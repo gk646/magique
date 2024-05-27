@@ -3,4 +3,6 @@
 
 
 
+int* allocate();
+
 #endif //ASSETMANAGER_H

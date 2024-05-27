@@ -1,23 +1,40 @@
-
 #include <magique/game/Game.h>
 
-#include "core/Core.h"
+
+#include <raylib.h>
 
 
-using namespace magique;
 
-
-Game::Game(const char *name) : gameName(name)
+namespace magique
 {
+    Game::Game(const char* name) : gameName(name)
+    {
+        InitWindow(1280,960, name);
+    }
 
-}
+    Game::~Game()
+    {
 
-Game::~Game() {}
+    }
 
-void Game::init() {}
+    void Game::init()
+    {
 
-void Game::update() {}
+    }
 
-void Game::render() {}
+    void Game::update()
+    {
 
-int Game::run() { return 0; }
+    }
+
+    void Game::render()
+    {
+
+    }
+
+    int Game::run()
+    {
+        return 0;
+    }
+
+} // namespace magique
