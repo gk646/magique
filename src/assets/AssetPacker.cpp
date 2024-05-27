@@ -1,10 +1,17 @@
 
 #include "AssetPacker.h"
+#include <magique/assets/AssetManager.h>
 
 #include <iostream>
 #include <fstream>
 #include <utility>
 #include <filesystem>
+
+
+int* allocate()
+{
+    return new int();
+}
 
 namespace AssetPacker {
 

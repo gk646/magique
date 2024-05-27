@@ -1,16 +1,33 @@
 #define CATCH_CONFIG_MAIN
 
-
 #include <magique/magique.hpp>
 
+#include <entt/entity/registry.hpp>
+
+enum class EntityType : uint16_t
+{
+    PLAYER,
+    ENEMY,
+};
+
+
+using namespace magique;
 
 int main()
 {
-    magique::Game myGame;
+    Game myGame;
 
-    auto* myPtr = new int[5];
+    ecs::RegisterEntity(EntityType::PLAYER,
+                        [](entt::registry& reg, const entt::entity e)
+                        {
+                            ecs::MakeActor(e);
+                            ecs::MakeCollision(e, AABB);
 
-    delete [] myPtr;
+                        });
+
+    const auto e = ecs::CreateEntity(EntityType::PLAYER);
+
+    ecs::DestroyEntity(e);
 
     return myGame.run();
 }
