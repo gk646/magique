@@ -1,7 +1,7 @@
 
 # Set the CMake project name
-set(PROJECT_PREFIX "MAGIC")
-set(TARGET_NAME "magic")
+set(PROJECT_PREFIX "MAGIQUE")
+set(TARGET_NAME "magique")
 
 # Set the library path
 set(DEPENDENCY_PATH "C:/Users/gk646/Documents/Libraries")
