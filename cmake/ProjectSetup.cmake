@@ -1,4 +1,3 @@
-
 # Set the CMake project name
 set(PROJECT_PREFIX "MAGIQUE")
 set(TARGET_NAME "magique")

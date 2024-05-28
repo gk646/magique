@@ -58,6 +58,6 @@ struct FileImage {
   const char* data;
 };
 
-typedef std::map<std::string, FileImage, NumericSort> fileImageMap_t;
+using std::map<std::string, FileImage, NumericSort> fileImageMap_t;
 }  // namespace AssetPacker
 #endif  //MAGEQUEST_SRC_ASSETPACKER_FWD_H_

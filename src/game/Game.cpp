@@ -10,6 +10,7 @@ namespace magique
     Game::Game(const char* name) : gameName(name)
     {
         InitWindow(1280,960, name);
+        InitAudioDevice();
     }
 
     Game::~Game()
@@ -17,20 +18,7 @@ namespace magique
 
     }
 
-    void Game::init()
-    {
 
-    }
-
-    void Game::update()
-    {
-
-    }
-
-    void Game::render()
-    {
-
-    }
 
     int Game::run()
     {

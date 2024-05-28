@@ -5,4 +5,6 @@ struct GameLoader;   // Handles loading all major game files -  Start -> MainMen
 struct SaveLoader;   // Handles loading individual world state and player save - MainMenu -> Game
 struct SaveUnloader; // Handles saving the session and reseting the state  - Game -> MainMenu
 
-#endif // FWD_HPP
+
+struct AssetContainer; // Asset List loaded from a compiled asset pack
+#endif            // FWD_HPP
