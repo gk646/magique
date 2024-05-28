@@ -3,11 +3,10 @@
 #include <magique/assets/container/AssetContainer.h>
 
 #include <cxutil/cxstring.h>
-
+#include <cxutil/cxtime.h>
 
 #include "core/Core.h"
 
-#include <iostream>
 #include <fstream>
 #include <filesystem>
 
@@ -38,14 +37,13 @@ namespace
 
         filePointer += 5;
         memcpy(&totalSize, &imageData[filePointer], 4);
-        std::cout << "Image Size: " << totalSize << " bytes given, " << imageSize << " read." << std::endl;
 
         if (imageSize == 0)
             imageSize = totalSize;
 
         if (imageSize != totalSize)
         {
-            std::cout << "Image size mismatch between header and buffer size" << std::endl;
+            printf("Image size mismatch between header and buffer size");
             return false;
         }
         // Skip header file size
@@ -63,7 +61,7 @@ namespace
                 memcpy(&titleLen, &imageData[filePointer], 4);
                 if (titleLen > MAX_TITLE_LENGTH)
                 {
-                    std::cout << "Filename exceeds limit" << std::endl;
+                    printf("Filename exceeds limit");
                     return false;
                 }
                 filePointer += 4;
@@ -75,7 +73,7 @@ namespace
             memcpy(&fileSize, &imageData[filePointer], 4);
             if (fileSize > imageSize - filePointer)
             {
-                std::cout << "File data exceeds image data" << std::endl;
+                printf("File data exceeds image data");
                 return false;
             }
             filePointer += 4;
@@ -108,8 +106,6 @@ namespace
     {
         if (fs::exists(directory))
         {
-            pathList.reserve(100);
-
             if (fs::is_directory(directory))
             {
                 ScanDirectory(fs::directory_entry(directory), pathList);
@@ -120,10 +116,10 @@ namespace
                 pathList.emplace_back(directory);
                 return true;
             }
-            printf("Error: Given path is not directory of file: %s", directory);
+            fprintf(stderr, "Error: Given path is not directory of file: %s\n", directory);
             return false;
         }
-        printf("Error: Given directory does not exist: %s", directory);
+        fprintf(stderr, "Error: Given directory does not exist: %s\n", directory);
         return false;
     }
 
@@ -135,6 +131,7 @@ namespace magique::assets
 
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
+        cxstructs::now();
         std::ifstream file(path, std::ios::binary);
         if (file)
         {
@@ -145,12 +142,15 @@ namespace magique::assets
             const bool res = LoadImageFromMemory(fileData, imageSize, assets, encryptionKey);
             delete[] fileData;
             if (res)
+            {
+                printf("Successfully loaded image %s - Took: %lld millis. Total Size: %d\n", path,
+                       cxstructs::getTime<std::chrono::milliseconds>(), imageSize);
                 return true;
-
-            printf("Failed to load image: %s", path);
+            }
+            fprintf(stderr, "Failed to load image: %s\n", path);
             return false;
         }
-        printf("Failed to load file: %s", path);
+        fprintf(stderr, "Failed to load file: %s\n", path);
         file.close();
         return false;
     }
@@ -158,7 +158,10 @@ namespace magique::assets
 
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey)
     {
+        cxstructs::now();
         vector<fs::path> pathList;
+        pathList.reserve(100);
+
 
         if (!CreatePathList(directory, pathList))
         {
@@ -167,7 +170,7 @@ namespace magique::assets
 
         if (pathList.empty())
         {
-            printf("No files to compile");
+            fprintf(stderr, "No files to compile");
             return false;
         }
 
@@ -176,7 +179,7 @@ namespace magique::assets
 
         if (!image)
         {
-            std::cout << "Could not open file for writing: " << fileName << std::endl;
+            fprintf(stderr, "Could not open file for writing: %s\n", fileName);
             return false;
         }
 
@@ -188,7 +191,7 @@ namespace magique::assets
             std::ifstream file(entry, std::ios::binary | std::ios::ate);
             if (!file)
             {
-                printf("Could not open input file: %s", entry.generic_string().c_str());
+                fprintf(stderr, "Could not open input file: %s\n", entry.generic_string().c_str());
                 continue;
             }
 
@@ -204,7 +207,7 @@ namespace magique::assets
                     auto size = static_cast<uint32_t>(fileSize);
                     fs::path relativePath = fs::relative(entry, rootPath);
                     std::string relativePathStr = relativePath.generic_string();
-                    uint32_t pathLen = static_cast<uint32_t>(relativePathStr.size());
+                    auto pathLen = static_cast<uint32_t>(relativePathStr.size());
                     image.write(reinterpret_cast<const char*>(&pathLen), sizeof(pathLen));
                     image.write(relativePathStr.c_str(), pathLen);
                     image.write(reinterpret_cast<const char*>(&size), sizeof(size));
@@ -219,6 +222,8 @@ namespace magique::assets
         image.seekp(5);
         image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(writtenSize));
         image.close();
+        printf("Successfully compiled %s into %s - Took %lld millis. Total Size: %d\n", directory, fileName,
+               cxstructs::getTime<std::chrono::milliseconds>(), writtenSize);
         return true;
     }
 

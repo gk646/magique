@@ -11,7 +11,7 @@ namespace magique::ecs
     entt::registry& GetRegistry() { return ENTT_REGISTRY; }
 
     // Type map
-    HashMap<EntityType, const std::function<void(entt::registry&, entt::entity)>> typeMap;
+   inline HashMap<EntityType, const std::function<void(entt::registry&, entt::entity)>> typeMap;
 
 
     bool RegisterEntity(const EntityType type, const std::function<void(entt::registry&, entt::entity)>& createFunc)

@@ -1,7 +1,5 @@
 #define CATCH_CONFIG_MAIN
 
-#include "raylib.h"
-
 
 #include <magique/magique.hpp>
 
@@ -21,6 +19,18 @@ using namespace magique;
 int main()
 {
     Game myGame;
+
+    ecs::RegisterEntity(EntityType::PLAYER,
+                        [](entt::registry& reg, const entt::entity e)
+                        {
+                            ecs::MakeActor(e);
+                            ecs::MakeCollision(e, AABB);
+                        });
+
+    const auto e = ecs::CreateEntity(EntityType::PLAYER);
+
+    ecs::DestroyEntity(e);
+
 
     return myGame.run();
 }

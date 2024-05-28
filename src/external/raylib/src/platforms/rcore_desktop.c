@@ -137,8 +137,9 @@ static void JoystickCallback(int jid, int event);                               
 // NOTE: By default, if KEY_ESCAPE pressed or window close icon clicked
 bool WindowShouldClose(void)
 {
-    if (CORE.Window.ready) return CORE.Window.shouldClose;
-    else return true;
+    if (CORE.Window.ready)
+        return CORE.Window.shouldClose;
+    return true;
 }
 
 // Toggle fullscreen mode
