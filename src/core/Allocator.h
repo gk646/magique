@@ -5,7 +5,7 @@
 // Override the global new operator
 inline void* operator new(const size_t size)
 {
-    printf("Allocating %d bytes", static_cast<int>(size));
+    //printf("Allocating %d bytes", static_cast<int>(size));
     void* ptr = malloc(size);
     if (ptr)
         return ptr;
@@ -15,7 +15,7 @@ inline void* operator new(const size_t size)
 // Override the global delete operator
 inline void operator delete(void* ptr) noexcept
 {
-    printf("Deallocating");
+   // printf("Deallocating");
     free(ptr);
 }
 
@@ -33,7 +33,7 @@ inline void operator delete[](void* ptr) noexcept
 // Additional overloads might be needed for custom behavior and specific compilers
 inline void operator delete(void* ptr, size_t size) noexcept
 {
-    printf("Deallocating %d bytes", static_cast<int>(size));
+   // printf("Deallocating %d bytes", static_cast<int>(size));
 
     free(ptr);
 }
