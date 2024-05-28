@@ -3,23 +3,25 @@
 add_subdirectory(assets)
 add_subdirectory(ecs)
 add_subdirectory(lua)
-add_subdirectory(external)
 add_subdirectory(game)
 add_subdirectory(loading)
 
-# Main library
-add_library(${TARGET_NAME} STATIC link.cpp)
+# Dependencies
+add_subdirectory(external)
+
+
+# Main library (Object libraries)
+add_library(${TARGET_NAME} STATIC
+        core/Allocator.h
+        $<TARGET_OBJECTS:${TARGET_NAME}_assets>
+        $<TARGET_OBJECTS:${TARGET_NAME}_ecs>
+        $<TARGET_OBJECTS:${TARGET_NAME}_lua>
+        $<TARGET_OBJECTS:${TARGET_NAME}_game>
+        $<TARGET_OBJECTS:${TARGET_NAME}_loading>
+)
+
+target_link_libraries(${TARGET_NAME} PUBLIC raylib)
 
 
 # Output library at root
 set_target_properties(${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
-
-
-# Linking
-target_link_libraries(${TARGET_NAME} PUBLIC
-        ${TARGET_NAME}-lua
-        ${TARGET_NAME}-assets
-        ${TARGET_NAME}-ecs
-        ${TARGET_NAME}-loading
-        ${TARGET_NAME}-game
-)

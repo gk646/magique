@@ -7,4 +7,7 @@ struct SaveUnloader; // Handles saving the session and reseting the state  - Gam
 
 
 struct AssetContainer; // Asset List loaded from a compiled asset pack
-#endif            // FWD_HPP
+
+
+struct Camera2D; // raylib
+#endif           // FWD_HPP

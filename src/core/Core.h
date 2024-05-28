@@ -7,11 +7,7 @@
 #include <cstdlib>
 #include <new>
 
-// Replce with cxallocator
-#include "Allocator.h"
-
 #include <cxutil/cxassert.h>
-
 
 namespace magique
 {
