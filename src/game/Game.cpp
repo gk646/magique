@@ -1,11 +1,10 @@
-
 #include <magique/game/Game.h>
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/AssetPacker.h>
+#include <magique/util/Logging.h>
 
 #include <raylib.h>
 #include <entt/entity/registry.hpp>
-
 
 using UpdateMethod = void (*)(entt::registry& registry);
 
@@ -21,11 +20,12 @@ namespace magique
 #ifdef MAGIQUE_DEBUG
         SetTraceLogLevel(LOG_WARNING);
 #endif
-        SetTraceLogLevel(LOG_NONE);
+        SetTraceLogLevel(LOG_WARNING);
         InitWindow(1280, 720, name);
         InitAudioDevice();
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
+        LOG_INFO("Started Game");
     }
 
 

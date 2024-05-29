@@ -5,9 +5,11 @@
 enum Shape : uint8_t
 {
     CIRCLE, // Circle
-    AABB, // Non-rotated retangle
-    POLY, // Polygone
+    AABB,   // Non-rotated retangle
+    POLY,   // Polygone
 };
+
+enum MapID : uint8_t; // Models different levels
 
 // Denotes an actor
 struct ActorC
@@ -23,14 +25,16 @@ struct PositionC
 {
     float x;
     float y;
+    MapID zone;
     int16_t width;
     int16_t height;
+    uint16_t rotation;
 };
 
 
 struct CollisionC
 {
-    Shape shape = AABB; // Shape
+    Shape shape = AABB;  // Shape
     int16_t anchorX = 0; // Rotation anchor point for the hitbox
     int16_t anchorY = 0; // Rotation anchor point for the hitbox
 };

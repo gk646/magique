@@ -1,8 +1,6 @@
 #ifndef MAGIQUE_H
 #define MAGIQUE_H
 
-#include "magique/fwd.hpp"
-
 // CORE
 #include "game/Game.h"
 
@@ -13,6 +11,8 @@
 // EC System
 #include "ecs/Registry.h"
 
+// Util
+#include "util/Logging.h"
 
 
 #endif // MAGIQUE_H

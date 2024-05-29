@@ -1,14 +1,31 @@
-
 #include <magique/assets/AssetPacker.h>
+#include <magique/core/DataStructures.h>
 #include <magique/assets/container/AssetContainer.h>
+#include <magique/util/Logging.h>
 
 #include <cxutil/cxstring.h>
 #include <cxutil/cxtime.h>
 
-#include "core/Core.h"
-
 #include <fstream>
 #include <filesystem>
+
+// Original implementation is heavily modified
+/*
+    Modified version of the Simple-Asset-Packer by:
+    MIT License
+
+    Copyright (c) 2020 Hugh Nixon
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+ */
 
 namespace fs = std::filesystem;
 
@@ -24,14 +41,15 @@ namespace
         }
     }
 
-    bool LoadImageFromMemory(const char* imageData, uint32_t imageSize, AssetContainer& assets, uint64_t encryptionKey)
+    bool LoadImageFromMemory(const char* imageData, uint32_t imageSize, magique::AssetContainer& assets,
+                             uint64_t encryptionKey)
     {
         uint32_t totalSize = 0;
         uint32_t filePointer = 0;
 
         if (memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
         {
-            printf("Malformed Image File");
+            LOG_ERROR("Malformed asset image File");
             return false;
         }
 
@@ -43,7 +61,7 @@ namespace
 
         if (imageSize != totalSize)
         {
-            printf("Image size mismatch between header and buffer size");
+            LOG_ERROR("Image size mismatch between header and buffer size");
             return false;
         }
         // Skip header file size
@@ -61,7 +79,7 @@ namespace
                 memcpy(&titleLen, &imageData[filePointer], 4);
                 if (titleLen > MAX_TITLE_LENGTH)
                 {
-                    printf("Filename exceeds limit");
+                    LOG_ERROR("Filename exceeds limit");
                     return false;
                 }
                 filePointer += 4;
@@ -73,7 +91,7 @@ namespace
             memcpy(&fileSize, &imageData[filePointer], 4);
             if (fileSize > imageSize - filePointer)
             {
-                printf("File data exceeds image data");
+                LOG_ERROR("File data exceeds image data");
                 return false;
             }
             filePointer += 4;
@@ -116,13 +134,12 @@ namespace
                 pathList.emplace_back(directory);
                 return true;
             }
-            fprintf(stderr, "Error: Given path is not directory of file: %s\n", directory);
+            LOG_ERROR("Error: Given path is not directory of file: %s", directory);
             return false;
         }
-        fprintf(stderr, "Error: Given directory does not exist: %s\n", directory);
+        LOG_ERROR( "Error: Given directory does not exist: %s", directory);
         return false;
     }
-
 
 } // namespace
 
@@ -132,6 +149,7 @@ namespace magique::assets
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
         cxstructs::now();
+        assets.assets.reserve(100);
         std::ifstream file(path, std::ios::binary);
         if (file)
         {
@@ -143,14 +161,14 @@ namespace magique::assets
             delete[] fileData;
             if (res)
             {
-                printf("Successfully loaded image %s - Took: %lld millis. Total Size: %d\n", path,
+                LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %d\n", path,
                        cxstructs::getTime<std::chrono::milliseconds>(), imageSize);
                 return true;
             }
-            fprintf(stderr, "Failed to load image: %s\n", path);
+            LOG_ERROR( "Failed to load asset image: %s", path);
             return false;
         }
-        fprintf(stderr, "Failed to load file: %s\n", path);
+        LOG_ERROR("Failed to load file: %s", path);
         file.close();
         return false;
     }
@@ -162,7 +180,6 @@ namespace magique::assets
         vector<fs::path> pathList;
         pathList.reserve(100);
 
-
         if (!CreatePathList(directory, pathList))
         {
             return false;
@@ -170,7 +187,7 @@ namespace magique::assets
 
         if (pathList.empty())
         {
-            fprintf(stderr, "No files to compile");
+            LOG_ERROR("No files to compile into asset image");
             return false;
         }
 
@@ -179,7 +196,7 @@ namespace magique::assets
 
         if (!image)
         {
-            fprintf(stderr, "Could not open file for writing: %s\n", fileName);
+            LOG_ERROR("Could not open file for writing: %s", fileName);
             return false;
         }
 
@@ -191,7 +208,7 @@ namespace magique::assets
             std::ifstream file(entry, std::ios::binary | std::ios::ate);
             if (!file)
             {
-                fprintf(stderr, "Could not open input file: %s\n", entry.generic_string().c_str());
+                LOG_ERROR("Could not open input file: %s", entry.generic_string().c_str());
                 continue;
             }
 
@@ -222,7 +239,7 @@ namespace magique::assets
         image.seekp(5);
         image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(writtenSize));
         image.close();
-        printf("Successfully compiled %s into %s - Took %lld millis. Total Size: %d\n", directory, fileName,
+        LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %d\n", directory, fileName,
                cxstructs::getTime<std::chrono::milliseconds>(), writtenSize);
         return true;
     }

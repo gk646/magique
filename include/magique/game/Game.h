@@ -20,7 +20,7 @@ namespace magique
 {
     struct Game
     {
-        Camera2D camera;
+        Camera2D camera{};
         explicit Game(const char* name = "MyGame");
         virtual ~Game();
 
@@ -30,10 +30,7 @@ namespace magique
         virtual void onStartup(GameLoader& gl) {}
 
         // Called when the windows close button is pressed
-        virtual void onCloseEvent()
-        {
-            isRunning = false;
-        }
+        virtual void onCloseEvent() { isRunning = false; }
 
         // Called when the game closes
         virtual void onShutDown() {}
@@ -64,9 +61,8 @@ namespace magique
         // Call this to start the game
         int run(const char* assetPath = "data.bin", uint64_t encryptionKey = 0);
 
-        bool isRunning = false;
-
     private:
+        bool isRunning = false;
         const char* const gameName;
     };
 

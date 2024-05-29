@@ -5,6 +5,8 @@ add_subdirectory(ecs)
 add_subdirectory(lua)
 add_subdirectory(game)
 add_subdirectory(loading)
+add_subdirectory(core)
+add_subdirectory(util)
 
 # Dependencies
 add_subdirectory(external)
@@ -12,12 +14,13 @@ add_subdirectory(external)
 
 # Main library (Object libraries)
 add_library(${TARGET_NAME} STATIC
-        core/Allocator.h
+        $<TARGET_OBJECTS:${TARGET_NAME}_core>
         $<TARGET_OBJECTS:${TARGET_NAME}_assets>
         $<TARGET_OBJECTS:${TARGET_NAME}_ecs>
         $<TARGET_OBJECTS:${TARGET_NAME}_lua>
         $<TARGET_OBJECTS:${TARGET_NAME}_game>
         $<TARGET_OBJECTS:${TARGET_NAME}_loading>
+        $<TARGET_OBJECTS:${TARGET_NAME}_util>
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC raylib)

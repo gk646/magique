@@ -2,10 +2,10 @@
 #define CONFIG_H
 
 
-#ifdef MAGIQUE_DEBUG
-#define MAGIQUE_DB_SHOW_HITBOXES
+#define MAGIQUE_MULITPLAYER_SUPPORT 0 // 1 to enable multiplayer
+#define MAGIQUE_LOGIC_TICKS 60        // 60 Ticks per second
 
-#endif
+//-----------------MULTIPLAYER-----------------//
 
-
+#define MAGQIQUE_MAX_PLAYERS 4
 #endif //CONFIG_H
