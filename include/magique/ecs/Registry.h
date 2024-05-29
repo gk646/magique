@@ -28,7 +28,7 @@ namespace magique::ecs
     // Failure: Returns false
     bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
 
-    // Unregisters an entity
+    // Unregisters an entity - replaces the existing function if present
     // Failure: Returns false
     bool UnRegisterEntity(EntityType type);
 

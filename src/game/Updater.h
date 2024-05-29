@@ -2,19 +2,27 @@
 
 #include <thread>
 
-#include <magique/config.h>
 #include <magique/ecs/Registry.h>
+
+#include "ecs/systems/CollisionSystem.h"
+#include "core/Config.h"
 
 namespace magique::updater
 {
     inline std::thread LOGIC_THREAD;
 
-    inline void GameLoop(bool& isRunning, Game& game)
+    inline void InternalUpdate(entt::registry& registry)
+    {
+
+        ecs::CheckCollisions(registry);
+    }
+
+    inline void GameLoop(const bool& isRunning, Game& game)
     {
         using namespace std::chrono;
         using namespace std::this_thread;
 
-        printf("Started GameLoop");
+        LOG_INFO("Started Gameloop");
         constexpr auto tickDuration = microseconds(1'000'000 / MAGIQUE_LOGIC_TICKS);
 
         auto lastTime = steady_clock::now();
@@ -33,6 +41,7 @@ namespace magique::updater
                 //Tick game
                 {
                     auto& reg = ecs::GetRegistry();
+                    InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }
                 const auto tickTime = steady_clock::now() - startTime;

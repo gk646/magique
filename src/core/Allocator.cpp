@@ -1,21 +1,30 @@
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 
+#include <cstdio>
+#include <cstdlib>
+#include <magique/util/Logging.h>
+
+
+// Will get a custom allocator interface similar to this gdc talk
+// https://www.youtube.com/watch?v=fcBZEZWGYek&pp=ygUcc2ltcGxlIGNvbGxvc3N1c2UgcmVtYWtlIGdkYw%3D%3D
 
 // Override the global new operator
 inline void* operator new(const size_t size)
 {
-    //printf("Allocating %d bytes", static_cast<int>(size));
+    LOG_ALLOC("Allocating %d bytes", static_cast<int>(size));
     void* ptr = malloc(size);
     if (ptr)
         return ptr;
-    throw std::bad_alloc();
+
+    return nullptr;
 }
 
 // Override the global delete operator
 inline void operator delete(void* ptr) noexcept
 {
-   // printf("Deallocating");
+    LOG_ALLOC("Deallocating");
+
     free(ptr);
 }
 
@@ -33,8 +42,7 @@ inline void operator delete[](void* ptr) noexcept
 // Additional overloads might be needed for custom behavior and specific compilers
 inline void operator delete(void* ptr, size_t size) noexcept
 {
-   // printf("Deallocating %d bytes", static_cast<int>(size));
-
+    LOG_ALLOC("Deallocating %d bytes", static_cast<int>(size));
     free(ptr);
 }
 

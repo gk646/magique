@@ -61,25 +61,20 @@ bool NumericSort::operator()(const std::string& a, const std::string& b) const
     return a < b;
 }
 
-AssetContainer::AssetContainer()
+namespace magique
 {
+    AssetContainer::AssetContainer() {}
 
-}
 
-
-AssetContainer::~AssetContainer()
-{
-    for (auto& a : assets)
+    AssetContainer::~AssetContainer()
     {
-        delete[] a.data;
-        a.data = nullptr;
+        for (auto& a : assets)
+        {
+            delete[] a.data;
+            a.data = nullptr;
+        }
     }
-}
 
 
-
-void AssetContainer::sort()
-{
-
-
-}
+    void AssetContainer::sort() {}
+} // namespace magique

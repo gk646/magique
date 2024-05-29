@@ -7,7 +7,7 @@
 
 namespace magique::renderer
 {
-    inline void Run(bool& isRunning, Game& game)
+    inline void Run(const bool& isRunning, Game& game)
     {
         auto& reg = ecs::GetRegistry();
         // Double loop to catch the close event
@@ -16,18 +16,17 @@ namespace magique::renderer
             while (!WindowShouldClose() && isRunning) [[likely]]
             {
                 const auto startTime = std::chrono::steady_clock::now();
+                game.preRender(); // Pre render
                 BeginDrawing();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
                     auto& camera = game.camera;
                     BeginMode2D(camera);
                     {
-                        // Draw game
-                        game.drawGame(reg, camera);
+                        game.drawGame(reg, camera); // Draw game
                     }
                     EndMode2D();
-                    // Draw UI
-                    game.drawUI();
+                    game.drawUI(); // Draw UI
                 }
                 EndDrawing();
                 const auto tickTime = std::chrono::steady_clock::now() - startTime;
@@ -40,7 +39,6 @@ namespace magique::renderer
             game.onCloseEvent();
         }
     }
-
 
     inline void Close()
     {
