@@ -4,8 +4,6 @@
 #include "magique/fwd.hpp"
 #include "entt/entity/fwd.hpp"
 
-#include "magique/ecs/BaseComponents.h"
-
 //-----------------------------------------------
 // Types Modules
 //-----------------------------------------------
@@ -16,6 +14,7 @@
 
 namespace magique
 {
+    enum MapID : uint8_t; // Models different levels
 
     struct Point final
     {

@@ -1,14 +1,55 @@
 #ifndef GAMELOADER_H
 #define GAMELOADER_H
 
-#include "taskexecutor/TaskExecutor.h"
+#include <magique/assets/container/AssetContainer.h>
+#include <magique/loading/taskexecutor/TaskExecutor.h>
 
-struct AssetContainer;
+//-----------------------------------------------
+// Game Loader
+//-----------------------------------------------
+// .....................................................................
+// The main loader to get from startup to the initialized game (MainMenu)
+// Theres 2 guarantees when using the loader:
+//  - The task is guaranteed be executed on the main thread if specified
+//  - All task of a higher priority are finished when advancing to the next
+//
+// For ANY kind of gpu access (texture loading) you HAVE specify MAIN_THREAD.
+// For most others task use ANY_THREAD to allow background loading without stopping the render loop
+// Loading dependencies and order can easily be created by specifying a lower priority for tasks that accesses data
+// of higher ones
+// This loader cleans itself up after loading all tasks
+
 namespace magique
 {
+    using GameLoadFunc = void (*)(AssetContainer&); // Typedef for simple tasks not requiring variables
+
     struct GameLoader final : TaskExecutor<AssetContainer>
     {
-        auto load() -> bool override;
+        GameLoader(const char* assetPath, uint64_t encryptionKey);
+
+        void printStats();
+
+        // Called each frame - progressed the loader
+        // Dont call it yourself
+        bool load() override;
+
+
+        // Registers a new task
+        // task     - a new instance of a subclass of ITask, takes owner ship
+        // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
+        // pl       - the level of priority, higher priorities are loaded first
+        // impact   - an absolute estimate of the time needed to finish the task
+        void registerTask(ITask<AssetContainer>* task, Thread thread, PriorityLevel pl = MED, int impact = 1);
+
+        // Registers a new task
+        // func     - a loading func (lambda)
+        // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
+        // pl       - the level of priority, higher priorities are loaded first
+        // impact   - an absolute estimate of the time needed to finish the task
+        void registerTask(GameLoadFunc func, Thread thread, PriorityLevel pl = MED, int impact = 1);
+
+    private:
+        AssetContainer assets;
     };
 
 } // namespace magique

@@ -137,7 +137,7 @@ namespace
             LOG_ERROR("Error: Given path is not directory of file: %s", directory);
             return false;
         }
-        LOG_ERROR( "Error: Given directory does not exist: %s", directory);
+        LOG_ERROR("Error: Given directory does not exist: %s", directory);
         return false;
     }
 
@@ -148,6 +148,11 @@ namespace magique::assets
 
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
+        if (!std::filesystem::exists(path))
+        {
+            LOG_WARNING("Given path does not exist: %s", path);
+            return false;
+        }
         cxstructs::now();
         assets.assets.reserve(100);
         std::ifstream file(path, std::ios::binary);
@@ -162,10 +167,10 @@ namespace magique::assets
             if (res)
             {
                 LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %d\n", path,
-                       cxstructs::getTime<std::chrono::milliseconds>(), imageSize);
+                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize);
                 return true;
             }
-            LOG_ERROR( "Failed to load asset image: %s", path);
+            LOG_ERROR("Failed to load asset image: %s", path);
             return false;
         }
         LOG_ERROR("Failed to load file: %s", path);
@@ -240,7 +245,7 @@ namespace magique::assets
         image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(writtenSize));
         image.close();
         LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %d\n", directory, fileName,
-               cxstructs::getTime<std::chrono::milliseconds>(), writtenSize);
+                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize);
         return true;
     }
 

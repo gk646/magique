@@ -1,20 +1,19 @@
+#pragma once
 #ifndef COREDATA_H
 #define COREDATA_H
 
 #include <entt/entity/registry.hpp>
-
 #include <magique/util/Logging.h>
 #include <magique/ecs/Registry.h>
 #include <magique/core/DataStructures.h>
 
-
 #include "InternalTypes.h"
 #include "datastructures/HashGrid.h"
+#include "perf/Perf.h"
 
 // All the core data that is shared between internal implementations
 // We carry a slog of includes around but dont really care as its statically compiled
-// Library compiled time isnt a user cost
-
+// Library compile time isnt a user cost
 
 namespace magique
 {
@@ -31,6 +30,12 @@ namespace magique
 
     // Current draw data
     inline DrawTickData DRAW_TICK_DATA;
+
+    // Active game loader if any
+    inline GameLoader* CURRENT_GAME_LOADER = nullptr;
+
+    // Performance metrics
+    inline PerfData PERF_DATA;
 
 } // namespace magique
 #endif //COREDATA_H

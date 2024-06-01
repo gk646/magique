@@ -2,10 +2,11 @@
 #define INTERNALTYPES_H
 
 #include <magique/core/Types.h>
+#include <magique/core/Defines.h>
+
 #include <cxstructs/BitMask.h>
 
 #include "datastructures/HashGrid.h"
-#include "Config.h"
 
 namespace magique
 {

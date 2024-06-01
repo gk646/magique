@@ -1,40 +1,55 @@
 #ifndef TASKEXECUTOR_H_
 #define TASKEXECUTOR_H_
 
+#include <magique/util/Logging.h>
 #include <thread>
 #include <map>
 #include <vector>
 #include <cstdint>
+#include <functional>
 
-enum PriorityLevel : uint8_t
+enum PriorityLevel : int8_t
 {
-    INSTANT,
-    CRITICAL,
-    HIGH,
-    MED,
     LOW,
-    DONE
+    MED,
+    MEDIUM,
+    CRITICAL,
+    INSTANT,
 };
-enum Device : uint8_t
+
+enum Thread : uint8_t
 {
-    CPU,
-    GPU
+    MAIN_THREAD,
+    BACKGROUND_THREAD,
 };
+
 
 template <typename T>
 struct ITask
 {
     bool isLoaded = false;
     int impact = 0;
+
+    virtual ~ITask() = default;
     virtual void execute(T& res) = 0;
 };
+
+
+template <typename T>
+struct LambdaTask final : ITask<T>
+{
+    std::function<void(T&)> func;
+
+    explicit LambdaTask(std::function<void(T&)> func) : func(std::move(func)) {}
+    void execute(T& res) override { func(res); }
+};
+
 
 struct IExecutor
 {
     virtual ~IExecutor() = default;
-    virtual auto load() -> bool = 0;
-    [[nodiscard]] virtual auto getProgressPercent() const -> float = 0;
-    [[nodiscard]] virtual auto isFinished() const -> bool = 0;
+    virtual bool load() = 0;
+    [[nodiscard]] virtual float getProgressPercent() const = 0;
 };
 
 template <typename T>
@@ -57,54 +72,45 @@ struct TaskExecutor : IExecutor
                 delete task;
         }
     }
-    auto getProgressPercent() const -> float final { return (100.0F * loadedImpact) / totalImpact; }
-    auto isFinished() const -> bool final { return currentLevel == DONE; }
+    float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
 protected:
-    void registerTask(ITask<T>* ptr, PriorityLevel pl, const Device d, int impact) {
-        if (!ptr) {
-            printf("MAGE_QUEST: Total Load Pensum: %d\n", totalImpact);
+    void addTask(ITask<T>* task, PriorityLevel pl, const Thread d, int impact)
+    {
+        if (!task)
+        {
             return;
         }
-        if (d == GPU) {
-            gpuTasks[pl].push_back(ptr);
-        } else {
-            cpuTasks[pl].push_back(ptr);
-        }
-        ptr->impact = impact;
+        task->impact = impact;
         totalImpact += impact;
+        if (d == MAIN_THREAD)
+        {
+            gpuTasks[pl].push_back(task);
+        }
+        else
+        {
+            cpuTasks[pl].push_back(task);
+        }
+    }
+    void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const Thread d, const int impact)
+    {
+        addTask(new LambdaTask{func}, pl, d, impact);
     }
     bool loadLoop(T& res)
     {
-        if (currentLevel == DONE)
-            return true;
-
-        if (currentLevel == INSTANT)
+        if (currentLevel == -1)
         {
-            loadInstant(res);
+            return true;
         }
 
-        // Load the next GPU task if not currently loading a GPU task and if there are any left to load
+        if (currentLevel == INSTANT && gpuTasks.contains(currentLevel))
+        {
+            loadTasks(gpuTasks[currentLevel], res);
+        }
+
         if (!gpuDone)
         {
-            bool done = true;
-            if (!gpuTasks[currentLevel].empty())
-            {
-                for (auto task : gpuTasks[currentLevel])
-                {
-                    if (!task->isLoaded)
-                    {
-                        loadTask(task, res);
-                        done = false;
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                done = true;
-            }
-            gpuDone = done;
+            gpuDone = loadTasks(gpuTasks[currentLevel], res);
         }
 
         if (!cpuDone)
@@ -116,15 +122,9 @@ protected:
                     loadThread.join();
                 }
                 loadThread = std::thread(
-                    [&]()
+                    [this, &res]()
                     {
-                        for (auto& task : cpuTasks[currentLevel])
-                        {
-                            if (!task->isLoaded)
-                            {
-                                loadTask(task, res);
-                            }
-                        }
+                        loadTasks(cpuTasks[currentLevel], res);
                         cpuDone = true;
                     });
             }
@@ -134,57 +134,51 @@ protected:
             }
         }
 
-        // Check if it's time to move to the next level
         if (gpuDone && cpuDone)
         {
-            bool allTasksLoaded = true;
-            for (const auto& task : cpuTasks[currentLevel])
-            {
-                if (!task->isLoaded)
-                {
-                    allTasksLoaded = false;
-                    break;
-                }
-            }
-
-            if (allTasksLoaded)
-            {
-                for (const auto& task : gpuTasks[currentLevel])
-                {
-                    if (!task->isLoaded)
-                    {
-                        allTasksLoaded = false;
-                        break;
-                    }
-                }
-            }
-
+            bool allTasksLoaded =
+                areAllTasksLoaded(cpuTasks[currentLevel]) && areAllTasksLoaded(gpuTasks[currentLevel]);
             if (allTasksLoaded)
             {
                 gpuDone = false;
                 cpuDone = false;
-                currentLevel = static_cast<PriorityLevel>(static_cast<int>(currentLevel) + 1);
+                currentLevel = static_cast<PriorityLevel>(static_cast<int>(currentLevel) - 1);
             }
         }
-        return isFinished();
+
+        return currentLevel == -1;
     }
-    void loadInstant(T& res)
+    bool loadTasks(std::vector<ITask<T>*>& tasks, T& res)
     {
-        for (auto task : gpuTasks[currentLevel])
+        for (auto task : tasks)
         {
             if (!task->isLoaded)
             {
                 loadTask(task, res);
             }
         }
+        return true;
     }
-    void loadTask(ITask<T>* ptr, T& res)
+    void loadTask(ITask<T>* task, T& res)
     {
-        ptr->execute(res);
-        loadedImpact += ptr->impact;
-        ptr->isLoaded = true;
-        printf("MAGE_QUEST: %d / %d -> %f completed\n", loadedImpact.load(), totalImpact, getProgressPercent());
+        task->execute(res);
+        loadedImpact += task->impact;
+        task->isLoaded = true;
+        LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%\n", task->impact, loadedImpact.load(), totalImpact,
+                 getProgressPercent());
     }
+    bool areAllTasksLoaded(const std::vector<ITask<T>*>& tasks) const
+    {
+        for (const auto task : tasks)
+        {
+            if (!task->isLoaded)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     std::map<PriorityLevel, std::vector<ITask<T>*>> cpuTasks;
     std::map<PriorityLevel, std::vector<ITask<T>*>> gpuTasks;
     std::thread loadThread;
@@ -195,4 +189,4 @@ protected:
     bool gpuDone = false;
 };
 
-#endif //MAGEQUEST_SRC_UTILS_TASKEXECUTOR_H_
+#endif //TASKEXECUTOR_H_
