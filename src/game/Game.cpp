@@ -1,15 +1,15 @@
 #include <magique/game/Game.h>
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/AssetPacker.h>
 #include <magique/util/Logging.h>
 
 #include <raylib.h>
 #include <entt/entity/registry.hpp>
 
-using UpdateMethod = void (*)(entt::registry& registry);
+#include "core/CoreData.h"
 
 #include "Renderer.h"
 #include "Updater.h"
+
 
 namespace magique
 {
@@ -25,7 +25,7 @@ namespace magique
         InitAudioDevice();
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
-        LOG_INFO("Started Game");
+        LOG_INFO("Initialized Game");
     }
 
 
@@ -38,16 +38,24 @@ namespace magique
 
     int Game::run(const char* assetPath, const uint64_t encryptionKey)
     {
-        AssetContainer assets;
-        assets::LoadAssetImage(assetPath, assets, encryptionKey);
+
+        CURRENT_GAME_LOADER = new GameLoader{assetPath, encryptionKey};
+        onStartup(*CURRENT_GAME_LOADER);
+        CURRENT_GAME_LOADER->printStats();
+
+        isLoading = true;
 
         updater::Run(isRunning, *this);
-        renderer::Run(isRunning, *this);
+        renderer::Run(isRunning, isLoading, *this);
+
 
         renderer::Close();
         updater::Close();
 
+
+
         return 0;
     }
+
 
 } // namespace magique

@@ -5,9 +5,42 @@
 #include <magique/ecs/Registry.h>
 #include <magique/game/Game.h>
 
+#include "core/CoreData.h"
+
 namespace magique::renderer
 {
-    inline void Run(const bool& isRunning, Game& game)
+    using namespace std::chrono;
+    inline static time_point<steady_clock> starTime;
+
+
+    inline void HandleLoadingScreen(bool& isLoading, Game& game)
+    {
+        if (CURRENT_GAME_LOADER)
+        {
+            const auto res = CURRENT_GAME_LOADER->load();
+            game.drawLoadingScreen(CURRENT_GAME_LOADER->getProgressPercent());
+            if (res == true)
+            {
+                delete CURRENT_GAME_LOADER;
+                CURRENT_GAME_LOADER = nullptr;
+                isLoading = false;
+            }
+        }
+    }
+
+    inline void StartRenderTick(Game& game)
+    {
+        starTime = steady_clock::now();
+        game.preRender(); // Pre render
+    }
+
+    inline void EndRenderTick()
+    {
+        EndDrawing();
+        PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - starTime).count());
+    }
+
+    inline void Run(const bool& isRunning, bool& isLoading, Game& game)
     {
         auto& reg = ecs::GetRegistry();
         // Double loop to catch the close event
@@ -15,27 +48,26 @@ namespace magique::renderer
         {
             while (!WindowShouldClose() && isRunning) [[likely]]
             {
-                const auto startTime = std::chrono::steady_clock::now();
-                game.preRender(); // Pre render
+                StartRenderTick(game);
                 BeginDrawing();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
+                    if (isLoading) [[unlikely]]
+                    {
+                        HandleLoadingScreen(isLoading, game);
+                    }
+
                     auto& camera = game.camera;
                     BeginMode2D(camera);
                     {
                         game.drawGame(reg, camera); // Draw game
                     }
                     EndMode2D();
+
                     game.drawUI(); // Draw UI
                 }
-                EndDrawing();
-                const auto tickTime = std::chrono::steady_clock::now() - startTime;
-                // Glob::DTD.lastTickTime = tickTime.count();
-#ifdef MAGIQUE_DEBUG
-                //Glob::GDT.drawTimes.push_back(Glob::DTD.lastTickTime);
-#endif
+                EndRenderTick();
             }
-
             game.onCloseEvent();
         }
     }

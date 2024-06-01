@@ -1,11 +1,13 @@
 #define CATCH_CONFIG_MAIN
 
+#include "MageQuest.h"
+
+
 #include <magique/magique.hpp>
 #include <magique/core/Core.h>
 #include <entt/entity/registry.hpp>
 #include <magique/assets/AssetPacker.h>
 #include <magique/util/Logging.h>
-
 
 enum class EntityType : uint16_t
 {
@@ -18,8 +20,9 @@ using namespace magique;
 
 int main()
 {
-    Game myGame;
 
+    MageQuest myGame;
+    magique::util::SetLogLevel(magique::util::LEVEL_INFO);
     ecs::RegisterEntity(EntityType::PLAYER,
                         [](entt::registry& reg, const entt::entity e)
                         {
@@ -30,15 +33,6 @@ int main()
     const auto e = ecs::CreateEntity(EntityType::PLAYER);
 
     ecs::DestroyEntity(e);
-
-    LOG_INFO("hello");
-
-    LOG_ERROR("error!");
-
-
-    assets::CompileImage("../","hey.bin");
-
-
 
     return myGame.run();
 }

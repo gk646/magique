@@ -1,7 +1,7 @@
 #ifndef HASHGRID_H
 #define HASHGRID_H
 
-#include <vector>
+#include <fastvector/fast_vector.h>
 #include <raylib/raylib.h>
 #include <tsl/robin_map.h>
 
@@ -13,7 +13,7 @@ struct HashGrid
 {
     using size_type = uint32_t;
     using GridID = size_type;
-    using value_type = std::vector<EntityID>;
+    using value_type = fast_vector<EntityID>;
 
     tsl::robin_map<GridID, value_type> map;
 
@@ -50,19 +50,19 @@ public:
 
         return *this;
     }
-    inline const value_type& operator[](GridID g) noexcept { return map[g]; }
-    [[nodiscard]] inline GridID getGridID(float x, float y) const noexcept
+    const value_type& operator[](GridID g) noexcept { return map[g]; }
+    [[nodiscard]] GridID getGridID(float x, float y) const noexcept
     {
         return static_cast<int>(x / cellSize) + static_cast<int>(y / cellSize) * gridSize;
     }
-    inline void clear()
+    void clear()
     {
         for (auto begin = map.begin(); begin != map.end(); ++begin)
         {
             begin.value().clear();
         }
     }
-    inline void setupNew(float newCellSize, uint16_t newSpaceSize, bool optimized = true)
+    void setupNew(float newCellSize, uint16_t newSpaceSize, bool optimized = true)
     {
         if (optimized)
         {
@@ -99,8 +99,7 @@ public:
         gridIDs[3] = (gridIDs[1] != -1 && gridIDs[2] != -1) ? bottomRightIndex : -1;
     }
 
-    inline void insert(float x, float y, float width, float height, float rot, float rotX, float rotY,
-                       EntityID entityID)
+    void insert(float x, float y, float width, float height, float rot, float rotX, float rotY, EntityID entityID)
     {
         if (rot == 0.0F || (rotX == 0 && rotY == 0))
         {

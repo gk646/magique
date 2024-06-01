@@ -3,7 +3,6 @@
 
 #include <cxutil/cxassert.h>
 
-
 #include "core/CoreData.h"
 
 namespace magique::ecs
@@ -61,8 +60,10 @@ namespace magique::ecs
         return false;
     }
 
-    void MakeActor(entt::entity e) { ENTT_REGISTRY.emplace<ActorC>(e); }
-
+    void MakeActor(entt::entity e)
+    {
+        ENTT_REGISTRY.emplace<ActorC>(e);
+    }
 
     void MakeCollision(entt::entity e, Shape shape, int anchorX, int anchorY)
     {

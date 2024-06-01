@@ -11,7 +11,7 @@ namespace magique::util
 
     void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
-        if (LOG_LEVEL < level)
+        if (level < LOG_LEVEL)
         {
             return;
         }

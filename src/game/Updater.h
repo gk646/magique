@@ -3,9 +3,9 @@
 #include <thread>
 
 #include <magique/ecs/Registry.h>
+#include <magique/core/Defines.h>
 
 #include "ecs/systems/CollisionSystem.h"
-#include "core/Config.h"
 
 namespace magique::updater
 {

@@ -63,6 +63,7 @@ namespace magique
 
     private:
         bool isRunning = false;
+        bool isLoading = false;
         const char* const gameName;
     };
 
