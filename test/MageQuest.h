@@ -57,22 +57,33 @@ class MageQuest final : public Game
 
             DrawRectangle(pos.x, pos.y, col.width, col.height, pos.type == EntityType::PLAYER ? BLUE : RED);
         }
-
-
-
     }
 
 
     void updateGame(entt::registry& registry) override
     {
+
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
+            srand(150);
+            for (int i = 0; i < 1000; ++i)
+            {
+                ecs::CreateEntity(EntityType::PLAYER, rand()%1000, rand()%1000, LEVEL_1);
+            }
+            return;
+            for (int i = 0; i < 50; ++i)
+            {
+
                 ecs::CreateEntity(EntityType::PLAYER, 250, 250, LEVEL_1);
+            }
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
+            for (int i = 0; i < 50; ++i)
+            {
                 ecs::CreateEntity(EntityType::ENEMY, 450, 250, LEVEL_1);
+            }
         }
 
         auto view = registry.view<PositionC, DebugControllerC>();

@@ -1,8 +1,6 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
-#include <unordered_set>
-
 #include <magique/core/Types.h>
 #include <magique/core/Defines.h>
 #include <cxstructs/BitMask.h>
@@ -10,17 +8,17 @@
 
 #include "core/datastructures/HashGrid.h"
 #include "core/datastructures/QuadTree.h"
+#include "core/datastructures/MultiResolutionGrid.h"
 
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
 {
     std::size_t operator()(const CollisionPair& p) const
     {
-        uint64_t combined = (static_cast<uint64_t>(p.first) << 32) | static_cast<uint64_t>(p.second);
+        const uint64_t combined = (static_cast<uint64_t>(p.first) << 32) | static_cast<uint64_t>(p.second);
         return std::hash<uint64_t>()(combined);
     }
 };
-
 
 namespace magique
 {
@@ -58,18 +56,19 @@ namespace magique
         HashSet<CollisionPair, PairHash> checkedPairs;
 
         // Global hashGrid for all entities
-        HashGrid<entt::entity> hashGrid{200, 1000};
+        SingleResolutionHashGrid<entt::entity,32> hashGrid{100};
 
         // Global quadtree
         QuadTree<entt::entity> quadTree{32000, 32000};
 
-        std::vector<entt::entity> collector;
+        vector<entt::entity> collector;
 
         // Atomic spinlock - whenever and data is accessed on the draw thread
         std::atomic_flag flag;
 
         LogicTickData()
         {
+            hashGrid.reserve(50,1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             removedEntities.reserve(100);
@@ -88,6 +87,7 @@ namespace magique
         {
             while (flag.test_and_set(std::memory_order_acquire))
             {
+
             }
         }
 

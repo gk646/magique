@@ -19,10 +19,6 @@ inline void* operator new(const size_t size)
         volatile int b = 5;
     }
 
-    if( size == 24)
-    {
-        volatile int b = 5;
-    }
     if (ptr)
         return ptr;
 

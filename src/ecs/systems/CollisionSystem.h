@@ -6,6 +6,8 @@
 
 #include "core/InternalTypes.h"
 
+#include <cxutil/cxtime.h>
+
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
 {
     c2Poly poly;
@@ -107,8 +109,8 @@ namespace magique::ecs
     inline void CheckCollisions(entt::registry& registry)
     {
 
-        auto view = registry.view<PositionC, const CollisionC>();
-        auto& qt = LOGIC_TICK_DATA.quadTree;
+        const auto view = registry.view<PositionC, const CollisionC>();
+        auto& grid = LOGIC_TICK_DATA.hashGrid;
         auto& checkedPairs = LOGIC_TICK_DATA.checkedPairs;
         auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
         auto& collector = LOGIC_TICK_DATA.collector;
@@ -119,35 +121,33 @@ namespace magique::ecs
         //  - Use stack padded collector
 
         updateVec.clear();
-        qt.clear();
         for (const auto first : view)
         {
             auto [posA, colA] = view.get<PositionC, CollisionC>(first);
             updateVec.push_back(first);
-            qt.insert(first, posA.x, posA.y, posA.x + colA.width, posA.y + colA.height);
+            grid.insert(first, posA.x, posA.y, colA.width, colA.height);
         }
 
 
-        printf("S: %d\n", updateVec.size());
         std::ranges::sort(updateVec);
 
         int collisions = 0;
+        cxstructs::now();
         for (const auto first : updateVec)
         {
             auto [posA, colA] = view.get<PositionC, CollisionC>(first);
 
             // Query quadtree
-            qt.query(collector, posA.x, posA.y, posA.x + colA.width, posA.y + colA.height);
-
+            grid.query<vector<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
             for (const auto second : collector)
             {
-                if (first == second)
+                if (first >= second)
                     continue;
 
                 CollisionPair pair = first < second ? std::make_pair(first, second) : std::make_pair(second, first);
 
-               // if (checkedPairs.contains(pair))
-                //    continue;
+                if (checkedPairs.contains(pair))
+                    continue;
 
                 auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
 
@@ -157,10 +157,12 @@ namespace magique::ecs
                     // printf("Collision!\n");
                 }
 
-               // checkedPairs.insert(pair);
+                checkedPairs.insert(pair);
             }
             collector.clear();
         }
+        cxstructs::printTime<std::chrono::nanoseconds>();
+
         int correct = 0;
         for (const auto first : updateVec)
         {
@@ -168,18 +170,17 @@ namespace magique::ecs
             {
                 if (first >= second)
                     continue;
-                auto [posA, colA] = view.get<PositionC, CollisionC>(first);
-                auto [posB, colB] = view.get<PositionC, const CollisionC>(entt::entity(second));
+                auto [posA, colA] = view.get<PositionC, const CollisionC>(first);
+                auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
                     correct++;
                 }
             }
         }
+        printf("S: %d\n", updateVec.size());
 
-        printf("Correct: %d\n", correct);
-        printf("Actual: %d\n", collisions);
-
+        grid.clear();
         checkedPairs.clear();
     }
 } // namespace magique::ecs
