@@ -13,9 +13,9 @@
 // All entities will have the PositionC component per default
 // .....................................................................
 
-
 // A unique type identifier handled by the user to disinguish different types of game objects
 // Max value is reserved for internal use e.g. INT32_MAX
+
 enum class EntityType : uint16_t;
 
 using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
@@ -24,11 +24,11 @@ namespace magique::ecs
 {
     //--------------Registering--------------//
 
-    // Registers an entity
+    // Registers an entity with a corresponding create function - replaces the existing function if present
     // Failure: Returns false
     bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
 
-    // Unregisters an entity - replaces the existing function if present
+    // Unregisters an entity
     // Failure: Returns false
     bool UnRegisterEntity(EntityType type);
 
@@ -36,7 +36,7 @@ namespace magique::ecs
 
     // Creates a new entity by calling the registered function for that type
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type);
+    entt::entity CreateEntity(EntityType type, float x, float y, MapID map);
 
     // Tries to destroy the entity and all its components
     // Failure: Returns false
@@ -51,10 +51,16 @@ namespace magique::ecs
     //--------------Creating--------------//
 
     // Adds components such that the given entity is an actor
-    void MakeActor(entt::entity e);
+    void GiveActor(entt::entity e);
 
     // Makes the entity collidable with others
-    void MakeCollision(entt::entity e, Shape shape, int anchorX = 0, int anchorY = 0);
+    void GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
+
+    // Draws entitiy as rectangles - only works in debug mode
+    void GiveDebugVisuals(entt::entity e);
+
+    // Gives it w,a,s,d controls - only works in debug mode
+    void GiveDebugController(entt::entity e);
 
     // Returns the entt registry
     entt::registry& GetRegistry();

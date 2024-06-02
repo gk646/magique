@@ -8,7 +8,6 @@
 #include <magique/core/DataStructures.h>
 
 #include "InternalTypes.h"
-#include "datastructures/HashGrid.h"
 #include "perf/Perf.h"
 
 // All the core data that is shared between internal implementations
