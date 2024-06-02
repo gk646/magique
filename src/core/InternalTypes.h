@@ -1,12 +1,26 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
+#include <unordered_set>
+
 #include <magique/core/Types.h>
 #include <magique/core/Defines.h>
-
 #include <cxstructs/BitMask.h>
+#include <ankerl/unordered_dense.h>
 
-#include "datastructures/HashGrid.h"
+#include "core/datastructures/HashGrid.h"
+#include "core/datastructures/QuadTree.h"
+
+using CollisionPair = std::pair<entt::entity, entt::entity>;
+struct PairHash
+{
+    std::size_t operator()(const CollisionPair& p) const
+    {
+        uint64_t combined = (static_cast<uint64_t>(p.first) << 32) | static_cast<uint64_t>(p.second);
+        return std::hash<uint64_t>()(combined);
+    }
+};
+
 
 namespace magique
 {
@@ -29,7 +43,7 @@ namespace magique
         // They are still updated for cache duration
         HashMap<entt::entity, uint16_t> entityUpdateCache;
 
-        // vector containing the entites to update for this tick
+        // vector containing the entites to update for this ticka
         vector<entt::entity> entityUpdateVec;
 
         // vector containing all entites to be drawn this tick
@@ -40,13 +54,16 @@ namespace magique
         // This is for multiplayer queued updates
         vector<entt::entity> removedEntities;
 
-
         // Checked collision pairs for each tick
-        HashSet<uint64_t> checkedPairs;
+        HashSet<CollisionPair, PairHash> checkedPairs;
 
+        // Global hashGrid for all entities
+        HashGrid<entt::entity> hashGrid{200, 1000};
 
-        // Global hashgrid for all entities
-        HashGrid<entt::entity> hashGrid;
+        // Global quadtree
+        QuadTree<entt::entity> quadTree{32000, 32000};
+
+        std::vector<entt::entity> collector;
 
         // Atomic spinlock - whenever and data is accessed on the draw thread
         std::atomic_flag flag;
@@ -84,7 +101,6 @@ namespace magique
             drawVec.clear();
             removedEntities.clear();
             checkedPairs.clear();
-            hashGrid.clear();
         }
     };
 } // namespace magique

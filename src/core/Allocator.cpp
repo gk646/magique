@@ -14,6 +14,15 @@ inline void* operator new(const size_t size)
 {
     LOG_ALLOC("Allocating %d bytes", static_cast<int>(size));
     void* ptr = malloc(size);
+    if(size > 100000)
+    {
+        volatile int b = 5;
+    }
+
+    if( size == 24)
+    {
+        volatile int b = 5;
+    }
     if (ptr)
         return ptr;
 

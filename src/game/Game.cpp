@@ -26,6 +26,8 @@ namespace magique
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         LOG_INFO("Initialized Game");
+        camera.zoom = 1.0F;
+        SetTargetFPS(60);
     }
 
 
@@ -38,7 +40,6 @@ namespace magique
 
     int Game::run(const char* assetPath, const uint64_t encryptionKey)
     {
-
         CURRENT_GAME_LOADER = new GameLoader{assetPath, encryptionKey};
         onStartup(*CURRENT_GAME_LOADER);
         CURRENT_GAME_LOADER->printStats();
@@ -48,10 +49,8 @@ namespace magique
         updater::Run(isRunning, *this);
         renderer::Run(isRunning, isLoading, *this);
 
-
         renderer::Close();
         updater::Close();
-
 
 
         return 0;

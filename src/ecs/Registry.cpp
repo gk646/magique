@@ -35,17 +35,16 @@ namespace magique::ecs
         return true;
     }
 
-    entt::entity CreateEntity(const EntityType id)
+    entt::entity CreateEntity(const EntityType type, float x, float y, MapID map)
     {
-        CX_ASSERT(id < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
-
-        const auto it = ENT_TYPE_MAP.find(id);
+        CX_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        const auto it = ENT_TYPE_MAP.find(type);
         if (it == ENT_TYPE_MAP.end())
         {
             return entt::null; // EntityID not registered
         }
         const auto entity = ENTT_REGISTRY.create();
-        ENTT_REGISTRY.emplace<PositionC>(entity); // PositionC is default
+        ENTT_REGISTRY.emplace<PositionC>(entity, x, y,type,  map); // PositionC is default
         it->second(ENTT_REGISTRY, entity);
         return entity;
     }
@@ -60,14 +59,32 @@ namespace magique::ecs
         return false;
     }
 
-    void MakeActor(entt::entity e)
+    void GiveActor(entt::entity e) { ENTT_REGISTRY.emplace<ActorC>(e); }
+
+    void GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
     {
-        ENTT_REGISTRY.emplace<ActorC>(e);
+        ENTT_REGISTRY.emplace<CollisionC>(e, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
+                                          static_cast<int16_t>(anchorY));
     }
 
-    void MakeCollision(entt::entity e, Shape shape, int anchorX, int anchorY)
+    void GiveDebugVisuals(entt::entity e)
     {
-        ENTT_REGISTRY.emplace<CollisionC>(e, shape, static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY));
+#if MAGIQUE_DEBUG == 1
+        ENTT_REGISTRY.emplace<DebugVisualsC>(e);
+#else
+        LOG_WARNING("Using debug function but not in debug mode!");
+#endif
     }
+
+void GiveDebugController(entt::entity e)
+    {
+#if MAGIQUE_DEBUG == 1
+        ENTT_REGISTRY.emplace<DebugControllerC>(e);
+#else
+        LOG_WARNING("Using debug function but not in debug mode!");
+#endif
+    }
+
+
 
 } // namespace magique::ecs

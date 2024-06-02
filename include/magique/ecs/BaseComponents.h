@@ -3,9 +3,11 @@
 
 #include <magique/core/Types.h>
 
+enum class EntityType : uint16_t;
+
 enum LightStyle : uint8_t
 {
-    POINT_LIGHT,
+    POINT_LIGHT_SOFT,
 };
 
 // Shape classes
@@ -32,26 +34,49 @@ struct PositionC
 {
     float x;
     float y;
+    EntityType type;
     magique::MapID map;
-    int16_t width;
-    int16_t height;
-    uint16_t rotation;
+    uint16_t rotation = 0;
 };
 
 
 struct CollisionC
 {
-    Shape shape = AABB;  // Shape
+    Shape shape = AABB; // Shape
+    uint16_t width = 0;
+    uint16_t height = 0;
     int16_t anchorX = 0; // Rotation anchor point for the hitbox
     int16_t anchorY = 0; // Rotation anchor point for the hitbox
 };
 
-
-struct LightC
+// If added entity will emit light
+struct EmitterC
 {
     uint8_t r, g, b;
-    uint8_t intensity;
-    LightStyle style;
+    uint8_t intensity = 1;
+    LightStyle style = POINT_LIGHT_SOFT;
+};
+
+// If added entity will throw shadows
+struct OccluderC
+{
+    int width;
+    int height;
+    Shape shape;
+};
+
+//-----------------DEBUG-----------------//
+
+// Only works in debug mode
+struct DebugVisualsC
+{
+    // Draws entity as RED rectangle
+};
+
+// Only works in debug mode
+struct DebugControllerC
+{
+    // Basic W, A, S ,D movement
 };
 
 #endif // BASECOMPONENTS_H

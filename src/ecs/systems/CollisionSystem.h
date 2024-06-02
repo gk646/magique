@@ -2,10 +2,9 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
-#include "core/datastructures/HashGrid.h"
-
 #include <c2/cute_c2.h>
 
+#include "core/InternalTypes.h"
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
 {
@@ -43,36 +42,36 @@ inline c2Poly RotRect(float x, float y, float width, float height, float rot, fl
 }
 
 inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
-                    const CollisionC& colB) noexcept
+                           const CollisionC& colB) noexcept
 {
     constexpr c2x identityTransform{{0, 0}, {1, 0}};
     // both shapes are non-rotated AABBs
     if (colA.shape == AABB && colB.shape == AABB && posA.rotation == 0 && posB.rotation == 0) [[likely]]
     {
-        const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + posA.width, posA.y + posA.height}};
-        const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + posB.width, posB.y + posB.height}};
+        const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
+        const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
         return c2AABBtoAABB(aabbA, aabbB) != 0;
     }
     if (colA.shape == CIRCLE && colB.shape == CIRCLE)
     {
-        const c2Circle circleA = {{posA.x + posA.width / 2.0F, posA.y + posA.height / 2.0F},
-                                  static_cast<float>(posA.width)};
-        const c2Circle circleB = {{posB.x + posB.width / 2.0F, posB.y + posB.height / 2.0F},
-                                  static_cast<float>(posB.width)};
+        const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F},
+                                  static_cast<float>(colA.width)};
+        const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F},
+                                  static_cast<float>(colB.width)};
         return c2CircletoCircle(circleA, circleB) != 0;
     } // Handle circle-AABB collision
     if (colA.shape == CIRCLE && colB.shape == AABB)
     {
-        const c2Circle circleA = {{posA.x + posA.width / 2.0F, posA.y + posA.height / 2.0F},
-                                  static_cast<float>(posA.width)};
-        const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + posB.width, posB.y + posB.height}};
+        const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F},
+                                  static_cast<float>(colA.width)};
+        const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
         return c2CircletoAABB(circleA, aabbB) != 0;
     }
     if (colA.shape == AABB && colB.shape == CIRCLE)
     {
-        const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + posA.width, posA.y + posA.height}};
-        const c2Circle circleB = {{posB.x + posB.width / 2.0F, posB.y + posB.height / 2.0F},
-                                  static_cast<float>(posB.width)};
+        const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
+        const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F},
+                                  static_cast<float>(colB.width)};
         return c2CircletoAABB(circleB, aabbA) != 0;
     }
     // Handle AABB-AABB collision (considering rotation)
@@ -80,23 +79,23 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
     {
         if (posA.rotation == 0)
         {
-            const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + posA.width, posA.y + posA.height}};
+            const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
             c2Poly polyB;
-            polyB = RotRect(posB.x, posB.y, posB.width, posB.height, posB.rotation, colB.anchorX, colB.anchorY);
+            polyB = RotRect(posB.x, posB.y, colB.width, colB.height, posB.rotation, colB.anchorX, colB.anchorY);
             return c2AABBtoPoly(aabbA, &polyB, &identityTransform) != 0;
         }
         if (posB.rotation == 0)
         {
-            const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + posB.width, posB.y + posB.height}};
+            const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
             c2Poly polyA;
-            polyA = RotRect(posA.x, posA.y, posA.width, posA.height, posA.rotation, colA.anchorX, colA.anchorY);
+            polyA = RotRect(posA.x, posA.y, colA.width, colA.height, posA.rotation, colA.anchorX, colA.anchorY);
             return c2AABBtoPoly(aabbB, &polyA, &identityTransform) != 0;
         }
         c2Poly polyA;
-        polyA = RotRect(posA.x, posA.y, posA.width, posA.height, posA.rotation, colA.anchorX, colA.anchorY);
+        polyA = RotRect(posA.x, posA.y, colA.width, colA.height, posA.rotation, colA.anchorX, colA.anchorY);
 
         c2Poly polyB;
-        polyB = RotRect(posB.x, posB.y, posB.width, posB.height, posB.rotation, colB.anchorX, colB.anchorY);
+        polyB = RotRect(posB.x, posB.y, colB.width, colB.height, posB.rotation, colB.anchorX, colB.anchorY);
         return c2PolytoPoly(&polyA, &identityTransform, &polyB, &identityTransform) != 0;
     }
     return false;
@@ -104,11 +103,84 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
 
 namespace magique::ecs
 {
+
     inline void CheckCollisions(entt::registry& registry)
     {
 
+        auto view = registry.view<PositionC, const CollisionC>();
+        auto& qt = LOGIC_TICK_DATA.quadTree;
+        auto& checkedPairs = LOGIC_TICK_DATA.checkedPairs;
+        auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
+        auto& collector = LOGIC_TICK_DATA.collector;
+
+        // Optimizations will include:
+        //  - Only iterating entities that need a update
+        //  - Possibly presorting
+        //  - Use stack padded collector
+
+        updateVec.clear();
+        qt.clear();
+        for (const auto first : view)
+        {
+            auto [posA, colA] = view.get<PositionC, CollisionC>(first);
+            updateVec.push_back(first);
+            qt.insert(first, posA.x, posA.y, posA.x + colA.width, posA.y + colA.height);
+        }
 
 
+        printf("S: %d\n", updateVec.size());
+        std::ranges::sort(updateVec);
+
+        int collisions = 0;
+        for (const auto first : updateVec)
+        {
+            auto [posA, colA] = view.get<PositionC, CollisionC>(first);
+
+            // Query quadtree
+            qt.query(collector, posA.x, posA.y, posA.x + colA.width, posA.y + colA.height);
+
+            for (const auto second : collector)
+            {
+                if (first == second)
+                    continue;
+
+                CollisionPair pair = first < second ? std::make_pair(first, second) : std::make_pair(second, first);
+
+               // if (checkedPairs.contains(pair))
+                //    continue;
+
+                auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
+
+                if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
+                {
+                    collisions++;
+                    // printf("Collision!\n");
+                }
+
+               // checkedPairs.insert(pair);
+            }
+            collector.clear();
+        }
+        int correct = 0;
+        for (const auto first : updateVec)
+        {
+            for (const auto second : updateVec)
+            {
+                if (first >= second)
+                    continue;
+                auto [posA, colA] = view.get<PositionC, CollisionC>(first);
+                auto [posB, colB] = view.get<PositionC, const CollisionC>(entt::entity(second));
+                if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
+                {
+                    correct++;
+                }
+            }
+        }
+
+        printf("Correct: %d\n", correct);
+        printf("Actual: %d\n", collisions);
+
+        checkedPairs.clear();
     }
 } // namespace magique::ecs
 
