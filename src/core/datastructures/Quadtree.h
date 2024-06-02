@@ -1,83 +1,198 @@
-/*
- * This code was initially authored by the Stackoverflow user dragon-energy and posted under following page:
- * https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
- *
- * As for the license, the author has kindly noted:
- *
- * "Oh and feel free to use this code I post however you want, even for commercial projects.
- *  I would really love it if people let me know if they find it useful, but do as you wish."
- *
- * And generally all Stackoverflow-posted code is by default licensed with CC BY-SA 4.0:
- * https://creativecommons.org/licenses/by-sa/4.0/
- */
-
 #ifndef QUADTREE_H
 #define QUADTREE_H
 
-#include "IntList.h"
+// This is not really working
+// Its a quadtree but with all the data at the top level
+// Its basically 3 lookup tables
+// Inspired by https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
+#include <vector>
 
-#ifdef __cplusplus
-#define QTREE_FUNC extern "C"
-#else
-#define QTREE_FUNC
-#endif
 
-typedef struct Quadtree Quadtree;
-
-struct Quadtree
+// Element Node
+struct ElementNode
 {
-    // Stores all the nodes in the quadtree. The first node in this
-    // sequence is always the root.
-    IntList nodes;
-
-    // Stores all the elements in the quadtree.
-    IntList elts;
-
-    // Stores all the element nodes in the quadtree.
-    IntList enodes;
-
-    // Stores the quadtree extents.
-    int root_mx, root_my, root_sx, root_sy;
-
-    // Maximum allowed elements in a leaf before the leaf is subdivided/split unless
-    // the leaf is at the maximum allowed tree depth.
-    int max_elements;
-
-    // Stores the maximum depth allowed for the quadtree.
-    int max_depth;
-
-    // Temporary buffer used for queries.
-
-    char* temp;
-
-    // Stores the size of the temporary buffer.
-    int temp_size;
+    int next;         // Index of the next element in the leaf node (-1 for end)
+    int elementIndex; // Index of the element in the elements vector
+    bool operator==(const ElementNode& o) const { return this == &o; }
 };
 
-// Function signature used for traversing a tree node.
-typedef void QtNodeFunc(Quadtree* qt, void* user_data, int node, int depth, int mx, int my, int sx, int sy);
+// Element
+template <typename T>
+struct Element
+{
+    int left, top, right, bottom; // Bounding box of the element
+    T id;                         // ID of the element
+};
 
-// Creates a quadtree with the requested extents, maximum elements per leaf, and maximum tree depth.
-QTREE_FUNC void qt_create(Quadtree* qt, int x1, int y1, int x2, int y2, int max_elements, int max_depth);
+// Node
+struct Node
+{
+    int firstChild;     // Index of the first child or the first element
+    int numElements;    // Number of elements in the node or -1 if it's not a leaf
+    int mx, my, sx, sy; // Centered rectangle and half-size
+    int depth;          // Depth of the node
+};
 
-// Destroys the quadtree.
-QTREE_FUNC void qt_destroy(Quadtree* qt);
 
-// Inserts a new element to the tree.
-// Returns an index to the new element.
-QTREE_FUNC int qt_insert(Quadtree* qt, int id, int x1, int y1, int x2, int y2);
+// QuadTree
+template <typename T>
+    requires std::is_trivially_constructible_v<T> && (sizeof(T) == 4)
+class QuadTree
+{
+public:
+    QuadTree(int worldSizeX, int worldSizeY, int maxElementsPerNode = 4, int maxDepth = 8) :
+        maxElementsPerNode(maxElementsPerNode), maxDepth(maxDepth), worldSizeX(worldSizeX), worldSizeY(worldSizeY)
+    {
+        nodes.push_back(Node(-1, 0, worldSizeX / 2, worldSizeY / 2, worldSizeX / 2, worldSizeY / 2, 0)); // Root node
+    }
 
-// Removes the specified element from the tree.
-QTREE_FUNC void qt_remove(Quadtree* qt, int element);
+    void insert(T id, int x, int y, int width, int height)
+    {
+        elements.push_back({x, y, x + width, y + height, id});
+        insertElement(0, elements.size() - 1, 0);
+    }
 
-// Cleans up the tree, removing empty leaves.
-QTREE_FUNC void qt_cleanup(Quadtree* qt);
+    void query(std::vector<T>& results, int x1, int y1, int x2, int y2) const { queryNode(0, x1, y1, x2, y2, results); }
 
-// Outputs a list of elements found in the specified rectangle.
-QTREE_FUNC void qt_query(Quadtree* qt, IntList* out, int x1, int y1, int x2, int y2, int omit_element);
+    void clear()
+    {
+        nodes.clear();
+        elements.clear();
+        elementNodes.clear();
+        nodes.push_back(Node(-1, 0, worldSizeX / 2, worldSizeY / 2, worldSizeX / 2, worldSizeY / 2, 0)); // Root node
+    }
 
-// Traverses all the nodes in the tree, calling 'branch' for branch nodes and 'leaf'
-// for leaf nodes.
-QTREE_FUNC void qt_traverse(Quadtree* qt, void* user_data, QtNodeFunc* branch, QtNodeFunc* leaf);
+private:
+    std::vector<Node> nodes;
+    std::vector<Element<T>> elements;
+    std::vector<ElementNode> elementNodes;
+    int maxElementsPerNode;
+    int maxDepth;
+    int worldSizeX;
+    int worldSizeY;
 
-#endif
+    static int intersect(int l1, int t1, int r1, int b1, int l2, int t2, int r2, int b2)
+    {
+        return l2 <= r1 && r2 >= l1 && t2 <= b1 && b2 >= t1;
+    }
+
+    void insertElement(int nodeIndex, int elementIndex, int depth)
+    {
+        Node& node = nodes[nodeIndex];
+
+        if (node.numElements != -1 && (depth >= maxDepth || node.numElements < maxElementsPerNode))
+        {
+            addElementToNode(nodeIndex, elementIndex);
+            return;
+        }
+
+        if (node.numElements != -1)
+        {
+            subdivideNode(nodeIndex);
+        }
+
+        for (int i = 0; i < 4; ++i)
+        {
+            int childIndex = nodes[nodeIndex].firstChild + i;
+            if (nodes[childIndex].mx - nodes[childIndex].sx <= elements[elementIndex].left &&
+                nodes[childIndex].mx + nodes[childIndex].sx >= elements[elementIndex].right &&
+                nodes[childIndex].my - nodes[childIndex].sy <= elements[elementIndex].top &&
+                nodes[childIndex].my + nodes[childIndex].sy >= elements[elementIndex].bottom)
+            {
+                insertElement(childIndex, elementIndex, depth + 1);
+                return;
+            }
+        }
+    }
+
+    void subdivideNode(int nodeIndex)
+    {
+        Node& node = nodes[nodeIndex];
+        int midX = node.mx;
+        int midY = node.my;
+        int halfWidth = node.sx / 2;
+        int halfHeight = node.sy / 2;
+
+
+        int currentIndex = nodes[nodeIndex].firstChild;
+        nodes[nodeIndex].firstChild = nodes.size();
+        const int currDepth = node.depth + 1;
+
+        nodes.push_back({-1, 0, midX - halfWidth, midY - halfHeight, halfWidth, halfHeight, currDepth});
+        nodes.push_back({-1, 0, midX + halfWidth, midY - halfHeight, halfWidth, halfHeight, currDepth});
+        nodes.push_back(Node(-1, 0, midX - halfWidth, midY + halfHeight, halfWidth, halfHeight, currDepth));
+        nodes.push_back(Node(-1, 0, midX + halfWidth, midY + halfHeight, halfWidth, halfHeight, currDepth));
+
+        // Redistribute elements into child nodes
+        while (currentIndex != -1)
+        {
+            const int nextIndex = elementNodes[currentIndex].next;
+            const int elemIndex = elementNodes[currentIndex].elementIndex;
+            const Element<T>& element = elements[elemIndex];
+            //std::erase(elementNodes, elementNodes[currentIndex]);
+
+            for (int i = 0; i < 4; ++i)
+            {
+                int childIndex = nodes[nodeIndex].firstChild + i;
+                if (nodes[childIndex].mx - nodes[childIndex].sx <= element.left &&
+                    nodes[childIndex].mx + nodes[childIndex].sx >= element.right &&
+                    nodes[childIndex].my - nodes[childIndex].sy <= element.top &&
+                    nodes[childIndex].my + nodes[childIndex].sy >= element.bottom)
+                {
+                    addElementToNode(childIndex, elemIndex);
+                    break;
+                }
+            }
+            currentIndex = nextIndex;
+        }
+        nodes[nodeIndex].numElements = -1;
+    }
+
+    void addElementToNode(int nodeIndex, int elementIndex)
+    {
+        Node& node = nodes[nodeIndex];
+        elementNodes.push_back({node.firstChild, elementIndex});
+        node.firstChild = elementNodes.size() - 1;
+        node.numElements++;
+    }
+
+    void queryNode(int nodeIndex, int x1, int y1, int x2, int y2, std::vector<T>& results) const
+    {
+        const Node& node = nodes[nodeIndex];
+
+        // Check if the query rectangle intersects the node's bounding box
+        if (node.mx + node.sx < x1 && node.mx - node.sx > x2 && node.my + node.sy < y1 && node.my - node.sy > y2)
+        {
+            return;
+        }
+
+        if (node.numElements != -1)
+        {
+            int currentIndex = node.firstChild;
+            while (currentIndex != -1)
+            {
+                const ElementNode& elementNode = elementNodes[currentIndex];
+                const Element<T>& element = elements[elementNode.elementIndex];
+                const int lft = element.left;
+                const int top = element.top;
+                const int rgt = element.right;
+                const int btm = element.bottom;
+                if (intersect(x1, y1, x2, y2, lft, top, rgt, btm))
+                {
+                    results.push_back(element.id);
+                }
+                currentIndex = elementNode.next;
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                queryNode(node.firstChild + i, x1, y1, x2, y2, results);
+            }
+        }
+    }
+};
+
+
+#endif //QUADTREE_H

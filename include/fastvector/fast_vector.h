@@ -32,11 +32,9 @@ SOFTWARE.
 #include <cassert>
 #include <type_traits>
 #include <cstring>  // std::memcpy()
-#include <new>
 
 template <class T>
-class fast_vector {
- public:
+struct fast_vector {
   using size_type = int32_t;
 
   fast_vector() = default;
