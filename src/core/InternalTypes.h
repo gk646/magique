@@ -3,12 +3,15 @@
 
 #include <magique/core/Types.h>
 #include <magique/core/Defines.h>
+#include <magique/util/Logging.h>
+
 #include <cxstructs/BitMask.h>
 #include <ankerl/unordered_dense.h>
 
 #include "core/datastructures/HashGrid.h"
 #include "core/datastructures/QuadTree.h"
 #include "core/datastructures/MultiResolutionGrid.h"
+
 
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
@@ -25,10 +28,15 @@ namespace magique
     struct LogicTickData final
     {
         const Map* currentMap = nullptr;
+
         Pint cameraTilePos{};
+
         Point cameraPos{};
+
         MapID currentZone;
+
         entt::entity camera;
+
         MapID loadedZones[MAGQIQUE_MAX_PLAYERS];
 
         // Change set for multiplayer events
@@ -56,11 +64,9 @@ namespace magique
         HashSet<CollisionPair, PairHash> checkedPairs;
 
         // Global hashGrid for all entities
-        SingleResolutionHashGrid<entt::entity,32> hashGrid{100};
+        SingleResolutionHashGrid<entt::entity, 32> hashGrid{100};
 
-        // Global quadtree
-        QuadTree<entt::entity> quadTree{32000, 32000};
-
+        // Collects entities
         vector<entt::entity> collector;
 
         // Atomic spinlock - whenever and data is accessed on the draw thread
@@ -68,7 +74,7 @@ namespace magique
 
         LogicTickData()
         {
-            hashGrid.reserve(50,1000);
+            hashGrid.reserve(150, 1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             removedEntities.reserve(100);
@@ -87,7 +93,6 @@ namespace magique
         {
             while (flag.test_and_set(std::memory_order_acquire))
             {
-
             }
         }
 
@@ -102,6 +107,15 @@ namespace magique
             removedEntities.clear();
             checkedPairs.clear();
         }
+    };
+
+    struct Configuration final
+    {
+        // Toggles the performance overlay
+        bool showPerformanceOverlay = true;
+
+        // All logs visible
+        util::LogLevel logLevel = util::LEVEL_NONE;
     };
 } // namespace magique
 #endif //INTERNALTYPES_H

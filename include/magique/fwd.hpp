@@ -2,8 +2,9 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
-//-----------------LOADING-----------------//
+#include <cstdint> // My favourite header
 
+//-----------------LOADING-----------------//
 namespace magique
 {
     struct GameLoader;     // Handles loading all major game files -  Start -> MainMenu
@@ -11,17 +12,27 @@ namespace magique
     struct SaveUnloader;   // Handles saving the session and reseting the state  - Game -> MainMenu
     struct AssetContainer; // Asset List loaded from a compiled asset pack
 
-
     //-----------------LEVELS-----------------//
     struct Map; // Holds information about the current level
 
 
     //-----------------LOGIC-----------------//
     struct DrawTickData; // Data for one draw tick - guaranteed to not change during the tick
+
+    //-----------------ECS-----------------//
+
 } // namespace magique
 
+enum class EntityType : uint16_t;
+
+
+//-----------------RAYLIB-----------------//
 
 struct Camera2D; // raylib
+struct Font;
+struct Vector2;
+struct Vector3;
+struct Color;
 
 
 //-----------------DATA STRUCTURES-----------------//

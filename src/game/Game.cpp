@@ -16,7 +16,7 @@ namespace magique
 
     Game::Game(const char* name) : gameName(name)
     {
-        isRunning = true;
+        _isRunning = true;
 #ifdef MAGIQUE_DEBUG
         SetTraceLogLevel(LOG_WARNING);
 #endif
@@ -44,10 +44,10 @@ namespace magique
         onStartup(*CURRENT_GAME_LOADER);
         CURRENT_GAME_LOADER->printStats();
 
-        isLoading = true;
+        _isLoading = true;
 
-        updater::Run(isRunning, *this);
-        renderer::Run(isRunning, isLoading, *this);
+        updater::Run(_isRunning, *this);
+        renderer::Run(_isLoading, *this);
 
         renderer::Close();
         updater::Close();

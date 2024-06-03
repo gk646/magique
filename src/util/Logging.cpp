@@ -7,11 +7,14 @@
 namespace magique::util
 {
 
-    void SetLogLevel(const LogLevel level) { LOG_LEVEL = level; }
+    void SetLogLevel(const LogLevel level)
+    {
+        CONFIGURATION.logLevel = level;
+    }
 
     void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
-        if (level < LOG_LEVEL)
+        if (level < CONFIGURATION.logLevel)
         {
             return;
         }
@@ -34,6 +37,8 @@ namespace magique::util
         case LEVEL_ALLOCATION:
             level_str = "ALLOC";
             break;
+        case LEVEL_NONE:
+            return;
         }
 
         // Log to stdout or stderr based on log level

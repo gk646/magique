@@ -5,6 +5,8 @@
 #include <numeric>
 #include <vector>
 
+#include "ui/overlay/PerformanceDisplay.h"
+
 enum TickType
 {
     UPDATE,
@@ -14,7 +16,7 @@ enum TickType
 
 struct PerfData
 {
-
+    PerformanceDisplay perfOverlay;
     uint32_t logicTickTime = 0;
     uint32_t drawTickTime = 0;
 #if MAGIQUE_DEBUG == 1
@@ -29,7 +31,6 @@ struct PerfData
         logicTimes.reserve(10000);
         drawTimes.reserve(10000);
 #endif
-
     }
 
     void saveTickTime(const TickType t, const uint32_t time)

@@ -1408,7 +1408,7 @@ unsigned int TextLength(const char *text)
 const char *TextFormat(const char *text, ...)
 {
 #ifndef MAX_TEXTFORMAT_BUFFERS
-    #define MAX_TEXTFORMAT_BUFFERS 4        // Maximum number of static buffers for text formatting
+    #define MAX_TEXTFORMAT_BUFFERS 2        // Maximum number of static buffers for text formatting
 #endif
 
     // We create an array of buffers so strings don't expire until MAX_TEXTFORMAT_BUFFERS invocations

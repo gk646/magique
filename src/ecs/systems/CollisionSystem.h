@@ -108,7 +108,6 @@ namespace magique::ecs
 
     inline void CheckCollisions(entt::registry& registry)
     {
-
         const auto view = registry.view<PositionC, const CollisionC>();
         auto& grid = LOGIC_TICK_DATA.hashGrid;
         auto& checkedPairs = LOGIC_TICK_DATA.checkedPairs;
@@ -127,12 +126,8 @@ namespace magique::ecs
             updateVec.push_back(first);
             grid.insert(first, posA.x, posA.y, colA.width, colA.height);
         }
-
-
         std::ranges::sort(updateVec);
 
-        int collisions = 0;
-        cxstructs::now();
         for (const auto first : updateVec)
         {
             auto [posA, colA] = view.get<PositionC, CollisionC>(first);
@@ -153,16 +148,15 @@ namespace magique::ecs
 
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
-                    collisions++;
-                    // printf("Collision!\n");
+
                 }
 
                 checkedPairs.insert(pair);
             }
             collector.clear();
         }
-        cxstructs::printTime<std::chrono::nanoseconds>();
 
+#if MAGIQUE_DEBUG == 1
         int correct = 0;
         for (const auto first : updateVec)
         {
@@ -178,7 +172,8 @@ namespace magique::ecs
                 }
             }
         }
-        printf("S: %d\n", updateVec.size());
+        printf("Collisions: %d\n", correct);
+#endif
 
         grid.clear();
         checkedPairs.clear();
