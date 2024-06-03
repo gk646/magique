@@ -30,10 +30,10 @@ inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<u
 template <typename T, int size>
 struct DataBlock final
 {
-    static constexpr int NO_NEXT_BLOCK = -1;
-    T data[size];             // Fixed size data block
-    int count = 0;            // Current number of elements
-    int next = NO_NEXT_BLOCK; // Index of the next block or -1 if if its the end
+    static constexpr int NO_NEXT_BLOCK = UINT16_MAX;
+    T data[size];                  // Fixed size data block
+    uint16_t count = 0;            // Current number of elements
+    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or -1 if if its the end
 
     [[nodiscard]] bool isFull() const { return count == size; }
     // Can happen that its full but no next one is inserted yet
@@ -49,7 +49,7 @@ struct DataBlock final
     {
         for (int i = 0; i < count; ++i)
         {
-            elems.push_back(data[i]);
+            elems.insert(data[i]);
         }
     }
 };
@@ -167,7 +167,7 @@ private:
 
         if (block->isFull()) [[unlikely]] // Only happens once each block
         {
-            const int nextIdx = static_cast<int>(dataBlocks.size());
+            const auto nextIdx = static_cast<uint16_t>(dataBlocks.size());
             block->next = nextIdx;
             dataBlocks.push_back({});
             // Re allocation can invalidate the reference !!!!
@@ -199,6 +199,7 @@ private:
     }
 
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
+    static_assert(sizeof(V) <= 8, "You should only use small id types");
 };
 
 /*

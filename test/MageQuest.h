@@ -18,7 +18,6 @@ enum magique::MapID : uint8_t
     LEVEL_1,
 };
 
-
 using namespace magique;
 class MageQuest final : public Game
 {
@@ -48,7 +47,7 @@ class MageQuest final : public Game
     }
     void drawGame(entt::registry& registry, Camera2D& camera) override
     {
-        auto view = registry.view<PositionC, CollisionC, DebugVisualsC>();
+        const auto view = registry.view<PositionC, CollisionC, DebugVisualsC>();
 
         for (const auto e : view)
         {
@@ -57,18 +56,13 @@ class MageQuest final : public Game
 
             DrawRectangle(pos.x, pos.y, col.width, col.height, pos.type == EntityType::PLAYER ? BLUE : RED);
         }
-    }
-
-
-    void updateGame(entt::registry& registry) override
-    {
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
             srand(150);
-            for (int i = 0; i < 1000; ++i)
+            for (int i = 0; i < 1'000; ++i)
             {
-                ecs::CreateEntity(EntityType::PLAYER, rand()%1000, rand()%1000, LEVEL_1);
+                ecs::CreateEntity(EntityType::PLAYER, rand()%1111, rand()%1111, LEVEL_1);
             }
             return;
             for (int i = 0; i < 50; ++i)
@@ -80,11 +74,17 @@ class MageQuest final : public Game
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
-            for (int i = 0; i < 50; ++i)
+            for (int i = 0; i < 100'000; ++i)
             {
-                ecs::CreateEntity(EntityType::ENEMY, 450, 250, LEVEL_1);
+                ecs::CreateEntity(EntityType::ENEMY, rand()%100000, rand()%100000, LEVEL_1);
             }
+
+
         }
+    }
+
+    void updateGame(entt::registry& registry) override
+    {
 
         auto view = registry.view<PositionC, DebugControllerC>();
         for (const auto e : view)

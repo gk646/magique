@@ -14,9 +14,12 @@ namespace magique::updater
 
     inline void InternalUpdate(entt::registry& registry) { ecs::CheckCollisions(registry); }
 
-    inline void StartUpdateTick(Game& game) { startTime = steady_clock::now(); }
+    inline void StartUpdateTick() { startTime = steady_clock::now(); }
 
-    inline void EndUpdateTick() { PERF_DATA.saveTickTime(UPDATE, (steady_clock::now() - startTime).count()); }
+    inline void EndUpdateTick()
+    {
+        PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
+    }
 
     inline void GameLoop(const bool& isRunning, Game& game)
     {
@@ -32,9 +35,9 @@ namespace magique::updater
             lastTime = startTime;
             accumulator += passedTime;
 
-            while (accumulator >= tickDuration && isRunning) [[unlikely]] // Safe guard to close instantly
+            while (accumulator >= tickDuration) [[unlikely]] // Safe guard to close instantly
             {
-                StartUpdateTick(game);
+                StartUpdateTick();
                 //Tick game
                 {
                     auto& reg = ecs::GetRegistry();
@@ -42,7 +45,7 @@ namespace magique::updater
                     game.updateGame(reg);
                 }
                 EndUpdateTick();
-                accumulator -= tickDuration;
+                accumulator = microseconds(0);
             }
             std::this_thread::sleep_for(microseconds(1));
         }
