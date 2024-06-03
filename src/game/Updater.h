@@ -1,6 +1,5 @@
 #pragma once
 
-#include <thread>
 
 #include <magique/ecs/Registry.h>
 #include <magique/core/Defines.h>
@@ -9,20 +8,18 @@
 
 namespace magique::updater
 {
-    inline std::thread LOGIC_THREAD;
 
-    inline void InternalUpdate(entt::registry& registry)
-    {
+    using namespace std::chrono;
+    inline static time_point<steady_clock> startTime;
 
-        ecs::CheckCollisions(registry);
-    }
+    inline void InternalUpdate(entt::registry& registry) { ecs::CheckCollisions(registry); }
+
+    inline void StartUpdateTick(Game& game) { startTime = steady_clock::now(); }
+
+    inline void EndUpdateTick() { PERF_DATA.saveTickTime(UPDATE, (steady_clock::now() - startTime).count()); }
 
     inline void GameLoop(const bool& isRunning, Game& game)
     {
-        using namespace std::chrono;
-        using namespace std::this_thread;
-
-        LOG_INFO("Started Gameloop");
         constexpr auto tickDuration = microseconds(1'000'000 / MAGIQUE_LOGIC_TICKS);
 
         auto lastTime = steady_clock::now();
@@ -30,34 +27,31 @@ namespace magique::updater
 
         while (isRunning) [[likely]]
         {
-            auto now = steady_clock::now();
-            const auto passedTime = duration_cast<microseconds>(now - lastTime);
-            lastTime = now;
+            startTime = steady_clock::now();
+            const auto passedTime = duration_cast<microseconds>(startTime - lastTime);
+            lastTime = startTime;
             accumulator += passedTime;
 
             while (accumulator >= tickDuration && isRunning) [[unlikely]] // Safe guard to close instantly
             {
-                const auto startTime = steady_clock::now();
+                StartUpdateTick(game);
                 //Tick game
                 {
                     auto& reg = ecs::GetRegistry();
                     InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }
-                const auto tickTime = steady_clock::now() - startTime;
-#ifdef MAGIQUE_DEBUG
-                // Glob::GDT.logicTimes.push_back(tickTime.count());
-#endif
+                EndUpdateTick();
                 accumulator -= tickDuration;
             }
-
-            sleep_for(microseconds(1));
+            std::this_thread::sleep_for(microseconds(1));
         }
     }
 
     inline void Run(bool& isRunning, Game& game)
     {
         LOGIC_THREAD = std::thread(&GameLoop, std::ref(isRunning), std::ref(game));
+        LOG_INFO("Started Gameloop");
     }
 
     inline void Close()

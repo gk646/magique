@@ -5,20 +5,20 @@
 #include <magique/ecs/Registry.h>
 #include <magique/game/Game.h>
 
+#include "ui/CoreUI.h"
 #include "core/CoreData.h"
 
 namespace magique::renderer
 {
     using namespace std::chrono;
-    inline static time_point<steady_clock> starTime;
-
+    inline static time_point<steady_clock> startTime;
 
     inline void HandleLoadingScreen(bool& isLoading, Game& game)
     {
-        if (CURRENT_GAME_LOADER)
+        if (CURRENT_GAME_LOADER) [[likely]]
         {
-            const auto res = CURRENT_GAME_LOADER->load();
             game.drawLoadingScreen(CURRENT_GAME_LOADER->getProgressPercent());
+            const auto res = CURRENT_GAME_LOADER->load();
             if (res == true)
             {
                 delete CURRENT_GAME_LOADER;
@@ -30,23 +30,24 @@ namespace magique::renderer
 
     inline void StartRenderTick(Game& game)
     {
-        starTime = steady_clock::now();
+        startTime = steady_clock::now();
         game.preRender(); // Pre render
     }
 
     inline void EndRenderTick()
     {
+        DrawUI();
+        PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - startTime).count());
         EndDrawing();
-        PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - starTime).count());
     }
 
-    inline void Run(const bool& isRunning, bool& isLoading, Game& game)
+    inline void Run(bool& isLoading, Game& game)
     {
         auto& reg = ecs::GetRegistry();
         // Double loop to catch the close event
-        while (isRunning) [[likely]]
+        while (game.isRunning()) [[likely]]
         {
-            while (!WindowShouldClose() && isRunning) [[likely]]
+            while (!WindowShouldClose() && game.isRunning()) [[likely]]
             {
                 StartRenderTick(game);
                 BeginDrawing();

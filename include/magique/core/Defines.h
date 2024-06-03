@@ -22,7 +22,7 @@
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define MAGIQUE_DEBUG 1
 #else
-#define MAGIQUE_DEBUG 1
+#define MAGIQUE_DEBUG 0
 #endif
 
 #endif //MAGIQUE_DEFINES_H

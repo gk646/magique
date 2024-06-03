@@ -2,8 +2,9 @@
 #ifndef COREDATA_H
 #define COREDATA_H
 
+#include <thread>
+
 #include <entt/entity/registry.hpp>
-#include <magique/util/Logging.h>
 #include <magique/ecs/Registry.h>
 #include <magique/core/DataStructures.h>
 
@@ -16,7 +17,8 @@
 
 namespace magique
 {
-    inline util::LogLevel LOG_LEVEL = util::LEVEL_NONE; // All logs visible
+    // Logic thread
+    inline std::thread LOGIC_THREAD;
 
     // Internal registry
     inline entt::registry ENTT_REGISTRY;
@@ -35,6 +37,10 @@ namespace magique
 
     // Performance metrics
     inline PerfData PERF_DATA;
+
+    // Engine configuration flags
+    inline Configuration CONFIGURATION;
+
 
 } // namespace magique
 #endif //COREDATA_H

@@ -6,7 +6,6 @@
 #include <raylib.h>
 #include <magique/loading/GameLoader.h>
 
-
 //-----------------------------------------------
 // Game module
 //-----------------------------------------------
@@ -21,6 +20,8 @@ namespace magique
     struct Game
     {
         Camera2D camera{};
+        const char* const gameName;
+
         explicit Game(const char* name = "MyGame");
         virtual ~Game();
 
@@ -30,7 +31,7 @@ namespace magique
         virtual void onStartup(GameLoader& gl) {}
 
         // Called when the windows close button is pressed
-        virtual void onCloseEvent() { isRunning = false; }
+        virtual void onCloseEvent() { _isRunning = false; }
 
         // Called when the game closes
         virtual void onShutDown() {}
@@ -61,10 +62,14 @@ namespace magique
         // Call this to start the game
         int run(const char* assetPath = "data.bin", uint64_t encryptionKey = 0);
 
+
+        //----------------- GETTERS -----------------//
+        [[nodiscard]] bool isRunning() const { return _isRunning; }
+        [[nodiscard]] bool isLoading() const { return _isLoading; }
+
     private:
-        bool isRunning = false;
-        bool isLoading = false;
-        const char* const gameName;
+        bool _isRunning = false;
+        bool _isLoading = false;
     };
 
 } // namespace magique

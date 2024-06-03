@@ -19,7 +19,7 @@ namespace magique::core
 
     // Sets the update distance in pixels around actors
     // Entities in range will be collision checked
-    // Default:
+    // Default: 1000
     void SetEntityUpdateDistance(int pixels);
 
     // When entities leave the update range they are still updated for the cache duration
