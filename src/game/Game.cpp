@@ -27,7 +27,6 @@ namespace magique
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         LOG_INFO("Initialized Game");
         camera.zoom = 1.0F;
-        SetTargetFPS(60);
     }
 
 

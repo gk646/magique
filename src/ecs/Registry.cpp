@@ -4,6 +4,7 @@
 #include <cxutil/cxassert.h>
 
 #include "core/CoreData.h"
+#include "core/CoreConfig.h"
 
 namespace magique::ecs
 {
@@ -44,7 +45,7 @@ namespace magique::ecs
             return entt::null; // EntityID not registered
         }
         const auto entity = ENTT_REGISTRY.create();
-        ENTT_REGISTRY.emplace<PositionC>(entity, x, y,type,  map); // PositionC is default
+        ENTT_REGISTRY.emplace<PositionC>(entity, x, y, type, map); // PositionC is default
         it->second(ENTT_REGISTRY, entity);
         return entity;
     }
@@ -69,22 +70,21 @@ namespace magique::ecs
 
     void GiveDebugVisuals(entt::entity e)
     {
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_ENTITIES
         ENTT_REGISTRY.emplace<DebugVisualsC>(e);
 #else
         LOG_WARNING("Using debug function but not in debug mode!");
 #endif
     }
 
-void GiveDebugController(entt::entity e)
+    void GiveDebugController(entt::entity e)
     {
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_ENTITIES
         ENTT_REGISTRY.emplace<DebugControllerC>(e);
 #else
         LOG_WARNING("Using debug function but not in debug mode!");
 #endif
     }
-
 
 
 } // namespace magique::ecs

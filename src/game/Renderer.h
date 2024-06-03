@@ -30,6 +30,7 @@ namespace magique::renderer
 
     inline void StartRenderTick(Game& game)
     {
+
         startTime = steady_clock::now();
         game.preRender(); // Pre render
     }

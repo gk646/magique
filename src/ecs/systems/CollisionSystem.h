@@ -3,10 +3,11 @@
 #define COLLISIONSYSTEM_H
 
 #include <c2/cute_c2.h>
+#include <cxutil/cxtime.h>
 
 #include "core/InternalTypes.h"
+#include "core/CoreConfig.h"
 
-#include <cxutil/cxtime.h>
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
 {
@@ -110,14 +111,8 @@ namespace magique::ecs
     {
         const auto view = registry.view<PositionC, const CollisionC>();
         auto& grid = LOGIC_TICK_DATA.hashGrid;
-        auto& checkedPairs = LOGIC_TICK_DATA.checkedPairs;
         auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
         auto& collector = LOGIC_TICK_DATA.collector;
-
-        // Optimizations will include:
-        //  - Only iterating entities that need a update
-        //  - Possibly presorting
-        //  - Use stack padded collector
 
         updateVec.clear();
         for (const auto first : view)
@@ -126,37 +121,35 @@ namespace magique::ecs
             updateVec.push_back(first);
             grid.insert(first, posA.x, posA.y, colA.width, colA.height);
         }
-        std::ranges::sort(updateVec);
 
+#ifdef MAGIQUE_DEBUG_COLLISIONS
+        int collisions = 0;
+#endif
         for (const auto first : updateVec)
         {
-            auto [posA, colA] = view.get<PositionC, CollisionC>(first);
+            auto [posA, colA] = view.get<PositionC, const CollisionC>(first);
 
             // Query quadtree
-            grid.query<vector<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
+            grid.query<HashSet<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
             for (const auto second : collector)
             {
                 if (first >= second)
-                    continue;
-
-                CollisionPair pair = first < second ? std::make_pair(first, second) : std::make_pair(second, first);
-
-                if (checkedPairs.contains(pair))
                     continue;
 
                 auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
 
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
-
+#ifdef MAGIQUE_DEBUG_COLLISIONS
+                    collisions++;
+#endif
                 }
-
-                checkedPairs.insert(pair);
             }
             collector.clear();
         }
+#ifdef MAGIQUE_DEBUG_COLLISIONS
+        printf("Detected Collisions: %d\n", collisions);
 
-#if MAGIQUE_DEBUG == 1
         int correct = 0;
         for (const auto first : updateVec)
         {
@@ -174,9 +167,7 @@ namespace magique::ecs
         }
         printf("Collisions: %d\n", correct);
 #endif
-
         grid.clear();
-        checkedPairs.clear();
     }
 } // namespace magique::ecs
 

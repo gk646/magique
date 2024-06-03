@@ -10,3 +10,6 @@ set(SOURCE_PATH "C:/Users/gk646/Documents/CodingProjects/C++")
 option(${PROJECT_PREFIX}_ENABLE_SANITIZER "Set to compile with adress sanitizer")
 option(${PROJECT_PREFIX}_BUILD_TESTS "Set to compile the test executable")
 option(${PROJECT_PREFIX}_VERSION "0.0.1")
+
+
+include(cmake/CompilerOptions.cmake)

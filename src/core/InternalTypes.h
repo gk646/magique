@@ -8,8 +8,6 @@
 #include <cxstructs/BitMask.h>
 #include <ankerl/unordered_dense.h>
 
-#include "core/datastructures/HashGrid.h"
-#include "core/datastructures/QuadTree.h"
 #include "core/datastructures/MultiResolutionGrid.h"
 
 
@@ -60,14 +58,11 @@ namespace magique
         // This is for multiplayer queued updates
         vector<entt::entity> removedEntities;
 
-        // Checked collision pairs for each tick
-        HashSet<CollisionPair, PairHash> checkedPairs;
-
         // Global hashGrid for all entities
-        SingleResolutionHashGrid<entt::entity, 32> hashGrid{100};
+        SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
         // Collects entities
-        vector<entt::entity> collector;
+        HashSet<entt::entity> collector;
 
         // Atomic spinlock - whenever and data is accessed on the draw thread
         std::atomic_flag flag;
@@ -80,7 +75,7 @@ namespace magique
             removedEntities.reserve(100);
 
             //Collision pairs
-            checkedPairs.reserve(1000);
+            collector.reserve(500);
 
             //MP Update set
             changedSet.reserve(1000);
@@ -105,7 +100,8 @@ namespace magique
             entityUpdateVec.clear();
             drawVec.clear();
             removedEntities.clear();
-            checkedPairs.clear();
+            collector.clear();
+            hashGrid.clear();
         }
     };
 
