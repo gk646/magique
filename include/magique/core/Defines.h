@@ -11,12 +11,21 @@
 // It can be useful to use these in your code if you need access to them
 // .....................................................................
 
+
+//----------------- CORE -----------------//
+
+#define MAGIQUE_LOGIC_TICKS 60 // 60 Ticks per second
+
+//----------------- MULTIPLAYER -----------------//
+
 #define MAGIQUE_MULITPLAYER_SUPPORT 0 // 1 to enable multiplayer
-#define MAGIQUE_LOGIC_TICKS 60        // 60 Ticks per second
-
-//-----------------MULTIPLAYER-----------------//
-
 #define MAGQIQUE_MAX_PLAYERS 4
+
+
+//----------------- ASSETS -----------------//
+
+#define MAGIQUE_TEXTURE_ATLAS_WIDTH 2048  // Height of each texture atlas
+#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 2048 // Width of each texture atlas
 
 // 1 to Enable Debug
 #if defined(_DEBUG) || !defined(NDEBUG)
@@ -24,5 +33,6 @@
 #else
 #define MAGIQUE_DEBUG 0
 #endif
+
 
 #endif //MAGIQUE_DEFINES_H

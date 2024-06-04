@@ -7,10 +7,7 @@
 namespace magique::util
 {
 
-    void SetLogLevel(const LogLevel level)
-    {
-        CONFIGURATION.logLevel = level;
-    }
+    void SetLogLevel(const LogLevel level) { CONFIGURATION.logLevel = level; }
 
     void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
@@ -62,6 +59,20 @@ namespace magique::util
         va_end(args);
 
         fprintf(out, "\n");
+
+        if (level == LOG_FATAL) [[unlikely]]
+            exit(1);
+
+        if (level == LOG_ERROR && (MAGIQUE_DEBUG == 1)) [[unlikely]]
+        {
+#  if defined(_MSC_VER)
+            __debugbreak();
+#  elif defined(__GNUC__)
+            __builtin_trap();
+#  else
+            std::abort();
+#  endif
+        }
     }
 
-} // namespace magique
+} // namespace magique::util

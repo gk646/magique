@@ -20,6 +20,10 @@ namespace magique::ecs
         }
 
         ENT_TYPE_MAP.insert({type, createFunc});
+        for (auto entity : ENTT_REGISTRY.view<entt::entity>())
+        {
+            volatile int b = 5; // Try to instantiate all storage types
+        }
         return true;
     }
 

@@ -1,10 +1,15 @@
 #ifndef MAGEQUEST_H
 #define MAGEQUEST_H
 
+#include "../../cxstructs/src/cxconfig.h"
+#include "../../cxstructs/src/cxutil/cxtime.h"
+
+
 #include <entt/entity/registry.hpp>
-#include <magique/core/Types.h>
+#include <magique/assets/AssetManager.h>
 #include <magique/ecs/Registry.h>
-#include <magique/game/Game.h>
+#include <magique/core/Game.h>
+#include <magique/core/Draw.h>
 
 
 enum class EntityType : uint16_t
@@ -23,7 +28,6 @@ class MageQuest final : public Game
 {
     void onStartup(GameLoader& gl) override
     {
-        gl.registerTask([](AssetContainer&) { printf("hey"); }, BACKGROUND_THREAD);
 
         gl.registerTask(
             [](AssetContainer&)
@@ -42,6 +46,14 @@ class MageQuest final : public Game
                                         ecs::GiveCollision(e, AABB, 25, 50);
                                         ecs::GiveDebugVisuals(e);
                                     });
+            },
+            BACKGROUND_THREAD);
+
+        gl.registerTask(
+            [](AssetContainer& assets)
+            {
+                auto asset = assets.GetAsset("genz_old.png");
+                RegisterTexture(asset);
             },
             MAIN_THREAD);
     }
@@ -62,7 +74,7 @@ class MageQuest final : public Game
             srand(150);
             for (int i = 0; i < 1'000; ++i)
             {
-                ecs::CreateEntity(EntityType::PLAYER, rand()%1111, rand()%1111, LEVEL_1);
+                ecs::CreateEntity(EntityType::PLAYER, rand() % 1111, rand() % 1111, LEVEL_1);
             }
             return;
             for (int i = 0; i < 50; ++i)
@@ -74,13 +86,18 @@ class MageQuest final : public Game
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
-            for (int i = 0; i < 100'000; ++i)
+            for (int i = 0; i < 100; ++i)
             {
-                ecs::CreateEntity(EntityType::ENEMY, rand()%100000, rand()%100000, LEVEL_1);
+                ecs::CreateEntity(EntityType::ENEMY, rand() % 100000, rand() % 100000, LEVEL_1);
             }
-
-
         }
+        cxstructs::now();
+        const auto regin = GetTextureRegion(H("genz_old.png"));
+        cxstructs::printTime<std::chrono::nanoseconds>("first");
+        cxstructs::now();
+        DrawRegion(regin, 50, 50);
+        cxstructs::printTime<std::chrono::nanoseconds>();
+
     }
 
     void updateGame(entt::registry& registry) override

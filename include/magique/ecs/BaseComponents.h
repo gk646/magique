@@ -65,7 +65,7 @@ struct OccluderC
     Shape shape;
 };
 
-//-----------------DEBUG-----------------//
+//----------------- DEBUG -----------------//
 
 // Only works in debug mode
 struct DebugVisualsC

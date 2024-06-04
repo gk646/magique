@@ -3,30 +3,14 @@
 #include "rlgl.h"
 
 #include <magique/ecs/Registry.h>
-#include <magique/game/Game.h>
+#include <magique/core/Game.h>
 
 #include "ui/CoreUI.h"
-#include "core/CoreData.h"
 
 namespace magique::renderer
 {
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
-
-    inline void HandleLoadingScreen(bool& isLoading, Game& game)
-    {
-        if (CURRENT_GAME_LOADER) [[likely]]
-        {
-            game.drawLoadingScreen(CURRENT_GAME_LOADER->getProgressPercent());
-            const auto res = CURRENT_GAME_LOADER->load();
-            if (res == true)
-            {
-                delete CURRENT_GAME_LOADER;
-                CURRENT_GAME_LOADER = nullptr;
-                isLoading = false;
-            }
-        }
-    }
 
     inline void StartRenderTick(Game& game)
     {
@@ -41,6 +25,23 @@ namespace magique::renderer
         PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - startTime).count());
         EndDrawing();
     }
+
+    inline void HandleLoadingScreen(bool& isLoading, Game& game)
+    {
+        if (CURRENT_GAME_LOADER) [[likely]]
+        {
+            game.drawLoadingScreen(CURRENT_GAME_LOADER->getProgressPercent());
+            const auto res = CURRENT_GAME_LOADER->load();
+            if (res == true)
+            {
+                delete CURRENT_GAME_LOADER;
+                CURRENT_GAME_LOADER = nullptr;
+                isLoading = false;
+            }
+        }
+        EndRenderTick();
+    }
+
 
     inline void Run(bool& isLoading, Game& game)
     {
@@ -57,6 +58,7 @@ namespace magique::renderer
                     if (isLoading) [[unlikely]]
                     {
                         HandleLoadingScreen(isLoading, game);
+                        continue;
                     }
 
                     auto& camera = game.camera;

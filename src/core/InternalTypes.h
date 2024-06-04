@@ -9,14 +9,14 @@
 #include <ankerl/unordered_dense.h>
 
 #include "core/datastructures/MultiResolutionGrid.h"
-
+#include "core/datastructures/fast_vector.h"
 
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
 {
     std::size_t operator()(const CollisionPair& p) const
     {
-        const uint64_t combined = (static_cast<uint64_t>(p.first) << 32) | static_cast<uint64_t>(p.second);
+        const uint64_t combined = static_cast<uint64_t>(p.first) << 32 | static_cast<uint64_t>(p.second);
         return std::hash<uint64_t>()(combined);
     }
 };
@@ -25,6 +25,7 @@ namespace magique
 {
     struct LogicTickData final
     {
+        // Currently loaded map
         const Map* currentMap = nullptr;
 
         Pint cameraTilePos{};
@@ -112,6 +113,130 @@ namespace magique
 
         // All logs visible
         util::LogLevel logLevel = util::LEVEL_NONE;
+    };
+
+    template <typename... Resources>
+    struct AssetManager final
+    {
+        // A tuple to hold the hash maps
+        std::tuple<HashMap<uint32_t, Resources>...> resourceMaps;
+
+        // Helper to get the index of a type in the parameter pack
+        template <typename T, typename Tuple>
+        struct Index;
+
+        template <typename T, typename... Types>
+        struct Index<T, std::tuple<T, Types...>>
+        {
+            static constexpr std::size_t value = 0;
+        };
+
+        template <typename T, typename U, typename... Types>
+        struct Index<T, std::tuple<U, Types...>>
+        {
+            static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
+        };
+
+        template <typename T>
+        constexpr auto& getResourceMap()
+        {
+            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceMaps);
+        }
+
+        // Function to add a resource
+        template <typename T>
+        void addResource(uint32_t key, const T& resource)
+        {
+            getResourceMap<T>()[key] = resource;
+        }
+
+        // Function to get a resource
+        template <typename T>
+        T& getResource(uint32_t key)
+        {
+            // If you get an error here it means the key doesnt exist
+            // You probably used the wrong name
+            assert(getResourceMap<T>().contains(key));
+            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceMaps)[key];
+        }
+    };
+
+    // Uses naive 'scheduling' - if a sequence cant be deterministically described we skip to the next row
+    // So if a spritesheet doesnt fit in the current row we just skip it and put it in the next wasting the space
+    struct TextureAtlas final
+    {
+        int width = MAGIQUE_TEXTURE_ATLAS_WIDTH;   // Total width
+        int height = MAGIQUE_TEXTURE_ATLAS_HEIGHT; // Total height
+        int offX = 0;                              // Current offset from the top left
+        int offY = 0;                              // Current offset from the top let
+        unsigned int id = 0;                       // Texture id
+        int currentStepHeight = 0;                 // Highest height of a texture in current row
+        void* imageData = nullptr;                 // Save memory by only saving data ptr
+
+        explicit TextureAtlas(Color color) // Just passed so its not auto constructed anywhere
+        {
+            // Always PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 and 1 mipmap
+            const auto img = GenImageColor(width, height, color);
+            imageData = img.data;
+            const auto tex = LoadTextureFromImage(img);
+            if (tex.id == 0)
+            {
+                LOG_ERROR("Failed to load texture atlas texture! No textures will work");
+                UnloadImage(img);
+            }
+            id = tex.id;
+        }
+
+        TextureRegion addImage(const Image& image)
+        {
+            TextureRegion region = {0};
+            if (offX + image.width > width)
+            {
+                offY += currentStepHeight;
+                offX = 0;
+                currentStepHeight = image.height;
+                if (offY >= height)
+                {
+                    LOG_ERROR("Trying to add to a full texture atlas!");
+                    return region;
+                }
+            }
+
+            if (image.height > currentStepHeight) // Keep track of the highest image
+                currentStepHeight = image.height;
+
+            Image atlasImage = getImg();
+            // Add the image
+            ImageDraw(&atlasImage, image, {0, 0, (float)image.width, (float)image.height},
+                      {(float)offX, (float)offY, (float)image.width, (float)image.height}, WHITE);
+
+            UnloadImage(image);
+
+            region.width = image.width;
+            region.height = image.height;
+            region.offX = offX;
+            region.offY = offY;
+            region.id = id;
+            return region;
+        }
+
+        [[nodiscard]] Image getImg() const
+        {
+            Image img;
+            img.data = imageData;
+            img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+            img.mipmaps = 1;
+            img.width = width;
+            img.height = height;
+            return img;
+        }
+
+        void loadToGPU() const
+        {
+            // Always same format as image
+            UpdateTexture({id, width, height, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8}, imageData);
+            UnloadImage(getImg());
+        }
     };
 } // namespace magique
 #endif //INTERNALTYPES_H

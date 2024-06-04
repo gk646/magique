@@ -2,7 +2,7 @@
 #define GAMELOADER_H
 
 #include <magique/assets/container/AssetContainer.h>
-#include <magique/loading/taskexecutor/TaskExecutor.h>
+#include <magique/util/TaskExecutor.h>
 
 //-----------------------------------------------
 // Game Loader
@@ -27,7 +27,8 @@ namespace magique
     {
         GameLoader(const char* assetPath, uint64_t encryptionKey);
 
-        void printStats();
+        // Prints current stats - automatically called if all task are registered
+        void printStats() const;
 
         // Called each frame - progressed the loader
         // Dont call it yourself

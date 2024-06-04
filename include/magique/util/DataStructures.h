@@ -1,6 +1,8 @@
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H
 
+#include <magique/fwd.hpp>
+#include <ankerl/unordered_dense.h>
 
 //-----------------------------------------------
 // Datastructures Modules
@@ -11,8 +13,6 @@
 // Include this header with care, its rather heavy!
 // .....................................................................
 
-#include "fastvector/fast_vector.h"
-#include "ankerl/unordered_dense.h"
 
 namespace magique
 {

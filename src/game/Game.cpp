@@ -1,6 +1,7 @@
-#include <magique/game/Game.h>
+#include <magique/core/Game.h>
 #include <magique/assets/AssetPacker.h>
 #include <magique/util/Logging.h>
+#include <magique/core/Core.h>
 
 #include <raylib.h>
 #include <entt/entity/registry.hpp>
@@ -10,10 +11,8 @@
 #include "Renderer.h"
 #include "Updater.h"
 
-
 namespace magique
 {
-
     Game::Game(const char* name) : gameName(name)
     {
         _isRunning = true;
@@ -27,8 +26,8 @@ namespace magique
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         LOG_INFO("Initialized Game");
         camera.zoom = 1.0F;
+        InitMagique();
     }
-
 
     Game::~Game()
     {
@@ -36,12 +35,21 @@ namespace magique
         CloseWindow();
     }
 
-
     int Game::run(const char* assetPath, const uint64_t encryptionKey)
     {
         CURRENT_GAME_LOADER = new GameLoader{assetPath, encryptionKey};
-        onStartup(*CURRENT_GAME_LOADER);
-        CURRENT_GAME_LOADER->printStats();
+        onStartup(*static_cast<GameLoader*>(CURRENT_GAME_LOADER));
+        static_cast<GameLoader*>(CURRENT_GAME_LOADER)
+            ->registerTask(
+                [](AssetContainer&)
+                {
+                    for (auto& atlas : TEXTURE_ATLASES)
+                    {
+                        atlas.loadToGPU();
+                    }
+                },
+                MAIN_THREAD, LOW);
+        static_cast<GameLoader*>(CURRENT_GAME_LOADER)->printStats();
 
         _isLoading = true;
 
@@ -51,6 +59,10 @@ namespace magique
         renderer::Close();
         updater::Close();
 
+#if MAGIQUE_DEBUG == 1
+        LOG_INFO("Average DrawTick: %d nanos", (int)PERF_DATA.getAverageTime(DRAW));
+        LOG_INFO("Average LogicTick: %d nanos", (int)PERF_DATA.getAverageTime(UPDATE));
+#endif
 
         return 0;
     }

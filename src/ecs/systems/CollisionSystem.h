@@ -149,7 +149,6 @@ namespace magique::ecs
         }
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);
-
         int correct = 0;
         for (const auto first : updateVec)
         {
