@@ -13,9 +13,13 @@
 // .....................................................................
 
 
-namespace magique::core
+namespace magique
 {
-    //-----------------SETTERS-----------------//
+    // Initializes the engine - does not need to be called when using the game template
+    bool InitMagique();
+
+
+    //----------------- SETTERS -----------------//
 
     // Sets the update distance in pixels around actors
     // Entities in range will be collision checked
@@ -30,7 +34,7 @@ namespace magique::core
     void AddToUpdateCache(entt::entity e);
 
 
-    //-----------------GETTERS-----------------//
+    //----------------- GETTERS -----------------//
 
     // Returns a list of all entities within update range
     const vector<entt::entity>& GetUpdateEntities();
@@ -40,7 +44,7 @@ namespace magique::core
     DrawTickData& GetDrawTickData();
 
 
-} // namespace magique::core
+} // namespace magique
 
 
 #endif //MAGIQUE_CORE_H

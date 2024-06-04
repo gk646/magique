@@ -1,17 +1,4 @@
-#include <magique/assets/AssetPacker.h>
-#include <magique/core/DataStructures.h>
-#include <magique/assets/container/AssetContainer.h>
-#include <magique/util/Logging.h>
-
-#include <cxutil/cxstring.h>
-#include <cxutil/cxtime.h>
-
-#include <fstream>
-#include <filesystem>
-
-// Original implementation is heavily modified
 /*
-    Modified version of the Simple-Asset-Packer by:
     MIT License
 
     Copyright (c) 2020 Hugh Nixon
@@ -26,6 +13,20 @@
     The above copyright notice and this permission notice shall be included in all
     copies or substantial portions of the Software.
  */
+// Original implementation is heavily modified
+
+#include <fstream>
+#include <filesystem>
+
+#include <cxutil/cxstring.h>
+#include <cxutil/cxtime.h>
+
+#include <magique/assets/AssetPacker.h>
+#include <magique/util/DataStructures.h>
+#include <magique/assets/container/AssetContainer.h>
+#include <magique/util/Logging.h>
+
+#include "core/datastructures/fast_vector.h"
 
 namespace fs = std::filesystem;
 
@@ -41,7 +42,7 @@ namespace
         }
     }
 
-    bool LoadImageFromMemory(const char* imageData, uint32_t imageSize, magique::AssetContainer& assets,
+    bool LoadImageFromMemory(const char* imageData, uint32_t imageSize, std::vector<magique::Asset>& assets,
                              uint64_t encryptionKey)
     {
         uint32_t totalSize = 0;
@@ -71,8 +72,8 @@ namespace
 
         while (filePointer < imageSize && filePointer < totalSize)
         {
-            uint32_t titleLen = 0;
-            uint32_t fileSize = 0;
+            int titleLen = 0;
+            int fileSize = 0;
             memset(titleBuffer, 0, MAX_TITLE_LENGTH);
             // Copy title
             {
@@ -100,7 +101,7 @@ namespace
             SymmetricEncrypt(fileData, fileSize, encryptionKey);
             filePointer += fileSize;
 
-            assets.assets.push_back({cxstructs::str_dup(titleBuffer), fileSize, fileData});
+            assets.push_back({cxstructs::str_dup(titleBuffer), fileSize, fileData});
         }
         return true;
     }
@@ -146,7 +147,7 @@ namespace
 namespace magique::assets
 {
 
-    bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
+    bool LoadAssetImage(const char* path, AssetContainer&& container, const uint64_t encryptionKey)
     {
         if (!std::filesystem::exists(path))
         {
@@ -154,7 +155,6 @@ namespace magique::assets
             return false;
         }
         cxstructs::now();
-        assets.assets.reserve(100);
         std::ifstream file(path, std::ios::binary);
         if (file)
         {
@@ -162,12 +162,15 @@ namespace magique::assets
             const auto fileData = new char[imageSize];
             file.read(fileData, imageSize);
             file.close();
+            std::vector<Asset> assets;
+            assets.reserve(100);
             const bool res = LoadImageFromMemory(fileData, imageSize, assets, encryptionKey);
+            container = AssetContainer(std::move(assets));
             delete[] fileData;
             if (res)
             {
-                LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %d\n", path,
-                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize);
+                LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %.2f mb", path,
+                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize/1'000'000.0F);
                 return true;
             }
             LOG_ERROR("Failed to load asset image: %s", path);
@@ -244,8 +247,8 @@ namespace magique::assets
         image.seekp(5);
         image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(writtenSize));
         image.close();
-        LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %d\n", directory, fileName,
-                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize);
+        LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %.2f mb", directory, fileName,
+                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize/1'000'000.0F);
         return true;
     }
 

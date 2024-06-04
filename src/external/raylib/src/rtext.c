@@ -1112,18 +1112,7 @@ bool ExportFontAsCode(Font font, const char *fileName)
     return success;
 }
 
-// Draw current FPS
-// NOTE: Uses default font
-void DrawFPS(int posX, int posY)
-{
-    Color color = LIME;                         // Good FPS
-    int fps = GetFPS();
 
-    if ((fps < 30) && (fps >= 15)) color = ORANGE;  // Warning FPS
-    else if (fps < 15) color = RED;             // Low FPS
-
-    DrawText(TextFormat("%2i FPS", fps), posX, posY, 20, color);
-}
 
 // Draw text (using default font)
 // NOTE: fontSize work like in any drawing program but if fontSize is lower than font-base-size, then font-base-size is used
@@ -1401,40 +1390,6 @@ unsigned int TextLength(const char *text)
     }
 
     return length;
-}
-
-// Formatting of text with variables to 'embed'
-// WARNING: String returned will expire after this function is called MAX_TEXTFORMAT_BUFFERS times
-const char *TextFormat(const char *text, ...)
-{
-#ifndef MAX_TEXTFORMAT_BUFFERS
-    #define MAX_TEXTFORMAT_BUFFERS 2        // Maximum number of static buffers for text formatting
-#endif
-
-    // We create an array of buffers so strings don't expire until MAX_TEXTFORMAT_BUFFERS invocations
-    static char buffers[MAX_TEXTFORMAT_BUFFERS][MAX_TEXT_BUFFER_LENGTH] = { 0 };
-    static int index = 0;
-
-    char *currentBuffer = buffers[index];
-    memset(currentBuffer, 0, MAX_TEXT_BUFFER_LENGTH);   // Clear buffer before using
-
-    va_list args;
-    va_start(args, text);
-    int requiredByteCount = vsnprintf(currentBuffer, MAX_TEXT_BUFFER_LENGTH, text, args);
-    va_end(args);
-
-    // If requiredByteCount is larger than the MAX_TEXT_BUFFER_LENGTH, then overflow occured
-    if (requiredByteCount >= MAX_TEXT_BUFFER_LENGTH)
-    {
-        // Inserting "..." at the end of the string to mark as truncated
-        char *truncBuffer = buffers[index] + MAX_TEXT_BUFFER_LENGTH - 4; // Adding 4 bytes = "...\0"
-        sprintf(truncBuffer, "...");
-    }
-
-    index += 1;     // Move to next buffer for next function call
-    if (index >= MAX_TEXTFORMAT_BUFFERS) index = 0;
-
-    return currentBuffer;
 }
 
 // Get integer value from text

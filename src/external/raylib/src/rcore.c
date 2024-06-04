@@ -1804,31 +1804,6 @@ void UnloadRandomSequence(int *sequence)
 #endif
 }
 
-// Takes a screenshot of current screen
-// NOTE: Provided fileName should not contain paths, saving to working directory
-void TakeScreenshot(const char *fileName)
-{
-#if defined(SUPPORT_MODULE_RTEXTURES)
-    // Security check to (partially) avoid malicious code
-    if (strchr(fileName, '\'') != NULL) { TRACELOG(LOG_WARNING, "SYSTEM: Provided fileName could be potentially malicious, avoid [\'] character"); return; }
-
-    Vector2 scale = GetWindowScaleDPI();
-    unsigned char *imgData = rlReadScreenPixels((int)((float)CORE.Window.render.width*scale.x), (int)((float)CORE.Window.render.height*scale.y));
-    Image image = { imgData, (int)((float)CORE.Window.render.width*scale.x), (int)((float)CORE.Window.render.height*scale.y), 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
-
-    char path[512] = { 0 };
-    strcpy(path, TextFormat("%s/%s", CORE.Storage.basePath, GetFileName(fileName)));
-
-    ExportImage(image, path);           // WARNING: Module required: rtextures
-    RL_FREE(imgData);
-
-    if (FileExists(path)) TRACELOG(LOG_INFO, "SYSTEM: [%s] Screenshot taken successfully", path);
-    else TRACELOG(LOG_WARNING, "SYSTEM: [%s] Screenshot could not be saved", path);
-#else
-    TRACELOG(LOG_WARNING,"IMAGE: ExportImage() requires module: rtextures");
-#endif
-}
-
 // Setup window configuration flags (view FLAGS)
 // NOTE: This function is expected to be called before window creation,
 // because it sets up some flags for the window creation process

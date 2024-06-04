@@ -22,11 +22,31 @@ namespace magique
         float y;
     };
 
-
     struct Pint final
     {
         int x;
         int y;
+    };
+
+
+    struct TextureRegion final // All texture are part of an atlas and can not be referenced as standalone
+    {
+        uint16_t offX;   // Horizontal offset from the top left of the atlas
+        uint16_t offY;   // Vertical offset from the top left of the atlas
+        uint16_t width;  // Width of the texture
+        uint16_t height; // Height of the texture
+        uint16_t id;     // The texture id
+    };
+
+
+    struct SpriteSheet final
+    {
+        uint16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
+        uint16_t offY;   // Vertical offset from the top left of the atlas of the first frame
+        uint16_t width;  // Width of a frame
+        uint16_t height; // Height of a frame
+        uint16_t id;     // The texture id
+        uint16_t frames; // Total number of frames
     };
 
     // The information used through a single draw tick
@@ -43,7 +63,7 @@ namespace magique
     };
 
 
-    //-----------------MULTIPLAYER-----------------//
+    //----------------- MULTIPLAYER -----------------//
 
     enum UpdateFlag : uint8_t
     {

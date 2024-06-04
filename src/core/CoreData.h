@@ -3,13 +3,18 @@
 #define COREDATA_H
 
 #include <thread>
+#include <raylib/raylib.h>
+#include <cxstructs/StackVector.h>
 
+#include <magique/util/TaskExecutor.h>
 #include <entt/entity/registry.hpp>
-#include <magique/ecs/Registry.h>
-#include <magique/core/DataStructures.h>
+#include <magique/util/DataStructures.h>
 
 #include "InternalTypes.h"
 #include "perf/Perf.h"
+
+#include <magique/assets/AssetManager.h>
+
 
 // All the core data that is shared between internal implementations
 // We carry a slog of includes around but dont really care as its statically compiled
@@ -33,7 +38,7 @@ namespace magique
     inline DrawTickData DRAW_TICK_DATA;
 
     // Active game loader if any
-    inline GameLoader* CURRENT_GAME_LOADER = nullptr;
+    inline IExecutor* CURRENT_GAME_LOADER = nullptr;
 
     // Performance metrics
     inline PerfData PERF_DATA;
@@ -41,6 +46,11 @@ namespace magique
     // Engine configuration flags
     inline Configuration CONFIGURATION;
 
+    // Asset manager
+    inline AssetManager<Sound, Music, Shader, TextureRegion> ASSET_MANAGER;
+
+    // Texture atlases
+    inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
 
 } // namespace magique
 #endif //COREDATA_H

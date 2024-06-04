@@ -16,9 +16,9 @@ enum TickType
 
 struct PerfData
 {
-    PerformanceDisplay perfOverlay;
     uint32_t logicTickTime = 0;
     uint32_t drawTickTime = 0;
+    PerformanceDisplay perfOverlay;
 #if MAGIQUE_DEBUG == 1
     std::vector<uint32_t> logicTimes;
     std::vector<uint32_t> drawTimes;

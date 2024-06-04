@@ -4,7 +4,7 @@
 #include <entt/entity/fwd.hpp>
 
 #include <raylib.h>
-#include <magique/loading/GameLoader.h>
+#include <magique/core/GameLoader.h>
 
 //-----------------------------------------------
 // Game module

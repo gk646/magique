@@ -164,7 +164,7 @@ protected:
         task->execute(res);
         loadedImpact += task->impact;
         task->isLoaded = true;
-        LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%\n", task->impact, loadedImpact.load(), totalImpact,
+        LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(), totalImpact,
                  getProgressPercent());
     }
     bool areAllTasksLoaded(const std::vector<ITask<T>*>& tasks) const
