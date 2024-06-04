@@ -1,10 +1,12 @@
+#include <cstdio>
+
 #include <magique/core/Defines.h>
-#include <magique/ui/UIRoot.h>
 #include <magique/ui/Colors.h>
 
 #include <raylib/raylib.h>
 
 #include "core/CoreData.h"
+
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1
 #include <steam/steam_api.h>
@@ -48,14 +50,14 @@ float drawBlock(const char* text, const Font& f, float fs, Vector2 pos, float w)
 }
 
 
-void PerformanceDisplay::updateValues(const Font& font)
+void PerformanceDisplay::updateValues()
 {
     tickCounter++;
-
     // Update values only every 10 ticks
     if (tickCounter != updateDelayTicks) [[likely]]
         return;
 
+    auto& font = magique::CONFIGURATION.engineFont;
     const auto fs = 20;
 
     int block = 0;
@@ -101,10 +103,10 @@ void PerformanceDisplay::updateValues(const Font& font)
     tickCounter = 0;
 }
 
-void PerformanceDisplay::draw(const Font& font)
+void PerformanceDisplay::draw()
 {
-    updateValues(font);
     Vector2 position = {15, 0};
+    auto& font = magique::CONFIGURATION.engineFont;
     const auto fs = 20;
     for (const auto& block : blocks)
     {

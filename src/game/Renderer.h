@@ -12,11 +12,10 @@ namespace magique::renderer
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
-    inline void StartRenderTick(Game& game)
+    inline void StartRenderTick()
     {
 
         startTime = steady_clock::now();
-        game.preRender(); // Pre render
     }
 
     inline void EndRenderTick()
@@ -51,10 +50,11 @@ namespace magique::renderer
         {
             while (!WindowShouldClose() && game.isRunning()) [[likely]]
             {
-                StartRenderTick(game);
+                StartRenderTick();
                 BeginDrawing();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
+                    game.preRender(); // Pre render
                     if (isLoading) [[unlikely]]
                     {
                         HandleLoadingScreen(isLoading, game);
@@ -64,7 +64,10 @@ namespace magique::renderer
                     auto& camera = game.camera;
                     BeginMode2D(camera);
                     {
+                        game.drawWorld(camera);
+                        LOGIC_TICK_DATA.lock();
                         game.drawGame(reg, camera); // Draw game
+                        LOGIC_TICK_DATA.unlock();
                     }
                     EndMode2D();
 
@@ -78,7 +81,7 @@ namespace magique::renderer
 
     inline void Close()
     {
-        for (uint_fast32_t i = 1; i < 10000; i++)
+        for (uint_fast32_t i = 1; i < 15000; i++)
         {
             rlUnloadTexture(i);
         }

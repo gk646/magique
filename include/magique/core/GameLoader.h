@@ -34,7 +34,6 @@ namespace magique
         // Dont call it yourself
         bool load() override;
 
-
         // Registers a new task
         // task     - a new instance of a subclass of ITask, takes owner ship
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)

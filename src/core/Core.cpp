@@ -5,8 +5,6 @@
 static bool initCalled = false;
 namespace magique
 {
-
-
     bool InitMagique()
     {
         if (initCalled)
@@ -21,16 +19,23 @@ namespace magique
             TEXTURE_ATLASES.emplace_back(BLANK);
         }
 
-
+        CONFIGURATION.engineFont = GetFontDefault();
+        if (CONFIGURATION.engineFont.texture.id == 0)
+        {
+            LOG_ERROR("Failed to load default font");
+            return false;
+        }
         return true;
     }
 
 
+    void SyncThreads() { LOGIC_TICK_DATA.lock(); }
 
-    void SetEntityUpdateDistance(int pixels)
-    {
 
-    }
+    void UnSyncThreads() { LOGIC_TICK_DATA.unlock(); }
+
+
+    void SetEntityUpdateDistance(int pixels) {}
 
 
     const vector<entt::entity>& GetUpdateEntities() { return LOGIC_TICK_DATA.entityUpdateVec; }

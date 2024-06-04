@@ -4,13 +4,15 @@
 
 #include <cstdint> // My favourite header
 
-//----------------- LOADING -----------------//
+
 namespace magique
 {
+    //----------------- LOADING -----------------//
+
     struct GameLoader;     // Handles loading all major game files -  Start -> MainMenu
     struct SaveLoader;     // Handles loading individual world state and player save - MainMenu -> Game
     struct SaveUnloader;   // Handles saving the session and reseting the state  - Game -> MainMenu
-    struct AssetContainer; // Asset List loaded from a compiled asset pack
+    struct AssetContainer; // Asset list loaded from a compiled asset pack
 
     //-----------------LEVELS-----------------//
     struct Map; // Holds information about the current level
@@ -23,15 +25,19 @@ namespace magique
 
 
     //----------------- ASSETS -----------------//
-    struct Asset;         // Memory container for any asset
-    struct TextureRegion; // All textures are stitched into a atlas, you can only retrieve their region
-    struct SpriteSheet;
-    enum AtlasType : uint8_t;      // Specifies which atlas to add the texture to
-    enum class Resource : uint8_t; // Resource type specifier
+    struct Asset;                 // Memory container for any asset
+    struct TextureRegion;         // All textures are stitched into a atlas, you can only retrieve their region
+    struct SpriteSheet;           // Identifies a sprite sheet
+    enum AtlasType : uint8_t;     // Specifies which atlas to add the texture to
+    enum class handle : uint32_t; // Resource handle
+
+
 } // namespace magique
 
-enum class EntityType : uint16_t;
+//----------------- USER DEFINED -----------------//
 
+enum class EntityType : uint16_t; // User implemented to denote different entity types
+enum HandleType : int;            // User implemented to denote different handle types
 
 //-----------------RAYLIB-----------------//
 
@@ -43,23 +49,5 @@ struct Color;
 struct Texture;
 struct Sound;
 struct Music;
-
-//-----------------DATA STRUCTURES-----------------//
-
-template <typename T>
-struct fast_vector; // Library vector type
-
-
-namespace magique
-{
-    template <typename T>
-    using vector = fast_vector<T>;
-
-    // Cant forward declare that easily
-    //template <typename K, typename V, typename Hash>
-    // using HashMap = tsl::robin_map<K, V, Hash>;
-
-} // namespace magique
-
 
 #endif // MAGIQUE_FWD_HPP

@@ -4,7 +4,7 @@
 
 #include <c2/cute_c2.h>
 #include <cxutil/cxtime.h>
-
+#include "core/CoreConfig.h"
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
 {

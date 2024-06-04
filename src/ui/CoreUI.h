@@ -11,7 +11,7 @@ namespace magique
     {
         if (CONFIGURATION.showPerformanceOverlay)
         {
-            PERF_DATA.perfOverlay.draw(GetFontDefault());
+            PERF_DATA.perfOverlay.draw();
         }
     }
 } // namespace magique

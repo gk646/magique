@@ -18,7 +18,7 @@ namespace magique::util
         return hash;
     }
 
-    inline uint32_t HashString(char const* s, const int salt) noexcept
+    constexpr uint32_t HashString(char const* s, const int salt) noexcept
     {
         uint32_t hash = 2166136261U + salt;
         while (*s != 0)

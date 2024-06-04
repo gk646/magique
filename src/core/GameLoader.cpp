@@ -15,7 +15,10 @@ namespace magique
         LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
     }
 
-    bool GameLoader::load() { return loadLoop(assets); }
+    bool GameLoader::load()
+    {
+        return loadLoop(assets);
+    }
 
     bool BasicChecks(void* func, PriorityLevel pl, int impact)
     {

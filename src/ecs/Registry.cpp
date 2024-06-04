@@ -1,12 +1,13 @@
 #include <magique/ecs/Registry.h>
 
 #include "core/CoreData.h"
+#include "core/CoreConfig.h"
 
 namespace magique::ecs
 {
-
     bool RegisterEntity(const EntityType type, const std::function<void(entt::registry&, entt::entity)>& createFunc)
     {
+
         assert(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         if (type == static_cast<EntityType>(UINT16_MAX) || ENT_TYPE_MAP.contains(type))
         {
@@ -19,6 +20,7 @@ namespace magique::ecs
         {
             volatile int b = 5; // Try to instantiate all storage types
         }
+
 
         return true;
     }
@@ -38,6 +40,8 @@ namespace magique::ecs
 
     entt::entity CreateEntity(const EntityType type, float x, float y, MapID map)
     {
+        assert(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        LOGIC_TICK_DATA.lock();
         assert(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto it = ENT_TYPE_MAP.find(type);
         if (it == ENT_TYPE_MAP.end())
@@ -47,16 +51,22 @@ namespace magique::ecs
         const auto entity = ENTT_REGISTRY.create();
         ENTT_REGISTRY.emplace<PositionC>(entity, x, y, type, map); // PositionC is default
         it->second(ENTT_REGISTRY, entity);
+
+        LOGIC_TICK_DATA.unlock();
+
         return entity;
     }
 
     bool DestroyEntity(const entt::entity entity)
     {
+        assert(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        LOGIC_TICK_DATA.lock();
         if (ENTT_REGISTRY.valid(entity))
         {
             ENTT_REGISTRY.destroy(entity);
             return true;
         }
+        LOGIC_TICK_DATA.unlock();
         return false;
     }
 

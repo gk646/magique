@@ -22,11 +22,9 @@
 #include <cxutil/cxtime.h>
 
 #include <magique/assets/AssetPacker.h>
-#include <magique/util/DataStructures.h>
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 
-#include "core/datastructures/fast_vector.h"
 
 namespace fs = std::filesystem;
 
@@ -106,7 +104,7 @@ namespace
         return true;
     }
 
-    void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
+    void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
     {
         for (const auto& entry : fs::directory_iterator(directory))
         {
@@ -121,7 +119,7 @@ namespace
         }
     }
 
-    bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
+    bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
     {
         if (fs::exists(directory))
         {
@@ -185,7 +183,7 @@ namespace magique::assets
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey)
     {
         cxstructs::now();
-        vector<fs::path> pathList;
+        std::vector<fs::path> pathList;
         pathList.reserve(100);
 
         if (!CreatePathList(directory, pathList))

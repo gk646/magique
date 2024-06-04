@@ -3,9 +3,8 @@
 
 #include <cstdint>
 #include <numeric>
-#include <vector>
-
 #include "ui/overlay/PerformanceDisplay.h"
+#include "core/CoreConfig.h"
 
 enum TickType
 {
@@ -19,14 +18,14 @@ struct PerfData
     uint32_t logicTickTime = 0;
     uint32_t drawTickTime = 0;
     PerformanceDisplay perfOverlay;
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_PROFILE
     std::vector<uint32_t> logicTimes;
     std::vector<uint32_t> drawTimes;
 #endif
 
     PerfData()
     {
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_PROFILE
         // Reserve much upfront to not impede benchmarks
         logicTimes.reserve(10000);
         drawTimes.reserve(10000);
@@ -38,21 +37,21 @@ struct PerfData
         if (t == UPDATE)
         {
             logicTickTime = time;
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_PROFILE
             logicTimes.push_back(time);
 #endif
         }
         else if (t == DRAW)
         {
             drawTickTime = time;
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_PROFILE
             drawTimes.push_back(time);
 #endif
         }
     }
 
     // Dont even let it be there
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG_PROFILE
     [[nodiscard]] float getAverageTime(const TickType t) const
     {
         const std::vector<uint32_t>* times;
