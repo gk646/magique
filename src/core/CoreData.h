@@ -13,7 +13,7 @@
 
 // All the core data that is shared between internal implementations
 // We carry a slog of includes around but dont really care as its statically compiled
-// Library compile time isnt a user cost
+// Library compile time isnt a user cost -> but size gets bigger...
 
 namespace magique
 {

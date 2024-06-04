@@ -4,9 +4,13 @@
 #include <magique/core/Defines.h>
 
 #if MAGIQUE_DEBUG == 1
-#define MAGIQUE_DEBUG_COLLISIONS
+//#define MAGIQUE_DEBUG_COLLISIONS
 #define MAGIQUE_DEBUG_ENTITIES
+#define MAGIQUE_DEBUG_PROFILE
 #endif
+
+#define MAGIQUE_DEBUG_ENTITIES
+#define MAGIQUE_DEBUG_PROFILE
 
 
 #endif //CORECONFIG_H

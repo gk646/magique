@@ -1,14 +1,17 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
+#include <algorithm>
+
 #include <magique/core/Types.h>
+#include <magique/util/DataStructures.h>
 #include <magique/core/Defines.h>
+#include <magique/util/Logging.h>
 
 #include <cxstructs/BitMask.h>
 #include <raylib/raylib.h>
 
 #include "core/datastructures/MultiResolutionGrid.h"
-#include "core/datastructures/fast_vector.h"
 
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
@@ -29,8 +32,6 @@ namespace magique
 
         Pint cameraTilePos{};
 
-        Point cameraPos{};
-
         MapID currentZone;
 
         entt::entity camera;
@@ -39,9 +40,6 @@ namespace magique
 
         // Change set for multiplayer events
         HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet;
-
-        // For how long entities in the cache are still updates after they are out of range
-        uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
 
         // Cache for entities that are not in update range anymore
         // They are still updated for cache duration
@@ -112,13 +110,22 @@ namespace magique
 
         // All logs visible
         util::LogLevel logLevel = util::LEVEL_NONE;
+
+        // Update distance
+        int entityUpdateDistance = 1000;
+
+        // For how long entities in the cache are still updates after they are out of range
+        uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
+
+        // Font
+        Font engineFont;
     };
 
     template <typename... Resources>
     struct AssetManager final
     {
         // A tuple to hold the hash maps
-        std::tuple<HashMap<uint32_t, Resources>...> resourceMaps;
+        std::tuple<std::vector<Resources>...> resourceVectors;
 
         // Helper to get the index of a type in the parameter pack
         template <typename T, typename Tuple>
@@ -137,28 +144,32 @@ namespace magique
         };
 
         template <typename T>
-        constexpr auto& getResourceMap()
+        constexpr auto& getResourceVec()
         {
-            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceMaps);
+            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceVectors);
         }
 
         // Function to add a resource
         template <typename T>
-        void addResource(uint32_t key, const T& resource)
+        handle addResource(const T& resource)
         {
-            getResourceMap<T>()[key] = resource;
+            auto& vec = getResourceVec<T>();
+            auto handle = vec.size();
+            vec.push_back(resource);
+            return static_cast<enum class handle>(handle);
         }
 
         // Function to get a resource
         template <typename T>
-        T& getResource(uint32_t key)
+        T& getResource(handle handle)
         {
-            // If you get an error here it means the key doesnt exist
-            // You probably used the wrong name
-            assert(getResourceMap<T>().contains(key));
-            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceMaps)[key];
+            // If you get an error here you probably used a handle in the wrong method
+            // Or its just a null handle
+            assert(getResourceVec<T>().size() > (int)handle && "Cannot contain the resource");
+            return getResourceVec<T>()[static_cast<uint32_t>(handle)];
         }
     };
+
 
     // Uses naive 'scheduling' - if a sequence cant be deterministically described we skip to the next row
     // So if a spritesheet doesnt fit in the current row we just skip it and put it in the next wasting the space

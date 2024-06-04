@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <magique/ecs/Registry.h>
 #include <magique/core/Defines.h>
 
@@ -18,6 +17,11 @@ namespace magique::updater
 
     inline void EndUpdateTick()
     {
+        if(CONFIGURATION.showPerformanceOverlay)
+        {
+            PERF_DATA.perfOverlay.updateValues();
+        }
+        TickInputEvents();
         PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
     }
 

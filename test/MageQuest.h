@@ -1,7 +1,12 @@
 #ifndef MAGEQUEST_H
 #define MAGEQUEST_H
 
+#include "../../cxstructs/src/cxconfig.h"
+#include "../../cxstructs/src/cxutil/cxtime.h"
+
+
 #include <magique/assets/AssetManager.h>
+#include <magique/assets/HandleRegistry.h>
 #include <magique/ecs/Registry.h>
 #include <magique/core/Game.h>
 #include <magique/core/Draw.h>
@@ -16,6 +21,12 @@ enum class EntityType : uint16_t
 enum magique::MapID : uint8_t
 {
     LEVEL_1,
+};
+
+
+enum HandleType
+{
+    GENZ,
 };
 
 using namespace magique;
@@ -44,24 +55,38 @@ struct MageQuest final : Game
             },
             BACKGROUND_THREAD);
 
-        gl.registerTask(
-            [](AssetContainer& assets)
-            {
-                auto asset = assets.GetAsset("genz_old.png");
-                RegisterTexture(asset);
-            },
-            MAIN_THREAD);
+        gl.registerTask([](AssetContainer& assets)
+                        { RegisterHandle(RegisterTexture(assets.GetAsset("genz_old.png")), GENZ); }, MAIN_THREAD);
     }
+
     void drawGame(entt::registry& registry, Camera2D& camera) override
     {
         const auto view = registry.view<PositionC, CollisionC, DebugVisualsC>();
-
         for (const auto e : view)
         {
             auto& pos = view.get<PositionC>(e);
             auto& col = view.get<CollisionC>(e);
 
             DrawRectangle(pos.x, pos.y, col.width, col.height, pos.type == EntityType::PLAYER ? BLUE : RED);
+        }
+
+        DrawRegion(GetTextureRegion(GetHandle(GENZ)), 50, 50, WHITE);
+    }
+
+    void updateGame(entt::registry& registry) override
+    {
+        auto view = registry.view<PositionC, DebugControllerC>();
+        for (const auto e : view)
+        {
+            auto& pos = view.get<PositionC>(e);
+            if (IsKeyDown(KEY_W))
+                pos.y -= 5;
+            if (IsKeyDown(KEY_S))
+                pos.y += 5;
+            if (IsKeyDown(KEY_A))
+                pos.x -= 5;
+            if (IsKeyDown(KEY_D))
+                pos.x += 5;
         }
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -85,25 +110,6 @@ struct MageQuest final : Game
             {
                 ecs::CreateEntity(EntityType::ENEMY, rand() % 100000, rand() % 100000, LEVEL_1);
             }
-        }
-        DrawRegion(GetTextureRegion(H("genz_old.png")), 50, 50, WHITE);
-    }
-
-    void updateGame(entt::registry& registry) override
-    {
-
-        auto view = registry.view<PositionC, DebugControllerC>();
-        for (const auto e : view)
-        {
-            auto& pos = view.get<PositionC>(e);
-            if (IsKeyDown(KEY_W))
-                pos.y -= 5;
-            if (IsKeyDown(KEY_S))
-                pos.y += 5;
-            if (IsKeyDown(KEY_A))
-                pos.x -= 5;
-            if (IsKeyDown(KEY_D))
-                pos.x += 5;
         }
     }
 };

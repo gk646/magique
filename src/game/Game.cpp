@@ -55,11 +55,10 @@ namespace magique
         renderer::Close();
         updater::Close();
 
-#if MAGIQUE_DEBUG == 1
-        LOG_INFO("Average DrawTick: %d nanos", (int)PERF_DATA.getAverageTime(DRAW));
-        LOG_INFO("Average LogicTick: %d nanos", (int)PERF_DATA.getAverageTime(UPDATE));
+#ifdef MAGIQUE_DEBUG_PROFILE
+        LOG_INFO("Average DrawTick: %dk nanos", (int)PERF_DATA.getAverageTime(DRAW)/1'000);
+        LOG_INFO("Average LogicTick: %dk nanos", (int)PERF_DATA.getAverageTime(UPDATE)/1'000);
 #endif
-
         return 0;
     }
 

@@ -13,6 +13,12 @@
 // .....................................................................
 // Core game class you should subclass
 // All methods are called on the main thread unless specified otherwise.
+// A note on the threading behavior:
+// There is a update thread and the main thread. They almost fully run in paralell expect when some shared state is mutated
+// So if you add or destoy entities there has to be locks. If you use the ecs API of magique you dont have to worry about that
+// Also magique uses primitive atomics with spinlocks to avoid context switching! Generally 99% of the time no thread will wait!
+//
+// All input getters of raylib work on either thread correctly and are updated at the end of each update tick!
 // .....................................................................
 
 namespace magique
@@ -45,25 +51,32 @@ namespace magique
         // Thread: Called on the update thread!
         virtual void updateGame(entt::registry& registry) {}
 
-        //-----------------RENDERING-----------------//
+        //-----------------RENDERING-----------------//  // In chronological call order
 
         // Called each tick before rendering happens
         virtual void preRender() {}
 
-        // Called each tick when loading
+        // Called each tick when loading - skips all other draw methods
         virtual void drawLoadingScreen(float progressPercent) {}
 
+        // Called each tick to render the world
+        // This is not thread synced - dont read any logic tick data or the registry
+        virtual void drawWorld(Camera2D& camera) {}
+
         // Called each render tick
+        // Synchronized with the logic tick - its save to access logic tick data (drawVec) or the registry
         virtual void drawGame(entt::registry& registry, Camera2D& camera) {}
 
-        // Called each render tick after the drawGame call
+        // Called each render tick after all other draw calls
         virtual void drawUI() {}
+
+        //----------------- START -----------------//
 
         // Call this to start the game
         int run(const char* assetPath = "data.bin", uint64_t encryptionKey = 0);
 
-
         //----------------- GETTERS -----------------//
+
         [[nodiscard]] bool isRunning() const { return _isRunning; }
         [[nodiscard]] bool isLoading() const { return _isLoading; }
 

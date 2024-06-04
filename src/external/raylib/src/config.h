@@ -76,15 +76,15 @@
 #define MAX_FILEPATH_CAPACITY        8192       // Maximum file paths capacity
 #define MAX_FILEPATH_LENGTH          4096       // Maximum length for filepaths (Linux PATH_MAX default value)
 
-#define MAX_KEYBOARD_KEYS             512       // Maximum number of keyboard keys supported
+#define MAX_KEYBOARD_KEYS             350       // Maximum number of keyboard keys supported
 #define MAX_MOUSE_BUTTONS               8       // Maximum number of mouse buttons supported
 #define MAX_GAMEPADS                    4       // Maximum number of gamepads supported
 #define MAX_GAMEPAD_AXIS                8       // Maximum number of axis supported (per gamepad)
-#define MAX_GAMEPAD_BUTTONS            32       // Maximum number of buttons supported (per gamepad)
+#define MAX_GAMEPAD_BUTTONS            16       // Maximum number of buttons supported (per gamepad)
 #define MAX_GAMEPAD_VIBRATION_TIME      2.0f    // Maximum vibration time in seconds
 #define MAX_TOUCH_POINTS                8       // Maximum number of touch points supported
-#define MAX_KEY_PRESSED_QUEUE          16       // Maximum number of keys in the key input queue
-#define MAX_CHAR_PRESSED_QUEUE         16       // Maximum number of characters in the char input queue
+#define MAX_KEY_PRESSED_QUEUE          8        // Maximum number of keys in the key input queue
+#define MAX_CHAR_PRESSED_QUEUE         8        // Maximum number of characters in the char input queue
 
 #define MAX_DECOMPRESSION_SIZE         64       // Max size allocated for decompression in MB
 
@@ -105,7 +105,7 @@
 #define RL_DEFAULT_BATCH_DRAWCALLS           256      // Default number of batch draw calls (by state changes: mode, texture)
 #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS     4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
 
-#define RL_MAX_MATRIX_STACK_SIZE              32      // Maximum size of internal Matrix stack
+#define RL_MAX_MATRIX_STACK_SIZE              16      // Maximum size of internal Matrix stack
 
 #define RL_MAX_SHADER_LOCATIONS               32      // Maximum number of shader locations supported
 

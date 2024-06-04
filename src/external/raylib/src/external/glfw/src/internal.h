@@ -329,13 +329,13 @@ typedef VkResult (APIENTRY * PFN_vkEnumerateInstanceExtensionProperties)(const c
 
 // Checks for whether the library has been initialized
 #define _GLFW_REQUIRE_INIT()                         \
-    if (!_glfw.initialized)                          \
+    if (!_glfw.initialized)           \
     {                                                \
         _glfwInputError(GLFW_NOT_INITIALIZED, NULL); \
         return;                                      \
     }
 #define _GLFW_REQUIRE_INIT_OR_RETURN(x)              \
-    if (!_glfw.initialized)                          \
+    if (!_glfw.initialized)              \
     {                                                \
         _glfwInputError(GLFW_NOT_INITIALIZED, NULL); \
         return x;                                    \
@@ -1006,4 +1006,3 @@ int _glfw_max(int a, int b);
 void* _glfw_calloc(size_t count, size_t size);
 void* _glfw_realloc(void* pointer, size_t size);
 void _glfw_free(void* pointer);
-
