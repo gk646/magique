@@ -3,14 +3,12 @@
 #include <magique/core/Draw.h>
 #include <magique/core/Defines.h>
 
-#include <raylib/raylib.h>
-
 #include "external/raylib/src/rlgl.h"
 
 namespace magique
 {
-
-    void DrawRegion(TextureRegion region, const float x, float y, const Color tint, const bool flipX)
+    // Passed as value because of low size
+    void DrawRegion(TextureRegion region, const float x, const float y, const Color tint, const bool flipX)
     {
         // Check if the region is valid
         assert(region.id > 0);
@@ -21,15 +19,10 @@ namespace magique
         const auto offsetX = static_cast<float>(region.offX);
         const auto offsetY = static_cast<float>(region.offY);
 
-        if (flipX)
+        if (flipX) [[unlikely]]
         {
-            std::swap(region.offX, region.width);
+            region.width *= -1;
         }
-
-        const Vector2 topLeft = {x, y};
-        const Vector2 bottomLeft = {x, y + texHeight};
-        const Vector2 bottomRight = {x + texWidth, y + texHeight};
-        const Vector2 topRight = {x + texWidth, y};
 
         constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
         constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
@@ -47,19 +40,19 @@ namespace magique
 
         // Top-left corner for region and quad
         rlTexCoord2f(texCoordLeft, texCoordTop);
-        rlVertex2f(topLeft.x, topLeft.y);
+        rlVertex2f(x, y);
 
         // Bottom-left corner for region and quad
         rlTexCoord2f(texCoordLeft, texCoordBottom);
-        rlVertex2f(bottomLeft.x, bottomLeft.y);
+        rlVertex2f(x, y + texHeight);
 
         // Bottom-right corner for region and quad
         rlTexCoord2f(texCoordRight, texCoordBottom);
-        rlVertex2f(bottomRight.x, bottomRight.y);
+        rlVertex2f(x + texWidth, y + texHeight);
 
         // Top-right corner for region and quad
         rlTexCoord2f(texCoordRight, texCoordTop);
-        rlVertex2f(topRight.x, topRight.y);
+        rlVertex2f(x + texWidth, y);
 
         rlEnd();
         rlSetTexture(0);

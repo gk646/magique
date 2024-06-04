@@ -40,7 +40,7 @@ namespace magique::updater
                 StartUpdateTick();
                 //Tick game
                 {
-                    auto& reg = ecs::GetRegistry();
+                    auto& reg = ecs::ENTT_REGISTRY;
                     InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }

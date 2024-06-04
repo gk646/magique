@@ -1,8 +1,6 @@
 #ifndef MAGIQUE_ASSETMANAGER_H
 #define MAGIQUE_ASSETMANAGER_H
 
-#include <raylib/raylib.h>
-
 #include <magique/fwd.hpp>
 #include <magique/util/Hash.h>
 
@@ -28,7 +26,6 @@ namespace magique
     {
         DEFAULT,        // Default atlas
         USER_INTERFACE, // All UI related textures
-        WORLD,          // All background world textures
         ENTITIES,       // All entity textures
         CUSTOM_1,       // User defineable
         CUSTOM_2,       // User defineable
@@ -39,7 +36,7 @@ namespace magique
     // The texture:       resources/textures/player.png
     // Compile Image:     assets::CompileImage("../resources");
     // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
-    // Draw Texture:      DrawTexture(assets::GetTexture("textures/player.png");
+    // Draw Texture:      DrawRegion(GetTexture("textures/player.png");
 
     //----------------- Loading -----------------//
 

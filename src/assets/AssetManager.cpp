@@ -1,5 +1,6 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/container/AssetContainer.h>
+#include <magique/util/Hash.h>
 
 #include <cxutil/cxstring.h>
 

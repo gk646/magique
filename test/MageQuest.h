@@ -1,11 +1,6 @@
 #ifndef MAGEQUEST_H
 #define MAGEQUEST_H
 
-#include "../../cxstructs/src/cxconfig.h"
-#include "../../cxstructs/src/cxutil/cxtime.h"
-
-
-#include <entt/entity/registry.hpp>
 #include <magique/assets/AssetManager.h>
 #include <magique/ecs/Registry.h>
 #include <magique/core/Game.h>
@@ -24,7 +19,7 @@ enum magique::MapID : uint8_t
 };
 
 using namespace magique;
-class MageQuest final : public Game
+struct MageQuest final : Game
 {
     void onStartup(GameLoader& gl) override
     {
@@ -91,13 +86,7 @@ class MageQuest final : public Game
                 ecs::CreateEntity(EntityType::ENEMY, rand() % 100000, rand() % 100000, LEVEL_1);
             }
         }
-        cxstructs::now();
-        const auto regin = GetTextureRegion(H("genz_old.png"));
-        cxstructs::printTime<std::chrono::nanoseconds>("first");
-        cxstructs::now();
-        DrawRegion(regin, 50, 50);
-        cxstructs::printTime<std::chrono::nanoseconds>();
-
+        DrawRegion(GetTextureRegion(H("genz_old.png")), 50, 50, WHITE);
     }
 
     void updateGame(entt::registry& registry) override

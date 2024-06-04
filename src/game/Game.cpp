@@ -1,15 +1,11 @@
 #include <magique/core/Game.h>
-#include <magique/assets/AssetPacker.h>
-#include <magique/util/Logging.h>
 #include <magique/core/Core.h>
-
-#include <raylib.h>
-#include <entt/entity/registry.hpp>
 
 #include "core/CoreData.h"
 
 #include "Renderer.h"
 #include "Updater.h"
+
 
 namespace magique
 {

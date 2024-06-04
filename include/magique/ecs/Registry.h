@@ -2,7 +2,7 @@
 #define REGISTRY_H
 
 #include <functional>
-#include <entt/entity/fwd.hpp>
+#include <entt/entity/registry.hpp>
 
 #include "BaseComponents.h" // The base components
 
@@ -16,12 +16,13 @@
 // A unique type identifier handled by the user to disinguish different types of game objects
 // Max value is reserved for internal use e.g. INT32_MAX
 
-enum class EntityType : uint16_t;
+enum class EntityType : uint16_t; // User implemented
 
 using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
 
 namespace magique::ecs
 {
+    inline entt::registry ENTT_REGISTRY; // The used registry - lives user side cause of massive includes
     //--------------Registering--------------//
 
     // Registers an entity with a corresponding create function - replaces the existing function if present
@@ -62,8 +63,6 @@ namespace magique::ecs
     // Gives it w,a,s,d controls - only works in debug mode
     void GiveDebugController(entt::entity e);
 
-    // Returns the entt registry
-    entt::registry& GetRegistry();
 } // namespace magique::ecs
 
 #endif // REGISTRY_H

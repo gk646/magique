@@ -3,10 +3,9 @@
 
 #include <magique/core/Types.h>
 #include <magique/core/Defines.h>
-#include <magique/util/Logging.h>
 
 #include <cxstructs/BitMask.h>
-#include <ankerl/unordered_dense.h>
+#include <raylib/raylib.h>
 
 #include "core/datastructures/MultiResolutionGrid.h"
 #include "core/datastructures/fast_vector.h"
@@ -212,11 +211,11 @@ namespace magique
 
             UnloadImage(image);
 
-            region.width = image.width;
-            region.height = image.height;
-            region.offX = offX;
-            region.offY = offY;
-            region.id = id;
+            region.width = static_cast<uint16_t>(image.width);
+            region.height = static_cast<uint16_t>(image.height);
+            region.offX = static_cast<uint16_t>(offX);
+            region.offY = static_cast<uint16_t>(offY);
+            region.id = static_cast<uint16_t>(id);
             return region;
         }
 

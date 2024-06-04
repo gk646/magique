@@ -1,19 +1,14 @@
-#pragma once
 #ifndef COREDATA_H
 #define COREDATA_H
 
-#include <thread>
-#include <raylib/raylib.h>
 #include <cxstructs/StackVector.h>
 
 #include <magique/util/TaskExecutor.h>
-#include <entt/entity/registry.hpp>
+#include <magique/assets/AssetManager.h>
 #include <magique/util/DataStructures.h>
 
 #include "InternalTypes.h"
 #include "perf/Perf.h"
-
-#include <magique/assets/AssetManager.h>
 
 
 // All the core data that is shared between internal implementations
@@ -24,9 +19,6 @@ namespace magique
 {
     // Logic thread
     inline std::thread LOGIC_THREAD;
-
-    // Internal registry
-    inline entt::registry ENTT_REGISTRY;
 
     // Type map
     inline HashMap<EntityType, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP;
