@@ -41,6 +41,8 @@ struct Vector2;
 struct Vector3;
 struct Color;
 struct Texture;
+struct Sound;
+struct Music;
 
 //-----------------DATA STRUCTURES-----------------//
 

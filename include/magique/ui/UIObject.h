@@ -7,6 +7,7 @@ namespace magique
 {
     struct UIObject
     {
+        virtual ~UIObject() = default;
         // Called each tick on the main thread
         virtual void draw() {}
         // Called each tick
@@ -22,18 +23,16 @@ namespace magique
         //----------------- EVENTS -----------------//
 
         // Called when this object is added as children
-
         virtual void onAdd() {}
-        virtual void onRepsition() {}
+
+        // Called when its moved or resized
+        virtual void onReposition() {}
 
         //----------------- GETTERS -----------------//
-
-
 
         [[nodiscard]] bool isHovered() const;
 
         [[nodiscard]] bool isPressed() const;
-
     };
 
 } // namespace magique

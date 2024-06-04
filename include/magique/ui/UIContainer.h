@@ -16,8 +16,7 @@ namespace magique
     struct UIContainer : UIObject
     {
         std::vector<std::unique_ptr<UIObject>> children;
-
-        virtual ~UIContainer() = default;
+        ~UIContainer() override = default;
         virtual void reposition();
     };
 } // namespace magique

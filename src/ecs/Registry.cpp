@@ -1,35 +1,31 @@
-#include <entt/entity/registry.hpp>
 #include <magique/ecs/Registry.h>
 
-#include <cxutil/cxassert.h>
-
 #include "core/CoreData.h"
-#include "core/CoreConfig.h"
 
 namespace magique::ecs
 {
 
-    entt::registry& GetRegistry() { return ENTT_REGISTRY; }
-
     bool RegisterEntity(const EntityType type, const std::function<void(entt::registry&, entt::entity)>& createFunc)
     {
-        CX_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        assert(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         if (type == static_cast<EntityType>(UINT16_MAX) || ENT_TYPE_MAP.contains(type))
         {
             return false; // Invalid ID or already registered
         }
 
         ENT_TYPE_MAP.insert({type, createFunc});
+
         for (auto entity : ENTT_REGISTRY.view<entt::entity>())
         {
             volatile int b = 5; // Try to instantiate all storage types
         }
+
         return true;
     }
 
     bool UnRegisterEntity(const EntityType type)
     {
-        CX_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        assert(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
 
         if (type == static_cast<EntityType>(UINT16_MAX) || !ENT_TYPE_MAP.contains(type))
         {
@@ -42,7 +38,7 @@ namespace magique::ecs
 
     entt::entity CreateEntity(const EntityType type, float x, float y, MapID map)
     {
-        CX_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        assert(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto it = ENT_TYPE_MAP.find(type);
         if (it == ENT_TYPE_MAP.end())
         {

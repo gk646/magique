@@ -5,9 +5,8 @@
 #include <memory>
 #include <optional>
 
-#include <magique/fwd.hpp>
-#include <magique/ui/UIObject.h>
-#include <magique/ui/types/CursorAttachment.h>
+#include <magique/ui/UIContainer.h>
+#include <magique/ui/UITypes.h>
 
 enum AnchorPos : uint8_t
 {
@@ -32,7 +31,7 @@ enum Size : uint8_t
 
 namespace magique
 {
-    struct UIRoot final
+    struct UIRoot final : UIContainer
     {
         // Currently hovered object
         std::optional<UIObject*> hoveredObject;

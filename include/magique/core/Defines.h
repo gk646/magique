@@ -24,8 +24,9 @@
 
 //----------------- ASSETS -----------------//
 
-#define MAGIQUE_TEXTURE_ATLAS_WIDTH 2048  // Height of each texture atlas
-#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 2048 // Width of each texture atlas
+#define MAGIQUE_TEXTURE_ATLAS_WIDTH 4096     // Height of each texture atlas
+#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 4096    // Width of each texture atlas
+#define MAGIQUE_DIRECT_TEXTURE_STORAGE 15000 // Allows to store 15k textures statically, accessed per id (for tile maps)
 
 // 1 to Enable Debug
 #if defined(_DEBUG) || !defined(NDEBUG)

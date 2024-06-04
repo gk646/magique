@@ -1,6 +1,5 @@
-#ifndef MAGIQUE_CURSORATTACHMENT_H
-#define MAGIQUE_CURSORATTACHMENT_H
-
+#ifndef MAGIQUE_UITYPES_H
+#define MAGIQUE_UITYPES_H
 
 namespace magique
 {
@@ -11,4 +10,4 @@ namespace magique
     };
 
 } // namespace magique
-#endif //MAGIQUE_CURSORATTACHMENT_H
+#endif //MAGIQUE_UITYPES_H

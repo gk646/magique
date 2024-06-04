@@ -63,7 +63,7 @@ namespace magique::util
         if (level == LOG_FATAL) [[unlikely]]
             exit(1);
 
-        if (level == LOG_ERROR && (MAGIQUE_DEBUG == 1)) [[unlikely]]
+        if (level >= LOG_ERROR && (MAGIQUE_DEBUG == 1)) [[unlikely]]
         {
 #  if defined(_MSC_VER)
             __debugbreak();

@@ -2,7 +2,6 @@
 #define MULTIRESOLUTIONGRID_H
 
 #include <cassert>
-
 #include <vector>
 #include <ankerl/unordered_dense.h>
 

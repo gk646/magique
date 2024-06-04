@@ -2,12 +2,6 @@
 
 #include "core/CoreData.h"
 
-#define CUTE_C2_IMPLEMENTATION
-#include "external/raylib/src/rlgl.h"
-
-
-#include <c2/cute_c2.h>
-
 static bool initCalled = false;
 namespace magique
 {
@@ -33,7 +27,10 @@ namespace magique
 
 
 
-    void SetEntityUpdateDistance(int pixels) {}
+    void SetEntityUpdateDistance(int pixels)
+    {
+
+    }
 
 
     const vector<entt::entity>& GetUpdateEntities() { return LOGIC_TICK_DATA.entityUpdateVec; }
