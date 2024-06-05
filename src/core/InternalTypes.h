@@ -13,6 +13,8 @@
 
 #include "core/datastructures/MultiResolutionGrid.h"
 
+#include <numeric>
+
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
 {
@@ -163,8 +165,8 @@ namespace magique
         template <typename T>
         T& getResource(handle handle)
         {
-            // If you get an error here you probably used a handle in the wrong method
-            // Or its just a null handle
+            // If you get an error here you probably used a wrong handle or in the wrong method
+            assert(handle != handle::null && "Null handle!");
             assert(getResourceVec<T>().size() > (int)handle && "Cannot contain the resource");
             return getResourceVec<T>()[static_cast<uint32_t>(handle)];
         }
@@ -177,8 +179,8 @@ namespace magique
     {
         int width = MAGIQUE_TEXTURE_ATLAS_WIDTH;   // Total width
         int height = MAGIQUE_TEXTURE_ATLAS_HEIGHT; // Total height
-        int offX = 0;                              // Current offset from the top left
-        int offY = 0;                              // Current offset from the top let
+        int posX = 0;                              // Current offset from the top left
+        int posY = 0;                              // Current offset from the top let
         unsigned int id = 0;                       // Texture id
         int currentStepHeight = 0;                 // Highest height of a texture in current row
         void* imageData = nullptr;                 // Save memory by only saving data ptr
@@ -197,37 +199,104 @@ namespace magique
             id = tex.id;
         }
 
-        TextureRegion addImage(const Image& image)
+        TextureRegion addTexture(const Image& image)
         {
             TextureRegion region = {0};
-            if (offX + image.width > width)
-            {
-                offY += currentStepHeight;
-                offX = 0;
-                currentStepHeight = image.height;
-                if (offY >= height)
-                {
-                    LOG_ERROR("Trying to add to a full texture atlas!");
-                    return region;
-                }
-            }
+            if (!checkStep(image.width, image.height))
+                return region;
 
-            if (image.height > currentStepHeight) // Keep track of the highest image
-                currentStepHeight = image.height;
+            region.width = static_cast<uint16_t>(image.width);
+            region.height = static_cast<uint16_t>(image.height);
+            region.offX = static_cast<uint16_t>(posX);
+            region.offY = static_cast<uint16_t>(posY);
+            region.id = static_cast<uint16_t>(id);
+
+            posX += image.width;
 
             Image atlasImage = getImg();
             // Add the image
             ImageDraw(&atlasImage, image, {0, 0, (float)image.width, (float)image.height},
-                      {(float)offX, (float)offY, (float)image.width, (float)image.height}, WHITE);
+                      {(float)posX, (float)posY, (float)image.width, (float)image.height}, WHITE);
 
             UnloadImage(image);
 
-            region.width = static_cast<uint16_t>(image.width);
-            region.height = static_cast<uint16_t>(image.height);
-            region.offX = static_cast<uint16_t>(offX);
-            region.offY = static_cast<uint16_t>(offY);
-            region.id = static_cast<uint16_t>(id);
             return region;
+        }
+
+        SpriteSheet addSpritesheet(const Image& image, const int frames, int tarW, int tarH, int offX, int offY)
+        {
+            SpriteSheet sheet = {0};
+            const int totalWidth = frames * image.width;
+
+            if (!checkStep(totalWidth, image.height))
+                return sheet;
+
+            sheet.width = static_cast<uint16_t>(tarW);
+            sheet.height = static_cast<uint16_t>(tarH);
+            sheet.offX = static_cast<uint16_t>(posX);
+            sheet.offY = static_cast<uint16_t>(posY);
+            sheet.id = static_cast<uint16_t>(id);
+            sheet.frames = frames;
+
+            Image atlasImage = getImg();
+
+            if (offX == 0) // Load whole image
+            {
+                while (true)
+                {
+
+                    ImageDraw(&atlasImage, image, {(float)offX, (float)offY, (float)tarW, (float)tarH},
+                              {(float)posX, (float)posY, (float)tarW, (float)tarH}, WHITE);
+                    offX += tarW;
+                    posX += tarW;
+                    if (offX >= image.width)
+                    {
+                        offX = 0;
+                        offY += tarH;
+                        if (offY >= image.height)
+                            break;
+                    }
+                }
+            }
+            else // Load part of image
+            {
+                for (int i = 0; i < frames; ++i)
+                {
+                    ImageDraw(&atlasImage, image, {(float)offX, (float)offY, (float)tarW, (float)tarH},
+                              {(float)posX, (float)posY, (float)tarW, (float)tarH}, WHITE);
+                    posX += tarW; // We check atlas line upfront - only support sheet in contious line
+                    offX += tarW;
+                    if (offX > image.width)
+                    {
+                        offX = 0;
+                        offY += tarH;
+                    }
+                }
+            }
+
+            UnloadImage(image);
+
+            return sheet;
+        }
+
+        bool checkStep(int texWidth, int texHeight)
+        {
+            if (posX + texWidth > width)
+            {
+                posY += currentStepHeight;
+                posX = 0;
+                currentStepHeight = texHeight;
+                if (posY >= height)
+                {
+                    LOG_ERROR("Texture atlas is full!");
+                    return false;
+                }
+            }
+
+            if (texHeight > currentStepHeight) // Keep track of the highest image
+                currentStepHeight = texHeight;
+
+            return true;
         }
 
         [[nodiscard]] Image getImg() const

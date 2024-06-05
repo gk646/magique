@@ -1,8 +1,6 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/container/AssetContainer.h>
 
-#include <cxutil/cxstring.h>
-
 #include "core/CoreData.h"
 
 
@@ -33,17 +31,37 @@ namespace magique
     }
 
 
-    handle RegisterSpritesheet(const Asset& asset, int width, int height, AtlasType atlas)
+    handle RegisterSpritesheet(const Asset& asset, int width, int height, AtlasType at)
     {
-        return handle::null;
+        Image image;
+        if (!ValidityCheck(image, asset, at))
+            return handle::null;
+
+        assert(image.width >= width && image.height >= height && "Image is smaller than a single frame");
+
+        auto& atlas = TEXTURE_ATLASES[at];
+
+        const auto sheet = atlas.addSpritesheet(image, 1, width, height, 0, 0);
+
+        return ASSET_MANAGER.addResource(sheet);
     }
 
 
-    handle RegisterSpritesheetEx(const Asset& asset, int width, int height, AtlasType atlas, int frames, int offX,
+    handle RegisterSpritesheetEx(const Asset& asset, int width, int height, AtlasType at, int frames, int offX,
                                  int offY)
     {
+        Image image;
+        if (!ValidityCheck(image, asset, at))
+            return handle::null;
 
-        return handle::null;
+        assert(image.width >= width && image.height >= height && "Image is smaller than a single frame");
+        assert(offX < image.width && offY < image.height && "Offset is outside image bounds");
+
+        auto& atlas = TEXTURE_ATLASES[at];
+
+        const auto sheet = atlas.addSpritesheet(image, frames, width, height, offX, offY);
+
+        return ASSET_MANAGER.addResource(sheet);
     }
 
 
@@ -55,18 +73,17 @@ namespace magique
 
         auto& atlas = TEXTURE_ATLASES[at];
 
-        const auto region = atlas.addImage(image);
+        const auto region = atlas.addTexture(image);
 
-        const auto handle = ASSET_MANAGER.addResource(region);
-        assert(handle != handle::null, "Error registering");
-
-        return handle;
+        return ASSET_MANAGER.addResource(region);
     }
 
 
     Sound& GetSound(const handle handle) { return ASSET_MANAGER.getResource<Sound>(handle); }
 
     TextureRegion GetTextureRegion(const handle handle) { return ASSET_MANAGER.getResource<TextureRegion>(handle); }
+
+    SpriteSheet GetSpriteSheet(const handle handle) { return ASSET_MANAGER.getResource<SpriteSheet>(handle); }
 
 
 } // namespace magique
