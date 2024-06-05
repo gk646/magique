@@ -45,6 +45,7 @@ namespace
     {
         uint32_t totalSize = 0;
         uint32_t filePointer = 0;
+        uint32_t totalEntries = 0;
 
         if (memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
         {
@@ -65,6 +66,15 @@ namespace
         }
         // Skip header file size
         filePointer += 4;
+
+        memcpy(&totalEntries, &imageData[filePointer], 4);
+
+        if (totalEntries < 50'000 && totalEntries > 0) // Sanity check
+        {
+            assets.reserve(totalEntries+1);
+        }
+        filePointer += 4;
+
         constexpr int MAX_TITLE_LENGTH = 256;
         char titleBuffer[MAX_TITLE_LENGTH];
 
@@ -161,14 +171,13 @@ namespace magique::assets
             file.read(fileData, imageSize);
             file.close();
             std::vector<Asset> assets;
-            assets.reserve(100);
             const bool res = LoadImageFromMemory(fileData, imageSize, assets, encryptionKey);
             container = AssetContainer(std::move(assets));
             delete[] fileData;
             if (res)
             {
                 LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %.2f mb", path,
-                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize/1'000'000.0F);
+                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize / 1'000'000.0F);
                 return true;
             }
             LOG_ERROR("Failed to load asset image: %s", path);
@@ -208,45 +217,48 @@ namespace magique::assets
 
         image.write(IMAGE_HEADER, strlen(IMAGE_HEADER));
         image.write("\x00\x00\x00\x00", 4);
+        const int size = pathList.size();
+        image.write(reinterpret_cast<const char*>(&size), 4);
 
+        std::vector<char> data;
+        data.reserve(10000);
         for (auto& entry : pathList)
         {
-            std::ifstream file(entry, std::ios::binary | std::ios::ate);
+            FILE* file = fopen(entry.generic_string().c_str(), "rb");
             if (!file)
             {
                 LOG_ERROR("Could not open input file: %s", entry.generic_string().c_str());
                 continue;
             }
+            setvbuf(file, nullptr, _IONBF, 0);
 
             // Read file
             {
-                std::ifstream::pos_type fileSize = file.tellg();
-                file.seekg(0, std::ios::beg);
-                auto* fileData = new char[fileSize];
-                file.read(fileData, fileSize);
-                SymmetricEncrypt(fileData, fileSize, encryptionKey);
-
+                fseek(file, 0, SEEK_END);
+                const int fileSize = ftell(file);
+                if(fileSize > data.size()) data.resize(fileSize,0);
+                fseek(file, 0, SEEK_SET);
+                fread(data.data(), fileSize, 1, file);
+                SymmetricEncrypt(data.data(), fileSize, encryptionKey);
                 {
-                    auto size = static_cast<uint32_t>(fileSize);
                     fs::path relativePath = fs::relative(entry, rootPath);
                     std::string relativePathStr = relativePath.generic_string();
                     auto pathLen = static_cast<uint32_t>(relativePathStr.size());
                     image.write(reinterpret_cast<const char*>(&pathLen), sizeof(pathLen));
                     image.write(relativePathStr.c_str(), pathLen);
-                    image.write(reinterpret_cast<const char*>(&size), sizeof(size));
-                    image.write(fileData, size);
+                    image.write(reinterpret_cast<const char*>(&fileSize), sizeof(int));
+                    image.write(data.data(), fileSize);
                 }
-                delete[] fileData;
             }
-            file.close();
+            fclose(file);
         }
 
         uint32_t writtenSize = image.tellp();
         image.seekp(5);
-        image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(writtenSize));
+        image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(int));
         image.close();
         LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %.2f mb", directory, fileName,
-                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize/1'000'000.0F);
+                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize / 1'000'000.0F);
         return true;
     }
 

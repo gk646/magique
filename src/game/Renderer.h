@@ -14,8 +14,8 @@ namespace magique::renderer
 
     inline void StartRenderTick()
     {
-
         startTime = steady_clock::now();
+        BeginDrawing();
     }
 
     inline void EndRenderTick()
@@ -41,7 +41,6 @@ namespace magique::renderer
         EndRenderTick();
     }
 
-
     inline void Run(bool& isLoading, Game& game)
     {
         auto& reg = ecs::ENTT_REGISTRY;
@@ -51,7 +50,6 @@ namespace magique::renderer
             while (!WindowShouldClose() && game.isRunning()) [[likely]]
             {
                 StartRenderTick();
-                BeginDrawing();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
                     game.preRender(); // Pre render
@@ -60,7 +58,6 @@ namespace magique::renderer
                         HandleLoadingScreen(isLoading, game);
                         continue;
                     }
-
                     auto& camera = game.camera;
                     BeginMode2D(camera);
                     {
@@ -70,7 +67,6 @@ namespace magique::renderer
                         LOGIC_TICK_DATA.unlock();
                     }
                     EndMode2D();
-
                     game.drawUI(); // Draw UI
                 }
                 EndRenderTick();

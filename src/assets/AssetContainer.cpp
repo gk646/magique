@@ -1,13 +1,14 @@
 #include <algorithm>
+#include <cassert>
 #include <string>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 
 
-struct NumericSort
+struct Sorter
 {
-    static bool Comp(const char* a, const char* b)
+    static bool Full(const char* a, const char* b)
     {
         auto [baseA, baseALength, numA] = SplitPathAndNumber(a);
         auto [baseB, baseBLength, numB] = SplitPathAndNumber(b);
@@ -23,8 +24,9 @@ struct NumericSort
             return numA < numB;
         }
 
-        return a < b;
+        return *a > *b;
     }
+    static bool Directory(const char* a, const char* b, int bSize) { return strncmp(a, b, bSize) < 0; }
 
 private:
     static bool isDigit(const char c) { return c >= '0' && c <= '9'; }
@@ -66,6 +68,50 @@ private:
 
 namespace magique
 {
+    int FindAssetPos(const std::vector<Asset>& assets, const char* name)
+    {
+        int low = 0;
+        int high = static_cast<int>(assets.size());
+
+        while (low <= high)
+        {
+            const int mid = low + (high - low) / 2;
+
+            if (strcmp(assets[mid].name, name) == 0) [[unlikely]]
+                return mid;
+
+            if (Sorter::Full(assets[mid].name, name))
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+
+        // If we reach here, then element was not present
+        return -1;
+    }
+
+    int FindDirectoryPos(const std::vector<Asset>& assets, const char* name, int size)
+    {
+        int low = 0;
+        int high = static_cast<int>(assets.size());
+
+        while (low <= high)
+        {
+            const int mid = low + (high - low) / 2;
+
+            if (strncmp(assets[mid].name, name, size) == 0) [[unlikely]]
+                return mid;
+
+            if (Sorter::Directory(assets[mid].name, name, size))
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+
+        // If we reach here, then element was not present
+        return -1;
+    }
+
     AssetContainer::AssetContainer(std::vector<Asset>&& newAssets)
     {
         if (!assets.empty())
@@ -83,7 +129,7 @@ namespace magique
         assets = std::move(newAssets);
 
         // This sorts all entries after directory and then insdie a directory after numbering
-        std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return NumericSort::Comp(a1.name, a2.name); });
+        std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.name, a2.name); });
     }
 
 
@@ -96,19 +142,48 @@ namespace magique
         }
     }
 
-    bool AssetContainer::IterateDirectory(const char* name, LoadFunc func) const { return true; }
-
-    const Asset& AssetContainer::GetAsset(const char* name) const
+    void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
+        assert(name != nullptr && "Passing nullptr!");
+        assert(!assets.empty() && "No assets loaded!");
 
-        for (const auto& a : assets)
+        const int size = static_cast<int>(strlen(name));
+        int pos = FindDirectoryPos(assets, name, size);
+
+
+        if (pos == -1) [[unlikely]]
         {
-            if (strcmp(a.name, name) == 0)
-                return a;
+            LOG_WARNING("No directory with name %s found!", name);
+            return;
         }
 
-        LOG_ERROR("No asset with name %s found! Returning empty asset", name);
-        return Asset();
+        while (pos > 0 && strncmp(assets[pos - 1].name, name, size) == 0)
+        {
+            pos--;
+        }
+
+        do
+        {
+            func(assets[pos]);
+            pos++;
+        }
+        while (pos < assets.size() && strncmp(assets[pos].name, name, size) == 0);
+    }
+
+    const Asset& AssetContainer::getAsset(const char* name) const
+    {
+        assert(name != nullptr && "Passing nullptr!");
+        assert(!assets.empty() && "No assets loaded!");
+
+        const int pos = FindAssetPos(assets, name);
+
+        if (pos == -1) [[unlikely]]
+        {
+            LOG_ERROR("No asset with name %s found! Returning empty asset", name);
+            return Asset();
+        }
+
+        return assets[pos];
     }
 
 

@@ -2,6 +2,7 @@
 #define ASSETCONTAINER_H
 
 #include <vector>
+#include <functional>
 
 //-----------------------------------------------
 // Asset Container
@@ -20,23 +21,30 @@ namespace magique
         [[nodiscard]] const unsigned char* getData() const { return reinterpret_cast<const unsigned char*>(data); }
     };
 
-    using LoadFunc = void (*)(const Asset& asset);
-
     struct AssetContainer final
     {
         AssetContainer() = default;                           // Default constructor
         explicit AssetContainer(std::vector<Asset>&& assets); // Internal constructor
-        AssetContainer& operator=(AssetContainer&& other) noexcept =  default;
+        AssetContainer& operator=(AssetContainer&& other) noexcept = default;
         ~AssetContainer();
 
-        // Iterates the given directory and calls 'func' for all entries
+        // IMPORTANT: All assets are named with their path from the asset content root
+        // Example :
+        // The texture:       resources/textures/player.png
+        // Compile Image:     assets::CompileImage("../resources");
+        // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
+
+
+        // Iterates the given directory and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
-        // Failure: returns false
-        bool IterateDirectory(const char* name, LoadFunc func) const;
+        // Pass an empty string to iterate all files
+        // Relative to the compiled image root e.g res/player/idle - compile("./res") - iterate("player/idle");
+        void iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const;
 
         // Retrieves an asset by its name
         // Assets are registered with their relative path from the asset image root
-        const Asset& GetAsset(const char* name) const;
+        const Asset& getAsset(const char* name) const;
+
 
     private:
         std::vector<Asset> assets; // Internal file list

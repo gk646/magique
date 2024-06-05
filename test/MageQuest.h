@@ -1,16 +1,11 @@
 #ifndef MAGEQUEST_H
 #define MAGEQUEST_H
 
-#include "../../cxstructs/src/cxconfig.h"
-#include "../../cxstructs/src/cxutil/cxtime.h"
-
-
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/HandleRegistry.h>
 #include <magique/ecs/Registry.h>
 #include <magique/core/Game.h>
 #include <magique/core/Draw.h>
-
 
 enum class EntityType : uint16_t
 {
@@ -34,9 +29,8 @@ struct MageQuest final : Game
 {
     void onStartup(GameLoader& gl) override
     {
-
         gl.registerTask(
-            [](AssetContainer&)
+            [](AssetContainer& assets)
             {
                 ecs::RegisterEntity(EntityType::PLAYER,
                                     [](entt::registry&, entt::entity e)
@@ -52,15 +46,24 @@ struct MageQuest final : Game
                                         ecs::GiveCollision(e, AABB, 25, 50);
                                         ecs::GiveDebugVisuals(e);
                                     });
+
+                assets.iterateDirectory("items/amulet", [](const Asset& a) { printf("%s\n", a.name); });
+
+                auto& asset = assets.getAsset("Entities/enemies/fireWorm/attack1/0.png");
+                RegisterHandle(RegisterSpritesheet(asset, 90, 90), "worm");
+                RegisterHandle(RegisterSpritesheetEx(asset, 90, 90, DEFAULT, 16, 0, 0), "wormex");
             },
             BACKGROUND_THREAD);
 
         gl.registerTask([](AssetContainer& assets)
-                        { RegisterHandle(RegisterTexture(assets.GetAsset("genz_old.png")), GENZ); }, MAIN_THREAD);
+                        { RegisterDirectHandle(RegisterTexture(assets.getAsset("Entities/player/idle/0.png")), 1); },
+                        MAIN_THREAD);
+
     }
 
     void drawGame(entt::registry& registry, Camera2D& camera) override
     {
+
         const auto view = registry.view<PositionC, CollisionC, DebugVisualsC>();
         for (const auto e : view)
         {
@@ -70,7 +73,9 @@ struct MageQuest final : Game
             DrawRectangle(pos.x, pos.y, col.width, col.height, pos.type == EntityType::PLAYER ? BLUE : RED);
         }
 
-        DrawRegion(GetTextureRegion(GetHandle(GENZ)), 50, 50, WHITE);
+        auto sprite = GetSpriteSheet(GetHandle(H("wormex")));
+        DrawTexture({sprite.id, 4096, 4096, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8}, 0, 0, WHITE);
+        DrawRegion(GetTextureRegion(GetDirectHandle(1)), 50, 50, WHITE);
     }
 
     void updateGame(entt::registry& registry) override

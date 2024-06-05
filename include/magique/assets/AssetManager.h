@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_ASSETMANAGER_H
 #define MAGIQUE_ASSETMANAGER_H
 
+#include <vector>
 #include <magique/fwd.hpp>
 
 //-----------------------------------------------
@@ -33,29 +34,30 @@ namespace magique
         CUSTOM_2,       // User defineable
     };
 
-    // IMPORTANT: All assets are named with their path from the asset content root
-    // Example :
-    // The texture:       resources/textures/player.png
-    // Compile Image:     assets::CompileImage("../resources");
-    // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
-
     //----------------- Loading -----------------//
 
     // Loads the whole texture into the given atlas
-    // Failure: returns false
+    // Failure: returns handle::null
     handle RegisterTexture(const Asset& asset, AtlasType atlas = DEFAULT);
 
     // Tries to load a .png file as sprite sheet
-    // Starts at the given offset and then tries to split the image into frames row by row with the given dimensions
-    // Failure: returns false
+    // Starts at (0,0) topleft and then tries to split the image into frames row by row with the given dimensions
+    // Failure: returns handle::null
     handle RegisterSpritesheet(const Asset& asset, int width, int height, AtlasType atlas = DEFAULT);
 
     // Tries to load a .png file as sprite sheet
     // Sames as RegisterSpritesheet but allows to specify an offset from the top left and the amount of frames to load
-    // Goes from left to right
-    // Failure: returns false
+    // Useful for loading part of a bigger sprite sheet - supports line breaks
+    // Failure: returns handle::null
     handle RegisterSpritesheetEx(const Asset& asset, int width, int height, AtlasType atlas, int frames, int offX = 0,
                                  int offY = 0);
+
+    // Registers a sprite sheet created out of the given assets
+    // All assets must be images with the same format and dimensions!
+    // Use iterateDirectory and collect assets to call this function
+    // Failure: returns handle::null
+    handle RegisterSpritesheetVec(const std::vector<const Asset&>& asset, AtlasType atlas);
+
 
     //----------------- Getting -----------------//
 

@@ -10,7 +10,6 @@
 #include "InternalTypes.h"
 #include "perf/Perf.h"
 
-
 // All the core data that is shared between internal implementations
 // We carry a slog of includes around but dont really care as its statically compiled
 // Library compile time isnt a user cost -> but size gets bigger...
@@ -39,7 +38,7 @@ namespace magique
     inline Configuration CONFIGURATION;
 
     // Asset manager
-    inline AssetManager<Sound, Music, Shader, TextureRegion> ASSET_MANAGER;
+    inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet> ASSET_MANAGER;
 
     // Texture atlases
     inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;

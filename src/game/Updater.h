@@ -13,7 +13,9 @@ namespace magique::updater
 
     inline void InternalUpdate(entt::registry& registry) { ecs::CheckCollisions(registry); }
 
-    inline void StartUpdateTick() { startTime = steady_clock::now(); }
+    inline void StartUpdateTick()
+    {
+    }
 
     inline void EndUpdateTick()
     {
