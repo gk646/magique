@@ -44,6 +44,7 @@ namespace magique::renderer
     inline void Run(bool& isLoading, Game& game)
     {
         auto& reg = REGISTRY;
+        auto& camera = LOGIC_TICK_DATA.camera;
         // Double loop to catch the close event
         while (game.isRunning()) [[likely]]
         {
@@ -58,7 +59,6 @@ namespace magique::renderer
                         HandleLoadingScreen(isLoading, game);
                         continue;
                     }
-                    auto& camera = game.camera;
                     BeginMode2D(camera);
                     {
                         game.drawWorld(camera);

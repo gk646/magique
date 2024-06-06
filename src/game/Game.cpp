@@ -6,6 +6,7 @@
 #include "Renderer.h"
 #include "Updater.h"
 
+CoreData CORE = {0};
 
 namespace magique
 {
@@ -21,7 +22,7 @@ namespace magique
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         LOG_INFO("Initialized Game");
-        camera.zoom = 1.0F;
+        LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
     }
 
@@ -56,8 +57,8 @@ namespace magique
         updater::Close();
 
 #ifdef MAGIQUE_DEBUG_PROFILE
-        LOG_INFO("Average DrawTick: %dk nanos", (int)PERF_DATA.getAverageTime(DRAW)/1'000);
-        LOG_INFO("Average LogicTick: %dk nanos", (int)PERF_DATA.getAverageTime(UPDATE)/1'000);
+        LOG_INFO("Average DrawTick: %dk nanos", (int)PERF_DATA.getAverageTime(DRAW) / 1'000);
+        LOG_INFO("Average LogicTick: %dk nanos", (int)PERF_DATA.getAverageTime(UPDATE) / 1'000);
 #endif
         return 0;
     }

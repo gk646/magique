@@ -1,9 +1,10 @@
-#include <cassert>
 
 #include <magique/core/Draw.h>
 #include <magique/util/Defines.h>
+#include <magique/util/Macros.h>
 
 #include "external/raylib/src/rlgl.h"
+
 
 namespace magique
 {
@@ -11,7 +12,7 @@ namespace magique
     void DrawRegion(TextureRegion region, const float x, const float y, const bool flipX, const Color tint)
     {
         // Check if the region is valid
-        assert(region.id > 0);
+        M_ASSERT(region.id > 0, "The texture for this region is invalid");
 
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
@@ -62,8 +63,8 @@ namespace magique
     void DrawSprite(SpriteSheet sheet, float x, float y, int frame, bool flipX, Color tint)
     {
         // Check if the region is valid
-        assert(sheet.id > 0 && "Invalid texture");
-        assert(frame >= 0 && frame <= sheet.frames && "Out of bounds frame");
+        M_ASSERT(sheet.id > 0, "The texture for this region is invalid");
+        M_ASSERT(frame >= 0 && frame <= sheet.frames, "Out of bounds frame");
 
         const auto texWidth = static_cast<float>(sheet.width);
         const auto texHeight = static_cast<float>(sheet.height);

@@ -5,6 +5,7 @@
 
 #include "ecs/systems/CollisionSystem.h"
 #include "ecs/systems/InputSystem.h"
+#include "ecs/systems/LogicSystem.h"
 
 namespace magique::updater
 {
@@ -14,8 +15,9 @@ namespace magique::updater
 
     inline void InternalUpdate(entt::registry& registry)
     {
-        ecs::PollInputs(registry);
-        ecs::CheckCollisions(registry);
+        PollInputs(registry);
+        UpdateLogic(registry);
+        CheckCollisions(registry);
     }
 
     inline void StartUpdateTick() {}

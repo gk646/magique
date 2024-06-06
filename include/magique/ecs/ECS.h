@@ -17,7 +17,6 @@
 
 enum EntityID : uint16_t; // User implemented
 
-
 namespace magique
 {
     inline entt::registry REGISTRY; // The used registry - lives user side cause of massive includes
@@ -50,22 +49,26 @@ namespace magique
 
     //--------------Creating--------------//
 
+    // Adds the camera component
+    // Camera will automatically reflect the entity state (update)
+    void GiveCamera(entt::entity entity);
+
     // Adds components such that the given entity is an actor
-    void GiveActor(entt::entity e);
+    void GiveActor(entt::entity entity);
 
     // Makes the entity collidable with others
-    void GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
+    void GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
 
     // Makes the entity react to its script
     // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
-    void GiveScript(entt::entity e);
+    void GiveScript(entt::entity entity);
 
     // DEBUG
     // Draws entitiy as rectangles - only works in debug mode
-    void GiveDebugVisuals(entt::entity e);
+    void GiveDebugVisuals(entt::entity entity);
 
     // Gives it w,a,s,d controls - only works in debug mode
-    void GiveDebugController(entt::entity e);
+    void GiveDebugController(entt::entity entity);
 
 } // namespace magique
 

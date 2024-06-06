@@ -40,8 +40,8 @@ namespace magique
     // How to add your own functions!
     // IMPORTANT: All event functions need the registry and the self id as the first 2 parameters!
     // Step 1: Add a new EventType enum with the name of your function
-    // Step 2: Add your new enum to the REGISTER_EVENTS macro
-    // Step 3: Add your function with the same name and your done!
+    // Step 2: Add your new enum value to the REGISTER_EVENTS macro
+    // Step 3: Done! You can now invoke your event!
 
     // Add ALL events here
     REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent);
@@ -96,10 +96,10 @@ namespace magique
     // Failure: returns nullptr
     EntityScript* GetScript(EntityID entity);
 
-    // Calls the given event function on given entity
-    // You CAN specify your Subclass type to access its unique methods directly
+    // Calls the given event function on the given entity
+    // Note: If you want to access non inherited methods you HAVE to pass your subclass type
     // IMPORTANT: 'arguments' are only parameters after the registry and self id - they are passed implicitly
-    // Examplea:   InvokeEvent<onKeyEvent>(self);
+    // Examples:   InvokeEvent<onKeyEvent>(self);
     //             InvokeEvent<onItemPickup, MyPlayerScript>(player, item);
     //             InvokeEvent<onExplosion, MyGrenadeScript>(grenade, radius, damage);
     template <EventType event, class Script = EntityScript, class... Args>

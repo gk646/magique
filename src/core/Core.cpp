@@ -28,20 +28,47 @@ namespace magique
         return true;
     }
 
+    //----------------- SET -----------------//
 
-    void SyncThreads() { LOGIC_TICK_DATA.lock(); }
+    void SetCameraEntity(entt::entity entity)
+    {
 
+    }
 
-    void UnSyncThreads() { LOGIC_TICK_DATA.unlock(); }
+    void SetUpdateDistance(int distance) { CONFIGURATION.entityUpdateDistance = static_cast<float>(distance); }
 
+    void SetCameraViewPadding(int distance) { CONFIGURATION.cameraViewPadding = static_cast<float>(distance); }
 
-    void SetEntityUpdateDistance(int pixels) {}
+    void SetEntityCacheDuration(int ticks) { CONFIGURATION.entityCacheDuration = ticks; }
 
+    void AddToUpdateCache(entt::entity e) { LOGIC_TICK_DATA.entityUpdateCache[e] = CONFIGURATION.entityCacheDuration; }
+
+    //----------------- GET -----------------//
 
     const vector<entt::entity>& GetUpdateEntities() { return LOGIC_TICK_DATA.entityUpdateVec; }
 
+    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return LOGIC_TICK_DATA.loadedMaps; }
+
+    const std::vector<entt::entity>& GetDrawEntities() { return LOGIC_TICK_DATA.drawVec; }
+
+    MapID GetCameraMap() { return LOGIC_TICK_DATA.cameraMap; }
+
+    Vector2 GetCameraPosition() { return LOGIC_TICK_DATA.camera.target; }
+
+    inline Rectangle GetCameraBounds()
+    {
+        const auto pad = CONFIGURATION.cameraViewPadding;
+        auto& camera = LOGIC_TICK_DATA.camera;
+        auto& target = camera.target;
+        auto& offset = camera.offset;
+        return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
+    }
 
     DrawTickData& GetDrawTickData() { return DRAW_TICK_DATA; }
+
+    void SyncThreads() { LOGIC_TICK_DATA.lock(); }
+
+    void UnSyncThreads() { LOGIC_TICK_DATA.unlock(); }
 
 
 } // namespace magique

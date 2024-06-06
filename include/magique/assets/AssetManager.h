@@ -13,8 +13,7 @@
 // Try to group all textures that are drawn together into the same atlas
 // Uses a handle system, which means you get a number that identifies this resoure
 // However this handle is only unique for its type, so dont use a handle from a sprite sheet method for a texture or sound
-//
-// So in most cases its just a number lookup into a pre allocated dense map!
+// In practice this doesnt mean anything as you organize handles anyway
 // .....................................................................
 
 namespace magique

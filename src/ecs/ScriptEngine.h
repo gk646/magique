@@ -8,7 +8,16 @@ namespace magique
 {
     struct ScriptEngine
     {
+        inline static auto* defaultScript = new EntityScript();
         std::vector<EntityScript*> scripts;
+
+        void padUpToEntity(const EntityID entity)
+        {
+            if (scripts.size() < entity + 1)
+            {
+                scripts.resize(entity + 1, defaultScript);
+            }
+        }
     };
 
     inline ScriptEngine SCRIPT_ENGINE;

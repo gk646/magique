@@ -13,8 +13,6 @@
 
 #include "core/datastructures/MultiResolutionGrid.h"
 
-#include <numeric>
-
 using CollisionPair = std::pair<entt::entity, entt::entity>;
 struct PairHash
 {
@@ -29,16 +27,17 @@ namespace magique
 {
     struct LogicTickData final
     {
-        // Currently loaded map
-        const Map* currentMap = nullptr;
+        // the camera
+        Camera2D camera{};
 
-        Pint cameraTilePos{};
+        // Map the camera is int
+        MapID cameraMap;
 
-        MapID currentZone;
+        // entity id of the camera
+        entt::entity id;
 
-        entt::entity camera;
-
-        MapID loadedZones[MAGQIQUE_MAX_PLAYERS];
+        // Currently loaded zones
+        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps;
 
         // Change set for multiplayer events
         HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet;
@@ -54,17 +53,13 @@ namespace magique
         // Culled with the camera
         vector<entt::entity> drawVec;
 
-        // Contains entities that have been removed
-        // This is for multiplayer queued updates
-        vector<entt::entity> removedEntities;
-
         // Global hashGrid for all entities
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
         // Collects entities
         HashSet<entt::entity> collector;
 
-        // Atomic spinlock - whenever and data is accessed on the draw thread
+        // Atomic spinlock - whenever any data is accessed on the draw thread
         std::atomic_flag flag;
 
         LogicTickData()
@@ -72,15 +67,14 @@ namespace magique
             hashGrid.reserve(150, 1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
-            removedEntities.reserve(100);
 
-            //Collision pairs
+            // entitiy collector
             collector.reserve(500);
 
-            //MP Update set
+            // multiplayer event update set
             changedSet.reserve(1000);
 
-            //Update cache
+            // Update cache
             entityUpdateCache.reserve(1000);
         }
 
@@ -99,7 +93,6 @@ namespace magique
             entityUpdateCache.clear();
             entityUpdateVec.clear();
             drawVec.clear();
-            removedEntities.clear();
             collector.clear();
             hashGrid.clear();
         }
@@ -114,7 +107,9 @@ namespace magique
         util::LogLevel logLevel = util::LEVEL_NONE;
 
         // Update distance
-        int entityUpdateDistance = 1000;
+        float entityUpdateDistance = 1000;
+
+        float cameraViewPadding = 250;
 
         // For how long entities in the cache are still updates after they are out of range
         uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
