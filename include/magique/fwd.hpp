@@ -21,7 +21,7 @@ namespace magique
 
     //-----------------ECS-----------------//
     struct EntityScript;
-
+    enum EventType : uint8_t;
     //----------------- ASSETS -----------------//
     struct Asset;                 // Memory container for any asset
     struct TextureRegion;         // All textures are stitched into a atlas, you can only retrieve their region

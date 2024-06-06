@@ -5,7 +5,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/util/DataStructures.h>
-#include <magique/core/Defines.h>
+#include <magique/util/Defines.h>
 #include <magique/util/Logging.h>
 
 #include <cxstructs/BitMask.h>
