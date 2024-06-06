@@ -43,7 +43,7 @@ namespace magique::renderer
 
     inline void Run(bool& isLoading, Game& game)
     {
-        auto& reg = ecs::ENTT_REGISTRY;
+        auto& reg = REGISTRY;
         // Double loop to catch the close event
         while (game.isRunning()) [[likely]]
         {

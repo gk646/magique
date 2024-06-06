@@ -11,7 +11,6 @@
 // It can be useful to use these in your code if you need access to them
 // .....................................................................
 
-
 //----------------- CORE -----------------//
 
 #define MAGIQUE_LOGIC_TICKS 60 // 60 Ticks per second

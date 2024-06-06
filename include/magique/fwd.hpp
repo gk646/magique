@@ -4,7 +4,6 @@
 
 #include <cstdint> // My favourite header
 
-
 namespace magique
 {
     //----------------- LOADING -----------------//
@@ -17,12 +16,11 @@ namespace magique
     //-----------------LEVELS-----------------//
     struct Map; // Holds information about the current level
 
-
     //-----------------LOGIC-----------------//
     struct DrawTickData; // Data for one draw tick - guaranteed to not change during the tick
 
     //-----------------ECS-----------------//
-
+    struct EntityScript;
 
     //----------------- ASSETS -----------------//
     struct Asset;                 // Memory container for any asset
@@ -31,13 +29,14 @@ namespace magique
     enum AtlasType : uint8_t;     // Specifies which atlas to add the texture to
     enum class handle : uint32_t; // Resource handle
 
-
 } // namespace magique
 
 //----------------- USER DEFINED -----------------//
 
-enum class EntityType : uint16_t; // User implemented to denote different entity types
-enum HandleType : int;            // User implemented to denote different handle types
+enum EntityID : uint16_t;   // User implemented to denote different entity types
+enum class HandleID : int;  // User implemented to denote different handles
+enum class MapID : uint8_t; // User implemented to denote different handles
+
 
 //-----------------RAYLIB-----------------//
 

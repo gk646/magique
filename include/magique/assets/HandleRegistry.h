@@ -12,7 +12,7 @@
 // Your free to manage and store handles on your own aswell!
 // .....................................................................
 
-enum HandleType : int; // User implementable to store handles by enum
+enum class HandleID : int; // User implementable to store handles by enum
 
 namespace magique
 {
@@ -23,7 +23,7 @@ namespace magique
     //----------------- REGISTER -----------------//
 
     // Saves a handle by the given type - not hashed -> enum ordinal value will be used as index
-    void RegisterHandle(handle handle, HandleType type);
+    void RegisterHandle(handle handle, HandleID type);
 
     // Stores a handle by the given name - hashed
     void RegisterHandle(handle handle, const char* name);
@@ -34,7 +34,7 @@ namespace magique
     //----------------- GET -----------------//
 
     // Retrieves a handle identified by a type - enum ordinal value will be used as index
-    handle GetHandle(HandleType type);
+    handle GetHandle(HandleID type);
 
     // Retrieves a handle based on string hashing
     // IMPORTANT: You have to use this macro to get compile time hash - sadly you can pass constexpr strings

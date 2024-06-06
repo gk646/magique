@@ -10,34 +10,34 @@
 // ECS Module
 //-------------------------------
 // .....................................................................
-// All entities will have the PositionC component per default
+// All entities have the PositionC auto assigned per default
 // .....................................................................
 
 // A unique type identifier handled by the user to disinguish different types of game objects
 // Max value is reserved for internal use e.g. INT32_MAX
 
-enum class EntityType : uint16_t; // User implemented
+enum EntityID : uint16_t; // User implemented
 
-using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
 
-namespace magique::ecs
+namespace magique
 {
-    inline entt::registry ENTT_REGISTRY; // The used registry - lives user side cause of massive includes
+    inline entt::registry REGISTRY; // The used registry - lives user side cause of massive includes
     //--------------Registering--------------//
 
+    using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
     // Registers an entity with a corresponding create function - replaces the existing function if present
     // Failure: Returns false
-    bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
+    bool RegisterEntity(EntityID type, const CreateFunc& createFunc);
 
     // Unregisters an entity
     // Failure: Returns false
-    bool UnRegisterEntity(EntityType type);
+    bool UnRegisterEntity(EntityID type);
 
     //--------------LIFE CYCLE--------------//
 
     // Creates a new entity by calling the registered function for that type
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type, float x, float y, MapID map);
+    entt::entity CreateEntity(EntityID type, float x, float y, MapID map);
 
     // Tries to destroy the entity and all its components
     // Failure: Returns false

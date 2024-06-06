@@ -4,7 +4,7 @@
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
-
+#include <raylib/raylib.h>
 
 struct Sorter
 {
@@ -112,6 +112,15 @@ namespace magique
         return -1;
     }
 
+    bool Asset::hasExtension(const char* extension) const
+    {
+        assert(extension != nullptr);
+        const auto* ext = GetFileExtension(name);
+        if (ext == nullptr)
+            return false;
+        return strcmp(extension, ext);
+    }
+
     AssetContainer::AssetContainer(std::vector<Asset>&& newAssets)
     {
         if (!assets.empty())
@@ -131,7 +140,6 @@ namespace magique
         // This sorts all entries after directory and then insdie a directory after numbering
         std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.name, a2.name); });
     }
-
 
     AssetContainer::~AssetContainer()
     {

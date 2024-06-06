@@ -1,9 +1,7 @@
 #ifndef BASECOMPONENTS_H
 #define BASECOMPONENTS_H
 
-#include <magique/core/Types.h>
-
-enum class EntityType : uint16_t;
+#include <magique/fwd.hpp>
 
 enum LightStyle : uint8_t
 {
@@ -15,32 +13,38 @@ enum Shape : uint8_t
 {
     CIRCLE, // Circle
     AABB,   // Non-rotated retangle
-    POLY,   // Polygone
+    POLY,   // Polygon
 };
 
 
 // Denotes an actor
-struct ActorC
+struct ActorC final
 {
 };
 
 // Denotes the camera holder - can only be 1!
-struct CameraC
+struct CameraC final
 {
+};
+
+// Denotes that the entity is scripted - will recieve script updates
+struct ScriptC final
+{
+   magique::EntityScript& script;
 };
 
 // Position
-struct PositionC
+struct PositionC final
 {
     float x;
     float y;
-    EntityType type;
-    magique::MapID map;
-    uint16_t rotation = 0;
+    EntityID type;
+    MapID map;
+    uint16_t rotation;
 };
 
 
-struct CollisionC
+struct CollisionC final
 {
     Shape shape = AABB; // Shape
     uint16_t width = 0;
@@ -49,19 +53,21 @@ struct CollisionC
     int16_t anchorY = 0; // Rotation anchor point for the hitbox
 };
 
+
 // If added entity will emit light
-struct EmitterC
+struct EmitterC final
 {
     uint8_t r, g, b;
-    uint8_t intensity = 1;
-    LightStyle style = POINT_LIGHT_SOFT;
+    uint8_t intensity;
+    LightStyle style;
 };
 
 // If added entity will throw shadows
-struct OccluderC
+// Can be different dimensions and shape than collision
+struct OccluderC final
 {
-    int width;
-    int height;
+    int16_t width;
+    int16_t height;
     Shape shape;
 };
 

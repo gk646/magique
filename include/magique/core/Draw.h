@@ -15,14 +15,14 @@
 namespace magique
 {
     // Draws a given texture region
-    void DrawRegion(TextureRegion region, float x, float y, Color tint = WHITE, bool flipX = false);
+    void DrawRegion(TextureRegion region, float x, float y, bool flipX = false, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect
     // Pass -width to flip the texture horizontally
     void DrawRegionEx(TextureRegion region, Rectangle dest, float rotation, Color tint = WHITE);
 
     // Draws the given frame from the sprite sheet
-    void DrawSprite(SpriteSheet sheet, float x, float y, int frame, Color tint = WHITE);
+    void DrawSprite(SpriteSheet sheet, float x, float y, int frame, bool flipX = false, Color tint = WHITE);
 
     // Draws and scales the given frame of the sprite sheet into the destination rect
     void DrawSpriteEx(SpriteSheet sheet, Rectangle dest, int frame, float rotation, Color tint = WHITE);

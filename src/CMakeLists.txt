@@ -2,7 +2,7 @@
 # Add all subdirectories
 add_subdirectory(assets)
 add_subdirectory(ecs)
-add_subdirectory(lua)
+add_subdirectory(scripting)
 add_subdirectory(game)
 add_subdirectory(core)
 add_subdirectory(ui)
@@ -17,7 +17,7 @@ add_library(${TARGET_NAME} STATIC
         $<TARGET_OBJECTS:${TARGET_NAME}_core>
         $<TARGET_OBJECTS:${TARGET_NAME}_assets>
         $<TARGET_OBJECTS:${TARGET_NAME}_ecs>
-        $<TARGET_OBJECTS:${TARGET_NAME}_lua>
+        $<TARGET_OBJECTS:${TARGET_NAME}_scripting>
         $<TARGET_OBJECTS:${TARGET_NAME}_game>
         $<TARGET_OBJECTS:${TARGET_NAME}_util>
         $<TARGET_OBJECTS:${TARGET_NAME}_ui>

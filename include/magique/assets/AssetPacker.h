@@ -15,7 +15,7 @@
 // The compile image can be helpful when iterating to always have the latest version of your resources compiled
 // Just add it before you start the game but remove it for release builds!
 
-namespace magique::assets
+namespace magique
 {
     //----------------- IN GAME -----------------//
 
