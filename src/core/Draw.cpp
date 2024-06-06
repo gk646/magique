@@ -1,7 +1,7 @@
 #include <cassert>
 
 #include <magique/core/Draw.h>
-#include <magique/core/Defines.h>
+#include <magique/util/Defines.h>
 
 #include "external/raylib/src/rlgl.h"
 

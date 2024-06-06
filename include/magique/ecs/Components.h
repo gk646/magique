@@ -1,7 +1,9 @@
-#ifndef BASECOMPONENTS_H
-#define BASECOMPONENTS_H
+#pragma once
+#ifndef MAGIQUE_COMPONENTS_H
+#define MAGIQUE_COMPONENTS_H
 
 #include <magique/fwd.hpp>
+
 
 enum LightStyle : uint8_t
 {
@@ -30,7 +32,6 @@ struct CameraC final
 // Denotes that the entity is scripted - will recieve script updates
 struct ScriptC final
 {
-   magique::EntityScript& script;
 };
 
 // Position
@@ -85,4 +86,4 @@ struct DebugControllerC
     // Basic W, A, S ,D movement
 };
 
-#endif // BASECOMPONENTS_H
+#endif // MAGIQUE_COMPONENTS_H

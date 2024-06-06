@@ -15,7 +15,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
 elseif (MSVC)
-    add_compile_options(/W4 /fp:fast /GR-)
+    add_compile_options(/W4 /fp:fast /GR- /Zc:preprocessor)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Od /Zi")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi")
 

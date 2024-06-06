@@ -2,9 +2,8 @@
 #define REGISTRY_H
 
 #include <functional>
+#include <magique/ecs/Components.h>
 #include <entt/entity/registry.hpp>
-
-#include "BaseComponents.h" // The base components
 
 //-------------------------------
 // ECS Module
@@ -57,12 +56,17 @@ namespace magique
     // Makes the entity collidable with others
     void GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
 
+    // Makes the entity react to its script
+    // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
+    void GiveScript(entt::entity e);
+
+    // DEBUG
     // Draws entitiy as rectangles - only works in debug mode
     void GiveDebugVisuals(entt::entity e);
 
     // Gives it w,a,s,d controls - only works in debug mode
     void GiveDebugController(entt::entity e);
 
-} // namespace magique::ecs
+} // namespace magique
 
 #endif // REGISTRY_H

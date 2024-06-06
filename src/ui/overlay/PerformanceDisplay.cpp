@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include <magique/core/Defines.h>
+#include <magique/util/Defines.h>
 #include <magique/ui/Colors.h>
 
 #include <raylib/raylib.h>

@@ -1,15 +1,13 @@
-#include "ScriptEngine.h"
-
-#include <cassert>
 #include <magique/ecs/ExternalScripting.h>
 #include <magique/ecs/InternalScripting.h>
 
+#include "ScriptEngine.h"
 
 namespace magique
 {
     void SetScript(EntityID entity, EntityScript* script)
     {
-        if (SCRIPT_ENGINE.scripts.size() < entity+1)
+        if (SCRIPT_ENGINE.scripts.size() < entity + 1)
         {
             assert(entity < 250 && "Sanity check");
             SCRIPT_ENGINE.scripts.resize(entity + 1, nullptr);
@@ -23,9 +21,11 @@ namespace magique
 
     EntityScript* GetScript(const EntityID entity)
     {
-        assert(SCRIPT_ENGINE.scripts.size() > entity);
-        assert(SCRIPT_ENGINE.scripts[entity] != nullptr && "No script exists! Did you call SetScriptForEntity?");
+        M_ASSERT(SCRIPT_ENGINE.scripts.size() > entity,
+                 "No script registered for this type! Did you call SetScriptForEntity?");
+        M_ASSERT(SCRIPT_ENGINE.scripts[entity] != nullptr,
+                 "No valid script exists! Did you pass a new Instance of your ScriptClass?");
         return SCRIPT_ENGINE.scripts[entity];
     }
 
-} // namespace magique::ecs
+} // namespace magique

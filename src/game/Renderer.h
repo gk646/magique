@@ -2,7 +2,7 @@
 
 #include "rlgl.h"
 
-#include <magique/ecs/Registry.h>
+#include <magique/ecs/ECS.h>
 #include <magique/core/Game.h>
 
 #include "ui/CoreUI.h"

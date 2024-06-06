@@ -1,7 +1,7 @@
 #ifndef CORECONFIG_H
 #define CORECONFIG_H
 
-#include <magique/core/Defines.h>
+#include <magique/util/Defines.h>
 
 #if MAGIQUE_DEBUG == 1
 //#define MAGIQUE_DEBUG_COLLISIONS

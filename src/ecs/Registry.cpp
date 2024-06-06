@@ -1,6 +1,6 @@
-#include <magique/ecs/Registry.h>
+#include <magique/ecs/ECS.h>
 #include <magique/ecs/InternalScripting.h>
-#include <magique/ecs/BaseComponents.h>
+#include <magique/ecs/Components.h>
 
 #include "core/CoreData.h"
 #include "core/CoreConfig.h"
@@ -9,8 +9,8 @@ namespace magique
 {
     bool RegisterEntity(const EntityID type, const std::function<void(entt::registry&, entt::entity)>& createFunc)
     {
-
-        assert(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         if (type == static_cast<EntityID>(UINT16_MAX) || ENT_TYPE_MAP.contains(type))
         {
             return false; // Invalid ID or already registered
@@ -20,7 +20,7 @@ namespace magique
 
         for (auto entity : REGISTRY.view<entt::entity>())
         {
-            volatile int b = 5; // Try to instantiate all storage types
+            volatile int b = (int)entity; // Try to instantiate all storage types
         }
 
 
@@ -29,7 +29,7 @@ namespace magique
 
     bool UnRegisterEntity(const EntityID type)
     {
-        assert(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
 
         if (type == static_cast<EntityID>(UINT16_MAX) || !ENT_TYPE_MAP.contains(type))
         {
@@ -42,8 +42,8 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, float x, float y, MapID map)
     {
-        assert(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
-        assert(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        M_ASSERT(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
 
         const auto it = ENT_TYPE_MAP.find(type);
         if (it == ENT_TYPE_MAP.end())
@@ -61,7 +61,7 @@ namespace magique
 
     bool DestroyEntity(const entt::entity entity)
     {
-        assert(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        M_ASSERT(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
         if (REGISTRY.valid(entity))
         {
             LOGIC_TICK_DATA.lock();
@@ -79,6 +79,8 @@ namespace magique
         REGISTRY.emplace<CollisionC>(e, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
                                      static_cast<int16_t>(anchorY));
     }
+
+    void GiveScript(const entt::entity e) { REGISTRY.emplace<ScriptC>(e); }
 
     void GiveDebugVisuals(entt::entity e)
     {
@@ -99,4 +101,4 @@ namespace magique
     }
 
 
-} // namespace magique::ecs
+} // namespace magique

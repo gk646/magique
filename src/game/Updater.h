@@ -1,7 +1,7 @@
 #pragma once
 
-#include <magique/ecs/Registry.h>
-#include <magique/core/Defines.h>
+#include <magique/ecs/ECS.h>
+#include <magique/util/Defines.h>
 
 #include "ecs/systems/CollisionSystem.h"
 #include "ecs/systems/InputSystem.h"

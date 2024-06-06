@@ -108,7 +108,8 @@ namespace magique::ecs
 {
     inline void CheckCollisions(entt::registry& registry)
     {
-        const auto view = registry.view<PositionC, const CollisionC>();
+        // Only handle scripted entities
+        const auto view = registry.view<const ScriptC, const PositionC, const CollisionC>();
         auto& grid = LOGIC_TICK_DATA.hashGrid;
         auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
         auto& collector = LOGIC_TICK_DATA.collector;
@@ -140,10 +141,12 @@ namespace magique::ecs
 
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
-                    const auto secondScript = GetScript(posA.type);
-                    InvokeEventDirect<onDynamicCollision>(*firstScript,first, second);
+                    const auto secondScript = GetScript(posB.type);
+                    M_ASSERT(firstScript != nullptr && secondScript != nullptr,
+                             "Entity has script component but no script set! Call SetScript(type,new MyScript());");
+                    InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
                     // Invoke out of seconds view
-                    InvokeEventDirect<onDynamicCollision>(*secondScript,second, first);
+                    InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
 #ifdef MAGIQUE_DEBUG_COLLISIONS
                     collisions++;
 #endif
