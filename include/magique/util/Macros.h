@@ -2,8 +2,6 @@
 #define MAGIQUE_MACROS_H
 
 #include <cstdio>
-#include <cassert>
-
 
 //-----------------------------------------------
 // Macros
@@ -59,7 +57,8 @@ namespace magique::util
 
 #if !defined(_DEBUG) || defined(NDEBUG)
 #define M_ASSERT(expr, message) ((void)0)
-#endif
+#else
 #define M_ASSERT(expr, message) ((expr) ? (void)0 : magique::util::AssertHandler(#expr, __FILE__, __LINE__, message))
+#endif
 
 #endif //MAGIQUE_MACROS_H

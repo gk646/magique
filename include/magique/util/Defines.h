@@ -18,7 +18,7 @@
 //----------------- MULTIPLAYER -----------------//
 
 #define MAGIQUE_MULITPLAYER_SUPPORT 0 // 1 to enable multiplayer
-#define MAGQIQUE_MAX_PLAYERS 4
+#define MAGIQUE_MAX_PLAYERS 4
 
 
 //----------------- ASSETS -----------------//

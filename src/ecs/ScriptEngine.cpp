@@ -9,11 +9,12 @@ namespace magique
     {
         if (SCRIPT_ENGINE.scripts.size() < entity + 1)
         {
-            assert(entity < 250 && "Sanity check");
-            SCRIPT_ENGINE.scripts.resize(entity + 1, nullptr);
+            M_ASSERT(entity < 1000, "Sanity check! If you have more than 1000 entity types kudos!");
+            SCRIPT_ENGINE.scripts.resize(entity + 1, SCRIPT_ENGINE.defaultScript);
         }
 
-        if (SCRIPT_ENGINE.scripts[entity])
+        // Dont delete the default script
+        if (SCRIPT_ENGINE.scripts[entity] && SCRIPT_ENGINE.scripts[entity] != SCRIPT_ENGINE.defaultScript)
             delete SCRIPT_ENGINE.scripts[entity];
         SCRIPT_ENGINE.scripts[entity] = script;
     }
@@ -22,8 +23,8 @@ namespace magique
     EntityScript* GetScript(const EntityID entity)
     {
         M_ASSERT(SCRIPT_ENGINE.scripts.size() > entity,
-                 "No script registered for this type! Did you call SetScriptForEntity?");
-        M_ASSERT(SCRIPT_ENGINE.scripts[entity] != nullptr,
+                 "No script registered for this type! Did you call SetScript()?");
+        M_ASSERT(SCRIPT_ENGINE.scripts[entity] != SCRIPT_ENGINE.defaultScript,
                  "No valid script exists! Did you pass a new Instance of your ScriptClass?");
         return SCRIPT_ENGINE.scripts[entity];
     }

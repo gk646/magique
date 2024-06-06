@@ -1,9 +1,9 @@
 #include <algorithm>
-#include <cassert>
 #include <string>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
+#include <magique/util/Macros.h>
 #include <raylib/raylib.h>
 
 struct Sorter
@@ -114,7 +114,7 @@ namespace magique
 
     bool Asset::hasExtension(const char* extension) const
     {
-        assert(extension != nullptr);
+        M_ASSERT(extension != nullptr, "Passing nullptr");
         const auto* ext = GetFileExtension(name);
         if (ext == nullptr)
             return false;
@@ -152,8 +152,8 @@ namespace magique
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
-        assert(name != nullptr && "Passing nullptr!");
-        assert(!assets.empty() && "No assets loaded!");
+        M_ASSERT(name != nullptr, "Passing nullptr!");
+        M_ASSERT(!assets.empty(), "No assets loaded!");
 
         const int size = static_cast<int>(strlen(name));
         int pos = FindDirectoryPos(assets, name, size);
@@ -180,8 +180,8 @@ namespace magique
 
     const Asset& AssetContainer::getAsset(const char* name) const
     {
-        assert(name != nullptr && "Passing nullptr!");
-        assert(!assets.empty() && "No assets loaded!");
+        M_ASSERT(name != nullptr, "Passing nullptr!");
+        M_ASSERT(!assets.empty(), "No assets loaded!");
 
         const int pos = FindAssetPos(assets, name);
 

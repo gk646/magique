@@ -6,7 +6,9 @@
 
 #include <c2/cute_c2.h>
 #include <cxutil/cxtime.h>
+
 #include "core/CoreConfig.h"
+#include "ecs/ScriptEngine.h"
 
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
@@ -49,7 +51,7 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
 {
     constexpr c2x identityTransform{{0, 0}, {1, 0}};
     // both shapes are non-rotated AABBs
-    if (colA.shape == AABB && colB.shape == AABB && posA.rotation == 0 && posB.rotation == 0) [[likely]]
+    if (colA.shape == RECT && colB.shape == RECT && posA.rotation == 0 && posB.rotation == 0) [[likely]]
     {
         const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
         const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
@@ -63,14 +65,14 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
                                   static_cast<float>(colB.width)};
         return c2CircletoCircle(circleA, circleB) != 0;
     } // Handle circle-AABB collision
-    if (colA.shape == CIRCLE && colB.shape == AABB)
+    if (colA.shape == CIRCLE && colB.shape == RECT)
     {
         const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F},
                                   static_cast<float>(colA.width)};
         const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
         return c2CircletoAABB(circleA, aabbB) != 0;
     }
-    if (colA.shape == AABB && colB.shape == CIRCLE)
+    if (colA.shape == RECT && colB.shape == CIRCLE)
     {
         const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
         const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F},
@@ -78,7 +80,7 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
         return c2CircletoAABB(circleB, aabbA) != 0;
     }
     // Handle AABB-AABB collision (considering rotation)
-    if (colA.shape == AABB && colB.shape == AABB)
+    if (colA.shape == RECT && colB.shape == RECT)
     {
         if (posA.rotation == 0)
         {
@@ -104,32 +106,21 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
     return false;
 }
 
-namespace magique::ecs
+namespace magique
 {
     inline void CheckCollisions(entt::registry& registry)
     {
-        // Only handle scripted entities
-        const auto view = registry.view<const ScriptC, const PositionC, const CollisionC>();
         auto& grid = LOGIC_TICK_DATA.hashGrid;
         auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
         auto& collector = LOGIC_TICK_DATA.collector;
-
-        updateVec.clear();
-        for (const auto first : view)
-        {
-            auto [posA, colA] = view.get<PositionC, CollisionC>(first);
-            updateVec.push_back(first);
-            grid.insert(first, posA.x, posA.y, colA.width, colA.height);
-        }
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;
 #endif
         for (const auto first : updateVec)
         {
-            auto [posA, colA] = view.get<PositionC, const CollisionC>(first);
-            const auto firstScript = GetScript(posA.type);
-
+            auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
+            auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
             // Query quadtree
             grid.query<HashSet<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
             for (const auto second : collector)
@@ -137,13 +128,14 @@ namespace magique::ecs
                 if (first >= second)
                     continue;
 
-                auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
+                auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
+
+                if (posA.map != posB.map) [[unlikely]]
+                    continue;
 
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
-                    const auto secondScript = GetScript(posB.type);
-                    M_ASSERT(firstScript != nullptr && secondScript != nullptr,
-                             "Entity has script component but no script set! Call SetScript(type,new MyScript());");
+                    auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
                     InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
                     // Invoke out of seconds view
                     InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
@@ -163,8 +155,8 @@ namespace magique::ecs
             {
                 if (first >= second)
                     continue;
-                auto [posA, colA] = view.get<PositionC, const CollisionC>(first);
-                auto [posB, colB] = view.get<PositionC, const CollisionC>(second);
+                auto [posA, colA] = registry.get<PositionC, const CollisionC>(first);
+                auto [posB, colB] = registry.get<PositionC, const CollisionC>(second);
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
                     correct++;
@@ -175,6 +167,6 @@ namespace magique::ecs
 #endif
         grid.clear();
     }
-} // namespace magique::ecs
+} // namespace magique
 
 #endif //COLLISIONSYSTEM_H

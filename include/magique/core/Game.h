@@ -3,7 +3,7 @@
 
 #include <entt/entity/fwd.hpp>
 
-#include <raylib.h>
+#include <raylib/raylib.h>
 #include <magique/core/GameLoader.h>
 
 //-----------------------------------------------
@@ -25,7 +25,6 @@ namespace magique
 {
     struct Game
     {
-        Camera2D camera{};
         const char* const gameName;
 
         explicit Game(const char* name = "MyGame");
@@ -61,10 +60,12 @@ namespace magique
 
         // Called each tick to render the world
         // This is not thread synced - dont read any logic tick data or the registry
+        // This should just be pure tile drawing of the background
         virtual void drawWorld(Camera2D& camera) {}
 
         // Called each render tick
         // Synchronized with the logic tick - its save to access logic tick data (drawVec) or the registry
+        // Note: BeginMode2D is already called
         virtual void drawGame(entt::registry& registry, Camera2D& camera) {}
 
         // Called each render tick after all other draw calls

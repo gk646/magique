@@ -40,7 +40,7 @@
 *
 **********************************************************************************************/
 
-#include "raylib.h"         // Declares module functions
+#include <raylib/raylib.h>
 
 // Check if config flags have been externally provided on compilation line
 #if !defined(EXTERNAL_CONFIG_FLAGS)

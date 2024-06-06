@@ -4,6 +4,15 @@
 
 #include <magique/fwd.hpp>
 
+//-----------------------------------------------
+// Components Module
+//-----------------------------------------------
+// .....................................................................
+// These are the built in components
+// They are quite basic and shouldnt limit
+// Note that EntityID and MapID are user defined types. These represent the notion of different type
+// of maps (levels, zones...) and entity types (classes...).
+// .....................................................................
 
 enum LightStyle : uint8_t
 {
@@ -14,7 +23,7 @@ enum LightStyle : uint8_t
 enum Shape : uint8_t
 {
     CIRCLE, // Circle
-    AABB,   // Non-rotated retangle
+    RECT,   // Rectangle, can be rotated
     POLY,   // Polygon
 };
 
@@ -41,13 +50,12 @@ struct PositionC final
     float y;
     EntityID type;
     MapID map;
-    uint16_t rotation;
+    uint16_t rotation; // Rotation in degress clockwise starting at 12 o'clock - applies to collision if present
 };
-
 
 struct CollisionC final
 {
-    Shape shape = AABB; // Shape
+    Shape shape = RECT; // Shape
     uint16_t width = 0;
     uint16_t height = 0;
     int16_t anchorX = 0; // Rotation anchor point for the hitbox

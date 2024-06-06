@@ -4,6 +4,7 @@
 
 #include "core/CoreData.h"
 #include "core/CoreConfig.h"
+#include "ScriptEngine.h"
 
 namespace magique
 {
@@ -50,12 +51,12 @@ namespace magique
         {
             return entt::null; // EntityID not registered
         }
-
         LOGIC_TICK_DATA.lock();
         const auto entity = REGISTRY.create();
         REGISTRY.emplace<PositionC>(entity, x, y, type, map); // PositionC is default
         it->second(REGISTRY, entity);
         LOGIC_TICK_DATA.unlock();
+        SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
         return entity;
     }
 
@@ -66,10 +67,16 @@ namespace magique
         {
             LOGIC_TICK_DATA.lock();
             REGISTRY.destroy(entity);
+            LOGIC_TICK_DATA.entityUpdateCache.erase(entity);
             LOGIC_TICK_DATA.unlock();
             return true;
         }
         return false;
+    }
+
+    void GiveCamera(entt::entity entity)
+    {
+        REGISTRY.emplace<CameraC>(entity);
     }
 
     void GiveActor(entt::entity e) { REGISTRY.emplace<ActorC>(e); }

@@ -29,7 +29,7 @@
 *
 **********************************************************************************************/
 
-#include "raylib.h"                     // WARNING: Required for: LogType enum
+#include <raylib/raylib.h>                     // WARNING: Required for: LogType enum
 
 // Check if config flags have been externally provided on compilation line
 #if !defined(EXTERNAL_CONFIG_FLAGS)

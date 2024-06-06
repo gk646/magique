@@ -2366,7 +2366,7 @@ const char* xm_effect_chr(int fx) {
 
 #ifdef JAR_XM_RAYLIB
 
-#include "raylib.h" // Need RayLib API calls for the DEBUG display
+#include <raylib/raylib.h> // Need RayLib API calls for the DEBUG display
 
 void jar_xm_debug(jar_xm_context_t *ctx) {
     int size=40;

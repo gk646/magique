@@ -274,7 +274,7 @@ pub fn build(b: *std.Build) !void {
 
     const lib = try compileRaylib(b, target, optimize, options);
 
-    lib.installHeader(b.path("src/raylib.h"), "raylib.h");
+    lib.installHeader(b.path("src/raylib.h"), <raylib/raylib.h>);
     lib.installHeader(b.path("src/raymath.h"), "raymath.h");
     lib.installHeader(b.path("src/rlgl.h"), "rlgl.h");
 
