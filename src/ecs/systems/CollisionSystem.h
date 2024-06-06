@@ -2,9 +2,12 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
+#include <magique/ecs/InternalScripting.h>
+
 #include <c2/cute_c2.h>
 #include <cxutil/cxtime.h>
 #include "core/CoreConfig.h"
+
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
 {
@@ -103,7 +106,6 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
 
 namespace magique::ecs
 {
-
     inline void CheckCollisions(entt::registry& registry)
     {
         const auto view = registry.view<PositionC, const CollisionC>();
@@ -125,6 +127,7 @@ namespace magique::ecs
         for (const auto first : updateVec)
         {
             auto [posA, colA] = view.get<PositionC, const CollisionC>(first);
+            const auto firstScript = GetScript(posA.type);
 
             // Query quadtree
             grid.query<HashSet<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
@@ -137,6 +140,10 @@ namespace magique::ecs
 
                 if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                 {
+                    const auto secondScript = GetScript(posA.type);
+                    InvokeEventDirect<onDynamicCollision>(*firstScript,first, second);
+                    // Invoke out of seconds view
+                    InvokeEventDirect<onDynamicCollision>(*secondScript,second, first);
 #ifdef MAGIQUE_DEBUG_COLLISIONS
                     collisions++;
 #endif

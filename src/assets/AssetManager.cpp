@@ -20,7 +20,7 @@ namespace magique
             LOG_WARNING("Loading texture with bad extension: %s", ext);
             return false;
         }
-        img = LoadImageFromMemory(ext, asset.getData(), asset.size);
+        img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
         if (img.data == nullptr)
         {
             LOG_ERROR("Error loading the texture: %s", asset.name);

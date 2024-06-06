@@ -4,6 +4,7 @@
 #include <magique/core/Defines.h>
 
 #include "ecs/systems/CollisionSystem.h"
+#include "ecs/systems/InputSystem.h"
 
 namespace magique::updater
 {
@@ -11,15 +12,17 @@ namespace magique::updater
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
-    inline void InternalUpdate(entt::registry& registry) { ecs::CheckCollisions(registry); }
-
-    inline void StartUpdateTick()
+    inline void InternalUpdate(entt::registry& registry)
     {
+        ecs::PollInputs(registry);
+        ecs::CheckCollisions(registry);
     }
+
+    inline void StartUpdateTick() {}
 
     inline void EndUpdateTick()
     {
-        if(CONFIGURATION.showPerformanceOverlay)
+        if (CONFIGURATION.showPerformanceOverlay)
         {
             PERF_DATA.perfOverlay.updateValues();
         }
@@ -46,7 +49,7 @@ namespace magique::updater
                 StartUpdateTick();
                 //Tick game
                 {
-                    auto& reg = ecs::ENTT_REGISTRY;
+                    auto& reg = REGISTRY;
                     InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }

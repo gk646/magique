@@ -1,5 +1,5 @@
 
-set(MODULE_NAME "lua")
+set(MODULE_NAME "scripting")
 include(${CMAKE_SOURCE_DIR}/cmake/DefineModule.cmake)
 
 target_include_directories(${TARGET_NAME}_${MODULE_NAME} PUBLIC ${DEPENDENCY_PATH}/luajit/src)

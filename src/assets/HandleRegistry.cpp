@@ -30,23 +30,24 @@ namespace magique
     }
 
 
-    void RegisterHandle(const handle handle, const HandleType type)
+    void RegisterHandle(const handle handle, const HandleID id)
     {
-        if (HANDLE_REGISTRY.handles.size() > type) [[likely]]
+        const int hID = static_cast<int>(id);
+        if (HANDLE_REGISTRY.handles.size() > hID) [[likely]]
         {
-            HANDLE_REGISTRY.handles[type] = handle;
+            HANDLE_REGISTRY.handles[hID] = handle;
             return;
         }
 
-        if (type > 100'000)
+        if (hID > 100'000)
         {
             LOG_WARNING("Registering with large type number! Likely and error! Skipping");
             return;
         }
 
-        LOG_INFO("Resizing the handle vector to size: %d", type + 1);
-        HANDLE_REGISTRY.handles.resize(type + 1);
-        HANDLE_REGISTRY.handles[type] = handle;
+        LOG_INFO("Resizing the handle vector to size: %d", hID + 1);
+        HANDLE_REGISTRY.handles.resize(hID + 1);
+        HANDLE_REGISTRY.handles[hID] = handle;
     }
 
     void RegisterHandle(handle handle, const char* name)
@@ -59,10 +60,10 @@ namespace magique
     }
 
 
-    handle GetHandle(HandleType type)
+    handle GetHandle(HandleID type)
     {
-        assert(type < HANDLE_REGISTRY.handles.size());
-        return HANDLE_REGISTRY.handles[type];
+        assert((int)type < HANDLE_REGISTRY.handles.size());
+        return HANDLE_REGISTRY.handles[static_cast<int>(type)];
     }
 
     handle GetHandle(const uint32_t hash)

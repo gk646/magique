@@ -15,10 +15,13 @@ namespace magique
 {
     struct Asset final
     {
-        const char* name; // Full name of the file - from the compile root
+        const char* name; // Full path of the file - from the compile root
         int size;         // File size
         const char* data; // File data
-        [[nodiscard]] const unsigned char* getData() const { return reinterpret_cast<const unsigned char*>(data); }
+
+        // Checks if the assets extension matches the given one e.g '.png' myTexture.png
+        // Includes the dot
+        bool hasExtension(const char* extension) const;
     };
 
     struct AssetContainer final
@@ -34,7 +37,6 @@ namespace magique
         // Compile Image:     assets::CompileImage("../resources");
         // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
 
-
         // Iterates the given directory and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
@@ -44,7 +46,6 @@ namespace magique
         // Retrieves an asset by its name
         // Assets are registered with their relative path from the asset image root
         const Asset& getAsset(const char* name) const;
-
 
     private:
         std::vector<Asset> assets; // Internal file list

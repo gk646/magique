@@ -14,8 +14,6 @@
 
 namespace magique
 {
-    enum MapID : uint8_t; // Models different levels
-
     struct Point final
     {
         float x;
@@ -29,7 +27,7 @@ namespace magique
     };
 
 
-    struct TextureRegion final // All texture are part of an atlas and can not be referenced as standalone
+    struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
         uint16_t offX;   // Horizontal offset from the top left of the atlas
         uint16_t offY;   // Vertical offset from the top left of the atlas

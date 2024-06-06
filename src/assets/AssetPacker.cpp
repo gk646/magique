@@ -152,7 +152,7 @@ namespace
 
 } // namespace
 
-namespace magique::assets
+namespace magique
 {
 
     bool LoadAssetImage(const char* path, AssetContainer&& container, const uint64_t encryptionKey)
