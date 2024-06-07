@@ -27,6 +27,10 @@
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 4096 // Width of each texture atlas
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k handles per number (for tile maps)
 
+//----------------- GRAPHICS -----------------//
+
+#define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
+
 // 1 to Enable Debug
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define MAGIQUE_DEBUG 1

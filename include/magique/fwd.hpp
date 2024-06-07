@@ -22,12 +22,16 @@ namespace magique
     //-----------------ECS-----------------//
     struct EntityScript;
     enum EventType : uint8_t;
+
     //----------------- ASSETS -----------------//
     struct Asset;                 // Memory container for any asset
     struct TextureRegion;         // All textures are stitched into a atlas, you can only retrieve their region
     struct SpriteSheet;           // Identifies a sprite sheet
     enum AtlasType : uint8_t;     // Specifies which atlas to add the texture to
     enum class handle : uint32_t; // Resource handle
+
+    //----------------- GRAPHICS -----------------//
+    enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
 
 } // namespace magique
 

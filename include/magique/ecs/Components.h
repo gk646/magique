@@ -62,7 +62,6 @@ struct CollisionC final
     int16_t anchorY = 0; // Rotation anchor point for the hitbox
 };
 
-
 // If added entity will emit light
 struct EmitterC final
 {

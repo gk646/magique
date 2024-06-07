@@ -32,7 +32,6 @@ namespace magique
         SHADERS.light = LoadShaderFromMemory(lightVert, lightFrag);
         SHADERS.shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
 
-
         return true;
     }
 
