@@ -40,6 +40,9 @@ namespace magique
     // Asset manager
     inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet> ASSET_MANAGER;
 
+    // Shaders
+    inline Shaders SHADERS;
+
     // Texture atlases
     inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
 

@@ -2,6 +2,8 @@
 
 #include "core/CoreData.h"
 
+#include "graphics/Shaders.h"
+
 static bool initCalled = false;
 namespace magique
 {
@@ -19,12 +21,18 @@ namespace magique
             TEXTURE_ATLASES.emplace_back(BLANK);
         }
 
-        CONFIGURATION.engineFont = GetFontDefault();
-        if (CONFIGURATION.engineFont.texture.id == 0)
+        CONFIGURATION.font = GetFontDefault();
+
+        if (CONFIGURATION.font.texture.id == 0)
         {
             LOG_ERROR("Failed to load default font");
             return false;
         }
+
+        SHADERS.light = LoadShaderFromMemory(lightVert, lightFrag);
+        SHADERS.shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
+
+
         return true;
     }
 

@@ -74,10 +74,17 @@ namespace magique
         return false;
     }
 
-    void GiveCamera(entt::entity entity)
+    void GiveCamera(entt::entity entity) { REGISTRY.emplace<CameraC>(entity); }
+
+    void GiveOccluder(entt::entity entity, int width, int height, Shape shape)
     {
-        REGISTRY.emplace<CameraC>(entity);
+        REGISTRY.emplace<OccluderC>(entity, (int16_t)width, (int16_t)height, shape);
     }
+    void GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style)
+    {
+        REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, (uint8_t)intensity, style);
+    }
+
 
     void GiveActor(entt::entity e) { REGISTRY.emplace<ActorC>(e); }
 

@@ -47,7 +47,7 @@ namespace magique
             tickData.camera.offset.y -= static_cast<float>(coll->height) / 2.0F;
         }
 #if MAGIQUE_DEBUG == 1
-        M_ASSERT(count < 2, "You have multiple cameras? O.O");
+        //M_ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
     }
 
