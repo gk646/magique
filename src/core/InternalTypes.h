@@ -95,6 +95,9 @@ namespace magique
 
     struct Configuration final
     {
+        // Current selected lighting mode
+        LightingModel lighting = LightingModel::STATIC_SHADOWS;
+
         // Toggles the performance overlay
         bool showPerformanceOverlay = true;
 
@@ -110,7 +113,7 @@ namespace magique
         uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
 
         // Font
-        Font font;
+        Font font{};
     };
 
     template <typename... Resources>

@@ -7,7 +7,6 @@
 //-----------------------------------------------
 // Types Modules
 //-----------------------------------------------
-
 // .....................................................................
 // These are common types used by the engine
 // .....................................................................
@@ -60,6 +59,12 @@ namespace magique
         float visualScaleY = 1.0F;
     };
 
+    enum class LightingModel : uint8_t
+    {
+        STATIC_SHADOWS, // Default
+        RAY_TRACING,
+        NONE,
+    };
 
     //----------------- MULTIPLAYER -----------------//
 

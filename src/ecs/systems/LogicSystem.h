@@ -116,10 +116,11 @@ namespace magique
         auto& updateVec = tickData.entityUpdateVec;
         auto& loadedMaps = tickData.loadedMaps;
 
+        tickData.lock(); // Lock early due to camera assign
+
         AssignCameraData(registry);
 
         // Cache
-        const auto camera = tickData.id;
         const auto cameraMap = tickData.cameraMap;
         const uint16_t cacheDuration = CONFIGURATION.entityCacheDuration;
         const auto cameraBounds = GetCameraRect();
@@ -131,7 +132,6 @@ namespace magique
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
 
-        tickData.lock();
         // Critical section
         {
             drawVec.clear();
