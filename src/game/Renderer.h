@@ -66,6 +66,7 @@ namespace magique::renderer
                         LOGIC_TICK_DATA.lock();
                         game.drawGame(reg, camera); // Draw game
                         LOGIC_TICK_DATA.unlock();
+                        RenderLighting(reg);
                     }
                     EndMode2D();
                     game.drawUI(); // Draw UI

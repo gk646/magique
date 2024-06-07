@@ -12,5 +12,4 @@ option(${PROJECT_PREFIX}_BUILD_TESTS "Set to compile the test executable")
 option(${PROJECT_PREFIX}_VERSION "0.0.1")
 
 
-
 include(cmake/CompilerOptions.cmake)

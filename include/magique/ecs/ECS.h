@@ -59,6 +59,12 @@ namespace magique
     // Makes the entity collidable with others
     void GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
 
+    // Makes the entitiy emit light according to the current lighting model
+    void GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style = POINT_LIGHT_SOFT);
+
+    // Makes the entitiy occlude light and throw shadows according to the current lighting model
+    void GiveOccluder(entt::entity entity, int width, int height, Shape shape = RECT);
+
     // Makes the entity react to its script
     // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
     void GiveScript(entt::entity entity);

@@ -59,13 +59,16 @@ namespace magique
         // Collects entities
         HashSet<entt::entity> collector{500};
 
+        // Shadow segments
+        vector<Vector3> shadowQuads;
+
         // Atomic spinlock - whenever any data is accessed on the draw thread
         std::atomic_flag flag;
 
         LogicTickData()
         {
             hashGrid.reserve(150, 1000);
-
+            shadowQuads.reserve(1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
         }
@@ -96,7 +99,7 @@ namespace magique
         bool showPerformanceOverlay = true;
 
         // All logs visible
-        util::LogLevel logLevel = util::LEVEL_NONE;
+        util::LogLevel logLevel = util::LEVEL_INFO;
 
         // Update distance
         float entityUpdateDistance = 1000;
@@ -107,7 +110,7 @@ namespace magique
         uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
 
         // Font
-        Font engineFont;
+        Font font;
     };
 
     template <typename... Resources>
@@ -158,7 +161,6 @@ namespace magique
             return getResourceVec<T>()[static_cast<uint32_t>(handle)];
         }
     };
-
 
     // Uses naive 'scheduling' - if a sequence cant be deterministically described we skip to the next row
     // So if a spritesheet doesnt fit in the current row we just skip it and put it in the next wasting the space
@@ -304,5 +306,13 @@ namespace magique
             UnloadImage(getImg());
         }
     };
+
+    struct Shaders final
+    {
+        Shader shadow;
+        Shader light;
+        Shader raytracing;
+    };
+
 } // namespace magique
 #endif //INTERNALTYPES_H

@@ -24,7 +24,7 @@ enum Shape : uint8_t
 {
     CIRCLE, // Circle
     RECT,   // Rectangle, can be rotated
-    POLY,   // Polygon
+    POLYGON,
 };
 
 

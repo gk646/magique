@@ -57,7 +57,7 @@ void PerformanceDisplay::updateValues()
     if (tickCounter != updateDelayTicks) [[likely]]
         return;
 
-    auto& font = magique::CONFIGURATION.engineFont;
+    auto& font = magique::CONFIGURATION.font;
     const auto fs = 20;
 
     int block = 0;
@@ -106,7 +106,7 @@ void PerformanceDisplay::updateValues()
 void PerformanceDisplay::draw()
 {
     Vector2 position = {15, 0};
-    auto& font = magique::CONFIGURATION.engineFont;
+    auto& font = magique::CONFIGURATION.font;
     const auto fs = 20;
     for (const auto& block : blocks)
     {

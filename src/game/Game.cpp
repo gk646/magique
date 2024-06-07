@@ -3,8 +3,9 @@
 
 #include "core/CoreData.h"
 
-#include "Renderer.h"
 #include "Updater.h"
+#include "Renderer.h"
+
 
 CoreData CORE = {0};
 
