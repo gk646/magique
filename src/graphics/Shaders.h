@@ -8,7 +8,7 @@ namespace magique
 #version 330 core
 out vec4 FragColor;
 void main() {
-    gl_FragColor = vec4(1.);
+    gl_FragColor = vec4(1,0,0,1);
 })";
     constexpr auto shadowVert = R"(
 #version 330 core
@@ -24,7 +24,7 @@ void main()
         vec2 dist = pos - lightPosition;
         pos += normalize(dist) * 10.0;
     }
-    gl_Position = mvp * vec4(pos, 0.0, 1.0);  // Correctly use pos.xy and add 0.0 for z coordinate
+    gl_Position = mvp * vec4(pos, 0., 1.);
 }
 
 )";
