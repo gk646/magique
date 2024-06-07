@@ -3,7 +3,6 @@
 
 #include "core/CoreData.h"
 
-
 namespace magique
 {
     bool ValidityCheck(Image& img, const Asset& asset, const AtlasType at)

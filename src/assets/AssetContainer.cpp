@@ -121,17 +121,13 @@ namespace magique
         return strcmp(extension, ext);
     }
 
-    AssetContainer::AssetContainer(std::vector<Asset>&& newAssets)
+    AssetContainer::AssetContainer(const char* nativeData, std::vector<Asset>&& newAssets) : nativeData(nativeData)
     {
         if (!assets.empty())
         {
             LOG_WARNING("Trying to load with image into a non-empty container");
             // This isnt necessarily bad - but is probably a mistake
-            for (auto& a : assets)
-            {
-                delete[] a.data;
-                a.data = nullptr;
-            }
+            delete[] nativeData;
             assets.clear();
         }
 
@@ -141,14 +137,18 @@ namespace magique
         std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.name, a2.name); });
     }
 
-    AssetContainer::~AssetContainer()
+    AssetContainer& AssetContainer::operator=(AssetContainer&& container) noexcept
     {
-        for (auto& a : assets)
-        {
-            delete[] a.data;
-            a.data = nullptr;
-        }
+        if (this == &container)
+            return *this;
+
+        assets = std::move(container.assets);
+        nativeData = container.nativeData;
+        container.nativeData = nullptr;
+
+        return *this;
     }
+    AssetContainer::~AssetContainer() { delete[] nativeData; }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {

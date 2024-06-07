@@ -26,9 +26,9 @@ namespace magique
 
     struct AssetContainer final
     {
-        AssetContainer() = default;                           // Default constructor
-        explicit AssetContainer(std::vector<Asset>&& assets); // Internal constructor
-        AssetContainer& operator=(AssetContainer&& other) noexcept = default;
+        AssetContainer() = default;                                          // Default constructor
+        AssetContainer(const char* nativeData, std::vector<Asset>&& assets); // Internal constructor
+        AssetContainer& operator=(AssetContainer&& other) noexcept;
         ~AssetContainer();
 
         // IMPORTANT: All assets are named with their path from the asset content root
@@ -48,6 +48,7 @@ namespace magique
         const Asset& getAsset(const char* name) const;
 
     private:
+        const char* nativeData;
         std::vector<Asset> assets; // Internal file list
     };
 } // namespace magique

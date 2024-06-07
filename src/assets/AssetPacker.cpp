@@ -40,7 +40,8 @@ namespace
         }
     }
 
-    bool LoadImageFromMemory(const char* imageData, uint32_t imageSize, std::vector<magique::Asset>& assets,
+    // GIANT MEMORY LEAK NEED TO FIX !!!!
+    bool LoadImageFromMemory(char* imageData, uint32_t imageSize, std::vector<magique::Asset>& assets,
                              uint64_t encryptionKey)
     {
         uint32_t totalSize = 0;
@@ -73,6 +74,7 @@ namespace
         {
             assets.reserve(totalEntries+1);
         }
+
         filePointer += 4;
 
         constexpr int MAX_TITLE_LENGTH = 256;
@@ -104,12 +106,9 @@ namespace
                 return false;
             }
             filePointer += 4;
-            auto* fileData = new char[fileSize];
-            memcpy(fileData, &imageData[filePointer], fileSize);
-            SymmetricEncrypt(fileData, fileSize, encryptionKey);
+            SymmetricEncrypt(&imageData[filePointer], fileSize, encryptionKey);
+            assets.push_back({cxstructs::str_dup(titleBuffer), fileSize, &imageData[filePointer]});
             filePointer += fileSize;
-
-            assets.push_back({cxstructs::str_dup(titleBuffer), fileSize, fileData});
         }
         return true;
     }
@@ -172,8 +171,7 @@ namespace magique
             file.close();
             std::vector<Asset> assets;
             const bool res = LoadImageFromMemory(fileData, imageSize, assets, encryptionKey);
-            container = AssetContainer(std::move(assets));
-            delete[] fileData;
+            container = AssetContainer{fileData, std::move(assets)};
             if (res)
             {
                 LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %.2f mb", path,

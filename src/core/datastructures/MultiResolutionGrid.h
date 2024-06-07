@@ -13,13 +13,16 @@ using HashMapType = ankerl::unordered_dense::map<Key, Value>; // Insert custom t
 template <typename Value>
 using VectorType = std::vector<Value>; // Inset custom type here
 
-
-// Make lookup tables
-// Make 3 top level data arrays:
-//  - CellEntries (From where to where the range goes), DataBlock (saves the data contigousy),
-//  - Map CellID to a CellEntry -> HashMap<CellID, index> , reserve some open slots (64)
-//  - In the CellEntry save the memory location and count and a pointer to the next block (if collision happen)
-
+// This is a cache friendly "top-level" data structure
+// https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
+// Originally inspired by the above post to just move all the data of the structure to the top level
+// This simplifies memory management and layout, it uses just a single vector for data
+// This is achieved by mapping between dimensions, here between a cell and a memory block
+// Now its still not perfect but definitely very fast
+// Also the problem of multiple insertions is efficiently solved by accumulating with a hashmap
+// Its almost mandatory to use a memory consistent map like a dense map thats a vector internally aswell
+// This simplifies memory and thus cache friendlyness even more
+// With this setup you have 0 (zero) allocations in game ticks which involves completely clearing and refilling grid
 
 using CellID = uint64_t;
 // This creates a unique value - both values are unqiue themselves so their concatenated version is aswell
