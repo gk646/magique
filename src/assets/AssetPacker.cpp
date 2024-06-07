@@ -72,33 +72,31 @@ namespace
 
         if (totalEntries < 50'000 && totalEntries > 0) // Sanity check
         {
-            assets.reserve(totalEntries+1);
+            assets.reserve(totalEntries + 1);
         }
 
         filePointer += 4;
 
-        constexpr int MAX_TITLE_LENGTH = 256;
-        char titleBuffer[MAX_TITLE_LENGTH];
 
         while (filePointer < imageSize && filePointer < totalSize)
         {
             int titleLen = 0;
             int fileSize = 0;
-            memset(titleBuffer, 0, MAX_TITLE_LENGTH);
-            // Copy title
+            const char* titlePointer = nullptr;
+            // Get title pointe
             {
                 memcpy(&titleLen, &imageData[filePointer], 4);
-                if (titleLen > MAX_TITLE_LENGTH)
+                if (titleLen > 512)
                 {
                     LOG_ERROR("Filename exceeds limit");
                     return false;
                 }
                 filePointer += 4;
-                memcpy(titleBuffer, &imageData[filePointer], titleLen);
+                titlePointer = &imageData[filePointer];
                 filePointer += titleLen;
             }
 
-            // Copy file data
+            // Get file pointer
             memcpy(&fileSize, &imageData[filePointer], 4);
             if (fileSize > imageSize - filePointer)
             {
@@ -107,7 +105,7 @@ namespace
             }
             filePointer += 4;
             SymmetricEncrypt(&imageData[filePointer], fileSize, encryptionKey);
-            assets.push_back({cxstructs::str_dup(titleBuffer), fileSize, &imageData[filePointer]});
+            assets.push_back({titlePointer, fileSize, &imageData[filePointer]});
             filePointer += fileSize;
         }
         return true;
@@ -130,22 +128,27 @@ namespace
 
     bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
     {
-        if (fs::exists(directory))
+        fs::path dirPath(directory);
+        std::error_code ec;
+        fs::file_status status = fs::status(dirPath, ec);
+
+        if (ec)
         {
-            if (fs::is_directory(directory))
-            {
-                ScanDirectory(fs::directory_entry(directory), pathList);
-                return true;
-            }
-            if (fs::is_regular_file(directory))
-            {
-                pathList.emplace_back(directory);
-                return true;
-            }
-            LOG_ERROR("Error: Given path is not directory of file: %s", directory);
+            LOG_ERROR("Error: Cannot access path: %s", directory);
             return false;
         }
-        LOG_ERROR("Error: Given directory does not exist: %s", directory);
+
+        if (fs::is_directory(status))
+        {
+            ScanDirectory(fs::directory_entry(dirPath), pathList);
+            return true;
+        }
+        if (fs::is_regular_file(status))
+        {
+            pathList.emplace_back(dirPath);
+            return true;
+        }
+        LOG_ERROR("Error: Given path is not directory or file: %s", directory);
         return false;
     }
 
@@ -204,19 +207,22 @@ namespace magique
             return false;
         }
 
+        int writtenSize = 0;
         fs::path rootPath(directory);
-        std::ofstream image(fileName, std::ios::binary);
+        FILE* imageFile = fopen(fileName, "wb");
 
-        if (!image)
+        if (!imageFile)
         {
             LOG_ERROR("Could not open file for writing: %s", fileName);
             return false;
         }
+        setvbuf(imageFile, nullptr, _IONBF, 0);
 
-        image.write(IMAGE_HEADER, strlen(IMAGE_HEADER));
-        image.write("\x00\x00\x00\x00", 4);
+        fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
+        fwrite(&writtenSize, 4, 1, imageFile);
         const int size = pathList.size();
-        image.write(reinterpret_cast<const char*>(&size), 4);
+        fwrite(&size, 4, 1, imageFile);
+        writtenSize += strlen(IMAGE_HEADER) + 4 + 4;
 
         std::vector<char> data;
         data.reserve(10000);
@@ -234,30 +240,33 @@ namespace magique
             {
                 fseek(file, 0, SEEK_END);
                 const int fileSize = ftell(file);
-                if(fileSize > data.size()) data.resize(fileSize,0);
+                if (fileSize > data.size())
+                    data.resize(fileSize, 0);
                 fseek(file, 0, SEEK_SET);
                 fread(data.data(), fileSize, 1, file);
                 SymmetricEncrypt(data.data(), fileSize, encryptionKey);
                 {
                     fs::path relativePath = fs::relative(entry, rootPath);
                     std::string relativePathStr = relativePath.generic_string();
-                    auto pathLen = static_cast<uint32_t>(relativePathStr.size());
-                    image.write(reinterpret_cast<const char*>(&pathLen), sizeof(pathLen));
-                    image.write(relativePathStr.c_str(), pathLen);
-                    image.write(reinterpret_cast<const char*>(&fileSize), sizeof(int));
-                    image.write(data.data(), fileSize);
+                    auto pathLen = static_cast<int>(relativePathStr.size() + 1);
+                    fwrite(&pathLen, sizeof(int), 1, imageFile);
+                    fwrite(relativePathStr.c_str(), pathLen, 1, imageFile);
+                    fwrite(&fileSize, sizeof(int), 1, imageFile);
+                    fwrite(data.data(), fileSize, 1, imageFile);
+
+                    writtenSize += fileSize;
+                    writtenSize += pathLen;
+                    writtenSize += 8; // two 4 byte ints
                 }
             }
             fclose(file);
         }
-
-        uint32_t writtenSize = image.tellp();
-        image.seekp(5);
-        image.write(reinterpret_cast<const char*>(&writtenSize), sizeof(int));
-        image.close();
+        fseek(imageFile, 5, SEEK_SET);
+        fwrite(&writtenSize, sizeof(int), 1, imageFile);
+        fclose(imageFile);
         LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %.2f mb", directory, fileName,
                  cxstructs::getTime<std::chrono::milliseconds>(), writtenSize / 1'000'000.0F);
         return true;
     }
 
-} // namespace magique::assets
+} // namespace magique

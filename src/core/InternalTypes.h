@@ -40,11 +40,11 @@ namespace magique
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps;
 
         // Change set for multiplayer events
-        HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet;
+        HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet{500};
 
         // Cache for entities that are not in update range anymore
         // They are still updated for cache duration
-        HashMap<entt::entity, uint16_t> entityUpdateCache;
+        HashMap<entt::entity, uint16_t> entityUpdateCache{1000};
 
         // vector containing the entites to update for this ticka
         vector<entt::entity> entityUpdateVec;
@@ -57,7 +57,7 @@ namespace magique
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
         // Collects entities
-        HashSet<entt::entity> collector;
+        HashSet<entt::entity> collector{500};
 
         // Atomic spinlock - whenever any data is accessed on the draw thread
         std::atomic_flag flag;
@@ -65,17 +65,9 @@ namespace magique
         LogicTickData()
         {
             hashGrid.reserve(150, 1000);
+
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
-
-            // entitiy collector
-            collector.reserve(500);
-
-            // multiplayer event update set
-            changedSet.reserve(1000);
-
-            // Update cache
-            entityUpdateCache.reserve(1000);
         }
 
         void lock()

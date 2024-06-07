@@ -148,7 +148,10 @@ namespace magique
 
         return *this;
     }
-    AssetContainer::~AssetContainer() { delete[] nativeData; }
+    AssetContainer::~AssetContainer()
+    {
+        delete[] nativeData;
+    }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {

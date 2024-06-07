@@ -10,7 +10,7 @@ namespace magique
     struct HandleRegistry final
     {
         std::vector<handle> handles;
-        HashMap<uint32_t, handle> handleMap;
+        HashMap<uint32_t, handle> handleMap{100};
         uint16_t fastHandles[MAGIQUE_DIRECT_HANDLES]{};
 
         HandleRegistry()

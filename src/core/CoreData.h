@@ -20,7 +20,7 @@ namespace magique
     inline std::thread LOGIC_THREAD;
 
     // Type map
-    inline HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP;
+    inline HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP{50};
 
     // Current logic data
     inline LogicTickData LOGIC_TICK_DATA;
