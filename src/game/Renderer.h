@@ -6,6 +6,7 @@
 #include <magique/core/Game.h>
 
 #include "ui/CoreUI.h"
+#include "ecs/systems/LightingSystem.h"
 
 namespace magique::renderer
 {

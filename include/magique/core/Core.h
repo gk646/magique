@@ -44,7 +44,6 @@ namespace magique
     // Adds the entity to the update cache manually regardless of position
     void AddToUpdateCache(entt::entity e);
 
-
     //----------------- Logic Tick Data -----------------// // Updated at the beginning of each update tick
     // IMPORTANT: If you access this data on the draw thread (main thread) AND outside of drawGame() needs to be synced
 

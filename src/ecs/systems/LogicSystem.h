@@ -2,8 +2,9 @@
 #define LOGICSYSTEM_H
 
 #include <ranges>
+#include <cxstructs/SmallVector.h>
 
-#include "core/datastructures/SmallVector.h"
+using namespace cxstructs;
 
 namespace magique
 {
