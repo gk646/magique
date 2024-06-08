@@ -12,6 +12,7 @@ namespace magique
     struct SaveLoader;     // Handles loading individual world state and player save - MainMenu -> Game
     struct SaveUnloader;   // Handles saving the session and reseting the state  - Game -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
+    struct IExecutor;
 
     //-----------------LEVELS-----------------//
     struct Map; // Holds information about the current level
@@ -33,13 +34,19 @@ namespace magique
     //----------------- GRAPHICS -----------------//
     enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
 
+    //----------------- Multiplayer -----------------//
+    enum UpdateFlag : uint8_t;
+
+    //----------------- UTIL -----------------//
+    enum LogLevel : int;
+
 } // namespace magique
 
 //----------------- USER DEFINED -----------------//
 
 enum EntityID : uint16_t;   // User implemented to denote different entity types
 enum class HandleID : int;  // User implemented to denote different handles
-enum class MapID : uint8_t; // User implemented to denote different handles
+enum class MapID : uint8_t; // User implemented to denote different maps
 
 
 //-----------------RAYLIB-----------------//

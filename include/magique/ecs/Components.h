@@ -65,8 +65,8 @@ struct CollisionC final
 // If added entity will emit light
 struct EmitterC final
 {
-    uint8_t r, g, b;
-    uint8_t intensity;
+    uint8_t r, g, b, a; // Use ColorToInt()
+    uint16_t intensity; // Style dependant - the size of the light
     LightStyle style;
 };
 

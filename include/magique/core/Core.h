@@ -47,6 +47,10 @@ namespace magique
     // Sets the engine font for overlays etc.
     void SetFont(const Font& font);
 
+    // Sets the current lighting mode - Entities need the Occluder and Emitter components!
+    // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
+    void SetLightingModle(LightingModel model);
+
     //----------------- Logic Tick Data -----------------// // Updated at the beginning of each update tick
     // IMPORTANT: If you access this data on the draw thread (main thread) AND outside of drawGame() needs to be synced
 
@@ -68,12 +72,6 @@ namespace magique
 
     // Returns the bounds of the camera rect including the view padding
     Rectangle GetCameraBounds();
-
-    //----------------- Draw Tick Data -----------------// // Updated at the beginning of each draw tick
-
-    // Returns the current draw data for this tick
-    // Guaranteed to not change during each tick
-    DrawTickData& GetDrawTickData();
 
     //----------------- THREADING -----------------//
 

@@ -1,11 +1,18 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <cxstructs/SmallVector.h>
 
+#include "core/globals/LogicTickData.h"
+#include "core/globals/DrawTickData.h"
+#include "core/globals/Configuration.h"
+#include "core/globals/PerfData.h"
+#include "core/globals/LogicThread.h"
+#include "core/globals/Shaders.h"
+#include "core/globals/TextureAtlas.h"
 #include "core/CoreData.h"
 
 #include "Updater.h"
 #include "Renderer.h"
-
 
 CoreData CORE = {0};
 
@@ -23,7 +30,7 @@ namespace magique
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         LOG_INFO("Initialized Game");
-        LOGIC_TICK_DATA.camera.zoom = 1.0F;
+        global::DRAW_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
     }
 
@@ -35,19 +42,19 @@ namespace magique
 
     int Game::run(const char* assetPath, const uint64_t encryptionKey)
     {
-        CURRENT_GAME_LOADER = new GameLoader{assetPath, encryptionKey};
-        onStartup(*static_cast<GameLoader*>(CURRENT_GAME_LOADER));
-        static_cast<GameLoader*>(CURRENT_GAME_LOADER)
-            ->registerTask(
-                [](AssetContainer&)
+        auto& loader = global::CURRENT_GAME_LOADER;
+        loader = new GameLoader{assetPath, encryptionKey};
+        onStartup(*static_cast<GameLoader*>(loader));
+        static_cast<GameLoader*>(loader)->registerTask(
+            [](AssetContainer&)
+            {
+                for (auto& atlas : global::TEXTURE_ATLASES)
                 {
-                    for (auto& atlas : TEXTURE_ATLASES)
-                    {
-                        atlas.loadToGPU();
-                    }
-                },
-                MAIN_THREAD, LOW);
-        static_cast<GameLoader*>(CURRENT_GAME_LOADER)->printStats();
+                    atlas.loadToGPU();
+                }
+            },
+            MAIN_THREAD, LOW);
+        static_cast<GameLoader*>(loader)->printStats();
 
         _isLoading = true;
 
@@ -58,8 +65,8 @@ namespace magique
         updater::Close();
 
 #ifdef MAGIQUE_DEBUG_PROFILE
-        LOG_INFO("Average DrawTick: %dk nanos", (int)PERF_DATA.getAverageTime(DRAW) / 1'000);
-        LOG_INFO("Average LogicTick: %dk nanos", (int)PERF_DATA.getAverageTime(UPDATE) / 1'000);
+        LOG_INFO("Average DrawTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(DRAW) / 1'000);
+        LOG_INFO("Average LogicTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(UPDATE) / 1'000);
 #endif
         return 0;
     }

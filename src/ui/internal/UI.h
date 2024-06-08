@@ -9,9 +9,9 @@ namespace magique
 
     inline void DrawUI()
     {
-        if (CONFIGURATION.showPerformanceOverlay)
+        if (global::CONFIGURATION.showPerformanceOverlay)
         {
-            PERF_DATA.perfOverlay.draw();
+            global::PERF_DATA.perfOverlay.draw();
         }
     }
 } // namespace magique

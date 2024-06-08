@@ -5,7 +5,7 @@
 
 namespace magique
 {
-    namespace colors
+    namespace colors // dont pollute namespace
     {
         inline constexpr Color LightGrey = {192, 203, 220, 255};
         inline constexpr Color LightGreyAlpha = {192, 203, 220, 190};

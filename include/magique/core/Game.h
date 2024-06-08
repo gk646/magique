@@ -2,7 +2,6 @@
 #define APPLICATION_H
 
 #include <entt/entity/fwd.hpp>
-
 #include <raylib/raylib.h>
 #include <magique/core/GameLoader.h>
 
@@ -74,6 +73,7 @@ namespace magique
         //----------------- START -----------------//
 
         // Call this to start the game
+        // Tries to load an asset image from the default path
         int run(const char* assetPath = "data.bin", uint64_t encryptionKey = 0);
 
         //----------------- GETTERS -----------------//

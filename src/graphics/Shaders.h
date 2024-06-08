@@ -1,9 +1,8 @@
-#ifndef SHADERS_H
-#define SHADERS_H
+#ifndef GRAPHICS_SHADERS_H
+#define GRAPHICS_SHADERS_H
 
 namespace magique
 {
-
     constexpr auto shadowFrag = R"(
 #version 330 core
 out vec4 FragColor;
@@ -35,14 +34,17 @@ in vec2 pos;
 
 out vec4 finalColor;
 
+uniform vec4 lightColor;
 uniform vec2 lightPos;
+uniform int intensity;
+uniform int lightStyle;
 
 const float strengthFactor = 1024.;
 
 void main() {
     vec2 dis = pos - lightPos;
     float str = 1. / (sqrt(dis.x * dis.x + dis.y * dis.y + strengthFactor * strengthFactor) - strengthFactor);
-    finalColor = vec4(vec3(str), 0.5);
+    finalColor = vec4( vec3(lightColor.xyz) * str , lightColor.w);
 }
 )";
 
@@ -158,4 +160,4 @@ void main() {
 
 } // namespace magique
 
-#endif //SHADERS_H
+#endif //GRAPHICS_SHADERS_H

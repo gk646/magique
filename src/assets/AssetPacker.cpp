@@ -161,7 +161,7 @@ namespace magique
     {
         if (!std::filesystem::exists(path))
         {
-            LOG_WARNING("Given path does not exist: %s", path);
+            LOG_WARNING("No asset image at path: %s", path);
             return false;
         }
         cxstructs::now();

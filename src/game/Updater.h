@@ -24,12 +24,12 @@ namespace magique::updater
 
     inline void EndUpdateTick()
     {
-        if (CONFIGURATION.showPerformanceOverlay)
+        if (global::CONFIGURATION.showPerformanceOverlay)
         {
-            PERF_DATA.perfOverlay.updateValues();
+           global:: PERF_DATA.perfOverlay.updateValues();
         }
         TickInputEvents();
-        PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
+        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
     }
 
     inline void GameLoop(const bool& isRunning, Game& game)
@@ -64,15 +64,15 @@ namespace magique::updater
 
     inline void Run(bool& isRunning, Game& game)
     {
-        LOGIC_THREAD = std::thread(&GameLoop, std::ref(isRunning), std::ref(game));
+        global::LOGIC_THREAD = std::thread(&GameLoop, std::ref(isRunning), std::ref(game));
         LOG_INFO("Started Gameloop");
     }
 
     inline void Close()
     {
-        if (LOGIC_THREAD.joinable())
+        if (global::LOGIC_THREAD.joinable())
         {
-            LOGIC_THREAD.join();
+            global::LOGIC_THREAD.join();
         }
     }
 

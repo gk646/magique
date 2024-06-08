@@ -1,50 +1,42 @@
 #ifndef COREDATA_H
 #define COREDATA_H
 
-#include <cxstructs/StackVector.h>
+#include <magique/fwd.hpp>
 
-#include <magique/util/TaskExecutor.h>
-#include <magique/assets/AssetManager.h>
-#include <magique/util/DataStructures.h>
+// This has been optimized for library build size and compile time
+// -> All heavy global headers are in the /global folder
+// These are commented out
 
-#include "InternalTypes.h"
-#include "perf/Perf.h"
-
-// All the core data that is shared between internal implementations
-// We carry a slog of includes around but dont really care as its statically compiled
-// Library compile time isnt a user cost -> but size gets bigger...
-
-namespace magique
+namespace magique::global
 {
     // Logic thread
-    inline std::thread LOGIC_THREAD;
-
-    // Type map
-    inline HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP{50};
-
-    // Current logic data
-    inline LogicTickData LOGIC_TICK_DATA;
+    //inline std::thread LOGIC_THREAD;
 
     // Current draw data
-    inline DrawTickData DRAW_TICK_DATA;
+    //inline DrawTickData DRAW_TICK_DATA;
 
     // Active game loader if any
     inline IExecutor* CURRENT_GAME_LOADER = nullptr;
 
     // Performance metrics
-    inline PerfData PERF_DATA;
+    //inline PerfData PERF_DATA;
 
     // Engine configuration flags
-    inline Configuration CONFIGURATION;
+    // inline Configuration CONFIGURATION;
 
     // Asset manager
-    inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet> ASSET_MANAGER;
+    // inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet> ASSET_MANAGER;
 
     // Shaders
-    inline Shaders SHADERS;
+    // inline Shaders SHADERS;
 
     // Texture atlases
-    inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
+    // inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
 
-} // namespace magique
+    // Type map
+    // inline HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP{50};
+
+    // Current logic data
+    // inline LogicTickData LOGIC_TICK_DATA;
+} // namespace magique::global
 #endif //COREDATA_H

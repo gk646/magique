@@ -1,12 +1,11 @@
+#include "PerformanceDisplay.h"
+
 #include <cstdio>
-
-#include <magique/util/Defines.h>
 #include <magique/ui/Colors.h>
-
 #include <raylib/raylib.h>
 
-#include "core/CoreData.h"
-
+#include "core/globals/Configuration.h"
+#include "core/globals/PerfData.h"
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1
 #include <steam/steam_api.h>
@@ -57,7 +56,7 @@ void PerformanceDisplay::updateValues()
     if (tickCounter != updateDelayTicks) [[likely]]
         return;
 
-    auto& font = magique::CONFIGURATION.font;
+    auto& font = magique::global::CONFIGURATION.font;
     const auto fs = 20;
 
     int block = 0;
@@ -66,12 +65,12 @@ void PerformanceDisplay::updateValues()
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
     block++;
-    auto val = static_cast<float>(magique::PERF_DATA.logicTickTime) / 1'000'000.0F; // nanos
+    auto val = static_cast<float>(magique::global::PERF_DATA.logicTickTime) / 1'000'000.0F; // nanos
     snprintf(blocks[block].text, 32, "CPU: %.1f", val);
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
     block++;
-    val = static_cast<float>(magique::PERF_DATA.drawTickTime) / 1'000'000.0F;
+    val = static_cast<float>(magique::global::PERF_DATA.drawTickTime) / 1'000'000.0F;
     snprintf(blocks[block].text, 32, "GPU: %.1f", val);
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
@@ -106,7 +105,7 @@ void PerformanceDisplay::updateValues()
 void PerformanceDisplay::draw()
 {
     Vector2 position = {15, 0};
-    auto& font = magique::CONFIGURATION.font;
+    auto& font = magique::global::CONFIGURATION.font;
     const auto fs = 20;
     for (const auto& block : blocks)
     {

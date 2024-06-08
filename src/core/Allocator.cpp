@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <magique/util/Logging.h>
 
-
 // Will get a custom allocator interface similar to this gdc talk
 // https://www.youtube.com/watch?v=fcBZEZWGYek&pp=ygUcc2ltcGxlIGNvbGxvc3N1c2UgcmVtYWtlIGdkYw%3D%3D
 
