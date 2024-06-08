@@ -30,6 +30,9 @@ namespace magique
     struct SpriteSheet;           // Identifies a sprite sheet
     enum AtlasType : uint8_t;     // Specifies which atlas to add the texture to
     enum class handle : uint32_t; // Resource handle
+    struct TileMap;               // Defines which textures to draw at each tile with a number
+    struct TileSet;               // Defines the details for all tiles in a project - collision ...
+    struct TileSheet;             // Stores the textures for all tiles in a project
 
     //----------------- GRAPHICS -----------------//
     enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None

@@ -1,6 +1,8 @@
 #ifndef MAGIQUE_H
 #define MAGIQUE_H
 
+// A single include header
+
 // Core
 #include "core/Game.h"
 #include "core/Core.h"

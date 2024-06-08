@@ -1,3 +1,4 @@
+#include <cmath>
 
 #include <magique/core/Draw.h>
 #include <magique/util/Defines.h>
@@ -5,13 +6,19 @@
 
 #include "external/raylib/src/rlgl.h"
 
+#include <magique/assets/types/TileMap.h>
+
+
 namespace magique
 {
     // Passed as value because of low size
-    void DrawRegion(TextureRegion region, const float x, const float y, const bool flipX, const Color tint)
+    void DrawRegion(TextureRegion region, float x, float y, const bool flipX, const Color tint)
     {
         // Check if the region is valid
         M_ASSERT(region.id > 0, "The texture for this region is invalid");
+
+        x = std::floor(x); // Flooring to avoid texture glitches
+        y = std::floor(y);
 
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
@@ -64,6 +71,9 @@ namespace magique
         M_ASSERT(sheet.id > 0, "The texture for this region is invalid");
         M_ASSERT(frame >= 0 && frame <= sheet.frames, "Out of bounds frame");
 
+        x = std::floor(x); // Flooring to avoid texture glitches
+        y = std::floor(y);
+
         const auto texWidth = static_cast<float>(sheet.width);
         const auto texHeight = static_cast<float>(sheet.height);
 
@@ -108,5 +118,14 @@ namespace magique
         rlEnd();
         rlSetTexture(0);
     }
+
+
+
+    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer)
+    {
+        M_ASSERT(tileMap.layerCount >= layer,"Out of bounds layer!");
+        int startIdx = tileMap
+    }
+
 
 } // namespace magique

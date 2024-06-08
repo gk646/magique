@@ -81,7 +81,6 @@ namespace magique
             {
                 while (true)
                 {
-
                     ImageDraw(&atlasImage, image, {(float)offX, (float)offY, (float)tarW, (float)tarH},
                               {(float)posX, (float)posY, (float)tarW, (float)tarH}, WHITE);
                     offX += tarW;

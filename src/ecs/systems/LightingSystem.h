@@ -15,7 +15,6 @@ namespace magique
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
         auto& shadowQuads = global::LOGIC_TICK_DATA.shadowQuads;
-        auto& camera = global::DRAW_TICK_DATA.camera;
         shadowQuads.clear();
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
@@ -82,7 +81,6 @@ namespace magique
             const Vector4 color = {(float)emit.r / 255.0F, (float)emit.g / 255.0F, (float)emit.b / 255.0F,
                                    (float)emit.a / 255.0F};
 
-            // Raw GL
             glUseProgram(shadowShader.id);
             {
                 glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ONE, GL_ZERO);
@@ -123,7 +121,6 @@ namespace magique
         Vector2 occShape[MAGIQUE_MAX_RAYTRACING_ENTITIES];
 
         const auto lights = registry.view<const PositionC, const EmitterC>();
-
         int count = 0;
         for (const auto e : lights)
         {
@@ -136,6 +133,11 @@ namespace magique
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
         count = 0;
+        for(const auto e : occluders)
+        {
+            const auto& pos = registry.get<const PositionC>(e);
+            const auto& emit = registry.get<const EmitterC>(e);
+        }
     }
 
     inline void RenderLighting(entt::registry& registry)
