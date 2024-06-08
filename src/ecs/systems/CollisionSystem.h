@@ -7,7 +7,7 @@
 #include <c2/cute_c2.h>
 #include <cxutil/cxtime.h>
 
-#include "core/CoreConfig.h"
+#include "core/Config.h"
 #include "ecs/ScriptEngine.h"
 
 
@@ -110,9 +110,10 @@ namespace magique
 {
     inline void CheckCollisions(entt::registry& registry)
     {
-        auto& grid = LOGIC_TICK_DATA.hashGrid;
-        auto& updateVec = LOGIC_TICK_DATA.entityUpdateVec;
-        auto& collector = LOGIC_TICK_DATA.collector;
+        auto& tickData = global::LOGIC_TICK_DATA;
+        auto& grid = tickData.hashGrid;
+        auto& updateVec = tickData.entityUpdateVec;
+        auto& collector = tickData.collector;
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;

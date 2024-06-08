@@ -10,7 +10,6 @@
 // UI Container - Base UI Class
 //-----------------------------------------------
 
-
 namespace magique
 {
     struct UIContainer : UIObject

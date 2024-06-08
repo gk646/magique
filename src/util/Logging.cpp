@@ -1,17 +1,19 @@
 #include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
 
 #include <magique/util/Logging.h>
+#include <magique/util/Defines.h>
 
-#include "core/CoreData.h"
+#include "core/globals/Configuration.h"
 
-namespace magique::util
+namespace magique
 {
-
-    void SetLogLevel(const LogLevel level) { CONFIGURATION.logLevel = level; }
+    void SetLogLevel(const LogLevel level) { global::CONFIGURATION.logLevel = level; }
 
     void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
-        if (level < CONFIGURATION.logLevel)
+        if (level < global::CONFIGURATION.logLevel)
         {
             return;
         }
@@ -65,13 +67,13 @@ namespace magique::util
 
         if (level >= LOG_ERROR && (MAGIQUE_DEBUG == 1)) [[unlikely]]
         {
-#  if defined(_MSC_VER)
+#if defined(_MSC_VER)
             __debugbreak();
-#  elif defined(__GNUC__)
+#elif defined(__GNUC__)
             __builtin_trap();
-#  else
+#else
             std::abort();
-#  endif
+#endif
         }
     }
 

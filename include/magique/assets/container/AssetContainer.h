@@ -22,6 +22,15 @@ namespace magique
         // Checks if the assets extension matches the given one e.g '.png' myTexture.png
         // Includes the dot
         bool hasExtension(const char* extension) const;
+
+        // True if the asset name starts with the given prefix
+        bool startsWith(const char* prefix) const;
+
+        // True if the asset name ends with the given prefix
+        bool endsWith(const char* suffix) const;
+
+        // True if the asset name contains the given sequence anywhere
+        bool contains(const char* str) const;
     };
 
     struct AssetContainer final
@@ -48,8 +57,8 @@ namespace magique
         const Asset& getAsset(const char* name) const;
 
     private:
-        const char* nativeData;
-        std::vector<Asset> assets; // Internal file list
+        const char* nativeData = nullptr; // Pointer to all the file data
+        std::vector<Asset> assets;        // Internal file list
     };
 } // namespace magique
 

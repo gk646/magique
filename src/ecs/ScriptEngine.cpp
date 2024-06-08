@@ -25,7 +25,8 @@ namespace magique
         M_ASSERT(SCRIPT_ENGINE.scripts.size() > entity,
                  "No script registered for this type! Did you call SetScript()?");
         M_ASSERT(SCRIPT_ENGINE.scripts[entity] != SCRIPT_ENGINE.defaultScript,
-                 "No valid script exists! Did you pass a new Instance of your ScriptClass?");
+                 "No valid script exists for this entity! Did you call SetScript() and pass a new Instance of your "
+                 "ScriptClass?");
         return SCRIPT_ENGINE.scripts[entity];
     }
 

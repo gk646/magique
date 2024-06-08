@@ -90,7 +90,7 @@ namespace magique
         return -1;
     }
 
-    int FindDirectoryPos(const std::vector<Asset>& assets, const char* name, int size)
+    int FindDirectoryPos(const std::vector<Asset>& assets, const char* name, const int size)
     {
         int low = 0;
         int high = static_cast<int>(assets.size());
@@ -148,10 +148,7 @@ namespace magique
 
         return *this;
     }
-    AssetContainer::~AssetContainer()
-    {
-        delete[] nativeData;
-    }
+    AssetContainer::~AssetContainer() { delete[] nativeData; }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {

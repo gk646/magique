@@ -5,7 +5,6 @@
 
 #include "external/raylib/src/rlgl.h"
 
-
 namespace magique
 {
     // Passed as value because of low size
@@ -58,7 +57,6 @@ namespace magique
         rlEnd();
         rlSetTexture(0);
     }
-
 
     void DrawSprite(SpriteSheet sheet, float x, float y, int frame, bool flipX, Color tint)
     {

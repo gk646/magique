@@ -3,8 +3,12 @@
 
 #include <cstdint>
 #include <numeric>
-#include "ui/overlay/PerformanceDisplay.h"
-#include "core/CoreConfig.h"
+
+#include "ui/internal/PerformanceDisplay.h"
+#include "core/Config.h"
+
+namespace magique{
+
 
 enum TickType
 {
@@ -79,5 +83,11 @@ struct PerfData
 #endif
 };
 
+namespace global{
+inline PerfData PERF_DATA;
+
+}
+
+}
 
 #endif //PROFILE_H

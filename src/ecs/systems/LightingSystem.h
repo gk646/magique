@@ -10,12 +10,12 @@ namespace magique
     inline void RenderHardShadows(entt::registry& registry)
     {
         ClearBackground(BLACK);
-        rlDrawRenderBatchActive(); // Draw and Flush current
 
-        auto& shadowShader = SHADERS.shadow;
-        auto& lightShader = SHADERS.light;
-        auto& shadowQuads = LOGIC_TICK_DATA.shadowQuads;
-        auto& camera = LOGIC_TICK_DATA.camera;
+        auto& shaders = global::SHADERS;
+        auto& shadowShader = shaders.shadow;
+        auto& lightShader = shaders.light;
+        auto& shadowQuads = global::LOGIC_TICK_DATA.shadowQuads;
+        auto& camera = global::DRAW_TICK_DATA.camera;
         shadowQuads.clear();
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
@@ -36,9 +36,10 @@ namespace magique
         }
 
         int size = static_cast<int>(shadowQuads.size());
-        int lightLightLoc = GetShaderLocation(lightShader, "lightPos");
-        int shadowLightLoc = GetShaderLocation(shadowShader, "lightPosition");
-        int mvpLoc = GetShaderLocation(shadowShader, "mvp");
+        int lightLightLoc = shaders.lightLightLoc;
+        int lightColorLoc = shaders.lightColorLoc;
+        int shadowLightLoc = shaders.shadowLightLoc;
+        int mvpLoc = shaders.mvpLoc;
 
         unsigned int vao, vbo;
         createSimpleObjectBuffer(shadowQuads.data(), size, &vao, &vbo);
@@ -47,15 +48,11 @@ namespace magique
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-        const auto pad = CONFIGURATION.cameraViewPadding;
-        auto& target = camera.target;
-        auto& offset = camera.offset;
-        const Rectangle backRect = {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2,
-                                    offset.y * 2 + pad * 2};
+        const Rectangle backRect = GetCameraBounds();
 
         Matrix projectionMatrix =
             MatrixOrtho(0.0f, CORE.Window.currentFbo.width, CORE.Window.currentFbo.height, 0.0f, 0.0f, 1.0f);
-        Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(LOGIC_TICK_DATA.camera), projectionMatrix);
+        Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(global::DRAW_TICK_DATA.camera), projectionMatrix);
 
         float matMVPfloat[16] = {matMVP.m0,  matMVP.m1,  matMVP.m2,  matMVP.m3, matMVP.m4,  matMVP.m5,
                                  matMVP.m6,  matMVP.m7,  matMVP.m8,  matMVP.m9, matMVP.m10, matMVP.m11,
@@ -80,7 +77,10 @@ namespace magique
         for (const auto e : lights)
         {
             const auto& pos = lights.get<PositionC>(e);
+            const auto& emit = lights.get<EmitterC>(e);
             const Vector2 light = {pos.x, pos.y};
+            const Vector4 color = {(float)emit.r / 255.0F, (float)emit.g / 255.0F, (float)emit.b / 255.0F,
+                                   (float)emit.a / 255.0F};
 
             // Raw GL
             glUseProgram(shadowShader.id);
@@ -98,6 +98,7 @@ namespace magique
             rlSetBlendFactorsSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD, GL_FUNC_ADD);
             BeginBlendMode(BLEND_CUSTOM_SEPARATE);
             BeginShaderMode(lightShader);
+            SetShaderValueV(lightShader, lightColorLoc, &color, SHADER_UNIFORM_VEC4, 1);
             {
                 DrawRectangleRec(backRect, BLANK);
             }
@@ -139,7 +140,7 @@ namespace magique
 
     inline void RenderLighting(entt::registry& registry)
     {
-        if (CONFIGURATION.lighting == LightingModel::STATIC_SHADOWS)
+        if (global::CONFIGURATION.lighting == LightingModel::STATIC_SHADOWS)
         {
             RenderHardShadows(registry);
         }

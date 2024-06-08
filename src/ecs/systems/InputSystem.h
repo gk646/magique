@@ -10,14 +10,6 @@ namespace magique
 
     inline bool IsAnyKeyDown()
     {
-        for (const char i : CORE.Input.Keyboard.previousKeyState)
-        {
-            if (i == 1)
-            {
-                return true; // At least one key is down
-            }
-        }
-
         for (const char i : CORE.Input.Keyboard.currentKeyState)
         {
             if (i == 1)
@@ -44,7 +36,7 @@ namespace magique
     inline void PollInputs(entt::registry& registry)
     {
         // Should be a subtle optimization
-        // Do some initial checks to avoid calling event fun
+        // Do some initial checks to avoid calling event function every tick
 
         const bool invokeKey = GetKeyPressed() != 0 || GetCharPressed() != 0 || IsAnyKeyDown();
 
@@ -53,27 +45,33 @@ namespace magique
 
         if (invokeKey && invokeMouse)
         {
-            const auto view = registry.view<ScriptC>();
-            for (const auto e : view)
+            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
             {
-                InvokeEvent<onKeyEvent>(e);
-                InvokeEvent<onMouseEvent>(e);
+                if (registry.all_of<ScriptC>(e)) [[likely]]
+                {
+                    InvokeEvent<onKeyEvent>(e);
+                    InvokeEvent<onMouseEvent>(e);
+                }
             }
         }
         else if (invokeKey)
         {
-            const auto view = registry.view<ScriptC>();
-            for (const auto e : view)
+            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
             {
-                InvokeEvent<onKeyEvent>(e);
+                if (registry.all_of<ScriptC>(e)) [[likely]]
+                {
+                    InvokeEvent<onKeyEvent>(e);
+                }
             }
         }
         else if (invokeMouse)
         {
-            const auto view = registry.view<ScriptC>();
-            for (const auto e : view)
+            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
             {
-                InvokeEvent<onMouseEvent>(e);
+                if (registry.all_of<ScriptC>(e)) [[likely]]
+                {
+                    InvokeEvent<onMouseEvent>(e);
+                }
             }
         }
     }

@@ -1,55 +1,21 @@
 #ifndef LOGICSYSTEM_H
 #define LOGICSYSTEM_H
 
-#include <ranges>
-#include <cxstructs/SmallVector.h>
-
 using namespace cxstructs;
 
 namespace magique
 {
-    inline Vector3 GetUpdateCircle(const float x, const float y) { return {x, y, CONFIGURATION.entityUpdateDistance}; }
+    inline Vector3 GetUpdateCircle(const float x, const float y) { return {x, y, global::CONFIGURATION.entityUpdateDistance}; }
 
     inline Rectangle GetCameraRect()
     {
-        const auto pad = CONFIGURATION.cameraViewPadding;
-        auto& camera = LOGIC_TICK_DATA.camera;
+        const auto pad = global::CONFIGURATION.cameraViewPadding;
+        auto& camera = global::DRAW_TICK_DATA.camera;
         auto& target = camera.target;
         auto& offset = camera.offset;
         return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
     }
 
-    inline void AssignCameraData(entt::registry& registry)
-    {
-        const auto view = registry.view<const CameraC, const PositionC>();
-        auto& tickData = LOGIC_TICK_DATA;
-#if MAGIQUE_DEBUG == 1
-        int count = 0;
-#endif
-        const float sWidth = GetScreenWidth();
-        const float sHeight = GetScreenHeight();
-        for (const auto e : view)
-        {
-            const auto& pos = view.get<PositionC>(e);
-            tickData.cameraMap = pos.map;
-            tickData.camera.offset = {sWidth / 2, sHeight / 2};
-            tickData.id = e;
-            tickData.camera.target = {pos.x, pos.y};
-#if MAGIQUE_DEBUG == 1
-            count++;
-#endif
-        }
-        // Center the camera
-        const auto coll = REGISTRY.try_get<CollisionC>(LOGIC_TICK_DATA.id);
-        if (coll) [[likely]]
-        {
-            tickData.camera.offset.x -= static_cast<float>(coll->width) / 2.0F;
-            tickData.camera.offset.y -= static_cast<float>(coll->height) / 2.0F;
-        }
-#if MAGIQUE_DEBUG == 1
-        //M_ASSERT(count < 2, "You have multiple cameras? O.O");
-#endif
-    }
 
     // Insert numbers into flattened array
     inline void InsertToActorDist(SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
@@ -109,20 +75,16 @@ namespace magique
 
     inline void UpdateLogic(entt::registry& registry)
     {
-        auto& tickData = LOGIC_TICK_DATA;
+        auto& tickData = global::LOGIC_TICK_DATA;
         auto& hashGrid = tickData.hashGrid;
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;
         auto& updateVec = tickData.entityUpdateVec;
         auto& loadedMaps = tickData.loadedMaps;
 
-        tickData.lock(); // Lock early due to camera assign
-
-        AssignCameraData(registry);
-
         // Cache
         const auto cameraMap = tickData.cameraMap;
-        const uint16_t cacheDuration = CONFIGURATION.entityCacheDuration;
+        const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
         const auto cameraBounds = GetCameraRect();
 
         // Lookup tables
@@ -132,7 +94,8 @@ namespace magique
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
 
-        // Critical section
+
+        tickData.lock(); // Critical section
         {
             drawVec.clear();
             hashGrid.clear();

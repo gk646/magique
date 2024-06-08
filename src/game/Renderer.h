@@ -1,20 +1,23 @@
 #pragma once
 
-#include "rlgl.h"
-
 #include <magique/ecs/ECS.h>
 #include <magique/core/Game.h>
 
-#include "ui/CoreUI.h"
+#include "rlgl.h"
+#include "ui/internal/UI.h"
 #include "ecs/systems/LightingSystem.h"
+#include "core/globals/PerfData.h"
+#include "core/CoreData.h"
 
 namespace magique::renderer
 {
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
+
     inline void StartRenderTick()
     {
+
         startTime = steady_clock::now();
         BeginDrawing();
     }
@@ -22,20 +25,21 @@ namespace magique::renderer
     inline void EndRenderTick()
     {
         DrawUI();
-        PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - startTime).count());
         EndDrawing();
+        global::PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - startTime).count());
     }
 
     inline void HandleLoadingScreen(bool& isLoading, Game& game)
     {
-        if (CURRENT_GAME_LOADER) [[likely]]
+        auto& loader = global::CURRENT_GAME_LOADER;
+        if (loader) [[likely]]
         {
-            game.drawLoadingScreen(CURRENT_GAME_LOADER->getProgressPercent());
-            const auto res = CURRENT_GAME_LOADER->load();
+            game.drawLoadingScreen(loader->getProgressPercent());
+            const auto res = loader->load();
             if (res == true)
             {
-                delete CURRENT_GAME_LOADER;
-                CURRENT_GAME_LOADER = nullptr;
+                delete loader;
+                loader = nullptr;
                 isLoading = false;
             }
         }
@@ -45,7 +49,7 @@ namespace magique::renderer
     inline void Run(bool& isLoading, Game& game)
     {
         auto& reg = REGISTRY;
-        auto& camera = LOGIC_TICK_DATA.camera;
+        auto& camera = global::DRAW_TICK_DATA.camera;
         // Double loop to catch the close event
         while (game.isRunning()) [[likely]]
         {
@@ -54,7 +58,7 @@ namespace magique::renderer
                 StartRenderTick();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
-                    game.preRender(); // Pre render
+                    game.preRender();          // Pre render
                     if (isLoading) [[unlikely]]
                     {
                         HandleLoadingScreen(isLoading, game);
@@ -63,9 +67,9 @@ namespace magique::renderer
                     BeginMode2D(camera);
                     {
                         game.drawWorld(camera);
-                        LOGIC_TICK_DATA.lock();
+                        global::LOGIC_TICK_DATA.lock();
                         game.drawGame(reg, camera); // Draw game
-                        LOGIC_TICK_DATA.unlock();
+                        global::LOGIC_TICK_DATA.unlock();
                         RenderLighting(reg);
                     }
                     EndMode2D();

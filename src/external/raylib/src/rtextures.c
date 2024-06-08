@@ -4515,6 +4515,7 @@ int ColorToInt(Color color)
     return result;
 }
 
+
 // Get color normalized as float [0..1]
 Vector4 ColorNormalize(Color color)
 {

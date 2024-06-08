@@ -1,9 +1,12 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/InternalScripting.h>
 #include <magique/ecs/Components.h>
+#include <raylib/raylib.h>
 
-#include "core/CoreData.h"
-#include "core/CoreConfig.h"
+#include "core/globals/EntityTypeMap.h"
+#include "core/globals/LogicTickData.h"
+#include "core/globals/LogicThread.h"
+#include "core/Config.h"
 #include "ScriptEngine.h"
 
 namespace magique
@@ -12,63 +15,68 @@ namespace magique
     {
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
-        if (type == static_cast<EntityID>(UINT16_MAX) || ENT_TYPE_MAP.contains(type))
+        auto& map = global::ENT_TYPE_MAP;
+        if (type == static_cast<EntityID>(UINT16_MAX) || map.contains(type))
         {
             return false; // Invalid ID or already registered
         }
 
-        ENT_TYPE_MAP.insert({type, createFunc});
+        map.insert({type, createFunc});
 
         for (auto entity : REGISTRY.view<entt::entity>())
         {
             volatile int b = (int)entity; // Try to instantiate all storage types
         }
-
-
         return true;
     }
 
     bool UnRegisterEntity(const EntityID type)
     {
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        auto& map = global::ENT_TYPE_MAP;
 
-        if (type == static_cast<EntityID>(UINT16_MAX) || !ENT_TYPE_MAP.contains(type))
+        if (type == static_cast<EntityID>(UINT16_MAX) || !map.contains(type))
         {
             return false; // Invalid ID or not registered
         }
 
-        ENT_TYPE_MAP.erase(type);
+        map.erase(type);
         return true;
     }
 
-    entt::entity CreateEntity(const EntityID type, float x, float y, MapID map)
+    entt::entity CreateEntity(const EntityID type, float x, float y, MapID mapID)
     {
-        M_ASSERT(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
 
-        const auto it = ENT_TYPE_MAP.find(type);
-        if (it == ENT_TYPE_MAP.end())
+        auto& map = global::ENT_TYPE_MAP;
+
+        const auto it = map.find(type);
+        if (it == map.end())
         {
             return entt::null; // EntityID not registered
         }
-        LOGIC_TICK_DATA.lock();
+
+        auto& tickData = global::LOGIC_TICK_DATA;
+        tickData.lock();
         const auto entity = REGISTRY.create();
-        REGISTRY.emplace<PositionC>(entity, x, y, type, map); // PositionC is default
+        REGISTRY.emplace<PositionC>(entity, x, y, type, mapID); // PositionC is default
         it->second(REGISTRY, entity);
-        LOGIC_TICK_DATA.unlock();
+        tickData.unlock();
         SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
         return entity;
     }
 
     bool DestroyEntity(const entt::entity entity)
     {
-        M_ASSERT(std::this_thread::get_id() == LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        auto& tickData = global::LOGIC_TICK_DATA;
         if (REGISTRY.valid(entity))
         {
-            LOGIC_TICK_DATA.lock();
+            tickData.lock();
             REGISTRY.destroy(entity);
-            LOGIC_TICK_DATA.entityUpdateCache.erase(entity);
-            LOGIC_TICK_DATA.unlock();
+            tickData.entityUpdateCache.erase(entity);
+            tickData.unlock();
             return true;
         }
         return false;
@@ -80,11 +88,11 @@ namespace magique
     {
         REGISTRY.emplace<OccluderC>(entity, (int16_t)width, (int16_t)height, shape);
     }
+
     void GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style)
     {
-        REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, (uint8_t)intensity, style);
+        REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity, style);
     }
-
 
     void GiveActor(entt::entity e) { REGISTRY.emplace<ActorC>(e); }
 

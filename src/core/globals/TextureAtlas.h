@@ -1,170 +1,15 @@
-#ifndef INTERNALTYPES_H
-#define INTERNALTYPES_H
+#ifndef TEXTUREATLAS_H
+#define TEXTUREATLAS_H
 
-#include <algorithm>
-
-#include <magique/core/Types.h>
-#include <magique/util/DataStructures.h>
+#include <magique/assets/AssetManager.h>
 #include <magique/util/Defines.h>
 #include <magique/util/Logging.h>
+#include <magique/core/Types.h>
 
-#include <cxstructs/BitMask.h>
-#include <raylib/raylib.h>
-
-#include "core/datastructures/MultiResolutionGrid.h"
-
-using CollisionPair = std::pair<entt::entity, entt::entity>;
-struct PairHash
-{
-    std::size_t operator()(const CollisionPair& p) const
-    {
-        const uint64_t combined = static_cast<uint64_t>(p.first) << 32 | static_cast<uint64_t>(p.second);
-        return std::hash<uint64_t>()(combined);
-    }
-};
+#include <cxstructs/StackVector.h>
 
 namespace magique
 {
-    struct LogicTickData final
-    {
-        // the camera
-        Camera2D camera{};
-
-        // Map the camera is int
-        MapID cameraMap;
-
-        // entity id of the camera
-        entt::entity id;
-
-        // Currently loaded zones
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps;
-
-        // Change set for multiplayer events
-        HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet{500};
-
-        // Cache for entities that are not in update range anymore
-        // They are still updated for cache duration
-        HashMap<entt::entity, uint16_t> entityUpdateCache{1000};
-
-        // vector containing the entites to update for this ticka
-        vector<entt::entity> entityUpdateVec;
-
-        // vector containing all entites to be drawn this tick
-        // Culled with the camera
-        vector<entt::entity> drawVec;
-
-        // Global hashGrid for all entities
-        SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
-
-        // Collects entities
-        HashSet<entt::entity> collector{500};
-
-        // Shadow segments
-        vector<Vector3> shadowQuads;
-
-        // Atomic spinlock - whenever any data is accessed on the draw thread
-        std::atomic_flag flag;
-
-        LogicTickData()
-        {
-            hashGrid.reserve(150, 1000);
-            shadowQuads.reserve(1000);
-            drawVec.reserve(1000);
-            entityUpdateVec.reserve(1000);
-        }
-
-        void lock()
-        {
-            while (flag.test_and_set(std::memory_order_acquire))
-            {
-            }
-        }
-
-        void unlock() { flag.clear(std::memory_order_release); }
-
-        void clear()
-        {
-            changedSet.clear();
-            entityUpdateCache.clear();
-            entityUpdateVec.clear();
-            drawVec.clear();
-            collector.clear();
-            hashGrid.clear();
-        }
-    };
-
-    struct Configuration final
-    {
-        // Current selected lighting mode
-        LightingModel lighting = LightingModel::STATIC_SHADOWS;
-
-        // Toggles the performance overlay
-        bool showPerformanceOverlay = true;
-
-        // All logs visible
-        util::LogLevel logLevel = util::LEVEL_INFO;
-
-        // Update distance
-        float entityUpdateDistance = 1000;
-
-        float cameraViewPadding = 250;
-
-        // For how long entities in the cache are still updates after they are out of range
-        uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
-
-        // Font
-        Font font{};
-    };
-
-    template <typename... Resources>
-    struct AssetManager final
-    {
-        // A tuple to hold the hash maps
-        std::tuple<std::vector<Resources>...> resourceVectors;
-
-        // Helper to get the index of a type in the parameter pack
-        template <typename T, typename Tuple>
-        struct Index;
-
-        template <typename T, typename... Types>
-        struct Index<T, std::tuple<T, Types...>>
-        {
-            static constexpr std::size_t value = 0;
-        };
-
-        template <typename T, typename U, typename... Types>
-        struct Index<T, std::tuple<U, Types...>>
-        {
-            static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
-        };
-
-        template <typename T>
-        constexpr auto& getResourceVec()
-        {
-            return std::get<Index<T, std::tuple<Resources...>>::value>(resourceVectors);
-        }
-
-        // Function to add a resource
-        template <typename T>
-        handle addResource(const T& resource)
-        {
-            auto& vec = getResourceVec<T>();
-            auto handle = vec.size();
-            vec.push_back(resource);
-            return static_cast<enum class handle>(handle);
-        }
-
-        // Function to get a resource
-        template <typename T>
-        T& getResource(handle handle)
-        {
-            // If you get an error here you probably used a wrong handle or in the wrong method
-            assert(handle != handle::null && "Null handle!");
-            assert(getResourceVec<T>().size() > (int)handle && "Cannot contain the resource");
-            return getResourceVec<T>()[static_cast<uint32_t>(handle)];
-        }
-    };
-
     // Uses naive 'scheduling' - if a sequence cant be deterministically described we skip to the next row
     // So if a spritesheet doesnt fit in the current row we just skip it and put it in the next wasting the space
     struct TextureAtlas final
@@ -310,12 +155,10 @@ namespace magique
         }
     };
 
-    struct Shaders final
+    namespace global
     {
-        Shader shadow;
-        Shader light;
-        Shader raytracing;
-    };
+        inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
 
+    }
 } // namespace magique
-#endif //INTERNALTYPES_H
+#endif //TEXTUREATLAS_H

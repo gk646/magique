@@ -39,7 +39,7 @@
         FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                           \
     }
 
-namespace magique::util
+namespace magique::internal
 {
     inline void AssertHandler(const char* expr, const char* file, int line, const char* message)
     {
@@ -58,7 +58,7 @@ namespace magique::util
 #if !defined(_DEBUG) || defined(NDEBUG)
 #define M_ASSERT(expr, message) ((void)0)
 #else
-#define M_ASSERT(expr, message) ((expr) ? (void)0 : magique::util::AssertHandler(#expr, __FILE__, __LINE__, message))
+#define M_ASSERT(expr, message) ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
 #endif
 
 #endif //MAGIQUE_MACROS_H
