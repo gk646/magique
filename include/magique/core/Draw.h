@@ -27,6 +27,10 @@ namespace magique
     // Draws and scales the given frame of the sprite sheet into the destination rect
     void DrawSpriteEx(SpriteSheet sheet, Rectangle dest, int frame, float rotation, Color tint = WHITE);
 
+    // Automatically culled with the current camera!
+    // If you need to scale your textures, provide a scaling factor when you load the sheet
+    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
+
 } // namespace magique
 
 #endif //MAGIQUE_DRAW_H

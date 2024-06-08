@@ -2,6 +2,8 @@
 #include <magique/core/Core.h>
 #include <cxstructs/SmallVector.h>
 
+#include "external/raylib/src/rlgl.h"
+
 #include "core/globals/LogicTickData.h"
 #include "core/globals/DrawTickData.h"
 #include "core/globals/Configuration.h"

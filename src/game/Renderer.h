@@ -1,13 +1,8 @@
 #pragma once
 
-#include <magique/ecs/ECS.h>
-#include <magique/core/Game.h>
-
-#include "rlgl.h"
-#include "ui/internal/UI.h"
+#include "game/common/RenderUtil.h"
 #include "ecs/systems/LightingSystem.h"
-#include "core/globals/PerfData.h"
-#include "core/CoreData.h"
+#include "ui/internal/UI.h"
 
 namespace magique::renderer
 {
@@ -15,11 +10,11 @@ namespace magique::renderer
     inline static time_point<steady_clock> startTime;
 
 
-    inline void StartRenderTick()
+    inline void StartRenderTick(entt::registry& registry)
     {
-
         startTime = steady_clock::now();
         BeginDrawing();
+        AssignCameraData(registry);
     }
 
     inline void EndRenderTick()
@@ -55,7 +50,7 @@ namespace magique::renderer
         {
             while (!WindowShouldClose() && game.isRunning()) [[likely]]
             {
-                StartRenderTick();
+                StartRenderTick(reg);
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
                     game.preRender();          // Pre render

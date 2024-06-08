@@ -94,7 +94,6 @@ namespace magique
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
 
-
         tickData.lock(); // Critical section
         {
             drawVec.clear();
@@ -122,7 +121,7 @@ namespace magique
                         for (int i = 0; i < MAGIQUE_MAX_PLAYERS; ++i)
                         {
                             const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
-                            if (actorNum == 1)
+                            if (actorNum == -1)
                                 break;
                             const auto vec3 = actorCircles[actorNum];
                             // Check if insdie any update circle

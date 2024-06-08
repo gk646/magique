@@ -4,7 +4,6 @@
 //-----------------------------------------------
 // Defines
 //-----------------------------------------------
-
 // .....................................................................
 // These are core engine defines which MUST not be changed
 // After any changes the library has to be recompiled!
@@ -20,12 +19,12 @@
 #define MAGIQUE_MULITPLAYER_SUPPORT 0 // 1 to enable multiplayer
 #define MAGIQUE_MAX_PLAYERS 4
 
-
 //----------------- ASSETS -----------------//
 
 #define MAGIQUE_TEXTURE_ATLAS_WIDTH 4096  // Height of each texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 4096 // Width of each texture atlas
-#define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k handles per number (for tile maps)
+#define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles (for tile maps)
+#define MAGIQUE_MAX_TILEMAP_LAYERS 5
 
 //----------------- GRAPHICS -----------------//
 

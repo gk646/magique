@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef MAGIQUE_TYPES_H
+#define MAGIQUE_TYPES_H
 
 #include "magique/fwd.hpp"
 
