@@ -11,7 +11,6 @@
 
 namespace magique
 {
-    // Passed as value because of low size
     void DrawRegion(TextureRegion region, float x, float y, const bool flipX, const Color tint)
     {
         // Check if the region is valid
@@ -119,12 +118,19 @@ namespace magique
         rlSetTexture(0);
     }
 
-
-
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer)
     {
-        M_ASSERT(tileMap.layerCount >= layer,"Out of bounds layer!");
-        int startIdx = tileMap
+        M_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
+
+        const int size = tileMap.getLayerSize();
+        auto* start = tileMap.getLayerStart(layer);
+
+        for (int i = 0; i < size; ++i)
+        {
+            const auto tileNum = start[i];
+        }
+
+        // int startIdx = tileMap
     }
 
 

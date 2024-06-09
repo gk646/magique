@@ -29,6 +29,7 @@ namespace magique
 
     // Automatically culled with the current camera!
     // If you need to scale your textures, provide a scaling factor when you load the sheet
+    // 'layer' is 0-based indexing and starts from the bottom up in draw order
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
 
 } // namespace magique

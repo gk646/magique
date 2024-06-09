@@ -57,7 +57,6 @@ namespace magique
     // Use with iterateDirectory()
     handle RegisterSpritesheetVec(const std::vector<const Asset&>& asset, AtlasType atlas);
 
-
     //----------------- Sound -----------------//
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
@@ -65,11 +64,12 @@ namespace magique
 
 
     //----------------- TileMaps -----------------//
-
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
+    // Note: magique only supports setting 1 TileSheet at a time -  Use SetTileSet() in the Core module
+    // Note: A Tilsheet has its own atlas - you can access it manually aswell and get a TextureRegion back
 
     // Registers a "Tiled" (the level editor) map export from a ".tsx" file!
-    // Supports loading multiple layers
+    // Supports loading multiple layers - all layers must have same dimensions!
     handle RegisterTileMap(const Asset& asset);
 
     // Registers a tileset - defines the details all tiles in a project
@@ -77,13 +77,12 @@ namespace magique
 
     // Registers a tile sheet of textures from a single ".png" file
     // width and height specify the dimensions of each tile - scale allows to scale the resulting texture (rounded down)
-    handle RegisterTileSheet(const Asset& asset, int width, int height, AtlasType atlas = WORLD, float scale = 1.0F);
+    handle RegisterTileSheet(const Asset& asset, int width, int height, float scale = 1.0F);
 
     // Registers a tile sheet from single textures - ".png"
     // All assets provided must have the same dimensions and be pictures
     // width and height specify the dimensions of each tile - scale allows to scale the resulting texture (rounded down)
-    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, AtlasType atlas,
-                             float scale = 1.0F);
+    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, float scale = 1.0F);
 
     //----------------- Getting -----------------//
 
