@@ -1,5 +1,6 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/container/AssetContainer.h>
+#include <magique/assets/types/TileMap.h>
 #include <magique/util/Macros.h>
 #include <magique/core/Types.h>
 
@@ -11,7 +12,7 @@
 
 namespace magique
 {
-    bool ValidityCheck(Image& img, const Asset& asset, const AtlasType at)
+    bool ImageCheck(Image& img, const Asset& asset, const AtlasType at)
     {
         if (at > CUSTOM_2)
         {
@@ -35,11 +36,10 @@ namespace magique
         return true;
     }
 
-
     handle RegisterSpritesheet(const Asset& asset, int width, int height, AtlasType at)
     {
         Image image;
-        if (!ValidityCheck(image, asset, at))
+        if (!ImageCheck(image, asset, at))
             return handle::null;
 
         M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
@@ -55,7 +55,7 @@ namespace magique
                                  int offY)
     {
         Image image;
-        if (!ValidityCheck(image, asset, at))
+        if (!ImageCheck(image, asset, at))
             return handle::null;
 
         M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
@@ -71,7 +71,7 @@ namespace magique
     handle RegisterTexture(const Asset& asset, const AtlasType at)
     {
         Image image;
-        if (!ValidityCheck(image, asset, at))
+        if (!ImageCheck(image, asset, at))
             return handle::null;
 
         auto& atlas = global::TEXTURE_ATLASES[at];
@@ -80,6 +80,29 @@ namespace magique
 
         return global::ASSET_MANAGER.addResource(region);
     }
+
+
+    handle RegisterTileMap(const Asset& asset)
+    {
+        auto tileMap = TileMap(asset);
+        return global::ASSET_MANAGER.addResource(std::move(tileMap));
+    }
+
+    handle RegisterTileSet(const Asset& asset) { return handle::null; }
+
+
+    handle RegisterTileSheet(const Asset& asset, int width, int height, AtlasType atlas, float scale)
+    {
+
+        return handle::null;
+    }
+
+    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, AtlasType atlas, float scale)
+    {
+        return handle::null;
+    }
+
+    //----------------- GET -----------------//
 
     Sound& GetSound(const handle handle) { return global::ASSET_MANAGER.getResource<Sound>(handle); }
 

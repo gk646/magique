@@ -44,6 +44,16 @@ namespace magique
             return static_cast<enum class handle>(handle);
         }
 
+        // Function to move add a resource
+        template <typename T>
+        handle addResource(T&& resource)
+        {
+            auto& vec = getResourceVec<T>();
+            auto handle = vec.size();
+            vec.push_back(std::forward<T>(resource));
+            return static_cast<enum class handle>(handle);
+        }
+
         // Function to get a resource
         template <typename T>
         T& getResource(handle handle)
@@ -56,7 +66,7 @@ namespace magique
     };
     namespace global
     {
-        inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet> ASSET_MANAGER;
+        inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet, TileMap> ASSET_MANAGER;
 
     }
 
