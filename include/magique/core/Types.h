@@ -14,8 +14,8 @@ namespace magique
 {
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
-        uint16_t offX;   // Horizontal offset from the top left of the atlas
-        uint16_t offY;   // Vertical offset from the top left of the atlas
+        int16_t offX;   // Horizontal offset from the top left of the atlas
+        int16_t offY;   // Vertical offset from the top left of the atlas
         int16_t width;  // Width of the texture
         int16_t height; // Height of the texture
         uint16_t id;    // The texture id
@@ -23,8 +23,8 @@ namespace magique
 
     struct SpriteSheet final
     {
-        uint16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
-        uint16_t offY;   // Vertical offset from the top left of the atlas of the first frame
+        int16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
+        int16_t offY;   // Vertical offset from the top left of the atlas of the first frame
         int16_t width;   // Width of a frame
         int16_t height;  // Height of a frame
         uint16_t id;     // The texture id

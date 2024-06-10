@@ -82,10 +82,14 @@ namespace magique
     Rectangle GetCameraBounds()
     {
         const auto pad = global::CONFIGURATION.cameraViewPadding;
-        auto& camera = global::DRAW_TICK_DATA.camera;
-        auto& target = camera.target;
-        auto& offset = camera.offset;
-        return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
+        const auto& [offset, target, rotation, zoom] = global::DRAW_TICK_DATA.camera;
+
+        const float camLeft = target.x - offset.x / zoom - pad;
+        const float camTop = target.y - offset.y / zoom - pad;
+        const float camWidth = offset.x * 2 / zoom + (pad * 2);
+        const float camHeight = offset.y * 2 / zoom + (pad * 2);
+
+        return {camLeft, camTop, camWidth, camHeight};
     }
 
     void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }

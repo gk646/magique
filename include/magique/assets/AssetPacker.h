@@ -5,7 +5,6 @@
 
 #include "magique/fwd.hpp"
 
-
 //-----------------------------------------------
 // Assetpacker Module
 //-----------------------------------------------
@@ -21,7 +20,7 @@ namespace magique
 
     // Loads a compiled asset image from disk into the given container
     // Failure: Returns false
-    bool LoadAssetImage(const char* path, AssetContainer&& assets, uint64_t encryptionKey = 0);
+    bool LoadAssetImage(const char* path, AssetContainer& assets, uint64_t encryptionKey = 0);
 
 
     //----------------- UTILS -----------------//

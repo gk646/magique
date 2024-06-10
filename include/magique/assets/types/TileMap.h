@@ -22,7 +22,9 @@ namespace magique
         [[nodiscard]] int getLayerStartIndex(int layer) const;
 
         // Returns the layer count
-        [[nodiscard]] int getLayerSize() const { return width * height; }
+        [[nodiscard]] int getWidth() const { return width; }
+
+        [[nodiscard]] int getHeight() const { return height; }
 
         // Returns the layer count
         [[nodiscard]] int getLayerCount() const { return layerCount; }
@@ -31,8 +33,8 @@ namespace magique
         std::vector<uint16_t> layerData;                     // Flattened array for the tile numbers
         uint32_t layerIndices[MAGIQUE_MAX_TILEMAP_LAYERS]{}; // Layer start indices
         uint8_t layerCount = 0;                              // Layer count
-        uint16_t width = 0;
-        uint16_t height = 0;
+        int16_t width = 0;
+        int16_t height = 0;
     };
 
 } // namespace magique
