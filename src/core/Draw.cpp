@@ -1,13 +1,14 @@
 #include <cmath>
 
+#include <magique/core/Core.h>
 #include <magique/core/Draw.h>
 #include <magique/util/Defines.h>
 #include <magique/util/Macros.h>
-
-#include "external/raylib/src/rlgl.h"
-
 #include <magique/assets/types/TileMap.h>
+#include <magique/assets/types/TileSheet.h>
 
+#include "core/globals/DrawTickData.h"
+#include "external/raylib/src/rlgl.h"
 
 namespace magique
 {
@@ -122,15 +123,36 @@ namespace magique
     {
         M_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
 
-        const int size = tileMap.getLayerSize();
+        const auto cameraBounds = GetCameraBounds();
+
+        const float tileSize = tileSheet.texSize;
+        const int mapWidth = tileMap.getWidth() * tileSize;
+        const int mapHeight = tileMap.getHeight() * tileSize;
+
+        int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
+        int endTileX =
+            std::min(mapWidth - 1, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)));
+        int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
+        int endTileY =
+            std::min(mapHeight - 1, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)));
+
         auto* start = tileMap.getLayerStart(layer);
 
-        for (int i = 0; i < size; ++i)
+        float screenY = 0;
+        for (int y = startTileY; y <= endTileY; ++y)
         {
-            const auto tileNum = start[i];
-        }
+            float screenX = 0;
+            for (int x = startTileX; x <= endTileX; ++x)
+            {
+                int i = y * mapWidth + x;
+                const auto tileNum = start[i];
+                TextureRegion region = tileSheet.getRegion(tileNum);
+                DrawRegion(region, screenX, screenY);
 
-        // int startIdx = tileMap
+                screenX += tileSize;
+            }
+            screenY+= tileSize;
+        }
     }
 
 

@@ -40,8 +40,9 @@ namespace magique
 
     //----------------- Textures -----------------//
 
-    // Loads the whole texture into the given atlas
-    handle RegisterTexture(const Asset& asset, AtlasID atlas = DEFAULT);
+    // Loads the whole image as texture into the given atlas
+    // scale    - constrols the final dimensions of the resulting textures
+    handle RegisterTexture(const Asset& asset, AtlasID atlas = DEFAULT, float scale = 1);
 
     // Tries to load a .png file as sprite sheet
     // Starts at (0,0) topleft and then tries to split the image into frames row by row with the given dimensions
@@ -83,20 +84,20 @@ namespace magique
     handle RegisterTileSet(const Asset& asset);
 
     // Registers a tile sheet of textures from a single ".png" file
-    // 'width' and 'height' specify the source dimensions of each tile
+    // 'textureSize' specify the width and height of each source tile
     // 'scale' allows to scale the resulting texture (rounded down)
-    handle RegisterTileSheet(const Asset& asset, int width, int height, float scale = 1);
+    handle RegisterTileSheet(const Asset& asset, int textureSize, float scale = 1);
 
     // Same as 'RegisterTileSheet()' but takes a list of picures
     // All assets provided must have the same dimensions and be pictures
     // This is useful if you have split images instead of a single tilesheet - Use with iterateDirectory()
-    handle RegisterTileSheet(std::vector<const Asset*>& assets, int width, int height, float scale = 1);
+    handle RegisterTileSheet(std::vector<const Asset*>& assets, int textureSize, float scale = 1);
 
 
     //----------------- Get -----------------//
 
     // Returns the texture identified by this handle
-    TextureRegion GetTextureRegion(handle handle);
+    TextureRegion GetTexture(handle handle);
 
     // Returns the sprite sheet identified by this handle
     SpriteSheet GetSpriteSheet(handle handle);

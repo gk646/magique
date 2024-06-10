@@ -1,13 +1,16 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/types/TileMap.h>
+#include <magique/assets/types/TileSheet.h>
 #include <magique/util/Macros.h>
 #include <magique/core/Types.h>
 
 #include <raylib/raylib.h>
 
-#include "core/globals/AssetManager.h"
 #include "core/globals/TextureAtlas.h"
+#include "assets/LoadWrappers.h"
+#include "core/globals/AssetManager.h"
+
 
 namespace magique
 {
@@ -18,20 +21,7 @@ namespace magique
             LOG_ERROR("Trying to load texture into invalid atlas");
             return false;
         }
-
-        const auto ext = GetFileExtension(asset.name);
-        if (ext == nullptr)
-        {
-            LOG_WARNING("Loading texture with bad extension: %s", ext);
-            return false;
-        }
-        img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
-        if (img.data == nullptr)
-        {
-            LOG_ERROR("Error loading the image: %s", asset.name);
-            UnloadImage(img);
-            return false;
-        }
+        img = internal::LoadImage(asset);
         return true;
     }
 
@@ -139,7 +129,7 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTexture(const Asset& asset, const AtlasID at)
+    handle RegisterTexture(const Asset& asset, const AtlasID at, float scale)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -147,7 +137,7 @@ namespace magique
 
         auto& atlas = global::TEXTURE_ATLASES[at];
 
-        const auto region = atlas.addTexture(image);
+        const auto region = atlas.addTexture(image, (int)(scale * image.width), (int)(scale * image.height));
 
         return global::ASSET_MANAGER.addResource(region);
     }
@@ -162,17 +152,19 @@ namespace magique
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
 
 
-    handle RegisterTileSheet(const Asset& asset, int width, int height, AtlasID atlas, float scale)
+    handle RegisterTileSheet(const Asset& asset, int size, float scale)
     {
+        const auto sheet = TileSheet(asset, size, scale);
 
+        if (sheet.textureID == 0)
+        {
+            return handle::null;
+        }
 
-        return handle::null;
+        return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, AtlasID atlas, float scale)
-    {
-        return handle::null;
-    }
+    handle RegisterTileSheet(std::vector<const Asset*>& assets, int size, float scale) { return handle::null; }
 
     //----------------- GET -----------------//
 
@@ -184,6 +176,10 @@ namespace magique
     }
 
     SpriteSheet GetSpriteSheet(const handle handle) { return global::ASSET_MANAGER.getResource<SpriteSheet>(handle); }
+
+    TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
+
+    TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
 
 
 } // namespace magique

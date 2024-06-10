@@ -36,7 +36,7 @@ namespace magique
             id = tex.id;
         }
 
-        TextureRegion addTexture(const Image& image)
+        TextureRegion addTexture(const Image& image, int tarW, int tarH)
         {
             TextureRegion region = {0};
             if (!checkStep(image.width, image.height))

@@ -7,7 +7,7 @@ namespace magique
 
     GameLoader::GameLoader(const char* assetPath, uint64_t encryptionKey)
     {
-        LoadAssetImage(assetPath, std::move(assets), encryptionKey);
+        LoadAssetImage(assetPath, assets, encryptionKey);
     }
 
     void GameLoader::printStats() const

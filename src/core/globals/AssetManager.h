@@ -1,8 +1,8 @@
 #ifndef ASSETMANAGER_H
 #define ASSETMANAGER_H
 
-
 #include <cstdint>
+
 
 namespace magique
 {
@@ -64,9 +64,10 @@ namespace magique
             return getResourceVec<T>()[static_cast<uint32_t>(handle)];
         }
     };
+
     namespace global
     {
-        inline AssetManager<Sound, Music, Shader, TextureRegion, SpriteSheet, TileMap> ASSET_MANAGER;
+        inline AssetManager<TileSheet, Sound, Music, TextureRegion, SpriteSheet, TileMap> ASSET_MANAGER;
 
     }
 
