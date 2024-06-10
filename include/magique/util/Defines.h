@@ -21,8 +21,8 @@
 
 //----------------- ASSETS -----------------//
 
-#define MAGIQUE_TEXTURE_ATLAS_WIDTH 4096  // Height of each texture atlas
-#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 4096 // Width of each texture atlas
+#define MAGIQUE_TEXTURE_ATLAS_WIDTH 8192  // Height of each texture atlas
+#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192 // Width of each texture atlas
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles (for tile maps)
 #define MAGIQUE_MAX_TILEMAP_LAYERS 5
 

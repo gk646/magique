@@ -21,7 +21,7 @@ namespace magique
         }
         initCalled = true;
 
-        for (int i = 0; i < CUSTOM_2 + 1; ++i)
+        for (int i = 0; i < ENTITIES_2 + 1; ++i)
         {
             global::TEXTURE_ATLASES.emplace_back(BLANK);
         }
@@ -65,7 +65,7 @@ namespace magique
 
     void SetFont(const Font& font) { global::CONFIGURATION.font = font; }
 
-    void SetLightingModle(LightingModel model) { global::CONFIGURATION.lighting = model; }
+    void SetLightingModel(LightingModel model) { global::CONFIGURATION.lighting = model; }
 
     //----------------- GET -----------------//
 
