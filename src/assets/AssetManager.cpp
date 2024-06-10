@@ -9,12 +9,11 @@
 #include "core/globals/AssetManager.h"
 #include "core/globals/TextureAtlas.h"
 
-
 namespace magique
 {
-    bool ImageCheck(Image& img, const Asset& asset, const AtlasType at)
+    bool ImageCheck(Image& img, const Asset& asset, const AtlasID at)
     {
-        if (at > CUSTOM_2)
+        if (at > ENTITIES_2)
         {
             LOG_ERROR("Trying to load texture into invalid atlas");
             return false;
@@ -29,14 +28,14 @@ namespace magique
         img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
         if (img.data == nullptr)
         {
-            LOG_ERROR("Error loading the texture: %s", asset.name);
+            LOG_ERROR("Error loading the image: %s", asset.name);
             UnloadImage(img);
             return false;
         }
         return true;
     }
 
-    handle RegisterSpritesheet(const Asset& asset, int width, int height, AtlasType at)
+    handle RegisterSpritesheet(const Asset& asset, const int width, const int height, const AtlasID at, float scale)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -44,15 +43,26 @@ namespace magique
 
         M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
 
-        auto& atlas = global::TEXTURE_ATLASES[at];
+        const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
+        const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
 
-        const SpriteSheet sheet = atlas.addSpritesheet(image, 1, width, height, 0, 0);
+        const int frames = image.width / width * (image.height / height);
+        // All images will be layout out horizontally for fast direct access without calculations
+        if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
+        {
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.name);
+            UnloadImage(image);
+            return handle::null;
+        }
+
+        auto& atlas = global::TEXTURE_ATLASES[at];
+        const SpriteSheet sheet = atlas.addSpritesheet(image, frames, tarWidth, tarHeight, 0, 0);
 
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetEx(const Asset& asset, int width, int height, AtlasType at, int frames, int offX,
-                                 int offY)
+    handle RegisterSpritesheetEx(const Asset& asset, const int width, const int height, const int frames,
+                                 const int offX, const int offY, const AtlasID at, const float scale)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -61,14 +71,75 @@ namespace magique
         M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
         M_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
 
-        auto& atlas = global::TEXTURE_ATLASES[at];
+        const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
+        const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
 
-        const auto sheet = atlas.addSpritesheet(image, frames, width, height, offX, offY);
+        if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
+        {
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.name);
+            UnloadImage(image);
+            return handle::null;
+        }
+
+        auto& atlas = global::TEXTURE_ATLASES[at];
+        const auto sheet = atlas.addSpritesheet(image, frames, tarWidth, tarHeight, offX, offY);
 
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTexture(const Asset& asset, const AtlasType at)
+    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, AtlasID at, float scale)
+    {
+        Image image;
+        if (!ImageCheck(image, *assets[0], at))
+            return handle::null;
+
+        const int width = image.width;
+        const int height = image.height;
+
+        const float tarWidth = std::floor(static_cast<float>(width) * scale);
+        const float tarHeight = std::floor(static_cast<float>(height) * scale);
+
+        if (assets.size() * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
+        {
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", assets[0]->name);
+            UnloadImage(image);
+            return handle::null;
+        }
+
+        const Rectangle source = {0, 0, (float)width, (float)height};
+        Image singleImage = GenImageColor(assets.size() * width, height, BLANK);
+        ImageDraw(&singleImage, image, source, {0, 0, (float)width, (float)height}, WHITE);
+
+        auto offX = static_cast<float>(width);
+        for (int i = 1; i < assets.size(); ++i)
+        {
+            const auto& a = *assets[i];
+            Image newImg;
+            if (!ImageCheck(newImg, a, at))
+            {
+                UnloadImage(newImg);
+                UnloadImage(singleImage);
+                return handle::null;
+            }
+            if (image.width != width || image.height != height)
+            {
+                LOG_WARNING("Image is not the same size as others: %s", a.name);
+                UnloadImage(newImg);
+                UnloadImage(singleImage);
+                return handle::null;
+            }
+            ImageDraw(&singleImage, newImg, source, {offX, 0, (float)width, (float)height}, WHITE);
+            offX += static_cast<float>(width);
+            UnloadImage(newImg);
+        }
+
+        auto& atlas = global::TEXTURE_ATLASES[at];
+        const auto sheet = atlas.addSpritesheet(singleImage, assets.size(), tarWidth, tarHeight, 0, 0);
+
+        return global::ASSET_MANAGER.addResource(sheet);
+    }
+
+    handle RegisterTexture(const Asset& asset, const AtlasID at)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -91,13 +162,14 @@ namespace magique
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
 
 
-    handle RegisterTileSheet(const Asset& asset, int width, int height, AtlasType atlas, float scale)
+    handle RegisterTileSheet(const Asset& asset, int width, int height, AtlasID atlas, float scale)
     {
+
 
         return handle::null;
     }
 
-    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, AtlasType atlas, float scale)
+    handle RegisterTileSheet(std::vector<const Asset&>& assets, int width, int height, AtlasID atlas, float scale)
     {
         return handle::null;
     }

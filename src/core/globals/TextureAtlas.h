@@ -48,12 +48,13 @@ namespace magique
             region.offY = static_cast<uint16_t>(posY);
             region.id = static_cast<uint16_t>(id);
 
-            posX += image.width;
 
             Image atlasImage = getImg();
             // Add the image
             ImageDraw(&atlasImage, image, {0, 0, (float)image.width, (float)image.height},
                       {(float)posX, (float)posY, (float)image.width, (float)image.height}, WHITE);
+
+            posX += image.width;
 
             UnloadImage(image);
 
@@ -63,9 +64,9 @@ namespace magique
         SpriteSheet addSpritesheet(const Image& image, const int frames, int tarW, int tarH, int offX, int offY)
         {
             SpriteSheet sheet = {0};
-            const int totalWidth = frames * image.width;
+            const int totalWidth = frames * tarW;
 
-            if (!checkStep(totalWidth, image.height))
+            if (!checkStep(totalWidth, tarH))
                 return sheet;
 
             sheet.width = static_cast<uint16_t>(tarW);
@@ -156,7 +157,7 @@ namespace magique
 
     namespace global
     {
-        inline cxstructs::StackVector<TextureAtlas, CUSTOM_2 + 1> TEXTURE_ATLASES;
+        inline cxstructs::StackVector<TextureAtlas, ENTITIES_2+1 > TEXTURE_ATLASES;
 
     }
 } // namespace magique

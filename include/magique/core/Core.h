@@ -49,7 +49,7 @@ namespace magique
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
-    void SetLightingModle(LightingModel model);
+    void SetLightingModel(LightingModel model);
 
     //----------------- Logic Tick Data -----------------// // Updated at the beginning of each update tick
     // IMPORTANT: If you access this data on the draw thread (main thread) AND outside of drawGame() needs to be synced

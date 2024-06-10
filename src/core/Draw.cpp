@@ -68,7 +68,7 @@ namespace magique
     {
         // Check if the region is valid
         M_ASSERT(sheet.id > 0, "The texture for this region is invalid");
-        M_ASSERT(frame >= 0 && frame <= sheet.frames, "Out of bounds frame");
+        M_ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
 
         x = std::floor(x); // Flooring to avoid texture glitches
         y = std::floor(y);
