@@ -92,6 +92,18 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
+    Rectangle GetCameraNativeBounds()
+    {
+        const auto& [offset, target, rotation, zoom] = global::DRAW_TICK_DATA.camera;
+
+        const float camLeft = target.x - offset.x / zoom ;
+        const float camTop = target.y - offset.y / zoom ;
+        const float camWidth = offset.x * 2 / zoom ;
+        const float camHeight = offset.y * 2 / zoom ;
+
+        return {camLeft, camTop, camWidth, camHeight};
+    }
+
     void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }
 
     void UnSyncThreads() { global::LOGIC_TICK_DATA.unlock(); }

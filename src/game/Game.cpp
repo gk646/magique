@@ -17,6 +17,7 @@
 #include "Renderer.h"
 
 CoreData CORE = {0};
+rlglData RLGL = {0};
 
 namespace magique
 {

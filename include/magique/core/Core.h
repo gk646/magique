@@ -70,9 +70,11 @@ namespace magique
     // Specifically the entities position offset by its collision bounds (if any)
     Vector2 GetCameraPosition();
 
-    // Returns the bounds of the camera rect including the view padding
+    // Returns the bounds of the camera rect including the view padding and zoom
     Rectangle GetCameraBounds();
 
+    // Returns the bounds of camera without padding
+    Rectangle GetCameraNativeBounds();
     //----------------- THREADING -----------------//
 
     // You generally dont have to call this - only call this if you know what it does

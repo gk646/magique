@@ -110,8 +110,6 @@
 #include <time.h>                   // Required for: time() [Used in InitTimer()]
 #include <math.h>                   // Required for: tan() [Used in BeginMode3D()], atan2f() [Used in LoadVrStereoConfig()]
 
-#define RLGL_IMPLEMENTATION
-#include "rlgl.h"                   // OpenGL abstraction layer to OpenGL 1.1, 3.3+ or ES2
 
 #define RAYMATH_IMPLEMENTATION
 #include "raymath.h"                // Vector2, Vector3, Quaternion and Matrix functionality
@@ -201,7 +199,12 @@ unsigned int __stdcall timeEndPeriod(unsigned int uPeriod);
 // Defines and Macros
 //----------------------------------------------------------------------------------
 
+#include "external/glad.h"
 #include "coredata.h"
+
+#define RLGL_IMPLEMENTATION
+#include "rlgl.h"                   // OpenGL abstraction layer to OpenGL 1.1, 3.3+ or ES2
+
 
 // Flags operation macros
 #define FLAG_SET(n, f) ((n) |= (f))
@@ -693,6 +696,9 @@ void BeginDrawing(void)
     rlLoadIdentity();                   // Reset current matrix (modelview)
     rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling
 
+    RLGL.State.prevDrawCalls = RLGL.State.drawCalls;
+    RLGL.State.drawCalls = 0;
+
     //rlTranslatef(0.375, 0.375, 0);    // HACK to have 2D pixel-perfect drawing on OpenGL 1.1
                                         // NOTE: Not required with OpenGL 3.3+
 }
@@ -701,7 +707,6 @@ void BeginDrawing(void)
 void EndDrawing(void)
 {
     rlDrawRenderBatchActive();      // Update and draw internal render batch
-
 #if defined(SUPPORT_GIF_RECORDING)
     // Draw record indicator
     if (gifRecording)

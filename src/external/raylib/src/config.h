@@ -28,6 +28,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define STBIR_DEFAULT_FILTER_UPSAMPLE STBIR_FILTER_POINT_SAMPLE
+
 //------------------------------------------------------------------------------------
 // Module selection - Some modules could be avoided
 // Mandatory modules: rcore, rlgl, utils

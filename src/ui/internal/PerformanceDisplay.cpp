@@ -7,6 +7,8 @@
 #include "core/globals/Configuration.h"
 #include "core/globals/PerfData.h"
 
+#include "external/raylib/src/coredata.h"
+
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1
 #include <steam/steam_api.h>
 #include "multiplayer/MultiplayerSession.h"
@@ -72,6 +74,11 @@ void PerformanceDisplay::updateValues()
     block++;
     val = static_cast<float>(magique::global::PERF_DATA.drawTickTime) / 1'000'000.0F;
     snprintf(blocks[block].text, 32, "GPU: %.1f", val);
+    blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
+
+    block++;
+    val = RLGL.State.prevDrawCalls;
+    snprintf(blocks[block].text, 32, "Draw Calls: %.1d", (int)val);
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1

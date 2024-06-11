@@ -104,7 +104,10 @@ namespace magique
     }
 
 
-    const uint16_t* TileMap::getLayerStart(const int layer) const { return &layerData[getLayerStartIndex(layer)]; }
+    const uint16_t* TileMap::getLayerStart(const int layer) const
+    {
+        return &layerData[getLayerStartIndex(layer)];
+    }
 
 
     int TileMap::getLayerStartIndex(const int layer) const

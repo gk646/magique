@@ -6,6 +6,7 @@ namespace magique
 {
     inline void AssignCameraData(entt::registry& registry)
     {
+        global::LOGIC_TICK_DATA.lock();
         const auto view = registry.view<const CameraC, const PositionC>();
         auto& tickData = global::DRAW_TICK_DATA;
 #if MAGIQUE_DEBUG == 1
@@ -34,6 +35,7 @@ namespace magique
 #if MAGIQUE_DEBUG == 1
         //M_ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
+        global::LOGIC_TICK_DATA.unlock();
     }
 
 

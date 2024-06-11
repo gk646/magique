@@ -10,7 +10,7 @@ struct PerformanceBlock final
 
 struct PerformanceDisplay
 {
-    PerformanceBlock blocks[5]; // 5 blocks for FPS, CPU, GPU, Upload, Download
+    PerformanceBlock blocks[6]; // 5 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
     int tickCounter = 0;
     int updateDelayTicks = 10;
 
