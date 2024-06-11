@@ -16,26 +16,28 @@ namespace magique
         Rectangle src{0, 0, (float)textureSize, (float)textureSize};
         Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
 
+        texPerRow = texImage.width / static_cast<int>(dst.width);
+        texSize = static_cast<int16_t>(dst.width);
+
         while (src.y < img.height)
         {
-            ImageDraw(&texImage, img, src, dst, WHITE);
-            src.x += src.width;
-            dst.x += dst.width;
-            if (src.x >= img.width)
+            for (int i = 0; i < texPerRow; ++i)
             {
-                src.x = 0;
-                src.y += src.height;
-            }
-
-            if (dst.x >= texImage.width)
-            {
-                dst.x = 0;
-                dst.y += dst.height;
-                if (dst.y >= texImage.height)
+                ImageDraw(&texImage, img, src, dst, WHITE);
+                src.x += src.width;
+                dst.x += dst.width;
+                if (src.x >= img.width)
                 {
-                    LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.name);
-                    break;
+                    src.x = 0;
+                    src.y += src.height;
                 }
+            }
+            dst.x = 0;
+            dst.y += dst.height;
+            if (dst.y >= texImage.height)
+            {
+                LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.name);
+                break;
             }
         }
 
@@ -45,8 +47,6 @@ namespace magique
             LOG_ERROR("Failed to load tilesheet to GPU: %s", asset.name);
         }
         textureID = tex.id;
-        texSize = static_cast<int>(dst.width);
-        texPerRow = texImage.width / static_cast<int>(dst.width);
 
         UnloadImage(texImage);
         UnloadImage(img);
@@ -57,11 +57,16 @@ namespace magique
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {
+        if (tileNum == 0)
+        {
+            return {static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
+                    static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize), texSize, texSize, textureID};
+        }
         // M_ASSERT(offsets.size() > tileNum, "No texture stored for that tileNum");
         //const uint32_t texOff = 1;
 
-        const int16_t row = tileNum / texPerRow;
-        const int16_t colum = tileNum - row * texPerRow;
+        const int16_t row = (tileNum-1) / texPerRow;
+        const int16_t colum = (tileNum-1) - row * texPerRow;
 
         return {static_cast<int16_t>(colum * texSize), static_cast<int16_t>(row * texSize), texSize, texSize,
                 textureID};

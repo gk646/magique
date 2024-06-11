@@ -84,14 +84,15 @@ namespace magique
     handle RegisterTileSet(const Asset& asset);
 
     // Registers a tile sheet of textures from a single ".png" file
-    // 'textureSize' specify the width and height of each source tile
-    // 'scale' allows to scale the resulting texture (rounded down)
-    handle RegisterTileSheet(const Asset& asset, int textureSize, float scale = 1);
+    // IMPORTANT: Make sure the tilesheet has exact dimensions and no padding!
+    // 'textureSize'    - specify the width and height of each source tile
+    // 'scale'          - allows to scale the resulting texture (rounded down)
+    handle RegisterTileSheet(const Asset& asset, int tileSize, float scale = 1);
 
     // Same as 'RegisterTileSheet()' but takes a list of picures
     // All assets provided must have the same dimensions and be pictures
     // This is useful if you have split images instead of a single tilesheet - Use with iterateDirectory()
-    handle RegisterTileSheet(std::vector<const Asset*>& assets, int textureSize, float scale = 1);
+    handle RegisterTileSheet(std::vector<const Asset*>& assets, int tileSize, float scale = 1);
 
 
     //----------------- Get -----------------//

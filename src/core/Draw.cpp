@@ -7,7 +7,7 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 
-#include "core/globals/DrawTickData.h"
+#define GRAPHICS_API_OPENGL_33
 #include "external/raylib/src/rlgl.h"
 
 namespace magique
@@ -94,28 +94,30 @@ namespace magique
         const float texCoordBottom = (offsetY + texHeight) / atlasHeight;
 
         rlSetTexture(sheet.id);
-        rlBegin(RL_QUADS);
+        {
+            rlBegin(RL_QUADS);
+            {
+                rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+                rlNormal3f(0.0f, 0.0f, 1.0f); // Normal vector pointing towards the viewer
 
-        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-        rlNormal3f(0.0f, 0.0f, 1.0f); // Normal vector pointing towards the viewer
+                // Top-left corner for region and quad
+                rlTexCoord2f(texCoordLeft, texCoordTop);
+                rlVertex2f(x, y);
 
-        // Top-left corner for region and quad
-        rlTexCoord2f(texCoordLeft, texCoordTop);
-        rlVertex2f(x, y);
+                // Bottom-left corner for region and quad
+                rlTexCoord2f(texCoordLeft, texCoordBottom);
+                rlVertex2f(x, y + texHeight);
 
-        // Bottom-left corner for region and quad
-        rlTexCoord2f(texCoordLeft, texCoordBottom);
-        rlVertex2f(x, y + texHeight);
+                // Bottom-right corner for region and quad
+                rlTexCoord2f(texCoordRight, texCoordBottom);
+                rlVertex2f(x + texWidth, y + texHeight);
 
-        // Bottom-right corner for region and quad
-        rlTexCoord2f(texCoordRight, texCoordBottom);
-        rlVertex2f(x + texWidth, y + texHeight);
-
-        // Top-right corner for region and quad
-        rlTexCoord2f(texCoordRight, texCoordTop);
-        rlVertex2f(x + texWidth, y);
-
-        rlEnd();
+                // Top-right corner for region and quad
+                rlTexCoord2f(texCoordRight, texCoordTop);
+                rlVertex2f(x + texWidth, y);
+            }
+            rlEnd();
+        }
         rlSetTexture(0);
     }
 
@@ -123,36 +125,38 @@ namespace magique
     {
         M_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
 
-        const auto cameraBounds = GetCameraBounds();
+        const auto cameraBounds = GetCameraNativeBounds();
 
         const float tileSize = tileSheet.texSize;
-        const int mapWidth = tileMap.getWidth() * tileSize;
-        const int mapHeight = tileMap.getHeight() * tileSize;
+        const int mapWidth = tileMap.getWidth() * static_cast<int>(tileSize);
+        const int mapHeight = tileMap.getHeight() * static_cast<int>(tileSize);
+        const int mapWidthTiles = tileMap.getWidth();
 
-        int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
-        int endTileX =
-            std::min(mapWidth - 1, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)));
-        int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
-        int endTileY =
-            std::min(mapHeight - 1, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)));
+        const int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
+        const int endTileX =
+            std::min(mapWidth - 1, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)+1));
+        const int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
+        const int endTileY =
+            std::min(mapHeight - 1, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)+1));
 
-        auto* start = tileMap.getLayerStart(layer);
+        auto* start = tileMap.getLayerStart(layer) + startTileX + startTileY * mapWidthTiles;
+        const int diffX = endTileX - startTileX;
+        const int diffY = endTileY - startTileY;
+        const float startX = static_cast<float>(startTileX) * tileSize;
 
-        float screenY = 0;
-        for (int y = startTileY; y <= endTileY; ++y)
+        float screenY = static_cast<float>(startTileY) * tileSize;
+        for (int i = 0; i < diffY; ++i)
         {
-            float screenX = 0;
-            for (int x = startTileX; x <= endTileX; ++x)
+            float screenX = startX;
+            for (int j = 0; j < diffX; ++j)
             {
-                int i = y * mapWidth + x;
-                const auto tileNum = start[i];
-                TextureRegion region = tileSheet.getRegion(tileNum);
-                DrawRegion(region, screenX, screenY);
-
+                DrawRegion(tileSheet.getRegion(start[j]), screenX, screenY);
                 screenX += tileSize;
             }
-            screenY+= tileSize;
+            start += mapWidthTiles;
+            screenY += tileSize;
         }
+
     }
 
 
