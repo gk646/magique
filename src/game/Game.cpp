@@ -1,5 +1,7 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <magique/assets/AssetLoader.h>
+#include <magique/persistence/container/GameConfig.h>
 #include <cxstructs/SmallVector.h>
 
 #include "external/raylib/src/rlgl.h"
@@ -46,9 +48,10 @@ namespace magique
     int Game::run(const char* assetPath, const uint64_t encryptionKey)
     {
         auto& loader = global::CURRENT_GAME_LOADER;
-        loader = new GameLoader{assetPath, encryptionKey};
-        onStartup(*static_cast<GameLoader*>(loader));
-        static_cast<GameLoader*>(loader)->registerTask(
+        loader = new AssetLoader{assetPath, encryptionKey};
+        GameConfig config;
+        onStartup(*static_cast<AssetLoader*>(loader),config);
+        static_cast<AssetLoader*>(loader)->registerTask(
             [](AssetContainer&)
             {
                 for (auto& atlas : global::TEXTURE_ATLASES)
@@ -57,7 +60,7 @@ namespace magique
                 }
             },
             MAIN_THREAD, LOW);
-        static_cast<GameLoader*>(loader)->printStats();
+        static_cast<AssetLoader*>(loader)->printStats();
 
         _isLoading = true;
 

@@ -1,24 +1,21 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include <magique/fwd.hpp>
 #include <entt/entity/fwd.hpp>
-#include <raylib/raylib.h>
-#include <magique/core/GameLoader.h>
 
 //-----------------------------------------------
 // Game module
 //-----------------------------------------------
-
-// .....................................................................
+// ................................................................................
 // Core game class you should subclass
 // All methods are called on the main thread unless specified otherwise.
 // A note on the threading behavior:
 // There is a update thread and the main thread. They almost fully run in paralell expect when some shared state is mutated
 // So if you add or destoy entities there has to be locks. If you use the ecs API of magique you dont have to worry about that
-// Also magique uses primitive atomics with spinlocks to avoid context switching! Generally 99% of the time no thread will wait!
-//
+// Also magique uses primitive atomics with spinlocks to avoid context switching! Generally 95% of the time no thread will wait!
 // All input getters of raylib work on either thread correctly and are updated at the end of each update tick!
-// .....................................................................
+// ................................................................................
 
 namespace magique
 {
@@ -32,13 +29,13 @@ namespace magique
         //-----------------LIFE CYCLE-----------------//
 
         // Called on startup - register your loaders here
-        virtual void onStartup(GameLoader& gl) {}
+        virtual void onStartup(AssetLoader& al, GameConfig& config) {}
+
+        // Called when the game closes - register you savers here
+        virtual void onShutDown(ConfigSaver& cs) {}
 
         // Called when the windows close button is pressed
         virtual void onCloseEvent() { _isRunning = false; }
-
-        // Called when the game closes
-        virtual void onShutDown() {}
 
         // Calls the close event
         void shutDown();

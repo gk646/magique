@@ -1,0 +1,4 @@
+#ifndef SAVELOADER_H
+#define SAVELOADER_H
+
+#endif //SAVELOADER_H

@@ -6,7 +6,6 @@
 #include <cxutil/cxstring.h>
 #include <magique/util/Macros.h>
 
-
 namespace magique
 {
     TileMap::TileMap(const Asset& asset)
@@ -96,25 +95,17 @@ namespace magique
                  layerWidth, layerHeight);
     }
 
-
     uint16_t& TileMap::getTileNum(const int x, const int y, const int layer)
     {
         const auto start = getLayerStartIndex(layer);
         return layerData[start + y * width + x];
     }
 
-
-    const uint16_t* TileMap::getLayerStart(const int layer) const
-    {
-        return &layerData[getLayerStartIndex(layer)];
-    }
-
+    const uint16_t* TileMap::getLayerStart(const int layer) const { return &layerData[getLayerStartIndex(layer)]; }
 
     int TileMap::getLayerStartIndex(const int layer) const
     {
         M_ASSERT(layer < layerCount, "Layer out of bounds! 0-based indexing!");
         return static_cast<int>(layerIndices[layer]);
     }
-
-
 } // namespace magique

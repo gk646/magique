@@ -65,7 +65,6 @@ private:
     }
 };
 
-
 namespace magique
 {
     int FindAssetPos(const std::vector<Asset>& assets, const char* name)

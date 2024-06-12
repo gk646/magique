@@ -7,6 +7,7 @@ add_subdirectory(game)
 add_subdirectory(core)
 add_subdirectory(ui)
 add_subdirectory(util)
+add_subdirectory(persistance)
 
 # Dependencies
 add_subdirectory(external)
@@ -21,6 +22,7 @@ add_library(${TARGET_NAME} STATIC
         $<TARGET_OBJECTS:${TARGET_NAME}_game>
         $<TARGET_OBJECTS:${TARGET_NAME}_util>
         $<TARGET_OBJECTS:${TARGET_NAME}_ui>
+        $<TARGET_OBJECTS:${TARGET_NAME}_persistence>
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC raylib)

@@ -1,5 +1,5 @@
-#ifndef GAMELOADER_H
-#define GAMELOADER_H
+#ifndef MAGIQUE_ASSETLOADER_H
+#define MAGIQUE_ASSETLOADER_H
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/TaskExecutor.h>
@@ -7,7 +7,7 @@
 //-----------------------------------------------
 // Game Loader
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // The main loader to get from startup to the initialized game (MainMenu)
 // Theres 2 guarantees when using the loader:
 //  - The task is guaranteed be executed on the main thread if specified
@@ -21,11 +21,11 @@
 
 namespace magique
 {
-    using GameLoadFunc = void (*)(AssetContainer&); // Typedef for simple tasks not requiring variables
+    using AssetLoadFunc = void (*)(AssetContainer&); // Typedef for simple tasks not requiring variables
 
-    struct GameLoader final : TaskExecutor<AssetContainer>
+    struct AssetLoader final : TaskExecutor<AssetContainer>
     {
-        GameLoader(const char* assetPath, uint64_t encryptionKey);
+        AssetLoader(const char* assetPath, uint64_t encryptionKey);
 
         // Prints current stats - automatically called if all task are registered
         void printStats() const;
@@ -46,7 +46,7 @@ namespace magique
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(GameLoadFunc func, Thread thread, PriorityLevel pl = MED, int impact = 1);
+        void registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl = MED, int impact = 1);
 
     private:
         AssetContainer assets;
@@ -54,4 +54,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //GAMELOADER_H
+#endif //MAGIQUE_ASSETLOADER_H

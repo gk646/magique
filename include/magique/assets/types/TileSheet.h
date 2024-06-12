@@ -7,13 +7,13 @@
 //-----------------------------------------------
 // TileSheet
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // Defines the textures associated with the tile numbers from a TileMap
 // You should only have 1 per project and all TileMaps should use that TileSheet
 // But if you want you can have multiple - just pay attention to what map is using which indices to map textures correctly
 // Note that after creating a TileSheet its final and cannot be changed
 // Only supports quadratic textures
-// .....................................................................
+// ................................................................................
 
 namespace magique
 {

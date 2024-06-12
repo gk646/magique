@@ -1,0 +1,1 @@
+#include <magique/persistence/GameSaver.h>
