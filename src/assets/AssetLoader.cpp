@@ -1,26 +1,22 @@
 #include <magique/assets/AssetPacker.h>
-#include <magique/core/GameLoader.h>
+#include <magique/assets/AssetLoader.h>
 #include <magique/util/Logging.h>
 
 namespace magique
 {
-
-    GameLoader::GameLoader(const char* assetPath, uint64_t encryptionKey)
+    AssetLoader::AssetLoader(const char* assetPath, uint64_t encryptionKey)
     {
         LoadAssetImage(assetPath, assets, encryptionKey);
     }
 
-    void GameLoader::printStats() const
+    void AssetLoader::printStats() const
     {
         LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
     }
 
-    bool GameLoader::load()
-    {
-        return loadLoop(assets);
-    }
+    bool AssetLoader::load() { return loadLoop(assets); }
 
-    bool BasicChecks(void* func, PriorityLevel pl, int impact)
+    bool BasicChecks(const void* func, const PriorityLevel pl, const int impact)
     {
         if (func == nullptr)
         {
@@ -41,7 +37,7 @@ namespace magique
         return true;
     }
 
-    void GameLoader::registerTask(ITask<AssetContainer>* task, Thread thread, PriorityLevel pl, int impact)
+    void AssetLoader::registerTask(ITask<AssetContainer>* task, Thread thread, PriorityLevel pl, int impact)
     {
         if (!BasicChecks(task, pl, impact))
             return;
@@ -50,13 +46,11 @@ namespace magique
     }
 
 
-    void GameLoader::registerTask(GameLoadFunc func, Thread thread, PriorityLevel pl, int impact)
+    void AssetLoader::registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl, int impact)
     {
         if (!BasicChecks(func, pl, impact))
             return;
 
         addLambdaTask(func, pl, thread, impact);
     }
-
-
 } // namespace magique

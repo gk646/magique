@@ -7,7 +7,6 @@
 
 namespace magique
 {
-
     TileSheet::TileSheet(const Asset& asset, int textureSize, float scale)
     {
         auto img = internal::LoadImage(asset);
@@ -53,7 +52,6 @@ namespace magique
     }
 
     TileSheet::TileSheet(const std::vector<const Asset*>& assets, int textureSize, float scale) {}
-
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {

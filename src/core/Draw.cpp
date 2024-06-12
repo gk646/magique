@@ -7,7 +7,6 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 
-#define GRAPHICS_API_OPENGL_33
 #include "external/raylib/src/rlgl.h"
 
 namespace magique
@@ -134,10 +133,10 @@ namespace magique
 
         const int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
         const int endTileX =
-            std::min(mapWidth - 1, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)+1));
+            std::min(mapWidth , static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)+1));
         const int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
         const int endTileY =
-            std::min(mapHeight - 1, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)+1));
+            std::min(mapHeight, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)+1));
 
         auto* start = tileMap.getLayerStart(layer) + startTileX + startTileY * mapWidthTiles;
         const int diffX = endTileX - startTileX;

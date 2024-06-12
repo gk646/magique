@@ -9,8 +9,6 @@ namespace magique
 {
     inline void RenderHardShadows(entt::registry& registry)
     {
-        ClearBackground(BLACK);
-
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
@@ -47,7 +45,7 @@ namespace magique
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-        const Rectangle backRect = GetCameraBounds();
+        const Rectangle backRect = GetCameraNativeBounds();
 
         Matrix projectionMatrix =
             MatrixOrtho(0.0f, CORE.Window.currentFbo.width, CORE.Window.currentFbo.height, 0.0f, 0.0f, 1.0f);

@@ -6,9 +6,9 @@
 //-----------------------------------------------
 // Types Modules
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // These are common types used by the engine
-// .....................................................................
+// ................................................................................
 
 namespace magique
 {
@@ -23,8 +23,8 @@ namespace magique
 
     struct SpriteSheet final
     {
-        int16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
-        int16_t offY;   // Vertical offset from the top left of the atlas of the first frame
+        int16_t offX;    // Horizontal offset from the top left of the atlas of the first frame
+        int16_t offY;    // Vertical offset from the top left of the atlas of the first frame
         int16_t width;   // Width of a frame
         int16_t height;  // Height of a frame
         uint16_t id;     // The texture id
@@ -38,11 +38,56 @@ namespace magique
         NONE,
     };
 
+    // Efficient representation of a keybind with optional modifiers
+    struct Keybind final
+    {
+        Keybind() = default;
+        explicit Keybind(int keyCode, bool shiftDown = false, bool CTRLDown = false, bool altDown = false);
+        [[nodiscard]] bool isKeyPressed() const;
+        [[nodiscard]] bool isKeyDown() const;
+        // Returns only the release of the base key
+        [[nodiscard]] bool isKeyReleased() const;
+
+        // Returns the base key code
+        [[nodiscard]] int getKey() const;
+
+        [[nodiscard]] bool hasShift() const;
+        [[nodiscard]] bool hasCtrl() const;
+        [[nodiscard]] bool hasAlt() const;
+
+    private:
+        uint16_t data = 0;
+    };
+
+    // Efficient representation of a setting with mulitple different types
+    struct Setting final
+    {
+        // Supported types:
+        Setting() = default;
+        explicit Setting(Vector2& val);
+        explicit Setting(int val);
+        explicit Setting(bool val);
+        explicit Setting(float val);
+
+        // Retrieve the settings values
+        // IMPORTANT: needs to be the same type that was used to save!
+        template <typename T>
+        T get() const;
+
+        // Saves this value for the setting
+        // Can be used to override datatype aswell
+        template <typename T>
+        void save(const T& value);
+
+    private:
+        int64_t data = 0;
+    };
+
+
     //----------------- MULTIPLAYER -----------------//
 
     enum UpdateFlag : uint8_t
     {
-        //-----------UPDATE_TYPES-----------//
         UPDATE_DELETE_ENTITY = 1,
         UPDATE_POSITION_ENTITY = 2,
         UPDATE_HEALTH_ENTITY = 4,
@@ -73,7 +118,8 @@ namespace magique
         CLIENT_EFFECT_UPDATE,
     };
 
+
 } // namespace magique
 
 
-#endif //TYPES_H
+#endif //MAGIQUE_TYPES_H

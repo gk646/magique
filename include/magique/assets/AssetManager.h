@@ -7,7 +7,7 @@
 //-----------------------------------------------
 // Asset Management Module
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // Per default all methods are made to load from memory to work with the asset image
 // Textures are automatically stitched into the default or a specified one
 // Try to group all textures that are drawn together into the same atlas
@@ -18,7 +18,7 @@
 // The handles are direct indices for lookups in those vectors O(1)
 // All method return handle::null if there are errors!
 // Note: Register- here is equal to Load- , but signifies that they are held internally and accessable via the handle
-// .....................................................................
+// ................................................................................
 
 namespace magique
 {

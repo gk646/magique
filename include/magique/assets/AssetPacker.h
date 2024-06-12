@@ -9,7 +9,7 @@
 // Assetpacker Module
 //-----------------------------------------------
 
-// .....................................................................
+// ................................................................................
 // You do not need to call the 'LoadAssetImage' function if you use the game template
 // The compile image can be helpful when iterating to always have the latest version of your resources compiled
 // Just add it before you start the game but remove it for release builds!

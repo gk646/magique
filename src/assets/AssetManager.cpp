@@ -11,7 +11,6 @@
 #include "assets/LoadWrappers.h"
 #include "core/globals/AssetManager.h"
 
-
 namespace magique
 {
     bool ImageCheck(Image& img, const Asset& asset, const AtlasID at)
@@ -142,7 +141,6 @@ namespace magique
         return global::ASSET_MANAGER.addResource(region);
     }
 
-
     handle RegisterTileMap(const Asset& asset)
     {
         auto tileMap = TileMap(asset);
@@ -150,7 +148,6 @@ namespace magique
     }
 
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
-
 
     handle RegisterTileSheet(const Asset& asset, int size, float scale)
     {
@@ -180,6 +177,4 @@ namespace magique
     TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
 
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
-
-
 } // namespace magique

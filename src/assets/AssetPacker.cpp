@@ -25,7 +25,6 @@
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 
-
 namespace fs = std::filesystem;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
@@ -40,9 +39,8 @@ namespace
         }
     }
 
-    // GIANT MEMORY LEAK NEED TO FIX !!!!
     bool LoadImageFromMemory(char* imageData, uint32_t imageSize, std::vector<magique::Asset>& assets,
-                             uint64_t encryptionKey)
+                             const uint64_t encryptionKey)
     {
         uint32_t totalSize = 0;
         uint32_t filePointer = 0;
@@ -151,13 +149,11 @@ namespace
         LOG_ERROR("Error: Given path is not directory or file: %s", directory);
         return false;
     }
-
 } // namespace
 
 namespace magique
 {
-
-    bool LoadAssetImage(const char* path, AssetContainer& container, const uint64_t encryptionKey)
+    bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
         if (!std::filesystem::exists(path))
         {
@@ -172,9 +168,9 @@ namespace magique
             const auto fileData = new char[imageSize];
             file.read(fileData, imageSize);
             file.close();
-            std::vector<Asset> assets;
-            const bool res = LoadImageFromMemory(fileData, imageSize, assets, encryptionKey);
-            container = AssetContainer{fileData, std::move(assets)};
+            std::vector<Asset> assetList;
+            const bool res = LoadImageFromMemory(fileData, imageSize, assetList, encryptionKey);
+            assets = AssetContainer{fileData, std::move(assetList)};
             if (res)
             {
                 LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %.2f mb", path,
@@ -188,7 +184,6 @@ namespace magique
         file.close();
         return false;
     }
-
 
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey)
     {
@@ -268,5 +263,4 @@ namespace magique
                  cxstructs::getTime<std::chrono::milliseconds>(), writtenSize / 1'000'000.0F);
         return true;
     }
-
 } // namespace magique

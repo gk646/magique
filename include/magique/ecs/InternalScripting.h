@@ -8,7 +8,7 @@
 //-----------------------------------------------
 // Internal Scripting Module
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // I thought quite a bit about how to do scripting. The main problem is that by
 // allowing users to create their own components and functions its very hard
 // to create a good scripting interface. This problem doesnt occur in other engines
@@ -19,7 +19,7 @@
 // A script here is actually universal for all entities of that type and only exists once!
 // All players have the same logic, all skeletons have the same base logic.
 // Of course their component state can be different and they will behave differently
-// .....................................................................
+// ................................................................................
 
 namespace magique
 {

@@ -7,12 +7,12 @@
 //-----------------------------------------------
 // Components Module
 //-----------------------------------------------
-// .....................................................................
+// ................................................................................
 // These are the built in components
 // They are quite basic and shouldnt limit
 // Note that EntityID and MapID are user defined types. These represent the notion of different type
 // of maps (levels, zones...) and entity types (classes...).
-// .....................................................................
+// ................................................................................
 
 enum LightStyle : uint8_t
 {
