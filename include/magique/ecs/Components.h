@@ -16,7 +16,8 @@
 
 enum LightStyle : uint8_t
 {
-    POINT_LIGHT_SOFT,
+    POINT_LIGHT_SOFT, // point ligtht
+    DIRECTIONAL_LIGHT_STRONG, // Sunlight
 };
 
 // Shape classes

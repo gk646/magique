@@ -4,40 +4,21 @@
 
 namespace magique
 {
-    inline void AssignCameraData(entt::registry& registry)
+    // Logic loop as authority over the state
+    // Render thread just draws the current state
+    inline void AssignDrawTickCamera()
     {
         global::LOGIC_TICK_DATA.lock();
-        const auto view = registry.view<const CameraC, const PositionC>();
-        auto& tickData = global::DRAW_TICK_DATA;
-#if MAGIQUE_DEBUG == 1
-        int count = 0;
-#endif
-        const float sWidth = GetScreenWidth();
-        const float sHeight = GetScreenHeight();
-        for (const auto e : view)
         {
-            const auto& pos = view.get<PositionC>(e);
-            tickData.cameraMap = pos.map;
-            tickData.camera.offset = {sWidth / 2, sHeight / 2};
-            tickData.cameraEntity = e;
-            tickData.camera.target = {pos.x, pos.y};
-#if MAGIQUE_DEBUG == 1
-            count++;
-#endif
+            auto& drawTick = global::DRAW_TICK_DATA;
+            auto& logicTick = global::LOGIC_TICK_DATA;
+
+            drawTick.camera = logicTick.camera;
+            drawTick.cameraMap = logicTick.cameraMap;
+            drawTick.cameraEntity = logicTick.cameraEntity;
         }
-        // Center the camera
-        const auto coll = REGISTRY.try_get<CollisionC>(global::DRAW_TICK_DATA.cameraEntity);
-        if (coll) [[likely]]
-        {
-            tickData.camera.offset.x -= static_cast<float>(coll->width) / 2.0F;
-            tickData.camera.offset.y -= static_cast<float>(coll->height) / 2.0F;
-        }
-#if MAGIQUE_DEBUG == 1
-        //M_ASSERT(count < 2, "You have multiple cameras? O.O");
-#endif
         global::LOGIC_TICK_DATA.unlock();
     }
-
 
 } // namespace magique
 

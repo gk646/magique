@@ -10,7 +10,7 @@ namespace magique
 
     struct Keybind; // Efficient representation of a keybind
     struct Setting; // A
-
+    struct Puint;   // uint16_t point class
     //----------------- LOADING & SAVING -----------------//
 
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
@@ -62,11 +62,11 @@ namespace magique
 
 //----------------- USER DEFINED -----------------//
 
-enum EntityID : uint16_t;          // User implemented to denote different entity types
-enum class HandleID : int;         // User implemented to denote different handles
-enum class MapID : uint8_t;        // User implemented to denote different maps
-enum class KeybindID : uint16_t;   // User implemented to denote different keybinds
-enum class SettingID : uint16_t;   // User implemented to denote different settings
+enum EntityID : uint16_t;             // User implemented to denote different entity types
+enum class HandleID : int;            // User implemented to denote different handles
+enum class MapID : uint8_t;           // User implemented to denote different maps
+enum class KeybindID : uint16_t;      // User implemented to denote different keybinds
+enum class SettingID : uint16_t;      // User implemented to denote different settings
 enum class ConfigStringID : uint16_t; // User implemented to denote different config string
 
 //-----------------RAYLIB-----------------//

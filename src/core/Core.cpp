@@ -27,7 +27,7 @@ namespace magique
         }
 
         auto& config = global::CONFIGURATION;
-
+        config.shadowResolution = {1280, 960};
         config.font = GetFontDefault();
 
         if (config.font.texture.id == 0)
@@ -37,13 +37,18 @@ namespace magique
         }
 
         auto& shaders = global::SHADERS;
+        shaders.init();
         shaders.light = LoadShaderFromMemory(lightVert, lightFrag);
         shaders.shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
 
         shaders.lightLightLoc = GetShaderLocation(shaders.light, "lightPos");
         shaders.lightColorLoc = GetShaderLocation(shaders.light, "lightColor");
+        shaders.lightTypeLoc = GetShaderLocation(shaders.light, "lightType");
+        shaders.lightIntensityLoc = GetShaderLocation(shaders.light, "intensity");
+
         shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
         shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
+
 
         return true;
     }
@@ -75,14 +80,14 @@ namespace magique
 
     const std::vector<entt::entity>& GetDrawEntities() { return global::LOGIC_TICK_DATA.drawVec; }
 
-    MapID GetCameraMap() { return global::DRAW_TICK_DATA.cameraMap; }
+    MapID GetCameraMap() { return global::LOGIC_TICK_DATA.cameraMap; }
 
     Vector2 GetCameraPosition() { return global::DRAW_TICK_DATA.camera.target; }
 
     Rectangle GetCameraBounds()
     {
         const auto pad = global::CONFIGURATION.cameraViewPadding;
-        const auto& [offset, target, rotation, zoom] = global::DRAW_TICK_DATA.camera;
+        const auto& [offset, target, rotation, zoom] = global::LOGIC_TICK_DATA.camera;
 
         const float camLeft = target.x - offset.x / zoom - pad;
         const float camTop = target.y - offset.y / zoom - pad;
@@ -94,15 +99,17 @@ namespace magique
 
     Rectangle GetCameraNativeBounds()
     {
-        const auto& [offset, target, rotation, zoom] = global::DRAW_TICK_DATA.camera;
+        const auto& [offset, target, rotation, zoom] = global::LOGIC_TICK_DATA.camera;
 
-        const float camLeft = target.x - offset.x / zoom ;
-        const float camTop = target.y - offset.y / zoom ;
-        const float camWidth = offset.x * 2 / zoom ;
-        const float camHeight = offset.y * 2 / zoom ;
+        const float camLeft = target.x - offset.x / zoom;
+        const float camTop = target.y - offset.y / zoom;
+        const float camWidth = offset.x * 2 / zoom;
+        const float camHeight = offset.y * 2 / zoom;
 
         return {camLeft, camTop, camWidth, camHeight};
     }
+
+    entt::entity GetCameraEntity() { return global::LOGIC_TICK_DATA.cameraEntity; }
 
     void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }
 

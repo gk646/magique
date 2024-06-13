@@ -2853,6 +2853,7 @@ void rlDrawRenderBatch(rlRenderBatch *batch)
         // Draw buffers
         if (RLGL.State.vertexCounter > 0)
         {
+            RLGL.State.drawCalls++;
             // Set current shader and upload current MVP matrix
             glUseProgram(RLGL.State.currentShaderId);
 
@@ -3015,7 +3016,6 @@ void rlSetRenderBatchActive(rlRenderBatch *batch)
 // Update and draw internal render batch
 void rlDrawRenderBatchActive(void)
 {
-    RLGL.State.drawCalls++;
 #if defined(GRAPHICS_API_OPENGL_33) || defined(GRAPHICS_API_OPENGL_ES2)
     rlDrawRenderBatch(RLGL.currentBatch);    // NOTE: Stereo rendering is checked inside
 #endif

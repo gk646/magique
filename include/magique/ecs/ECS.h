@@ -60,7 +60,7 @@ namespace magique
     void GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
 
     // Makes the entitiy emit light according to the current lighting model
-    void GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style = POINT_LIGHT_SOFT);
+    void GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
 
     // Makes the entitiy occlude light and throw shadows according to the current lighting model
     void GiveOccluder(entt::entity entity, int width, int height, Shape shape = RECT);

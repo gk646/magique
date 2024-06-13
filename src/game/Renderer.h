@@ -9,12 +9,11 @@ namespace magique::renderer
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
-
-    inline void StartRenderTick(entt::registry& registry)
+    inline void StartRenderTick()
     {
         startTime = steady_clock::now();
         BeginDrawing();
-        AssignCameraData(registry);
+        AssignDrawTickCamera();
     }
 
     inline void EndRenderTick()
@@ -22,6 +21,7 @@ namespace magique::renderer
         DrawUI();
         EndDrawing();
         global::PERF_DATA.saveTickTime(DRAW, (steady_clock::now() - startTime).count());
+       // std::this_thread::sleep_for(milliseconds(4));
     }
 
     inline void HandleLoadingScreen(bool& isLoading, Game& game)
@@ -50,7 +50,7 @@ namespace magique::renderer
         {
             while (!WindowShouldClose() && game.isRunning()) [[likely]]
             {
-                StartRenderTick(reg);
+                StartRenderTick();
                 {
                     ClearBackground(RAYWHITE); // Thanks ray
                     game.preRender();          // Pre render

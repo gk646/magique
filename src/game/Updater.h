@@ -26,7 +26,7 @@ namespace magique::updater
     {
         if (global::CONFIGURATION.showPerformanceOverlay)
         {
-           global:: PERF_DATA.perfOverlay.updateValues();
+            global::PERF_DATA.perfOverlay.updateValues();
         }
         TickInputEvents();
         global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
@@ -38,6 +38,7 @@ namespace magique::updater
 
         auto lastTime = steady_clock::now();
         microseconds accumulator(0);
+        auto& reg = REGISTRY;
 
         while (isRunning) [[likely]]
         {
@@ -51,7 +52,6 @@ namespace magique::updater
                 StartUpdateTick();
                 //Tick game
                 {
-                    auto& reg = REGISTRY;
                     InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }

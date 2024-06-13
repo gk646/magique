@@ -39,12 +39,20 @@ uniform vec2 lightPos;
 uniform int intensity;
 uniform int lightStyle;
 
-const float strengthFactor = 1024.;
-
 void main() {
     vec2 dis = pos - lightPos;
-    float str = 1. / (sqrt(dis.x * dis.x + dis.y * dis.y + strengthFactor * strengthFactor) - strengthFactor);
-    finalColor = vec4( vec3(lightColor.xyz) * str , lightColor.w);
+    float distance = length(dis);
+    float str;
+
+    if (lightStyle == 0) {  // Light style 0: point light with falloff
+        str = 1.0 / (distance * distance / intensity + 1.0);
+    } else if (lightStyle == 1) {  // Light style 1: sunlight with minimal falloff
+        str = 1.0 / (distance / intensity + 1.0);
+    } else {
+        str = 1.0; // Default to no falloff if lightStyle is not recognized
+    }
+
+    finalColor = vec4(vec3(lightColor.xyz) * str, lightColor.w);
 }
 )";
 
@@ -68,6 +76,7 @@ void main()
     gl_Position = mvp * vec4(pos.x, pos.y, 0., 1.0);
 }
 )";
+
     constexpr auto rayVert = R"(
 #version 330 core
 

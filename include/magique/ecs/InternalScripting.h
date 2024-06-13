@@ -32,6 +32,7 @@ namespace magique
         onTick,
         onKeyEvent,
         onMouseEvent,
+        myCustomEvent
     };
 
     // Create a subclass of this to implemented specific behaviors
@@ -44,7 +45,7 @@ namespace magique
     // Step 3: Done! You can now invoke your event!
 
     // Add ALL events here
-    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent);
+    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent, myCustomEvent);
 
     struct EntityScript
     {
@@ -107,7 +108,7 @@ namespace magique
     {
         const auto& pos = REGISTRY.get<PositionC>(entity); // Every entity has a position
         auto* script = static_cast<Script*>(GetScript(pos.type));
-        assert(script != nullptr && "No Script for this type!");
+        M_ASSERT(script != nullptr , "No Script for this type!");
         Call<event, Script, entt::registry&, entt::entity, Args...>(script, REGISTRY, entity,
                                                                     std::forward<Args>(arguments)...);
     }

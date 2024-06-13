@@ -19,17 +19,17 @@ namespace magique
 {
     struct TileSheet final
     {
-        int16_t texSize;        // Size of each texture
-        uint16_t texPerRow = 0;  // Textures per row
-        uint16_t textureID = 0; // id of the underlying texture
-
-        //std::vector<uint32_t> offsets; // Stores offset values
+        int16_t texSize;               // Size of each texture
+        uint16_t texPerRow = 0;        // Textures per row
+        uint16_t textureID = 0;        // id of the underlying texture
         // Internal constructors
         explicit TileSheet(const Asset& asset, int size, float scale);
         explicit TileSheet(const std::vector<const Asset*>& assets, int size, float scale);
 
         // Returns the region for the given tileNum
         [[nodiscard]] TextureRegion getRegion(uint16_t tileNum) const;
+
+        [[nodiscard]] Vector2 getOffset(uint16_t tileNum) const;
     };
 } // namespace magique
 

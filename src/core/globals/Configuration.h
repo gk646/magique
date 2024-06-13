@@ -9,6 +9,9 @@ namespace magique{
 
     struct Configuration final
     {
+        //Shadow map resolution
+        Vector2 shadowResolution;
+
         // Current selected lighting mode
         LightingModel lighting = LightingModel::STATIC_SHADOWS;
 

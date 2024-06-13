@@ -57,18 +57,28 @@ namespace magique
     {
         if (tileNum == 0)
         {
-            return {static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
-                    static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize), texSize, texSize, textureID};
+            return {static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
+                    static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize), texSize, texSize, textureID};
         }
-        // M_ASSERT(offsets.size() > tileNum, "No texture stored for that tileNum");
-        //const uint32_t texOff = 1;
 
-        const int16_t row = (tileNum-1) / texPerRow;
-        const int16_t colum = (tileNum-1) - row * texPerRow;
+        const int row = (tileNum - 1) / texPerRow;
+        const int colum = tileNum - 1 - row * texPerRow;
 
-        return {static_cast<int16_t>(colum * texSize), static_cast<int16_t>(row * texSize), texSize, texSize,
+        return {static_cast<uint16_t>(colum * texSize), static_cast<uint16_t>(row * texSize), texSize, texSize,
                 textureID};
-
-        // return {static_cast<uint16_t>(texOff), static_cast<uint16_t>(texOff << 16), texSize, texSize, textureID};
     }
+
+    Vector2 TileSheet::getOffset(const uint16_t tileNum) const
+    {
+        if (tileNum == 0)
+        {
+            return {static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
+                    static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize)};
+        }
+        const int row = (tileNum - 1) / texPerRow;
+        const int colum = tileNum - 1 - row * texPerRow;
+
+        return {static_cast<float>(colum * texSize), static_cast<float>(row * texSize)};
+    }
+
 } // namespace magique
