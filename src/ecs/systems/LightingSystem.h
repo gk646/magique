@@ -9,6 +9,7 @@ namespace magique
 {
     inline void RenderHardShadows(entt::registry& registry)
     {
+
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
@@ -16,7 +17,6 @@ namespace magique
         shadowQuads.clear();
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
-
         for (const auto e : occluders)
         {
             const auto& occ = occluders.get<OccluderC>(e);
@@ -35,15 +35,17 @@ namespace magique
         int size = static_cast<int>(shadowQuads.size());
         int lightLightLoc = shaders.lightLightLoc;
         int lightColorLoc = shaders.lightColorLoc;
+        int lightTypeLoc = shaders.lightTypeLoc;
+        int lightIntensityLoc = shaders.lightIntensityLoc;
+
         int shadowLightLoc = shaders.shadowLightLoc;
         int mvpLoc = shaders.mvpLoc;
 
-        unsigned int vao, vbo;
-        createSimpleObjectBuffer(shadowQuads.data(), size, &vao, &vbo);
-
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+        if (size > 0)
+        {
+            shaders.updateObjectBuffer(shadowQuads.data(), size);
+        }
+        printf("%d\n", size);
 
         const Rectangle backRect = GetCameraNativeBounds();
 
@@ -59,51 +61,59 @@ namespace magique
         glUniformMatrix4fv(mvpLoc, 1, false, matMVPfloat);
         glUseProgram(0);
 
-        const auto lights = registry.view<const PositionC, const EmitterC>();
-
-        const Vector2 lighe = {0, 0};
-        BeginBlendMode(BLEND_CUSTOM_SEPARATE);
-        BeginShaderMode(lightShader);
+        BeginTextureMode(shaders.shadowTexture);
         {
-            SetShaderValue(lightShader, lightLightLoc, &lighe, SHADER_UNIFORM_VEC2);
-            DrawRectangleRec(backRect, BLANK);
+            ClearBackground({0, 0, 0, 0});
+
+            const auto lights = registry.view<const PositionC, const EmitterC>();
+            for (const auto e : lights)
+            {
+                const auto& pos = lights.get<PositionC>(e);
+                const auto& emit = lights.get<EmitterC>(e);
+                int intensity = emit.intensity;
+                int style = emit.style;
+                const Vector2 light = {pos.x, pos.y};
+                const Vector4 color = {(float)emit.r / 255.0F, (float)emit.g / 255.0F, (float)emit.b / 255.0F,
+                                       (float)emit.a / 255.0F};
+
+                glUseProgram(shadowShader.id);
+                {
+                    glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ONE, GL_ZERO);
+                    SetShaderValue(shadowShader, shadowLightLoc, &light, SHADER_UNIFORM_VEC2);
+                    rlEnableVertexArray(shaders.vao);
+                    rlDrawVertexArray(0, size);
+                    rlDisableVertexArray();
+                }
+                glUseProgram(0);
+
+                rlSetBlendFactorsSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD, GL_FUNC_ADD);
+                BeginBlendMode(BLEND_CUSTOM_SEPARATE);
+                {
+                    BeginShaderMode(lightShader);
+                    {
+                        SetShaderValue(lightShader, lightLightLoc, &light, SHADER_UNIFORM_VEC2);
+                        SetShaderValueV(lightShader, lightColorLoc, &color, SHADER_UNIFORM_VEC4, 1);
+                        SetShaderValueV(lightShader, lightTypeLoc, &style, SHADER_UNIFORM_INT, 1);
+                        SetShaderValueV(lightShader, lightIntensityLoc, &intensity, SHADER_UNIFORM_INT, 1);
+                        DrawRectangleRec(backRect, BLANK);
+                    }
+                    EndShaderMode();
+                }
+                EndBlendMode();
+            }
         }
-        EndShaderMode();
+        EndTextureMode();
+
+
+        rlSetBlendFactors(GL_ZERO, GL_SRC_COLOR, GL_FUNC_ADD);
+        BeginBlendMode(BLEND_CUSTOM);
+
+        DrawTexturePro(shaders.shadowTexture.texture,
+                       {0, 0, 1920, -1080},
+                       {0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()},
+                       {0,0}, 0, {255, 255, 255, 200});
+
         EndBlendMode();
-
-        for (const auto e : lights)
-        {
-            const auto& pos = lights.get<PositionC>(e);
-            const auto& emit = lights.get<EmitterC>(e);
-            const Vector2 light = {pos.x, pos.y};
-            const Vector4 color = {(float)emit.r / 255.0F, (float)emit.g / 255.0F, (float)emit.b / 255.0F,
-                                   (float)emit.a / 255.0F};
-
-            glUseProgram(shadowShader.id);
-            {
-                glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ONE, GL_ZERO);
-                SetShaderValue(shadowShader, shadowLightLoc, &light, SHADER_UNIFORM_VEC2);
-
-                rlEnableVertexArray(vao);
-                rlDrawVertexArray(0, size);
-                rlDisableVertexArray();
-            }
-            glUseProgram(0);
-
-            SetShaderValue(lightShader, lightLightLoc, &light, SHADER_UNIFORM_VEC2);
-            rlSetBlendFactorsSeparate(GL_ONE_MINUS_DST_ALPHA, GL_ONE, GL_ZERO, GL_ZERO, GL_FUNC_ADD, GL_FUNC_ADD);
-            BeginBlendMode(BLEND_CUSTOM_SEPARATE);
-            BeginShaderMode(lightShader);
-            SetShaderValueV(lightShader, lightColorLoc, &color, SHADER_UNIFORM_VEC4, 1);
-            {
-                DrawRectangleRec(backRect, BLANK);
-            }
-            EndShaderMode();
-            EndBlendMode();
-        }
-
-        rlUnloadVertexArray(vao);
-        rlUnloadVertexBuffer(vbo);
     }
 
     inline void RenderRayTracing(entt::registry& registry)
@@ -131,7 +141,7 @@ namespace magique
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
         count = 0;
-        for(const auto e : occluders)
+        for (const auto e : occluders)
         {
             const auto& pos = registry.get<const PositionC>(e);
             const auto& emit = registry.get<const EmitterC>(e);
@@ -140,11 +150,12 @@ namespace magique
 
     inline void RenderLighting(entt::registry& registry)
     {
-        if (global::CONFIGURATION.lighting == LightingModel::STATIC_SHADOWS)
+        const auto model = global::CONFIGURATION.lighting;
+        if (model == LightingModel::STATIC_SHADOWS)
         {
             RenderHardShadows(registry);
         }
-        else
+        else if (model == LightingModel::RAY_TRACING)
         {
             RenderRayTracing(registry);
         }
@@ -152,41 +163,5 @@ namespace magique
 } // namespace magique
 
 
-inline int asdf()
-{
-    InitWindow(1920, 1080, "light");
-    auto rayShader = LoadShader(nullptr, "../ray.frag");
-    int rayResLoc = GetShaderLocation(rayShader, "resolution");
-    int rayTimeLoc = GetShaderLocation(rayShader, "iTime");
 
-    Vector2 res{1024, 576};
-    auto tex = LoadRenderTexture(res.x, res.y);
-    int data = 0;
-    glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &data);
-    printf("%d\n", data);
-    while (!WindowShouldClose())
-    {
-        float time = GetTime();
-
-        BeginTextureMode(tex);
-        ClearBackground(BLUE);
-        BeginShaderMode(rayShader);
-        SetShaderValue(rayShader, rayResLoc, &res, RL_SHADER_UNIFORM_VEC2);
-        SetShaderValue(rayShader, rayTimeLoc, &time, RL_SHADER_UNIFORM_FLOAT);
-        DrawRectangle(0, 0, res.x, res.y, BLACK);
-        EndShaderMode();
-        EndTextureMode();
-
-        BeginDrawing();
-        ClearBackground(BLUE);
-        DrawTexturePro(tex.texture, {0, 0, (float)tex.texture.width, -(float)tex.texture.height}, {0, 0, 1920, 1080},
-                       {0, 0}, 0.0f, WHITE);
-        DrawFPS(25, 25);
-        EndDrawing();
-    }
-
-    UnloadShader(rayShader);
-    CloseWindow();
-    return 0;
-}
 #endif //LIGHTINGSYSTEM_H

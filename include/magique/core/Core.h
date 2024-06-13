@@ -75,6 +75,10 @@ namespace magique
 
     // Returns the bounds of camera without padding
     Rectangle GetCameraNativeBounds();
+
+    // Returns the current camera holder
+    entt::entity GetCameraEntity();
+
     //----------------- THREADING -----------------//
 
     // You generally dont have to call this - only call this if you know what it does

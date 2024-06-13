@@ -8,6 +8,8 @@
 #include "util/datastructures/MultiResolutionGrid.h"
 #include "core/Config.h"
 
+#include <entt/entity/entity.hpp>
+
 namespace magique
 {
     struct LogicTickData final
@@ -15,8 +17,11 @@ namespace magique
         // Map the camera is in
         MapID cameraMap;
 
+        // current camera
+        Camera2D camera{};
+
         // entity id of the camera
-        entt::entity id;
+        entt::entity cameraEntity = entt::null;
 
         // Currently loaded zones
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{};

@@ -14,8 +14,8 @@ namespace magique
 {
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
-        int16_t offX;   // Horizontal offset from the top left of the atlas
-        int16_t offY;   // Vertical offset from the top left of the atlas
+        uint16_t offX;  // Horizontal offset from the top left of the atlas
+        uint16_t offY;  // Vertical offset from the top left of the atlas
         int16_t width;  // Width of the texture
         int16_t height; // Height of the texture
         uint16_t id;    // The texture id
@@ -23,13 +23,14 @@ namespace magique
 
     struct SpriteSheet final
     {
-        int16_t offX;    // Horizontal offset from the top left of the atlas of the first frame
-        int16_t offY;    // Vertical offset from the top left of the atlas of the first frame
+        uint16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
+        uint16_t offY;   // Vertical offset from the top left of the atlas of the first frame
         int16_t width;   // Width of a frame
         int16_t height;  // Height of a frame
         uint16_t id;     // The texture id
         uint16_t frames; // Total number of frames
     };
+
 
     enum class LightingModel : uint8_t
     {
@@ -116,6 +117,12 @@ namespace magique
         CLIENT_ABILITY_USED,
         CLIENT_QUEST_UPDATE,
         CLIENT_EFFECT_UPDATE,
+    };
+
+    struct Puint final
+    {
+        uint16_t x;
+        uint16_t y;
     };
 
 

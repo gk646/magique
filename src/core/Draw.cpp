@@ -9,6 +9,9 @@
 
 #include "external/raylib/src/rlgl.h"
 
+#include <cxconfig.h>
+#include <cxutil/cxtime.h>
+
 namespace magique
 {
     void DrawRegion(TextureRegion region, float x, float y, const bool flipX, const Color tint)
@@ -22,9 +25,6 @@ namespace magique
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
 
-        const auto offsetX = static_cast<float>(region.offX);
-        const auto offsetY = static_cast<float>(region.offY);
-
         if (flipX) [[unlikely]]
         {
             region.width *= -1;
@@ -33,10 +33,10 @@ namespace magique
         constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
         constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
 
-        const float texCoordLeft = offsetX / atlasWidth;
-        const float texCoordRight = (offsetX + texWidth) / atlasWidth;
-        const float texCoordTop = offsetY / atlasHeight;
-        const float texCoordBottom = (offsetY + texHeight) / atlasHeight;
+        const float texCoordLeft = static_cast<float>(region.offX) / atlasWidth;
+        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / atlasWidth;
+        const float texCoordTop = static_cast<float>(region.offY) / atlasHeight;
+        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / atlasHeight;
 
         rlSetTexture(region.id);
         rlBegin(RL_QUADS);
@@ -133,10 +133,10 @@ namespace magique
 
         const int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
         const int endTileX =
-            std::min(mapWidth , static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize)+1));
+            std::min(mapWidth, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize) + 1));
         const int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
         const int endTileY =
-            std::min(mapHeight, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize)+1));
+            std::min(mapHeight, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize) + 1));
 
         auto* start = tileMap.getLayerStart(layer) + startTileX + startTileY * mapWidthTiles;
         const int diffX = endTileX - startTileX;
@@ -144,18 +144,44 @@ namespace magique
         const float startX = static_cast<float>(startTileX) * tileSize;
 
         float screenY = static_cast<float>(startTileY) * tileSize;
+
+        rlSetTexture(tileSheet.textureID);
+        rlBegin(RL_QUADS);
+        rlColor4ub(255, 255, 255, 255);
+        rlNormal3f(0.0f, 0.0f, 1.0f);
+
+        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
+        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
         for (int i = 0; i < diffY; ++i)
         {
             float screenX = startX;
             for (int j = 0; j < diffX; ++j)
             {
-                DrawRegion(tileSheet.getRegion(start[j]), screenX, screenY);
+                const auto [x, y] = tileSheet.getOffset(start[j]);
+                const float texCoordLeft = x / atlasWidth;
+                const float texCoordRight = (x + tileSize) / atlasWidth;
+                const float texCoordTop = y / atlasHeight;
+                const float texCoordBottom = (y + tileSize) / atlasHeight;
+
+                rlTexCoord2f(texCoordLeft, texCoordTop);
+                rlVertex2f(screenX, screenY);
+
+                rlTexCoord2f(texCoordLeft, texCoordBottom);
+                rlVertex2f(screenX, screenY + tileSize);
+
+                rlTexCoord2f(texCoordRight, texCoordBottom);
+                rlVertex2f(screenX + tileSize, screenY + tileSize);
+
+                rlTexCoord2f(texCoordRight, texCoordTop);
+                rlVertex2f(screenX + tileSize, screenY);
+
                 screenX += tileSize;
             }
             start += mapWidthTiles;
             screenY += tileSize;
         }
-
+        rlEnd();
+        rlSetTexture(0);
     }
 
 
