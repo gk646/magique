@@ -37,7 +37,7 @@ namespace magique
         return true;
     }
 
-    void AssetLoader::registerTask(ITask<AssetContainer>* task, Thread thread, PriorityLevel pl, int impact)
+    void AssetLoader::registerTask(TaskI<AssetContainer>* task, Thread thread, PriorityLevel pl, int impact)
     {
         if (!BasicChecks(task, pl, impact))
             return;

@@ -16,7 +16,7 @@ namespace magique::global
     //inline DrawTickData DRAW_TICK_DATA;
 
     // Active game loader if any
-    inline IExecutor* CURRENT_GAME_LOADER = nullptr;
+    inline ExecutorI* CURRENT_GAME_LOADER = nullptr;
 
     // Performance metrics
     //inline PerfData PERF_DATA;

@@ -29,7 +29,6 @@ namespace magique::util
         return hash;
     }
 
-
 } // namespace magique::util
 
 #endif //MAGIQUE_HASH_H
