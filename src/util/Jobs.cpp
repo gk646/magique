@@ -16,8 +16,8 @@ namespace magique
                     if (!scheduler->jobQueue.empty())
                     {
                         job = scheduler->jobQueue.front();
-                        M_ASSERT(job->handle != jobHandle::null, "Null handle");
                         scheduler->jobQueue.pop_front();
+                        M_ASSERT(job->handle != jobHandle::null, "Null handle");
                     }
                     scheduler->queueLock.unlock();
                 }
@@ -25,7 +25,7 @@ namespace magique
                 if (job)
                 {
                     job->run();
-                    scheduler->removeWorkedJob(job->handle);
+                    scheduler->removeWorkedJob(job);
                     delete job;
                 }
                 else
@@ -70,10 +70,14 @@ namespace magique
             bool allCompleted = true;
             for (const auto handle : handles)
             {
-                if (std::ranges::any_of(workedJobs, [=](const JobBase* j) { return j->handle == handle; }))
+                for (const auto j : workedJobs)
                 {
-                    allCompleted = false;
-                    break;
+                    if (j->handle == handle)
+                    {
+                        bool val = shutDown.load(); // Prevents compiler optimizations
+                        allCompleted = false;
+                        break;
+                    }
                 }
             }
             if (allCompleted)
