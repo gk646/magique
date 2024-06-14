@@ -169,14 +169,8 @@ namespace magique
         {
             // allows for time tracking later on
             workedLock.lock();
-            std::erase(workedJobs, job);
-            workedJobs.push_back(job);
+            std::erase(workedJobs,job);
             workedLock.unlock();
-        }
-
-        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
-        void removeWorkedJob(const jobHandle jobhandle)
-        {
             // Just spin the handles around
             if (handleID >= 65000)
             {
@@ -184,6 +178,7 @@ namespace magique
             }
         }
 
+        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
         friend void workerThread(Scheduler* scheduler);
 
         // Aligned to prevent false sharing
