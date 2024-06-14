@@ -26,17 +26,17 @@ namespace magique
     };
 
     template <typename T>
-    struct ITask
+    struct TaskI
     {
         bool isLoaded = false;
         int impact = 0;
 
-        virtual ~ITask() = default;
+        virtual ~TaskI() = default;
         virtual void execute(T& res) = 0;
     };
 
     template <typename T>
-    struct LambdaTask final : ITask<T>
+    struct LambdaTask final : TaskI<T>
     {
         std::function<void(T&)> func;
 
@@ -44,15 +44,15 @@ namespace magique
         void execute(T& res) override { func(res); }
     };
 
-    struct IExecutor
+    struct ExecutorI
     {
-        virtual ~IExecutor() = default;
+        virtual ~ExecutorI() = default;
         virtual bool load() = 0;
         [[nodiscard]] virtual float getProgressPercent() const = 0;
     };
 
     template <typename T>
-    struct TaskExecutor : IExecutor
+    struct TaskExecutor : ExecutorI
     {
         ~TaskExecutor() override
         {
@@ -74,7 +74,7 @@ namespace magique
         float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
-        void addTask(ITask<T>* task, PriorityLevel pl, const Thread d, int impact)
+        void addTask(TaskI<T>* task, PriorityLevel pl, const Thread d, int impact)
         {
             if (!task)
             {
@@ -147,7 +147,7 @@ namespace magique
 
             return currentLevel == -1;
         }
-        bool loadTasks(std::vector<ITask<T>*>& tasks, T& res)
+        bool loadTasks(std::vector<TaskI<T>*>& tasks, T& res)
         {
             for (auto task : tasks)
             {
@@ -158,7 +158,7 @@ namespace magique
             }
             return true;
         }
-        void loadTask(ITask<T>* task, T& res)
+        void loadTask(TaskI<T>* task, T& res)
         {
             task->execute(res);
             loadedImpact += task->impact;
@@ -166,7 +166,7 @@ namespace magique
             LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }
-        bool areAllTasksLoaded(const std::vector<ITask<T>*>& tasks) const
+        bool areAllTasksLoaded(const std::vector<TaskI<T>*>& tasks) const
         {
             for (const auto task : tasks)
             {
@@ -178,8 +178,8 @@ namespace magique
             return true;
         }
 
-        std::map<PriorityLevel, std::vector<ITask<T>*>> cpuTasks;
-        std::map<PriorityLevel, std::vector<ITask<T>*>> gpuTasks;
+        std::map<PriorityLevel, std::vector<TaskI<T>*>> cpuTasks;
+        std::map<PriorityLevel, std::vector<TaskI<T>*>> gpuTasks;
         std::thread loadThread;
         int totalImpact = 0;
         std::atomic<int> loadedImpact = 0;

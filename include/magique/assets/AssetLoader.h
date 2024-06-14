@@ -39,7 +39,7 @@ namespace magique
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(ITask<AssetContainer>* task, Thread thread, PriorityLevel pl = MED, int impact = 1);
+        void registerTask(TaskI<AssetContainer>* task, Thread thread, PriorityLevel pl = MED, int impact = 1);
 
         // Registers a new task
         // func     - a loading func (lambda)

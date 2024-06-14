@@ -24,7 +24,7 @@ namespace magique
     struct ConfigSaver;  // Handles saving the config
     struct GameConfig;   // The config persistence object
 
-    struct IExecutor; // Task loading interface
+    struct ExecutorI; // Task loading interface
 
     //-----------------LOGIC-----------------//
 
@@ -57,6 +57,8 @@ namespace magique
     //----------------- UTIL -----------------//
 
     enum LogLevel : int;
+    struct Scheduler;
+    enum class jobHandle : uint16_t;
 
 } // namespace magique
 
