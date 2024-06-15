@@ -43,8 +43,9 @@ namespace magique
         // Global hashGrid for all entities
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
-        // Collects entities
-        HashSet<entt::entity> collector{500};
+        // Collects entities - 4 for the 4 threads
+        HashSet<entt::entity> collectors[4]{HashSet<entt::entity>{500}, HashSet<entt::entity>{500},
+                                            HashSet<entt::entity>{500}, HashSet<entt::entity>{500}};
 
         // Shadow segments
         vector<Vector3> shadowQuads;
@@ -75,7 +76,10 @@ namespace magique
             entityUpdateCache.clear();
             entityUpdateVec.clear();
             drawVec.clear();
-            collector.clear();
+            collectors[0].clear();
+            collectors[1].clear();
+            collectors[2].clear();
+            collectors[3].clear();
             hashGrid.clear();
         }
     };

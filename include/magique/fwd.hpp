@@ -59,6 +59,7 @@ namespace magique
     enum LogLevel : int;
     struct Scheduler;
     enum class jobHandle : uint16_t;
+    struct IJob;
 
 } // namespace magique
 

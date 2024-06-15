@@ -20,7 +20,9 @@ namespace magique::updater
         CheckCollisions(registry);
     }
 
-    inline void StartUpdateTick() {}
+    inline void StartUpdateTick() {
+
+    }
 
     inline void EndUpdateTick()
     {

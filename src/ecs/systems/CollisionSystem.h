@@ -3,6 +3,7 @@
 #define COLLISIONSYSTEM_H
 
 #include <magique/ecs/InternalScripting.h>
+#include <magique/util/Jobs.h>
 
 #include <c2/cute_c2.h>
 #include <cxutil/cxtime.h>
@@ -106,47 +107,77 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
     return false;
 }
 
+
 namespace magique
 {
     inline void CheckCollisions(entt::registry& registry)
     {
+        // make into lambda
+        auto collSlice = [](int start, int end, const std::vector<entt::entity>& updateVec, entt::registry& registry,
+                            SingleResolutionHashGrid<entt::entity, 32>& grid, HashSet<entt::entity>& collector)
+        {
+            for (int i = start; i < end; ++i)
+            {
+                const auto first = updateVec[i];
+                auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
+                auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
+                // Query quadtree
+                grid.query<HashSet<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
+                for (const auto second : collector)
+                {
+                    if (first >= second)
+                        continue;
+
+                    auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
+
+                    if (posA.map != posB.map) [[unlikely]]
+                        continue;
+
+                    if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
+                    {
+                        auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
+                        InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
+                        // Invoke out of seconds view
+                        InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
+#ifdef MAGIQUE_DEBUG_COLLISIONS
+                        collisions++;
+#endif
+                    }
+                }
+                collector.clear();
+            }
+        };
+
         auto& tickData = global::LOGIC_TICK_DATA;
         auto& grid = tickData.hashGrid;
         auto& updateVec = tickData.entityUpdateVec;
-        auto& collector = tickData.collector;
+        auto& collectors = tickData.collectors;
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;
 #endif
-        for (const auto first : updateVec)
+
+        std::array<jobHandle, 4> handles{};
+        auto& sc = GetScheduler();
+        int start = 0;
+        int end = 0;
+        int partSize = updateVec.size() / 4;
+        for (int i = 0; i < 4; ++i)
         {
-            auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-            auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
-            // Query quadtree
-            grid.query<HashSet<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
-            for (const auto second : collector)
+            start = end;
+            end = start + partSize;
+            if (i == 3)
             {
-                if (first >= second)
-                    continue;
-
-                auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
-
-                if (posA.map != posB.map) [[unlikely]]
-                    continue;
-
-                if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
-                {
-                    auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
-                    InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
-                    // Invoke out of seconds view
-                    InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
-#ifdef MAGIQUE_DEBUG_COLLISIONS
-                    collisions++;
-#endif
-                }
+                end = updateVec.size();
             }
-            collector.clear();
+            auto job = new ExplicitJob(collSlice, start, end, std::ref(updateVec), std::ref(registry), std::ref(grid),
+                                 std::ref(collectors[i]));
+            auto h = sc.addJob(job);
+            handles[i] = h;
         }
+
+        sc.await(handles);
+
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);
         int correct = 0;
