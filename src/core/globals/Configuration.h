@@ -5,12 +5,12 @@
 #include <magique/util/Logging.h>
 #include <raylib/raylib.h>
 
-namespace magique{
-
+namespace magique
+{
     struct Configuration final
     {
         //Shadow map resolution
-        Vector2 shadowResolution;
+        Vector2 shadowResolution{};
 
         // Current selected lighting mode
         LightingModel lighting = LightingModel::STATIC_SHADOWS;
@@ -19,11 +19,12 @@ namespace magique{
         bool showPerformanceOverlay = true;
 
         // All above info are visible
-        LogLevel logLevel = LogLevel::LEVEL_INFO;
+        LogLevel logLevel = LEVEL_INFO;
 
         // Update distance
         float entityUpdateDistance = 1000;
 
+        // Padding around the cameras native bounds
         float cameraViewPadding = 250;
 
         // For how long entities in the cache are still updates after they are out of range
@@ -33,13 +34,12 @@ namespace magique{
         Font font{};
     };
 
+    namespace global
+    {
 
-    namespace global{
+        inline Configuration CONFIGURATION;
 
+    }
 
-    inline Configuration CONFIGURATION;
-
-
-
-    }}
+} // namespace magique
 #endif //CONFIGURATION_H

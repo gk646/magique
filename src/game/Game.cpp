@@ -30,13 +30,14 @@ namespace magique
         SetTraceLogLevel(LOG_WARNING);
 #endif
         SetTraceLogLevel(LOG_WARNING);
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, name);
         InitAudioDevice();
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
-        LOG_INFO("Initialized Game");
         global::LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
+        LOG_INFO("Initialized Game");
     }
 
     Game::~Game()
@@ -49,24 +50,30 @@ namespace magique
     {
         auto& loader = global::CURRENT_GAME_LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
-        GameConfig config;
-        onStartup(*static_cast<AssetLoader*>(loader),config);
-        static_cast<AssetLoader*>(loader)->registerTask(
-            [](AssetContainer&)
-            {
-                for (auto& atlas : global::TEXTURE_ATLASES)
-                {
-                    atlas.loadToGPU();
-                }
-            },
-            MAIN_THREAD, LOW);
-        static_cast<AssetLoader*>(loader)->printStats();
 
+        //TODO load config
+        GameConfig config;
+
+        // Call startup
+        onStartup(*static_cast<AssetLoader*>(loader), config);
+
+        // Load atlas to gpu
+        const auto loadAtlasGPU = [](AssetContainer&)
+        {
+            for (auto& atlas : global::TEXTURE_ATLASES)
+            {
+                atlas.loadToGPU();
+            }
+        };
+        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW);
+        static_cast<AssetLoader*>(loader)->printStats();
         _isLoading = true;
 
+        // Start threads
         updater::Run(_isRunning, *this);
         renderer::Run(_isLoading, *this);
 
+        onShutDown(config);
         renderer::Close();
         updater::Close();
 
@@ -75,6 +82,11 @@ namespace magique
         LOG_INFO("Average LogicTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(UPDATE) / 1'000);
 #endif
         return 0;
+    }
+
+    void Game::shutDown()
+    {
+        onCloseEvent();
     }
 
 

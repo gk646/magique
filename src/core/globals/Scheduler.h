@@ -1,8 +1,0 @@
-#ifndef MAGIQUE_SCHEDULER_H
-#define MAGIQUE_SCHEDULER_H
-
-
-
-#include
-
-#endif //MAGIQUE_SCHEDULER_H

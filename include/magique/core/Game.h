@@ -31,8 +31,8 @@ namespace magique
         // Called on startup - register your loaders here
         virtual void onStartup(AssetLoader& al, GameConfig& config) {}
 
-        // Called when the game closes - register you savers here
-        virtual void onShutDown(ConfigSaver& cs) {}
+        // Called when the game closes
+        virtual void onShutDown(GameConfig& config) {}
 
         // Called when the windows close button is pressed
         virtual void onCloseEvent() { _isRunning = false; }

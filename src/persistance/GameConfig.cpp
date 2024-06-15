@@ -22,13 +22,13 @@ namespace magique
         settings[(int)id] = setting;
     }
 
-    void GameConfig::SaveString(std::string&& string, ConfigStringID id)
+    void GameConfig::SaveString(const std::string& string, ConfigStringID id)
     {
         if (strings.size() < (int)id + 1)
         {
             strings.resize((int)id + 1);
         }
-        strings[(int)id] = std::move(string);
+        strings[(int)id] = string;
     }
 
 

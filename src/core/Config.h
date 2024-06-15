@@ -1,7 +1,10 @@
-#ifndef CORECONFIG_H
-#define CORECONFIG_H
+#ifndef MAGIQUE_CONFIG_H
+#define MAGIQUE_CONFIG_H
 
 #include <magique/util/Defines.h>
+
+
+#define MAGIQUE_VERSION "0.0.1"
 
 #if MAGIQUE_DEBUG == 1
 //#define MAGIQUE_DEBUG_COLLISIONS
@@ -14,4 +17,5 @@
 
 #define MAGIQUE_MAX_EXPECTED_MAPS 32
 
-#endif //CORECONFIG_H
+
+#endif //MAGIQUE_CONFIG_H

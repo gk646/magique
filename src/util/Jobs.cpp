@@ -5,11 +5,19 @@
 
 namespace magique
 {
+    std::mutex mutex;
     void workerThread(Scheduler* scheduler)
     {
         while (!scheduler->shutDown.load(std::memory_order_acquire))
         {
-            while (scheduler->isHibernate.load(std::memory_order_acquire))
+            std::unique_lock lock(mutex, std::defer_lock);
+            scheduler->condition.wait(lock,[=]
+            {
+                return !scheduler->isHibernate;
+            });
+
+
+            while (!scheduler->isHibernate.load(std::memory_order_acquire))
             {
                 scheduler->queueLock.lock();
                 if (!scheduler->jobQueue.empty())
@@ -29,16 +37,15 @@ namespace magique
                 {
                     scheduler->queueLock.unlock();
                 }
-                std::this_thread::sleep_for(std::chrono::nanoseconds(100));
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
-            std::this_thread::yield();
         }
     }
 
 
     Scheduler::Scheduler(const int threadCount) : mainID(std::this_thread::get_id())
     {
+        shutDown = false;
+        isHibernate = true;
         for (size_t i = 0; i < threadCount; ++i)
         {
             threads.emplace_back(workerThread, this);
@@ -67,7 +74,14 @@ namespace magique
         return handle;
     }
 
-    void Scheduler::wakeup() { isHibernate = false; }
+    void Scheduler::wakeup()
+    {
+        isHibernate.store(false, std::memory_order_release);
+        condition.notify_all();
+    }
 
-    void Scheduler::hibernate() { isHibernate = true; }
+    void Scheduler::hibernate()
+    {
+        isHibernate.store(true, std::memory_order_release);
+    }
 } // namespace magique

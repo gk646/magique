@@ -20,9 +20,7 @@ namespace magique::updater
         CheckCollisions(registry);
     }
 
-    inline void StartUpdateTick() {
-
-    }
+    inline void StartUpdateTick() { global::SCHEDULER->wakeup(); }
 
     inline void EndUpdateTick()
     {
@@ -30,6 +28,7 @@ namespace magique::updater
         {
             global::PERF_DATA.perfOverlay.updateValues();
         }
+        global::SCHEDULER->hibernate();
         TickInputEvents();
         global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
     }
