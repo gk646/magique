@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_JOBS_H
 #define MAGIQUE_JOBS_H
 
+#include <condition_variable>
 #include <deque>
 #include <vector>
 #include <thread>
@@ -12,6 +13,8 @@
 // .....................................................................
 // This is for advanced users
 // Use GetScheduler() to get the global instance and schedule your tasks
+// This systems is trimmed for speed - many while true loops during tick
+//
 // .....................................................................
 
 namespace magique
@@ -46,13 +49,13 @@ namespace magique
     };
 
     // Core scheduler
+    // Takes ownership of all pointers
     struct Scheduler final
     {
         explicit Scheduler(int threadCount = 4);
         ~Scheduler();
 
         // Adds a new job to the global queue
-        // Takes owner ship of the pointer
         jobHandle addJob(IJob* job);
 
         // Adds the job to a group
@@ -131,6 +134,7 @@ namespace magique
         alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
         alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
         alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
+        alignas(64) std::condition_variable condition;
         volatile int workedSize = 0;
         std::thread::id mainID;           // Thread id of the main thread
         std::vector<std::thread> threads; // All working threads
@@ -140,7 +144,7 @@ namespace magique
     template <typename Callable>
     struct Job final : IJob
     {
-        explicit Job(Callable&& func) : func_(std::move(func)) {}
+        explicit Job(Callable func) : func_(std::move(func)) {}
         void run() override { func_(); }
 
     private:

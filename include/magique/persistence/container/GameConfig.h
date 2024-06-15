@@ -34,7 +34,7 @@ namespace magique
         void SaveSetting(Setting setting, SettingID id);
 
         // Saves a string
-        void SaveString(std::string&& string, ConfigStringID id);
+        void SaveString(const std::string& string, ConfigStringID id);
 
         //----------------- GET -----------------//
 

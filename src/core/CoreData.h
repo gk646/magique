@@ -7,6 +7,7 @@
 // -> All heavy global headers are in the /global folder
 // These are commented out
 
+
 namespace magique::global
 {
     // Logic thread
@@ -17,6 +18,9 @@ namespace magique::global
 
     // Active game loader if any
     inline ExecutorI* CURRENT_GAME_LOADER = nullptr;
+
+    // The global scheduler for the job system
+    inline Scheduler* SCHEDULER = nullptr;
 
     // Performance metrics
     //inline PerfData PERF_DATA;
