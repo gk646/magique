@@ -131,7 +131,6 @@ namespace magique
         Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
-
         {
             drawVec.clear();
             hashGrid.clear();

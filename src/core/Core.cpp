@@ -1,5 +1,6 @@
 #include <magique/core/Core.h>
 #include <magique/assets/AssetManager.h>
+#include <magique/util/Jobs.h>
 
 #include "core/globals/Configuration.h"
 #include "core/globals/TextureAtlas.h"
@@ -12,6 +13,7 @@ static bool initCalled = false;
 
 namespace magique
 {
+    inline Scheduler* SCHEDULER;
     bool InitMagique()
     {
         if (initCalled)
@@ -49,6 +51,7 @@ namespace magique
         shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
         shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
 
+        SCHEDULER = new Scheduler(4);
 
         return true;
     }
@@ -110,6 +113,12 @@ namespace magique
     }
 
     entt::entity GetCameraEntity() { return global::LOGIC_TICK_DATA.cameraEntity; }
+
+    Scheduler& GetScheduler()
+    {
+        return *SCHEDULER;
+    }
+
 
     void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }
 

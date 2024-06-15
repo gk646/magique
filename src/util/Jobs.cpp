@@ -1,6 +1,7 @@
-#include <algorithm>
 #include <magique/util/Jobs.h>
 #include <magique/util/Macros.h>
+
+#include <cxutil/cxtime.h>
 
 namespace magique
 {
@@ -8,32 +9,30 @@ namespace magique
     {
         while (!scheduler->shutDown.load(std::memory_order_acquire))
         {
-            while (scheduler->running.load(std::memory_order_acquire))
+            while (scheduler->isHibernate.load(std::memory_order_acquire))
             {
-                JobBase* job = nullptr;
+                scheduler->queueLock.lock();
+                if (!scheduler->jobQueue.empty())
                 {
-                    scheduler->queueLock.lock();
-                    if (!scheduler->jobQueue.empty())
-                    {
-                        job = scheduler->jobQueue.front();
-                        scheduler->jobQueue.pop_front();
-                        M_ASSERT(job->handle != jobHandle::null, "Null handle");
-                    }
+                    const auto job = scheduler->jobQueue.front();
+                    scheduler->jobQueue.pop_front();
                     scheduler->queueLock.unlock();
-                }
-
-                if (job)
-                {
-                    job->run();
-                    scheduler->removeWorkedJob(job);
-                    delete job;
+                    M_ASSERT(job->handle != jobHandle::null, "Null handle");
+                    if (job)
+                    {
+                        job->run();
+                        scheduler->removeWorkedJob(job);
+                        delete job;
+                    }
                 }
                 else
                 {
-                    std::this_thread::yield();
+                    scheduler->queueLock.unlock();
                 }
+                std::this_thread::sleep_for(std::chrono::nanoseconds(100));
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            std::this_thread::yield();
         }
     }
 
@@ -49,7 +48,7 @@ namespace magique
     Scheduler::~Scheduler()
     {
         shutDown = true;
-        running = false;
+        isHibernate = false;
         for (auto& t : threads)
         {
             if (t.joinable())
@@ -57,33 +56,18 @@ namespace magique
         }
     }
 
-
-    void Scheduler::start() { running.store(true, std::memory_order_release); }
-
-
-    void Scheduler::await(const std::initializer_list<jobHandle>& handles)
+    jobHandle Scheduler::addJob(IJob* job)
     {
-        M_ASSERT(std::this_thread::get_id() == mainID,
-                 "Has to be called from the main thread! Use dependencies for chaining jobs");
-        while (true)
-        {
-            bool allCompleted = true;
-            for (const auto handle : handles)
-            {
-                for (const auto j : workedJobs)
-                {
-                    if (j->handle == handle)
-                    {
-                        bool val = shutDown.load(); // Prevents compiler optimizations
-                        allCompleted = false;
-                        break;
-                    }
-                }
-            }
-            if (allCompleted)
-                break;
-            // std::this_thread::yield(); // Dont wanna yield the main thread
-        }
+        const auto handle = getNextHandle();
+        job->handle = handle;
+        queueLock.lock();
+        jobQueue.push_back(job);
+        queueLock.unlock();
+        addWorkedJob(job);
+        return handle;
     }
 
+    void Scheduler::wakeup() { isHibernate = false; }
+
+    void Scheduler::hibernate() { isHibernate = true; }
 } // namespace magique

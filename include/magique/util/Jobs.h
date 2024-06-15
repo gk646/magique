@@ -16,14 +16,18 @@
 
 namespace magique
 {
-    enum JobType : uint8_t
-    {
-        VECTOR, // Vector operation
-    };
     // handle to a job
     enum class jobHandle : uint16_t
     {
         null = UINT16_MAX, // The null handle
+    };
+
+    // Job base class - allows to call templatd lambdas
+    struct IJob
+    {
+        // No virtual destructor to save instructions
+        virtual void run() = 0;
+        jobHandle handle = jobHandle::null;
     };
 
     // Wrapper for a spinlock
@@ -41,135 +45,73 @@ namespace magique
         std::atomic_flag flag = ATOMIC_FLAG_INIT;
     };
 
-    struct JobBase
-    {
-        // No virtual destructor
-        virtual void run() = 0;
-        jobHandle handle;
-    };
-
-    template <typename Callable>
-    struct Job final : JobBase
-    {
-        explicit Job(Callable func) : func_(std::move(func)) {}
-
-        void run() override { func_(); }
-
-    private:
-        Callable func_;
-    };
-
-    template <typename Func, typename... Args>
-    struct ExplicitJob final : JobBase
-    {
-        explicit ExplicitJob(Func func, Args... args) : func_(func), args_(std::make_tuple(args...)) {}
-
-        void run() override { std::apply(func_, args_); }
-
-    private:
-        Func func_;
-        std::tuple<Args...> args_;
-    };
-
-
-    template <typename T>
-    using VectorOperation = void (*)(const T* data, uint32_t index);
-
-    template <typename T>
-    struct VectorJob final : JobBase
-    {
-        VectorJob(VectorOperation<T> op, T* ptr, const uint32_t begin, const uint32_t end) :
-            op(op), ptr(ptr), begin(begin), end(end)
-        {
-        }
-
-        void run() override
-        {
-            for (uint32_t i = begin; i < end; ++i)
-            {
-                op(ptr, i);
-            }
-        }
-
-        VectorOperation<T> op;
-        const T* ptr;
-        uint32_t begin;
-        uint32_t end;
-    };
-
-
     // Core scheduler
     struct Scheduler final
     {
         explicit Scheduler(int threadCount = 4);
         ~Scheduler();
 
-        // Adds a job that operates on a single data vector
-        template <typename T>
-        jobHandle addVectorJob(VectorOperation<T> op, T* data, uint32_t begin, uint32_t end)
-        {
-            const auto handle = getNextHandle();
-            JobBase* job = new VectorJob<T>(op, data, begin, end);
-            job->handle = handle;
-            queueLock.lock();
-            jobQueue.push_back(job);
-            queueLock.unlock();
-            addWorkedJob(job);
-            return handle;
-        }
+        // Adds a new job to the global queue
+        // Takes owner ship of the pointer
+        jobHandle addJob(IJob* job);
 
-        // Adds a generic job with explicit type parameters
-        template <typename Func, typename... Args>
-        jobHandle addJobEx(Func func, Args... args)
-        {
-            const auto handle = getNextHandle();
-            JobBase* job = new ExplicitJob<Func, Args...>{func, std::forward<Args>(args)...};
-            job->handle = handle;
-            queueLock.lock();
-            jobQueue.push_back(job);
-            queueLock.unlock();
-            addWorkedJob(job);
-            return handle;
-        }
-
-        // Adds a  job with explicit type parameters
-        template <typename Func>
-        jobHandle addJob(Func func)
-        {
-            const auto handle = getNextHandle();
-            JobBase* job = new Job<Func>{func};
-            job->handle = handle;
-            queueLock.lock();
-            jobQueue.push_back(job);
-            queueLock.unlock();
-            addWorkedJob(job);
-            return handle;
-        }
+        // Adds the job to a group
+        jobHandle groupJob(IJob* job, int group);
 
         // dependencies
         // accumulate
 
-        // Starts all threads
-        void start();
-        // Stops all threads
-        void stop();
+        // Awaits the completion of all handles in the given iterable container
+        template <typename Container>
+        void await(const Container& handles) const
+        {
+            while (true)
+            {
+                bool allCompleted = true;
+                const auto vec = workedJobs.data();
+                const auto size = workedSize;
+                if (size == 0)
+                    return;
 
-        void await(const std::initializer_list<jobHandle>& handles);
+                for (const auto handle : handles)
+                {
+                    for (int i = 0; i < size; ++i)
+                    {
+                        if (vec[i]->handle == handle)
+                        {
+                            allCompleted = false;
+                            break;
+                        }
+                    }
+                    if (!allCompleted)
+                        break;
+                }
+                if (allCompleted)
+                    return;
+            }
+        }
+
+        // Brings all threads back to working speed
+        void wakeup();
+
+        // Puts all threads to hibernation - slowing down their cycling
+        void hibernate();
 
     private:
-        void addWorkedJob(const JobBase* job)
+        void addWorkedJob(const IJob* job)
         {
             // allows for time tracking later on
             workedLock.lock();
+            ++workedSize;
             workedJobs.push_back(job);
             workedLock.unlock();
         }
-
-        void removeWorkedJob(const JobBase* job)
+        void removeWorkedJob(const IJob* job)
         {
             // allows for time tracking later on
             workedLock.lock();
-            std::erase(workedJobs,job);
+            --workedSize;
+            std::erase(workedJobs, job);
             workedLock.unlock();
             // Just spin the handles around
             if (handleID >= 65000)
@@ -182,15 +124,46 @@ namespace magique
         friend void workerThread(Scheduler* scheduler);
 
         // Aligned to prevent false sharing
-        alignas(64) Spinlock queueLock;                 // The lock to make queue access thread safe
-        alignas(64) Spinlock workedLock;                // The lock to worked vector thread safe
-        alignas(64) std::atomic<uint16_t> handleID = 0; // The internal handle counter
-        alignas(64) std::atomic<bool> running = false;  // If the scheduler is running
-        alignas(64) std::deque<JobBase*> jobQueue;      // Global job queue
-        std::thread::id mainID;                         // Thread id of the main thread
-        std::vector<std::thread> threads;               // All working threads
-        std::vector<const JobBase*> workedJobs;         // Currently processed jobs
-        std::atomic<bool> shutDown = false;             // Signal to shutdown all threads
+        alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
+        alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
+        alignas(64) std::atomic<uint16_t> handleID = 0;    // The internal handle counter
+        alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
+        alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
+        alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
+        alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
+        volatile int workedSize = 0;
+        std::thread::id mainID;           // Thread id of the main thread
+        std::vector<std::thread> threads; // All working threads
+    };
+
+
+    template <typename Callable>
+    struct Job final : IJob
+    {
+        explicit Job(Callable&& func) : func_(std::move(func)) {}
+        void run() override { func_(); }
+
+    private:
+        Callable func_;
+    };
+
+    // Allows to specify explicitly specify parameters
+    template <typename Func, typename... Args>
+    struct ExplicitJob final : IJob
+    {
+        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
+
+        void run() override { std::apply(func, args); }
+
+    private:
+        Func func;
+        std::tuple<Args...> args;
+    };
+
+    struct Worker
+    {
+        std::deque<IJob*> jobQueue;
+        std::thread thread;
     };
 
 } // namespace magique
