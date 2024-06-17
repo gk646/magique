@@ -9,7 +9,6 @@
 
 #include "external/raylib/src/rlgl.h"
 
-#include <cxconfig.h>
 #include <cxutil/cxtime.h>
 
 namespace magique

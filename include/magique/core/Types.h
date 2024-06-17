@@ -84,6 +84,20 @@ namespace magique
         int64_t data = 0;
     };
 
+    // Stores information used in the GameSave
+    struct StorageCell final
+    {
+        StorageID id;
+        const char* data;
+        int size;
+        bool operator==(const StorageCell& o) const { return id == o.id; }
+        bool operator<(const StorageCell& o) const { return id < o.id; }
+    };
+
+    struct TypeInfo final
+    {
+        int size;
+    };
 
     //----------------- MULTIPLAYER -----------------//
 

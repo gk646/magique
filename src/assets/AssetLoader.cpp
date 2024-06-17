@@ -16,7 +16,8 @@ namespace magique
 
     bool AssetLoader::load() { return loadLoop(assets); }
 
-    bool BasicChecks(const void* func, const PriorityLevel pl, const int impact)
+    template <typename Func>
+    bool BasicChecks(const Func func, const PriorityLevel pl, const int impact)
     {
         if (func == nullptr)
         {
