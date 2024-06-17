@@ -22,9 +22,7 @@ namespace magique::updater
 
     inline void StartUpdateTick()
     {
-        startTime = steady_clock::now();
         global::SCHEDULER->wakeup();
-        global::SCHEDULER->awaitAll();
     }
 
     inline void EndUpdateTick()
@@ -48,6 +46,7 @@ namespace magique::updater
 
         while (isRunning) [[likely]]
         {
+            startTime = steady_clock::now();
             const auto passedTime = duration_cast<microseconds>(startTime - lastTime);
             lastTime = startTime;
             accumulator += passedTime;

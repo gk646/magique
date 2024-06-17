@@ -121,62 +121,68 @@ namespace magique
         int collisions = 0;
 #endif
         cxstructs::now();
+
+        const auto collisionCheck = [&](int j, int startIdx, int endIdx)
+        {
+            const auto start = updateVec.begin() + startIdx;
+            const auto end = updateVec.begin() + endIdx;
+            for (auto it = start; it != end; ++it)
+            {
+                const auto first = *it;
+                auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
+                auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
+                // Query quadtree
+                grid.query<HashSet<entt::entity>>(collectors[j], posA.x, posA.y, colA.width, colA.height);
+                for (const auto second : collectors[j])
+                {
+                    if (first >= second)
+                        continue;
+
+                    auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
+
+                    if (posA.map != posB.map) [[unlikely]]
+                        continue;
+
+                    if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
+                    {
+                        auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
+                        InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
+                        // Invoke out of seconds view
+                        InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
+#ifdef MAGIQUE_DEBUG_COLLISIONS
+                        collisions++;
+#endif
+                    }
+                }
+                collectors[j].clear();
+            }
+        };
+
         constexpr int parts = 4;
         std::vector<std::thread> threads;
-
-        std::array<jobHandle, parts> handles{};
-        auto& sc = GetScheduler();
+        threads.reserve(5);
         int start = 0;
         int end = 0;
-        int partSize = updateVec.size() / parts;
+        const int partSize = updateVec.size() / parts;
         for (int j = 0; j < parts; ++j)
         {
             start = end;
             end = start + partSize;
             if (j == parts - 1)
             {
-                end = updateVec.size();
+                collisionCheck(j, start, updateVec.size());
+                break;
             }
 
             if (start - end == 0)
                 continue;
 
-            auto job = new Job(
-                [&, j, start, end]
-                {
-                    for (int i = start; i < end; ++i)
-                    {
-                        const auto first = updateVec[i];
-                        auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-                        auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
-                        // Query quadtree
-                        grid.query<HashSet<entt::entity>>(collectors[j], posA.x, posA.y, colA.width, colA.height);
-                        for (const auto second : collectors[j])
-                        {
-                            if (first >= second)
-                                continue;
+            threads.emplace_back(collisionCheck, j, start, end);
+        }
 
-                            auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
-
-                            if (posA.map != posB.map) [[unlikely]]
-                                continue;
-
-                            if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
-                            {
-                                auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
-                                InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
-                                // Invoke out of seconds view
-                                InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
-#ifdef MAGIQUE_DEBUG_COLLISIONS
-                                collisions++;
-#endif
-                            }
-                        }
-                        collectors[j].clear();
-                    }
-                });
-            auto h = sc.addJob(job);
-            handles[j] = h;
+        for (auto& t : threads)
+        {
+            t.join();
         }
 
         cxstructs::printTime<std::chrono::nanoseconds>();

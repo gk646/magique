@@ -19,7 +19,7 @@ namespace magique
 
     struct GameLoader; // Handles loading individual world state and player save - MainMenu -> Game
     struct GameSaver;  // Handles saving the session and reseting the state  - Game -> MainMenu
-    struct SaveGame;   // The game save object
+    struct GameSave;   // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config

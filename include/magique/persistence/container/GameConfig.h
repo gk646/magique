@@ -14,6 +14,8 @@
 //   - Keybinds (if they are not save specific)
 //   - General Statistics
 //   - ...
+// There is only 1 config per game!
+// Note: The game config owns and stores the data - at any time you can call GetGameConfig() and access it
 // .....................................................................
 
 namespace magique
@@ -46,6 +48,9 @@ namespace magique
 
         // Returns a modifiable reference to this string
         [[nodiscard]] std::string& GetString(ConfigStringID id);
+
+        // Returns a modifiable reference to this string
+        [[nodiscard]] std::string& GetChars(ConfigStringID id);
 
     private:
         std::vector<Keybind> keybinds;
