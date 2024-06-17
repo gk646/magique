@@ -57,11 +57,13 @@ namespace magique
     // Returns a list of all entities within update range of any actor - works across multiple maps!
     const std::vector<entt::entity>& GetUpdateEntities();
 
-    // Returns the currently loaded zones - fills up unused slots with UINT8_MAX
-    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
-
     // Returns a list of all entities that should be drawn - culled with the current camera
     const std::vector<entt::entity>& GetDrawEntities();
+
+    //----------------- GETTERS -----------------//
+
+    // Returns the currently loaded zones - fills up unused slots with UINT8_MAX
+    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
     // Returns the map of the camera - you should probably draw this map
     MapID GetCameraMap();
@@ -79,8 +81,12 @@ namespace magique
     // Returns the current camera holder
     entt::entity GetCameraEntity();
 
+    // Returns the game configuration -
+    // IMPORTANT: Only valid after the Game() constructor returned!
+    GameConfig& GetGameConfig();
+
     //----------------- JOB SYSTEM -----------------//
-    // Note:: This is for advanced users! Looks at util/Jobs.h
+    // Note:: This is for advanced users! Look at util/Jobs.h
 
     // Returns a reference to the scheduler
     // Allows to submit concurrent jobs to distribute compatible work across threads

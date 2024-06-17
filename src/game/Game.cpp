@@ -46,7 +46,7 @@ namespace magique
         CloseWindow();
     }
 
-    int Game::run(const char* assetPath, const uint64_t encryptionKey)
+    int Game::run(const char* assetPath, const char* configPath, const uint64_t encryptionKey)
     {
         auto& loader = global::CURRENT_GAME_LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
@@ -84,10 +84,7 @@ namespace magique
         return 0;
     }
 
-    void Game::shutDown()
-    {
-        onCloseEvent();
-    }
+    void Game::shutDown() { _isRunning = false; }
 
 
 } // namespace magique

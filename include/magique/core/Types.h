@@ -31,7 +31,6 @@ namespace magique
         uint16_t frames; // Total number of frames
     };
 
-
     enum class LightingModel : uint8_t
     {
         STATIC_SHADOWS, // Default
@@ -63,8 +62,8 @@ namespace magique
     // Efficient representation of a setting with mulitple different types
     struct Setting final
     {
-        // Supported types:
         Setting() = default;
+        // Supported types:
         explicit Setting(Vector2& val);
         explicit Setting(int val);
         explicit Setting(bool val);
@@ -88,15 +87,58 @@ namespace magique
     struct StorageCell final
     {
         StorageID id;
-        const char* data;
+        char* data;
         int size;
         bool operator==(const StorageCell& o) const { return id == o.id; }
         bool operator<(const StorageCell& o) const { return id < o.id; }
     };
 
-    struct TypeInfo final
+    struct Serializer final
     {
-        int size;
+        Serializer() = default;
+        Serializer(char* data, int size) : data(data), size(0), allocatedSize(size) {}
+
+        template <typename T>
+        Serializer& serialize(const T& value)
+        {
+            serialize(reinterpret_cast<const char*>(&value), sizeof(T));
+            return *this;
+        }
+
+        template <typename T>
+        Serializer& serializeArray(const T* array, int count)
+        {
+            serialize(reinterpret_cast<const char*>(array), count * sizeof(T));
+            return *this;
+        }
+
+        template <typename T>
+        Serializer& deserialize(T& value)
+        {
+            deserialize(reinterpret_cast<const char*>(&value), sizeof(T));
+            return *this;
+        }
+
+        template <typename T>
+        Serializer& deserializeArray(T*& array, int count)
+        {
+            if (array == nullptr)
+            {
+                array = new T[count];
+            }
+            deserialize(reinterpret_cast<char*>(array), count * sizeof(T));
+            return *this;
+        }
+
+    private:
+        void grow(int newSize);
+        void serialize(const char* data, int bytes);
+        void deserialize(char* data, int bytes);
+
+        char* data = nullptr;
+        int size = 0;
+        int allocatedSize = 0;
+        friend struct GameSave;
     };
 
     //----------------- MULTIPLAYER -----------------//
@@ -112,7 +154,6 @@ namespace magique
         FILLER4 = 64,
         FILLER5 = 128,
     };
-
 
     enum UDP_Channel : uint8_t
     {

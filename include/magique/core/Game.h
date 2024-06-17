@@ -12,7 +12,7 @@
 // All methods are called on the main thread unless specified otherwise.
 // A note on the threading behavior:
 // There is a update thread and the main thread. They almost fully run in paralell expect when some shared state is mutated
-// So if you add or destoy entities there has to be locks. If you use the ecs API of magique you dont have to worry about that
+// So if you add or destoy entities they have to be synced. If you use the ECS API of magique you dont have to worry about that
 // Also magique uses primitive atomics with spinlocks to avoid context switching! Generally 95% of the time no thread will wait!
 // All input getters of raylib work on either thread correctly and are updated at the end of each update tick!
 // ................................................................................
@@ -35,9 +35,9 @@ namespace magique
         virtual void onShutDown(GameConfig& config) {}
 
         // Called when the windows close button is pressed
-        virtual void onCloseEvent() { _isRunning = false; }
+        virtual void onCloseEvent() { shutDown(); }
 
-        // Calls the close event
+        // Stops the game
         void shutDown();
 
         //-----------------UPDATING-----------------//
@@ -71,7 +71,8 @@ namespace magique
 
         // Call this to start the game
         // Tries to load an asset image from the default path
-        int run(const char* assetPath = "data.bin", uint64_t encryptionKey = 0);
+        // Tries to load the game config from the default path
+        int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
         //----------------- GETTERS -----------------//
 

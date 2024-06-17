@@ -1,3 +1,5 @@
+#include <cstring>
+#include <cmath>
 #include <type_traits>
 
 #include <magique/core/Types.h>
@@ -97,6 +99,10 @@ namespace magique
             intPtr[1] = static_cast<int32_t>(data & 0xFFFFFFFF);
             return vec;
         }
+        else
+        {
+            static_assert(std::is_same_v<T, Vector2>, "This type is not supported!");
+        }
     }
 
     template <typename T>
@@ -119,6 +125,40 @@ namespace magique
             const auto* intPtr = reinterpret_cast<int32_t*>(&const_cast<Vector2&>(value));
             data = static_cast<int64_t>(intPtr[0]) << 32 | static_cast<uint32_t>(intPtr[1]) & 0xFFFFFFFF;
         }
+        else
+        {
+            static_assert(std::is_same_v<T, Vector2>, "This type is not supported!");
+        }
     }
+
+    void Serializer::grow(const int newSize)
+    {
+        if (newSize > allocatedSize)
+        {
+            const int newAllocatedSize = std::max(newSize, 2 * allocatedSize);
+            auto* newData = new char[newAllocatedSize];
+            if (data)
+            {
+                std::memcpy(newData, data, size);
+                delete[] data;
+            }
+            data = newData;
+            allocatedSize = newAllocatedSize;
+        }
+    }
+
+    void Serializer::serialize(const char* newData, int bytes)
+    {
+        grow(size + bytes);
+        std::memcpy(data + size, newData, bytes);
+        size += bytes;
+    }
+
+    void Serializer::deserialize(char* newData, int bytes)
+    {
+        std::memcpy(newData, data + size, bytes);
+        size += bytes;
+    }
+
 
 } // namespace magique

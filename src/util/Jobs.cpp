@@ -12,11 +12,10 @@ namespace magique
     {
         while (!scheduler->shutDown.load(std::memory_order_acquire))
         {
-            std::unique_lock lock(mutex, std::defer_lock);
-            scheduler->condition.wait(lock,[=]
             {
-                return !scheduler->isHibernate;
-            });
+                std::unique_lock lock(mutex);
+                scheduler->condition.wait(lock, [=] { return !scheduler->isHibernate; });
+            }
 
             while (!scheduler->isHibernate.load(std::memory_order_acquire))
             {
@@ -28,20 +27,18 @@ namespace magique
                     scheduler->jobQueue.pop_front();
                     scheduler->queueLock.unlock();
                     M_ASSERT(job->handle != jobHandle::null, "Null handle");
-                    if (job)
-                    {
-                        cxstructs::now(1);
-                        job->run();
-                        cxstructs::printTime<std::chrono::nanoseconds>("Took:",1);
-                        scheduler->removeWorkedJob(job);
-                        delete job;
-                    }
+                    // cxstructs::now(1);
+                    job->run();
+                    //cxstructs::printTime<std::chrono::nanoseconds>("Took:", 1);
+                    scheduler->removeWorkedJob(job);
+                    delete job;
                 }
                 else
                 {
                     scheduler->queueLock.unlock();
                 }
             }
+            std::this_thread::sleep_for(std::chrono::microseconds(10));
         }
     }
 
@@ -82,9 +79,8 @@ namespace magique
     void Scheduler::awaitAll() const
     {
 
-        while(currentJobsSize > 0)
+        while (currentJobsSize > 0)
         {
-
         }
     }
 
@@ -93,7 +89,7 @@ namespace magique
     {
         ++usingThreads;
         isHibernate = false;
-         condition.notify_all();
+        condition.notify_all();
     }
 
     void Scheduler::hibernate()

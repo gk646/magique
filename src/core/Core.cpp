@@ -52,10 +52,10 @@ namespace magique
         shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
         shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
 
-        int threads = std::min((int)std::thread::hardware_concurrency(), 4);
-        LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
+        int threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), 4);
         global::SCHEDULER = new Scheduler(threads);
 
+        LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
     }
 
