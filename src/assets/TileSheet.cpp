@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include <magique/assets/types/TileSheet.h>
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>

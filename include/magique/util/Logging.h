@@ -1,8 +1,6 @@
 #ifndef MAGIQUE_LOGGING_H
 #define MAGIQUE_LOGGING_H
 
-#include <magique/util/Defines.h>
-
 //-----------------------------------------------
 // Logging Module
 //-----------------------------------------------
@@ -13,7 +11,7 @@
 
 namespace magique
 {
-    enum LogLevel
+    enum LogLevel :  int
     {
         LEVEL_NONE,
         LEVEL_ALLOCATION, // Logs every allocation and deallocation

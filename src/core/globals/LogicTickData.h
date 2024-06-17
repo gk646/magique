@@ -12,6 +12,18 @@
 
 namespace magique
 {
+    struct AlignedSet
+    {
+        alignas(64) HashSet<entt::entity> set{500};
+    };
+
+    template <int size>
+    struct AlignedHashSets
+    {
+        std::array<AlignedSet, size> sets{};
+        HashSet<entt::entity>& operator[](int idx) { return sets[idx].set; }
+    };
+
     struct LogicTickData final
     {
         // Map the camera is in
@@ -44,8 +56,7 @@ namespace magique
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
         // Collects entities - 4 for the 4 threads
-        HashSet<entt::entity> collectors[4]{HashSet<entt::entity>{500}, HashSet<entt::entity>{500},
-                                            HashSet<entt::entity>{500}, HashSet<entt::entity>{500}};
+        AlignedHashSets<4> collectors{};
 
         // Shadow segments
         vector<Vector3> shadowQuads;
@@ -76,10 +87,6 @@ namespace magique
             entityUpdateCache.clear();
             entityUpdateVec.clear();
             drawVec.clear();
-            collectors[0].clear();
-            collectors[1].clear();
-            collectors[2].clear();
-            collectors[3].clear();
             hashGrid.clear();
         }
     };

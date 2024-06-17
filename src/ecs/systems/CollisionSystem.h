@@ -120,22 +120,27 @@ namespace magique
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;
 #endif
+        cxstructs::now();
+        constexpr int parts = 4;
+        std::vector<std::thread> threads;
 
-        std::array<jobHandle, 4> handles{};
+        std::array<jobHandle, parts> handles{};
         auto& sc = GetScheduler();
         int start = 0;
         int end = 0;
-        int partSize = updateVec.size() / 4;
-        for (int j = 0; j < 4; ++j)
+        int partSize = updateVec.size() / parts;
+        for (int j = 0; j < parts; ++j)
         {
             start = end;
             end = start + partSize;
-            if (j == 3)
+            if (j == parts - 1)
             {
                 end = updateVec.size();
             }
+
             if (start - end == 0)
                 continue;
+
             auto job = new Job(
                 [&, j, start, end]
                 {
@@ -174,7 +179,7 @@ namespace magique
             handles[j] = h;
         }
 
-        sc.await(handles);
+        cxstructs::printTime<std::chrono::nanoseconds>();
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);

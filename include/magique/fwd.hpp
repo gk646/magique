@@ -11,14 +11,15 @@ namespace magique
     struct Keybind; // Efficient representation of a keybind
     struct Setting; // A
     struct Puint;   // uint16_t point class
+
     //----------------- LOADING & SAVING -----------------//
 
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
-    struct SaveLoader; // Handles loading individual world state and player save - MainMenu -> Game
-    struct SaveSaver;  // Handles saving the session and reseting the state  - Game -> MainMenu
-    struct GameSave;   // The game save object
+    struct GameLoader; // Handles loading individual world state and player save - MainMenu -> Game
+    struct GameSaver;  // Handles saving the session and reseting the state  - Game -> MainMenu
+    struct SaveGame;   // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config
@@ -65,12 +66,13 @@ namespace magique
 
 //----------------- USER DEFINED -----------------//
 
-enum EntityID : uint16_t;             // User implemented to denote different entity types
-enum class HandleID : int;            // User implemented to denote different handles
-enum class MapID : uint8_t;           // User implemented to denote different maps
-enum class KeybindID : uint16_t;      // User implemented to denote different keybinds
-enum class SettingID : uint16_t;      // User implemented to denote different settings
-enum class ConfigStringID : uint16_t; // User implemented to denote different config string
+enum EntityID : uint16_t;             // User implemented to identify entity types
+enum class HandleID : int;            // User implemented to identify handles
+enum class MapID : uint8_t;           // User implemented to identify maps
+enum class KeybindID : uint16_t;      // User implemented to identify keybinds
+enum class SettingID : uint16_t;      // User implemented to identify settings
+enum class ConfigStringID : uint16_t; // User implemented to identify config string
+enum class StorageID : int;           // User implemented to identify stored information
 
 //-----------------RAYLIB-----------------//
 

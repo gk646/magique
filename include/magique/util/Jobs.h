@@ -68,17 +68,13 @@ namespace magique
         template <typename Container>
         void await(const Container& handles) const
         {
-            while (true)
+            while (currentJobsSize > 0)
             {
                 bool allCompleted = true;
                 const auto vec = workedJobs.data();
-                const auto size = workedSize;
-                if (size == 0)
-                    return;
-
                 for (const auto handle : handles)
                 {
-                    for (int i = 0; i < size; ++i)
+                    for (int i = 0; i < currentJobsSize; ++i)
                     {
                         if (vec[i]->handle == handle)
                         {
@@ -94,10 +90,17 @@ namespace magique
             }
         }
 
-        // Brings all threads back to working speed
+        // Awaits the completion of all current tasks
+        void awaitAll() const;
+
+        //----------------- internal -----------------//
+        // These function are public to make it a complete module
+        // You dont need to call them when using magique
+
+        // Brings all workers back to speed
         void wakeup();
 
-        // Puts all threads to hibernation - slowing down their cycling
+        // Puts all workers to hibernation
         void hibernate();
 
     private:
@@ -105,7 +108,7 @@ namespace magique
         {
             // allows for time tracking later on
             workedLock.lock();
-            ++workedSize;
+            ++currentJobsSize;
             workedJobs.push_back(job);
             workedLock.unlock();
         }
@@ -113,7 +116,7 @@ namespace magique
         {
             // allows for time tracking later on
             workedLock.lock();
-            --workedSize;
+            --currentJobsSize;
             std::erase(workedJobs, job);
             workedLock.unlock();
             // Just spin the handles around
@@ -129,15 +132,16 @@ namespace magique
         // Aligned to prevent false sharing
         alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
         alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
-        alignas(64) std::atomic<uint16_t> handleID = 0;    // The internal handle counter
         alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
         alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
         alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
         alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
         alignas(64) std::condition_variable condition;
-        volatile int workedSize = 0;
-        std::thread::id mainID;           // Thread id of the main thread
-        std::vector<std::thread> threads; // All working threads
+        volatile std::atomic<int> currentJobsSize = 0;
+        std::atomic<uint16_t> handleID = 0; // The internal handle counter
+        std::thread::id mainID;             // Thread id of the main thread
+        std::vector<std::thread> threads;   // All working threads
+        std::atomic<int> usingThreads = 0;
     };
 
 
