@@ -99,7 +99,7 @@ struct SingleResolutionHashGrid final
     }
 
     template <typename Container>
-    void query(Container& elems, const float x, const float y, const int w, const int h)
+    void query(Container& elems, const float x, const float y, const int w, const int h) const
     {
         const int x1 = static_cast<int>(x) / cellSize;
         const int y1 = static_cast<int>(y) / cellSize;
@@ -180,7 +180,7 @@ private:
     }
 
     template <typename Container>
-    void queryElements(const CellID id, Container& elems)
+    void queryElements(const CellID id, Container& elems) const
     {
         const auto it = cellMap.find(id);
         if (it == cellMap.end()) [[unlikely]] // Most elements should be together
@@ -188,8 +188,7 @@ private:
             return;
         }
         const int blockIdx = it->second;
-        DataBlock<V, blockSize>* startBlock = nullptr;
-        startBlock = &dataBlocks[blockIdx];
+        const DataBlock<V, blockSize>* startBlock = &dataBlocks[blockIdx];
 
         startBlock->append(elems);
         while (startBlock->hasNext())

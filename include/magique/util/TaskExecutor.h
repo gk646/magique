@@ -47,7 +47,7 @@ namespace magique
     struct ExecutorI
     {
         virtual ~ExecutorI() = default;
-        virtual bool load() = 0;
+        virtual bool step() = 0;
         [[nodiscard]] virtual float getProgressPercent() const = 0;
     };
 
@@ -74,28 +74,7 @@ namespace magique
         float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
-        void addTask(TaskI<T>* task, PriorityLevel pl, const Thread d, int impact)
-        {
-            if (!task)
-            {
-                return;
-            }
-            task->impact = impact;
-            totalImpact += impact;
-            if (d == MAIN_THREAD)
-            {
-                gpuTasks[pl].push_back(task);
-            }
-            else
-            {
-                cpuTasks[pl].push_back(task);
-            }
-        }
-        void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const Thread d, const int impact)
-        {
-            addTask(new LambdaTask{func}, pl, d, impact);
-        }
-        bool loadLoop(T& res)
+        bool stepLoop(T& res)
         {
             if (currentLevel == -1)
             {
@@ -147,6 +126,38 @@ namespace magique
 
             return currentLevel == -1;
         }
+        void addTask(TaskI<T>* task, PriorityLevel pl, const Thread d, int impact)
+        {
+            if (!task)
+            {
+                return;
+            }
+            task->impact = impact;
+            totalImpact += impact;
+            if (d == MAIN_THREAD)
+            {
+                gpuTasks[pl].push_back(task);
+            }
+            else
+            {
+                cpuTasks[pl].push_back(task);
+            }
+        }
+        void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const Thread d, const int impact)
+        {
+            addTask(new LambdaTask{func}, pl, d, impact);
+        }
+
+        std::map<PriorityLevel, std::vector<TaskI<T>*>> cpuTasks;
+        std::map<PriorityLevel, std::vector<TaskI<T>*>> gpuTasks;
+        std::thread loadThread;
+        int totalImpact = 0;
+        std::atomic<int> loadedImpact = 0;
+        PriorityLevel currentLevel = INSTANT;
+        bool cpuDone = false;
+        bool gpuDone = false;
+
+    private:
         bool loadTasks(std::vector<TaskI<T>*>& tasks, T& res)
         {
             for (auto task : tasks)
@@ -177,15 +188,6 @@ namespace magique
             }
             return true;
         }
-
-        std::map<PriorityLevel, std::vector<TaskI<T>*>> cpuTasks;
-        std::map<PriorityLevel, std::vector<TaskI<T>*>> gpuTasks;
-        std::thread loadThread;
-        int totalImpact = 0;
-        std::atomic<int> loadedImpact = 0;
-        PriorityLevel currentLevel = INSTANT;
-        bool cpuDone = false;
-        bool gpuDone = false;
     };
 } // namespace magique
 #endif //TASKEXECUTOR_H_

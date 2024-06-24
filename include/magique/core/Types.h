@@ -84,19 +84,31 @@ namespace magique
     };
 
     // Stores information used in the GameSave
-    struct StorageCell final
+    struct GameSaveStorageCell final
     {
-        StorageID id;
-        char* data;
-        int size;
-        bool operator==(const StorageCell& o) const { return id == o.id; }
-        bool operator<(const StorageCell& o) const { return id < o.id; }
+        StorageID id{};
+        char* data = nullptr;
+        int size = 0;
+        int allocatedSize = 0;
+        bool operator==(const GameSaveStorageCell& o) const { return id == o.id; }
+        bool operator<(const GameSaveStorageCell& o) const { return id < o.id; }
+        void grow(int newSize);
     };
+
+    struct GameConfigStorageCell final
+    {
+        union
+        {
+            Keybind keybind;
+            Setting setting;
+            void* string = nullptr;
+        };
+    };
+
 
     struct Serializer final
     {
-        Serializer() = default;
-        Serializer(char* data, int size) : data(data), size(0), allocatedSize(size) {}
+        explicit Serializer(GameSaveStorageCell& cell, const int size) : cell(cell), size(size) {}
 
         template <typename T>
         Serializer& serialize(const T& value)
@@ -131,13 +143,11 @@ namespace magique
         }
 
     private:
-        void grow(int newSize);
         void serialize(const char* data, int bytes);
         void deserialize(char* data, int bytes);
 
-        char* data = nullptr;
+        GameSaveStorageCell& cell;
         int size = 0;
-        int allocatedSize = 0;
         friend struct GameSave;
     };
 
@@ -173,13 +183,6 @@ namespace magique
         CLIENT_QUEST_UPDATE,
         CLIENT_EFFECT_UPDATE,
     };
-
-    struct Puint final
-    {
-        uint16_t x;
-        uint16_t y;
-    };
-
 
 } // namespace magique
 

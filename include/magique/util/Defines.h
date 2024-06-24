@@ -26,6 +26,10 @@
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles (for tile maps)
 #define MAGIQUE_MAX_TILEMAP_LAYERS 5
 
+//----------------- LOADING -----------------//
+
+#define MAGIQUE_MAX_TABLE_NAME_SIZE 16
+
 //----------------- GRAPHICS -----------------//
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50

@@ -120,16 +120,15 @@ namespace magique
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;
 #endif
-        cxstructs::now();
 
-        const auto collisionCheck = [&](int j, int startIdx, int endIdx)
+        const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
             const auto start = updateVec.begin() + startIdx;
             const auto end = updateVec.begin() + endIdx;
             for (auto it = start; it != end; ++it)
             {
                 const auto first = *it;
-                auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
+                const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
                 auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
                 // Query quadtree
                 grid.query<HashSet<entt::entity>>(collectors[j], posA.x, posA.y, colA.width, colA.height);

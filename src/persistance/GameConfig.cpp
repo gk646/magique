@@ -1,53 +1,61 @@
-#include <magique/persistence/container/GameConfig.h>
+#include <magique/persistence/types/GameConfig.h>
 #include <magique/core/Types.h>
 #include <magique/util/Macros.h>
 
 namespace magique
 {
-    void GameConfig::SaveKeybind(Keybind keybind, KeybindID id)
+    void GameConfig::SaveKeybind(ConfigID id, Keybind keybind)
     {
-        if (keybinds.size() < (int)id + 1)
+        if (storage.size() < (int)id + 1)
         {
-            keybinds.resize((int)id + 1);
+            storage.resize((int)id + 1);
         }
-        keybinds[(int)id] = keybind;
+        storage[(int)id].keybind = keybind;
     }
 
-    void GameConfig::SaveSetting(Setting setting, SettingID id)
+    void GameConfig::SaveSetting(ConfigID id, Setting setting)
     {
-        if (settings.size() < (int)id + 1)
+        if (storage.size() < (int)id + 1)
         {
-            settings.resize((int)id + 1);
+            storage.resize((int)id + 1);
         }
-        settings[(int)id] = setting;
+        storage[(int)id].setting = setting;
     }
 
-    void GameConfig::SaveString(const std::string& string, ConfigStringID id)
+    void GameConfig::SaveString(ConfigID id, const std::string& string)
     {
-        if (strings.size() < (int)id + 1)
+        if (storage.size() < (int)id + 1)
         {
-            strings.resize((int)id + 1);
+            storage.resize((int)id + 1);
         }
-        strings[(int)id] = string;
+        if (storage[(int)id].string != nullptr)
+        {
+            *static_cast<std::string*>(storage[(int)id].string) = string;
+        }
+        else
+        {
+            storage[(int)id].string = new std::string(string);
+        }
     }
 
 
-    Keybind& GameConfig::GetKeybind(KeybindID id)
+    Keybind& GameConfig::GetKeybind(ConfigID id)
     {
-        M_ASSERT(keybinds.size() > (int)id, "Setting was never assigned!");
-        return keybinds[(int)id];
+        M_ASSERT(storage.size() > (int)id, "Setting was never assigned!");
+        return storage[(int)id].keybind;
     }
 
-    Setting& GameConfig::GetSetting(SettingID id)
+    Setting& GameConfig::GetSetting(ConfigID id)
     {
-        M_ASSERT(settings.size() > (int)id, "Setting was never assigned!");
-        return settings[(int)id];
+        M_ASSERT(storage.size() > (int)id, "Setting was never assigned!");
+        return storage[(int)id].setting;
     }
 
-    std::string& GameConfig::GetString(ConfigStringID id)
+    std::string& GameConfig::GetString(ConfigID id)
     {
-        M_ASSERT(strings.size() > (int)id, "Setting was never assigned!");
-        return strings[(int)id];
+        M_ASSERT(storage.size() > (int)id, "Setting was never assigned!");
+        M_ASSERT(storage[(int)id].string != nullptr, "No string saved to this slot");
+        return *static_cast<std::string*>(storage[(int)id].string);
     }
 
 
