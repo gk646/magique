@@ -70,7 +70,6 @@ namespace magique
 
     auto Keybind::hasAlt() const -> bool { return data & 1 << 15; }
 
-
     Setting::Setting(Vector2& val) { save(val); }
     Setting::Setting(int val) { save(val); }
     Setting::Setting(bool val) { save(val); }
@@ -131,11 +130,11 @@ namespace magique
         }
     }
 
-    void Serializer::grow(const int newSize)
+    void GameSaveStorageCell::grow(const int newSize)
     {
         if (newSize > allocatedSize)
         {
-            const int newAllocatedSize = std::max(newSize, 2 * allocatedSize);
+            const int newAllocatedSize = newSize;
             auto* newData = new char[newAllocatedSize];
             if (data)
             {
@@ -149,14 +148,14 @@ namespace magique
 
     void Serializer::serialize(const char* newData, int bytes)
     {
-        grow(size + bytes);
-        std::memcpy(data + size, newData, bytes);
+        cell.grow(size + bytes);
+        std::memcpy(cell.data + size, newData, bytes);
         size += bytes;
     }
 
     void Serializer::deserialize(char* newData, int bytes)
     {
-        std::memcpy(newData, data + size, bytes);
+        std::memcpy(newData, cell.data  + size, bytes);
         size += bytes;
     }
 

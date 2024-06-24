@@ -9,8 +9,8 @@ namespace magique
     //----------------- CORE -----------------//
 
     struct Keybind; // Efficient representation of a keybind
-    struct Setting; // A
-    struct Puint;   // uint16_t point class
+    struct Setting; // Efficient representation of a setting
+    struct Game;    // Core Game class
 
     //----------------- LOADING & SAVING -----------------//
 
@@ -26,6 +26,9 @@ namespace magique
     struct GameConfig;   // The config persistence object
 
     struct ExecutorI; // Task loading interface
+
+    template <typename... Columns>
+    struct DataTable; // DataBase like interface to save game data
 
     //-----------------LOGIC-----------------//
 

@@ -14,7 +14,10 @@ namespace magique
         LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
     }
 
-    bool AssetLoader::load() { return loadLoop(assets); }
+    bool AssetLoader::step()
+    {
+        return stepLoop(assets);
+    }
 
     template <typename Func>
     bool BasicChecks(const Func func, const PriorityLevel pl, const int impact)
@@ -45,7 +48,6 @@ namespace magique
 
         addTask(task, pl, thread, impact);
     }
-
 
     void AssetLoader::registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl, int impact)
     {

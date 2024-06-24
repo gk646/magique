@@ -20,9 +20,7 @@
 
 namespace magique
 {
-    enum class KeybindID : uint16_t;      // User implemented - used as direct index
-    enum class SettingID : uint16_t;      // User implemented - used as direct index
-    enum class ConfigStringID : uint16_t; // User implemented - used as direct index
+    enum class ConfigID : uint16_t; // User implemented - used as direct index
 
     struct GameConfig
     {
@@ -30,32 +28,27 @@ namespace magique
 
         // Saves a keybind at the given id
         // Example: SaveKeyBind(Keybind(KEY_M), KeybindID::OPEN_MAP);
-        void SaveKeybind(Keybind keybind, KeybindID id);
+        void SaveKeybind(ConfigID id, Keybind keybind);
 
         // Saves a setting at the given id
-        void SaveSetting(Setting setting, SettingID id);
+        void SaveSetting(ConfigID id, Setting setting);
 
         // Saves a string
-        void SaveString(const std::string& string, ConfigStringID id);
+        void SaveString(ConfigID id, const std::string& string);
 
         //----------------- GET -----------------//
 
         // Returns a modifiable reference to this keybind
-        [[nodiscard]] Keybind& GetKeybind(KeybindID id);
+        [[nodiscard]] Keybind& GetKeybind(ConfigID id);
 
         // Returns a modifiable reference to this setting
-        [[nodiscard]] Setting& GetSetting(SettingID id);
+        [[nodiscard]] Setting& GetSetting(ConfigID id);
 
         // Returns a modifiable reference to this string
-        [[nodiscard]] std::string& GetString(ConfigStringID id);
-
-        // Returns a modifiable reference to this string
-        [[nodiscard]] std::string& GetChars(ConfigStringID id);
+        [[nodiscard]] std::string& GetString(ConfigID id);
 
     private:
-        std::vector<Keybind> keybinds;
-        std::vector<Setting> settings;
-        std::vector<std::string> strings;
+        std::vector<GameConfigStorageCell> storage;
     };
 
 } // namespace magique

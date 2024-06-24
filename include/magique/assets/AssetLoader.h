@@ -27,13 +27,6 @@ namespace magique
     {
         AssetLoader(const char* assetPath, uint64_t encryptionKey);
 
-        // Prints current stats - automatically called if all task are registered
-        void printStats() const;
-
-        // Called each frame - progressed the loader
-        // Dont call it yourself
-        bool load() override;
-
         // Registers a new task
         // task     - a new instance of a subclass of ITask, takes owner ship
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
@@ -49,7 +42,14 @@ namespace magique
         void registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl = MED, int impact = 1);
 
     private:
+        // Prints current stats - automatically called if all task are registered
+        void printStats() const;
+
+        // Called each frame - progressed the loader
+        bool step() override;
+
         AssetContainer assets;
+        friend Game;
     };
 
 } // namespace magique

@@ -32,7 +32,6 @@ void* operator new(const size_t size)
     free(ptr);
 }
 
-// You might also want to override the array versions of new and delete
  void* operator new[](size_t size)
 {
     return ::operator new(size); // Redirect to single-object new
@@ -43,7 +42,6 @@ void* operator new(const size_t size)
     ::operator delete(ptr); // Redirect to single-object delete
 }
 
-// Additional overloads might be needed for custom behavior and specific compilers
  void operator delete(void* ptr, size_t size) noexcept
 {
     LOG_ALLOC("Deallocating %d bytes", static_cast<int>(size));
