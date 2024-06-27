@@ -1,13 +1,14 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <magique/persistence/container/GameSave.h>
+#include <magique/persistence/types/GameSave.h>
 #include <magique/util/Logging.h>
 
 #include <cxutil/cxio.h>
 
 namespace magique
 {
+    using StorageCell = GameSaveStorageCell;
     constexpr auto* FILE_HEADER = "MAGIQUE_SAVE_FILE";
 
     bool ContainsCell(const StorageID id, const std::vector<StorageCell>& storage)
@@ -105,12 +106,12 @@ namespace magique
         fwrite(&totalSize, sizeof(int32_t), 1, file);
 
         // Total entries
-        int32_t totalEntries = static_cast<int32_t>(save.storage.size());
+        const auto totalEntries = static_cast<int32_t>(save.storage.size());
         fwrite(&totalEntries, sizeof(int32_t), 1, file);
 
         int32_t dataSize = 0;
 
-        for (const auto& [id, data, size] : save.storage)
+        for (const auto& [id, data, size, _] : save.storage)
         {
             fwrite(&id, sizeof(int), 1, file);
             fwrite(&size, sizeof(int), 1, file);
@@ -129,31 +130,7 @@ namespace magique
     }
 
 
-    bool GameSave::saveData(const StorageID id, const char* data, const int typeSize, const int count)
-    {
-        const auto cell = getData(id);
-
-        // Copy the data
-        const int totalSize = count * typeSize;
-        const auto saveData = new char[totalSize];
-        memcpy(saveData, data, totalSize);
-
-        // Doesnt exist yet
-        if (cell == nullptr)
-        {
-            storage.push_back({id, static_cast<char*>(saveData), totalSize});
-        }
-        else // Overwrite existing data
-        {
-            delete[] cell->data;
-            cell->data = static_cast<char*>(saveData);
-            cell->size = totalSize;
-        }
-        return true;
-    }
-
-
-    StorageCell* GameSave::getData(const StorageID id)
+    GameSaveStorageCell* GameSave::getDataImpl(StorageID id)
     {
         for (auto& cell : storage)
         {
@@ -163,12 +140,29 @@ namespace magique
             }
         }
         return nullptr;
-        const auto it = std::lower_bound(storage.begin(), storage.end(), StorageCell{id, nullptr, 0});
-        if (it != storage.end() && it->id == id)
-        {
-            return &*it;
-        }
-        return nullptr;
     }
+
+
+    void GameSave::assignDataImpl(StorageID id, const char* data, int bytes)
+    {
+        auto cell = getDataImpl(id);
+        if (cell == nullptr)
+        {
+            cell = &storage.emplace_back(id, nullptr, 0, 0);
+        }
+        cell->assign(data, bytes);
+    }
+
+    void GameSave::appendDataImpl(StorageID id, const char* data, int bytes)
+    {
+        const auto cell = getDataImpl(id);
+        if (cell == nullptr)
+        {
+            LOG_ERROR("Cell does not exist!:%s", id);
+            return;
+        }
+        cell->append(data, bytes);
+    }
+
 
 } // namespace magique

@@ -146,17 +146,18 @@ namespace magique
         }
     }
 
-    void Serializer::serialize(const char* newData, int bytes)
+    void GameSaveStorageCell::append(const char* ptr, const int bytes)
     {
-        cell.grow(size + bytes);
-        std::memcpy(cell.data + size, newData, bytes);
+        grow(size + bytes);
+        std::memcpy(data + size, ptr, bytes);
         size += bytes;
     }
 
-    void Serializer::deserialize(char* newData, int bytes)
+    void GameSaveStorageCell::assign(const char* ptr, int bytes)
     {
-        std::memcpy(newData, cell.data  + size, bytes);
-        size += bytes;
+        grow(bytes);
+        std::memcpy(data, ptr, bytes);
+        size = bytes;
     }
 
 

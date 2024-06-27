@@ -30,7 +30,7 @@ namespace magique::renderer
         if (loader) [[likely]]
         {
             game.drawLoadingScreen(loader->getProgressPercent());
-            const auto res = loader->load();
+            const auto res = loader->step();
             if (res == true)
             {
                 delete loader;
@@ -83,6 +83,5 @@ namespace magique::renderer
             rlUnloadTexture(i);
         }
     }
-
 
 } // namespace magique::renderer

@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <vector>
 #include <magique/util/Defines.h>
+#include <magique/util/Logging.h>
 
 //-----------------------------------------------
 // DataTable
@@ -15,27 +16,15 @@
 
 namespace magique
 {
-    struct Column final
-    {
-        const char* name = nullptr;
-        int size = 0;
-
-        // Specify the type
-        template <typename T>
-        explicit Column(const char* name) : name(name), size(sizeof(T))
-        {
-        }
-    };
-
     template <typename... Types>
     struct DataTable final
     {
         using ColumnsTuple = std::tuple<Types...>;
         //----------------- TABLE -----------------//
 
-        // Specify the column names
-        // Example:     DataTable table{Column<int>("age"), Column<float>("height")};
-        explicit DataTable(const char* args...);
+        // Constructs an EMPTY data table - specify the column names
+        // Example:     DataTable table{"age", "height"};
+        DataTable(const std::initializer_list<const char*>& args);
 
         // Returns the amount of rows
         [[nodiscard]] int getRows() const;
@@ -55,63 +44,70 @@ namespace magique
         // 0 - based indexing
 
         // Sets a value at the specified position
-        template <typename T>
-        void set(const T& value, int row, int column);
+        template <int column>
+        void set(const auto& value, int row);
 
+        // Assigns the given row new values
         void setRow(const ColumnsTuple& tuple, int row);
+
+        // Assigns the given row new values
+        void setRow(ColumnsTuple&& tuple, int row);
+
+        // Adds a new row with the given values
+        void addRow(const ColumnsTuple& tuple);
+
+        // Adds a new row with the given values
+        void addRow(ColumnsTuple&& tuple);
 
         //----------------- GET -----------------//
         // 0 - based indexing
 
-        ColumnsTuple& getRow(int row) { return getData(row, 0); }
+        // Row getters
+        ColumnsTuple& operator[](int row);
+        const ColumnsTuple& operator[](int row) const;
 
-        // Returns the value at the specified position
-        template <typename T>
-        const T& get(int row, int column) const
-        {
-            return *static_cast<const T*>(getData(row, column));
-        }
+        // Cell getters
+        // Specify the column in the template -> type safety
+        template <int column>
+        auto& getCell(int row);
+        template <int column>
+        const auto& getCell(int row) const;
 
-        // Returns the value at the specified position
-        template <typename T>
-        T& get(int row, int column)
-        {
-            return *static_cast<const T*>(getData(row, column));
-        }
+        // Returns the underlying data vector
+        const std::vector<ColumnsTuple>& getData() const;
 
     private:
-        void addColumn(const char* name);
-
-        bool addColumnImpl(const char* name, int bytes);
-
-        void* getData(int row, int column, int size);
-        [[nodiscard]] const void* getData(int row, int column) const;
-
-        void setData(int row, int column);
-
-        void* data = nullptr;                                        // Data storage row-wise
-        int rows = 0;                                                // Number of rows
         int offsets[sizeof...(Types)]{};                             // Accumulative offset for the columns
         char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{}; // Column names
-        constexpr int rowSize = (sizeof(Types) + ...);               // Byte size of 1 row
-        constexpr int columns = sizeof...(Types);                    // Amount of columns
+        std::vector<ColumnsTuple> data;                              // Data storage row-wise
+        int rowSize = (sizeof(Types) + ...);                         // Byte size of 1 row
+        int columns = sizeof...(Types);                              // Amount of columns
     };
+
+
 
 
     //----------------- IMPLEMENTATION -----------------//
     template <typename... Types>
-    DataTable<Types...>::DataTable(const char* args, ...)
+    DataTable<Types...>::DataTable(const std::initializer_list<const char*>& args)
     {
-        const std::initializer_list<const char*> list{args...};
-        for (const auto arg : list)
+        int i = 0;
+        for (const auto arg : args)
         {
-            addColumn(arg);
+            if (arg == nullptr)
+            {
+                LOG_ERROR("Passing nullptr as column name");
+                continue;
+            }
+            int len = strlen(arg);
+            std::memcpy(names[i], arg, std::min(MAGIQUE_MAX_TABLE_NAME_SIZE, len));
+            i++;
         }
     }
     template <typename... Types>
     int DataTable<Types...>::getRows() const
     {
-        return rows;
+        return data.size();
     }
     template <typename... Types>
     constexpr int DataTable<Types...>::getColumns() const
@@ -140,16 +136,59 @@ namespace magique
         return ret;
     }
     template <typename... Types>
-    template <typename T>
-    void DataTable<Types...>::set(const T& value, int row, int column)
+    template <int column>
+    void DataTable<Types...>::set(const auto& value, int row)
     {
-        setData(row, column, sizeof(T));
+        std::get<column>(data[row]) = value;
     }
     template <typename... Types>
     void DataTable<Types...>::setRow(const ColumnsTuple& tuple, int row)
     {
-
+        data[row] = tuple;
     }
+    template <typename... Types>
+    void DataTable<Types...>::setRow(ColumnsTuple&& tuple, int row)
+    {
+        data[row] = std::move(tuple);
+    }
+    template <typename... Types>
+    void DataTable<Types...>::addRow(const ColumnsTuple& tuple)
+    {
+        data.push_back(tuple);
+    }
+    template <typename... Types>
+    void DataTable<Types...>::addRow(ColumnsTuple&& tuple)
+    {
+        data.emplace_back(tuple);
+    }
+    template <typename... Types>
+    typename DataTable<Types...>::ColumnsTuple& DataTable<Types...>::operator[](const int row)
+    {
+        return data[row];
+    }
+    template <typename... Types>
+    const typename DataTable<Types...>::ColumnsTuple& DataTable<Types...>::operator[](const int row) const
+    {
+        return data[row];
+    }
+    template <typename... Types>
+    template <int column>
+    auto& DataTable<Types...>::getCell(int row)
+    {
+        return std::get<column>(data[row]);
+    }
+    template <typename... Types>
+    template <int column>
+    const auto& DataTable<Types...>::getCell(int row) const
+    {
+        return std::get<column>(data[row]);
+    }
+    template <typename... Types>
+    const std::vector<typename DataTable<Types...>::ColumnsTuple>& DataTable<Types...>::getData() const
+    {
+        return data;
+    }
+
 
 } // namespace magique
 
