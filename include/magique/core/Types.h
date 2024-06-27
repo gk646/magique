@@ -92,6 +92,8 @@ namespace magique
         int allocatedSize = 0;
         bool operator==(const GameSaveStorageCell& o) const { return id == o.id; }
         bool operator<(const GameSaveStorageCell& o) const { return id < o.id; }
+        void assign(const char* ptr, int bytes);
+        void append(const char* ptr, int bytes);
         void grow(int newSize);
     };
 
@@ -105,51 +107,6 @@ namespace magique
         };
     };
 
-
-    struct Serializer final
-    {
-        explicit Serializer(GameSaveStorageCell& cell, const int size) : cell(cell), size(size) {}
-
-        template <typename T>
-        Serializer& serialize(const T& value)
-        {
-            serialize(reinterpret_cast<const char*>(&value), sizeof(T));
-            return *this;
-        }
-
-        template <typename T>
-        Serializer& serializeArray(const T* array, int count)
-        {
-            serialize(reinterpret_cast<const char*>(array), count * sizeof(T));
-            return *this;
-        }
-
-        template <typename T>
-        Serializer& deserialize(T& value)
-        {
-            deserialize(reinterpret_cast<const char*>(&value), sizeof(T));
-            return *this;
-        }
-
-        template <typename T>
-        Serializer& deserializeArray(T*& array, int count)
-        {
-            if (array == nullptr)
-            {
-                array = new T[count];
-            }
-            deserialize(reinterpret_cast<char*>(array), count * sizeof(T));
-            return *this;
-        }
-
-    private:
-        void serialize(const char* data, int bytes);
-        void deserialize(char* data, int bytes);
-
-        GameSaveStorageCell& cell;
-        int size = 0;
-        friend struct GameSave;
-    };
 
     //----------------- MULTIPLAYER -----------------//
 

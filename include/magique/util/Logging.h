@@ -31,7 +31,6 @@ namespace magique
 } // namespace magique
 
 // Use these macros for logging
-
 #define LOG_ALLOC(msg, ...) magique::Log(magique::LEVEL_ALLOCATION, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #define LOG_INFO(msg, ...) magique::Log(magique::LEVEL_INFO, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #define LOG_WARNING(msg, ...) magique::Log(magique::LEVEL_WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)

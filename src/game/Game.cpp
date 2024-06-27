@@ -1,7 +1,7 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/assets/AssetLoader.h>
-#include <magique/persistence/container/GameConfig.h>
+#include <magique/persistence/types/GameConfig.h>
 #include <cxstructs/SmallVector.h>
 
 #include "external/raylib/src/rlgl.h"
