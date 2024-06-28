@@ -141,6 +141,10 @@ namespace magique
         CLIENT_EFFECT_UPDATE,
     };
 
+
+
+
+
 } // namespace magique
 
 

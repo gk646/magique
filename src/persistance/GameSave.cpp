@@ -88,7 +88,6 @@ namespace magique
         return save;
     }
 
-
     bool GameSave::SaveGameSave(GameSave& save, const char* filePath, uint64_t encryptionKey)
     {
         FILE* file = fopen(filePath, "wb");
@@ -129,7 +128,6 @@ namespace magique
         return true;
     }
 
-
     GameSaveStorageCell* GameSave::getDataImpl(StorageID id)
     {
         for (auto& cell : storage)
@@ -141,7 +139,6 @@ namespace magique
         }
         return nullptr;
     }
-
 
     void GameSave::assignDataImpl(StorageID id, const char* data, int bytes)
     {
@@ -163,6 +160,5 @@ namespace magique
         }
         cell->append(data, bytes);
     }
-
 
 } // namespace magique
