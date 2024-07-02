@@ -74,7 +74,7 @@ namespace magique
         template <int column>
         const auto& getCell(int row) const;
 
-        // Get the cell by name
+        // Get the cell by name , type has to be provided
         template <typename T>
         T& getCell(int row, const char* name);
         template <typename T>
@@ -98,18 +98,26 @@ namespace magique
         {
             return sizeof(T);
         }
+
         template <std::size_t... Indices, typename... Types>
         constexpr std::array<size_t, sizeof...(Types)> calculateOffsets(std::index_sequence<Indices...>,
                                                                         std::tuple<Types...>)
         {
             return {
-                (Indices == 0 ? 0 : (SizeOf<std::tuple_element_t<Indices - 1, std::tuple<Types...>>>()) + ... + 0)...};
+                (Indices == 0 ? 0 : (SizeOf<std::tuple_element_t<Indices - 1, std::tuple<Types...>>>() + ... + 0))...};
         }
-        int offsets[sizeof...(Types)]{};                             // Accumulative offset for the columns
-        char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{}; // Column names
-        std::vector<ColumnsTuple> data;                              // Data storage row-wise
-        int rowSize = (sizeof(Types) + ...);                         // Byte size of 1 row
-        int columns = sizeof...(Types);                              // Amount of columns
+
+        template <typename... Types>
+        constexpr std::array<size_t, sizeof...(Types)> getOffsets()
+        {
+            return calculateOffsets(std::index_sequence_for<Types...>{}, std::tuple<Types...>{});
+        }
+
+        std::array<std::size_t, sizeof...(Types)> offsets = getOffsets<Types...>; // Accumulative offset for the columns
+        char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{};          // Column names
+        std::vector<ColumnsTuple> data;                                       // Data storage row-wise
+        int rowSize = (sizeof(Types) + ...);                                  // Byte size of 1 row
+        int columns = sizeof...(Types);                                       // Amount of columns
     };
 
 
@@ -213,7 +221,7 @@ namespace magique
     template <typename T>
     T& DataTable<Types...>::getCell(int row, const char* name)
     {
-        return
+        return T();
     }
     template <typename... Types>
     const std::vector<typename DataTable<Types...>::ColumnsTuple>& DataTable<Types...>::getData() const
@@ -240,8 +248,6 @@ namespace magique
     {
         return Iterator<ColumnsTuple>(data.data() + data.size());
     }
-
-
 } // namespace magique
 
 #endif //MAGIQUE_DATATABLE_H

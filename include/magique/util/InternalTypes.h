@@ -3,6 +3,7 @@
 
 namespace magique
 {
+    // Array Iterator template
     template <typename U>
     class Iterator
     {
@@ -80,6 +81,12 @@ namespace magique
     private:
         pointer ptr_;
     };
+
+    template <typename T>
+    static constexpr size_t SizeOf()
+    {
+        return sizeof(T);
+    }
 } // namespace magique
 
 #endif //INTERNALTYPES_H
