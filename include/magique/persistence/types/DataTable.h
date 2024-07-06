@@ -6,6 +6,7 @@
 #include <magique/util/Defines.h>
 #include <magique/util/InternalTypes.h>
 #include <magique/util/Logging.h>
+#include <magique/util/Macros.h>
 
 //-----------------------------------------------
 // DataTable
@@ -67,14 +68,13 @@ namespace magique
         ColumnsTuple& operator[](int row);
         const ColumnsTuple& operator[](int row) const;
 
-        // Cell getters
-        // Specify the column in the template -> type safety
-        template <int column>
-        auto& getCell(int row);
-        template <int column>
-        const auto& getCell(int row) const;
+        // Get the cell with runtime column -> type has to be provided
+        template <typename T>
+        auto& getCell(int row, int column);
+        template <typename T>
+        const auto& getCell(int row, int column) const;
 
-        // Get the cell by name , type has to be provided
+        // Get the cell with runtime name -> type has to be provided
         template <typename T>
         T& getCell(int row, const char* name);
         template <typename T>
@@ -93,37 +93,27 @@ namespace magique
         Iterator<const ColumnsTuple> end() const;
 
     private:
+        using OffsetArray = std::array<int, sizeof...(Types)>;
         template <typename T>
-        constexpr size_t SizeOf()
-        {
-            return sizeof(T);
-        }
+        static constexpr int SizeOf();
+        template <std::size_t... Indices>
+        constexpr std::array<int, sizeof...(Types)> calculateOffsets(std::index_sequence<Indices...>);
+        template <typename T, typename Tuple, std::size_t... Is>
+        T& getTupleColumnImpl(int index, Tuple& t, std::index_sequence<Is...>);
+        template <typename T>
+        T& getTupleColumn(int column, std::tuple<Types...>& t);
 
-        template <std::size_t... Indices, typename... Types>
-        constexpr std::array<size_t, sizeof...(Types)> calculateOffsets(std::index_sequence<Indices...>,
-                                                                        std::tuple<Types...>)
-        {
-            return {
-                (Indices == 0 ? 0 : (SizeOf<std::tuple_element_t<Indices - 1, std::tuple<Types...>>>() + ... + 0))...};
-        }
-
-        template <typename... Types>
-        constexpr std::array<size_t, sizeof...(Types)> getOffsets()
-        {
-            return calculateOffsets(std::index_sequence_for<Types...>{}, std::tuple<Types...>{});
-        }
-
-        std::array<std::size_t, sizeof...(Types)> offsets = getOffsets<Types...>; // Accumulative offset for the columns
-        char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{};          // Column names
-        std::vector<ColumnsTuple> data;                                       // Data storage row-wise
-        int rowSize = (sizeof(Types) + ...);                                  // Byte size of 1 row
-        int columns = sizeof...(Types);                                       // Amount of columns
+        OffsetArray offsets;                                         // Accumulative offset for the columns
+        char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{}; // Column names
+        std::vector<ColumnsTuple> data;                              // Data storage row-wise
+        int columns = sizeof...(Types);                              // Amount of columns
     };
 
 
     //----------------- IMPLEMENTATION -----------------//
     template <typename... Types>
-    DataTable<Types...>::DataTable(const std::initializer_list<const char*>& args)
+    DataTable<Types...>::DataTable(const std::initializer_list<const char*>& args) :
+        offsets(calculateOffsets(std::make_index_sequence<sizeof...(Types) - 1>{}))
     {
         int i = 0;
         for (const auto arg : args)
@@ -133,7 +123,7 @@ namespace magique
                 LOG_ERROR("Passing nullptr as column name");
                 continue;
             }
-            int len = strlen(arg);
+            int len = static_cast<int>(strlen(arg));
             std::memcpy(names[i], arg, std::min(MAGIQUE_MAX_TABLE_NAME_SIZE, len));
             i++;
         }
@@ -156,6 +146,7 @@ namespace magique
             if (strcmp(names[i], column) == 0)
                 return i;
         }
+        LOG_FATAL("DataTable does not contain column with name:%s", column);
         return -1;
     }
     template <typename... Types>
@@ -206,22 +197,33 @@ namespace magique
         return data[row];
     }
     template <typename... Types>
-    template <int column>
-    auto& DataTable<Types...>::getCell(int row)
+    template <typename T>
+    auto& DataTable<Types...>::getCell(int row, int column)
     {
-        return std::get<column>(data[row]);
+        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        return getTupleColumn<T>(column, data[row]);
     }
     template <typename... Types>
-    template <int column>
-    const auto& DataTable<Types...>::getCell(int row) const
+    template <typename T>
+    const auto& DataTable<Types...>::getCell(int row, int column) const
     {
-        return std::get<column>(data[row]);
+        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        return getTupleColumn<T>(column, data[row]);
     }
     template <typename... Types>
     template <typename T>
     T& DataTable<Types...>::getCell(int row, const char* name)
     {
-        return T();
+        const int col = getColumnIndex(name);
+        return getTupleColumn<T>(col, data[row]);
+    }
+    template <typename... Types>
+    template <typename T>
+    const T& DataTable<Types...>::getCell(int row, const char* name) const
+    {
+
+        int col = getColumnIndex(name);
+        return getTupleColumn<T>(col, data[row]);
     }
     template <typename... Types>
     const std::vector<typename DataTable<Types...>::ColumnsTuple>& DataTable<Types...>::getData() const
@@ -248,6 +250,37 @@ namespace magique
     {
         return Iterator<ColumnsTuple>(data.data() + data.size());
     }
+    template <typename... Types>
+    template <typename T, typename Tuple, std::size_t... Is>
+    T& DataTable<Types...>::getTupleColumnImpl(int index, Tuple& t, std::index_sequence<Is...>)
+    {
+        T* ptrs[] = {std::is_same_v<T, std::tuple_element_t<Is, Tuple>> ? reinterpret_cast<T*>(&std::get<Is>(t))
+                                                                        : nullptr...};
+        return *ptrs[index];
+    }
+    template <typename... Types>
+    template <typename T>
+    T& DataTable<Types...>::getTupleColumn(int column, std::tuple<Types...>& t)
+    {
+        static_assert((std::is_same_v<T, Types> || ...), "Given type does not exist in the table!");
+        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        return getTupleColumnImpl<T>(column, t, std::index_sequence_for<Types...>{});
+    }
+    template <typename... Types>
+    template <typename T>
+    constexpr int DataTable<Types...>::SizeOf()
+    {
+        return sizeof(T);
+    }
+    template <typename... Types>
+    template <std::size_t... Indices>
+    constexpr std::array<int, sizeof...(Types)> DataTable<Types...>::calculateOffsets(std::index_sequence<Indices...>)
+    {
+        OffsetArray ret = {0};
+        ((ret[Indices + 1] = ret[Indices] + SizeOf<std::tuple_element_t<Indices, std::tuple<Types...>>>()), ...);
+        return ret;
+    }
+
 } // namespace magique
 
 #endif //MAGIQUE_DATATABLE_H

@@ -62,11 +62,9 @@ namespace magique
 
         fprintf(out, "\n");
 
-        if (level == LOG_FATAL) [[unlikely]]
-            exit(1);
-
-        if (level >= LOG_ERROR && (MAGIQUE_DEBUG == 1)) [[unlikely]]
+        if (level >= LOG_ERROR) [[unlikely]]
         {
+#if MAGIQUE_DEBUG == 1
 #if defined(_MSC_VER)
             __debugbreak();
 #elif defined(__GNUC__)
@@ -74,7 +72,10 @@ namespace magique
 #else
             std::abort();
 #endif
+#endif
+            if (level == LOG_FATAL) [[unlikely]]
+                exit(1);
         }
     }
 
-} // namespace magique::util
+} // namespace magique
