@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <magique/core/Types.h>
+#include <magique/util/InternalTypes.h>
 
 //-----------------------------------------------
 // GameConfig
