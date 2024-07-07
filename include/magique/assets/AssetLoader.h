@@ -2,7 +2,7 @@
 #define MAGIQUE_ASSETLOADER_H
 
 #include <magique/assets/container/AssetContainer.h>
-#include <magique/util/TaskExecutor.h>
+#include <magique/internal/TaskExecutor.h>
 
 //-----------------------------------------------
 // Game Loader

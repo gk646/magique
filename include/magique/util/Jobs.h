@@ -33,6 +33,19 @@ namespace magique
         jobHandle handle = jobHandle::null;
     };
 
+    // Allows to specify explicitly specify parameters
+    template <typename Func, typename... Args>
+    struct ExplicitJob final : IJob
+    {
+        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
+
+        void run() override { std::apply(func, args); }
+
+    private:
+        Func func;
+        std::tuple<Args...> args;
+    };
+
     // Wrapper for a spinlock
     struct Spinlock final
     {
@@ -155,18 +168,7 @@ namespace magique
         Callable func_;
     };
 
-    // Allows to specify explicitly specify parameters
-    template <typename Func, typename... Args>
-    struct ExplicitJob final : IJob
-    {
-        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
 
-        void run() override { std::apply(func, args); }
-
-    private:
-        Func func;
-        std::tuple<Args...> args;
-    };
 
     struct Worker
     {

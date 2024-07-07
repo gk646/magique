@@ -62,7 +62,7 @@ namespace magique
 
         fprintf(out, "\n");
 
-        if (level >= LOG_ERROR) [[unlikely]]
+        if (level >= LEVEL_ERROR) [[unlikely]]
         {
 #if MAGIQUE_DEBUG == 1
 #if defined(_MSC_VER)
@@ -73,7 +73,7 @@ namespace magique
             std::abort();
 #endif
 #endif
-            if (level == LOG_FATAL) [[unlikely]]
+            if (level == LEVEL_FATAL) [[unlikely]]
                 exit(1);
         }
     }

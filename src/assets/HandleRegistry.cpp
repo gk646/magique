@@ -1,6 +1,6 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/HandleRegistry.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
 #include "core/globals/HandleRegistry.h"

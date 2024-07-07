@@ -1,14 +1,15 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
-#include <iterator>
+#include <cstddef>
 #include <magique/core/Types.h>
 
 //-----------------------------------------------
-// Public Internal Types
+// Public Internal Module
 //-----------------------------------------------
 // .....................................................................
-// Dont modify these types. The have to be public due to templates (or other reasons) but are used internally
+// Dont modify these types or methods.
+// They have to be public due to templates (or other reasons) and are used internally
 // .....................................................................
 
 namespace magique
@@ -18,7 +19,6 @@ namespace magique
     class Iterator
     {
     public:
-        using iterator_category = std::random_access_iterator_tag;
         using value_type = U;
         using difference_type = std::ptrdiff_t;
         using pointer = U*;
@@ -120,6 +120,39 @@ namespace magique
             Setting setting;
             void* string = nullptr;
         };
+    };
+
+    struct EmitterData final
+    {
+        using ScaleFunction = float (*)(float s, float t);
+        using ColorFunction = float (*)(Color& c, float t);
+        bool resolutionScaling = true;
+        uint8_t r = 0, g = 0, b = 0, a = 1;
+        Shape shape = RECT;
+        Shape emissionShape = RECT;
+        uint16_t amount = 1;
+        uint16_t lifeTime = 1000;
+        uint16_t width = 10, height = 10;
+        uint16_t emWidth = 1, emHeight = 1;
+        uint16_t x = 1, y = 1;
+        float minScale = 1;
+        float maxScale = 1;
+        float minInitVeloc = 1;
+        float maxInitVeloc = 1;
+        float dirX = 0, dirY = 0;
+        float spreadAngle = 0;
+        ScaleFunction scaleFunc = nullptr;
+        ColorFunction colorFunc = nullptr;
+    };
+
+    struct ParticleData final
+    {
+        float x, y;         // Position
+        float vx, vy;       // Velocity
+        uint16_t age;       // Current age
+        uint16_t lifetime;  // Total lifetime
+        float size;         // Current size
+        uint8_t r, g, b, a; // Current color
     };
 
 } // namespace magique

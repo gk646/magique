@@ -2,7 +2,7 @@
 #define MAGIQUE_GAMELOADER_H
 
 #include <magique/core/Types.h>
-#include <magique/util/TaskExecutor.h>
+#include <magique/internal/TaskExecutor.h>
 #include <magique/persistence/types/GameSave.h>
 
 //-----------------------------------------------

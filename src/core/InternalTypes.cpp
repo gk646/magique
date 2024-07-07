@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include <magique/util/InternalTypes.h>
+#include <magique/internal/Types.h>
 
 namespace magique
 {

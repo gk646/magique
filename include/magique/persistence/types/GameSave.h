@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 #include <magique/core/Types.h>
-#include <magique/util/InternalTypes.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Types.h>
+#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // Game Save

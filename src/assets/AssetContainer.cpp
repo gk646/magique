@@ -3,7 +3,7 @@
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 #include <raylib/raylib.h>
 
 struct Sorter
