@@ -38,6 +38,18 @@ namespace magique
         NONE,
     };
 
+    // Feel free to rename those!
+    enum class CollisionLayer : uint8_t
+    {
+        DEFAULT_LAYER = 1 <<1,
+        LAYER_1 = 1 <<2,
+        LAYER_2 = 1 <<3,
+        LAYER_3 = 1 <<4,
+        LAYER_4 = 1 <<5,
+        LAYER_5 = 1 <<6,
+        LAYER_6 = 1 <<7,
+    };
+
     // Efficient representation of a keybind with optional modifiers
     struct Keybind final
     {
@@ -81,30 +93,6 @@ namespace magique
 
     private:
         int64_t data = 0;
-    };
-
-    // Stores information used in the GameSave
-    struct GameSaveStorageCell final
-    {
-        StorageID id{};
-        char* data = nullptr;
-        int size = 0;
-        int allocatedSize = 0;
-        bool operator==(const GameSaveStorageCell& o) const { return id == o.id; }
-        bool operator<(const GameSaveStorageCell& o) const { return id < o.id; }
-        void assign(const char* ptr, int bytes);
-        void append(const char* ptr, int bytes);
-        void grow(int newSize);
-    };
-
-    struct GameConfigStorageCell final
-    {
-        union
-        {
-            Keybind keybind;
-            Setting setting;
-            void* string = nullptr;
-        };
     };
 
 

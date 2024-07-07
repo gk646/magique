@@ -5,6 +5,9 @@
 #include <magique/ecs/ECS.h>
 #include <magique/util/Macros.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter
+
 //-----------------------------------------------
 // Internal Scripting Module
 //-----------------------------------------------
@@ -45,7 +48,8 @@ namespace magique
     // Step 3: Done! You can now invoke your event!
 
     // Add ALL events here
-    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent, myCustomEvent);
+    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent,
+                    myCustomEvent);
 
     struct EntityScript
     {
@@ -108,7 +112,7 @@ namespace magique
     {
         const auto& pos = REGISTRY.get<PositionC>(entity); // Every entity has a position
         auto* script = static_cast<Script*>(GetScript(pos.type));
-        M_ASSERT(script != nullptr , "No Script for this type!");
+        M_ASSERT(script != nullptr, "No Script for this type!");
         Call<event, Script, entt::registry&, entt::entity, Args...>(script, REGISTRY, entity,
                                                                     std::forward<Args>(arguments)...);
     }
@@ -117,10 +121,12 @@ namespace magique
     template <EventType event, class Script = EntityScript, class... Args>
     void InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
     {
-        M_ASSERT(script != nullptr , "Passing a null script");
+        M_ASSERT(script != nullptr, "Passing a null script");
         Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), REGISTRY, entity,
                                                                     std::forward<Args>(arguments)...);
     }
 
 } // namespace magique
+#pragma warning(pop)
+
 #endif //MAGIQUE_INTERNAL_SCRIPTING_H

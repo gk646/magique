@@ -1,6 +1,16 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
+#include <iterator>
+#include <magique/core/Types.h>
+
+//-----------------------------------------------
+// Public Internal Types
+//-----------------------------------------------
+// .....................................................................
+// Dont modify these types. The have to be public due to templates (or other reasons) but are used internally
+// .....................................................................
+
 namespace magique
 {
     // Array Iterator template
@@ -87,6 +97,31 @@ namespace magique
     {
         return sizeof(T);
     }
+
+    // Stores information used in the GameSave
+    struct GameSaveStorageCell final
+    {
+        StorageID id{};
+        char* data = nullptr;
+        int size = 0;
+        int allocatedSize = 0;
+        bool operator==(const GameSaveStorageCell& o) const { return id == o.id; }
+        bool operator<(const GameSaveStorageCell& o) const { return id < o.id; }
+        void assign(const char* ptr, int bytes);
+        void append(const char* ptr, int bytes);
+        void grow(int newSize);
+    };
+
+    struct GameConfigStorageCell final
+    {
+        union
+        {
+            Keybind keybind;
+            Setting setting;
+            void* string = nullptr;
+        };
+    };
+
 } // namespace magique
 
 #endif //INTERNALTYPES_H

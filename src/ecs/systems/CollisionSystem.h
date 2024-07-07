@@ -139,7 +139,7 @@ namespace magique
 
                     auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
 
-                    if (posA.map != posB.map) [[unlikely]]
+                    if (posA.map != posB.map || colA.layerMask & colB.layerMask ) [[unlikely]]
                         continue;
 
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]

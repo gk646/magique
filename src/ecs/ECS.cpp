@@ -82,24 +82,27 @@ namespace magique
         return false;
     }
 
-    void GiveCamera(entt::entity entity) { REGISTRY.emplace<CameraC>(entity); }
+   void GiveCamera(entt::entity entity) {
+         REGISTRY.emplace<CameraC>(entity);
 
-    void GiveOccluder(entt::entity entity, int width, int height, Shape shape)
-    {
-        REGISTRY.emplace<OccluderC>(entity, (int16_t)width, (int16_t)height, shape);
     }
 
-    void GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style)
+    OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape)
     {
-        REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity, style);
+        return REGISTRY.emplace<OccluderC>(entity, (int16_t)width, (int16_t)height, shape);
     }
 
-    void GiveActor(entt::entity e) { REGISTRY.emplace<ActorC>(e); }
-
-    void GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
+    EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style)
     {
-        REGISTRY.emplace<CollisionC>(e, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
-                                     static_cast<int16_t>(anchorY));
+        return REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity, style);
+    }
+
+    void GiveActor(entt::entity e) { return REGISTRY.emplace<ActorC>(e); }
+
+    CollisionC& GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
+    {
+        return REGISTRY.emplace<CollisionC>(e,{}, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
+                                            static_cast<int16_t>(anchorY));
     }
 
     void GiveScript(const entt::entity e) { REGISTRY.emplace<ScriptC>(e); }

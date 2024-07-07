@@ -38,6 +38,7 @@ namespace magique
 
     struct EntityScript;
     enum EventType : uint8_t;
+    enum class CollisionLayer : uint8_t;
 
     //----------------- ASSETS -----------------//
 

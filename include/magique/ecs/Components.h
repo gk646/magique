@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_COMPONENTS_H
 #define MAGIQUE_COMPONENTS_H
 
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 
 //-----------------------------------------------
 // Components Module
@@ -16,7 +16,7 @@
 
 enum LightStyle : uint8_t
 {
-    POINT_LIGHT_SOFT, // point ligtht
+    POINT_LIGHT_SOFT,         // point ligtht
     DIRECTIONAL_LIGHT_STRONG, // Sunlight
 };
 
@@ -56,11 +56,16 @@ struct PositionC final
 
 struct CollisionC final
 {
-    Shape shape = RECT; // Shape
+    uint8_t layerMask = 1; // Collision layer -> Use the methods to set it
+    Shape shape = RECT;    // Shape
     uint16_t width = 0;
     uint16_t height = 0;
     int16_t anchorX = 0; // Rotation anchor point for the hitbox
     int16_t anchorY = 0; // Rotation anchor point for the hitbox
+
+    void addCollisionLayer(magique::CollisionLayer layer);
+    void removeCollisionLayer(magique::CollisionLayer layer);
+    void removeAllLayers();
 };
 
 // If added entity will emit light

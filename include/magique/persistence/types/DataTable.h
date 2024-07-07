@@ -94,8 +94,6 @@ namespace magique
 
     private:
         using OffsetArray = std::array<int, sizeof...(Types)>;
-        template <typename T>
-        static constexpr int SizeOf();
         template <std::size_t... Indices>
         constexpr std::array<int, sizeof...(Types)> calculateOffsets(std::index_sequence<Indices...>);
         template <typename T, typename Tuple, std::size_t... Is>
@@ -265,12 +263,6 @@ namespace magique
         static_assert((std::is_same_v<T, Types> || ...), "Given type does not exist in the table!");
         M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
         return getTupleColumnImpl<T>(column, t, std::index_sequence_for<Types...>{});
-    }
-    template <typename... Types>
-    template <typename T>
-    constexpr int DataTable<Types...>::SizeOf()
-    {
-        return sizeof(T);
     }
     template <typename... Types>
     template <std::size_t... Indices>
