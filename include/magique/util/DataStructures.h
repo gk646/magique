@@ -14,7 +14,6 @@
 // Include this header with care, its rather heavy!
 // ................................................................................
 
-
 namespace magique
 {
     template <typename T>

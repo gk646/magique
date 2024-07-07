@@ -1,6 +1,6 @@
 #include <magique/persistence/types/GameConfig.h>
 #include <magique/core/Types.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 
 namespace magique
 {

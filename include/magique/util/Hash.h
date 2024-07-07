@@ -4,7 +4,6 @@
 
 namespace magique::util
 {
-
     // Compile time string hashing function
     // Takes an optional salt parameter (arbitrary defined value) to make it customizable in terms of collision handling
     consteval uint32_t HashStringEval(char const* s, const int salt) noexcept

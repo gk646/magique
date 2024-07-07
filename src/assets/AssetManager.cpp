@@ -4,7 +4,7 @@
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 #include <magique/core/Types.h>
 
 #include <raylib/raylib.h>

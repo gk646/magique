@@ -5,7 +5,7 @@
 // Defines
 //-----------------------------------------------
 // ................................................................................
-// These are core engine defines which MUST not be changed
+// These are core engine defines and shouldnt be changed unless you know what it does
 // After any changes the library has to be recompiled!
 // It can be useful to use these in your code if you need access to them
 // ................................................................................
@@ -40,6 +40,5 @@
 #else
 #define MAGIQUE_DEBUG 0
 #endif
-
 
 #endif //MAGIQUE_DEFINES_H

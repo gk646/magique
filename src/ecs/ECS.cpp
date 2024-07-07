@@ -101,7 +101,7 @@ namespace magique
 
     CollisionC& GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
     {
-        return REGISTRY.emplace<CollisionC>(e,{}, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
+        return REGISTRY.emplace<CollisionC>(e,(uint8_t)1, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
                                             static_cast<int16_t>(anchorY));
     }
 

@@ -1,8 +1,11 @@
-`magique` is a 2D engine putting the programming first! It focused on supplying a stable teck stack of libraries that
+`magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant answer all game development needs in a simple but powerful way both in performance and usability. magique achieves this  while providing core functionalities around p to create a productive 2D engine.
 are curated together to create complex games.
 
 Most notable features:
 
+- Every method and header is fully documented including return values, parameters, defaults or failure
+- Optimized for usability following a simple code-style
+- Low-level implementation
 - Supports visual scripting with the node editor `raynodes` which is run blazingly fast by LuaJIT
 - Global memory allocator for performance and control
 - Encrypted asset packing for simple distribution
@@ -22,12 +25,8 @@ The techstack and feature list of `magique`:
 - entt
     - Entity component system
     - Views, groups, signals...
-- tsl
+- ankerl
     - Optimized hashmap and hashset
-- LuaJIT
-    - Lua scripts
-- cxstructs
-    - helper datastructures and algorithms
 
 Paradigms:
 

@@ -4,9 +4,9 @@
 #include <initializer_list>
 #include <vector>
 #include <magique/util/Defines.h>
-#include <magique/util/InternalTypes.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Types.h>
+#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // DataTable

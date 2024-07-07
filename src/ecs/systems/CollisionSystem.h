@@ -52,13 +52,14 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
 {
     constexpr c2x identityTransform{{0, 0}, {1, 0}};
     // both shapes are non-rotated AABBs
-    if (colA.shape == RECT && colB.shape == RECT && posA.rotation == 0 && posB.rotation == 0) [[likely]]
+    if (colA.shape == magique::RECT && colB.shape == magique::RECT && posA.rotation == 0 && posB.rotation == 0)
+        [[likely]]
     {
         const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
         const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
         return c2AABBtoAABB(aabbA, aabbB) != 0;
     }
-    if (colA.shape == CIRCLE && colB.shape == CIRCLE)
+    if (colA.shape == magique::CIRCLE && colB.shape == magique::CIRCLE)
     {
         const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F},
                                   static_cast<float>(colA.width)};
@@ -66,14 +67,14 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
                                   static_cast<float>(colB.width)};
         return c2CircletoCircle(circleA, circleB) != 0;
     } // Handle circle-AABB collision
-    if (colA.shape == CIRCLE && colB.shape == RECT)
+    if (colA.shape == magique::CIRCLE && colB.shape == magique::RECT)
     {
         const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F},
                                   static_cast<float>(colA.width)};
         const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
         return c2CircletoAABB(circleA, aabbB) != 0;
     }
-    if (colA.shape == RECT && colB.shape == CIRCLE)
+    if (colA.shape == magique::RECT && colB.shape == magique::CIRCLE)
     {
         const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
         const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F},
@@ -81,7 +82,7 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
         return c2CircletoAABB(circleB, aabbA) != 0;
     }
     // Handle AABB-AABB collision (considering rotation)
-    if (colA.shape == RECT && colB.shape == RECT)
+    if (colA.shape == magique::RECT && colB.shape == magique::RECT)
     {
         if (posA.rotation == 0)
         {
@@ -139,7 +140,7 @@ namespace magique
 
                     auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
 
-                    if (posA.map != posB.map || colA.layerMask & colB.layerMask ) [[unlikely]]
+                    if (posA.map != posB.map || colA.layerMask & colB.layerMask) [[unlikely]]
                         continue;
 
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
@@ -156,7 +157,7 @@ namespace magique
                 collectors[j].clear();
             }
         };
-
+        cxstructs::now();
         constexpr int parts = 4;
         std::vector<std::thread> threads;
         threads.reserve(5);

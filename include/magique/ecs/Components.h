@@ -14,21 +14,6 @@
 // of maps (levels, zones...) and entity types (classes...).
 // ................................................................................
 
-enum LightStyle : uint8_t
-{
-    POINT_LIGHT_SOFT,         // point ligtht
-    DIRECTIONAL_LIGHT_STRONG, // Sunlight
-};
-
-// Shape classes
-enum Shape : uint8_t
-{
-    CIRCLE, // Circle
-    RECT,   // Rectangle, can be rotated
-    POLYGON,
-};
-
-
 // Denotes an actor
 struct ActorC final
 {
@@ -56,8 +41,8 @@ struct PositionC final
 
 struct CollisionC final
 {
-    uint8_t layerMask = 1; // Collision layer -> Use the methods to set it
-    Shape shape = RECT;    // Shape
+    uint8_t layerMask = 1;                // Collision layer -> Use the methods to set it
+    magique::Shape shape = magique::RECT; // Shape
     uint16_t width = 0;
     uint16_t height = 0;
     int16_t anchorX = 0; // Rotation anchor point for the hitbox
@@ -71,9 +56,9 @@ struct CollisionC final
 // If added entity will emit light
 struct EmitterC final
 {
-    uint8_t r, g, b, a; // Use ColorToInt()
+    uint8_t r, g, b, a; // 0 - 255, a = transparency
     uint16_t intensity; // Style dependant - the size of the light
-    LightStyle style;
+    magique::LightStyle style;
 };
 
 // If added entity will throw shadows
@@ -82,7 +67,7 @@ struct OccluderC final
 {
     int16_t width;
     int16_t height;
-    Shape shape;
+    magique::Shape shape;
 };
 
 //----------------- DEBUG -----------------//

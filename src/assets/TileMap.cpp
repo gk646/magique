@@ -4,7 +4,7 @@
 
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 
 namespace magique
 {

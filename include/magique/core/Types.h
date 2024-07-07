@@ -31,6 +31,20 @@ namespace magique
         uint16_t frames; // Total number of frames
     };
 
+    enum LightStyle : uint8_t
+    {
+        POINT_LIGHT_SOFT,         // point ligtht
+        DIRECTIONAL_LIGHT_STRONG, // Sunlight
+    };
+
+    // Shape classes
+    enum Shape : uint8_t
+    {
+        CIRCLE, // Circle
+        RECT,   // Rectangle, can be rotated
+        POLYGON,
+    };
+
     enum class LightingModel : uint8_t
     {
         STATIC_SHADOWS, // Default
@@ -41,13 +55,13 @@ namespace magique
     // Feel free to rename those!
     enum class CollisionLayer : uint8_t
     {
-        DEFAULT_LAYER = 1 <<1,
-        LAYER_1 = 1 <<2,
-        LAYER_2 = 1 <<3,
-        LAYER_3 = 1 <<4,
-        LAYER_4 = 1 <<5,
-        LAYER_5 = 1 <<6,
-        LAYER_6 = 1 <<7,
+        DEFAULT_LAYER = 1 << 1,
+        LAYER_1 = 1 << 2,
+        LAYER_2 = 1 << 3,
+        LAYER_3 = 1 << 4,
+        LAYER_4 = 1 << 5,
+        LAYER_5 = 1 << 6,
+        LAYER_6 = 1 << 7,
     };
 
     // Efficient representation of a keybind with optional modifiers
@@ -128,9 +142,6 @@ namespace magique
         CLIENT_QUEST_UPDATE,
         CLIENT_EFFECT_UPDATE,
     };
-
-
-
 
 
 } // namespace magique

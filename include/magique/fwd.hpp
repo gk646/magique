@@ -7,13 +7,13 @@
 namespace magique
 {
     //----------------- CORE -----------------//
-
-    struct Keybind; // Efficient representation of a keybind
-    struct Setting; // Efficient representation of a setting
-    struct Game;    // Core Game class
+    struct Keybind;       // Efficient representation of a keybind
+    struct Setting;       // Efficient representation of a setting
+    struct Game;          // Core Game class
+    struct ScreenEmitter; // Particle emitter
+    struct EntityEmitter; // Particle emitter
 
     //----------------- LOADING & SAVING -----------------//
-
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
@@ -31,17 +31,14 @@ namespace magique
     struct DataTable; // DataBase like interface to save game data
 
     //-----------------LOGIC-----------------//
-
     struct DrawTickData; // Data for one draw tick - guaranteed to not change during the tick
 
     //-----------------ECS-----------------//
-
     struct EntityScript;
     enum EventType : uint8_t;
     enum class CollisionLayer : uint8_t;
 
     //----------------- ASSETS -----------------//
-
     struct Asset;                 // Memory container for any asset
     struct TextureRegion;         // All textures are stitched into a atlas, you can only retrieve their region
     struct SpriteSheet;           // Identifies a sprite sheet
@@ -52,15 +49,12 @@ namespace magique
     struct TileSheet;             // Stores the textures for all tiles in a project
 
     //----------------- GRAPHICS -----------------//
-
     enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
 
     //----------------- Multiplayer -----------------//
-
     enum UpdateFlag : uint8_t;
 
     //----------------- UTIL -----------------//
-
     enum LogLevel : int;
     struct Scheduler;
     enum class jobHandle : uint16_t;
@@ -69,7 +63,6 @@ namespace magique
 } // namespace magique
 
 //----------------- USER DEFINED -----------------//
-
 enum EntityID : uint16_t;             // User implemented to identify entity types
 enum class HandleID : int;            // User implemented to identify handles
 enum class MapID : uint8_t;           // User implemented to identify maps
@@ -79,7 +72,6 @@ enum class ConfigStringID : uint16_t; // User implemented to identify config str
 enum class StorageID : int;           // User implemented to identify stored information
 
 //-----------------RAYLIB-----------------//
-
 struct Camera2D;
 struct Font;
 struct Vector2;

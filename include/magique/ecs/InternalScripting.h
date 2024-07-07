@@ -3,7 +3,7 @@
 
 #include <magique/fwd.hpp>
 #include <magique/ecs/ECS.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
@@ -58,7 +58,7 @@ namespace magique
         // Called once after all components have been added
         virtual void onCreate(entt::registry& registry, entt::entity self) {}
 
-        // Called once before the entitiy is destroyed
+        // Called once before the entity is destroyed
         virtual void onDestroy(entt::registry& registry, entt::entity self) {}
 
         // Called when this entity collides with another entity - called for both entities
@@ -76,7 +76,7 @@ namespace magique
         // Called once at the beginning of each tick IF mouse state changed - includes mouse movement
         virtual void onMouseEvent(entt::registry& registry, entt::entity self) {}
 
-        //-----------------USER -----------------// // These events have to be called by the user
+        //----------------- USER -----------------// // These events have to be called by the user
         // Examples:
 
         // virtual void onMove(entt::registry& registry, entt::entity self, float newX, float newY) {}
@@ -127,6 +127,7 @@ namespace magique
     }
 
 } // namespace magique
+
 #pragma warning(pop)
 
 #endif //MAGIQUE_INTERNAL_SCRIPTING_H

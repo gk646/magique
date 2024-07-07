@@ -1,5 +1,5 @@
 #include <magique/util/Jobs.h>
-#include <magique/util/Macros.h>
+#include <magique/internal/Macros.h>
 
 #include <cxutil/cxtime.h>
 
