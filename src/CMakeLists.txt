@@ -1,4 +1,3 @@
-
 # Add all subdirectories
 add_subdirectory(assets)
 add_subdirectory(ecs)
@@ -7,7 +6,7 @@ add_subdirectory(game)
 add_subdirectory(core)
 add_subdirectory(ui)
 add_subdirectory(util)
-add_subdirectory(persistance)
+add_subdirectory(persistence)
 
 # Dependencies
 add_subdirectory(external)
@@ -26,7 +25,6 @@ add_library(${TARGET_NAME} STATIC
 )
 
 target_link_libraries(${TARGET_NAME} PUBLIC raylib)
-
 
 # Output library at root
 set_target_properties(${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

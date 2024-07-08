@@ -84,7 +84,10 @@ namespace magique
         return 0;
     }
 
-    void Game::shutDown() { _isRunning = false; }
+    void Game::shutDown()
+    {
+        _isRunning = false;
+    }
 
 
 } // namespace magique

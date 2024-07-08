@@ -1162,14 +1162,6 @@ void PollInputEvents(void)
     CORE.Window.resizedLastFrame = false;
 
     glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
-
-    // While window minimized, stop loop execution
-    while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)) glfwWaitEvents();
-
-    CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
-
-    // Reset close status for next frame
-    glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
 
 // Ticks input events once - allows to pick a arbitrary update tickrate

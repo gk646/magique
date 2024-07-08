@@ -14,13 +14,13 @@ namespace magique
         const auto img = internal::LoadImage(asset);
         auto texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_WIDTH, MAGIQUE_TEXTURE_ATLAS_HEIGHT, BLANK);
 
-        Rectangle src{0, 0, (float)textureSize, (float)textureSize};
+        Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};
         Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
 
         texPerRow = texImage.width / static_cast<int>(dst.width);
         texSize = static_cast<int16_t>(dst.width);
 
-        // could be optimized a lot by manually doing the resizing and reusing a buffer
+        // Can be optimized a lot by manually doing the resizing and reusing a buffer
         while (src.y < img.height)
         {
             for (int i = 0; i < texPerRow; ++i)

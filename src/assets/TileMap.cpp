@@ -8,6 +8,10 @@
 
 namespace magique
 {
+    constexpr unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+    constexpr unsigned FLIPPED_VERTICALLY_FLAG = 0x40000000;
+    constexpr unsigned FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+
     TileMap::TileMap(const Asset& asset)
     {
         auto ext = GetFileExtension(asset.name);
@@ -76,10 +80,18 @@ namespace magique
             layerData.reserve(accumulatedCount + 1);
 
             // right-down parsing
+            int x = 0;
             for (int i = 0; i < layerSize - 1; ++i)
             {
                 layerData.push_back(static_cast<uint16_t>(cxstructs::str_parse_int(workPtr)));
-                cxstructs::str_skip_char(workPtr, ',', 1);
+                x++;
+                if (x == width)
+                {
+                    cxstructs::str_skip_char(workPtr, '\n', 1);
+                    x = 0;
+                }
+                else
+                    cxstructs::str_skip_char(workPtr, ',', 1);
             }
             // Push last
             layerData.push_back(static_cast<uint16_t>(cxstructs::str_parse_int(workPtr)));

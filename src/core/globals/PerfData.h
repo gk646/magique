@@ -54,9 +54,9 @@ namespace magique
 
         // Dont even let it be there
 #ifdef MAGIQUE_DEBUG_PROFILE
-        [[nodiscard]] float getAverageTime(const TickType t) const
+        [[nodiscard]] float getAverageTime(const TickType t)
         {
-            const std::vector<uint32_t>* times;
+            std::vector<uint32_t>* times;
             if (t == UPDATE)
             {
                 times = &logicTimes;
@@ -64,6 +64,7 @@ namespace magique
             else if (t == DRAW)
             {
                 times = &drawTimes;
+
             }
             else
             {
@@ -74,6 +75,7 @@ namespace magique
             {
                 return 0.0f;
             }
+            times->pop_back();
 
             const uint64_t sum = std::accumulate(times->begin(), times->end(), static_cast<uint64_t>(0));
             return static_cast<float>(sum) / times->size();
