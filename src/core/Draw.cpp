@@ -9,8 +9,6 @@
 
 #include "external/raylib/src/rlgl.h"
 
-#include <cxutil/cxtime.h>
-
 namespace magique
 {
     void DrawRegion(TextureRegion region, float x, float y, const bool flipX, const Color tint)
@@ -182,6 +180,5 @@ namespace magique
         rlEnd();
         rlSetTexture(0);
     }
-
 
 } // namespace magique

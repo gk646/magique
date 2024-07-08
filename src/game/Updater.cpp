@@ -1,12 +1,3 @@
-#pragma once
-
-#include <magique/ecs/ECS.h>
-#include <magique/util/Defines.h>
-
-#include "ecs/systems/CollisionSystem.h"
-#include "ecs/systems/InputSystem.h"
-#include "ecs/systems/LogicSystem.h"
-
 namespace magique::updater
 {
     using namespace std::chrono;
@@ -19,10 +10,7 @@ namespace magique::updater
         CheckCollisions(registry);
     }
 
-    inline void StartUpdateTick()
-    {
-        global::SCHEDULER->wakeup();
-    }
+    inline void StartUpdateTick() { global::SCHEDULER->wakeup(); }
 
     inline void EndUpdateTick()
     {

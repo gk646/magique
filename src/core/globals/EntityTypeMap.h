@@ -1,7 +1,7 @@
 #ifndef ENTITYTYPEMAP_H
 #define ENTITYTYPEMAP_H
 
-#include <magique/util/DataStructures.h>
+#include <magique/internal/DataStructures.h>
 #include <entt/fwd.hpp>
 
 namespace magique::global{

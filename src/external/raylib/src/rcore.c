@@ -1435,8 +1435,8 @@ void SetTargetFPS(int fps)
     if (fps < 1) CORE.Time.target = 0;
     else
     {
-        CORE.Time.target = 1'000'000'000 / fps;
-        CORE.Time.wait = CORE.Time.target * 0.50;
+        CORE.Time.target = 1.0 / (double)fps;
+        CORE.Time.wait = CORE.Time.target * 0.45;
     }
     //TRACELOG(LOG_INFO, "TIMER: Target time per frame: %02.03f milliseconds", (float)CORE.Time.target*1000.0f);
 }
@@ -1453,7 +1453,7 @@ int GetFPS(void)
     int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
     int ret = (int)round((lastFPS+ currFPS)/2.0F);
     lastTime = currentTime;
-    lastFPS = currFPS;
+    lastFPS = ret;
     CORE.Time.frameCounter = 0;
 
     return ret;
@@ -1463,60 +1463,6 @@ int GetFPS(void)
 float GetFrameTime(void)
 {
     return (float)CORE.Time.frame / 1'000'000'000.0F;
-}
-
-//----------------------------------------------------------------------------------
-// Module Functions Definition: Custom frame control
-//----------------------------------------------------------------------------------
-
-// NOTE: Functions with a platform-specific implementation on rcore_<platform>.c
-//void SwapScreenBuffer(void);
-//void PollInputEvents(void);
-
-// Wait for some time (stop program execution)
-// NOTE: Sleep() granularity could be around 10 ms, it means, Sleep() could
-// take longer than expected... for that reason we use the busy wait loop
-// Ref: http://stackoverflow.com/questions/43057578/c-programming-win32-games-sleep-taking-longer-than-expected
-// Ref: http://www.geisswerks.com/ryan/FAQS/timing.html --> All about timing on Win32!
-void WaitTime(double seconds)
-{
-    if (seconds < 0) return;    // Security check
-
-#if defined(SUPPORT_BUSY_WAIT_LOOP) || defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
-    double destinationTime = GetTime() + seconds;
-#endif
-
-#if defined(SUPPORT_BUSY_WAIT_LOOP)
-    while (GetTime() < destinationTime) { }
-#else
-    #if defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
-        double sleepSeconds = seconds - seconds*0.05;  // NOTE: We reserve a percentage of the time for busy waiting
-    #else
-        double sleepSeconds = seconds;
-    #endif
-
-    // System halt functions
-    #if defined(_WIN32)
-        Sleep((unsigned long)(sleepSeconds*1000.0));
-    #endif
-    #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
-        struct timespec req = { 0 };
-        time_t sec = sleepSeconds;
-        long nsec = (sleepSeconds - sec)*1000000000L;
-        req.tv_sec = sec;
-        req.tv_nsec = nsec;
-
-        // NOTE: Use nanosleep() on Unix platforms... usleep() it's deprecated
-        while (nanosleep(&req, &req) == -1) continue;
-    #endif
-    #if defined(__APPLE__)
-        usleep(sleepSeconds*1000000.0);
-    #endif
-
-    #if defined(SUPPORT_PARTIALBUSY_WAIT_LOOP)
-        while (GetTime() < destinationTime) { }
-    #endif
-#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -2893,7 +2839,6 @@ void InitTimer(void)
     else TRACELOG(LOG_WARNING, "TIMER: Hi-resolution timer not available");
 #endif
 
-    CORE.Time.previous = GetTime();     // Get time as double
 }
 
 // Set viewport for a provided width and height

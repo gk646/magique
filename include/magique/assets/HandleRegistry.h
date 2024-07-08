@@ -2,7 +2,7 @@
 #define MAGIQUE_ASSETREGISTRY_H
 
 #include <magique/fwd.hpp>
-#include <magique/util/Hash.h>
+#include <magique/internal/Hash.h>
 
 //-----------------------------------------------
 // Asset Registry

@@ -2,7 +2,7 @@
 #define LOGICTICKDATA_H
 
 #include <magique/fwd.hpp>
-#include <magique/util/DataStructures.h>
+#include <magique/internal/DataStructures.h>
 #include <cxstructs/BitMask.h>
 
 #include "util/datastructures/MultiResolutionGrid.h"

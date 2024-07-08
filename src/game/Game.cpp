@@ -4,7 +4,10 @@
 #include <magique/persistence/types/GameConfig.h>
 #include <cxstructs/SmallVector.h>
 
+#include "external/raylib/src/external/glad.h"
 #include "external/raylib/src/rlgl.h"
+#include "external/raylib/src/coredata.h"
+#include "GLFW/glfw3.h"
 
 #include "core/globals/LogicTickData.h"
 #include "core/globals/DrawTickData.h"
@@ -15,8 +18,23 @@
 #include "core/globals/TextureAtlas.h"
 #include "core/CoreData.h"
 
-#include "Updater.h"
-#include "Renderer.h"
+#include "ecs/systems/CollisionSystem.h"
+#include "ecs/systems/InputSystem.h"
+#include "ecs/systems/LogicSystem.h"
+#include "ecs/systems/LightingSystem.h"
+
+#if defined(_WIN32)
+#define NOUSER
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <processthreadsapi.h>
+#endif
+
+#include "game/common/RenderUtil.h"
+#include "util/OSUtil.h"
+
+#include "Updater.cpp"
+#include "Renderer.cpp"
 
 CoreData CORE = {0};
 rlglData RLGL = {0};
@@ -84,10 +102,7 @@ namespace magique
         return 0;
     }
 
-    void Game::shutDown()
-    {
-        _isRunning = false;
-    }
+    void Game::shutDown() { _isRunning = false; }
 
 
 } // namespace magique
