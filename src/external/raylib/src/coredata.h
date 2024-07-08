@@ -98,11 +98,9 @@ typedef struct CoreData {
         } Gamepad;
     } Input;
     struct {
-        double current;                     // Current time measure
-        double previous;                    // Previous time measure
-        long long frame;                    // Time measure for one frame
-        long long target;                   // Desired time for one frame
-        long long wait;                     // Desired wait time for one frame
+        double frame;                       // Time measure for one frame
+        double target;                      // Desired time for one frame
+        double wait;                        // Desired wait time for one frame
         unsigned long long int base;        // Base time measure for hi-res timer (PLATFORM_ANDROID, PLATFORM_DRM)
         unsigned int frameCounter;          // Frame counter
 

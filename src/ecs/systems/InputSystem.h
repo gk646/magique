@@ -3,7 +3,6 @@
 
 #include <magique/ecs/InternalScripting.h>
 
-#include "external/raylib/src/coredata.h"
 
 namespace magique
 {

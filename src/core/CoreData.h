@@ -7,7 +7,6 @@
 // -> All heavy global headers are in the /global folder
 // These are commented out
 
-
 namespace magique::global
 {
     // Logic thread
