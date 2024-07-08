@@ -1,7 +1,6 @@
 #ifndef INTERNALTYPES_H
 #define INTERNALTYPES_H
 
-#include <cstddef>
 #include <magique/core/Types.h>
 
 //-----------------------------------------------
@@ -20,7 +19,7 @@ namespace magique
     {
     public:
         using value_type = U;
-        using difference_type = std::ptrdiff_t;
+        using difference_type = int64_t;
         using pointer = U*;
         using reference = U&;
 

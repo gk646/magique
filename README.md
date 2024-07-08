@@ -1,19 +1,22 @@
-`magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant answer all game development needs in a simple but powerful way both in performance and usability. magique achieves this  while providing core functionalities around p to create a productive 2D engine.
-are curated together to create complex games.
+`magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant answer all game development needs in a simple but powerful way both in performance and usability. `magique` achieves this by providing core functionalities around a stack of proven libraries to create a productive 2D engine. You like raylib? You like entt? You love `magique`!
 
 Most notable features:
 
 - Every method and header is fully documented including return values, parameters, defaults or failure
-- Optimized for usability following a simple code-style
-- Low-level implementation
-- Supports visual scripting with the node editor `raynodes` which is run blazingly fast by LuaJIT
-- Global memory allocator for performance and control
-- Encrypted asset packing for simple distribution
-- Powerful and fast ECS integration with `entt`
-- Multiplayer support with steamworks api
-- Many custom wrappers for Audio and UI
+- Optimized for maximum usability following a simple code-style and clean headers
+- Every engine facility is implemented in the most memory and performance efficient way possible
 
-The techstack and feature list of `magique`:
+
+- Encrypted asset packing and loading into a single asset image
+- Built in loading interface handling load-priority and background loading of assets
+- Custom wrapper for ECS integration with `entt`
+- Particle system following the style of Godot 4
+- Persistence interface for game saves and config including a custom database emulator
+- Lighting system featuring a hard shadow and raytracing mode through built in ECS components
+- Fast and extendable C++ scripting system
+- Built in facilities for loading and drawing sprites and tilemaps (supports [Tiled](https://www.mapeditor.org/))
+
+The techstack of `magique`:
 
 - raylib
     - Drawing, shaders

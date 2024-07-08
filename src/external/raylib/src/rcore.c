@@ -690,23 +690,18 @@ void ClearBackground(Color color)
 // Setup canvas (framebuffer) to start drawing
 void BeginDrawing(void)
 {
-    // WARNING: Previously to BeginDrawing() other render textures drawing could happen,
-    // consequently the measure for update vs draw is not accurate (only the total frame time is accurate)
 
     rlLoadIdentity();                   // Reset current matrix (modelview)
     rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling
 
     RLGL.State.prevDrawCalls = RLGL.State.drawCalls;
     RLGL.State.drawCalls = 0;
-
-    //rlTranslatef(0.375, 0.375, 0);    // HACK to have 2D pixel-perfect drawing on OpenGL 1.1
-                                        // NOTE: Not required with OpenGL 3.3+
 }
 
 // End canvas drawing and swap buffers (double buffering)
 void EndDrawing(void)
 {
-    rlDrawRenderBatchActive();      // Update and draw internal render batch
+   rlDrawRenderBatchActive();      // Update and draw internal render batch
 #if defined(SUPPORT_GIF_RECORDING)
     // Draw record indicator
     if (gifRecording)
@@ -748,15 +743,7 @@ void EndDrawing(void)
     }
 #endif
 
-#if defined(SUPPORT_AUTOMATION_EVENTS)
-    if (automationEventRecording) RecordAutomationEvent();    // Event recording
-#endif
-
-#if !defined(SUPPORT_CUSTOM_FRAME_CONTROL)
     SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
-
-    PollInputEvents();      // Poll user events (before next frame update)
-#endif
 
 #if defined(SUPPORT_SCREEN_CAPTURE)
     if (IsKeyPressed(KEY_F12))
@@ -796,7 +783,13 @@ void EndDrawing(void)
     }
 #endif  // SUPPORT_SCREEN_CAPTURE
 
-    CORE.Time.frameCounter++;
+    // While window minimized, stop loop execution
+    // while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)) glfwWaitEvents();
+
+    CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
+
+    // Reset close status for next frame
+    glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
 
 // Initialize 2D mode with custom camera (2D)
@@ -1439,59 +1432,37 @@ Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera)
 // Set target FPS (maximum)
 void SetTargetFPS(int fps)
 {
-    if (fps < 1) CORE.Time.target = 0.0;
-    else CORE.Time.target = 1.0/(double)fps;
-
-    TRACELOG(LOG_INFO, "TIMER: Target time per frame: %02.03f milliseconds", (float)CORE.Time.target*1000.0f);
+    if (fps < 1) CORE.Time.target = 0;
+    else
+    {
+        CORE.Time.target = 1'000'000'000 / fps;
+        CORE.Time.wait = CORE.Time.target * 0.50;
+    }
+    //TRACELOG(LOG_INFO, "TIMER: Target time per frame: %02.03f milliseconds", (float)CORE.Time.target*1000.0f);
 }
 
 // Get current FPS
 // NOTE: We calculate an average framerate
 int GetFPS(void)
 {
-    int fps = 0;
+    static float lastTime = 0;
+    static int lastFPS = 0;
 
-#if !defined(SUPPORT_CUSTOM_FRAME_CONTROL)
-    #define FPS_CAPTURE_FRAMES_COUNT    30      // 30 captures
-    #define FPS_AVERAGE_TIME_SECONDS   0.5f     // 500 milliseconds
-    #define FPS_STEP (FPS_AVERAGE_TIME_SECONDS/FPS_CAPTURE_FRAMES_COUNT)
+    const float currentTime = GetTime();
 
-    static int index = 0;
-    static float history[FPS_CAPTURE_FRAMES_COUNT] = { 0 };
-    static float average = 0, last = 0;
-    float fpsFrame = GetFrameTime();
+    int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
+    int ret = (int)round((lastFPS+ currFPS)/2.0F);
+    lastTime = currentTime;
+    lastFPS = currFPS;
+    CORE.Time.frameCounter = 0;
 
-    // if we reset the window, reset the FPS info
-    if (CORE.Time.frameCounter == 0)
-    {
-        average = 0;
-        last = 0;
-        index = 0;
-
-        for (int i = 0; i < FPS_CAPTURE_FRAMES_COUNT; i++) history[i] = 0;
-    }
-
-    if (fpsFrame == 0) return 0;
-
-    if ((GetTime() - last) > FPS_STEP)
-    {
-        last = (float)GetTime();
-        index = (index + 1)%FPS_CAPTURE_FRAMES_COUNT;
-        average -= history[index];
-        history[index] = fpsFrame/FPS_CAPTURE_FRAMES_COUNT;
-        average += history[index];
-    }
-
-    fps = (int)roundf(1.0f/average);
-#endif
-
-    return fps;
+    return ret;
 }
 
 // Get time in seconds for last frame drawn (delta time)
 float GetFrameTime(void)
 {
-    return (float)CORE.Time.frame;
+    return (float)CORE.Time.frame / 1'000'000'000.0F;
 }
 
 //----------------------------------------------------------------------------------

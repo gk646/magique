@@ -157,7 +157,7 @@ namespace magique
                 collectors[j].clear();
             }
         };
-        cxstructs::now();
+       // cxstructs::now();
         constexpr int parts = 4;
         std::vector<std::thread> threads;
         threads.reserve(5);
@@ -185,7 +185,7 @@ namespace magique
             t.join();
         }
 
-        cxstructs::printTime<std::chrono::nanoseconds>();
+        //cxstructs::printTime<std::chrono::nanoseconds>();
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);

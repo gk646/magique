@@ -9,7 +9,6 @@
 
 namespace magique::updater
 {
-
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
@@ -38,16 +37,16 @@ namespace magique::updater
 
     inline void GameLoop(const bool& isRunning, Game& game)
     {
-        constexpr auto tickDuration = microseconds(1'000'000 / MAGIQUE_LOGIC_TICKS);
+        constexpr auto tickDuration = nanoseconds(1'000'000'000 / MAGIQUE_LOGIC_TICKS);
 
         auto lastTime = steady_clock::now();
-        microseconds accumulator(0);
+        nanoseconds accumulator(0);
         auto& reg = REGISTRY;
 
         while (isRunning) [[likely]]
         {
             startTime = steady_clock::now();
-            const auto passedTime = duration_cast<microseconds>(startTime - lastTime);
+            const auto passedTime = startTime - lastTime;
             lastTime = startTime;
             accumulator += passedTime;
 
@@ -60,7 +59,7 @@ namespace magique::updater
                     game.updateGame(reg);
                 }
                 EndUpdateTick();
-                accumulator = microseconds(0);
+                accumulator = nanoseconds::zero();
             }
             std::this_thread::sleep_for(microseconds(1));
         }
