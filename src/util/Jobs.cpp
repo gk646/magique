@@ -5,8 +5,6 @@
 
 namespace magique
 {
-    // this is allows to wait without using sleep()
-    // sleep causes big delays sometimes up to 2ms
     std::mutex mutex;
     void workerThread(Scheduler* scheduler)
     {
@@ -42,7 +40,6 @@ namespace magique
         }
     }
 
-
     Scheduler::Scheduler(const int threadCount) : mainID(std::this_thread::get_id())
     {
         shutDown = false;
@@ -75,7 +72,6 @@ namespace magique
         return handle;
     }
 
-
     void Scheduler::awaitAll() const
     {
 
@@ -83,7 +79,6 @@ namespace magique
         {
         }
     }
-
 
     void Scheduler::wakeup()
     {

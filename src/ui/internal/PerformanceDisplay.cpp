@@ -39,7 +39,7 @@ void AssignConnectionInfo(bool isHost, float& inBytes, float& outBytes)
 }
 #endif
 
-float drawBlock(const char* text, const Font& f, float fs, Vector2 pos, float w)
+float drawBlock(const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
 {
     const float blockHeight = fs + fs * 0.15F;
     const Rectangle container = {pos.x, pos.y, w, blockHeight};
@@ -50,7 +50,6 @@ float drawBlock(const char* text, const Font& f, float fs, Vector2 pos, float w)
     return w;
 }
 
-
 void PerformanceDisplay::updateValues()
 {
     tickCounter++;
@@ -59,7 +58,7 @@ void PerformanceDisplay::updateValues()
         return;
 
     auto& font = magique::global::CONFIGURATION.font;
-    const auto fs = 20;
+    constexpr auto fs = 20;
 
     int block = 0;
     const int fps = GetFPS();
@@ -77,8 +76,8 @@ void PerformanceDisplay::updateValues()
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
     block++;
-    val = RLGL.State.prevDrawCalls;
-    snprintf(blocks[block].text, 32, "Draw Calls: %.1d", (int)val);
+    const int calls = RLGL.State.prevDrawCalls;
+    snprintf(blocks[block].text, 32, "Draw Calls: %.1d", calls);
     blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1

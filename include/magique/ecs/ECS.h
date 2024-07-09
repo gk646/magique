@@ -48,14 +48,8 @@ namespace magique
     // GetNativeRegistry().view<PositionC>();
 
     //--------------Creating--------------//
+
     // Note: All Create__ functions return a reference to the created component (where appropriate)
-
-    // Adds the camera component
-    // Camera will automatically reflect the entity state (update)
-    void GiveCamera(entt::entity entity);
-
-    // Adds components such that the given entity is an actor
-    void GiveActor(entt::entity entity);
 
     // Makes the entity collidable with others
     CollisionC& GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0,
@@ -67,11 +61,19 @@ namespace magique
     // Makes the entitiy occlude light and throw shadows according to the current lighting model
     OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape = RECT);
 
+    // Adds the camera component
+    // Camera will automatically reflect the entity state (update)
+    void GiveCamera(entt::entity entity);
+
+    // Adds components such that the given entity is an actor
+    void GiveActor(entt::entity entity);
+
     // Makes the entity react to its script
     // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
     void GiveScript(entt::entity entity);
 
-    // DEBUG
+    //----------------- DEBUG -----------------//
+
     // Draws entitiy as rectangles - only works in debug mode
     void GiveDebugVisuals(entt::entity entity);
 

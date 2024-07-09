@@ -34,7 +34,7 @@ namespace magique
         // Called when the game closes
         virtual void onShutDown(GameConfig& config) {}
 
-        // Called when the windows close button is pressed
+        // Called when the window close button is pressed
         virtual void onCloseEvent() { shutDown(); }
 
         // Stops the game

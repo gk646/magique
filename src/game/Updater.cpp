@@ -10,7 +10,10 @@ namespace magique::updater
         CheckCollisions(registry);
     }
 
-    inline void StartUpdateTick() { global::SCHEDULER->wakeup(); }
+    inline void StartUpdateTick()
+    {
+        global::SCHEDULER->wakeup();
+    }
 
     inline void EndUpdateTick()
     {

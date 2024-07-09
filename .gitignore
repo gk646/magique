@@ -1,5 +1,9 @@
 .idea
-/cmake-*
+cmake-*
 
-/res
+res*
 /test
+
+examples/**/*.clang-format
+
+*.zip

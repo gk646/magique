@@ -22,9 +22,11 @@ add_library(${TARGET_NAME} STATIC
         $<TARGET_OBJECTS:${TARGET_NAME}_util>
         $<TARGET_OBJECTS:${TARGET_NAME}_ui>
         $<TARGET_OBJECTS:${TARGET_NAME}_persistence>
+        $<TARGET_OBJECTS:raylib>
+        $<TARGET_OBJECTS:glfw>
 )
 
-target_link_libraries(${TARGET_NAME} PUBLIC raylib)
+target_link_libraries(${TARGET_NAME} PUBLIC raylib  glfw winmm)
 
 # Output library at root
 set_target_properties(${TARGET_NAME} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

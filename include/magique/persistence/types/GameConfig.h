@@ -17,6 +17,7 @@
 //   - ...
 // There is only 1 config per game!
 // Note: The game config owns and stores the data - at any time you can call GetGameConfig() and access it
+// The GameConfig is persisted automatically when the game is shutdown
 // .....................................................................
 
 namespace magique
@@ -28,7 +29,7 @@ namespace magique
         //----------------- SAVE -----------------//
 
         // Saves a keybind at the given id
-        // Example: SaveKeyBind(Keybind(KEY_M), KeybindID::OPEN_MAP);
+        // Example: SaveKeyBind(Keybind(KEY_M), ConfigID::OPEN_MAP);
         void SaveKeybind(ConfigID id, Keybind keybind);
 
         // Saves a setting at the given id
@@ -36,6 +37,10 @@ namespace magique
 
         // Saves a string
         void SaveString(ConfigID id, const std::string& string);
+
+        // Saves any primitive datatype (char, int, float, double,...)
+        template <typename T>
+        void SaveValue(ConfigID id, T val);
 
         //----------------- GET -----------------//
 
@@ -47,6 +52,11 @@ namespace magique
 
         // Returns a modifiable reference to this string
         [[nodiscard]] std::string& GetString(ConfigID id);
+
+        // Returns a modifiable reference to this values
+        // The correct type has to be specified
+        template <typename T>
+        [[nodiscard]] T& GetValue(ConfigID id);
 
     private:
         std::vector<GameConfigStorageCell> storage;
