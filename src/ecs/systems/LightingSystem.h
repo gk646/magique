@@ -44,7 +44,6 @@ namespace magique
         {
             shaders.updateObjectBuffer(shadowQuads.data(), size);
         }
-        printf("%d\n", size);
 
         const Rectangle backRect = GetCameraNativeBounds();
 

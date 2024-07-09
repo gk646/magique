@@ -4,6 +4,7 @@ project(magique CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 include(cmake/ProjectSetup.cmake)
+include(cmake/BuildRelease.cmake)
 
 add_subdirectory(src)
 

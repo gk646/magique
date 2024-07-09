@@ -117,7 +117,8 @@ namespace magique
         {
             Keybind keybind;
             Setting setting;
-            void* string = nullptr;
+            void* string;
+            unsigned char buffer[8]{};
         };
     };
 

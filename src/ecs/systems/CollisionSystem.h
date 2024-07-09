@@ -108,7 +108,6 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
     return false;
 }
 
-
 namespace magique
 {
     inline void CheckCollisions(entt::registry& registry)
@@ -157,7 +156,8 @@ namespace magique
                 collectors[j].clear();
             }
         };
-       // cxstructs::now();
+
+       //cxstructs::now();
         constexpr int parts = 4;
         std::vector<std::thread> threads;
         threads.reserve(5);

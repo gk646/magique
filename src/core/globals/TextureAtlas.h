@@ -12,32 +12,21 @@ namespace magique
 {
     // Uses naive 'scheduling' - if a sequence cant be deterministically described we skip to the next row
     // So if a spritesheet doesnt fit in the current row we just skip it and put it in the next wasting the space
+    // Also uses lazy initialization - only loads image and texture if actually used
     struct TextureAtlas final
     {
+        bool initialized = false;
+        uint16_t id = 0;                           // Texture id
         int width = MAGIQUE_TEXTURE_ATLAS_WIDTH;   // Total width
         int height = MAGIQUE_TEXTURE_ATLAS_HEIGHT; // Total height
         int posX = 0;                              // Current offset from the top left
         int posY = 0;                              // Current offset from the top let
-        unsigned int id = 0;                       // Texture id
         int currentStepHeight = 0;                 // Highest height of a texture in current row
         void* imageData = nullptr;                 // Save memory by only saving data ptr
 
-        explicit TextureAtlas(Color color) // Just passed so its not auto constructed anywhere
-        {
-            // Always PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 and 1 mipmap
-            const auto img = GenImageColor(width, height, color);
-            imageData = img.data;
-            const auto tex = LoadTextureFromImage(img);
-            if (tex.id == 0)
-            {
-                LOG_ERROR("Failed to load texture atlas texture! No textures will work");
-                UnloadImage(img);
-            }
-            id = tex.id;
-        }
-
         TextureRegion addTexture(const Image& image, int tarW, int tarH)
         {
+            initialize();
             TextureRegion region = {0};
             if (!checkStep(image.width, image.height))
                 return region;
@@ -47,7 +36,6 @@ namespace magique
             region.offX = static_cast<uint16_t>(posX);
             region.offY = static_cast<uint16_t>(posY);
             region.id = static_cast<uint16_t>(id);
-
 
             Image atlasImage = getImg();
             // Add the image
@@ -63,6 +51,7 @@ namespace magique
 
         SpriteSheet addSpritesheet(const Image& image, const int frames, int tarW, int tarH, int offX, int offY)
         {
+            initialize();
             SpriteSheet sheet = {0};
             const int totalWidth = frames * tarW;
 
@@ -116,7 +105,43 @@ namespace magique
             return sheet;
         }
 
-        bool checkStep(int texWidth, int texHeight)
+        void loadToGPU() const
+        {
+            if (!initialized)
+                return;
+            // Always same format as image
+            UpdateTexture({id, width, height, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8}, imageData);
+            UnloadImage(getImg());
+        }
+
+    private:
+        void initialize()
+        {
+            if (initialized)
+                return;
+            initialized = true;
+            // Always PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 and 1 mipmap
+            const auto img = GenImageColor(width, height, BLANK);
+            imageData = img.data;
+            const auto tex = LoadTextureFromImage(getImg());
+            if (tex.id == 0)
+            {
+                LOG_ERROR("Failed to load texture atlas texture! No textures will work");
+                UnloadImage(getImg());
+            }
+            id = tex.id;
+        }
+        [[nodiscard]] Image getImg() const
+        {
+            Image img;
+            img.data = imageData;
+            img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+            img.mipmaps = 1;
+            img.width = width;
+            img.height = height;
+            return img;
+        }
+        bool checkStep(const int texWidth, const int texHeight)
         {
             if (posX + texWidth > width)
             {
@@ -135,30 +160,11 @@ namespace magique
 
             return true;
         }
-
-        [[nodiscard]] Image getImg() const
-        {
-            Image img;
-            img.data = imageData;
-            img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
-            img.mipmaps = 1;
-            img.width = width;
-            img.height = height;
-            return img;
-        }
-
-        void loadToGPU() const
-        {
-            // Always same format as image
-            UpdateTexture({id, width, height, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8}, imageData);
-            UnloadImage(getImg());
-        }
     };
 
     namespace global
     {
-        inline cxstructs::StackVector<TextureAtlas, ENTITIES_2+1 > TEXTURE_ATLASES;
-
+        inline cxstructs::StackVector<TextureAtlas, ENTITIES_2 + 1> TEXTURE_ATLASES;
     }
 } // namespace magique
 #endif //TEXTUREATLAS_H

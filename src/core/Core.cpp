@@ -25,7 +25,7 @@ namespace magique
 
         for (int i = 0; i < ENTITIES_2 + 1; ++i)
         {
-            global::TEXTURE_ATLASES.emplace_back(BLANK);
+            global::TEXTURE_ATLASES.emplace_back();
         }
 
         auto& config = global::CONFIGURATION;
@@ -52,7 +52,7 @@ namespace magique
         shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
         shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
 
-        int threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), 4);
+        const int threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), 4);
         global::SCHEDULER = new Scheduler(threads);
 
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);

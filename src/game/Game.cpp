@@ -55,7 +55,7 @@ namespace magique
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         global::LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
-        LOG_INFO("Initialized Game");
+        LOG_INFO("Initialized Game: %s", gameName);
     }
 
     Game::~Game()

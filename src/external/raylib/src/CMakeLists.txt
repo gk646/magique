@@ -108,10 +108,6 @@ target_include_directories(raylib
 # Copy the header files to the build directory for convenience
 file(COPY ${raylib_public_headers} DESTINATION "include")
 
-# Includes information on how the library will be installed on the system
-# when cmake --install is run
-include(InstallConfigurations)
-
 # Print the flags for the user
 if (DEFINED CMAKE_BUILD_TYPE)
     message(STATUS "Generated build type: ${CMAKE_BUILD_TYPE}")
@@ -123,7 +119,5 @@ message(STATUS "Compiling with the flags:")
 message(STATUS "  PLATFORM=" ${PLATFORM_CPP})
 message(STATUS "  GRAPHICS=" ${GRAPHICS})
 
-# Options if you want to create an installer using CPack
-include(PackConfigurations)
 
 enable_testing()

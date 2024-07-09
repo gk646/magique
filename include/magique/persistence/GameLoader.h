@@ -23,13 +23,13 @@ namespace magique
         // task     - a new instance of a subclass of ITask, takes owner ship
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(TaskI<GameSave>* task, PriorityLevel pl = MED, int impact = 1);
+        void registerTask(TaskI<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);
 
         // Registers a new task
         // func     - a loading func (lambda)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(GameLoadFunc func, PriorityLevel pl = MED, int impact = 1);
+        void registerTask(GameLoadFunc func, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
         // Prints current stats - automatically called if all task are registered

@@ -1436,7 +1436,7 @@ void SetTargetFPS(int fps)
     else
     {
         CORE.Time.target = 1.0 / (double)fps;
-        CORE.Time.wait = CORE.Time.target * 0.45;
+        CORE.Time.wait = CORE.Time.target * 0.65;
     }
     //TRACELOG(LOG_INFO, "TIMER: Target time per frame: %02.03f milliseconds", (float)CORE.Time.target*1000.0f);
 }
@@ -1445,15 +1445,30 @@ void SetTargetFPS(int fps)
 // NOTE: We calculate an average framerate
 int GetFPS(void)
 {
+#define FPS_BUFF_SIZE 15
     static float lastTime = 0;
-    static int lastFPS = 0;
+    static int fpsBuffer[FPS_BUFF_SIZE] = {0};
+    static int index = 0;
+    static int sumFPS = 0;
+    static int count = 0;
 
-    const float currentTime = GetTime();
+    const double currentTime = glfwGetTime();
 
-    int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
-    int ret = (int)round((lastFPS+ currFPS)/2.0F);
+    const int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
+
+    sumFPS -= fpsBuffer[index];
+    fpsBuffer[index] = currFPS;
+    sumFPS += currFPS;
+    index = (index + 1) % FPS_BUFF_SIZE;
+
+    if (count < FPS_BUFF_SIZE)
+    {
+        count++;
+    }
+
+    const int ret = (int)ceil((float)sumFPS / count);
+
     lastTime = currentTime;
-    lastFPS = ret;
     CORE.Time.frameCounter = 0;
 
     return ret;

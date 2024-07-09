@@ -63,13 +63,11 @@ namespace magique
 } // namespace magique
 
 //----------------- USER DEFINED -----------------//
-enum EntityID : uint16_t;             // User implemented to identify entity types
-enum class HandleID : int;            // User implemented to identify handles
-enum class MapID : uint8_t;           // User implemented to identify maps
-enum class KeybindID : uint16_t;      // User implemented to identify keybinds
-enum class SettingID : uint16_t;      // User implemented to identify settings
-enum class ConfigStringID : uint16_t; // User implemented to identify config string
-enum class StorageID : int;           // User implemented to identify stored information
+enum EntityID : uint16_t;   // User implemented to identify entity types
+enum class MapID : uint8_t; // User implemented to identify maps
+enum class HandleID : int;  // User implemented to identify handles
+enum class ConfigID : int;  // User implemented to identify config string
+enum class StorageID : int; // User implemented to identify stored information
 
 //-----------------RAYLIB-----------------//
 struct Camera2D;

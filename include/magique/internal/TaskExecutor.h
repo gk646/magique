@@ -13,8 +13,8 @@ namespace magique
     enum PriorityLevel : int8_t
     {
         LOW,
-        MED,
         MEDIUM,
+        HIGH,
         CRITICAL,
         INSTANT,
     };
