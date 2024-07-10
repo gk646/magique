@@ -46,7 +46,9 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, float x, float y, MapID mapID)
     {
-        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        auto& tickData = global::LOGIC_TICK_DATA;
+        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id() || !tickData.flag.test(),
+                 "Has to be called from the logic thread OR without active lock on the draw thread");
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
 
         auto& map = global::ENT_TYPE_MAP;
@@ -57,7 +59,7 @@ namespace magique
             return entt::null; // EntityID not registered
         }
 
-        auto& tickData = global::LOGIC_TICK_DATA;
+
         tickData.lock();
         const auto entity = REGISTRY.create();
         REGISTRY.emplace<PositionC>(entity, x, y, type, mapID); // PositionC is default
@@ -82,10 +84,7 @@ namespace magique
         return false;
     }
 
-   void GiveCamera(entt::entity entity) {
-         REGISTRY.emplace<CameraC>(entity);
-
-    }
+    void GiveCamera(entt::entity entity) { REGISTRY.emplace<CameraC>(entity); }
 
     OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape)
     {
@@ -101,8 +100,8 @@ namespace magique
 
     CollisionC& GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
     {
-        return REGISTRY.emplace<CollisionC>(e,(uint8_t)1, shape, (uint16_t)width, (uint16_t)height, static_cast<int16_t>(anchorX),
-                                            static_cast<int16_t>(anchorY));
+        return REGISTRY.emplace<CollisionC>(e, (uint8_t)1, shape, (uint16_t)width, (uint16_t)height,
+                                            static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY));
     }
 
     void GiveScript(const entt::entity e) { REGISTRY.emplace<ScriptC>(e); }

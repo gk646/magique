@@ -2,7 +2,9 @@
 #define ASTEROIDS_H
 
 #include <magique/core/Game.h>
+#include <magique/ecs/InternalScripting.h>
 
+// Entity identifiers
 enum EntityID : uint16_t
 {
     PLAYER,
@@ -15,17 +17,12 @@ enum EntityID : uint16_t
     ALIEN_BOSS,
 };
 
-enum class HandleID
+enum class MapID : uint8_t
 {
-    TEX_BULLET,
-    TEX_EXTRA_LIFE,
-    TEX_HOUSE,
-    TEX_PLAYER,
-    TEX_ROCK,
-    TEX_SHIELD,
-    SPRITE_EXPLOSION,
+    LEVEL_1
 };
 
+// The game class
 struct Asteroids final : magique::Game
 {
     Asteroids() : Game("Asteroids") {}
@@ -36,6 +33,13 @@ struct Asteroids final : magique::Game
     void drawWorld(Camera2D &camera) override;
     void drawGame(entt::registry &registry, Camera2D &camera) override;
     void drawUI() override;
+};
+
+
+struct PlayerScript final : magique::EntityScript
+{
+    void onKeyEvent(entt::registry &registry, entt::entity me) override;
+    void onDynamicCollision(entt::registry &registry, entt::entity self, entt::entity other) override {}
 };
 
 #endif // ASTEROIDS_H

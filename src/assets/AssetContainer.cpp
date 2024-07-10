@@ -149,6 +149,7 @@ namespace magique
 
 
         memcpy(stringBuffer, lastSep, std::min(64, len));
+        stringBuffer[std::min(64, len)] = '\0';
         return stringBuffer;
     }
 
@@ -178,6 +179,7 @@ namespace magique
         }
 
         memcpy(stringBuffer, lastDot, std::min(64, len));
+        stringBuffer[std::min(64, len)] = '\0';
         return stringBuffer;
     }
 

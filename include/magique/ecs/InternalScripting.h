@@ -35,7 +35,6 @@ namespace magique
         onTick,
         onKeyEvent,
         onMouseEvent,
-        myCustomEvent
     };
 
     // Create a subclass of this to implemented specific behaviors
@@ -48,8 +47,7 @@ namespace magique
     // Step 3: Done! You can now invoke your event!
 
     // Add ALL events here
-    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent,
-                    myCustomEvent);
+    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent);
 
     struct EntityScript
     {
@@ -89,7 +87,7 @@ namespace magique
 
         // virtual void onLevelUp(entt::registry& registry, entt::entity self) {}
 
-        // ... feel free to add more!
+        // ... feel free to add more global methods or create subclasses with special methods!
     };
 
     // Sets a c++ script for this entity type

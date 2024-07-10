@@ -59,7 +59,6 @@ namespace magique::updater
     inline void Run(bool& isRunning, Game& game)
     {
         global::LOGIC_THREAD = std::thread(&GameLoop, std::ref(isRunning), std::ref(game));
-        LOG_INFO("Started Gameloop");
     }
 
     inline void Close()

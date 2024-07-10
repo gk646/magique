@@ -2,10 +2,12 @@
 namespace magique::renderer
 {
     static double startTime;
+    static chrono::time_point<chrono::steady_clock> startTimeH;
 
     void StartRenderTick()
     {
         startTime = glfwGetTime();
+        startTimeH = chrono::steady_clock::now();
         PollInputEvents();
         BeginDrawing();
         AssignDrawTickCamera();
@@ -21,7 +23,7 @@ namespace magique::renderer
         const double frameTime = glfwGetTime() - startTime;
         CORE.Time.frame = frameTime;
         CORE.Time.frameCounter++;
-        global::PERF_DATA.saveTickTime(DRAW, static_cast<long long>(frameTime * 1'000'000'000));
+        global::PERF_DATA.saveTickTime(DRAW, (chrono::steady_clock::now() - startTimeH).count());
     }
 
     void HandleLoadingScreen(bool& isLoading, Game& game)
@@ -68,7 +70,6 @@ namespace magique::renderer
         EndRenderTick();
     }
 
-
     void Setup()
     {
 #if defined(WIN32)
@@ -76,8 +77,16 @@ namespace magique::renderer
         SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
         HANDLE hProcess = GetCurrentProcess();
         SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-        DWORD_PTR affinityMask = 1; // Use only the first CPU core
-        SetThreadAffinityMask(hThread, affinityMask);
+        DWORD_PTR processAffinityMask = 0xF;
+        if (!SetProcessAffinityMask(hProcess, processAffinityMask)) {
+            fprintf(stderr, "Failed to set process affinity mask\n");
+        }
+        DWORD_PTR affinityMask = 1;
+        auto res = SetThreadAffinityMask(hThread, affinityMask);
+        res = SetThreadAffinityMask(hThread, affinityMask);
+        if (res == 0) {
+            fprintf(stderr, "Failed to set thread affinity mask\n");
+        }
 #endif
     }
 

@@ -26,7 +26,6 @@ namespace magique
             static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
         };
 
-
         template <typename T>
         constexpr auto& getResourceVec()
         {

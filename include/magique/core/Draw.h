@@ -9,7 +9,7 @@
 //-----------------------------------------------
 // ................................................................................
 // Here are all the magique drawing function that take its custom types
-// Generally you cant really use raylibs anymore as texture are stored in atlases
+// Generally you cant really use raylib types anymore as texture are stored into atlases
 // ................................................................................
 
 namespace magique

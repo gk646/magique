@@ -53,6 +53,26 @@ struct CollisionC final
     void removeAllLayers();
 };
 
+template <typename ActionStateEnum = magique::ActionState> // Supply your own action state enum if needed
+struct AnimationC final
+{
+    magique::Animation animations[ActionStateEnum::STATES_END]{}; // Custom enums need that end value
+    uint16_t currentSpriteCount = 0;
+    ActionStateEnum lastActionState;
+
+    // Sets the animation for this action state
+    void addAnimation(ActionStateEnum state, magique::SpriteSheet sheet, uint16_t frameDuration);
+
+    // Removes the animation for this state
+    void removeAnimation(ActionStateEnum state);
+
+    // Draws the current
+    void draw();
+
+    void update();
+};
+
+
 // If added entity will emit light
 struct EmitterC final
 {
@@ -83,5 +103,30 @@ struct DebugControllerC
 {
     // Basic W, A, S ,D movement
 };
+
+
+//----------------- IMPLEMENTATION -----------------//
+
+#include <magique/internal/Macros.h>
+
+template <typename ActionStateEnum>
+void AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, magique::SpriteSheet sheet,
+                                               uint16_t frameDuration)
+{
+    M_ASSERT(state < ActionStateEnum::STATES_END,"Given enum is bigger than the max value!");
+    auto& anim = animations[(int)state];
+    anim.duration = frameDuration;
+    anim.sheet = sheet;
+}
+
+
+template <typename ActionStateEnum>
+void AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
+{
+    M_ASSERT(state < ActionStateEnum::STATES_END,"Given enum is bigger than the max value!");
+    auto& anim = animations[(int)state];
+    anim.duration = UINT16_MAX;
+    anim.sheet = magique::SpriteSheet{};
+}
 
 #endif // MAGIQUE_COMPONENTS_H

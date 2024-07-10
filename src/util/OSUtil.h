@@ -24,7 +24,11 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 #endif
     while (glfwGetTime() < destinationTime)
     {
+#if defined(_WIN32)
+        YieldProcessor();
+#endif
     }
 }
+
 
 #endif //MAGIQUE_OSUTIL_H
