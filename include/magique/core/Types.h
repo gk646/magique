@@ -31,6 +31,28 @@ namespace magique
         uint16_t frames; // Total number of frames
     };
 
+    struct Animation final
+    {
+        SpriteSheet sheet{};
+        uint16_t duration = UINT16_MAX;
+
+        int getCurrentFrame(uint16_t spriteCount);
+    };
+
+    // Default action states
+    enum class ActionState : uint8_t
+    {
+        IDLE,
+        WALK,
+        RUN,
+        ATTACK_1,
+        ATTACK_2,
+        HIT,
+        SPECIAL,
+        DEATH,
+        STATES_END, // All custom state enums need this as last state
+    };
+
     enum LightStyle : uint8_t
     {
         POINT_LIGHT_SOFT,         // point ligtht

@@ -5,6 +5,7 @@
 #include <magique/assets/AssetLoader.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/HandleRegistry.h>
+#include <magique/core/Core.h>
 #include <magique/ecs/ECS.h>
 
 void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
@@ -52,17 +53,52 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
         },
         magique::MAIN_THREAD, magique::MEDIUM, 2);
 
+    // Set the player script
+    SetScript(PLAYER, new PlayerScript());
 
     // Register the player entity
-    magique::RegisterEntity(EntityID::PLAYER, [](entt::registry &registry, entt::entity entity) {});
+    magique::RegisterEntity(EntityID::PLAYER,
+                            [](entt::registry &registry, entt::entity entity)
+                            {
+                                magique::GiveCamera(entity);
+                                magique::GiveActor(entity);
+                                magique::GiveCollision(entity, magique::RECT, 12, 12, 6, 6);
+                                auto& anim = registry.emplace<AnimationC<>>(entity);
+                                anim.
+                            });
+
+    // Create a player
+    magique::CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
 }
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
 void Asteroids::updateGame(entt::registry &registry) {}
 
+
 void Asteroids::drawWorld(Camera2D &camera) {}
 
-void Asteroids::drawGame(entt::registry &registry, Camera2D &camera) {}
+void Asteroids::drawGame(entt::registry &registry, Camera2D &camera)
+{
+    auto &drawEntities = magique::GetDrawEntities();
+    auto spriteEntities = magique::REGISTRY.view<>()
+    for(auto e : drawEntities)
+    {
+
+    }
+}
 
 void Asteroids::drawUI() {}
+
+void PlayerScript::onKeyEvent(entt::registry &registry, entt::entity me)
+{
+    auto &pos = registry.get<PositionC>(me);
+    if (IsKeyDown(KEY_W))
+        pos.y -= 5;
+    if (IsKeyDown(KEY_S))
+        pos.y += 5;
+    if (IsKeyDown(KEY_A))
+        pos.x -= 5;
+    if (IsKeyDown(KEY_D))
+        pos.x += 5;
+}

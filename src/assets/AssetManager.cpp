@@ -132,7 +132,12 @@ namespace magique
 
     handle RegisterSound(const Asset& asset)
     {
-        const Wave wave = LoadWaveFromMemory(asset.getExtension(), (unsigned char*)asset.data, asset.size);
+        const auto ext = asset.getExtension();
+        if (ext == nullptr)
+        {
+            LOG_ERROR("Asset file type is not a sound file!: %s", ext);
+        }
+        const Wave wave = LoadWaveFromMemory(ext, (unsigned char*)asset.data, asset.size);
         Sound sound = LoadSoundFromWave(wave);
         const auto handle = global::ASSET_MANAGER.addResource<Sound>(sound);
         UnloadWave(wave);

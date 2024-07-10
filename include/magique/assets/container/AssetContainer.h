@@ -23,13 +23,13 @@ namespace magique
         // Includes the dot
         bool hasExtension(const char* extension) const;
 
-        // True if the asset name starts with the given prefix
+        // True if the asset path starts with the given prefix
         bool startsWith(const char* prefix) const;
 
-        // True if the asset name ends with the given prefix
+        // True if the asset path ends with the given prefix
         bool endsWith(const char* suffix) const;
 
-        // True if the asset name contains the given sequence anywhere
+        // True if the asset path contains the given sequence anywhere
         bool contains(const char* str) const;
 
         //----------------- GETTERS -----------------//
@@ -40,7 +40,7 @@ namespace magique
         //      extension - include file extension or not (".png",".wav", ...)
         [[nodiscard]] const char* getFileName(bool extension = true) const;
 
-        // Returns the extension of the asset - This means all characters after the last dot (".")
+        // Returns the file extension of the asset - This means all characters after the last dot (".")
         // Failure: returns nullptr if the asset's path is empty or has no extension
         [[nodiscard]] const char* getExtension() const;
 

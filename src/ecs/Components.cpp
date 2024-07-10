@@ -1,7 +1,6 @@
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
 
-
 bool isValidLayer(magique::CollisionLayer layer)
 {
     const auto layerNum = static_cast<uint8_t>(layer);

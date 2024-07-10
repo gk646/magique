@@ -1,11 +1,17 @@
 #include <cmath>
 #include <type_traits>
 
+#include <magique/core/Draw.h>
 #include <magique/core/Types.h>
 #include <raylib/raylib.h>
 
 namespace magique
 {
+    void Animation::draw()
+    {
+        DrawSpriteEx()
+    }
+
     Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)
     {
         data = static_cast<uint16_t>(key & 0x1FFF);

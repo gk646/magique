@@ -1436,7 +1436,7 @@ void SetTargetFPS(int fps)
     else
     {
         CORE.Time.target = 1.0 / (double)fps;
-        CORE.Time.wait = CORE.Time.target * 0.65;
+        CORE.Time.wait = CORE.Time.target * 0.50; // Dont get consistent measurements otherwise
     }
     //TRACELOG(LOG_INFO, "TIMER: Target time per frame: %02.03f milliseconds", (float)CORE.Time.target*1000.0f);
 }
