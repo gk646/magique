@@ -37,11 +37,10 @@ namespace magique
         ENTITIES_2,
     };
 
-
     //----------------- Textures -----------------//
 
     // Loads the whole image as texture into the given atlas
-    // scale    - constrols the final dimensions of the resulting textures
+    // scale    - constrols the final dimensions of the resulting texture
     handle RegisterTexture(const Asset& asset, AtlasID atlas = DEFAULT, float scale = 1);
 
     // Tries to load a .png file as sprite sheet
@@ -60,7 +59,6 @@ namespace magique
     // Use with iterateDirectory()
     handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, AtlasID atlas, float scale = 1);
 
-
     //----------------- Audio -----------------//
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
@@ -69,7 +67,6 @@ namespace magique
     // Register a music file (streamed audio) - can be any raylib supported type (.mp3)
     // Everything above 10mb should be streamed instead of loaded as sound!
     handle RegisterMusic(const Asset& asset);
-
 
     //----------------- TileMaps -----------------//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!

@@ -15,6 +15,17 @@ enum EntityID : uint16_t
     ALIEN_BOSS,
 };
 
+enum class HandleID
+{
+    TEX_BULLET,
+    TEX_EXTRA_LIFE,
+    TEX_HOUSE,
+    TEX_PLAYER,
+    TEX_ROCK,
+    TEX_SHIELD,
+    SPRITE_EXPLOSION,
+};
+
 struct Asteroids final : magique::Game
 {
     Asteroids() : Game("Asteroids") {}

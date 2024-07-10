@@ -10,8 +10,8 @@
 #include <raylib/raylib.h>
 
 #include "core/globals/TextureAtlas.h"
-#include "assets/LoadWrappers.h"
 #include "core/globals/AssetManager.h"
+#include "assets/LoadWrappers.h"
 
 namespace magique
 {
@@ -41,7 +41,7 @@ namespace magique
         // All images will be layout out horizontally for fast direct access without calculations
         if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
         {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.name);
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.path);
             UnloadImage(image);
             return handle::null;
         }
@@ -67,7 +67,7 @@ namespace magique
 
         if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
         {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.name);
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.path);
             UnloadImage(image);
             return handle::null;
         }
@@ -92,7 +92,7 @@ namespace magique
 
         if (assets.size() * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
         {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", assets[0]->name);
+            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", assets[0]->path);
             UnloadImage(image);
             return handle::null;
         }
@@ -114,7 +114,7 @@ namespace magique
             }
             if (image.width != width || image.height != height)
             {
-                LOG_WARNING("Image is not the same size as others: %s", a.name);
+                LOG_WARNING("Image is not the same size as others: %s", a.path);
                 UnloadImage(newImg);
                 UnloadImage(singleImage);
                 return handle::null;
@@ -128,6 +128,15 @@ namespace magique
         const auto sheet = atlas.addSpritesheet(singleImage, assets.size(), tarWidth, tarHeight, 0, 0);
 
         return global::ASSET_MANAGER.addResource(sheet);
+    }
+
+    handle RegisterSound(const Asset& asset)
+    {
+        const Wave wave = LoadWaveFromMemory(asset.getExtension(), (unsigned char*)asset.data, asset.size);
+        Sound sound = LoadSoundFromWave(wave);
+        const auto handle = global::ASSET_MANAGER.addResource<Sound>(sound);
+        UnloadWave(wave);
+        return handle;
     }
 
     handle RegisterTexture(const Asset& asset, const AtlasID at, float scale)

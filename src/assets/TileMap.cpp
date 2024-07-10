@@ -14,17 +14,17 @@ namespace magique
 
     TileMap::TileMap(const Asset& asset)
     {
-        auto ext = GetFileExtension(asset.name);
+        auto ext = GetFileExtension(asset.path);
 
         if (ext == nullptr)
         {
-            LOG_WARNING("No valid extension: %s", asset.name);
+            LOG_WARNING("No valid extension: %s", asset.path);
             return;
         }
 
         if (strcmp(ext, ".tmx") != 0)
         {
-            LOG_WARNING("Not a valid tilemap extension: %s", asset.name);
+            LOG_WARNING("Not a valid tilemap extension: %s", asset.path);
             return;
         }
 
@@ -60,7 +60,7 @@ namespace magique
 
         if (layerWidth == -1 || layerHeight == -1)
         {
-            LOG_WARNING("Could not load tilemap layer dimensions: %s", asset.name);
+            LOG_WARNING("Could not load tilemap layer dimensions: %s", asset.path);
             return;
         }
         width = layerWidth;
@@ -103,7 +103,7 @@ namespace magique
                 break;
             }
         }
-        LOG_INFO("Successfully loaded TileMap: %s | Layers: %d | Width: %d / Height %d ", asset.name, layerCount,
+        LOG_INFO("Successfully loaded TileMap: %s | Layers: %d | Width: %d / Height %d ", asset.path, layerCount,
                  layerWidth, layerHeight);
     }
 

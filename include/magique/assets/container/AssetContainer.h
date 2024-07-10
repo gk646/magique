@@ -1,5 +1,5 @@
-#ifndef ASSETCONTAINER_H
-#define ASSETCONTAINER_H
+#ifndef MAGIQUE_ASSETCONTAINER_H
+#define MAGIQUE_ASSETCONTAINER_H
 
 #include <vector>
 #include <functional>
@@ -15,7 +15,7 @@ namespace magique
 {
     struct Asset final
     {
-        const char* name; // Full path of the file - from the compile root
+        const char* path; // Full path of the file - from the compile root
         int size;         // File size
         const char* data; // File data
 
@@ -31,6 +31,21 @@ namespace magique
 
         // True if the asset name contains the given sequence anywhere
         bool contains(const char* str) const;
+
+        //----------------- GETTERS -----------------//
+        // IMPORTANT: The string returned by these methods is only correct until any of these methods are called again
+
+        // Returns a the direct file name without the asset - This means all characters after the last separator ("/")
+        // Failure: returns nullptr if the asset's path is empty or no filename can be found
+        //      extension - include file extension or not (".png",".wav", ...)
+        [[nodiscard]] const char* getFileName(bool extension = true) const;
+
+        // Returns the extension of the asset - This means all characters after the last dot (".")
+        // Failure: returns nullptr if the asset's path is empty or has no extension
+        [[nodiscard]] const char* getExtension() const;
+
+    private:
+        inline static char stringBuffer[64]{}; // Shared string buffer for string returns
     };
 
     struct AssetContainer final
@@ -50,10 +65,14 @@ namespace magique
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
         // Relative to the compiled image root e.g res/player/idle - compile("./res") - iterate("player/idle");
-        void iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const;
+        void iterateDirectory(const char* directory, const std::function<void(const Asset&)>& func) const;
 
-        // Retrieves an asset by its name
-        // Assets are registered with their relative path from the asset image root
+        // Retrieves the first asset that matches the given path
+        // This is fast operation
+        const Asset& getAssetByPath(const char* path) const;
+
+        // Retrieves the first asset that matches the given
+        // This is slower than ByPath
         const Asset& getAsset(const char* name) const;
 
     private:
@@ -62,4 +81,4 @@ namespace magique
     };
 } // namespace magique
 
-#endif //ASSETCONTAINER_H
+#endif //MAGIQUE_ASSETCONTAINER_H
