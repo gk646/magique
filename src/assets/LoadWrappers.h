@@ -9,14 +9,14 @@ namespace magique::internal
 {
     inline bool AssetBaseCheck(const Asset& asset)
     {
-        return asset.name != nullptr && asset.data != nullptr && asset.size > 0;
+        return asset.path != nullptr && asset.data != nullptr && asset.size > 0;
     }
 
     inline Image LoadImage(const Asset& asset)
     {
         M_ASSERT(AssetBaseCheck(asset), "Failed asset check");
 
-        auto ext = GetFileExtension(asset.name);
+        auto ext = GetFileExtension(asset.path);
 
         M_ASSERT(ext != nullptr, "No valid extension");
 

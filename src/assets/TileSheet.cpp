@@ -38,7 +38,7 @@ namespace magique
             dst.y += dst.height;
             if (dst.y >= texImage.height)
             {
-                LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.name);
+                LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.path);
                 break;
             }
         }
@@ -46,7 +46,7 @@ namespace magique
         const auto tex = LoadTextureFromImage(texImage);
         if (tex.id == 0)
         {
-            LOG_ERROR("Failed to load tilesheet to GPU: %s", asset.name);
+            LOG_ERROR("Failed to load tilesheet to GPU: %s", asset.path);
         }
         textureID = tex.id;
 

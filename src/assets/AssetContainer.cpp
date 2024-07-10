@@ -5,6 +5,7 @@
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 #include <raylib/raylib.h>
+#include <cxutil/cxstring.h>
 
 struct Sorter
 {
@@ -65,60 +66,122 @@ private:
     }
 };
 
+int FindAssetPos(const std::vector<magique::Asset>& assets, const char* name)
+{
+    int low = 0;
+    int high = static_cast<int>(assets.size());
+
+    while (low <= high)
+    {
+        const int mid = low + (high - low) / 2;
+
+        if (strcmp(assets[mid].path, name) == 0) [[unlikely]]
+            return mid;
+
+        if (Sorter::Full(assets[mid].path, name))
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    // If we reach here, then element was not present
+    return -1;
+}
+
+int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name, const int size)
+{
+    int low = 0;
+    int high = static_cast<int>(assets.size());
+
+    while (low <= high)
+    {
+        const int mid = low + (high - low) / 2;
+
+        if (strncmp(assets[mid].path, name, size) == 0) [[unlikely]]
+            return mid;
+
+        if (Sorter::Directory(assets[mid].path, name, size))
+            low = mid + 1;
+        else
+            high = mid - 1;
+    }
+
+    // If we reach here, then element was not present
+    return -1;
+}
+
 namespace magique
 {
-    int FindAssetPos(const std::vector<Asset>& assets, const char* name)
-    {
-        int low = 0;
-        int high = static_cast<int>(assets.size());
-
-        while (low <= high)
-        {
-            const int mid = low + (high - low) / 2;
-
-            if (strcmp(assets[mid].name, name) == 0) [[unlikely]]
-                return mid;
-
-            if (Sorter::Full(assets[mid].name, name))
-                low = mid + 1;
-            else
-                high = mid - 1;
-        }
-
-        // If we reach here, then element was not present
-        return -1;
-    }
-
-    int FindDirectoryPos(const std::vector<Asset>& assets, const char* name, const int size)
-    {
-        int low = 0;
-        int high = static_cast<int>(assets.size());
-
-        while (low <= high)
-        {
-            const int mid = low + (high - low) / 2;
-
-            if (strncmp(assets[mid].name, name, size) == 0) [[unlikely]]
-                return mid;
-
-            if (Sorter::Directory(assets[mid].name, name, size))
-                low = mid + 1;
-            else
-                high = mid - 1;
-        }
-
-        // If we reach here, then element was not present
-        return -1;
-    }
 
     bool Asset::hasExtension(const char* extension) const
     {
         M_ASSERT(extension != nullptr, "Passing nullptr");
-        const auto* ext = GetFileExtension(name);
+        const auto* ext = GetFileExtension(path);
         if (ext == nullptr)
             return false;
         return strcmp(extension, ext);
     }
+
+    const char* Asset::getFileName(bool extension) const
+    {
+        const char* workPtr = path;
+        const char* lastSep = nullptr;
+        int len = 0;
+        while (*workPtr)
+        {
+            if (lastSep)
+            {
+                if (!extension && *workPtr == '.')
+                    break;
+                len++;
+            }
+
+            if (*workPtr == '/')
+            {
+                len = 0;
+                lastSep = workPtr + 1;
+            }
+            workPtr++;
+        }
+
+        if (lastSep == nullptr)
+            return nullptr;
+
+
+        memcpy(stringBuffer, lastSep, std::min(64, len));
+        return stringBuffer;
+    }
+
+    const char* Asset::getExtension() const
+    {
+        const char* workPtr = path;
+        const char* lastDot = nullptr;
+
+        while (*workPtr)
+        {
+            if (*workPtr == '.')
+            {
+                lastDot = workPtr;
+            }
+            workPtr++;
+        }
+
+        if (lastDot == nullptr)
+            return nullptr;
+
+        int len = 0;
+        workPtr = lastDot;
+        while (*workPtr)
+        {
+            len++;
+            workPtr++;
+        }
+
+        memcpy(stringBuffer, lastDot, std::min(64, len));
+        return stringBuffer;
+    }
+
+    //----------------- CONTAINER -----------------//
 
     AssetContainer::AssetContainer(const char* nativeData, std::vector<Asset>&& newAssets) : nativeData(nativeData)
     {
@@ -133,7 +196,7 @@ namespace magique
         assets = std::move(newAssets);
 
         // This sorts all entries after directory and then insdie a directory after numbering
-        std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.name, a2.name); });
+        std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
     }
 
     AssetContainer& AssetContainer::operator=(AssetContainer&& container) noexcept
@@ -164,7 +227,7 @@ namespace magique
             return;
         }
 
-        while (pos > 0 && strncmp(assets[pos - 1].name, name, size) == 0)
+        while (pos > 0 && strncmp(assets[pos - 1].path, name, size) == 0)
         {
             pos--;
         }
@@ -174,10 +237,10 @@ namespace magique
             func(assets[pos]);
             pos++;
         }
-        while (pos < assets.size() && strncmp(assets[pos].name, name, size) == 0);
+        while (pos < assets.size() && strncmp(assets[pos].path, name, size) == 0);
     }
 
-    const Asset& AssetContainer::getAsset(const char* name) const
+    const Asset& AssetContainer::getAssetByPath(const char* name) const
     {
         M_ASSERT(name != nullptr, "Passing nullptr!");
         M_ASSERT(!assets.empty(), "No assets loaded!");
@@ -191,6 +254,21 @@ namespace magique
         }
 
         return assets[pos];
+    }
+
+    const Asset& AssetContainer::getAsset(const char* name) const
+    {
+        M_ASSERT(name != nullptr, "Passing nullptr!");
+        M_ASSERT(!assets.empty(), "No assets loaded!");
+
+        for (const auto& a : assets)
+        {
+            if (cxstructs::str_cmp_rev(a.path, name) == 0)
+                return a;
+        }
+
+        LOG_ERROR("No asset with name %s found! Returning empty asset", name);
+        return Asset();
     }
 
 

@@ -3,7 +3,6 @@
 
 #include <cstdint>
 
-
 namespace magique
 {
     template <typename... Resources>
