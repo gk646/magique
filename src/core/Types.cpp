@@ -7,9 +7,9 @@
 
 namespace magique
 {
-    void Animation::draw()
+    int Animation::getCurrentTexture(const uint16_t spriteCount) const
     {
-        DrawSpriteEx()
+        return spriteCount % sheet.frames * duration / duration;
     }
 
     Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)

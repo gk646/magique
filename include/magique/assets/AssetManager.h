@@ -8,16 +8,17 @@
 // Asset Management Module
 //-----------------------------------------------
 // ................................................................................
+// All Register__ methods load and store the resource internally
+// The returned handle is used by Get__ methods to retrieve the resource again
 // Per default all methods are made to load from memory to work with the asset image
-// Textures are automatically stitched into the default or a specified one
+// Textures are automatically stitched into the default atlas or a specified one
 // Try to group all textures that are drawn together into the same atlas
 // Uses a handle system, which means you get a number that identifies this resoure
 // However this handle is only unique for its type, so dont use a handle from a spritesheet for a texture or a sound
 // In practice this doesnt mean anything as you organize handles anyway
-// This handle syste is very fast - all items from a resource type (Sound, TextureRegion) are stored in a contigous vector
+// This handle system is very fast - all items from a resource type (Sound, TextureRegion) are stored in a contigous vector
 // The handles are direct indices for lookups in those vectors O(1)
-// All method return handle::null if there are errors!
-// Note: Register- here is equal to Load- , but signifies that they are held internally and accessable via the handle
+// All methods return handle::null if there are errors!
 // ................................................................................
 
 namespace magique
@@ -27,14 +28,15 @@ namespace magique
         null = UINT32_MAX // The null handle - identifies invalid handles
     };
 
-    enum AtlasID : uint8_t
+    enum AtlasID : uint8_t // Can add new ones or rename them
     {
         DEFAULT, // Default atlas
         CHARACTER,
-        USER_INTERFACE,   // All UI related textures
-        USER_INTERFACE_2, // All entity textures
+        USER_INTERFACE, // All UI related textures
         ENTITIES_1,
         ENTITIES_2,
+        ENTITIES_3,
+        ATLAS_END // Always needs to be last
     };
 
     //----------------- Textures -----------------//

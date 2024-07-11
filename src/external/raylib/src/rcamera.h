@@ -171,7 +171,7 @@ RLAPI Matrix GetCameraProjectionMatrix(Camera* camera, float aspect);
 
 #if defined(RCAMERA_IMPLEMENTATION)
 
-#include "raymath.h"        // Required for vector maths:
+#include <raylib/raymath.h>        // Required for vector maths:
                             // Vector3Add()
                             // Vector3Subtract()
                             // Vector3Scale()

@@ -112,7 +112,7 @@
 
 
 #define RAYMATH_IMPLEMENTATION
-#include "raymath.h"                // Vector2, Vector3, Quaternion and Matrix functionality
+#include <raylib/raymath.h>                // Vector2, Vector3, Quaternion and Matrix functionality
 
 #if defined(SUPPORT_GESTURES_SYSTEM)
     #define RGESTURES_IMPLEMENTATION
@@ -203,7 +203,7 @@ unsigned int __stdcall timeEndPeriod(unsigned int uPeriod);
 #include "coredata.h"
 
 #define RLGL_IMPLEMENTATION
-#include "rlgl.h"                   // OpenGL abstraction layer to OpenGL 1.1, 3.3+ or ES2
+#include <raylib/rlgl.h>                   // OpenGL abstraction layer to OpenGL 1.1, 3.3+ or ES2
 
 
 // Flags operation macros

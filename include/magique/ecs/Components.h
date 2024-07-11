@@ -34,22 +34,27 @@ struct PositionC final
 {
     float x;
     float y;
-    EntityID type;
     MapID map;
+    EntityID type;
     uint16_t rotation; // Rotation in degress clockwise starting at 12 o'clock - applies to collision if present
 };
 
 struct CollisionC final
 {
-    uint8_t layerMask = 1;                // Collision layer -> Use the methods to set it
+    uint8_t layerMask = 1;                // Entities only collide if they share any collision layer
     magique::Shape shape = magique::RECT; // Shape
-    uint16_t width = 0;
-    uint16_t height = 0;
-    int16_t anchorX = 0; // Rotation anchor point for the hitbox
-    int16_t anchorY = 0; // Rotation anchor point for the hitbox
+    uint16_t width = 0;                   // width / radius for the circle
+    uint16_t height = 0;                  // height
+    int16_t anchorX = 0;                  // Rotation anchor point for the hitbox
+    int16_t anchorY = 0;                  // Rotation anchor point for the hitbox
 
+    // Adds the collision layer
     void addCollisionLayer(magique::CollisionLayer layer);
+
+    // Removes the collision layer
     void removeCollisionLayer(magique::CollisionLayer layer);
+
+    // Removes all collisions layers
     void removeAllLayers();
 };
 
@@ -66,10 +71,14 @@ struct AnimationC final
     // Removes the animation for this state
     void removeAnimation(ActionStateEnum state);
 
-    // Draws the current
+    // Draws the current sprite
     void draw();
 
+    // Progresses the sprite - should be called on the update thread to be frame rate independant
     void update();
+
+    // Sets a new action state
+    void setActionState(ActionStateEnum actionState);
 };
 
 
@@ -113,20 +122,37 @@ template <typename ActionStateEnum>
 void AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, magique::SpriteSheet sheet,
                                                uint16_t frameDuration)
 {
-    M_ASSERT(state < ActionStateEnum::STATES_END,"Given enum is bigger than the max value!");
+    M_ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
     auto& anim = animations[(int)state];
     anim.duration = frameDuration;
     anim.sheet = sheet;
 }
 
-
 template <typename ActionStateEnum>
 void AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
 {
-    M_ASSERT(state < ActionStateEnum::STATES_END,"Given enum is bigger than the max value!");
+    M_ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
     auto& anim = animations[(int)state];
     anim.duration = UINT16_MAX;
     anim.sheet = magique::SpriteSheet{};
+}
+template <typename ActionStateEnum>
+void AnimationC<ActionStateEnum>::draw()
+{
+    auto frame = animations[3].getCurrentTexture(currentSpriteCount);
+}
+template <typename ActionStateEnum>
+void AnimationC<ActionStateEnum>::update()
+{
+    currentSpriteCount++;
+}
+template <typename ActionStateEnum>
+void AnimationC<ActionStateEnum>::setActionState(ActionStateEnum actionState)
+{
+    if (lastActionState != actionState) {
+        lastActionState = actionState;
+        currentSpriteCount = 0;
+    }
 }
 
 #endif // MAGIQUE_COMPONENTS_H

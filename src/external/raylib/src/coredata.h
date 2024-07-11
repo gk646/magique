@@ -5,7 +5,7 @@
 // Should change nothing in any setup - just made this piece includeable somwhere else
 
 #include "config.h"
-#include "rlgl.h"
+#include <raylib/rlgl.h>
 
 #ifdef __cplusplus
 extern "C" {

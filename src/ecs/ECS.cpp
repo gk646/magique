@@ -59,13 +59,18 @@ namespace magique
             return entt::null; // EntityID not registered
         }
 
-
         tickData.lock();
         const auto entity = REGISTRY.create();
-        REGISTRY.emplace<PositionC>(entity, x, y, type, mapID); // PositionC is default
-        it->second(REGISTRY, entity);
+        {
+            REGISTRY.emplace<PositionC>(entity, x, y, mapID, type); // PositionC is default
+            it->second(REGISTRY, entity);
+        }
         tickData.unlock();
         SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
+        if (REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        {
+            InvokeEvent<onCreate>(entity);
+        }
         return entity;
     }
 
@@ -75,6 +80,10 @@ namespace magique
         auto& tickData = global::LOGIC_TICK_DATA;
         if (REGISTRY.valid(entity))
         {
+            if (REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+            {
+                InvokeEvent<onDestroy>(entity);
+            }
             tickData.lock();
             REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);

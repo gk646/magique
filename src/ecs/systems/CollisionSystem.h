@@ -139,7 +139,7 @@ namespace magique
 
                     auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
 
-                    if (posA.map != posB.map || colA.layerMask & colB.layerMask) [[unlikely]]
+                    if (posA.map != posB.map || colA.layerMask & colB.layerMask != 0) [[unlikely]]
                         continue;
 
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
@@ -157,7 +157,7 @@ namespace magique
             }
         };
 
-       //cxstructs::now();
+        //cxstructs::now();
         constexpr int parts = 4;
         std::vector<std::thread> threads;
         threads.reserve(5);

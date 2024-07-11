@@ -8,13 +8,11 @@
 enum EntityID : uint16_t
 {
     PLAYER,
+    BULLET,
     ROCK_SMALL,
     ROCK_MEDIUM,
     ROCK_LARGE,
     ROCK_EXPLODE,
-    ALIEN_NORMAL,
-    ALIEN_MEDIUM,
-    ALIEN_BOSS,
 };
 
 enum class MapID : uint8_t
@@ -38,8 +36,13 @@ struct Asteroids final : magique::Game
 
 struct PlayerScript final : magique::EntityScript
 {
-    void onKeyEvent(entt::registry &registry, entt::entity me) override;
-    void onDynamicCollision(entt::registry &registry, entt::entity self, entt::entity other) override {}
+    void onKeyEvent(entt::registry &registry, entt::entity self) override;
+};
+
+
+struct BulletScript final : magique::EntityScript
+{
+    void onTick(entt::registry &registry, entt::entity self) override;
 };
 
 #endif // ASTEROIDS_H

@@ -71,7 +71,7 @@
 #if defined(SUPPORT_MODULE_RTEXTURES)
 
 #include "utils.h"              // Required for: TRACELOG()
-#include "rlgl.h"               // OpenGL abstraction layer to multiple versions
+#include <raylib/rlgl.h>
 
 #include <stdlib.h>             // Required for: malloc(), calloc(), free()
 #include <string.h>             // Required for: strlen() [Used in ImageTextEx()], strcmp() [Used in LoadImageFromMemory()/LoadImageAnimFromMemory()/ExportImageToMemory()]

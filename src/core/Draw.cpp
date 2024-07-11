@@ -7,7 +7,7 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 
-#include "external/raylib/src/rlgl.h"
+#include <raylib/rlgl.h>
 
 namespace magique
 {

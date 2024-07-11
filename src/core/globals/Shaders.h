@@ -2,11 +2,10 @@
 #define SHADERS_H
 
 #include <raylib/raylib.h>
-#include "external/raylib/src/rlgl.h"
+#include <raylib/rlgl.h>
 
 namespace magique
 {
-
     struct Shaders final
     {
         Shader shadow;

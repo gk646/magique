@@ -63,7 +63,7 @@
 #if defined(SUPPORT_MODULE_RTEXT)
 
 #include "utils.h"          // Required for: LoadFile*()
-#include "rlgl.h"           // OpenGL abstraction layer to OpenGL 1.1, 2.1, 3.3+ or ES2 -> Only DrawTextPro()
+#include <raylib/rlgl.h>           // OpenGL abstraction layer to OpenGL 1.1, 2.1, 3.3+ or ES2 -> Only DrawTextPro()
 
 #include <stdlib.h>         // Required for: malloc(), free()
 #include <stdio.h>          // Required for: vsprintf()
