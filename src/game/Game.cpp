@@ -3,9 +3,9 @@
 #include <magique/assets/AssetLoader.h>
 #include <magique/persistence/types/GameConfig.h>
 #include <cxstructs/SmallVector.h>
+#include <raylib/rlgl.h>
 
 #include "external/raylib/src/external/glad.h"
-#include "external/raylib/src/rlgl.h"
 #include "external/raylib/src/coredata.h"
 #include "GLFW/glfw3.h"
 

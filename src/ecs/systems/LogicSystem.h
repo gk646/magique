@@ -107,7 +107,6 @@ namespace magique
 #endif
     }
 
-
     inline void UpdateLogic(entt::registry& registry)
     {
         auto& tickData = global::LOGIC_TICK_DATA;
@@ -190,6 +189,11 @@ namespace magique
         }
 
         tickData.unlock();
+
+        for (const auto e : updateVec)
+        {
+            InvokeEvent<onTick>(e); // Invoke tick event on all entities that are in this tick
+        }
     }
 
 } // namespace magique

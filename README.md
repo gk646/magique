@@ -1,3 +1,5 @@
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/5CE6RGWZ)
+
 `magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant answer all game development
 needs in a simple but definitive way both in performance and usability. `magique` achieves this by providing core
 functionalities around a stack of proven libraries to create a productive 2D engine. You like raylib? You like entt? You
@@ -17,20 +19,7 @@ Most notable features:
 - Unique C++ scripting system
 - New types and methods to load and draw sprites and tilemaps (supports [Tiled](https://www.mapeditor.org/) exports)
 
-The techstack of `magique`:
 
-- raylib
-    - Drawing, shaders
-    - File loading: .mp3, .wav, .png, .gif, models and shaders...
-    - Random Numbers: GetRandomInt()
-    - Audio
-- cute headers
-    - 2D collision detection
-- entt
-    - Entity component system
-    - Views, groups, signals...
-- ankerl
-    - Optimized hashmap and hashset
 
 #### What magique IS:
 
@@ -45,6 +34,21 @@ The techstack of `magique`:
 - An AAA engine with all possible bells and whistles
 - An engine for complete C++ beginners
 
+
+The tech-stack of `magique`:
+
+- raylib
+  - Drawing, shaders
+  - File loading: .mp3, .wav, .png, .gif, models and shaders...
+  - Random Numbers: GetRandomInt()
+  - Audio
+- cute headers
+  - 2D collision detection
+- entt
+  - Entity component system
+  - Views, groups, signals...
+- ankerl
+  - Optimized hashmap and hashset
 
 Paradigms:
 

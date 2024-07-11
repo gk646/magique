@@ -20,11 +20,6 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
-# Used as public API to be included into other projects
-set(raylib_public_headers
-        rlgl.h
-        raymath.h
-)
 
 # Sources to be compiled
 set(raylib_sources
@@ -105,8 +100,6 @@ target_include_directories(raylib
         ${OPENAL_INCLUDE_DIR}
 )
 
-# Copy the header files to the build directory for convenience
-file(COPY ${raylib_public_headers} DESTINATION "include")
 
 # Print the flags for the user
 if (DEFINED CMAKE_BUILD_TYPE)

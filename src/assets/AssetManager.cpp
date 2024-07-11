@@ -183,10 +183,7 @@ namespace magique
 
     Sound& GetSound(const handle handle) { return global::ASSET_MANAGER.getResource<Sound>(handle); }
 
-    TextureRegion GetTextureRegion(const handle handle)
-    {
-        return global::ASSET_MANAGER.getResource<TextureRegion>(handle);
-    }
+    TextureRegion GetTexture(const handle handle) { return global::ASSET_MANAGER.getResource<TextureRegion>(handle); }
 
     SpriteSheet GetSpriteSheet(const handle handle) { return global::ASSET_MANAGER.getResource<SpriteSheet>(handle); }
 

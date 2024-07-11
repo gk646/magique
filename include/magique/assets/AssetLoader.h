@@ -5,16 +5,17 @@
 #include <magique/internal/TaskExecutor.h>
 
 //-----------------------------------------------
-// Game Loader
+// Asset Loader
 //-----------------------------------------------
 // ................................................................................
 // The main loader to get from startup to the initialized game (MainMenu)
 // Theres 2 guarantees when using the loader:
 //  - The task is guaranteed be executed on the main thread if specified
-//  - All task of a higher priority are finished when advancing to the next
+//  - All task of a higher priority are finished before any task with a lower priority
+//  - However theres no order guarantuee for tasks of the same priority
 //
 // For ANY kind of gpu access (texture loading) you HAVE specify MAIN_THREAD.
-// For most others task use ANY_THREAD to allow background loading without stopping the render loop
+// For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
 // Loading dependencies and order can easily be created by specifying a lower priority for tasks that accesses data
 // of higher ones
 // This loader cleans itself up after loading all tasks

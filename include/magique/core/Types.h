@@ -36,7 +36,7 @@ namespace magique
         SpriteSheet sheet{};
         uint16_t duration = UINT16_MAX;
 
-        int getCurrentFrame(uint16_t spriteCount);
+        [[nodiscard]] int getCurrentTexture(uint16_t spriteCount) const;
     };
 
     // Default action states
@@ -55,7 +55,7 @@ namespace magique
 
     enum LightStyle : uint8_t
     {
-        POINT_LIGHT_SOFT,         // point ligtht
+        POINT_LIGHT_SOFT,         // Point ligtht
         DIRECTIONAL_LIGHT_STRONG, // Sunlight
     };
 
