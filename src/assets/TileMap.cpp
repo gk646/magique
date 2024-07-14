@@ -6,6 +6,7 @@
 #include <cxutil/cxstring.h>
 #include <magique/internal/Macros.h>
 
+/*
 namespace magique
 {
     constexpr unsigned FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
@@ -121,3 +122,5 @@ namespace magique
         return static_cast<int>(layerIndices[layer]);
     }
 } // namespace magique
+
+*/

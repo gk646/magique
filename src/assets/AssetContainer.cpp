@@ -265,7 +265,7 @@ namespace magique
 
         for (const auto& a : assets)
         {
-            if (cxstructs::str_cmp_rev(a.path, name) == 0)
+//            if (cxstructs::str_cmp_rev(a.path, name) == 0)
                 return a;
         }
 

@@ -131,6 +131,20 @@ namespace magique
         int64_t data = 0;
     };
 
+    // Always allocated with new []
+    template <typename T>
+    struct DataPointer final
+    {
+        T* pointer;
+        int size;
+
+        void free()
+        {
+            delete[] pointer;
+            size = -1;
+        }
+    };
+
 
     //----------------- MULTIPLAYER -----------------//
 
