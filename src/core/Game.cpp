@@ -2,26 +2,26 @@
 #include <magique/core/Core.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/persistence/types/GameConfig.h>
-#include <cxstructs/SmallVector.h>
+#include "cxstructs/SmallVector.h"
 #include <raylib/rlgl.h>
 
-#include "external/raylib/src/external/glad.h"
-#include "external/raylib/src/coredata.h"
-#include "GLFW/glfw3.h"
+#include "../external/raylib/src/external/glad.h"
+#include "../external/raylib/src/coredata.h"
+#include "../external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 
-#include "core/globals/LogicTickData.h"
-#include "core/globals/DrawTickData.h"
-#include "core/globals/Configuration.h"
-#include "core/globals/PerfData.h"
-#include "core/globals/LogicThread.h"
-#include "core/globals/Shaders.h"
-#include "core/globals/TextureAtlas.h"
-#include "core/CoreData.h"
+#include "globals/LogicTickData.h"
+#include "globals/DrawTickData.h"
+#include "globals/Configuration.h"
+#include "globals/PerfData.h"
+#include "globals/LogicThread.h"
+#include "globals/Shaders.h"
+#include "globals/TextureAtlas.h"
+#include "CoreData.h"
 
-#include "ecs/systems/CollisionSystem.h"
-#include "ecs/systems/InputSystem.h"
-#include "ecs/systems/LogicSystem.h"
-#include "ecs/systems/LightingSystem.h"
+#include "../ecs/systems/CollisionSystem.h"
+#include "../ecs/systems/InputSystem.h"
+#include "../ecs/systems/LogicSystem.h"
+#include "../ecs/systems/LightingSystem.h"
 
 #if defined(_WIN32)
 #define NOUSER
@@ -30,11 +30,11 @@
 #include <processthreadsapi.h>
 #endif
 
-#include "game/common/RenderUtil.h"
-#include "util/OSUtil.h"
+#include "headers/RenderUtil.h"
+#include "../util/OSUtil.h"
 
-#include "Updater.cpp"
-#include "Renderer.cpp"
+#include "headers/Updater.h"
+#include "headers/Renderer.cpp"
 
 CoreData CORE = {0};
 rlglData RLGL = {0};

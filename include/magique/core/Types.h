@@ -91,14 +91,18 @@ namespace magique
     {
         Keybind() = default;
         explicit Keybind(int keyCode, bool shiftDown = false, bool CTRLDown = false, bool altDown = false);
-        [[nodiscard]] bool isKeyPressed() const;
-        [[nodiscard]] bool isKeyDown() const;
-        // Returns only the release of the base key
-        [[nodiscard]] bool isKeyReleased() const;
+
+        // Returns true if the keybind is pressed
+        [[nodiscard]] bool isPressed() const;
+
+        // Returns true if the keybind is down
+        [[nodiscard]] bool isDown() const;
+
+        // Returns true if the base key OR any modifiers are released
+        [[nodiscard]] bool isReleased() const;
 
         // Returns the base key code
         [[nodiscard]] int getKey() const;
-
         [[nodiscard]] bool hasShift() const;
         [[nodiscard]] bool hasCtrl() const;
         [[nodiscard]] bool hasAlt() const;
@@ -145,6 +149,10 @@ namespace magique
         }
     };
 
+
+    struct BehavoirTree final
+    {
+    };
 
     //----------------- MULTIPLAYER -----------------//
 

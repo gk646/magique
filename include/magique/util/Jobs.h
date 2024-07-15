@@ -5,7 +5,6 @@
 #include <deque>
 #include <vector>
 #include <thread>
-#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // Job System
@@ -13,8 +12,7 @@
 // .....................................................................
 // This is for advanced users
 // Use GetScheduler() to get the global instance and schedule your tasks
-// This systems is trimmed for speed - many while true loops during tick
-//
+// This systems is trimmed for speed
 // .....................................................................
 
 namespace magique

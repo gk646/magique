@@ -23,7 +23,7 @@ namespace magique
             data |= (1 << 15);
     }
 
-    bool Keybind::isKeyPressed() const
+    bool Keybind::isPressed() const
     {
         if (IsKeyPressed(getKey()))
         {
@@ -44,7 +44,7 @@ namespace magique
         return false;
     }
 
-    bool Keybind::isKeyDown() const
+    bool Keybind::isDown() const
     {
         if (IsKeyDown(getKey()))
         {
@@ -65,7 +65,7 @@ namespace magique
         return false;
     }
 
-    bool Keybind::isKeyReleased() const { return IsKeyReleased(getKey()); }
+    bool Keybind::isReleased() const { return IsKeyReleased(getKey()); }
 
     int Keybind::getKey() const { return data & 0x1FFF; }
 

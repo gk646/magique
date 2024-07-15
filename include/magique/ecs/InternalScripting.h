@@ -92,7 +92,7 @@ namespace magique
 
     // Sets a c++ script for this entity type
     // Subclass the EntityScript class and pass a new Instance()
-    // Note: Entities still need a ScriptC component to react to scripts! Use GiveScript(e) when creating
+    // Note: Entities still need a ScriptC component to react to scripts! Use "GiveScript" when creating
     void SetScript(EntityID entity, EntityScript* script);
 
     // Retrieves the script for the entity type
@@ -106,26 +106,36 @@ namespace magique
     //             InvokeEvent<onItemPickup, MyPlayerScript>(player, item);
     //             InvokeEvent<onExplosion, MyGrenadeScript>(grenade, radius, damage);
     template <EventType event, class Script = EntityScript, class... Args>
-    void InvokeEvent(entt::entity entity, Args... arguments)
-    {
-        const auto& pos = REGISTRY.get<PositionC>(entity); // Every entity has a position
-        auto* script = static_cast<Script*>(GetScript(pos.type));
-        M_ASSERT(script != nullptr, "No Script for this type!");
-        Call<event, Script, entt::registry&, entt::entity, Args...>(script, REGISTRY, entity,
-                                                                    std::forward<Args>(arguments)...);
-    }
+    void InvokeEvent(entt::entity entity, Args... arguments);
 
     // Same as 'InvokeEvent' but avoids the type lookup - very fast!
     template <EventType event, class Script = EntityScript, class... Args>
-    void InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
-    {
-        M_ASSERT(script != nullptr, "Passing a null script");
-        Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), REGISTRY, entity,
-                                                                    std::forward<Args>(arguments)...);
-    }
+    void InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments);
 
 } // namespace magique
 
 #pragma warning(pop)
+
+
+// Implementation
+
+template <magique::EventType event, class Script, class... Args>
+void magique::InvokeEvent(entt::entity entity, Args... arguments)
+{
+    const auto& pos = REGISTRY.get<PositionC>(entity); // Every entity has a position
+    auto* script = static_cast<Script*>(GetScript(pos.type));
+    M_ASSERT(script != nullptr, "No Script for this type!");
+    Call<event, Script, entt::registry&, entt::entity, Args...>(script, REGISTRY, entity,
+                                                                std::forward<Args>(arguments)...);
+}
+
+template <magique::EventType event, class Script, class... Args>
+void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
+{
+
+    M_ASSERT(script != nullptr, "Passing a null script");
+    Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), REGISTRY, entity,
+                                                                std::forward<Args>(arguments)...);
+}
 
 #endif //MAGIQUE_INTERNAL_SCRIPTING_H

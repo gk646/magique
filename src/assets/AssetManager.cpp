@@ -11,7 +11,7 @@
 
 #include "core/globals/TextureAtlas.h"
 #include "core/globals/AssetManager.h"
-#include "assets/LoadWrappers.h"
+#include "assets/headers/LoadWrappers.h"
 
 namespace magique
 {

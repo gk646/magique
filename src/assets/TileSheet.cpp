@@ -5,7 +5,7 @@
 #include <magique/util/Logging.h>
 #include <magique/util/Defines.h>
 
-#include "assets/LoadWrappers.h"
+#include "assets/headers/LoadWrappers.h"
 
 namespace magique
 {

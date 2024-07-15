@@ -28,7 +28,7 @@ namespace magique
     struct ExecutorI; // Task loading interface
 
     template <typename... Columns>
-    struct DataTable; // DataBase like interface to save game data
+    struct DataTable; // Type-safe database-like interface to save game data
 
     //-----------------LOGIC-----------------//
     struct DrawTickData; // Data for one draw tick - guaranteed to not change during the tick
@@ -53,6 +53,12 @@ namespace magique
 
     //----------------- Multiplayer -----------------//
     enum UpdateFlag : uint8_t;
+
+    //----------------- GAMEDEV -----------------//
+    template <typename CustomData = void>
+    struct BehaviorTree<CustomData>;
+    template <typename CustomData = void>
+    struct TreeBuilder<CustomData>;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;
