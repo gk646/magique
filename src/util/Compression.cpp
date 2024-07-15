@@ -2,43 +2,88 @@
 #include <magique/internal/DataStructures.h>
 #include <magique/util/Logging.h>
 
+
 namespace magique
 {
     using BytePointer = unsigned char*;
-    using PatternType = uint64_t;
+    using PatternType = uint32_t;
     using MarkerType = uint8_t;
     using PatternMap = HashMap<PatternType, int>;
     using PatternVec = std::vector<std::pair<PatternType, int>>;
+    using MarkerVec = std::vector<MarkerType>;
+    using Marker2Vec = std::vector<uint16_t>;
 
-    bool HasOverlap(const PatternType a, const PatternType b)
+    bool HasOverlap(const PatternType ap, const PatternType bp)
     {
-        uint64_t mask = 0xFF;
-        for (int i = 1; i < sizeof(PatternType); ++i)
+        constexpr int patternSize = sizeof(PatternType);
+        // Convert PatternType to byte arrays for easier comparison
+        const uint8_t* a = reinterpret_cast<const uint8_t*>(&ap);
+        const uint8_t* b = reinterpret_cast<const uint8_t*>(&bp);
+
+        for (int i = 1; i < patternSize; ++i)
         {
-            if (a >> i * 8 == (b & ~(mask << i * 8)) || b >> i * 8 == (a & ~(mask << i * 8)))
+            bool overlap = true;
+            for (int j = 0; j < patternSize - i; ++j)
+            {
+                if (a[i + j] != b[j])
+                {
+                    overlap = false;
+                    break;
+                }
+            }
+            if (overlap)
             {
                 return true;
             }
-            mask = mask << 8 | 0xFF;
         }
+
+        // Check for suffix of b overlapping with prefix of a
+        for (int i = 1; i < patternSize; ++i)
+        {
+            bool overlap = true;
+            for (int j = 0; j < patternSize - i; ++j)
+            {
+                if (b[i + j] != a[j])
+                {
+                    overlap = false;
+                    break;
+                }
+            }
+            if (overlap)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
     void GeneratePatterns(BytePointer data, int size, PatternMap& map)
     {
+        HashMap<PatternType, uint8_t> patternLock;
         int startByte = 0;
         while (startByte <= size - sizeof(PatternType))
         {
             PatternType tempPattern;
             std::memcpy(&tempPattern, data + startByte, sizeof(PatternType));
-            auto it = map.find(tempPattern);
-            if (it != map.end())
+
+            if (!patternLock.contains(tempPattern))
             {
-                it->second++;
+                map[tempPattern]++;
+                patternLock.insert({tempPattern, sizeof(PatternType)});
             }
-            else
+
+            for (auto delIt = patternLock.begin(); delIt != patternLock.end();)
             {
-                map.insert({tempPattern, 1});
+                delIt->second--;
+                if (delIt->second == 0) [[likely]]
+                {
+                    delIt = patternLock.erase(delIt);
+                }
+                else
+                {
+                    ++delIt;
+                }
             }
             startByte++;
         }
@@ -99,22 +144,30 @@ namespace magique
         }
     }
 
-    int CalculateNewSize(int size, const PatternVec& vec, int markers)
+    int CalculateNewSize(int size, const PatternVec& vec, int markers, int markers2)
     {
+        //size += 5; // Tag
         for (const auto& pattern : vec)
         {
-            if (markers <= 0)
-                break;
-            size -= pattern.second * (sizeof(PatternType) - sizeof(MarkerType));
-            markers--;
+            if (markers > 0)
+            {
+                size -= pattern.second * (sizeof(PatternType) - sizeof(MarkerType));
+                markers--;
+            }
+            else if (markers2 > 0)
+            {
+                size -= pattern.second * (sizeof(PatternType) - sizeof(uint16_t));
+                markers2--;
+            }
         }
         return size;
     }
 
-    std::vector<MarkerType> FindMarkers(BytePointer data, const int size)
+    std::pair<MarkerVec, Marker2Vec> FindMarkers(BytePointer data, const int size)
     {
         std::vector bytePresence(256, false);
-        std::vector<MarkerType> uniqueMarkers;
+        MarkerVec uniqueMarkers;
+        Marker2Vec unique2Markers;
 
         for (int i = 0; i < size; ++i)
         {
@@ -129,30 +182,68 @@ namespace magique
             }
         }
 
-        return uniqueMarkers;
+        if (uniqueMarkers.size() < 25)
+        {
+            HashSet<uint16_t> uniqueBytes;
+            for (int i = 0; i < size - 1; ++i)
+            {
+                uint16_t marker = (data[i] << 8) | data[i + 1];
+                uniqueBytes.insert(marker);
+                if (uniqueBytes.size() >= UINT16_MAX)
+                    break;
+            }
+
+            if (uniqueBytes.size() < UINT16_MAX)
+            {
+                for (uint16_t i = UINT8_MAX; i < UINT16_MAX; ++i)
+                {
+                    if (uniqueBytes.find(i) == uniqueBytes.end())
+                    {
+                        unique2Markers.push_back(i);
+                    }
+                }
+            }
+        }
+        return {uniqueMarkers, unique2Markers};
     }
 
     DataPointer<const char> GenerateCompressedData(BytePointer data, int size, const PatternVec& vec)
     {
-        const std::vector<MarkerType> uniqueMarkers = FindMarkers(data, size);
+        const auto [markers, markers2] = FindMarkers(data, size);
 
-        if (uniqueMarkers.empty()) // No possible marker symbols
+        int unique = static_cast<int>(markers.size());
+        int unique2 = static_cast<int>(markers2.size());
+
+        if (unique == 0 && unique2 == 0) // No possible marker symbols
             return {reinterpret_cast<const char*>(data), size};
 
-        printf("unique: %zu\n", uniqueMarkers.size());
+        printf("unique: %zu\n", markers.size());
+        printf("unique2: %zu\n", markers2.size());
 
-        const int newSize = CalculateNewSize(size, vec, uniqueMarkers.size());
-        auto* compressedData = new unsigned char[newSize * 2];
+        const int newSize = CalculateNewSize(size, vec, unique, unique2);
+
+        printf("new size: %d\n", newSize);
+        auto* compressedData = new unsigned char[newSize];
 
         HashMap<PatternType, MarkerType> markerMap;
-        for (size_t i = 0; i < vec.size() && i < uniqueMarkers.size(); ++i)
+        HashMap<PatternType, uint16_t> marker2Map;
+
+        for (const auto& pair : vec)
         {
-            markerMap[vec[i].first] = uniqueMarkers[i];
+            if (unique > 0)
+            {
+                markerMap[pair.first] = markers[markers.size() - unique];
+                unique--;
+            }
+            else if (unique2 > 0)
+            {
+                marker2Map[pair.first] = markers2[markers2.size() - unique2];
+                unique2--;
+            }
         }
 
         int compressedIndex = 0;
         int i = 0;
-        int count = 0;
         while (i <= size - sizeof(PatternType))
         {
             PatternType tempPattern;
@@ -160,19 +251,25 @@ namespace magique
             auto it = markerMap.find(tempPattern);
             if (it != markerMap.end())
             {
-                count++;
                 compressedData[compressedIndex++] = it->second;
                 i += sizeof(PatternType);
-                if (count % 1000 == 0)
-                    printf("Count: %d\n", count);
             }
             else
             {
-                compressedData[compressedIndex++] = data[i++];
+                auto it2 = marker2Map.find(tempPattern);
+                if (it2 != marker2Map.end())
+                {
+                    compressedData[compressedIndex++] = static_cast<unsigned char>(it2->second >> 8);   // High byte
+                    compressedData[compressedIndex++] = static_cast<unsigned char>(it2->second & 0xFF); // Low byte
+                    i += sizeof(PatternType);
+                }
+                else
+                {
+                    compressedData[compressedIndex++] = data[i++];
+                }
             }
         }
 
-        // Copy any remaining bytes that didn't match a pattern
         while (i < size)
         {
             compressedData[compressedIndex++] = data[i++];
@@ -198,14 +295,14 @@ namespace magique
         GeneratePatterns((BytePointer)data, size, patternMap);
         printf("Size %d\n", patternMap.size());
 
-        SortPatterns(topPatterns, patternMap, UINT8_MAX);
+        SortPatterns(topPatterns, patternMap, 1024);
 
         FilterPatterns(topPatterns);
         printf("Size %d\n", topPatterns.size());
 
         for (const auto& pair : topPatterns)
         {
-            printf("Pattern: %016llx, Count: %d\n", pair.first, pair.second);
+            printf("Pattern: %04llx, Count: %d\n", pair.first, pair.second);
         }
 
         return GenerateCompressedData((BytePointer)data, size, topPatterns);
