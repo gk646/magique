@@ -30,5 +30,4 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
     }
 }
 
-
 #endif //MAGIQUE_OSUTIL_H

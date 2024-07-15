@@ -10,15 +10,15 @@
 // .....................................................................
 // This module is for creating particle effects.
 // You create a emitter first (either Entity or Screen) and then create the particle effect by calling
-// the global Create__ function with that emitter.
-// A emitter can be reused as often as you like
+// the global Create__ function with that emitter. A emitter can (and should) be reused as often as you like.
+// Uses the builder pattner for coincise syntax.
 // .....................................................................
 
 namespace magique
 {
     //----------------- CREATE -----------------//
 
-    // Adds a particle
+    // Creates a new screen particle
     void CreateScreenParticle(const ScreenEmitter& emitter);
 
     // Adds a entity particle to the ECS

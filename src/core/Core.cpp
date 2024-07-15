@@ -8,7 +8,7 @@
 #include "core/globals/LogicTickData.h"
 #include "core/globals/DrawTickData.h"
 #include "core/globals/Shaders.h"
-#include "graphics/Shaders.h"
+#include "headers/Shaders.h"
 
 static bool initCalled = false;
 
