@@ -5,8 +5,7 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 {
     if (sleepSeconds < 0)
         return; // Security check
-
-    // System halt functions
+                // System halt functions
 #if defined(_WIN32)
     Sleep((unsigned long)(sleepSeconds * 1000.0));
 #endif
@@ -28,6 +27,35 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
         YieldProcessor();
 #endif
     }
+}
+
+
+inline void SetupThreadPriority(int thread)
+{
+#if defined(WIN32)
+    HANDLE hThread = GetCurrentThread();
+    SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
+    DWORD_PTR affinityMask = 1 << thread;
+    auto res = SetThreadAffinityMask(hThread, affinityMask);
+    if (res == 0)
+    {
+        LOG_ERROR("Failed to setup thread affinity for thread: %d", thread);
+    }
+#endif
+}
+
+
+inline void SetupProcessPriority()
+{
+#if defined(WIN32)
+    HANDLE hProcess = GetCurrentProcess();
+    SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
+    DWORD_PTR processAffinityMask = 0xF; // First 4 threads
+    if (!SetProcessAffinityMask(hProcess, processAffinityMask))
+    {
+        LOG_ERROR("Failed to setup process priority");
+    }
+#endif
 }
 
 #endif //MAGIQUE_OSUTIL_H

@@ -1,21 +1,26 @@
+#pragma once
+
 namespace magique::updater
 {
     using namespace std::chrono;
     inline static time_point<steady_clock> startTime;
 
-    inline void InternalUpdate(entt::registry& registry)
+    inline void Setup()
     {
-        PollInputs(registry);
-        UpdateLogic(registry);
-        CheckCollisions(registry);
+        SetupThreadPriority(1); // Thread 1
     }
 
-    inline void StartUpdateTick()
+    inline void Close()
     {
-        global::SCHEDULER->wakeup();
+        if (global::LOGIC_THREAD.joinable())
+        {
+            global::LOGIC_THREAD.join();
+        }
     }
 
-    inline void EndUpdateTick()
+    inline void StartTick() { global::SCHEDULER->wakeup(); }
+
+    inline void EndTick()
     {
         if (global::CONFIGURATION.showPerformanceOverlay)
         {
@@ -28,6 +33,7 @@ namespace magique::updater
 
     inline void GameLoop(const bool& isRunning, Game& game)
     {
+        Setup();
         constexpr auto tickDuration = nanoseconds(1'000'000'000 / MAGIQUE_LOGIC_TICKS);
 
         auto lastTime = steady_clock::now();
@@ -43,13 +49,13 @@ namespace magique::updater
 
             while (accumulator >= tickDuration) [[unlikely]] // Safe guard to close instantly
             {
-                StartUpdateTick();
+                StartTick();
                 //Tick game
                 {
                     InternalUpdate(reg); // Internal update upfront
                     game.updateGame(reg);
                 }
-                EndUpdateTick();
+                EndTick();
                 accumulator = nanoseconds::zero();
             }
             std::this_thread::sleep_for(microseconds(1));
@@ -61,12 +67,5 @@ namespace magique::updater
         global::LOGIC_THREAD = std::thread(&GameLoop, std::ref(isRunning), std::ref(game));
     }
 
-    inline void Close()
-    {
-        if (global::LOGIC_THREAD.joinable())
-        {
-            global::LOGIC_THREAD.join();
-        }
-    }
 
 } // namespace magique::updater

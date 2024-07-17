@@ -45,8 +45,11 @@ namespace magique
         // They are still updated for cache duration
         HashMap<entt::entity, uint16_t> entityUpdateCache{1000};
 
-        // vector containing the entites to update for this ticka
+        // vector containing the entites to update for this tick
         vector<entt::entity> entityUpdateVec;
+
+        // vector containing the entites to check for collision
+        vector<entt::entity> collisionVec;
 
         // vector containing all entites to be drawn this tick
         // Culled with the camera

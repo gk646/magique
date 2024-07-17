@@ -9,10 +9,9 @@ enum EntityID : uint16_t
 {
     PLAYER,
     BULLET,
-    ROCK_SMALL,
-    ROCK_MEDIUM,
-    ROCK_LARGE,
-    ROCK_EXPLODE,
+    ROCK,
+    HOUSE,
+    STATIC_CAMERA, // In this example the camera is static and not attached to a entity
 };
 
 enum class MapID : uint8_t
@@ -44,5 +43,11 @@ struct BulletScript final : magique::EntityScript
 {
     void onTick(entt::registry &registry, entt::entity self) override;
 };
+
+struct HouseScript final : magique::EntityScript
+{
+    void onDynamicCollision(entt::registry &registry, entt::entity self, entt::entity other) override;
+};
+
 
 #endif // ASTEROIDS_H
