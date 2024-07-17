@@ -155,7 +155,7 @@ namespace magique
     };
 
 
-    enum class KeyboardLayout
+    enum class KeyLayout
     {
         QWERTY,
         QWERTZ,

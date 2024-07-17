@@ -44,7 +44,7 @@
 // Module: rcore - Configuration Flags
 //------------------------------------------------------------------------------------
 // Camera module is included (rcamera.h) and multiple predefined cameras are available: free, 1st/3rd person, orbital
-#define SUPPORT_CAMERA_SYSTEM           1
+//#define SUPPORT_CAMERA_SYSTEM           1
 // Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
 //#define SUPPORT_GESTURES_SYSTEM         1
 // Include pseudo-random numbers generator (rprand.h), based on Xoshiro128** and SplitMix64
@@ -68,7 +68,7 @@
 #define SUPPORT_COMPRESSION_API         1
 // Support automatic generated events, loading and recording of those events when required
 #define SUPPORT_AUTOMATION_EVENTS       1
-// Support custom frame control, only for advance users
+// Support custom frame control, only for advanced users
 // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timing + PollInputEvents()
 // Enabling this flag allows manual control of the frame processes, use at your own risk
 //#define SUPPORT_CUSTOM_FRAME_CONTROL    1
@@ -85,8 +85,8 @@
 #define MAX_GAMEPAD_BUTTONS            16       // Maximum number of buttons supported (per gamepad)
 #define MAX_GAMEPAD_VIBRATION_TIME      2.0f    // Maximum vibration time in seconds
 #define MAX_TOUCH_POINTS                8       // Maximum number of touch points supported
-#define MAX_KEY_PRESSED_QUEUE          8        // Maximum number of keys in the key input queue
-#define MAX_CHAR_PRESSED_QUEUE         8        // Maximum number of characters in the char input queue
+#define MAX_KEY_PRESSED_QUEUE           8       // Maximum number of keys in the key input queue
+#define MAX_CHAR_PRESSED_QUEUE          8       // Maximum number of characters in the char input queue
 
 #define MAX_DECOMPRESSION_SIZE         64       // Max size allocated for decompression in MB
 
@@ -161,10 +161,10 @@
 #define SUPPORT_FILEFORMAT_PNG      1
 #define SUPPORT_FILEFORMAT_BMP      1
 //#define SUPPORT_FILEFORMAT_TGA      1
-#define SUPPORT_FILEFORMAT_JPG      1
+//#define SUPPORT_FILEFORMAT_JPG      1
 #define SUPPORT_FILEFORMAT_GIF      1
 #define SUPPORT_FILEFORMAT_QOI      1
-#define SUPPORT_FILEFORMAT_PSD      1
+//#define SUPPORT_FILEFORMAT_PSD      1
 #define SUPPORT_FILEFORMAT_DDS      1
 //#define SUPPORT_FILEFORMAT_HDR      1
 //#define SUPPORT_FILEFORMAT_PIC          1
@@ -191,7 +191,7 @@
 #define SUPPORT_DEFAULT_FONT            1
 // Selected desired font fileformats to be supported for loading
 #define SUPPORT_FILEFORMAT_TTF          1
-//#define SUPPORT_FILEFORMAT_FNT          1
+#define SUPPORT_FILEFORMAT_FNT          1
 //#define SUPPORT_FILEFORMAT_BDF          1
 
 // Support text management functions
@@ -205,7 +205,7 @@
 
 // rtext: Configuration values
 //------------------------------------------------------------------------------------
-#define MAX_TEXT_BUFFER_LENGTH       1024       // Size of internal static buffers used on some functions:
+#define MAX_TEXT_BUFFER_LENGTH        512       // Size of internal static buffers used on some functions:
                                                 // TextFormat(), TextSubtext(), TextToUpper(), TextToLower(), TextToPascal(), TextSplit()
 #define MAX_TEXTSPLIT_COUNT           128       // Maximum number of substrings to split: TextSplit()
 
@@ -253,7 +253,7 @@
 // Module: utils - Configuration Flags
 //------------------------------------------------------------------------------------
 // Standard file io library (stdio.h) included
-#define SUPPORT_STANDARD_FILEIO         1
+//#define SUPPORT_STANDARD_FILEIO         1
 // Show TRACELOG() output messages
 // NOTE: By default LOG_DEBUG traces not shown
 #define SUPPORT_TRACELOG                1

@@ -72,7 +72,7 @@
 #if defined(RAUDIO_STANDALONE)
     #include "raudio.h"
 #else
-    #include <raylib/raylib.h>
+    #include <raylib/raylib.h>         // Declares module functions
 
     // Check if config flags have been externally provided on compilation line
     #if !defined(EXTERNAL_CONFIG_FLAGS)
@@ -1274,20 +1274,21 @@ Wave WaveCopy(Wave wave)
     return newWave;
 }
 
-// Crop a wave to defined samples range
+// Crop a wave to defined frames range
 // NOTE: Security check in case of out-of-range
-void WaveCrop(Wave *wave, int initSample, int finalSample)
+void WaveCrop(Wave *wave, int initFrame, int finalFrame)
 {
-    if ((initSample >= 0) && (initSample < finalSample) && ((unsigned int)finalSample < (wave->frameCount*wave->channels)))
+    if ((initFrame >= 0) && (initFrame < finalFrame) && ((unsigned int)finalFrame <= wave->frameCount))
     {
-        int sampleCount = finalSample - initSample;
+        int frameCount = finalFrame - initFrame;
 
-        void *data = RL_MALLOC(sampleCount*wave->sampleSize/8);
+        void *data = RL_MALLOC(frameCount*wave->channels*wave->sampleSize/8);
 
-        memcpy(data, (unsigned char *)wave->data + (initSample*wave->channels*wave->sampleSize/8), sampleCount*wave->sampleSize/8);
+        memcpy(data, (unsigned char *)wave->data + (initFrame*wave->channels*wave->sampleSize/8), frameCount*wave->channels*wave->sampleSize/8);
 
         RL_FREE(wave->data);
         wave->data = data;
+        wave->frameCount = (unsigned int)frameCount;
     }
     else TRACELOG(LOG_WARNING, "WAVE: Crop range out of bounds");
 }
@@ -1303,8 +1304,8 @@ float *LoadWaveSamples(Wave wave)
 
     for (unsigned int i = 0; i < wave.frameCount*wave.channels; i++)
     {
-        if (wave.sampleSize == 8) samples[i] = (float)(((unsigned char *)wave.data)[i] - 127)/256.0f;
-        else if (wave.sampleSize == 16) samples[i] = (float)(((short *)wave.data)[i])/32767.0f;
+        if (wave.sampleSize == 8) samples[i] = (float)(((unsigned char *)wave.data)[i] - 128)/128.0f;
+        else if (wave.sampleSize == 16) samples[i] = (float)(((short *)wave.data)[i])/32768.0f;
         else if (wave.sampleSize == 32) samples[i] = ((float *)wave.data)[i];
     }
 
@@ -1348,7 +1349,6 @@ Music LoadMusicStream(const char *fileName)
         }
         else
         {
-            drwav_uninit(ctxWav);
             RL_FREE(ctxWav);
         }
     }
@@ -1428,7 +1428,9 @@ Music LoadMusicStream(const char *fileName)
         {
             music.ctxType = MUSIC_AUDIO_FLAC;
             music.ctxData = ctxFlac;
-            music.stream = LoadAudioStream(ctxFlac->sampleRate, ctxFlac->bitsPerSample, ctxFlac->channels);
+            int sampleSize = ctxFlac->bitsPerSample;
+            if (ctxFlac->bitsPerSample == 24) sampleSize = 16;   // Forcing conversion to s16 on UpdateMusicStream()
+            music.stream = LoadAudioStream(ctxFlac->sampleRate, sampleSize, ctxFlac->channels);
             music.frameCount = (unsigned int)ctxFlac->totalPCMFrameCount;
             music.looping = true;   // Looping enabled by default
             musicLoaded = true;
@@ -1462,7 +1464,7 @@ Music LoadMusicStream(const char *fileName)
             jar_xm_reset(ctxXm);    // Make sure we start at the beginning of the song
             musicLoaded = true;
         }
-        else 
+        else
         {
             jar_xm_free_context(ctxXm);
         }
@@ -1548,7 +1550,7 @@ Music LoadMusicStreamFromMemory(const char *fileType, const unsigned char *data,
     else if ((strcmp(fileType, ".ogg") == 0) || (strcmp(fileType, ".OGG") == 0))
     {
         // Open ogg audio stream
-        stb_vorbis* ctxOgg = stb_vorbis_open_memory((const unsigned char*)data, dataSize, NULL, NULL);
+        stb_vorbis* ctxOgg = stb_vorbis_open_memory((const unsigned char *)data, dataSize, NULL, NULL);
 
         if (ctxOgg != NULL)
         {
@@ -1564,7 +1566,7 @@ Music LoadMusicStreamFromMemory(const char *fileType, const unsigned char *data,
             music.looping = true;   // Looping enabled by default
             musicLoaded = true;
         }
-        else 
+        else
         {
             stb_vorbis_close(ctxOgg);
         }
