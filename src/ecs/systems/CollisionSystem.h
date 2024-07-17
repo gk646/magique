@@ -114,7 +114,7 @@ namespace magique
     {
         auto& tickData = global::LOGIC_TICK_DATA;
         auto& grid = tickData.hashGrid;
-        auto& updateVec = tickData.entityUpdateVec;
+        auto& collisionVec = tickData.collisionVec;
         auto& collectors = tickData.collectors;
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
@@ -123,8 +123,8 @@ namespace magique
 
         const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
-            const auto start = updateVec.begin() + startIdx;
-            const auto end = updateVec.begin() + endIdx;
+            const auto start = collisionVec.begin() + startIdx;
+            const auto end = collisionVec.begin() + endIdx;
             for (auto it = start; it != end; ++it)
             {
                 const auto first = *it;
@@ -144,6 +144,7 @@ namespace magique
 
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                     {
+                        // Scripts are default filled - with this we can skip the script check
                         auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
                         InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
                         // Invoke out of seconds view
@@ -163,14 +164,14 @@ namespace magique
         threads.reserve(5);
         int start = 0;
         int end = 0;
-        const int partSize = updateVec.size() / parts;
+        const int partSize = collisionVec.size() / parts;
         for (int j = 0; j < parts; ++j)
         {
             start = end;
             end = start + partSize;
             if (j == parts - 1)
             {
-                collisionCheck(j, start, updateVec.size());
+                collisionCheck(j, start, collisionVec.size());
                 break;
             }
 
@@ -190,9 +191,9 @@ namespace magique
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);
         int correct = 0;
-        for (const auto first : updateVec)
+        for (const auto first : collisionVec)
         {
-            for (const auto second : updateVec)
+            for (const auto second : collisionVec)
             {
                 if (first >= second)
                     continue;

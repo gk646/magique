@@ -30,11 +30,11 @@
 #include <processthreadsapi.h>
 #endif
 
-#include "headers/RenderUtil.h"
-#include "../util/OSUtil.h"
+#include "headers/GameUtil.h"
+#include "internal/headers/OSUtil.h"
 
 #include "headers/Updater.h"
-#include "headers/Renderer.cpp"
+#include "headers/Renderer.h"
 
 CoreData CORE = {0};
 rlglData RLGL = {0};

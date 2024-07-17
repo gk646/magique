@@ -21,7 +21,7 @@ namespace magique
 
     // Insert numbers into flattened array
     inline void InsertToActorDist(SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
-                                  int map, int num)
+                                  const int map, const int num)
     {
 
         for (int i = 0; i < 4; i++)
@@ -62,7 +62,7 @@ namespace magique
         }
     }
 
-    void HandleCollisionEntity(entt::entity e, const CollisionC collision, const PositionC pos, auto& hashGrid)
+    void HandleCollisionEntity(entt::entity e, CollisionC collision, const PositionC pos, auto& hashGrid, auto& cVec)
     {
         if (pos.rotation == 0) [[likely]] // More likely
         {
@@ -114,85 +114,90 @@ namespace magique
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;
         auto& updateVec = tickData.entityUpdateVec;
+        auto& collisionVec = tickData.collisionVec;
         auto& loadedMaps = tickData.loadedMaps;
 
         tickData.lock(); // Critical section
-        AssignCameraData(registry);
-
-        // Cache
-        const auto cameraMap = tickData.cameraMap;
-        const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
-        const auto cameraBounds = GetCameraRect();
-
-        // Lookup tables
-        SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
-        SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
-        Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
-
-        BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
         {
-            drawVec.clear();
-            hashGrid.clear();
-            updateVec.clear();
+            AssignCameraData(registry);
 
-            const auto view = registry.view<const PositionC>();
-            for (const auto e : view)
+            // Cache
+            const auto cameraMap = tickData.cameraMap;
+            const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
+            const auto cameraBounds = GetCameraRect();
+
+            // Lookup tables
+            SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
+            SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
+            Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
+
+            BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
             {
-                const auto pos = view.get<const PositionC>(e);
-                const auto map = pos.map;
-                if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
+                drawVec.clear();
+                hashGrid.clear();
+                updateVec.clear();
+
+                const auto view = registry.view<const PositionC>();
+                for (const auto e : view)
                 {
-                    // Check if inside the camera bounds already
-                    if (map == cameraMap && CheckCollisionPointRec({pos.x, pos.y}, cameraBounds))
+                    const auto pos = view.get<const PositionC>(e);
+                    const auto map = pos.map;
+                    if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
                     {
-                        drawVec.push_back(e); // Should be drawn
-                        cache[e] = cacheDuration;
-                        const auto collision = registry.try_get<CollisionC>(e);
-                        if (collision != nullptr) [[likely]]
-                            HandleCollisionEntity(e, *collision, pos, hashGrid);
-                    }
-                    else
-                    {
-                        for (int i = 0; i < MAGIQUE_MAX_PLAYERS; ++i)
+                        // Check if inside the camera bounds already
+                        if (map == cameraMap && CheckCollisionPointRec({pos.x, pos.y}, cameraBounds))
                         {
-                            const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
-                            if (actorNum == -1)
-                                break;
-                            const auto vec3 = actorCircles[actorNum];
-                            // Check if insdie any update circle
-                            if (CheckCollisionPointCircle({pos.x, pos.y}, {vec3.x, vec3.y}, vec3.z))
+                            drawVec.push_back(e); // Should be drawn
+                            cache[e] = cacheDuration;
+                            const auto collision = registry.try_get<CollisionC>(e);
+                            if (collision != nullptr) [[likely]]
+                                HandleCollisionEntity(e, *collision, pos, hashGrid, collisionVec);
+                        }
+                        else
+                        {
+                            for (int i = 0; i < MAGIQUE_MAX_PLAYERS; ++i)
                             {
-                                cache[e] = cacheDuration;
-                                const auto collision = registry.try_get<CollisionC>(e);
-                                if (collision != nullptr) [[likely]]
-                                    HandleCollisionEntity(e, *collision, pos, hashGrid);
+                                const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
+                                if (actorNum == -1)
+                                    break;
+                                const auto vec3 = actorCircles[actorNum];
+                                // Check if insdie any update circle
+                                if (CheckCollisionPointCircle({pos.x, pos.y}, {vec3.x, vec3.y}, vec3.z))
+                                {
+                                    cache[e] = cacheDuration;
+                                    const auto collision = registry.try_get<CollisionC>(e);
+                                    if (collision != nullptr) [[likely]]
+                                        HandleCollisionEntity(e, *collision, pos, hashGrid, collisionVec);
+                                }
                             }
                         }
                     }
                 }
             }
-        }
 
-        // Fill the update vec after to avoid adding entities that drop out
-        for (auto it = cache.begin(); it != cache.end();)
-        {
-            if (it->second > 0)
+            // Fill the update vec after to avoid adding entities that drop out
+            for (auto it = cache.begin(); it != cache.end();)
             {
-                it->second--;
-                updateVec.push_back(it->first);
-                ++it;
-            }
-            else
-            {
-                it = cache.erase(it);
+                if (it->second > 0)
+                {
+                    it->second--;
+                    updateVec.push_back(it->first);
+                    ++it;
+                }
+                else
+                {
+                    it = cache.erase(it);
+                }
             }
         }
-
         tickData.unlock();
 
         for (const auto e : updateVec)
         {
-            InvokeEvent<onTick>(e); // Invoke tick event on all entities that are in this tick
+            if (registry.all_of<ScriptC>(e))
+            {
+                InvokeEvent<onTick>(e); // Invoke tick event on all entities that are in this tick
+            }
         }
     }
 

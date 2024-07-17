@@ -1,10 +1,25 @@
+#pragma once
 
 namespace magique::renderer
 {
     static double startTime;
     static chrono::time_point<chrono::steady_clock> startTimeH;
 
-    void StartRenderTick()
+    inline void Setup()
+    {
+        SetupThreadPriority(0); // Thread 0
+        SetupProcessPriority();
+    }
+
+    inline void Close()
+    {
+        for (uint_fast32_t i = 1; i < 15000; i++)
+        {
+            rlUnloadTexture(i);
+        }
+    }
+
+    inline void StartTick()
     {
         startTime = glfwGetTime();
         startTimeH = chrono::steady_clock::now();
@@ -13,7 +28,7 @@ namespace magique::renderer
         AssignDrawTickCamera();
     }
 
-    void EndRenderTick()
+    inline void EndTick()
     {
         if (global::CONFIGURATION.showPerformanceOverlay)
         {
@@ -26,34 +41,16 @@ namespace magique::renderer
         global::PERF_DATA.saveTickTime(DRAW, (chrono::steady_clock::now() - startTimeH).count());
     }
 
-    void HandleLoadingScreen(bool& isLoading, Game& game)
+    inline void RenderTick(bool& isLoading, Game& game, entt::registry& registry, Camera2D& camera)
     {
-        auto& loader = global::CURRENT_GAME_LOADER;
-        if (loader) [[likely]]
-        {
-            game.drawLoadingScreen(loader->getProgressPercent());
-            const auto res = loader->step();
-            EndRenderTick();
-            if (res == true)
-            {
-                global::PERF_DATA.drawTimes.clear();
-                global::PERF_DATA.logicTimes.clear();
-                delete loader;
-                loader = nullptr;
-                isLoading = false;
-            }
-        }
-    }
-
-    void RenderTick(bool& isLoading, Game& game, entt::registry& registry, Camera2D& camera)
-    {
-        StartRenderTick();
+        StartTick();
         {
             ClearBackground(RAYWHITE); // Thanks ray
             game.preRender();          // Pre render
             if (isLoading) [[unlikely]]
             {
                 HandleLoadingScreen(isLoading, game);
+                EndTick();
                 return;
             }
             BeginMode2D(camera);
@@ -67,30 +64,10 @@ namespace magique::renderer
             EndMode2D();
             game.drawUI(); // Draw UI
         }
-        EndRenderTick();
+        EndTick();
     }
 
-    void Setup()
-    {
-#if defined(WIN32)
-        HANDLE hThread = GetCurrentThread();
-        SetThreadPriority(hThread, THREAD_PRIORITY_HIGHEST);
-        HANDLE hProcess = GetCurrentProcess();
-        SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-        DWORD_PTR processAffinityMask = 0xF;
-        if (!SetProcessAffinityMask(hProcess, processAffinityMask)) {
-            fprintf(stderr, "Failed to set process affinity mask\n");
-        }
-        DWORD_PTR affinityMask = 1;
-        auto res = SetThreadAffinityMask(hThread, affinityMask);
-        res = SetThreadAffinityMask(hThread, affinityMask);
-        if (res == 0) {
-            fprintf(stderr, "Failed to set thread affinity mask\n");
-        }
-#endif
-    }
-
-    void Run(bool& isLoading, Game& game)
+    inline void Run(bool& isLoading, Game& game)
     {
         Setup();
 
@@ -109,12 +86,5 @@ namespace magique::renderer
         }
     }
 
-    void Close()
-    {
-        for (uint_fast32_t i = 1; i < 15000; i++)
-        {
-            rlUnloadTexture(i);
-        }
-    }
 
 } // namespace magique::renderer

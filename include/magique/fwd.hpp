@@ -30,9 +30,6 @@ namespace magique
     template <typename... Columns>
     struct DataTable; // Type-safe database-like interface to save game data
 
-    //-----------------LOGIC-----------------//
-    struct DrawTickData; // Data for one draw tick - guaranteed to not change during the tick
-
     //-----------------ECS-----------------//
     struct EntityScript;
     enum EventType : uint8_t;
@@ -46,7 +43,7 @@ namespace magique
     enum class handle : uint32_t; // Resource handle
     struct TileMap;               // Defines which textures to draw at each tile with a number
     struct TileSet;               // Defines the details for all tiles in a project - collision ...
-    struct TileSheet;             // Stores the textures for all tiles in a project
+    struct TileSheet;             // Stores the textures (id's) for all tiles in a project
 
     //----------------- GRAPHICS -----------------//
     enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
@@ -55,10 +52,12 @@ namespace magique
     enum UpdateFlag : uint8_t;
 
     //----------------- GAMEDEV -----------------//
-    template <typename CustomData = void>
-    struct BehaviorTree<CustomData>;
-    template <typename CustomData = void>
-    struct TreeBuilder<CustomData>;
+    template <typename CustomData = int>
+    struct BehaviorTree;
+    template <typename CustomData = int>
+    struct TreeBuilder;
+    struct Quest;
+    struct QuestNode;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;

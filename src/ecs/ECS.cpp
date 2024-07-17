@@ -66,9 +66,9 @@ namespace magique
             it->second(REGISTRY, entity);
         }
         tickData.unlock();
-        SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
         if (REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
+            SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
             InvokeEvent<onCreate>(entity);
         }
         return entity;

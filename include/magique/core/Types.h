@@ -154,6 +154,14 @@ namespace magique
     {
     };
 
+
+    enum class KeyboardLayout
+    {
+        QWERTY,
+        QWERTZ,
+        AUTOMATIC,
+    };
+
     //----------------- MULTIPLAYER -----------------//
 
     enum UpdateFlag : uint8_t
