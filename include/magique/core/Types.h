@@ -135,6 +135,16 @@ namespace magique
         int64_t data = 0;
     };
 
+    struct Achievement final
+    {
+        bool finished = false;
+        const char* name = nullptr;
+        void* condition;
+
+        Achievement(const char* name, void* condition) : name(name), condition(condition) {}
+        ~Achievement();
+    };
+
     // Always allocated with new []
     template <typename T>
     struct DataPointer final

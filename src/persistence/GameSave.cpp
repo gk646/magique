@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <filesystem>
 
-#include <magique/persistence/types/GameSave.h>
+#include <magique/persistence/container/GameSave.h>
 #include <magique/util/Logging.h>
 
 #include <cxutil/cxio.h>

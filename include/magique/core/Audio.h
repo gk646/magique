@@ -1,15 +1,22 @@
-#ifndef MAGIQUE_AUDIOPLAYER_H
-#define MAGIQUE_AUDIOPLAYER_H
+#ifndef MAGIQUE_AUDIO_H
+#define MAGIQUE_AUDIO_H
 
 #include <magique/fwd.hpp>
 #include <entt/entity/fwd.hpp>
 
-// Supported Sound and Music formats: mp3, wav, flac, ogg, qoa
+//-----------------------------------------------
+// Audio Module
+//-----------------------------------------------
+// .....................................................................
+// Supported Sound and Music formats: mp3, wav, flac, ogg, qoa (all raylib formats)
 // Note: Sound refers to shorter and music to longer tracks - music is streamed and is recommended for anything above 10s!
 // Note: The volume for each track is relative to the global volume
+// .....................................................................
 
 namespace magique
 {
+    //----------------- SOUND -----------------//
+
     // Plays the given sound - multiple calls play it multiple times
     void PlaySound(const Sound& sound, float volume);
 
@@ -17,9 +24,7 @@ namespace magique
     void IsSoundPlaying(const Sound& sound);
 
 
-    // Plays the given music
-    void PlayMusic(const Music& music);
-
+    //----------------- SOUND 2D -----------------//
 
     // Plays the given sound attached to the given entity
     // Automatically handles lifetime if entities is destroyed
@@ -30,9 +35,18 @@ namespace magique
     void PlaySound2D(const Sound& sound, float& x, float& y);
 
 
+    //----------------- MUSIC -----------------//
+
+    // Plays the given music
+    void PlayMusic(const Music& music);
+
+    //----------------- PLAYLIST -----------------//
+
+
+
     // Sound, Sound2D, Music, Playlist
     // play, pause, resume, stop, volume, PreProcess
 
 } // namespace magique
 
-#endif //MAGIQUE_AUDIOPLAYER_H
+#endif //MAGIQUE_AUDIO_H

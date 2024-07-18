@@ -13,13 +13,14 @@
 // ................................................................................
 
 // A unique type identifier handled by the user to disinguish different types of game objects
-// Max value is reserved for internal use e.g. INT32_MAX
-
+// Max value is reserved for internal use e.g. UINT16_MAX
 enum EntityID : uint16_t; // User implemented
 
 namespace magique
 {
-    inline entt::registry REGISTRY; // The used registry - lives user side cause of massive includes
+    // Returns the magique registry
+    entt::registry& GetRegistry();
+
     //--------------Registering--------------//
 
     using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
@@ -42,10 +43,10 @@ namespace magique
     bool DestroyEntity(entt::entity e);
 
     // auto getComponent() -> use native registry with templated access
-    // GetNativeRegistry().get<PositionC>(entt::entity);
+    // GetRegistry().get<PositionC>(entt::entity);
 
     // auto getView() -> use native registry with templated access
-    // GetNativeRegistry().view<PositionC>();
+    // GetRegistry().view<PositionC>();
 
     //--------------Creating--------------//
 
@@ -80,6 +81,13 @@ namespace magique
     // Gives it w,a,s,d controls - only works in debug mode
     void GiveDebugController(entt::entity entity);
 
+    //----------------- IMPLEMENTATION -----------------//
+
+    inline entt::registry REGISTRY; // The used registry - lives user side cause of massive includes
+
+    inline entt::registry& GetRegistry() { return REGISTRY; }
+
 } // namespace magique
+
 
 #endif // REGISTRY_H

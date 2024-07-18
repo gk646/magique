@@ -3,7 +3,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/TaskExecutor.h>
-#include <magique/persistence/types/GameSave.h>
+#include <magique/persistence/container/GameSave.h>
 
 //-----------------------------------------------
 // Game Saver

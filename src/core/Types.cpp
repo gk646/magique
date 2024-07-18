@@ -1,7 +1,5 @@
-#include <cmath>
-#include <type_traits>
+#include <functional>
 
-#include <magique/core/Draw.h>
 #include <magique/core/Types.h>
 #include <raylib/raylib.h>
 
@@ -79,6 +77,14 @@ namespace magique
     Setting::Setting(int val) { save(val); }
     Setting::Setting(bool val) { save(val); }
     Setting::Setting(float val) { save(val); }
+
+
+    Achievement::~Achievement()
+    {
+
+            delete[] name;
+            delete static_cast<std::function<bool()>*>(condition);
+    }
 
     template <typename T>
     T Setting::get() const
