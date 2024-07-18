@@ -1,4 +1,4 @@
-#include <magique/persistence/types/GameConfig.h>
+#include <magique/persistence/container/GameConfig.h>
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
 

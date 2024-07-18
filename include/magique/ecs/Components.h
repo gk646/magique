@@ -127,7 +127,6 @@ void AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, magique::S
     anim.duration = frameDuration;
     anim.sheet = sheet;
 }
-
 template <typename ActionStateEnum>
 void AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
 {

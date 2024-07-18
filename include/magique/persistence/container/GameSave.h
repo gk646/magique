@@ -84,36 +84,33 @@ namespace magique
         std::vector<GameSaveStorageCell> storage; // Internal data holder
     };
 
+} // namespace magique
+
 
     //----------------- IMPLEMENTATION -----------------//
 
-    template <typename T>
-    void GameSave::saveType(const StorageID id, const T& obj, const int count)
+template <typename T>
+    void magique::GameSave::saveType(const StorageID id, const T& obj, const int count)
     {
         return saveDataImpl(id, &obj, count, sizeof(T));
     }
-
     template <typename... Types>
-    void GameSave::saveTable(const StorageID id, const DataTable<Types...>& table)
+    void magique::GameSave::saveTable(const StorageID id, const DataTable<Types...>& table)
     {
         auto data = table.getData();
         return saveDataImpl(id, data.data(), data.size());
     }
-    
     template <typename T>
-    T* GameSave::getData(StorageID id)
+    T* magique::GameSave::getData(StorageID id)
     {
         M_ASSERT(getDataImpl(id) != nullptr, "Storage with given id does not exist!");
         return static_cast<T*>(getDataImpl(id));
     }
     template <typename T>
-    T* GameSave::getType(StorageID id)
+    T* magique::GameSave::getType(StorageID id)
     {
         M_ASSERT(getDataImpl(id) != nullptr, "Storage with given id does not exist!");
         return static_cast<T*>(getDataImpl(id));
     }
-
-} // namespace magique
-
 
 #endif //MAGIQUE_GAMESAVE_H

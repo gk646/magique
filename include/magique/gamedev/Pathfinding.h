@@ -2,8 +2,6 @@
 #define MAGIQUE_PATHFINDING_H
 
 
-
-
 namespace magique{
 
 
