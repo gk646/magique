@@ -2,7 +2,6 @@
 #define TEXTUREATLAS_H
 
 #include <magique/assets/AssetManager.h>
-#include <magique/util/Defines.h>
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
 

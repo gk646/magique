@@ -2,7 +2,6 @@
 
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
-#include <magique/util/Defines.h>
 #include <magique/internal/Macros.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>

@@ -13,4 +13,3 @@ target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_
 target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
 target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${SOURCE_PATH}/cxstructs/src)
-target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${SOURCE_PATH}/cxgpu/src)

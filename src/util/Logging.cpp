@@ -3,7 +3,6 @@
 #include <cstdlib>
 
 #include <magique/util/Logging.h>
-#include <magique/util/Defines.h>
 
 #include "core/globals/Configuration.h"
 

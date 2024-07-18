@@ -174,6 +174,13 @@ namespace magique
 
     //----------------- MULTIPLAYER -----------------//
 
+    enum class LobbyType : uint8_t
+    {
+        PRIVATE,      // only way to join the lobby is to invite to someone else
+        FRIENDS_ONLY, // shows for friends or invitees, but not in lobby list
+        PUBLIC,       // visible for friends and in lobby list
+    };
+
     enum UpdateFlag : uint8_t
     {
         UPDATE_DELETE_ENTITY = 1,

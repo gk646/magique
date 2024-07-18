@@ -10,5 +10,7 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include COMPONENT my_
 install(FILES ${CMAKE_SOURCE_DIR}/cmake-build-debug/magique.lib DESTINATION lib/debug COMPONENT my_project_libs)
 install(FILES ${CMAKE_SOURCE_DIR}/cmake-build-release/magique.lib DESTINATION lib/release COMPONENT my_project_libs)
 install(FILES ${CMAKE_SOURCE_DIR}/cmake/MagiqueConfig.cmake DESTINATION . COMPONENT my_project_config)
+install(FILES ${CMAKE_SOURCE_DIR}/THIRD_PARTY_LICENSES DESTINATION . COMPONENT licenses)
+install(FILES ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION . COMPONENT licenses)
 
 include(CPack)
