@@ -11,7 +11,6 @@
 
 // ................................................................................
 // These are the internal datastructures used by the engine
-// Include this header with care, its rather heavy!
 // ................................................................................
 
 namespace magique

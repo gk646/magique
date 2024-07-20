@@ -65,7 +65,7 @@ namespace magique
 
     namespace global
     {
-        inline AssetManager<TileSheet, Sound, Music, TextureRegion, SpriteSheet, TileMap> ASSET_MANAGER;
+        inline AssetManager<TileSheet, Sound, Music, TextureRegion, SpriteSheet, TileMap, Playlist> ASSET_MANAGER;
 
     }
 

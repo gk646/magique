@@ -1,8 +1,7 @@
 #ifndef MAGIQUE_HASH_H
 #define MAGIQUE_HASH_H
 
-
-namespace magique::util
+namespace magique
 {
     // Compile time string hashing function
     // Takes an optional salt parameter (arbitrary defined value) to make it customizable in terms of collision handling

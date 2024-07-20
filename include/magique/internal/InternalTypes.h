@@ -155,6 +155,16 @@ namespace magique
         uint8_t r, g, b, a; // Current color
     };
 
+
+    struct Sound2D final
+    {
+        float& x;
+        float& y;
+        float lastX = 0;
+        float lastY = 0;
+        bool isAlive = true;
+    };
+
 } // namespace magique
 
 #endif //INTERNALTYPES_H

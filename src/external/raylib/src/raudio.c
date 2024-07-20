@@ -993,6 +993,15 @@ Sound LoadSoundAlias(Sound source)
 }
 
 
+bool IsSoundAlias(Sound sound, Sound source)
+{
+    bool result = false;
+
+    if (sound.stream.buffer->data == source.stream.buffer->data) result = true;
+
+    return result;
+}
+
 // Checks if a sound is ready
 bool IsSoundReady(Sound sound)
 {
@@ -2152,6 +2161,17 @@ bool IsAudioStreamProcessed(AudioStream stream)
     bool result = false;
     ma_mutex_lock(&AUDIO.System.lock);
     result = stream.buffer->isSubBufferProcessed[0] || stream.buffer->isSubBufferProcessed[1];
+    ma_mutex_unlock(&AUDIO.System.lock);
+    return result;
+}
+
+bool IsAudioStreamEqual(AudioStream stream1, AudioStream stream2)
+{
+    if (stream1.buffer == NULL || stream2.buffer == NULL) return false;
+
+    bool result = false;
+    ma_mutex_lock(&AUDIO.System.lock);
+    result = stream1.buffer == stream2.buffer;
     ma_mutex_unlock(&AUDIO.System.lock);
     return result;
 }

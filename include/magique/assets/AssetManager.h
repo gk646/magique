@@ -70,6 +70,8 @@ namespace magique
     // Everything above 10mb should be streamed instead of loaded as sound!
     handle RegisterMusic(const Asset& asset);
 
+    handle RegisterPlaylist(const Playlist& playlist);
+
     //----------------- TileMaps -----------------//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
     // Note: magique only supports setting 1 TileSheet at a time -  Use SetTileSet() in the Core module

@@ -1,61 +1,75 @@
 #include <fstream>
+
+#include <magique/util/Defines.h>
+
 #include <steam/steam_api.h>
 
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Defines.h>
+#include <cxstructs/SmallVector.h>
+#include <magique/internal/Macros.h>
 
-// Thank me later for that
-void CreateAppIDFile()
+
+static void DebugOutput(ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
-    auto* filename = "steam_appid.txt";
-    std::ofstream file(filename);
-
-    if (file.is_open())
+    printf("%s\n", pszMsg);
+    fflush(stdout);
+    if (eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
     {
-        file << "480";
-        file.close();
-    }
-    else
-    {
-        LOG_ERROR("Unable to create steam_appid.txt file with test id 480 - Do it manually!");
+        fflush(stdout);
+        fflush(stderr);
+        exit(1);
     }
 }
 
 namespace magique
 {
+    cxstructs::SmallVector<SteamNetworkingMessage_t*, MAGIQUE_MESSAGES_ESTIMATE> MESSAGES;
+
     bool InitMultiplayer()
     {
-#if MAGIQUE_DEBUG == 1
-        CreateAppIDFile();
+#if MAGIQUE_STEAM == 1
+        SteamNetworkingUtils()->InitRelayNetworkAccess();
+#else
 #endif
-
-        SteamErrMsg errMsg;
-        if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
-        {
-            LOG_ERROR(errMsg);
-            return false;
-        }
-        LOG_INFO("Successfully initialized multiplayer");
+        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         return true;
     }
 
-    bool CreateGameLobby(const LobbyType type, const int maxPlayers)
+    Connection CreateListenSocket()
     {
-        SteamAPICall_t hSteamAPICall = k_uAPICallInvalid;
-        switch (type)
-        {
-        case LobbyType::PRIVATE:
-            hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePrivate, maxPlayers);
-            break;
-        case LobbyType::FRIENDS_ONLY:
-            hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypeFriendsOnly, maxPlayers);
-            break;
-        case LobbyType::PUBLIC:
-            hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, maxPlayers);
-            break;
-        }
-        return hSteamAPICall != k_uAPICallInvalid;
+        HSteamListenSocket socket;
+#if MAGIQUE_STEAM == 1
+        socket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
+#else
+        SteamNetworkingIPAddr ip;
+        ip.SetIPv4(0, 42000);
+        socket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, nullptr);
+#endif
+        return static_cast<Connection>(socket);
+    }
+
+
+    bool BatchMessage(const Connection conn, const void* message, const int size, SendFlag flag)
+    {
+        if (conn == Connection::INVALID_CONNECTION || message == nullptr || size == 0 ||
+            (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE))
+            return false;
+
+        // Allocate with buffer
+        const auto msg = SteamNetworkingUtils()->AllocateMessage(size);
+        std::memcpy(msg->m_pData, message, size);
+        msg->m_nFlags = static_cast<int>(flag);
+        msg->m_conn = static_cast<uint32_t>(conn);
+
+        MESSAGES.push_back(msg);
+        return true;
+    }
+
+    bool SendBatch()
+    {
+        if (MESSAGES.empty())
+            return false;
     }
 
 

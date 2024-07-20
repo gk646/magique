@@ -2,7 +2,7 @@
 #define PARTICLES_H
 
 #include <entt/entity/fwd.hpp>
-#include <magique/internal/Types.h>
+#include <magique/internal/InternalTypes.h>
 
 //-----------------------------------------------
 // Particle Module

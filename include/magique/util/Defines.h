@@ -12,21 +12,27 @@
 
 //----------------- CORE -----------------//
 
+#define MAGIQUE_DEBUG 1
 #define MAGIQUE_LOGIC_TICKS 60 // 60 Ticks per second
+
+//----------------- STEAM -----------------//
+
+// add "set(MAGIQUE_STEAM ON)" to your CMakeLists.txt before including magique to enable steam features
+#define MAGIQUE_STEAM 0
 
 //----------------- MULTIPLAYER -----------------//
 
-#define MAGIQUE_MULITPLAYER_SUPPORT 0 // 1 to enable multiplayer
-#define MAGIQUE_MAX_PLAYERS 4
+#define MAGIQUE_MAX_PLAYERS 4         // Needs to be set to the maximum amount of players
+#define MAGIQUE_MESSAGES_ESTIMATE 150 // Estimate how many multiplayer messages are sent each tick
 
 //----------------- ASSETS -----------------//
 
 #define MAGIQUE_TEXTURE_ATLAS_WIDTH 8192  // Height of each texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192 // Width of each texture atlas
-#define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles (for tile maps)
-#define MAGIQUE_MAX_TILEMAP_LAYERS 5
+#define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles
+#define MAGIQUE_MAX_TILEMAP_LAYERS 5      // Maximum amount of layers for tilemaps
 
-//----------------- LOADING -----------------//
+//----------------- LOADING -----------------/  /
 
 #define MAGIQUE_MAX_TABLE_NAME_SIZE 16
 
@@ -34,11 +40,21 @@
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
 
+
+//----------------- BRANCHES -----------------//
+
 // 1 to Enable Debug
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define MAGIQUE_DEBUG 1
 #else
 #define MAGIQUE_DEBUG 0
+#endif
+
+#if MAGIQUE_CMAKE_USE_STEAM
+#define MAGIQUE_STEAM 1
+#else
+#define STEAMNETWORKINGSOCKETS_STANDALONELIB
+#define MAGIQUE_STEAM 0
 #endif
 
 #endif //MAGIQUE_DEFINES_H

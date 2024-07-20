@@ -7,10 +7,11 @@
 // Multiplayer Module
 //-----------------------------------------------
 // .....................................................................
-// Currently only supports the Steamworks SDK backend
-// This multiplayer module allows for secure Peer-to-Peer multiplayer over the steam relay network
-// even with NAT traversal. Its setup so that the hosting peer is the server and a player at the same time
-// while other peers are regular clients. This is great for non ultra-competitive games with moderate lobby sizes.
+// Per DEFAULT steam features are turned OFF! This means connections only over IP4 or IP6
+// Setting "set(STEAMWORKS ON)" in cmake before including magique enables all steam features
+// and secure P2P connection over the steam relay network.
+//
+// This means that the behavior of these multiplayer functions changes with configuration but the interface does not
 // .....................................................................
 
 namespace magique
@@ -20,13 +21,40 @@ namespace magique
     // Automatically creates the test steam_appid.txt file with id 480
     bool InitMultiplayer();
 
+    //----------------- SETUP -----------------//
 
-    //----------------- LOBBIES -----------------//
+    // Creates a socket so others can connect to you - using this makes you the host
+    // Uses IP4/IP6 if steamfeatures are off - otherwise P2P
+    Connection CreateListenSocket();
 
-    // Returns true if the async call trying to create a lobby was successful
-    bool CreateGameLobby(LobbyType type, int maxPlayers);
+    // Connects to a opened socket - using this makes you the client
+    Connection ConnectToSocket();
+
+    //----------------- MESSAGES -----------------//
+
+    // Starts a new batch or appends to an existing one - can be called as many times as needed and batches until SendBatch() is called
+    // Note: there can only be 1 batch at a time! - copies the data you pass in (allows for stack and dynamic memory)
+    // Each message can be sent to a different connection as specified within a batch
+    // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
+    bool BatchMessage(Connection conn, const void* message, int size, SendFlag flag = SendFlag::RELIABLE);
+
+    // Sends the current batch if it exists
+    // Failure: returns false if BatchMessage() was not called at least once before with valid parameters
+    bool SendBatch();
+
+    // Directly sends the message - should only be used for single messages else use BatchMessage() and SendBatch()
+    // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
+    bool SendMessage(Connection conn, const void* message, int size, SendFlag flag = SendFlag::RELIABLE);
+
+
+    //----------------- MISC -----------------//
+
+    // True if your a host
+    bool IsHost();
+
 
 
 } // namespace magique
+
 
 #endif //MAGIQUE_MULTIPLAYER_H

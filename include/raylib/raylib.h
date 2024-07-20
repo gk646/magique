@@ -1619,6 +1619,7 @@ RLAPI bool IsWaveReady(Wave wave);                                    // Checks 
 RLAPI Sound LoadSound(const char *fileName);                          // Load sound from file
 RLAPI Sound LoadSoundFromWave(Wave wave);                             // Load sound from wave data
 RLAPI Sound LoadSoundAlias(Sound source);                             // Create a new sound that shares the same sample data as the source sound, does not own the sound data
+RLAPI bool IsSoundAlias(Sound sound, Sound source);                  // Checks if the given sound is an alias of the source sound
 RLAPI bool IsSoundReady(Sound sound);                                 // Checks if a sound is ready
 RLAPI void UpdateSound(Sound sound, const void *data, int sampleCount); // Update sound buffer with new data
 RLAPI void UnloadWave(Wave wave);                                     // Unload wave data
@@ -1666,6 +1667,7 @@ RLAPI bool IsAudioStreamReady(AudioStream stream);                    // Checks 
 RLAPI void UnloadAudioStream(AudioStream stream);                     // Unload audio stream and free memory
 RLAPI void UpdateAudioStream(AudioStream stream, const void *data, int frameCount); // Update audio stream buffers with data
 RLAPI bool IsAudioStreamProcessed(AudioStream stream);                // Check if any audio stream buffers requires refill
+RLAPI bool IsAudioStreamEqual(AudioStream stream1, AudioStream stream2); // Check if the audio streams are based on the same audio data
 RLAPI void PlayAudioStream(AudioStream stream);                       // Play audio stream
 RLAPI void PauseAudioStream(AudioStream stream);                      // Pause audio stream
 RLAPI void ResumeAudioStream(AudioStream stream);                     // Resume audio stream
