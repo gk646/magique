@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include <magique/internal/Types.h>
+#include <magique/internal/InternalTypes.h>
 
 namespace magique
 {
@@ -33,4 +33,7 @@ namespace magique
         std::memcpy(data, ptr, bytes);
         size = bytes;
     }
+
+
+
 } // namespace magique

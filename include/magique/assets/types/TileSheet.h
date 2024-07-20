@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_SPRITESHEET_H
-#define MAGIQUE_SPRITESHEET_H
+#ifndef MAGIQUE_TILESHEET_H
+#define MAGIQUE_TILESHEET_H
 
 #include <vector>
 #include <magique/fwd.hpp>
@@ -33,4 +33,4 @@ namespace magique
     };
 } // namespace magique
 
-#endif //MAGIQUE_SPRITESHEET_H
+#endif //MAGIQUE_TILESHEET_H

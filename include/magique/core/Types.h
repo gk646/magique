@@ -174,11 +174,29 @@ namespace magique
 
     //----------------- MULTIPLAYER -----------------//
 
-    enum class LobbyType : uint8_t
+
+    enum class SendFlag : uint8_t
     {
-        PRIVATE,      // only way to join the lobby is to invite to someone else
-        FRIENDS_ONLY, // shows for friends or invitees, but not in lobby list
-        PUBLIC,       // visible for friends and in lobby list
+        // Reliable message send. Can send up to k_cbMaxSteamNetworkingSocketsMessageSizeSend bytes in a single message.
+        // Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for
+        // efficient sends of large chunks of data.
+        //
+        // The Nagle algorithm is used.
+        RELIABLE = 8,
+        // Send the message unreliably. Can be lost.  Messages *can* be larger than a
+        // single MTU (UDP packet), but there is no retransmission, so if any piece
+        // of the message is lost, the entire message will be dropped.
+        //
+        // The sending API does have some knowledge of the underlying connection, so
+        // if there is no NAT-traversal accomplished or there is a recognized adjustment
+        // happening on the connection, the packet will be batched until the connection
+        // is open again.
+        UN_RELIABLE = 0,
+    };
+
+    enum class Connection : uint32_t
+    {
+        INVALID_CONNECTION = 0,
     };
 
     enum UpdateFlag : uint8_t

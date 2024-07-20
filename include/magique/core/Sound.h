@@ -3,9 +3,10 @@
 
 #include <magique/fwd.hpp>
 #include <entt/entity/fwd.hpp>
+#include <magique/assets/types/Playlist.h>
 
 //-----------------------------------------------
-// Audio Module
+// Sound Module
 //-----------------------------------------------
 // .....................................................................
 // Supported Sound and Music formats: mp3, wav, flac, ogg, qoa (all raylib formats)
@@ -15,33 +16,35 @@
 
 namespace magique
 {
-    //----------------- SOUND -----------------//
+    //----------------- SOUND & SOUND2D -----------------//
 
     // Plays the given sound - multiple calls play it multiple times
-    void PlaySound(const Sound& sound, float volume);
-
-    // Returns true if any instance of the given sound is currently playing
-    void IsSoundPlaying(const Sound& sound);
-
-
-    //----------------- SOUND 2D -----------------//
+    void PlaySound(const Sound& sound, float volume = 1.0F);
 
     // Plays the given sound attached to the given entity
     // Automatically handles lifetime if entities is destroyed
-    void PlaySound2D(const Sound& sound, entt::entity entity);
+    void PlaySound2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
 
     // Plays the given sound attached to the given coordinates
     // IMPORTANT: Given references MUST remain valid for the full duration of the sound
-    void PlaySound2D(const Sound& sound, float& x, float& y);
+    void PlaySound2D(const Sound& sound, float& x, float& y, float volume = 1.0F);
 
+    // Returns true if any instance of the given sound is currently playing
+    // Checks both normal and 2D
+    bool IsSoundPlaying(const Sound& sound);
 
     //----------------- MUSIC -----------------//
 
     // Plays the given music
-    void PlayMusic(const Music& music);
+    void PlayMusic(const Music& music, float volume = 1.0F);
 
     //----------------- PLAYLIST -----------------//
 
+    void PlayPlaylist(const Playlist& playlist);
+
+    void StopPlaylist(const Playlist& playlist);
+
+    void SkipTrack(const Playlist& playlist);
 
 
     // Sound, Sound2D, Music, Playlist

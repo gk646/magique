@@ -44,6 +44,7 @@ namespace magique
     struct TileMap;               // Defines which textures to draw at each tile with a number
     struct TileSet;               // Defines the details for all tiles in a project - collision ...
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
+    struct Playlist;              // Stores mulitple music objects to easily play and loop them
 
     //----------------- GRAPHICS -----------------//
     enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
@@ -64,6 +65,9 @@ namespace magique
     struct Scheduler;
     enum class jobHandle : uint16_t;
     struct IJob;
+
+    //----------------- INTERNAL -----------------//
+    struct SoundData;
 
 } // namespace magique
 

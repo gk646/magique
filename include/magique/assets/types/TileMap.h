@@ -2,9 +2,16 @@
 #define MAGIQUE_TILEMAP_H
 
 #include <vector>
-
 #include <magique/fwd.hpp>
 #include <magique/util/Defines.h>
+
+//-----------------------------------------------
+// TileMap
+//-----------------------------------------------
+// .....................................................................
+// A tilemap defines the actual map data by storing numbers that correspond to textures.
+// To draw a tilemap thus a tilesheet is needed that converts those numbers into visuals.
+// .....................................................................
 
 namespace magique
 {
@@ -21,9 +28,10 @@ namespace magique
         // Returns the start index of the given layer
         [[nodiscard]] int getLayerStartIndex(int layer) const;
 
-        // Returns the layer count
+        // Returns the width of each layer
         [[nodiscard]] int getWidth() const { return width; }
 
+        // Returns the height of each layer
         [[nodiscard]] int getHeight() const { return height; }
 
         // Returns the layer count
