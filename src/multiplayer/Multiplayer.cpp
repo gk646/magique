@@ -32,7 +32,7 @@ namespace magique
         SteamNetworkingUtils()->InitRelayNetworkAccess();
 #else
 #endif
-        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
+       // SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         return true;
     }
 
@@ -44,11 +44,10 @@ namespace magique
 #else
         SteamNetworkingIPAddr ip;
         ip.SetIPv4(0, 42000);
-        socket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, nullptr);
+       // socket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, nullptr);
 #endif
         return static_cast<Connection>(socket);
     }
-
 
     bool BatchMessage(const Connection conn, const void* message, const int size, SendFlag flag)
     {
@@ -57,12 +56,14 @@ namespace magique
             return false;
 
         // Allocate with buffer
+        /*
         const auto msg = SteamNetworkingUtils()->AllocateMessage(size);
         std::memcpy(msg->m_pData, message, size);
         msg->m_nFlags = static_cast<int>(flag);
         msg->m_conn = static_cast<uint32_t>(conn);
 
         MESSAGES.push_back(msg);
+        */
         return true;
     }
 

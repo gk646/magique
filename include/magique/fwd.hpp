@@ -67,7 +67,7 @@ namespace magique
     struct IJob;
 
     //----------------- INTERNAL -----------------//
-    struct SoundData;
+    struct AudioPlayer;
 
 } // namespace magique
 

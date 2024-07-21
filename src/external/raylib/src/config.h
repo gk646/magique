@@ -163,7 +163,7 @@
 //#define SUPPORT_FILEFORMAT_TGA      1
 //#define SUPPORT_FILEFORMAT_JPG      1
 #define SUPPORT_FILEFORMAT_GIF      1
-#define SUPPORT_FILEFORMAT_QOI      1
+//#define SUPPORT_FILEFORMAT_QOI      1
 //#define SUPPORT_FILEFORMAT_PSD      1
 #define SUPPORT_FILEFORMAT_DDS      1
 //#define SUPPORT_FILEFORMAT_HDR      1
@@ -236,10 +236,10 @@
 #define SUPPORT_FILEFORMAT_WAV          1
 #define SUPPORT_FILEFORMAT_OGG          1
 #define SUPPORT_FILEFORMAT_MP3          1
-#define SUPPORT_FILEFORMAT_QOA          1
+//#define SUPPORT_FILEFORMAT_QOA          1
 #define SUPPORT_FILEFORMAT_FLAC         1
-#define SUPPORT_FILEFORMAT_XM           1
-#define SUPPORT_FILEFORMAT_MOD          1
+//#define SUPPORT_FILEFORMAT_XM           1
+//#define SUPPORT_FILEFORMAT_MOD          1
 
 // raudio: Configuration values
 //------------------------------------------------------------------------------------

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <magique/core/Types.h>
-#include <magique/internal/Types.h>
+#include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
 
 //-----------------------------------------------

@@ -38,7 +38,7 @@ namespace magique
 
     // Retrieves a handle based on string hashing
     // IMPORTANT: You have to use this macro to get compile time hashing - sadly you can pass constexpr strings
-#define H(msg) magique::util::HashStringEval(msg, magique::HASH_SALT)
+#define H(msg) magique::HashStringEval(msg, magique::HASH_SALT)
     // Example: GetHandle(H("player"));
     handle GetHandle(uint32_t hash);
 

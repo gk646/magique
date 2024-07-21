@@ -156,14 +156,7 @@ namespace magique
     };
 
 
-    struct Sound2D final
-    {
-        float& x;
-        float& y;
-        float lastX = 0;
-        float lastY = 0;
-        bool isAlive = true;
-    };
+
 
 } // namespace magique
 
