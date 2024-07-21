@@ -38,7 +38,7 @@ namespace magique
 
     void RegisterHandle(handle handle, const char* name)
     {
-        auto hash = util::HashString(name, HASH_SALT);
+        auto hash = HashString(name, HASH_SALT);
         M_ASSERT(!global::HANDLE_REGISTRY.handleMap.contains(hash),
                  "Collision! You either registered a handle twice (with the same name) or suffered an unlucky hash "
                  "collision. Change the HASH_SALT parameter until no collisions occur!");
@@ -47,7 +47,7 @@ namespace magique
 
     handle GetHandle(HandleID type)
     {
-        M_ASSERT((int)type < global::HANDLE_REGISTRY.handles.size(), "No such handle!");
+        M_ASSERT(static_cast<int>(type) < global::HANDLE_REGISTRY.handles.size(), "No such handle!");
         return global::HANDLE_REGISTRY.handles[static_cast<int>(type)];
     }
 

@@ -56,6 +56,7 @@ namespace magique
         global::LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
         LOG_INFO("Initialized Game: %s", gameName);
+        LOG_INFO("Working Directory: %s", GetWorkingDirectory());
     }
 
     Game::~Game()
