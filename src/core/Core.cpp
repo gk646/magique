@@ -61,6 +61,8 @@ namespace magique
 
     //----------------- SET -----------------//
 
+    void SetShowPerformanceOverlay(const bool val) { global::CONFIGURATION.showPerformanceOverlay = val; }
+
     void SetCameraEntity(entt::entity entity) {}
 
     void SetUpdateDistance(int distance) { global::CONFIGURATION.entityUpdateDistance = static_cast<float>(distance); }
@@ -77,6 +79,8 @@ namespace magique
     void SetFont(const Font& font) { global::CONFIGURATION.font = font; }
 
     void SetLightingModel(LightingModel model) { global::CONFIGURATION.lighting = model; }
+
+    void SetWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
 
     //----------------- GET -----------------//
 
@@ -124,5 +128,5 @@ namespace magique
 
     void UnSyncThreads() { global::LOGIC_TICK_DATA.unlock(); }
 
-
+    void SetShowHitboxes(bool val) { global::CONFIGURATION.showHitboxes = val; }
 } // namespace magique

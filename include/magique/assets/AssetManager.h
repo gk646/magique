@@ -67,10 +67,11 @@ namespace magique
     handle RegisterSound(const Asset& asset);
 
     // Register a music file (streamed audio) - can be any raylib supported type (.mp3)
-    // Everything above 10mb should be streamed instead of loaded as sound!
+    // Everything above 10s should be loaded as music (and compressed with .mp3) instead of sound!
     handle RegisterMusic(const Asset& asset);
 
-    handle RegisterPlaylist(const Playlist& playlist);
+    // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
+    handle RegisterPlaylist(const std::vector<const Asset*>& assets);
 
     //----------------- TileMaps -----------------//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
@@ -115,6 +116,10 @@ namespace magique
 
     // Returns the tilesheet identified by this handle
     TileSheet& GetTileSheet(handle handle);
+
+    Music& GetMusic(handle handle);
+
+    Playlist& GetPlaylist(handle handle);
 
 } // namespace magique
 

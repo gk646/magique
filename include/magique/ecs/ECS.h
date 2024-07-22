@@ -21,7 +21,7 @@ namespace magique
     // Returns the magique registry
     entt::registry& GetRegistry();
 
-    //--------------Registering--------------//
+    //-------------- REGISTER --------------//
 
     using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
     // Registers an entity with a corresponding create function - replaces the existing function if present
@@ -32,7 +32,22 @@ namespace magique
     // Failure: Returns false
     bool UnRegisterEntity(EntityID type);
 
-    //--------------LIFE CYCLE--------------//
+    //----------------- INTERACTION -----------------//
+
+    // Retrieves the specified component from the public registry
+    template <typename T>
+    T& GetComponent(entt::entity e);
+
+    // Uses emplace_back to add the component to the given entity
+    // Args are the constructor arguments (if any)
+    // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
+    template <typename Component, typename... Args>
+    void GiveComponent(entt::entity e, Args... args);
+
+    // Returns true if the given entity exist in the registry
+    bool IsEntityExisting(entt::entity e);
+
+    //-------------- LIFE CYCLE --------------//
 
     // Creates a new entity by calling the registered function for that type
     // Failure: Returns entt::null
@@ -42,19 +57,12 @@ namespace magique
     // Failure: Returns false
     bool DestroyEntity(entt::entity e);
 
-    // auto getComponent() -> use native registry with templated access
-    // GetRegistry().get<PositionC>(entt::entity);
-
-    // auto getView() -> use native registry with templated access
-    // GetRegistry().view<PositionC>();
-
     //--------------Creating--------------//
 
     // Note: All Create__ functions return a reference to the created component (where appropriate)
 
     // Makes the entity collidable with others
-    CollisionC& GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0,
-                              int anchorY = 0);
+    CollisionC& GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
 
     // Makes the entitiy emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
@@ -81,13 +89,25 @@ namespace magique
     // Gives it w,a,s,d controls - only works in debug mode
     void GiveDebugController(entt::entity entity);
 
-    //----------------- IMPLEMENTATION -----------------//
-
-    inline entt::registry REGISTRY; // The used registry - lives user side cause of massive includes
-
-    inline entt::registry& GetRegistry() { return REGISTRY; }
-
 } // namespace magique
 
+
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique::internal
+{
+    inline entt::registry REGISTRY; // The used registry - lives user side cause of big includes
+}
+inline entt::registry& magique::GetRegistry() { return internal::REGISTRY; }
+template <typename T>
+T& magique::GetComponent(const entt::entity e)
+{
+    return internal::REGISTRY.get<T>(e);
+}
+template <class Component, typename... Args>
+void magique::GiveComponent(entt::entity e, Args... args)
+{
+    internal::REGISTRY.emplace<Component>(e, args...);
+}
 
 #endif // REGISTRY_H

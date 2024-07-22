@@ -1,9 +1,9 @@
 #pragma once
+#include "GameUtil.h"
 
 namespace magique::renderer
 {
     static double startTime;
-    static chrono::time_point<chrono::steady_clock> startTimeH;
 
     inline void Setup()
     {
@@ -22,7 +22,6 @@ namespace magique::renderer
     inline void StartTick()
     {
         startTime = glfwGetTime();
-        startTimeH = chrono::steady_clock::now();
         PollInputEvents();
         BeginDrawing();
         AssignDrawTickCamera();
@@ -38,7 +37,7 @@ namespace magique::renderer
         const double frameTime = glfwGetTime() - startTime;
         CORE.Time.frame = frameTime;
         CORE.Time.frameCounter++;
-        global::PERF_DATA.saveTickTime(DRAW, (chrono::steady_clock::now() - startTimeH).count());
+        global::PERF_DATA.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
     }
 
     inline void RenderTick(bool& isLoading, Game& game, entt::registry& registry, Camera2D& camera)
@@ -58,6 +57,8 @@ namespace magique::renderer
                 game.drawWorld(camera);
                 global::LOGIC_TICK_DATA.lock();
                 game.drawGame(registry, camera); // Draw game
+                if (global::CONFIGURATION.showHitboxes)
+                    RenderHitboxes(registry);
                 global::LOGIC_TICK_DATA.unlock();
                 RenderLighting(registry);
             }
@@ -71,7 +72,7 @@ namespace magique::renderer
     {
         Setup();
 
-        auto& registry = REGISTRY;
+        auto& registry = internal::REGISTRY;
         auto& camera = global::DRAW_TICK_DATA.camera;
 
         // Double loop to catch the close event

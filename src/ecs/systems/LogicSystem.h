@@ -64,6 +64,7 @@ namespace magique
 
     void HandleCollisionEntity(entt::entity e, CollisionC collision, const PositionC pos, auto& hashGrid, auto& cVec)
     {
+        cVec.push_back(e);
         if (pos.rotation == 0) [[likely]] // More likely
         {
             hashGrid.insert(e, pos.x, pos.y, collision.width, collision.height);
@@ -82,8 +83,8 @@ namespace magique
 #if MAGIQUE_DEBUG == 1
         int count = 0;
 #endif
-        const auto sWidth = (float)CORE.Window.screen.width;
-        const auto sHeight = (float)CORE.Window.screen.height;
+        const auto sWidth = static_cast<float>(CORE.Window.screen.width);
+        const auto sHeight = static_cast<float>(CORE.Window.screen.height);
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);
@@ -96,7 +97,7 @@ namespace magique
 #endif
         }
         // Center the camera
-        const auto coll = REGISTRY.try_get<CollisionC>(global::LOGIC_TICK_DATA.cameraEntity);
+        const auto coll = internal::REGISTRY.try_get<CollisionC>(global::LOGIC_TICK_DATA.cameraEntity);
         if (coll) [[likely]]
         {
             tickData.camera.offset.x -= static_cast<float>(coll->width) / 2.0F;
@@ -136,6 +137,7 @@ namespace magique
                 drawVec.clear();
                 hashGrid.clear();
                 updateVec.clear();
+                collisionVec.clear();
 
                 const auto view = registry.view<const PositionC>();
                 for (const auto e : view)

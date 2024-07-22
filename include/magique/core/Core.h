@@ -10,7 +10,7 @@
 #include <raylib/raylib.h>
 
 //-----------------------------------------------
-// CORE
+// Core Module
 //-----------------------------------------------
 // ................................................................................
 // This is the core API interface with access to many underlying details
@@ -23,6 +23,9 @@ namespace magique
     bool InitMagique();
 
     //----------------- SETTERS -----------------//
+
+    // If enabled display performance metrics on the top left
+    void SetShowPerformanceOverlay(bool val);
 
     // Sets the new camera holder - removes the component from the current and adds it to the new holder
     void SetCameraEntity(entt::entity entity);
@@ -50,6 +53,12 @@ namespace magique
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
     void SetLightingModel(LightingModel model);
+
+    // Sets static collision bounds - this is only useful for simpler scenes
+    // Everything outside the bounds is considered solid (static) automatically
+    // Pass a width or height of 0 to disable
+    // Default: Disabled
+    void SetWorldBounds(const Rectangle& rectangle);
 
     //----------------- Logic Tick Data -----------------// // Updated at the beginning of each update tick
     // IMPORTANT: If you access this data on the draw thread (main thread) AND outside of drawGame() needs to be synced
@@ -81,7 +90,7 @@ namespace magique
     // Returns the current camera holder
     entt::entity GetCameraEntity();
 
-    // Returns the game configuration -
+    // Returns the game configuration
     // IMPORTANT: Only valid after the Game() constructor returned!
     GameConfig& GetGameConfig();
 
@@ -101,7 +110,10 @@ namespace magique
     // You generally dont have to call this - only call this if you know what it does
     void UnSyncThreads();
 
+    //----------------- DEBUGGING -----------------//
+
+    // If true shows red hitboxes for collidable entities
+    void SetShowHitboxes(bool val);
+
 } // namespace magique
-
-
 #endif //MAGIQUE_CORE_H

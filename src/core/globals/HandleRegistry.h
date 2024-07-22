@@ -2,9 +2,9 @@
 #define HANDLEREGISTRY_H
 
 #include <vector>
-#include <magique/internal/DataStructures.h>
 
-#include "core/Config.h"
+#include <magique/internal/DataStructures.h>
+#include <magique/util/Defines.h>
 
 namespace magique{
     struct HandleRegistry final

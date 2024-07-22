@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <raylib/raylib.h>
+#include <magique/assets/types/Playlist.h>
 
 namespace magique
 {
@@ -147,7 +148,7 @@ namespace magique
             // Progress playlist
             for (const auto playlist : playlists)
             {
-                if (playlist->isPlaying_ && !IsMusicStreamPlaying(playlist->tracks[playlist->currentTrack]))
+                if (!IsMusicStreamPlaying(playlist->tracks[playlist->currentTrack]))
                 {
                     const int nextTrack = playlist->getNextTrack();
                     addTrack(playlist->tracks[nextTrack], playlist->volume, playlist->fading);

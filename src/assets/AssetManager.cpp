@@ -145,7 +145,25 @@ namespace magique
         return handle;
     }
 
-    handle RegisterTexture(const Asset& asset, const AtlasID at, float scale)
+    handle RegisterMusic(const Asset& asset)
+    {
+        const auto ext = asset.getExtension();
+        if (ext == nullptr)
+        {
+            LOG_ERROR("Asset file type is not a sound file!: %s", ext);
+        }
+        // Duplicate data as stream isnt copied
+        // This is leaked but until the end of the programm / still should make a manager for it
+        auto* newData = new char[asset.size];
+        std::memcpy(newData, asset.data, asset.size);
+        const auto music = LoadMusicStreamFromMemory(ext, (unsigned char*)newData, asset.size);
+        const auto handle = global::ASSET_MANAGER.addResource<Music>(music);
+        return handle;
+    }
+
+    handle RegisterPlaylist(const std::vector<const Asset*>& assets) { return handle::null; }
+
+    handle RegisterTexture(const Asset& asset, const AtlasID at, const float scale)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -191,4 +209,9 @@ namespace magique
     TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
 
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
+
+    Music& GetMusic(const handle handle) { return global::ASSET_MANAGER.getResource<Music>(handle); }
+
+    Playlist& GetPlaylist(const handle handle) { return global::ASSET_MANAGER.getResource<Playlist>(handle); }
+
 } // namespace magique
