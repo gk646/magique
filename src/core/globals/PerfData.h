@@ -4,8 +4,8 @@
 #include <numeric>
 #include <vector>
 
+#include <magique/util/Defines.h>
 #include "ui/internal/PerformanceDisplay.h"
-#include "core/Config.h"
 
 namespace magique
 {

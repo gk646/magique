@@ -7,6 +7,7 @@
 #include <magique/assets/HandleRegistry.h>
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
+#include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
 
 void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
@@ -33,6 +34,11 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
                                         // Register the handle to the sound with its direct filename - without extension
                                         RegisterHandle(handle, asset.getFileName(false));
                                     });
+
+            auto &asset = assets.getAsset("Automatav2.mp3");
+            // Create a playlist so it automatically loops
+            auto *background = new magique::Playlist{magique::GetMusic(magique::RegisterMusic(asset))};
+            magique::PlayPlaylist(background, 0.6F); // Start playlist
         },
         magique::BACKGROUND_THREAD, magique::MEDIUM, 8);
 
@@ -44,16 +50,7 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
             assets.iterateDirectory("SPRITES",
                                     [](const magique::Asset &asset)
                                     {
-                                        magique::handle handle;
-                                        // Correctly handle the sprite sheet
-                                        if (TextIsEqual(asset.getFileName(), "EXPLOSION SPRITE SHEET.png"))
-                                        {
-                                            handle = RegisterSpritesheet(asset, 20, 20);
-                                        }
-                                        else
-                                        {
-                                            handle = RegisterTexture(asset, magique::DEFAULT, 3);
-                                        }
+                                        magique::handle handle = RegisterTexture(asset, magique::DEFAULT, 3);
                                         // Register the handle to the texture with its filename - without extension
                                         RegisterHandle(handle, asset.getFileName(false));
                                     });
@@ -63,7 +60,7 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
     // Set the entity scripts
     SetScript(PLAYER, new PlayerScript());
     SetScript(BULLET, new BulletScript());
-    SetScript(HOUSE, new HouseScript());
+    SetScript(ROCK, new RockScript());
 
     // Register the player entity
     magique::RegisterEntity(EntityID::PLAYER,
@@ -71,7 +68,8 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
                             {
                                 magique::GiveActor(entity);
                                 magique::GiveScript(entity);
-                                // Texture dimensions scaled with 3 - and rotate around the middle
+                                registry.emplace<ShootC>(entity);
+                                // Texture dimensions scaled with 4 - and rotate around the middle
                                 magique::GiveCollision(entity, magique::RECT, 36, 36, 18, 18);
                             });
 
@@ -80,7 +78,7 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
                             [](entt::registry &registry, entt::entity entity)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
-                                // Texture dimensions scaled with 3 - and rotate around the middle
+                                // Texture dimensions scaled with 4 - and rotate around the middle
                                 magique::GiveCollision(entity, magique::RECT, 18, 18, 9, 9);
                             });
 
@@ -88,27 +86,32 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
     magique::RegisterEntity(EntityID::HOUSE,
                             [](entt::registry &registry, entt::entity entity)
                             {
-                                magique::GiveScript(entity); // Make it scriptable
-                                // Texture dimensions scaled with 3 - and rotate around the middle
+                                // Texture dimensions scaled with 4 - and rotate around the middle
                                 magique::GiveCollision(entity, magique::RECT, 45, 45, 22, 22);
+                            });
+
+    // Register the rock entity
+    magique::RegisterEntity(EntityID::ROCK,
+                            [](entt::registry &registry, entt::entity entity)
+                            {
+                                magique::GiveScript(entity); // Make it scriptable
+                                // Texture dimensions scaled with 4 - and rotate around the middle
+                                magique::GiveCollision(entity, magique::RECT, 20, 20, 10, 10);
                             });
 
     // Register the invisible static camera
     magique::RegisterEntity(EntityID::STATIC_CAMERA,
-                            [](entt::registry &registry, entt::entity entity)
-                            {
-                                magique::GiveCamera(entity);
-                            });
+                            [](entt::registry &registry, entt::entity entity) { magique::GiveCamera(entity); });
 
     // Create a player
     magique::CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
 
     // Create the static camera in the middle of the screen
-   // magique::CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
+    magique::CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
 
     // Create houses
-    auto y = (float)GetScreenHeight();
-    for (int x = 0; x < GetScreenWidth(); x += 45)
+    auto y = (float)GetScreenHeight() - 45;
+    for (int x = 17; x < GetScreenWidth() - 45; x += 50)
     {
         magique::CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
@@ -116,7 +119,17 @@ void Asteroids::onStartup(magique::AssetLoader &al, magique::GameConfig &config)
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
-void Asteroids::updateGame(entt::registry &registry) {}
+void Asteroids::updateGame(entt::registry &registry)
+{
+    static int ROCK_COUNTER = 80;
+    ROCK_COUNTER--;
+    if (ROCK_COUNTER == 0)
+    {
+        auto e = magique::CreateEntity(ROCK, GetRandomValue(0, GetScreenWidth()), 0, MapID::LEVEL_1);
+        magique::GetRegistry().get<PositionC>(e).rotation = GetRandomValue(-1, 1);
+        ROCK_COUNTER = 80;
+    }
+}
 
 void Asteroids::drawWorld(Camera2D &camera) { ClearBackground(BLACK); }
 
@@ -133,7 +146,7 @@ void Asteroids::drawGame(entt::registry &registry, Camera2D &camera)
         switch (pos.type)
         {
         case PLAYER:
-            handle = magique::GetHandle(H("PLAYER"));
+            handle = magique::GetHandle(H("PLAYER")); // Used hashed strings
             magique::DrawRegion(GetTexture(handle), pos.x, pos.y);
             break;
         case BULLET:
@@ -141,6 +154,8 @@ void Asteroids::drawGame(entt::registry &registry, Camera2D &camera)
             magique::DrawRegion(GetTexture(handle), pos.x, pos.y);
             break;
         case ROCK:
+            handle = magique::GetHandle(H("ROCK"));
+            magique::DrawRegionEx(GetTexture(handle), pos.x, pos.y, pos.rotation);
             break;
         case HOUSE:
             handle = magique::GetHandle(H("HOUSE"));
@@ -154,22 +169,36 @@ void Asteroids::drawGame(entt::registry &registry, Camera2D &camera)
 void Asteroids::drawUI() {}
 
 // Scripting
-
 void PlayerScript::onKeyEvent(entt::registry &registry, entt::entity self)
 {
     auto &pos = registry.get<PositionC>(self);
-
     if (IsKeyDown(KEY_W))
-        pos.y -= 5;
+        pos.y -= 6;
     if (IsKeyDown(KEY_S))
-        pos.y += 5;
+        pos.y += 6;
     if (IsKeyDown(KEY_A))
-        pos.x -= 5;
+        pos.x -= 6;
     if (IsKeyDown(KEY_D))
-        pos.x += 5;
+        pos.x += 6;
 
     if (IsKeyDown(KEY_SPACE))
-        magique::CreateEntity(BULLET, pos.x + 3, pos.y - 3, pos.map);
+    {
+        auto &shoot = registry.get<ShootC>(self);
+        if (shoot.shootCounter == 0)
+        {
+            magique::CreateEntity(BULLET, pos.x + 3, pos.y - 3, pos.map);
+            const auto handle = magique::GetHandle(H("BULLET_1"));
+            magique::PlaySound(magique::GetSound(handle), 0.5F);
+            shoot.shootCounter = ShootC::SHOOT_COOLDOWN;
+        }
+    }
+}
+
+void PlayerScript::onTick(entt::registry &registry, entt::entity self)
+{
+    auto &shoot = registry.get<ShootC>(self);
+    if (shoot.shootCounter > 0)
+        shoot.shootCounter--;
 }
 
 void BulletScript::onTick(entt::registry &registry, entt::entity self)
@@ -179,11 +208,18 @@ void BulletScript::onTick(entt::registry &registry, entt::entity self)
     pos.y -= 8;
 }
 
-void HouseScript::onDynamicCollision(entt::registry &registry, entt::entity self, entt::entity other)
+void RockScript::onDynamicCollision(entt::registry &registry, entt::entity self, entt::entity other)
 {
     auto &oPos = registry.get<PositionC>(other);
-    if (oPos.type == ROCK)
+    if (oPos.type == HOUSE)
     {
-        magique::DestroyEntity(self);
+        magique::DestroyEntity(other);
     }
+}
+
+void RockScript::onTick(entt::registry &registry, entt::entity self)
+{
+    auto &pos = registry.get<PositionC>(self);
+    pos.rotation++;
+    pos.y += 1;
 }

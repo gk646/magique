@@ -53,7 +53,7 @@ namespace magique
 
     handle GetHandle(const uint32_t hash)
     {
-        M_ASSERT(global::HANDLE_REGISTRY.handleMap.contains(hash), "No entry with that name!");
+        M_ASSERT(global::HANDLE_REGISTRY.handleMap.contains(hash), "No handle with that name (hash)!");
         return global::HANDLE_REGISTRY.handleMap[hash];
     }
 

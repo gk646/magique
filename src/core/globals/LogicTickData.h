@@ -1,14 +1,15 @@
 #ifndef LOGICTICKDATA_H
 #define LOGICTICKDATA_H
 
+#include <entt/entity/entity.hpp>
+
 #include <magique/fwd.hpp>
 #include <magique/internal/DataStructures.h>
 #include <cxstructs/BitMask.h>
+#include <magique/util/Defines.h>
 
 #include "util/datastructures/MultiResolutionGrid.h"
-#include "core/Config.h"
 
-#include <entt/entity/entity.hpp>
 
 namespace magique
 {

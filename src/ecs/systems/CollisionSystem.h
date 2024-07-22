@@ -2,13 +2,12 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
+#include <c2/cute_c2.h>
+
 #include <magique/ecs/InternalScripting.h>
 #include <magique/util/Jobs.h>
+#include <magique/util/Defines.h>
 
-#include <c2/cute_c2.h>
-#include <cxutil/cxtime.h>
-
-#include "core/Config.h"
 #include "ecs/ScriptEngine.h"
 
 
@@ -108,6 +107,9 @@ inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const 
     return false;
 }
 
+// Needs major addition: Collect collision pairs and call them single threaded after
+// Defer destruction of entities until after tick or just iterate pairs in order
+
 namespace magique
 {
     inline void CheckCollisions(entt::registry& registry)
@@ -128,27 +130,28 @@ namespace magique
             for (auto it = start; it != end; ++it)
             {
                 const auto first = *it;
+                if (!registry.valid(first)) [[unlikely]]
+                    continue;
+
                 const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-                auto* firstScript = SCRIPT_ENGINE.scripts[posA.type];
                 // Query quadtree
                 grid.query<HashSet<entt::entity>>(collectors[j], posA.x, posA.y, colA.width, colA.height);
                 for (const auto second : collectors[j])
                 {
-                    if (first >= second)
+                    if (first >= second || !registry.valid(second)) [[unlikely]]
                         continue;
 
                     auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
 
-                    if (posA.map != posB.map || colA.layerMask & colB.layerMask != 0) [[unlikely]]
+                    if (posA.map != posB.map || colA.layerMask & colB.layerMask == 0) [[unlikely]]
                         continue;
 
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                     {
                         // Scripts are default filled - with this we can skip the script check
-                        auto* secondScript = SCRIPT_ENGINE.scripts[posB.type];
-                        InvokeEventDirect<onDynamicCollision>(firstScript, first, second);
+                        InvokeEventDirect<onDynamicCollision>(SCRIPT_ENGINE.scripts[posA.type], first, second);
                         // Invoke out of seconds view
-                        InvokeEventDirect<onDynamicCollision>(secondScript, second, first);
+                        InvokeEventDirect<onDynamicCollision>(SCRIPT_ENGINE.scripts[posB.type], second, first);
 #ifdef MAGIQUE_DEBUG_COLLISIONS
                         collisions++;
 #endif
@@ -193,9 +196,11 @@ namespace magique
         int correct = 0;
         for (const auto first : collisionVec)
         {
+            if (!registry.valid(first)) [[unlikely]]
+                continue;
             for (const auto second : collisionVec)
             {
-                if (first >= second)
+                if (first >= second || !registry.valid(second)) [[unlikely]]
                     continue;
                 auto [posA, colA] = registry.get<PositionC, const CollisionC>(first);
                 auto [posB, colB] = registry.get<PositionC, const CollisionC>(second);

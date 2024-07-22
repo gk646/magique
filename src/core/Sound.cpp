@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    void SetSoundVolume(const float volume)
+    void SetSoundMasterVolume(const float volume)
     {
         auto& ap = global::AUDIO_PLAYER;
         ap.soundVolume = volume;
@@ -20,9 +20,9 @@ namespace magique
         }
     }
 
-    float GetSoundVolume() { return global::AUDIO_PLAYER.soundVolume; }
+    float GetSoundMasterVolume() { return global::AUDIO_PLAYER.soundVolume; }
 
-    void SetMusicVolume(const float volume)
+    void SetMusicMasterVolume(const float volume)
     {
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
@@ -32,7 +32,7 @@ namespace magique
         }
     }
 
-    float GetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }
+    float GetMusicMasterVolume() { return global::AUDIO_PLAYER.musicVolume; }
 
     void PlaySound(const Sound& sound, const float volume)
     {
@@ -116,7 +116,7 @@ namespace magique
 
     void StopMusic(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
 
-    void PlayPlaylist(Playlist* playlist)
+    void PlayPlaylist(Playlist* playlist, const float volume)
     {
         if (playlist == nullptr)
         {
@@ -128,13 +128,12 @@ namespace magique
             LOG_ERROR("Cannot play empty playlist");
             return;
         }
+        playlist->setVolume(volume);
         global::AUDIO_PLAYER.startPlaylist(*playlist);
     }
 
-    void StopPlaylist(Playlist& playlist)
-    {
-        global::AUDIO_PLAYER.stopPlaylist(playlist);
-    }
+    void StopPlaylist(Playlist& playlist) {
+global::AUDIO_PLAYER.stopPlaylist(playlist); }
 
     void ForwardPlaylist(Playlist& playlist)
     {

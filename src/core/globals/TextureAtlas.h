@@ -27,21 +27,21 @@ namespace magique
         {
             initialize();
             TextureRegion region = {0};
-            if (!checkStep(image.width, image.height))
+            if (!checkStep(tarW, tarH))
                 return region;
 
-            region.width = static_cast<uint16_t>(image.width);
-            region.height = static_cast<uint16_t>(image.height);
+            region.width = static_cast<uint16_t>(tarW);
+            region.height = static_cast<uint16_t>(tarH);
             region.offX = static_cast<uint16_t>(posX);
             region.offY = static_cast<uint16_t>(posY);
-            region.id = static_cast<uint16_t>(id);
+            region.id = id;
 
             Image atlasImage = getImg();
             // Add the image
             ImageDraw(&atlasImage, image, {0, 0, (float)image.width, (float)image.height},
-                      {(float)posX, (float)posY, (float)image.width, (float)image.height}, WHITE);
+                      {(float)posX, (float)posY, (float)tarW, (float)tarH}, WHITE);
 
-            posX += image.width;
+            posX += tarW;
 
             UnloadImage(image);
 

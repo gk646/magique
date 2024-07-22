@@ -27,11 +27,17 @@ namespace magique
         // Padding around the cameras native bounds
         float cameraViewPadding = 250;
 
-        // For how long entities in the cache are still updates after they are out of range
+        // For how long entities in the cache are still updated after they are out of range
         uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
 
         // Font
         Font font{};
+
+        // Shows red outlines for the hitboxes
+        bool showHitboxes;
+
+        // World bounds
+        Rectangle worldBounds{};
     };
 
     namespace global

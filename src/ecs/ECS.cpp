@@ -1,12 +1,13 @@
+#include <raylib/raylib.h>
+
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/InternalScripting.h>
 #include <magique/ecs/Components.h>
-#include <raylib/raylib.h>
+#include <magique/util/Defines.h>
 
 #include "core/globals/EntityTypeMap.h"
 #include "core/globals/LogicTickData.h"
 #include "core/globals/LogicThread.h"
-#include "core/Config.h"
 #include "ScriptEngine.h"
 
 namespace magique
@@ -22,10 +23,10 @@ namespace magique
         }
 
         map.insert({type, createFunc});
-
-        for (auto entity : REGISTRY.view<entt::entity>())
+        SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
+        for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
-            volatile int b = (int)entity; // Try to instantiate all storage types
+            volatile int b = static_cast<int>(entity); // Try to instantiate all storage types
         }
         return true;
     }
@@ -44,6 +45,11 @@ namespace magique
         return true;
     }
 
+    bool IsEntityExisting(const entt::entity e)
+    {
+        return internal::REGISTRY.valid(e);
+    }
+
     entt::entity CreateEntity(const EntityID type, float x, float y, MapID mapID)
     {
         auto& tickData = global::LOGIC_TICK_DATA;
@@ -60,15 +66,14 @@ namespace magique
         }
 
         tickData.lock();
-        const auto entity = REGISTRY.create();
+        const auto entity = internal::REGISTRY.create();
         {
-            REGISTRY.emplace<PositionC>(entity, x, y, mapID, type); // PositionC is default
-            it->second(REGISTRY, entity);
+            internal::REGISTRY.emplace<PositionC>(entity, x, y, mapID, type); // PositionC is default
+            it->second(internal::REGISTRY, entity);
         }
         tickData.unlock();
-        if (REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
-            SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
             InvokeEvent<onCreate>(entity);
         }
         return entity;
@@ -76,49 +81,54 @@ namespace magique
 
     bool DestroyEntity(const entt::entity entity)
     {
-        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
+        // M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
         auto& tickData = global::LOGIC_TICK_DATA;
-        if (REGISTRY.valid(entity))
+        if (internal::REGISTRY.valid(entity))
         {
-            if (REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+            if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
             {
                 InvokeEvent<onDestroy>(entity);
             }
             tickData.lock();
-            REGISTRY.destroy(entity);
+            internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
+            std::erase(tickData.drawVec, entity);
+            std::erase(tickData.entityUpdateVec, entity);
             tickData.unlock();
             return true;
         }
         return false;
     }
 
-    void GiveCamera(entt::entity entity) { REGISTRY.emplace<CameraC>(entity); }
+    void GiveCamera(const entt::entity entity) { internal::REGISTRY.emplace<CameraC>(entity); }
 
-    OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape)
+    OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, Shape shape)
     {
-        return REGISTRY.emplace<OccluderC>(entity, (int16_t)width, (int16_t)height, shape);
+        return internal::REGISTRY.emplace<OccluderC>(entity, static_cast<int16_t>(width), static_cast<int16_t>(height),
+                                                     shape);
     }
 
-    EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity, LightStyle style)
+    EmitterC& GiveEmitter(const entt::entity entity, Color color, const int intensity, LightStyle style)
     {
-        return REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity, style);
+        return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity,
+                                                    style);
     }
 
-    void GiveActor(entt::entity e) { return REGISTRY.emplace<ActorC>(e); }
+    void GiveActor(const entt::entity e) { return internal::REGISTRY.emplace<ActorC>(e); }
 
-    CollisionC& GiveCollision(entt::entity e, Shape shape, int width, int height, int anchorX, int anchorY)
+    auto GiveCollision(const entt::entity e, Shape shape, const int width, const int height, const int anchorX,
+                       const int anchorY) -> CollisionC&
     {
-        return REGISTRY.emplace<CollisionC>(e, (uint8_t)1, shape, (uint16_t)width, (uint16_t)height,
-                                            static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY));
+        return internal::REGISTRY.emplace<CollisionC>(e, (uint8_t)1, shape, (uint16_t)width, (uint16_t)height,
+                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY));
     }
 
-    void GiveScript(const entt::entity e) { REGISTRY.emplace<ScriptC>(e); }
+    void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
 
-    void GiveDebugVisuals(entt::entity e)
+    void GiveDebugVisuals(const entt::entity e)
     {
 #ifdef MAGIQUE_DEBUG_ENTITIES
-        REGISTRY.emplace<DebugVisualsC>(e);
+        internal::REGISTRY.emplace<DebugVisualsC>(e);
 #else
         LOG_WARNING("Using debug function but not in debug mode!");
 #endif
@@ -127,7 +137,7 @@ namespace magique
     void GiveDebugController(entt::entity e)
     {
 #ifdef MAGIQUE_DEBUG_ENTITIES
-        REGISTRY.emplace<DebugControllerC>(e);
+        internal::REGISTRY.emplace<DebugControllerC>(e);
 #else
         LOG_WARNING("Using debug function but not in debug mode!");
 #endif

@@ -124,9 +124,13 @@ namespace magique
 
     const char* Asset::getFileName(bool extension) const
     {
-        const char* workPtr = path;
         const char* lastSep = nullptr;
+
+    beginning:
+
+        const char* workPtr = path;
         int len = 0;
+
         while (*workPtr)
         {
             if (lastSep)
@@ -145,7 +149,10 @@ namespace magique
         }
 
         if (lastSep == nullptr)
-            return nullptr;
+        {
+            lastSep = path;
+            goto beginning;
+        }
 
 
         memcpy(stringBuffer, lastSep, std::min(64, len));

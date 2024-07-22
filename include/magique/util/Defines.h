@@ -12,6 +12,7 @@
 
 //----------------- CORE -----------------//
 
+#define MAGIQUE_VERSION "0.0.2"
 #define MAGIQUE_DEBUG 1
 #define MAGIQUE_LOGIC_TICKS 60 // 60 Ticks per second
 
@@ -31,6 +32,7 @@
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192 // Width of each texture atlas
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles
 #define MAGIQUE_MAX_TILEMAP_LAYERS 5      // Maximum amount of layers for tilemaps
+#define MAGIQUE_MAX_EXPECTED_MAPS 32      // Maximum amount of expected maps
 
 //----------------- LOADING -----------------/  /
 
@@ -43,7 +45,12 @@
 
 //----------------- BRANCHES -----------------//
 
-// 1 to Enable Debug
+#if MAGIQUE_DEBUG == 1
+//#define MAGIQUE_DEBUG_COLLISIONS  // Uses O(n**2) collision checking for double checking
+#define MAGIQUE_DEBUG_ENTITIES
+#define MAGIQUE_DEBUG_PROFILE
+#endif
+
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define MAGIQUE_DEBUG 1
 #else

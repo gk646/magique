@@ -38,7 +38,7 @@ namespace magique::updater
 
         auto lastTime = steady_clock::now();
         nanoseconds accumulator(0);
-        auto& reg = REGISTRY;
+        auto& reg = internal::REGISTRY;
 
         while (isRunning) [[likely]]
         {

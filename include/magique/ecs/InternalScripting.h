@@ -117,24 +117,22 @@ namespace magique
 #pragma warning(pop)
 
 
-// Implementation
-
+//----------------- IMPLEMENTATION -----------------//
 template <magique::EventType event, class Script, class... Args>
 void magique::InvokeEvent(entt::entity entity, Args... arguments)
 {
-    const auto& pos = REGISTRY.get<PositionC>(entity); // Every entity has a position
+    const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
     auto* script = static_cast<Script*>(GetScript(pos.type));
     M_ASSERT(script != nullptr, "No Script for this type!");
-    Call<event, Script, entt::registry&, entt::entity, Args...>(script, REGISTRY, entity,
+    Call<event, Script, entt::registry&, entt::entity, Args...>(script, internal::REGISTRY, entity,
                                                                 std::forward<Args>(arguments)...);
 }
-
 template <magique::EventType event, class Script, class... Args>
 void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
 {
 
     M_ASSERT(script != nullptr, "Passing a null script");
-    Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), REGISTRY, entity,
+    Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), internal::REGISTRY, entity,
                                                                 std::forward<Args>(arguments)...);
 }
 

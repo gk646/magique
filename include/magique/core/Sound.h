@@ -17,6 +17,7 @@
 
 // Note: The volume for each track is relative to the global volume
 // The final volume of each audio piece is the product of: MasterVolume * CategoryVolume(Sound/Music) * PlaybackVolume
+// This means that the playback volume given to PlayX() function is the relative volume for the sound in that category
 // .....................................................................
 
 namespace magique
@@ -28,16 +29,16 @@ namespace magique
     // GetMasterVolume() - raylib
 
     // Affects all Sound and Sound2D instances - has to be between (0.0 - 1.0)
-    void SetSoundVolume(float volume);
+    void SetSoundMasterVolume(float volume);
 
     // Returns the current sound volume - (0.0 - 1.0)
-    float GetSoundVolume();
+    float GetSoundMasterVolume();
 
     // Affects all Music instance including playlists - has to be between (0.0 - 1.0)
-    void SetMusicVolume(float volume);
+    void SetMusicMasterVolume(float volume);
 
     // Returns the current music volume - (0.0 - 1.0)
-    float GetMusicVolume();
+    float GetMusicMasterVolume();
 
     //----------------- SOUND & SOUND2D -----------------//
 
@@ -71,10 +72,10 @@ namespace magique
 
     //----------------- PLAYLIST -----------------//
 
-    // Starts to play the playlist at the last played track or the beginning
+    // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
     // Only pass a playlist with permament storage (either use RegisterPlaylist() or allocate it)
     // A playlist cannot be played multiple times simultanously - plays (loops) until stopped
-    void PlayPlaylist(Playlist* playlist);
+    void PlayPlaylist(Playlist* playlist, float volume = 1.0F);
 
     // Stops playing the playlist
     void StopPlaylist(Playlist& playlist);

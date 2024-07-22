@@ -59,3 +59,5 @@ Paradigms:
 
 - Fixed update tick rate
     - Default is 60 update per second
+- Entity Component System
+- 

@@ -16,6 +16,7 @@
 #include "globals/LogicThread.h"
 #include "globals/Shaders.h"
 #include "globals/TextureAtlas.h"
+#include "globals/AudioPlayer.h"
 #include "CoreData.h"
 
 #include "../ecs/systems/CollisionSystem.h"
@@ -55,8 +56,8 @@ namespace magique
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
         global::LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
-        LOG_INFO("Initialized Game: %s", gameName);
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
+        LOG_INFO("Initialized Game: %s", gameName);
     }
 
     Game::~Game()
@@ -84,6 +85,7 @@ namespace magique
                 atlas.loadToGPU();
             }
         };
+
         static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW);
         static_cast<AssetLoader*>(loader)->printStats();
         _isLoading = true;

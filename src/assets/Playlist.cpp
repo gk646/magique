@@ -2,6 +2,14 @@
 
 namespace magique
 {
+    Playlist::Playlist(const std::initializer_list<Music>& musics, const bool fade, const float volume) :
+        volume(volume), fading(fade)
+    {
+        tracks.reserve(musics.size() + 1);
+        for (auto& m : musics)
+            tracks.push_back(m);
+    }
+
     void Playlist::addTrack(const Music& music) { tracks.push_back(music); }
 
     void Playlist::removeTrack(const Music& music)
@@ -29,15 +37,19 @@ namespace magique
 
     int Playlist::getNextTrack()
     {
-        int nextTrack = 0;
+        currentTrack++;
         if (forwardFunction)
-            nextTrack = forwardFunction(*this, currentTrack);
+            currentTrack = forwardFunction(*this, currentTrack);
         else
         {
-            nextTrack = currentTrack % static_cast<int>(tracks.size());
+            currentTrack = currentTrack % static_cast<int>(tracks.size());
         }
-        currentTrack++;
-        return nextTrack;
+        return currentTrack;
+    }
+
+    void Playlist::setVolume(const float volume)
+    {
+        this->volume = volume;
     }
 
 } // namespace magique
