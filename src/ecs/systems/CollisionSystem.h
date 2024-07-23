@@ -9,6 +9,7 @@
 #include <magique/util/Defines.h>
 
 #include "ecs/ScriptEngine.h"
+#include "internal/types/Spinlock.h"
 
 
 inline c2Poly RotRect(float x, float y, float width, float height, float rot, float anchorX, float anchorY)
@@ -118,6 +119,7 @@ namespace magique
         auto& grid = tickData.hashGrid;
         auto& collisionVec = tickData.collisionVec;
         auto& collectors = tickData.collectors;
+        auto& pairs = tickData.collisionPairs;
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         int collisions = 0;
@@ -161,36 +163,29 @@ namespace magique
             }
         };
 
-        return;
-        //cxstructs::now();
-        constexpr int parts = 4;
-        std::vector<std::thread> threads;
-        threads.reserve(5);
-        int start = 0;
+        //TODO improve memmory management of jobs - probably possible to make them non allocated
+
+        static constexpr int parts = MAGIQUE_WORKER_THREADS + 1;
+        std::vector<jobHandle> handles;
         int end = 0;
         const int partSize = collisionVec.size() / parts;
         for (int j = 0; j < parts; ++j)
         {
-            start = end;
+            const int start = end;
             end = start + partSize;
             if (j == parts - 1)
             {
-                collisionCheck(j, start, collisionVec.size());
+                collisionCheck(j, start, end);
                 break;
             }
 
             if (start - end == 0)
                 continue;
 
-            threads.emplace_back(collisionCheck, j, start, end);
+            handles.push_back(AddJob(CreateExplicitJob(collisionCheck, j, start, end)));
         }
 
-        for (auto& t : threads)
-        {
-            t.join();
-        }
-
-        //cxstructs::printTime<std::chrono::nanoseconds>();
+        AwaitJobs(handles);
 
 #ifdef MAGIQUE_DEBUG_COLLISIONS
         printf("Detected Collisions: %d\n", collisions);
