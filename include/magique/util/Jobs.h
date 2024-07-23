@@ -28,23 +28,25 @@ namespace magique
     //----------------- JOBS -----------------//
 
     // Creates a new job from a lambda or function
-    // Note: Allocates a new Job instance that needs to be handles by the user
+    // Note: Only use the returned job pointer to submit jobs
     template <typename Callable>
-    [[nodiscard("Allocates memory with new")]] IJob* CreateJob(Callable callable);
+    IJob* CreateJob(Callable callable);
 
     // Creates a new job with explicitly given arguments
-    // Note: Allocates a new Job instance that needs to be handles by the user
+    // Note: Only use the returned job pointer to submit jobs
     template <typename Callable, typename... Args>
-    [[nodiscard("Allocates memory with new")]] IJob* CreateExplicitJob(Callable callable, Args... args);
+    IJob* CreateExplicitJob(Callable callable, Args... args);
 
     //----------------- ADDING -----------------//
     // Note: Takes ownership of all passed pointers (should not be accessed after)
 
     // Adds a new job to the global queue
+    // Note: Takes ownership of the pointer (deletes it after finishing)
     jobHandle AddJob(IJob* job);
 
     // Adds the job to a group
-    jobHandle AddGroupJob(IJob* job, int group);
+    // Note: Takes ownership of the pointer (deletes it after finishing)
+    //jobHandle AddGroupJob(IJob* job, int group);
 
     //----------------- WAITING -----------------//
 

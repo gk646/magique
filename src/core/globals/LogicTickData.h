@@ -15,7 +15,7 @@ namespace magique
 {
     struct AlignedSet
     {
-        alignas(64) HashSet<entt::entity> set{500};
+        alignas(64) HashSet<entt::entity> set{500}; // To prevent false sharing
     };
 
     template <int size>
@@ -56,11 +56,13 @@ namespace magique
         // Culled with the camera
         vector<entt::entity> drawVec;
 
+        vector<std::pair<entt::entity, entt::entity>> collisionPairs;
+
         // Global hashGrid for all entities
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
 
-        // Collects entities - 4 for the 4 threads
-        AlignedHashSets<4> collectors{};
+        // Collects entities - 2 for the 2 worker threads
+        AlignedHashSets<MAGIQUE_WORKER_THREADS + 1> collectors{};
 
         // Shadow segments
         vector<Vector3> shadowQuads;

@@ -8,6 +8,8 @@ include(cmake/BuildRelease.cmake)
 
 add_subdirectory(src)
 
+set(${PROJECT_PREFIX}_BUILD_TESTS ON)
+
 if (${PROJECT_PREFIX}_BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)

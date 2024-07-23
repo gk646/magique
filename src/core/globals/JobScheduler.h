@@ -7,23 +7,10 @@
 #include <vector>
 
 #include "internal/headers/OSUtil.h"
+#include "internal/types/Spinlock.h"
 
 namespace magique
 {
-    // Wrapper for a spinlock
-    struct Spinlock final
-    {
-        void lock()
-        {
-            while (flag.test_and_set(std::memory_order_acquire))
-                ;
-        }
-        void unlock() { flag.clear(std::memory_order_release); }
-
-    private:
-        std::atomic_flag flag = ATOMIC_FLAG_INIT;
-    };
-
     struct Scheduler final
     {
         ~Scheduler()
@@ -82,7 +69,7 @@ namespace magique
 
     inline void WorkerThreadFunc(Scheduler* scheduler, const int threadNumber)
     {
-        SetupThreadPriority(threadNumber, false);
+        SetupThreadPriority(threadNumber);
         while (!scheduler->shutDown.load(std::memory_order_acquire))
         {
             while (!scheduler->isHibernate.load(std::memory_order_acquire))
@@ -105,9 +92,9 @@ namespace magique
                 {
                     scheduler->queueLock.unlock();
                 }
-                std::this_thread::yield();
+               std::this_thread::yield();
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            std::this_thread::sleep_for(std::chrono::microseconds(1));
         }
     }
 

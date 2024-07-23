@@ -1,10 +1,10 @@
 #include <magique/util/Jobs.h>
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
+#include <magique/util/Defines.h>
 
 #include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/IncludeWindows.h"
-
 #include "core/globals/JobScheduler.h"
 
 static bool initCalled = false;
@@ -23,7 +23,7 @@ namespace magique
         scd.mainID = std::this_thread::get_id();
         scd.shutDown = false;
         scd.isHibernate = true;
-        for (size_t i = 0; i < 2; ++i) // 2 Worker Threads - 1 Main Thread - 1 Update Thread = 4
+        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 2 Worker Threads + 1 Main Thread + 1 Update Thread = 4
         {
             scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
         }
@@ -73,6 +73,7 @@ namespace magique
     }
 
     template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
+    template void AwaitJobs<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
 
     void AwaitAllJobs()
     {
@@ -97,7 +98,7 @@ namespace magique
         M_ASSERT(scd.usingThreads >= 0, "Mismatch between wakup() and hibernate() calls!");
         if (scd.usingThreads == 0)
         {
-            scd.isHibernate = false;
+            scd.isHibernate = true;
         }
     }
 
