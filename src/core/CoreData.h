@@ -19,7 +19,7 @@ namespace magique::global
     inline ExecutorI* CURRENT_GAME_LOADER = nullptr;
 
     // The global scheduler for the job system
-    inline Scheduler* SCHEDULER = nullptr;
+    //inline Scheduler SCHEDULER;
 
     // Performance metrics
     //inline PerfData PERF_DATA;

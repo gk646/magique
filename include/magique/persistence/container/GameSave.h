@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <magique/core/Types.h>
+#include <magique/persistence/types/DataTable.h>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
 
@@ -47,6 +48,8 @@ namespace magique
         // To save an array pass the first element and set count to array length
         template <typename T>
         void saveType(StorageID id, const T& obj, int count = 1);
+
+        // Built-In types
 
         // Savest the given data table to the specified slot
         template <typename... Types>

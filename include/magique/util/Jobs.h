@@ -1,179 +1,139 @@
 #ifndef MAGIQUE_JOBS_H
 #define MAGIQUE_JOBS_H
 
-#include <condition_variable>
-#include <deque>
-#include <vector>
-#include <thread>
+#include <tuple>
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // Job System
 //-----------------------------------------------
 // .....................................................................
 // This is for advanced users
-// Use GetScheduler() to get the global instance and schedule your tasks
 // This systems is trimmed for speed
+// Allows to submit concurrent jobs to distribute compatible work across threads
 // .....................................................................
 
 namespace magique
 {
-    // handle to a job
+    // Handle to a job
     enum class jobHandle : uint16_t
     {
         null = UINT16_MAX, // The null handle
     };
 
-    // Job base class - allows to call templatd lambdas
+    // Initializes the job system
+    // Note: Does not have to be called manually when using the game template
+    bool InitJobSystem();
+
+    //----------------- JOBS -----------------//
+
+    // Creates a new job from a lambda or function
+    // Note: Allocates a new Job instance that needs to be handles by the user
+    template <typename Callable>
+    [[nodiscard("Allocates memory with new")]] IJob* CreateJob(Callable callable);
+
+    // Creates a new job with explicitly given arguments
+    // Note: Allocates a new Job instance that needs to be handles by the user
+    template <typename Callable, typename... Args>
+    [[nodiscard("Allocates memory with new")]] IJob* CreateExplicitJob(Callable callable, Args... args);
+
+    //----------------- ADDING -----------------//
+    // Note: Takes ownership of all passed pointers (should not be accessed after)
+
+    // Adds a new job to the global queue
+    jobHandle AddJob(IJob* job);
+
+    // Adds the job to a group
+    jobHandle AddGroupJob(IJob* job, int group);
+
+    //----------------- WAITING -----------------//
+
+    // Waits till the specified job is completed if it exists
+    void AwaitJob(jobHandle handle);
+
+    // Awaits the completion of all given handles if they exist
+    // Can pass a vector<jobhandle> or initializer_list<job_handle>
+    template <typename Iterable>
+    void AwaitJobs(const Iterable& handles);
+
+    // Awaits the completion of all current tasks
+    void AwaitAllJobs();
+
+    //----------------- LIFECYCLE -----------------//
+
+    // Brings all workers back to speed
+    // Note: Called automatically when using the game tempalte - only call if you know what it does
+    void WakeUpJobs();
+
+    // Puts all workers to hibernation
+    // Note: Called automatically when using the game tempalte - only call if you know what it does
+    void HibernateJobs();
+
+    //----------------- JOBS -----------------//
+
+    // Job base class - allows to call templated lambdas
     struct IJob
     {
-        // No virtual destructor to save instructions
+        virtual ~IJob() = default;
         virtual void run() = 0;
         jobHandle handle = jobHandle::null;
     };
 
-    // Allows to specify explicitly specify parameters
+    // Allows to explicitly specify parameters
     template <typename Func, typename... Args>
     struct ExplicitJob final : IJob
     {
-        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
-
-        void run() override { std::apply(func, args); }
+        explicit ExplicitJob(Func func, Args... args);
+        void run() override;
 
     private:
         Func func;
         std::tuple<Args...> args;
     };
 
-    // Wrapper for a spinlock
-    struct Spinlock final
-    {
-        void lock()
-        {
-            while (flag.test_and_set(std::memory_order_acquire))
-                ;
-        }
-
-        void unlock() { flag.clear(std::memory_order_release); }
-
-    private:
-        std::atomic_flag flag = ATOMIC_FLAG_INIT;
-    };
-
-    // Core scheduler
-    // Takes ownership of all pointers
-    struct Scheduler final
-    {
-        explicit Scheduler(int threadCount = 4);
-        ~Scheduler();
-
-        // Adds a new job to the global queue
-        jobHandle addJob(IJob* job);
-
-        // Adds the job to a group
-        jobHandle groupJob(IJob* job, int group);
-
-        // dependencies
-        // accumulate
-
-        // Awaits the completion of all handles in the given iterable container
-        template <typename Container>
-        void await(const Container& handles) const
-        {
-            while (currentJobsSize > 0)
-            {
-                bool allCompleted = true;
-                const auto vec = workedJobs.data();
-                for (const auto handle : handles)
-                {
-                    for (int i = 0; i < currentJobsSize; ++i)
-                    {
-                        if (vec[i]->handle == handle)
-                        {
-                            allCompleted = false;
-                            break;
-                        }
-                    }
-                    if (!allCompleted)
-                        break;
-                }
-                if (allCompleted)
-                    return;
-            }
-        }
-
-        // Awaits the completion of all current tasks
-        void awaitAll() const;
-
-        //----------------- internal -----------------//
-        // These function are public to make it a complete module
-        // You dont need to call them when using magique
-
-        // Brings all workers back to speed
-        void wakeup();
-
-        // Puts all workers to hibernation
-        void hibernate();
-
-    private:
-        void addWorkedJob(const IJob* job)
-        {
-            // allows for time tracking later on
-            workedLock.lock();
-            ++currentJobsSize;
-            workedJobs.push_back(job);
-            workedLock.unlock();
-        }
-        void removeWorkedJob(const IJob* job)
-        {
-            // allows for time tracking later on
-            workedLock.lock();
-            --currentJobsSize;
-            std::erase(workedJobs, job);
-            workedLock.unlock();
-            // Just spin the handles around
-            if (handleID >= 65000)
-            {
-                handleID = 0;
-            }
-        }
-
-        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
-        friend void workerThread(Scheduler* scheduler);
-
-        // Aligned to prevent false sharing
-        alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
-        alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
-        alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
-        alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
-        alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
-        alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
-        alignas(64) std::condition_variable condition;
-        volatile std::atomic<int> currentJobsSize = 0;
-        std::atomic<uint16_t> handleID = 0; // The internal handle counter
-        std::thread::id mainID;             // Thread id of the main thread
-        std::vector<std::thread> threads;   // All working threads
-        std::atomic<int> usingThreads = 0;
-    };
-
-
     template <typename Callable>
     struct Job final : IJob
     {
-        explicit Job(Callable func) : func_(std::move(func)) {}
-        void run() override { func_(); }
+        explicit Job(Callable func);
+        void run() override;
 
     private:
         Callable func_;
     };
 
-
-
-    struct Worker
-    {
-        std::deque<IJob*> jobQueue;
-        std::thread thread;
-    };
-
 } // namespace magique
+
+
+//----------------- IMPLEMENTATION -----------------//
+
+template <typename Callable>
+magique::Job<Callable>::Job(Callable func) : func_(std::move(func))
+{
+}
+template <typename Callable>
+void magique::Job<Callable>::run()
+{
+    func_();
+}
+template <typename Func, typename... Args>
+magique::ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
+    func(std::move(func)), args(std::make_tuple(args...))
+{
+}
+template <typename Func, typename... Args>
+void magique::ExplicitJob<Func, Args...>::run()
+{
+    std::apply(func, args);
+}
+template <typename Callable>
+magique::IJob* magique::CreateJob(Callable callable)
+{
+    return new Job(callable);
+}
+template <typename Callable, typename... Args>
+magique::IJob* magique::CreateExplicitJob(Callable callable, Args... args)
+{
+    return new ExplicitJob(callable, args...);
+}
 
 #endif //MAGIQUE_JOBS_H

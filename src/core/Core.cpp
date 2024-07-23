@@ -2,7 +2,6 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/util/Jobs.h>
 
-#include "core/CoreData.h"
 #include "core/globals/Configuration.h"
 #include "core/globals/TextureAtlas.h"
 #include "core/globals/LogicTickData.h"
@@ -52,8 +51,7 @@ namespace magique
         shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
         shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
 
-        const int threads = std::min(static_cast<int>(std::thread::hardware_concurrency()), 4);
-        global::SCHEDULER = new Scheduler(threads);
+        InitJobSystem();
 
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
@@ -120,9 +118,6 @@ namespace magique
     }
 
     entt::entity GetCameraEntity() { return global::LOGIC_TICK_DATA.cameraEntity; }
-
-    Scheduler& GetScheduler() { return *global::SCHEDULER; }
-
 
     void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }
 

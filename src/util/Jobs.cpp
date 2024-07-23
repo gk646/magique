@@ -1,99 +1,103 @@
 #include <magique/util/Jobs.h>
 #include <magique/internal/Macros.h>
+#include <magique/util/Logging.h>
 
-#include <cxutil/cxtime.h>
+#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
+#include "internal/headers/IncludeWindows.h"
+
+#include "core/globals/JobScheduler.h"
+
+static bool initCalled = false;
 
 namespace magique
 {
-    std::mutex mutex;
-    void workerThread(Scheduler* scheduler)
+    bool InitJobSystem()
     {
-        while (!scheduler->shutDown.load(std::memory_order_acquire))
+        if (initCalled)
         {
-            {
-                std::unique_lock lock(mutex);
-                scheduler->condition.wait(lock, [=] { return !scheduler->isHibernate; });
-            }
-
-            while (!scheduler->isHibernate.load(std::memory_order_acquire))
-            {
-                scheduler->queueLock.lock();
-                if (!scheduler->jobQueue.empty())
-                {
-                    //printf("Taken by: %d\n", (int)std::this_thread::get_id());
-                    const auto job = scheduler->jobQueue.front();
-                    scheduler->jobQueue.pop_front();
-                    scheduler->queueLock.unlock();
-                    M_ASSERT(job->handle != jobHandle::null, "Null handle");
-                    // cxstructs::now(1);
-                    job->run();
-                    //cxstructs::printTime<std::chrono::nanoseconds>("Took:", 1);
-                    scheduler->removeWorkedJob(job);
-                    delete job;
-                }
-                else
-                {
-                    scheduler->queueLock.unlock();
-                }
-            }
-            std::this_thread::sleep_for(std::chrono::microseconds(10));
+            LOG_WARNING("Init called twice. Skipping...");
+            return true;
         }
+        initCalled = true;
+        auto& scd = global::SCHEDULER;
+        scd.mainID = std::this_thread::get_id();
+        scd.shutDown = false;
+        scd.isHibernate = true;
+        for (size_t i = 0; i < 2; ++i) // 2 Worker Threads - 1 Main Thread - 1 Update Thread = 4
+        {
+            scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
+        }
+        return true;
     }
 
-    Scheduler::Scheduler(const int threadCount) : mainID(std::this_thread::get_id())
+    jobHandle AddJob(IJob* job)
     {
-        shutDown = false;
-        isHibernate = true;
-        for (size_t i = 0; i < 0; ++i)
-        {
-            threads.emplace_back(workerThread, this);
-        }
-    }
-
-    Scheduler::~Scheduler()
-    {
-        shutDown = true;
-        isHibernate = true;
-        for (auto& t : threads)
-        {
-            if (t.joinable())
-                t.join();
-        }
-    }
-
-    jobHandle Scheduler::addJob(IJob* job)
-    {
-        const auto handle = getNextHandle();
+        auto& scd = global::SCHEDULER;
+        const auto handle = scd.getNextHandle();
         job->handle = handle;
-        queueLock.lock();
-        jobQueue.push_back(job);
-        queueLock.unlock();
-        addWorkedJob(job);
+        scd.queueLock.lock();
+        scd.jobQueue.push_back(job);
+        scd.queueLock.unlock();
+        scd.addWorkedJob(job);
         return handle;
     }
 
-    void Scheduler::awaitAll() const
-    {
+    jobHandle AddGroupJob(IJob* job, int group) { return jobHandle::null; }
 
-        while (currentJobsSize > 0)
+    template <typename Iterable>
+    void AwaitJobs(const Iterable& handles)
+    {
+        auto& scd = global::SCHEDULER;
+        while (scd.currentJobsSize > 0)
         {
+            bool allCompleted = true;
+            scd.workedLock.lock();
+            for (const auto handle : handles)
+            {
+                for (const auto job : scd.workedJobs)
+                {
+                    if (job->handle == handle)
+                    {
+                        allCompleted = false;
+                        break;
+                    }
+                }
+                if (!allCompleted)
+                    break;
+            }
+            scd.workedLock.unlock();
+            if (allCompleted)
+                return;
+            std::this_thread::yield();
         }
     }
 
-    void Scheduler::wakeup()
+    template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
+
+    void AwaitAllJobs()
     {
-        ++usingThreads;
-        isHibernate = false;
-        condition.notify_all();
+        auto& scd = global::SCHEDULER;
+        while (scd.currentJobsSize > 0)
+        {
+            // YieldProcessor();
+        }
     }
 
-    void Scheduler::hibernate()
+    void WakeUpJobs()
     {
-        --usingThreads;
-        M_ASSERT(usingThreads >= 0, "Mismatch between wakup() and hibernate() calls!");
-        if (usingThreads == 0)
+        auto& scd = global::SCHEDULER;
+        ++scd.usingThreads;
+        scd.isHibernate = false;
+    }
+
+    void HibernateJobs()
+    {
+        auto& scd = global::SCHEDULER;
+        --scd.usingThreads;
+        M_ASSERT(scd.usingThreads >= 0, "Mismatch between wakup() and hibernate() calls!");
+        if (scd.usingThreads == 0)
         {
-            isHibernate = false;
+            scd.isHibernate = false;
         }
     }
 

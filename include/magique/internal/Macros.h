@@ -24,7 +24,6 @@
 
 #define FOR_EACH_AGAIN() FOR_EACH_HELPER
 
-
 #define FUNCTION_CASE(eventType)                                                                                       \
     if constexpr (type == eventType)                                                                                   \
     {                                                                                                                  \

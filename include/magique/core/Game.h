@@ -1,6 +1,9 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter
+
 #include <magique/fwd.hpp>
 #include <entt/entity/fwd.hpp>
 
@@ -86,5 +89,6 @@ namespace magique
 
 } // namespace magique
 
+#pragma warning(pop)
 
 #endif // APPLICATION_H

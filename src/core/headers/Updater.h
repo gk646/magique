@@ -18,7 +18,7 @@ namespace magique::updater
         }
     }
 
-    inline void StartTick() { global::SCHEDULER->wakeup(); }
+    inline void StartTick() { WakeUpJobs(); }
 
     inline void EndTick()
     {
@@ -26,7 +26,7 @@ namespace magique::updater
         {
             global::PERF_DATA.perfOverlay.updateValues();
         }
-        global::SCHEDULER->hibernate();
+        HibernateJobs();
         TickInputEvents();
         global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
     }

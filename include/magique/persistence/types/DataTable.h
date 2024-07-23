@@ -5,7 +5,7 @@
 #include <vector>
 #include <magique/util/Defines.h>
 #include <magique/util/Logging.h>
-#include <magique/internal/Types.h>
+#include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
 
 //-----------------------------------------------
@@ -84,7 +84,7 @@ namespace magique
         const std::vector<ColumnsTuple>& getData() const;
 
         //----------------- ITERATORS -----------------//
-        // iterators for rows
+        // iterators for rows - use with structure binding for a very nice syntax
 
         Iterator<ColumnsTuple> begin();
         Iterator<ColumnsTuple> end();
