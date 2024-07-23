@@ -94,13 +94,6 @@ namespace magique
     // IMPORTANT: Only valid after the Game() constructor returned!
     GameConfig& GetGameConfig();
 
-    //----------------- JOB SYSTEM -----------------//
-    // Note:: This is for advanced users! Look at util/Jobs.h
-
-    // Returns a reference to the scheduler
-    // Allows to submit concurrent jobs to distribute compatible work across threads
-    Scheduler& GetScheduler();
-
     //----------------- THREADING -----------------//
 
     // You generally dont have to call this - only call this if you know what it does

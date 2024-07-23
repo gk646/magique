@@ -47,9 +47,9 @@ namespace magique
         return currentTrack;
     }
 
-    void Playlist::setVolume(const float volume)
+    void Playlist::setVolume(const float newVolume)
     {
-        this->volume = volume;
+        volume = newVolume;
     }
 
 } // namespace magique

@@ -54,6 +54,7 @@
 #if defined(_DEBUG) || !defined(NDEBUG)
 #define MAGIQUE_DEBUG 1
 #else
+#undef MAGIQUE_DEBUG
 #define MAGIQUE_DEBUG 0
 #endif
 

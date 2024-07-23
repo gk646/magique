@@ -1,13 +1,14 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/assets/AssetLoader.h>
+#include <magique/util/Jobs.h>
 #include <magique/persistence/container/GameConfig.h>
-#include "cxstructs/SmallVector.h"
+#include <cxstructs/SmallVector.h>
 #include <raylib/rlgl.h>
 
-#include "../external/raylib/src/external/glad.h"
-#include "../external/raylib/src/coredata.h"
-#include "../external/raylib/src/external/glfw/include/GLFW/glfw3.h"
+#include "external/raylib/src/external/glad.h"
+#include "external/raylib/src/coredata.h"
+#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 
 #include "globals/LogicTickData.h"
 #include "globals/DrawTickData.h"
@@ -19,21 +20,15 @@
 #include "globals/AudioPlayer.h"
 #include "CoreData.h"
 
-#include "../ecs/systems/CollisionSystem.h"
-#include "../ecs/systems/InputSystem.h"
-#include "../ecs/systems/LogicSystem.h"
-#include "../ecs/systems/LightingSystem.h"
+#include "ecs/systems/CollisionSystem.h"
+#include "ecs/systems/InputSystem.h"
+#include "ecs/systems/LogicSystem.h"
+#include "ecs/systems/LightingSystem.h"
 
-#if defined(_WIN32)
-#define NOUSER
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <processthreadsapi.h>
-#endif
-
-#include "headers/GameUtil.h"
+#include "internal/headers/IncludeWindows.h"
 #include "internal/headers/OSUtil.h"
 
+#include "headers/GameUtil.h"
 #include "headers/Updater.h"
 #include "headers/Renderer.h"
 
@@ -95,6 +90,7 @@ namespace magique
         renderer::Run(_isLoading, *this);
 
         onShutDown(config);
+
         renderer::Close();
         updater::Close();
 

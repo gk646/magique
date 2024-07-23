@@ -161,6 +161,7 @@ namespace magique
             }
         };
 
+        return;
         //cxstructs::now();
         constexpr int parts = 4;
         std::vector<std::thread> threads;

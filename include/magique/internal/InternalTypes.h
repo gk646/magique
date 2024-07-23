@@ -156,8 +156,6 @@ namespace magique
     };
 
 
-
-
 } // namespace magique
 
 #endif //INTERNALTYPES_H
