@@ -1,3 +1,4 @@
+
 #include <magique/util/Jobs.h>
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
@@ -5,7 +6,10 @@
 
 #include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/IncludeWindows.h"
-#include "core/globals/JobScheduler.h"
+#include "internal/globals/JobScheduler.h"
+
+#include <cxconfig.h>
+#include <cxstructs/SmallVector.h>
 
 static bool initCalled = false;
 
@@ -20,7 +24,6 @@ namespace magique
         }
         initCalled = true;
         auto& scd = global::SCHEDULER;
-        scd.mainID = std::this_thread::get_id();
         scd.shutDown = false;
         scd.isHibernate = true;
         for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 2 Worker Threads + 1 Main Thread + 1 Update Thread = 4
@@ -74,6 +77,8 @@ namespace magique
 
     template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
     template void AwaitJobs<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
+    template void AwaitJobs<cxstructs::SmallVector<jobHandle, MAGIQUE_WORKER_THREADS + 1>>(
+        const cxstructs::SmallVector<jobHandle, MAGIQUE_WORKER_THREADS + 1>& container);
 
     void AwaitAllJobs()
     {
@@ -91,9 +96,11 @@ namespace magique
         scd.isHibernate = false;
     }
 
-    void HibernateJobs()
+    void HibernateJobs(const double startTime, const double tickTime)
     {
         auto& scd = global::SCHEDULER;
+        scd.startTime = startTime;
+        scd.tickTime = tickTime;
         --scd.usingThreads;
         M_ASSERT(scd.usingThreads >= 0, "Mismatch between wakup() and hibernate() calls!");
         if (scd.usingThreads == 0)

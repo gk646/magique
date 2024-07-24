@@ -224,11 +224,9 @@ namespace magique
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
         M_ASSERT(name != nullptr, "Passing nullptr!");
-        M_ASSERT(!assets.empty(), "No assets loaded!");
 
         const int size = static_cast<int>(strlen(name));
         int pos = FindDirectoryPos(assets, name, size);
-
 
         if (pos == -1) [[unlikely]]
         {

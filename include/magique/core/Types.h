@@ -172,6 +172,21 @@ namespace magique
         AUTOMATIC,
     };
 
+    enum PriorityLevel : int8_t
+    {
+        LOW,
+        MEDIUM,
+        HIGH,
+        CRITICAL,
+        INSTANT,
+    };
+
+    enum Thread : uint8_t
+    {
+        MAIN_THREAD,
+        BACKGROUND_THREAD,
+    };
+
     //----------------- MULTIPLAYER -----------------//
 
 

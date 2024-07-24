@@ -23,7 +23,6 @@ namespace magique
     inline void InsertToActorDist(SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                                   const int map, const int num)
     {
-
         for (int i = 0; i < 4; i++)
         {
             if (actorDist[MAGIQUE_MAX_PLAYERS * map + i] == -1)
@@ -126,6 +125,7 @@ namespace magique
             const auto cameraMap = tickData.cameraMap;
             const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
             const auto cameraBounds = GetCameraRect();
+            // TODO cache actor count
 
             // Lookup tables
             SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
@@ -142,12 +142,14 @@ namespace magique
                 const auto view = registry.view<const PositionC>();
                 for (const auto e : view)
                 {
-                    const auto pos = view.get<const PositionC>(e);
+                    const auto& pos = view.get<const PositionC>(e);
                     const auto map = pos.map;
                     if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
                     {
                         // Check if inside the camera bounds already
-                        if (map == cameraMap && CheckCollisionPointRec({pos.x, pos.y}, cameraBounds))
+                        if (map == cameraMap &&
+                            PointIntersectsRect(pos.x, pos.y, cameraBounds.x, cameraBounds.y, cameraBounds.width,
+                                                cameraBounds.height))
                         {
                             drawVec.push_back(e); // Should be drawn
                             cache[e] = cacheDuration;
@@ -204,6 +206,5 @@ namespace magique
     }
 
 } // namespace magique
-
 
 #endif //LOGICSYSTEM_H

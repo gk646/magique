@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_INPUTSYSTEM_H
 #define MAGIQUE_INPUTSYSTEM_H
 
-#include <magique/ecs/InternalScripting.h>
+#include <magique/ecs/Scripting.h>
 
 
 namespace magique

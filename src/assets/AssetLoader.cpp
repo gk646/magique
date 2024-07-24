@@ -14,10 +14,7 @@ namespace magique
         LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
     }
 
-    bool AssetLoader::step()
-    {
-        return stepLoop(assets);
-    }
+    bool AssetLoader::step() { return stepLoop(assets); }
 
     template <typename Func>
     bool BasicChecks(const Func func, const PriorityLevel pl, const int impact)
@@ -41,19 +38,18 @@ namespace magique
         return true;
     }
 
-    void AssetLoader::registerTask(TaskI<AssetContainer>* task, Thread thread, PriorityLevel pl, int impact)
+    void AssetLoader::registerTask(TaskI<AssetContainer>* task, const Thread thread, const PriorityLevel pl,
+                                   const int impact)
     {
         if (!BasicChecks(task, pl, impact))
             return;
-
         addTask(task, pl, thread, impact);
     }
 
-    void AssetLoader::registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl, int impact)
+    void AssetLoader::registerTask(AssetLoadFunc func, const Thread thread, const PriorityLevel pl, const int impact)
     {
         if (!BasicChecks(func, pl, impact))
             return;
-
         addLambdaTask(func, pl, thread, impact);
     }
 } // namespace magique

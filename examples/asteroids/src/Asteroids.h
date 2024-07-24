@@ -2,7 +2,7 @@
 #define ASTEROIDS_H
 
 #include <magique/core/Game.h>
-#include <magique/ecs/InternalScripting.h>
+#include <magique/ecs/Scripting.h>
 
 // Entity identifiers
 enum EntityID : uint16_t

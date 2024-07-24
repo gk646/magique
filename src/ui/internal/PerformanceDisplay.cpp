@@ -4,8 +4,8 @@
 #include <magique/ui/Colors.h>
 #include <raylib/raylib.h>
 
-#include "core/globals/Configuration.h"
-#include "core/globals/PerfData.h"
+#include "internal/globals/Configuration.h"
+#include "internal/globals/PerfData.h"
 
 #include "external/raylib/src/coredata.h"
 

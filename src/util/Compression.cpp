@@ -2,7 +2,6 @@
 #include <magique/internal/DataStructures.h>
 #include <magique/util/Logging.h>
 
-
 namespace magique
 {
     using BytePointer = unsigned char*;
@@ -99,7 +98,7 @@ namespace magique
             const auto it = std::lower_bound(topPatterns.begin(), topPatterns.end(), pair, predicate);
             if (it != topPatterns.end() || topPatterns.size() < maxSize)
             {
-                topPatterns.insert(it, pair);
+                //topPatterns.insert({it, pair});
 
                 if (topPatterns.size() > maxSize)
                 {
@@ -278,7 +277,6 @@ namespace magique
         return {reinterpret_cast<const char*>(compressedData), compressedIndex};
     }
 
-
     DataPointer<const char> Compress(const char* in, const int size)
     {
         const auto* data = reinterpret_cast<const unsigned char*>(in);
@@ -308,8 +306,6 @@ namespace magique
         return GenerateCompressedData((BytePointer)data, size, topPatterns);
     }
 
-
     DataPointer<const char> DeCompress(const char* data, int size) { return {nullptr, 0}; }
-
 
 } // namespace magique

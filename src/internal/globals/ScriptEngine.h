@@ -2,7 +2,7 @@
 #define MAGIQUE_SCRIPTENGINE_H
 
 #include <vector>
-#include <magique/ecs/InternalScripting.h>
+#include <magique/ecs/Scripting.h>
 
 namespace magique
 {
@@ -20,8 +20,10 @@ namespace magique
         }
     };
 
-    inline ScriptEngine SCRIPT_ENGINE;
+namespace global{
 
+    inline ScriptEngine SCRIPT_ENGINE;
+}
 } // namespace magique
 
 

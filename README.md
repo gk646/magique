@@ -20,7 +20,6 @@ Most notable features:
 - New types and methods to load and draw sprites and tilemaps (supports [Tiled](https://www.mapeditor.org/) exports)
 
 
-
 #### What magique IS:
 
 - A free, fast and easy-to-use open-source 2D engine
@@ -35,7 +34,13 @@ Most notable features:
 - An engine for complete C++ beginners
 
 
-The tech-stack of `magique`:
+### 1. Installation
+
+
+### 2. The Wiki
+
+
+### 2. The tech-stack of `magique`:
 
 - raylib
   - Drawing, shaders
@@ -60,4 +65,3 @@ Paradigms:
 - Fixed update tick rate
     - Default is 60 update per second
 - Entity Component System
-- 

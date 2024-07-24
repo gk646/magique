@@ -4,7 +4,7 @@
 
 #include <magique/util/Logging.h>
 
-#include "core/globals/Configuration.h"
+#include "internal/globals/Configuration.h"
 
 namespace magique
 {

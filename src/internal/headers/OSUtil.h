@@ -50,8 +50,8 @@ inline void SetupProcessPriority()
 #if defined(WIN32)
     HANDLE hProcess = GetCurrentProcess();
     SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-
-    DWORD_PTR processAffinityMask = 0x1F;
+    return;
+    DWORD_PTR processAffinityMask = 0x3F;
     if (!SetProcessAffinityMask(hProcess, processAffinityMask))
     {
         LOG_ERROR("Failed to setup process priority");

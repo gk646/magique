@@ -41,12 +41,12 @@ struct PositionC final
 
 struct CollisionC final
 {
-    uint8_t layerMask = 1;                // Entities only collide if they share any collision layer
-    magique::Shape shape = magique::RECT; // Shape
-    uint16_t width = 0;                   // width / radius for the circle
-    uint16_t height = 0;                  // height
+    float width = 0;                      // width / radius for the circle
+    float height = 0;                     // height
     int16_t anchorX = 0;                  // Rotation anchor point for the hitbox
     int16_t anchorY = 0;                  // Rotation anchor point for the hitbox
+    uint8_t layerMask = 1;                // Entities only collide if they share any collision layer
+    magique::Shape shape = magique::RECT; // Shape
 
     // Adds the collision layer
     void addCollisionLayer(magique::CollisionLayer layer);

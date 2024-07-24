@@ -10,8 +10,8 @@
 
 #include <raylib/raylib.h>
 
-#include "core/globals/TextureAtlas.h"
-#include "core/globals/AssetManager.h"
+#include "internal/globals/TextureAtlas.h"
+#include "internal/globals/AssetManager.h"
 #include "assets/headers/LoadWrappers.h"
 
 namespace magique
