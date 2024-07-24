@@ -8,9 +8,10 @@
 // Job System
 //-----------------------------------------------
 // .....................................................................
-// This is for advanced users
-// This systems is trimmed for speed
-// Allows to submit concurrent jobs to distribute compatible work across threads
+// This is for advanced users. This systems is trimmed for speed, it busy waits during the tick to quickly pickup tasks.
+// Between ticks its in hibernate sleeping until woken up again.
+// Allows to submit concurrent jobs to distribute compatible work across threads.
+// Per default has 2 worker threads.
 // .....................................................................
 
 namespace magique
@@ -63,13 +64,13 @@ namespace magique
 
     //----------------- LIFECYCLE -----------------//
 
-    // Brings all workers back to speed
-    // Note: Called automatically when using the game tempalte - only call if you know what it does
+    // Brings all workers back to speed (out of hibernate)
+    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
     void WakeUpJobs();
 
-    // Puts all workers to hibernation
-    // Note: Called automatically when using the game tempalte - only call if you know what it does
-    void HibernateJobs();
+    // Puts all workers to hibernation - pass the time the worker threads should hibernate (until next logic tick)
+    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
+    void HibernateJobs(double tickStart, double tickTime);
 
     //----------------- JOBS -----------------//
 

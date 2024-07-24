@@ -1,0 +1,119 @@
+#ifndef MAGIQUE_COLLISIONDETECTION_H
+#define MAGIQUE_COLLISIONDETECTION_H
+
+#include <c2/cute_c2.h>
+#include <immintrin.h>
+
+//-----------------------------------------------
+// Collision Detection Primitives with AVX2 intrinsics
+//-----------------------------------------------
+
+
+inline static constexpr c2x identityTransform{{0, 0}, {1, 0}};
+
+inline c2Poly RotRect(const float x, const float y, const float width, const float height, const float rot,
+                      const float anchorX, const float anchorY)
+{
+    c2Poly poly;
+    const float rad = rot * (DEG2RAD);
+    const float cosTheta = cosf(rad);
+    const float sinTheta = sinf(rad);
+
+    // Define local space rectangle corners
+    c2v localCorners[4] = {
+        {0, 0},          // top-left
+        {width, 0},      // top-right
+        {width, height}, // bottom-right
+        {0, height}      // bottom-left
+    };
+
+    // Rotate each corner around the local pivot and translate to world space
+    for (int i = 0; i < 4; ++i)
+    {
+        float localX = localCorners[i].x - anchorX;
+        float localY = localCorners[i].y - anchorY;
+
+        // Apply rotation
+        float rotatedX = localX * cosTheta - localY * sinTheta;
+        float rotatedY = localX * sinTheta + localY * cosTheta;
+
+        // Translate back and offset to world position
+        poly.verts[i].x = x + rotatedX + anchorX;
+        poly.verts[i].y = y + rotatedY + anchorY;
+    }
+
+    poly.count = 4;
+    c2MakePoly(&poly);
+    return poly;
+}
+
+
+inline bool RectIntersectsRect(const float x1, const float y1, const float w1, const float h1, const float x2,
+                               const float y2, const float w2, const float h2)
+{
+#ifdef MAGIQUE_USE_AVX2
+    // Load the rectangle boundaries into AVX2 vectors
+    __m256 rect1_min = _mm256_set_ps(0, 0, 0, 0, y1, y1, x1, x1);
+    __m256 rect1_max = _mm256_set_ps(0, 0, 0, 0, y1 + h1, y1 + h1, x1 + w1, x1 + w1);
+    __m256 rect2_min = _mm256_set_ps(0, 0, 0, 0, y2, y2, x2, x2);
+    __m256 rect2_max = _mm256_set_ps(0, 0, 0, 0, y2 + h2, y2 + h2, x2 + w2, x2 + w2);
+
+    // Perform the necessary comparisons
+    __m256 cmp_min = _mm256_cmp_ps(rect1_max, rect2_min, _CMP_GT_OQ);
+    __m256 cmp_max = _mm256_cmp_ps(rect1_min, rect2_max, _CMP_LT_OQ);
+
+    // Combine comparisons to check for intersection
+    __m256 result = _mm256_and_ps(cmp_min, cmp_max);
+
+    // Check if all comparisons indicate an intersection
+    return (_mm256_movemask_ps(result) & 0x3) == 0x3;
+#else
+    // Non-SIMD version
+    return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
+#endif
+}
+
+inline bool PointIntersectsCircle(const float px, const float py, const float cx, const float cy, const float radius)
+{
+#ifdef MAGIQUE_USE_AVX2
+    const __m256 point = _mm256_set_ps(px, py, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    const __m256 circle = _mm256_set_ps(cx, cy, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    const __m256 diff = _mm256_sub_ps(point, circle);
+
+    const __m256 diff_squared = _mm256_mul_ps(diff, diff);
+
+    const __m256 squared_dist = _mm256_hadd_ps(diff_squared, diff_squared);
+
+    const float sum_of_squares = _mm256_cvtss_f32(squared_dist) + _mm256_cvtss_f32(_mm256_permute2f128_ps(squared_dist, squared_dist, 0x1));
+
+    const float radius_squared = radius * radius;
+    return sum_of_squares <= radius_squared;
+#else
+    // Non-SIMD version
+    const float dx = px - cx;
+    const float dy = py - cy;
+    return (dx * dx + dy * dy) <= (radius * radius);
+#endif
+}
+
+inline bool PointIntersectsRect(const float px, const float py, const float rx, const float ry, const float rw, const float rh)
+{
+#ifdef MAGIQUE_USE_AVX2
+    const __m256 point = _mm256_set_ps(py, py, py, py, px, px, px, px);
+    const __m256 rect_min = _mm256_set_ps(ry, ry, ry, ry, rx, rx, rx, rx);
+    const __m256 rect_max = _mm256_set_ps(ry + rh, ry + rh, ry + rh, ry + rh, rx + rw, rx + rw, rx + rw, rx + rw);
+
+    const __m256 cmp_min = _mm256_cmp_ps(point, rect_min, _CMP_GE_OQ);
+    const __m256 cmp_max = _mm256_cmp_ps(point, rect_max, _CMP_LE_OQ);
+
+    const __m256 result = _mm256_and_ps(cmp_min, cmp_max);
+
+    return (_mm256_movemask_ps(result) & 0x3) == 0x3;
+#else
+    // Non-SIMD version
+    return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
+#endif
+}
+
+#endif //MAGIQUE_COLLISIONDETECTION_H

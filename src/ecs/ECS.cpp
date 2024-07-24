@@ -1,20 +1,19 @@
 #include <raylib/raylib.h>
 
 #include <magique/ecs/ECS.h>
-#include <magique/ecs/InternalScripting.h>
+#include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Defines.h>
 
-#include "core/globals/EntityTypeMap.h"
-#include "core/globals/LogicTickData.h"
-#include "core/globals/LogicThread.h"
-#include "ScriptEngine.h"
+#include "internal/globals/EntityTypeMap.h"
+#include "internal/globals/LogicTickData.h"
+#include "internal/globals/LogicThread.h"
+#include "internal/globals/ScriptEngine.h"
 
 namespace magique
 {
     bool RegisterEntity(const EntityID type, const std::function<void(entt::registry&, entt::entity)>& createFunc)
     {
-        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ENT_TYPE_MAP;
         if (type == static_cast<EntityID>(UINT16_MAX) || map.contains(type))
@@ -23,7 +22,7 @@ namespace magique
         }
 
         map.insert({type, createFunc});
-        SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
+        global::SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types
@@ -45,10 +44,7 @@ namespace magique
         return true;
     }
 
-    bool IsEntityExisting(const entt::entity e)
-    {
-        return internal::REGISTRY.valid(e);
-    }
+    bool IsEntityExisting(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
     entt::entity CreateEntity(const EntityID type, float x, float y, MapID mapID)
     {
@@ -119,8 +115,8 @@ namespace magique
     auto GiveCollision(const entt::entity e, Shape shape, const int width, const int height, const int anchorX,
                        const int anchorY) -> CollisionC&
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, (uint8_t)1, shape, (uint16_t)width, (uint16_t)height,
-                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY));
+        return internal::REGISTRY.emplace<CollisionC>(e, (float)width, (float)height, static_cast<int16_t>(anchorX),
+                                                      static_cast<int16_t>(anchorY), (uint8_t)1, shape);
     }
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }

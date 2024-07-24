@@ -1,30 +1,17 @@
-#ifndef TASKEXECUTOR_H_
-#define TASKEXECUTOR_H_
+#ifndef MAGIQUE_TASKEXECUTOR_H_
+#define MAGIQUE_TASKEXECUTOR_H_
 
-#include <magique/util/Logging.h>
 #include <thread>
 #include <map>
 #include <vector>
-#include <cstdint>
 #include <functional>
+
+#include <magique/util/Logging.h>
+#include <magique/core/Types.h>
+#include <magique/util/Jobs.h>
 
 namespace magique
 {
-    enum PriorityLevel : int8_t
-    {
-        LOW,
-        MEDIUM,
-        HIGH,
-        CRITICAL,
-        INSTANT,
-    };
-
-    enum Thread : uint8_t
-    {
-        MAIN_THREAD,
-        BACKGROUND_THREAD,
-    };
-
     template <typename T>
     struct TaskI
     {
@@ -56,10 +43,6 @@ namespace magique
     {
         ~TaskExecutor() override
         {
-            if (loadThread.joinable())
-            {
-                loadThread.join();
-            }
             for (auto& loadLevel : cpuTasks)
             {
                 for (auto task : loadLevel.second)
@@ -91,20 +74,17 @@ namespace magique
                 gpuDone = loadTasks(gpuTasks[currentLevel], res);
             }
 
-            if (!cpuDone)
+            if (!cpuDone && !cpuWorking)
             {
                 if (!cpuTasks[currentLevel].empty())
                 {
-                    if (loadThread.joinable())
-                    {
-                        loadThread.join();
-                    }
-                    loadThread = std::thread(
-                        [this, &res]()
+                    cpuWorking = true;
+                    AddJob(CreateJob(
+                        [this, &res]
                         {
                             loadTasks(cpuTasks[currentLevel], res);
                             cpuDone = true;
-                        });
+                        }));
                 }
                 else
                 {
@@ -120,6 +100,7 @@ namespace magique
                 {
                     gpuDone = false;
                     cpuDone = false;
+                    cpuWorking = false;
                     currentLevel = static_cast<PriorityLevel>(static_cast<int>(currentLevel) - 1);
                 }
             }
@@ -147,15 +128,14 @@ namespace magique
         {
             addTask(new LambdaTask{func}, pl, d, impact);
         }
-
         std::map<PriorityLevel, std::vector<TaskI<T>*>> cpuTasks;
         std::map<PriorityLevel, std::vector<TaskI<T>*>> gpuTasks;
-        std::thread loadThread;
         int totalImpact = 0;
         std::atomic<int> loadedImpact = 0;
         PriorityLevel currentLevel = INSTANT;
         bool cpuDone = false;
         bool gpuDone = false;
+        bool cpuWorking = false;
 
     private:
         bool loadTasks(std::vector<TaskI<T>*>& tasks, T& res)
@@ -190,4 +170,4 @@ namespace magique
         }
     };
 } // namespace magique
-#endif //TASKEXECUTOR_H_
+#endif //MAGIQUE_TASKEXECUTOR_H_

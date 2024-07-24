@@ -1444,7 +1444,7 @@ void SetTargetFPS(int fps)
     else
     {
         CORE.Time.target = 1.0 / (double)fps;
-        CORE.Time.wait = CORE.Time.target * 0.50; // Dont get consistent measurements otherwise
+        CORE.Time.wait = CORE.Time.target * 0.90;
     }
 }
 

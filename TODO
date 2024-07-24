@@ -1,0 +1,15 @@
+collect collision pairs and process them all for each tick -> adjust entity destruction
+
+profile and optimize -> use simd
+
+Pathfinding -> with dimensions and strategy API
+
+AI -> actual AI
+
+implement saving game save and data table
+
+implement run length encoding in compression
+
+implement particle API
+
+implement inserting rotated and other shapes into hashgrid

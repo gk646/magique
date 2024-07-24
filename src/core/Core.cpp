@@ -2,12 +2,12 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/util/Jobs.h>
 
-#include "core/globals/Configuration.h"
-#include "core/globals/TextureAtlas.h"
-#include "core/globals/LogicTickData.h"
-#include "core/globals/DrawTickData.h"
-#include "core/globals/Shaders.h"
-#include "headers/Shaders.h"
+#include "internal/globals/Configuration.h"
+#include "internal/globals/TextureAtlas.h"
+#include "internal/globals/LogicTickData.h"
+#include "internal/globals/DrawTickData.h"
+#include "internal/globals/ShaderEngine.h"
+#include "internal/headers/Shaders.h"
 
 static bool initCalled = false;
 

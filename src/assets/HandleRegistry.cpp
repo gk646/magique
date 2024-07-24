@@ -3,7 +3,7 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
-#include "core/globals/HandleRegistry.h"
+#include "internal/globals/HandleRegistry.h"
 
 namespace magique
 {

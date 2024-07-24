@@ -2,28 +2,25 @@
 #define LOGICTICKDATA_H
 
 #include <entt/entity/entity.hpp>
+#include <cxstructs/BitMask.h>
 
 #include <magique/fwd.hpp>
 #include <magique/internal/DataStructures.h>
-#include <cxstructs/BitMask.h>
 #include <magique/util/Defines.h>
 
-#include "util/datastructures/MultiResolutionGrid.h"
-
+#include "internal/datastructures/MultiResolutionGrid.h"
 
 namespace magique
 {
-    struct AlignedSet
+    template <typename T>
+    struct AlignedVec
     {
-        alignas(64) HashSet<entt::entity> set{500}; // To prevent false sharing
+        // To prevent false sharing
+        alignas(64) vector<T> vec;
     };
 
-    template <int size>
-    struct AlignedHashSets
-    {
-        std::array<AlignedSet, size> sets{};
-        HashSet<entt::entity>& operator[](int idx) { return sets[idx].set; }
-    };
+    using CollPairCollector = std::array<AlignedVec<std::pair<entt::entity, entt::entity>>, MAGIQUE_WORKER_THREADS + 1>;
+    using EntityCollector = std::array<AlignedVec<entt::entity>, MAGIQUE_WORKER_THREADS + 1>;
 
     struct LogicTickData final
     {
@@ -50,19 +47,20 @@ namespace magique
         vector<entt::entity> entityUpdateVec;
 
         // vector containing the entites to check for collision
-        vector<entt::entity> collisionVec;
+        vector<entt::entity> collisionVec{};
 
         // vector containing all entites to be drawn this tick
         // Culled with the camera
         vector<entt::entity> drawVec;
 
-        vector<std::pair<entt::entity, entt::entity>> collisionPairs;
+        // Collision pair collectors
+        CollPairCollector collisionPairs{};
+
+        // Collects entities - 2 for the 2 worker threads
+        EntityCollector collectors{};
 
         // Global hashGrid for all entities
         SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
-
-        // Collects entities - 2 for the 2 worker threads
-        AlignedHashSets<MAGIQUE_WORKER_THREADS + 1> collectors{};
 
         // Shadow segments
         vector<Vector3> shadowQuads;

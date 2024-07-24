@@ -22,19 +22,20 @@ namespace magique
                 if (t.joinable())
                     t.join();
             }
+            threads.clear();
         }
-
         alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
         alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
-        alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
         alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
-        alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
         alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
+        alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
+        alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
         std::atomic<int> currentJobsSize = 0;              // Current jobs
         std::atomic<uint16_t> handleID = 0;                // The internal handle counter
-        std::thread::id mainID;                            // Thread id of the main thread
         std::vector<std::thread> threads;                  // All working threads
         std::atomic<int> usingThreads = 0;
+        double startTime = 0;
+        double tickTime = 0;
 
         void addWorkedJob(const IJob* job)
         {
@@ -59,21 +60,23 @@ namespace magique
             }
         }
 
-        jobHandle getNextHandle()
-        {
-            return static_cast<jobHandle>(handleID++);
-        }
+        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
 
         friend void WorkerThreadFunc(Scheduler* scheduler, int threadNumber);
     };
 
+    constexpr auto tickDuration = 1.0 / MAGIQUE_LOGIC_TICKS;
+    constexpr auto wait = tickDuration * 0.90;
+
     inline void WorkerThreadFunc(Scheduler* scheduler, const int threadNumber)
     {
         SetupThreadPriority(threadNumber);
+        bool waited = false;
         while (!scheduler->shutDown.load(std::memory_order_acquire))
         {
             while (!scheduler->isHibernate.load(std::memory_order_acquire))
             {
+                waited = false;
                 scheduler->queueLock.lock();
                 if (!scheduler->jobQueue.empty())
                 {
@@ -92,9 +95,14 @@ namespace magique
                 {
                     scheduler->queueLock.unlock();
                 }
-               std::this_thread::yield();
             }
-            std::this_thread::sleep_for(std::chrono::microseconds(1));
+
+            // Wait more precisely with spinning at the end
+            if (!waited)
+            {
+                WaitTime(scheduler->startTime + tickDuration, wait - scheduler->tickTime);
+                waited = true;
+            }
         }
     }
 

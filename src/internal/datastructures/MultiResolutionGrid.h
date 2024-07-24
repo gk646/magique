@@ -3,15 +3,7 @@
 
 #include <cassert>
 #include <vector>
-#include <ankerl/unordered_dense.h>
-
-// IMPORTANT: Use a custom hashmap here and possibly a custom vector
-// You can then remove the includes
-template <typename Key, typename Value>
-using HashMapType = ankerl::unordered_dense::map<Key, Value>; // Insert custom type here
-
-template <typename Value>
-using VectorType = std::vector<Value>; // Inset custom type here
+#include <magique/internal/DataStructures.h>
 
 // This is a cache friendly "top-level" data structure
 // https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
@@ -51,7 +43,7 @@ struct DataBlock final
     {
         for (int i = 0; i < count; ++i)
         {
-            elems.insert(data[i]);
+            elems.push_back(data[i]);
         }
     }
 };
@@ -59,8 +51,8 @@ struct DataBlock final
 template <typename V, int blockSize = 16>
 struct SingleResolutionHashGrid final
 {
-    HashMapType<CellID, int> cellMap{};
-    VectorType<DataBlock<V, blockSize>> dataBlocks{};
+    magique::HashMap<CellID, int> cellMap{};
+    std::vector<DataBlock<V, blockSize>> dataBlocks{};
     int cellSize;
 
     explicit SingleResolutionHashGrid(const int cellSize) : cellSize(cellSize) {}
@@ -99,12 +91,12 @@ struct SingleResolutionHashGrid final
     }
 
     template <typename Container>
-    void query(Container& elems, const float x, const float y, const int w, const int h) const
+    void query(Container& elems, const float x, const float y, const float w, const float h) const
     {
         const int x1 = static_cast<int>(x) / cellSize;
         const int y1 = static_cast<int>(y) / cellSize;
-        const int x2 = (static_cast<int>(x) + w) / cellSize;
-        const int y2 = (static_cast<int>(y) + h) / cellSize;
+        const int x2 = static_cast<int>(x + w) / cellSize;
+        const int y2 = static_cast<int>(y + h) / cellSize;
 
         CellID cellID = GetCellID(x1, y1);
         queryElements(cellID, elems);

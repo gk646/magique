@@ -42,7 +42,7 @@ namespace magique::internal
 {
     inline void AssertHandler(const char* expr, const char* file, int line, const char* message)
     {
-        fprintf(stderr, "Assert failed: %s\nAt: %s:%d\nMessage: %s", expr, file, line, message);
+        fprintf(stderr, "Assert failed: %s\nAt: %s:%d\nMessage: %s\n", expr, file, line, message);
 #if defined(_MSC_VER)
         __debugbreak();
 #elif defined(__GNUC__)

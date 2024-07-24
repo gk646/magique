@@ -2,7 +2,7 @@
 #include <magique/ecs/ECS.h>
 #include <magique/util/Logging.h>
 
-#include "core/globals/AudioPlayer.h"
+#include "internal/globals/AudioPlayer.h"
 
 namespace magique
 {

@@ -2,8 +2,10 @@
 
 namespace magique::updater
 {
-    using namespace std::chrono;
-    inline static time_point<steady_clock> startTime;
+    constexpr double tickDuration = 1.0F / MAGIQUE_LOGIC_TICKS;
+    constexpr double wait = tickDuration * 0.9F;
+    static double startTime;
+    static double tick;
 
     inline void Setup()
     {
@@ -18,7 +20,11 @@ namespace magique::updater
         }
     }
 
-    inline void StartTick() { WakeUpJobs(); }
+    inline void StartTick()
+    {
+        startTime = glfwGetTime();
+        WakeUpJobs();
+    }
 
     inline void EndTick()
     {
@@ -26,39 +32,29 @@ namespace magique::updater
         {
             global::PERF_DATA.perfOverlay.updateValues();
         }
-        HibernateJobs();
         TickInputEvents();
-        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>((steady_clock::now() - startTime).count()));
+        const double tickTime = glfwGetTime() - startTime;
+        tick = tickTime;
+        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * 1'000'000'000.0F));
+        HibernateJobs(startTime,tickTime);
     }
 
     inline void GameLoop(const bool& isRunning, Game& game)
     {
         Setup();
-        constexpr auto tickDuration = nanoseconds(1'000'000'000 / MAGIQUE_LOGIC_TICKS);
 
-        auto lastTime = steady_clock::now();
-        nanoseconds accumulator(0);
         auto& reg = internal::REGISTRY;
 
         while (isRunning) [[likely]]
         {
-            startTime = steady_clock::now();
-            const auto passedTime = startTime - lastTime;
-            lastTime = startTime;
-            accumulator += passedTime;
-
-            while (accumulator >= tickDuration) [[unlikely]] // Safe guard to close instantly
+            StartTick();
+            //Tick game
             {
-                StartTick();
-                //Tick game
-                {
-                    InternalUpdate(reg); // Internal update upfront
-                    game.updateGame(reg);
-                }
-                EndTick();
-                accumulator = nanoseconds::zero();
+                InternalUpdate(reg); // Internal update upfront
+                game.updateGame(reg);
             }
-            std::this_thread::sleep_for(microseconds(1));
+            EndTick();
+            WaitTime(startTime + tickDuration, wait - tick);
         }
     }
 

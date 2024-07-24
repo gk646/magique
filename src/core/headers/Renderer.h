@@ -1,5 +1,4 @@
 #pragma once
-#include "GameUtil.h"
 
 namespace magique::renderer
 {

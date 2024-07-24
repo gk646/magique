@@ -67,7 +67,7 @@ namespace magique
         global::AUDIO_PLAYER.update();
         PollInputs(registry);
         UpdateLogic(registry);
-        CheckCollisions(registry);
+        CollisionSystem(registry);
     }
 
 } // namespace magique
