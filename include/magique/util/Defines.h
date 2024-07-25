@@ -15,7 +15,8 @@
 #define MAGIQUE_VERSION "0.0.2"
 #define MAGIQUE_DEBUG 1
 #define MAGIQUE_LOGIC_TICKS 60   // 60 Ticks per second
-#define MAGIQUE_WORKER_THREADS 3 // Amount of worker threads
+// Amount of worker threads - should stay at to -> 4 total threads which supports 95% of steam users
+#define MAGIQUE_WORKER_THREADS 2
 
 //----------------- STEAM -----------------//
 
@@ -35,7 +36,13 @@
 #define MAGIQUE_MAX_TILEMAP_LAYERS 5      // Maximum amount of layers for tilemaps
 #define MAGIQUE_MAX_EXPECTED_MAPS 32      // Maximum amount of expected maps
 
-//----------------- LOADING -----------------/  /
+//----------------- UI -----------------//
+
+#define MAGIQUE_UI_RESOLUTION_X 1920.0F // Logical resolution of 1920x1080 since its the most common
+#define MAGIQUE_UI_RESOLUTION_Y 1080.0F
+
+
+//----------------- LOADING -----------------//
 
 #define MAGIQUE_MAX_TABLE_NAME_SIZE 16
 
@@ -43,10 +50,9 @@
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
 
-
 //----------------- PERFORMANCE -----------------//
 
-#define MAGIQUE_USE_AVX2 // AVX2 intrinsics -> since 2013 haswell
+#define MAGIQUE_USE_AVX2 // AVX2 intrinsics -> since 2013 haswell - 93% of steam users support this
 
 //----------------- BRANCHES -----------------//
 

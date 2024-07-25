@@ -52,7 +52,7 @@ namespace magique
                 DrawCircleLinesV({pos.x + col.width / 2.0F, pos.y + col.height / 2.0F}, col.width, RED);
                 break;
             case RECT:
-                DrawRectangleLinesEx({pos.x, pos.y, (float)col.width, (float)col.height},2.0F,RED);
+                DrawRectangleLinesEx({pos.x, pos.y, (float)col.width, (float)col.height}, 2.0F, RED);
                 break;
             case POLYGON:
                 break;
@@ -64,9 +64,10 @@ namespace magique
 
     inline void InternalUpdate(entt::registry& registry)
     {
+        global::UI_DATA.update();
         global::AUDIO_PLAYER.update();
-        PollInputs(registry);
-        UpdateLogic(registry);
+        InputSystem(registry);
+        LogicSystem(registry);
         CollisionSystem(registry);
     }
 

@@ -1,4 +1,3 @@
-#pragma once
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
@@ -60,6 +59,13 @@ namespace magique
     struct Quest;
     struct QuestNode;
 
+    //----------------- UI -----------------//
+    struct UIRoot;
+    struct UIObject;
+    struct UIContainer;
+    struct UIData; // Internal
+    enum class AnchorPosition : uint8_t;
+
     //----------------- UTIL -----------------//
     enum LogLevel : int;
     struct Scheduler;
@@ -87,5 +93,7 @@ struct Color;
 struct Texture;
 struct Sound;
 struct Music;
+struct Rectangle;
+
 
 #endif // MAGIQUE_FWD_HPP

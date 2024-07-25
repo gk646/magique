@@ -2,12 +2,9 @@
 #define MAGIQUE_CORE_H
 
 #include <vector>
-
+#include <entt/entity/fwd.hpp>
 #include <magique/fwd.hpp>
 #include <magique/util/Defines.h>
-
-#include <entt/entity/fwd.hpp>
-#include <raylib/raylib.h>
 
 //-----------------------------------------------
 // Core Module

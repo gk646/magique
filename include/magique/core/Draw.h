@@ -1,8 +1,8 @@
 #ifndef MAGIQUE_DRAW_H
 #define MAGIQUE_DRAW_H
 
-#include <magique/core/Types.h>
 #include <raylib/raylib.h>
+#include <magique/core/Types.h>
 
 //-----------------------------------------------
 // Draw Module

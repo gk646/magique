@@ -1,10 +1,13 @@
+#include <raylib/raylib.h>
+#include <raylib/rlgl.h>
+#include <cxstructs/SmallVector.h>
+
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/Jobs.h>
 #include <magique/persistence/container/GameConfig.h>
-#include <cxstructs/SmallVector.h>
-#include <raylib/rlgl.h>
 
 #include "external/raylib/src/external/glad.h"
 #include "external/raylib/src/coredata.h"
@@ -19,6 +22,7 @@
 #include "internal/globals/ShaderEngine.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AudioPlayer.h"
+#include "internal/globals/UIData.h"
 
 #include "internal/systems/CollisionSystem.h"
 #include "internal/systems/InputSystem.h"
@@ -34,6 +38,9 @@
 
 CoreData CORE = {0};
 rlglData RLGL = {0};
+
+// Note: All includes are pulled out topside for clarity
+// Here the whole render and update loops happen
 
 namespace magique
 {
@@ -102,6 +109,4 @@ namespace magique
     }
 
     void Game::shutDown() { _isRunning = false; }
-
-
 } // namespace magique
