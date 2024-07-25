@@ -3,25 +3,30 @@
 
 // A single include header
 
+// Assets
+#include "assets/AssetPacker.h"
+#include "assets/AssetManager.h"
+#include "assets/AssetLoader.h"
+
 // Core
 #include "core/Game.h"
 #include "core/Core.h"
 #include "core/Draw.h"
 #include "core/Types.h"
 
-// Assets
-#include "assets/AssetPacker.h"
-#include "assets/AssetManager.h"
-#include "assets/AssetLoader.h"
-
 // EC System
 #include "ecs/ECS.h"
+
+// Gamedev
+
+#include "gamedev/Achievements.h"
+#include "gamedev/Pathfinding.h"
 
 // Util
 #include "util/Logging.h"
 
 // UI
-
-#include "ui/UIRoot.h"
+#include "ui/UI.h"
+#include "ui/Text.h"
 
 #endif // MAGIQUE_H

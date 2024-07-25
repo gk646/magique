@@ -1,14 +1,12 @@
+
 #include <fstream>
+#include <steam/steam_api.h>
+#include <cxstructs/SmallVector.h>
 
 #include <magique/util/Defines.h>
-
-#include <steam/steam_api.h>
-
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/util/Logging.h>
-#include <cxstructs/SmallVector.h>
 #include <magique/internal/Macros.h>
-
 
 static void DebugOutput(ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {

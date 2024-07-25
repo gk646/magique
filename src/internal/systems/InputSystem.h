@@ -3,10 +3,8 @@
 
 #include <magique/ecs/Scripting.h>
 
-
 namespace magique
 {
-
     inline bool IsAnyKeyDown()
     {
         for (const char i : CORE.Input.Keyboard.currentKeyState)
@@ -32,7 +30,7 @@ namespace magique
         return false; // No key
     }
 
-    inline void PollInputs(entt::registry& registry)
+    inline void InputSystem(entt::registry& registry)
     {
         // Should be a subtle optimization
         // Do some initial checks to avoid calling event function every tick

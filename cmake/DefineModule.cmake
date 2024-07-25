@@ -9,7 +9,8 @@ file(GLOB_RECURSE MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
 add_library(${TARGET_NAME}_${MODULE_NAME} OBJECT ${MODULE_FILES})
 
+
 target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 
-target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${SOURCE_PATH}/cxstructs/src)
+target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/external/cxstructs)

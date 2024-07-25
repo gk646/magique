@@ -53,6 +53,17 @@ namespace magique
         STATES_END, // All custom state enums need this as last state
     };
 
+    struct Point final
+    {
+        float x;
+        float y;
+    };
+
+    struct CursorAttachment final
+    {
+        void* userPointer;
+    };
+
     enum LightStyle : uint8_t
     {
         POINT_LIGHT_SOFT,         // Point ligtht
@@ -159,12 +170,6 @@ namespace magique
         }
     };
 
-
-    struct BehavoirTree final
-    {
-    };
-
-
     enum class KeyLayout
     {
         QWERTY,
@@ -172,6 +177,8 @@ namespace magique
         AUTOMATIC,
     };
 
+    // Used in any of the loader interfaces
+    // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
     enum PriorityLevel : int8_t
     {
         LOW,
@@ -185,6 +192,28 @@ namespace magique
     {
         MAIN_THREAD,
         BACKGROUND_THREAD,
+    };
+
+    // Anchor position used in the UI module to position objects
+    enum class AnchorPosition : uint8_t
+    {
+        LEFT_TOP,      // LT
+        LEFT_MID,      // LM
+        LEFT_BOTTOM,   // LB
+        CENTER_TOP,    // CT
+        CENTER_MID,    // CM
+        CENTER_BOTTOM, // CB
+        RIGHT_TOP,     // RT
+        RIGHT_MID,     // RM
+        RIGHT_BOTTOM   // RB
+    };
+
+    enum Size : uint8_t
+    {
+        MINI,
+        SMALL,
+        MID,
+        BIG
     };
 
     //----------------- MULTIPLAYER -----------------//
@@ -245,8 +274,6 @@ namespace magique
         CLIENT_EFFECT_UPDATE,
     };
 
-
 } // namespace magique
-
 
 #endif //MAGIQUE_TYPES_H

@@ -62,7 +62,7 @@ namespace magique::renderer
                 RenderLighting(registry);
             }
             EndMode2D();
-            game.drawUI(); // Draw UI
+            game.drawUI(GetUIRoot()); // Draw UI
         }
         EndTick();
     }

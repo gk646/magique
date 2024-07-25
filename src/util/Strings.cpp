@@ -6,12 +6,6 @@
 
 namespace magique
 {
-    struct Point
-    {
-        float x;
-        float y;
-    };
-
     struct PointI
     {
         uint8_t x;

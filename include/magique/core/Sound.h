@@ -3,7 +3,6 @@
 
 #include <magique/fwd.hpp>
 #include <entt/entity/fwd.hpp>
-#include <magique/assets/types/Playlist.h>
 
 //-----------------------------------------------
 // Sound Module

@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_COLLISIONDETECTION_H
 #define MAGIQUE_COLLISIONDETECTION_H
 
-#include <c2/cute_c2.h>
 #include <immintrin.h>
 
 //-----------------------------------------------
@@ -9,43 +8,6 @@
 //-----------------------------------------------
 
 
-inline static constexpr c2x identityTransform{{0, 0}, {1, 0}};
-
-inline c2Poly RotRect(const float x, const float y, const float width, const float height, const float rot,
-                      const float anchorX, const float anchorY)
-{
-    c2Poly poly;
-    const float rad = rot * (DEG2RAD);
-    const float cosTheta = cosf(rad);
-    const float sinTheta = sinf(rad);
-
-    // Define local space rectangle corners
-    c2v localCorners[4] = {
-        {0, 0},          // top-left
-        {width, 0},      // top-right
-        {width, height}, // bottom-right
-        {0, height}      // bottom-left
-    };
-
-    // Rotate each corner around the local pivot and translate to world space
-    for (int i = 0; i < 4; ++i)
-    {
-        float localX = localCorners[i].x - anchorX;
-        float localY = localCorners[i].y - anchorY;
-
-        // Apply rotation
-        float rotatedX = localX * cosTheta - localY * sinTheta;
-        float rotatedY = localX * sinTheta + localY * cosTheta;
-
-        // Translate back and offset to world position
-        poly.verts[i].x = x + rotatedX + anchorX;
-        poly.verts[i].y = y + rotatedY + anchorY;
-    }
-
-    poly.count = 4;
-    c2MakePoly(&poly);
-    return poly;
-}
 
 
 inline bool RectIntersectsRect(const float x1, const float y1, const float w1, const float h1, const float x2,

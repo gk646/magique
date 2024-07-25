@@ -107,7 +107,7 @@ namespace magique
 #endif
     }
 
-    inline void UpdateLogic(entt::registry& registry)
+    inline void LogicSystem(entt::registry& registry)
     {
         auto& tickData = global::LOGIC_TICK_DATA;
         auto& hashGrid = tickData.hashGrid;

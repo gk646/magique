@@ -3,8 +3,8 @@ set(PROJECT_PREFIX "MAGIQUE")
 set(TARGET_NAME "magique")
 
 # Set the library path
-set(DEPENDENCY_PATH "C:/Users/gk646/Documents/Libraries")
-set(SOURCE_PATH "C:/Users/gk646/Documents/CodingProjects/C++")
+set(DEPENDENCY_PATH "C:/Users/Lukas/Documents/Libraries")
+
 set(${PROJECT_PREFIX}_VERSION "0.0.2")
 
 option(${PROJECT_PREFIX}_ENABLE_SANITIZER "Set to compile with adress sanitizer")

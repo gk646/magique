@@ -1,5 +1,5 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#ifndef MAGIQUE_GAME_H
+#define MAGIQUE_GAME_H
 
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
@@ -68,7 +68,7 @@ namespace magique
         virtual void drawGame(entt::registry& registry, Camera2D& camera) {}
 
         // Called each render tick after all other draw calls
-        virtual void drawUI() {}
+        virtual void drawUI(UIRoot& root) {}
 
         //----------------- START -----------------//
 
@@ -91,4 +91,4 @@ namespace magique
 
 #pragma warning(pop)
 
-#endif // APPLICATION_H
+#endif // MAGIQUE_GAME_H
