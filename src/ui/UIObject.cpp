@@ -128,5 +128,4 @@ namespace magique
 
     bool UIObject::getIsPressed(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
-
 } // namespace magique
