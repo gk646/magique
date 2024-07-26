@@ -6,14 +6,13 @@
 //-----------------------------------------------
 // UI Module
 //-----------------------------------------------
-//
-//
+// .....................................................................
 // The UI module in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
 // To fit all screen rations (16:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
 // This makes it easy to follow designs or reason about distances while the engine handles scaling automatically,
-//
+// .....................................................................
 
 namespace magique
 {

@@ -3,10 +3,10 @@
 
 #include <magique/fwd.hpp>
 
-
+//-----------------------------------------------
 // UIObject
-
-
+//-----------------------------------------------
+// .....................................................................
 // The UIObject is the base class of all ui elements. Its members are the percent values for its position, its unique id,
 // a pointer to the parent (may be null) and a z-index.
 // The z index controls at which layer the element is drawn. The closer to 0 means right in the screen and the bigger the
@@ -14,7 +14,7 @@
 // adjusted manually if needed.
 // Note: You can just pass absolute coordinates (in the logical UI resolution of 1920x1080) and the it will
 // automatically scale to the current resolution
-
+// .....................................................................
 
 namespace magique
 {

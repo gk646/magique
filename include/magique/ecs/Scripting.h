@@ -1,12 +1,12 @@
 #ifndef MAGIQUE_INTERNAL_SCRIPTING_H
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter
+
 #include <magique/fwd.hpp>
 #include <magique/ecs/ECS.h>
 #include <magique/internal/Macros.h>
-
-#pragma warning(push)
-#pragma warning(disable : 4100) // unreferenced formal parameter
 
 //-----------------------------------------------
 // Internal Scripting Module

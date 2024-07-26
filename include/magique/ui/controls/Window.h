@@ -4,6 +4,13 @@
 #include <raylib/raylib.h>
 #include <magique/ui/types/UIContainer.h>
 
+//-----------------------------------------------
+// Windows
+//-----------------------------------------------
+// .....................................................................
+// Generic window class which can be subclasses to achieve custom visuals
+// .....................................................................
+
 namespace magique
 {
     struct Window : UIContainer

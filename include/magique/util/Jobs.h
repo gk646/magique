@@ -9,7 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // This is for advanced users. This systems is trimmed for speed, it busy waits during the tick to quickly pickup tasks.
-// Between ticks its in hibernate sleeping until woken up again.
+// Between ticks its in hibernation sleeping until woken up again.
 // Allows to submit concurrent jobs to distribute compatible work across threads.
 // Per default has 2 worker threads.
 // .....................................................................

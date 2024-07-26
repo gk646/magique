@@ -3,18 +3,17 @@
 
 #include <memory>
 #include <optional>
-
 #include <magique/core/Types.h>
 #include <magique/ui/types/UIContainer.h>
 
+//-----------------------------------------------
 // UI Root
-//
-//
+//-----------------------------------------------
+// .....................................................................
 // The UI module in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
 // To fit all screen rations (16:9, 4:3) you can use anchor points.
-//
-//
+// .....................................................................
 
 namespace magique
 {

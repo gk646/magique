@@ -53,7 +53,6 @@ namespace magique
     bool IsHost();
 
 
-
 } // namespace magique
 
 

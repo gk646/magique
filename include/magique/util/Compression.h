@@ -3,6 +3,10 @@
 
 #include <magique/core/Types.h>
 
+//-----------------------------------------------
+// Compression Module
+//-----------------------------------------------
+
 namespace magique
 {
     // Compresses the given data with a custom algorithm
