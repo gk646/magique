@@ -6,8 +6,11 @@
 
 #include "internal/globals/Configuration.h"
 
+
 namespace magique
 {
+    LogCallbackFunc CALL_BACK = nullptr;
+
     void SetLogLevel(const LogLevel level) { global::CONFIGURATION.logLevel = level; }
 
     void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
@@ -52,6 +55,8 @@ namespace magique
             fprintf(out, "[%s]: ", level_str);
         }
 
+        if (CALL_BACK)
+            CALL_BACK(level, msg);
 
         // Handle the variable arguments
         va_list args;
@@ -59,7 +64,7 @@ namespace magique
         vfprintf(out, msg, args);
         va_end(args);
 
-        fprintf(out, "\n");
+        fputc('\n', out);
 
         if (level >= LEVEL_ERROR) [[unlikely]]
         {
@@ -73,8 +78,11 @@ namespace magique
 #endif
 #endif
             if (level == LEVEL_FATAL) [[unlikely]]
-                exit(1);
+                std::exit(EXIT_FAILURE);
         }
     }
+
+    void SetLogCallback(const LogCallbackFunc func) { CALL_BACK = func; }
+
 
 } // namespace magique

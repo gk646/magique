@@ -4,11 +4,13 @@
 #include <raylib/raylib.h>
 #include <magique/ui/types/UIObject.h>
 
+//-----------------------------------------------
 // Button
-
+//-----------------------------------------------
+// .....................................................................
 // The draw functions can be overridden so the visuals can be modified completly
 // Defaults implementations are provided for guidance
-
+// .....................................................................
 
 namespace magique
 {

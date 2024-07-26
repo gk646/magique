@@ -22,6 +22,9 @@ namespace magique
     template <typename K, typename V>
     using HashMap = ankerl::unordered_dense::map<K, V>;
 
+    template <typename K, typename V, typename Hash, typename Equals>
+    using HashMapEx = ankerl::unordered_dense::map<K, V, Hash, Equals>;
+
     template <typename K, typename Hash = std::hash<K>>
     using HashSet = emhash9::HashSet<K, Hash>;
 

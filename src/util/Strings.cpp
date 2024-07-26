@@ -1,8 +1,8 @@
-#include <magique/util/Strings.h>
 #include <cmath>
-
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
+
+#include <magique/util/Strings.h>
 
 namespace magique
 {
@@ -264,7 +264,6 @@ namespace magique
     {
         return SplitString(s.c_str(), delim);
     }
-
 
     std::string& TrimLeadingWhitespace(std::string& str)
     {

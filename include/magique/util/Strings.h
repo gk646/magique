@@ -10,7 +10,6 @@
 //-----------------------------------------------
 // .....................................................................
 // This module is supposed to extend raylibs. Check raylib for some more fundamental text options like number parsing etc.
-//
 // .....................................................................
 
 namespace magique

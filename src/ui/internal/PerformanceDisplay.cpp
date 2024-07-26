@@ -1,9 +1,8 @@
-#include <cstdio>
 #include <raylib/raylib.h>
 
+#include "PerformanceDisplay.h"
 #include "internal/globals/Configuration.h"
 #include "internal/globals/PerfData.h"
-#include "PerformanceDisplay.h"
 #include "external/raylib/src/coredata.h"
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1
@@ -40,7 +39,7 @@ float drawBlock(const char* text, const Font& f, const float fs, const Vector2 p
 {
     const float blockHeight = fs + fs * 0.15F;
     const Rectangle container = {pos.x, pos.y, w, blockHeight};
-    DrawRectangleRec(container, DARKGRAY);
+    DrawRectangleRec(container, GRAY);
     DrawRectangleLinesEx(container, fs * 0.1F, LIGHTGRAY);
     const Vector2 textPosition = {pos.x + w * 0.07F, pos.y + (blockHeight - fs) / 2};
     DrawTextEx(f, text, textPosition, fs, 0.5F, LIGHTGRAY);

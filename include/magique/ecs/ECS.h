@@ -9,12 +9,10 @@
 // ECS Module
 //-------------------------------
 // ................................................................................
-// All entities have the PositionC auto assigned per default
+// Note: All entities have the PositionC auto assigned per default!
 // ................................................................................
 
-// A unique type identifier handled by the user to disinguish different types of game objects
-// Max value is reserved for internal use e.g. UINT16_MAX
-enum EntityID : uint16_t; // User implemented
+enum EntityID : uint16_t; // A unique type identifier handled by the user to disinguish different types of game objects
 
 namespace magique
 {
@@ -50,6 +48,7 @@ namespace magique
     //-------------- LIFE CYCLE --------------//
 
     // Creates a new entity by calling the registered function for that type
+    // Note: All entities have the PositionC auto assigned per default!
     // Failure: Returns entt::null
     entt::entity CreateEntity(EntityID type, float x, float y, MapID map);
 

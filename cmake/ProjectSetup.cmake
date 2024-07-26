@@ -3,7 +3,7 @@ set(PROJECT_PREFIX "MAGIQUE")
 set(TARGET_NAME "magique")
 
 # Set the library path
-set(DEPENDENCY_PATH "C:/Users/Lukas/Documents/Libraries")
+set(DEPENDENCY_PATH "C:/Users/gk646/Documents/Libraries")
 
 set(${PROJECT_PREFIX}_VERSION "0.0.2")
 

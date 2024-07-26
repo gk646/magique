@@ -7,10 +7,10 @@
 //-----------------------------------------------
 // UI Container - Base UI Class
 //-----------------------------------------------
-//
+// .....................................................................
 // A container for ui-objects. All positions of its children are relative to it!
 // Moving the parent automatically moves all children!
-//
+// .....................................................................
 
 namespace magique
 {
