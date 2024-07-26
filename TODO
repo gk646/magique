@@ -13,3 +13,5 @@ implement run length encoding in compression
 implement particle API
 
 implement inserting rotated and other shapes into hashgrid
+
+text engine to format numbers into strings
