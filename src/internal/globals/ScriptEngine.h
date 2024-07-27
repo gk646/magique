@@ -20,10 +20,11 @@ namespace magique
         }
     };
 
-namespace global{
+    namespace global
+    {
 
-    inline ScriptEngine SCRIPT_ENGINE;
-}
+        inline ScriptEngine SCRIPT_ENGINE;
+    }
 } // namespace magique
 
 

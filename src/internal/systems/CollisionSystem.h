@@ -20,7 +20,7 @@ namespace magique
 {
     inline bool CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&);
 
-    inline void HandleCollisionPairs(CollPairCollector& colPairs);
+    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
 
     inline void CollisionSystem(entt::registry& registry)
     {
@@ -29,6 +29,7 @@ namespace magique
         auto& collisionVec = tickData.collisionVec;
         auto& collectors = tickData.collectors;
         auto& colPairs = tickData.collisionPairs;
+        auto& pairSet = tickData.pairSet;
 
         const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
@@ -36,27 +37,21 @@ namespace magique
             const auto end = collisionVec.begin() + endIdx;
             auto& collector = collectors[j].vec;
             auto& pairs = colPairs[j].vec;
-
             for (auto it = start; it != end; ++it)
             {
                 const auto first = *it;
                 const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-
-                // Query quadtree
                 grid.query<vector<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
                 for (const auto second : collector)
                 {
                     if (first >= second)
                         continue;
                     const auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
-
-                    // Not on the same map or not on the same collision layer
-                    if (posA.map != posB.map || colA.layerMask & colB.layerMask == 0) [[unlikely]]
-                        continue;
-
+                    if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0) [[unlikely]]
+                        continue; // Not on the same map or not on the same collision layer
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                     {
-                        pairs.emplace_back(first, second);
+                        pairs.emplace_back(first, posA.type, second, posB.type);
                     }
                 }
                 collector.clear();
@@ -64,7 +59,7 @@ namespace magique
         };
 
         const int size = static_cast<int>(collisionVec.size());
-        if (size > 700)
+        if (size > 500)
         {
             cxstructs::SmallVector<jobHandle, WORK_PARTS> handles;
             int end = 0;
@@ -89,15 +84,12 @@ namespace magique
             collisionCheck(0, 0, size);
         }
 #ifdef MAGIQUE_DEBUG_COLLISIONS
-        printf("Detected Collisions: %d\n", collisions);
         int correct = 0;
         for (const auto first : collisionVec)
         {
-            if (!registry.valid(first)) [[unlikely]]
-                continue;
             for (const auto second : collisionVec)
             {
-                if (first >= second || !registry.valid(second)) [[unlikely]]
+                if (first >= second) [[unlikely]]
                     continue;
                 auto [posA, colA] = registry.get<PositionC, const CollisionC>(first);
                 auto [posB, colB] = registry.get<PositionC, const CollisionC>(second);
@@ -110,23 +102,36 @@ namespace magique
         printf("Collisions: %d\n", correct);
 #endif
         grid.clear();
-        HandleCollisionPairs(colPairs);
+        HandleCollisionPairs(colPairs, pairSet);
     }
 
-    inline void HandleCollisionPairs(CollPairCollector& colPairs)
+    inline uint64_t GetEntityHash(const entt::entity e1, const entt::entity e2)
+    {
+        return static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
+    }
+
+
+    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
     {
         int count = 0;
         for (auto& [vec] : colPairs)
         {
-            count += vec.size();
+            for (const auto [e1, id1, e2, id2] : vec)
+            {
+                auto num = GetEntityHash(e1, e2);
+                if (pairSet.contains(num))
+                    continue;
+                pairSet.insert(num);
+                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id1], e1, e2);
+                // Invoke out of seconds view
+                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id2], e2, e1);
+                count++;
+            }
             vec.clear();
         }
-        printf("Pairs: %d\n", count);
-
+        pairSet.clear();
+        //printf("Pairs: %d\n", count);
         // Scripts are default filled - with this we can skip the script check
-        // InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[posA.type], first, second);
-        // Invoke out of seconds view
-        //InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[posB.type], second, first);
     }
 
     inline static constexpr c2x identityTransform{{0, 0}, {1, 0}};

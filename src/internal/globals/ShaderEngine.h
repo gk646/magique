@@ -8,6 +8,8 @@ namespace magique
 {
     struct Shaders final
     {
+        vector<Vector3> shadowQuads; // Shadow segments
+
         Shader shadow;
         Shader light;
         Shader raytracing;
@@ -25,8 +27,11 @@ namespace magique
 
         unsigned int vao, vbo;
         unsigned int currentSize;
-        void init(size_t initialSize = 1024 * sizeof(Vector3)) {
-            shadowTexture = LoadRenderTexture(1920,1080);
+
+        void init(size_t initialSize = 1024 * sizeof(Vector3))
+        {
+            shadowQuads.reserve(500);
+            shadowTexture = LoadRenderTexture(1920, 1080);
 
             currentSize = initialSize;
 
@@ -43,11 +48,13 @@ namespace magique
             rlDisableVertexArray();
         }
 
-        void updateObjectBuffer(const Vector3* vertices, const int vertexCount) {
+        void updateObjectBuffer(const Vector3* vertices, const int vertexCount)
+        {
             size_t requiredSize = vertexCount * sizeof(Vector3);
 
             // Check if the current buffer size is sufficient
-            if (requiredSize > currentSize) {
+            if (requiredSize > currentSize)
+            {
                 // Reallocate buffer with larger size
                 currentSize = requiredSize;
                 rlUnloadVertexBuffer(vbo);

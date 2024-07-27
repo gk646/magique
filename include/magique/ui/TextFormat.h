@@ -7,22 +7,22 @@
 // Text Format Module
 //-----------------------------------------------
 // .....................................................................
-// This module allows rendering text with placeholders replaced by specified values.
+// This module allows rendering text with dynamic placeholders replaced by specified values.
 // To denote a placeholder you have to use the saved placeholder string and the
 // Per default uses CMake syntax: "Hello, ${PLAYER_NAME}!" -> "Hello, Jespar!"
-// Uses raylibs text buffers internally.
-// Thus returned strings follow the same rules as its TextFormat() (invalidated on further calls)
-// Supports up to 255 values for each type - Maximum length of the formatted string is 512
 // Note: This is implemented as efficiently as possible -> its quite performant
+// Limitations:
+//              - Maximum of 255 Values for each type -> 885 total (int, float, string)
+//              - Maximum length of string values is 64
+//              - Maximum length of any placeholder is 64
 // .....................................................................
 
 namespace magique
 {
     //----------------- VALUES -----------------//
 
-    // Sets the value with which the specified format will be replaced
+    // Sets the value with which the specified placeholder will be replaced
     // Note: If a given format already exists it will be overwritten silently!
-    // Maximum length for a string value is 32
     void SetFormatValue(const char* placeholder, const char* val);
     void SetFormatValue(const char* placeholder, const std::string& val);
     void SetFormatValue(const char* placeholder, float val);
@@ -40,7 +40,7 @@ namespace magique
     void DrawTextFmt(const Font& font, const char* text, Vector2 pos, float size, float spacing, Color tint = WHITE);
 
     // Formats and returns the given text with the current placeholder state
-    // IMPORTANT: returned string becomes invalid after calling any other function that uses raylibs formatting
+    // IMPORTANT: returned string will only be valid until this method is called again
     const char* GetFormattedText(const char* text);
 
     //----------------- CUSTOMIZE -----------------//

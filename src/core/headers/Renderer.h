@@ -1,4 +1,5 @@
-#pragma once
+#ifndef RENDERER_H
+#define RENDERER_H
 
 namespace magique::renderer
 {
@@ -56,13 +57,14 @@ namespace magique::renderer
                 game.drawWorld(camera);
                 global::LOGIC_TICK_DATA.lock();
                 game.drawGame(registry, camera); // Draw game
-                if (global::CONFIGURATION.showHitboxes)
+                if (global::CONFIGURATION.showHitboxes) [[unlikely]]
                     RenderHitboxes(registry);
                 global::LOGIC_TICK_DATA.unlock();
                 RenderLighting(registry);
             }
             EndMode2D();
             game.drawUI(GetUIRoot()); // Draw UI
+            global::COMMAND_LINE.draw();
         }
         EndTick();
     }
@@ -88,3 +90,5 @@ namespace magique::renderer
 
 
 } // namespace magique::renderer
+
+#endif //RENDERER_H

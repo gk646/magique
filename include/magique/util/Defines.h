@@ -15,8 +15,7 @@
 #define MAGIQUE_VERSION "0.0.2"
 #define MAGIQUE_DEBUG 1
 #define MAGIQUE_LOGIC_TICKS 60   // 60 Ticks per second
-// Amount of worker threads - should stay at to -> 4 total threads which supports 95% of steam users
-#define MAGIQUE_WORKER_THREADS 2
+#define MAGIQUE_WORKER_THREADS 2 // Amount of worker threads - 4 total threads which supports 95% of steam users
 
 //----------------- STEAM -----------------//
 
@@ -39,8 +38,8 @@
 //----------------- UI -----------------//
 
 #define MAGIQUE_UI_RESOLUTION_X 1920.0F // Logical resolution of 1920x1080 since its the most common
-#define MAGIQUE_UI_RESOLUTION_Y 1080.0F
-
+#define MAGIQUE_UI_RESOLUTION_Y 1080.0F // Logical resolution of 1920x1080 since its the most common
+#define MAGIQUE_MAX_FORMAT_LEN 64       // Limits both placeholders and string values
 
 //----------------- LOADING -----------------//
 

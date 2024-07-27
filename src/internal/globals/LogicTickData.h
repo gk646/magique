@@ -12,68 +12,51 @@
 
 namespace magique
 {
+    struct PairInfo final // Saves entity id and type
+    {
+        entt::entity e1;
+        EntityID id1;
+        entt::entity e2;
+        EntityID id2;
+    };
+
     template <typename T>
-    struct AlignedVec
+    struct AlignedVec final
     {
         // To prevent false sharing
         alignas(64) vector<T> vec;
     };
 
-    using CollPairCollector = std::array<AlignedVec<std::pair<entt::entity, entt::entity>>, MAGIQUE_WORKER_THREADS + 1>;
+    using CollPairCollector = std::array<AlignedVec<PairInfo>, MAGIQUE_WORKER_THREADS + 1>;
     using EntityCollector = std::array<AlignedVec<entt::entity>, MAGIQUE_WORKER_THREADS + 1>;
+    using EntityFlagMap = HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>>;
+    using EntityCache = HashMap<entt::entity, uint16_t>;
+    using HashGrid = SingleResolutionHashGrid<entt::entity, 32>;
 
     struct LogicTickData final
     {
-        // Map the camera is in
-        MapID cameraMap;
-
-        // current camera
-        Camera2D camera{};
-
-        // entity id of the camera
-        entt::entity cameraEntity = entt::null;
-
-        // Currently loaded zones
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{};
-
-        // Change set for multiplayer events
-        HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>> changedSet{500};
-
-        // Cache for entities that are not in update range anymore
-        // They are still updated for cache duration
-        HashMap<entt::entity, uint16_t> entityUpdateCache{1000};
-
-        // vector containing the entites to update for this tick
-        vector<entt::entity> entityUpdateVec;
-
-        // vector containing the entites to check for collision
-        vector<entt::entity> collisionVec{};
-
-        // vector containing all entites to be drawn this tick
-        // Culled with the camera
-        vector<entt::entity> drawVec;
-
-        // Collision pair collectors
-        CollPairCollector collisionPairs{};
-
-        // Collects entities - 2 for the 2 worker threads
-        EntityCollector collectors{};
-
-        // Global hashGrid for all entities
-        SingleResolutionHashGrid<entt::entity, 32> hashGrid{200};
-
-        // Shadow segments
-        vector<Vector3> shadowQuads;
-
-        // Atomic spinlock - whenever any data is accessed on the draw thread
-        std::atomic_flag flag;
+        MapID cameraMap;                                     // Map the camera is in
+        Camera2D camera{};                                   // current camera
+        entt::entity cameraEntity = entt::null;              // entity id of the camera
+        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
+        EntityFlagMap changedSet{500};                       // Change set for multiplayer events
+        EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
+        vector<entt::entity> entityUpdateVec;                // vector containing the entites to update for this tick
+        vector<entt::entity> collisionVec{};                 // vector containing the entites to check for collision
+        vector<entt::entity> drawVec;                        // vector containing all entites to be drawn this tick
+        CollPairCollector collisionPairs{};                  // Collision pair collectors
+        HashSet<uint64_t> pairSet{};                         // Filters unique collision pairs
+        EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
+        HashGrid hashGrid{200};                              // Global hashGrid for all entities
+        std::atomic_flag flag; // Atomic spinlock - whenever any data is accessed on the draw thread
 
         LogicTickData()
         {
             hashGrid.reserve(150, 1000);
-            shadowQuads.reserve(1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
+            collisionVec.reserve(500);
+            pairSet.reserve(1000);
         }
 
         void lock()
