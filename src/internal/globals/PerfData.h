@@ -64,7 +64,6 @@ namespace magique
             else if (t == DRAW)
             {
                 times = &drawTimes;
-
             }
             else
             {

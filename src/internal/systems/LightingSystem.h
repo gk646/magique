@@ -12,7 +12,7 @@ namespace magique
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
-        auto& shadowQuads = global::LOGIC_TICK_DATA.shadowQuads;
+        auto& shadowQuads =shaders.shadowQuads;
         shadowQuads.clear();
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();

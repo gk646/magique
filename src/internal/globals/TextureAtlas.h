@@ -1,11 +1,11 @@
 #ifndef TEXTUREATLAS_H
 #define TEXTUREATLAS_H
 
+#include <cxstructs/StackVector.h>
+
 #include <magique/assets/AssetManager.h>
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
-
-#include <cxstructs/StackVector.h>
 
 namespace magique
 {

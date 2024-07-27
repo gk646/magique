@@ -6,7 +6,8 @@
 #include <magique/internal/DataStructures.h>
 #include <magique/util/Defines.h>
 
-namespace magique{
+namespace magique
+{
     struct HandleRegistry final
     {
         std::vector<handle> handles;
@@ -22,11 +23,12 @@ namespace magique{
         }
     };
 
-namespace global{
-    inline HandleRegistry HANDLE_REGISTRY{};
+    namespace global
+    {
+        inline HandleRegistry HANDLE_REGISTRY{};
 
     }
-    }
+} // namespace magique
 
 
 #endif //HANDLEREGISTRY_H

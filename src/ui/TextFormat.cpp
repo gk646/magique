@@ -1,5 +1,4 @@
 #include <ranges>
-#include <vector>
 #include <string>
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
@@ -7,8 +6,8 @@
 #include <magique/ui/TextFormat.h>
 #include <magique/internal/DataStructures.h>
 #include <magique/util/Logging.h>
-
-#include "external/raylib/src/config.h"
+#include <magique/internal/Macros.h>
+#include <magique/util/Defines.h>
 
 // Note: This implementation uses separate vectors to store values without memory overhead
 //       Inserting new values, and overwriting values from the same type is fast.
@@ -63,7 +62,8 @@ ValueStorage<std::string, float, int> VALUE_STORAGE; // All values stored by the
 char FMT_PREFIX = '$';                               // The format prefix to seach for#
 char FMT_ENCAP_START = '{';                          // Format encapsulator start
 char FMT_ENCAP_END = '}';                            // Format encapsulator end
-std::string FORMAT_CACHE(33, '\0');                  // Length of 64 to ensure it is large enough for most values
+std::string FORMAT_CACHE(64, '\0');                  // Length of 64 to ensure it is large enough for most values
+std::string STRING_BUILDER(512, '\0');
 
 template <typename T>
 constexpr ValueType getValueType()
@@ -106,6 +106,9 @@ void eraseValue(const ValueInfo info)
 template <typename T>
 void SetFormatValueImpl(const char* ph, const T& val)
 {
+    M_ASSERT(strlen(ph) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
+    if constexpr (std::is_same_v<T, std::string>)
+        M_ASSERT(val.size() < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
     const auto it = VALUES.find(ph);
     auto& valueVec = VALUE_STORAGE.getValueVec<T>();
     if (it != VALUES.end())
@@ -126,18 +129,20 @@ void SetFormatValueImpl(const char* ph, const T& val)
             }
             const auto size = static_cast<int>(valueVec.size());
             valueVec.emplace_back(std::move(val));
-            VALUES.insert({ph, {STRING, static_cast<uint8_t>(size)}});
+            VALUES.erase(it);
+            VALUES.insert({ph, {getValueType<T>(), static_cast<uint8_t>(size)}});
         }
         else // Just overwrite the existing value
         {
             valueVec[it->second.index] = val;
+            it->second.type = getValueType<T>();
         }
     }
     else // Just add a new value
     {
         const auto size = static_cast<int>(valueVec.size());
         valueVec.emplace_back(std::move(val));
-        VALUES.insert({ph, {STRING, static_cast<uint8_t>(size)}});
+        VALUES.insert({ph, {getValueType<T>(), static_cast<uint8_t>(size)}});
     }
 }
 
@@ -146,19 +151,24 @@ const char* GetValueText(const ValueInfo info)
     switch (info.type)
     {
     case FLOAT:
-        snprintf(&FORMAT_CACHE[0], FORMAT_CACHE.size(), "%.6g", VALUE_STORAGE.getValueVec<float>()[info.index]);
+        snprintf(FORMAT_CACHE.data(), 64, "%.3g", VALUE_STORAGE.getValueVec<float>()[info.index]);
         break;
     case STRING:
-        snprintf(&FORMAT_CACHE[0], FORMAT_CACHE.size(), "%s",
-                 VALUE_STORAGE.getValueVec<std::string>()[info.index].c_str());
-        break;
+        {
+            const std::string& str = VALUE_STORAGE.getValueVec<std::string>()[info.index];
+            std::memcpy(FORMAT_CACHE.data(), str.c_str(), str.size() + 1);
+            break;
+        }
     case INT:
-        snprintf(&FORMAT_CACHE[0], FORMAT_CACHE.size(), "%d", VALUE_STORAGE.getValueVec<int>()[info.index]);
-        break;
+        {
+            // Due to small buffer optimization doesnt cause allocation below 15 digits
+            const std::string intStr = std::to_string(VALUE_STORAGE.getValueVec<int>()[info.index]);
+            std::memcpy(FORMAT_CACHE.data(), intStr.c_str(), intStr.size() + 1);
+            break;
+        }
     default:
         return nullptr;
     }
-
     return FORMAT_CACHE.c_str();
 }
 
@@ -190,10 +200,6 @@ namespace magique
         return VALUE_STORAGE.getValueVec<T>()[it->second.index];
     }
 
-    template float& GetFormatValue(const char*);
-    template std::string& GetFormatValue(const char*);
-    template int& GetFormatValue(const char*);
-
     void DrawTextFmt(const Font& font, const char* text, const Vector2 pos, const float size, const float spacing,
                      const Color tint)
     {
@@ -201,6 +207,64 @@ namespace magique
         DrawTextEx(font, fmtText, pos, size, spacing, tint);
     }
 
+    const char* GetFormattedText(const char* text)
+    {
+        if (text == nullptr) [[unlikely]]
+            return nullptr;
+
+        int i = 0;
+        STRING_BUILDER.clear();
+        char c;
+
+        while ((c = text[i]) != '\0')
+        {
+            if (c == FMT_PREFIX && text[i + 1] == FMT_ENCAP_START)
+            {
+                const int placeStart = i + 2;
+                int j = placeStart;
+                while (text[j] != '\0' && text[j] != FMT_ENCAP_END)
+                {
+                    ++j;
+                }
+                if (text[j] == FMT_ENCAP_END)
+                {
+                    FORMAT_CACHE.assign(text + placeStart, j - placeStart);
+                    auto it = VALUES.find(FORMAT_CACHE);
+                    if (it != VALUES.end())
+                    {
+                        auto* valueText = GetValueText(it->second);
+                        STRING_BUILDER.append(valueText);
+                        i = j;
+                    }
+                    else
+                    {
+                        STRING_BUILDER.push_back(c);
+                    }
+                }
+                else
+                {
+                    STRING_BUILDER.push_back(c);
+                }
+            }
+            else
+            {
+                STRING_BUILDER.push_back(c);
+            }
+            ++i;
+        }
+        return STRING_BUILDER.c_str();
+    }
+
+
+    void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
+
+
+    template float& GetFormatValue(const char*);
+    template std::string& GetFormatValue(const char*);
+    template int& GetFormatValue(const char*);
+
+    // Old implementation - bit slower
+    /*
     const char* GetFormattedText(const char* text)
     {
         if (text == nullptr) [[unlikely]]
@@ -250,6 +314,11 @@ namespace magique
                         }
                         else
                         {
+                            const int newLen = i + valueLen - placeLen;
+                            if (newLen >= MAX_TEXT_BUFFER_LENGTH)
+                            {
+                                return nullptr;
+                            }
                             std::memmove(work + (placeStart - 2 + valueLen), work + (i + 1), maxLen - i);
                             std::memcpy(work + (placeStart - 2), valueText, valueLen);
                             i = placeStart - 3 + valueLen;
@@ -265,7 +334,6 @@ namespace magique
         }
         return work;
     }
-
-    void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
+    */
 
 } // namespace magique

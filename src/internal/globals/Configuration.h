@@ -34,7 +34,7 @@ namespace magique
         Font font{};
 
         // Shows red outlines for the hitboxes
-        bool showHitboxes;
+        bool showHitboxes = false;
 
         // World bounds
         Rectangle worldBounds{};
