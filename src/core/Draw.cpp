@@ -57,94 +57,93 @@ namespace magique
         rlSetTexture(0);
     }
 
-   void DrawRegionEx(TextureRegion region, const float x, const float y, const float rotation, const bool flipX, const Color tint)
-{
-    // Check if the region is valid
-    M_ASSERT(region.id > 0, "The texture for this region is invalid");
-
-    const auto texWidth = static_cast<float>(region.width);
-    const auto texHeight = static_cast<float>(region.height);
-
-    if (flipX) [[unlikely]]
+    void DrawRegionEx(TextureRegion region, const float x, const float y, const float rotation, const bool flipX,
+                      const Color tint)
     {
-        region.width *= -1;
-    }
+        // Check if the region is valid
+        M_ASSERT(region.id > 0, "The texture for this region is invalid");
 
-    constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-    constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
+        const auto texWidth = static_cast<float>(region.width);
+        const auto texHeight = static_cast<float>(region.height);
 
-    const float texCoordLeft = static_cast<float>(region.offX) / atlasWidth;
-    const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / atlasWidth;
-    const float texCoordTop = static_cast<float>(region.offY) / atlasHeight;
-    const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / atlasHeight;
-
-    rlSetTexture(region.id);
-    rlBegin(RL_QUADS);
-
-    rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-    rlNormal3f(0.0f, 0.0f, 1.0f);
-
-    if (rotation != 0)
-    {
-        // Rotation in radians
-        const float cosTheta = std::cos(rotation * DEG2RAD);
-        const float sinTheta = std::sin(rotation * DEG2RAD);
-
-        // Center of rotation
-        const float cx = x + texWidth / 2;
-        const float cy = y + texHeight / 2;
-
-        auto rotate = [&](const float px, const float py)
+        if (flipX) [[unlikely]]
         {
-            const float dx = px - cx;
-            const float dy = py - cy;
-            return std::make_pair(cx + dx * cosTheta - dy * sinTheta, cy + dx * sinTheta + dy * cosTheta);
-        };
+            region.width *= -1;
+        }
 
-        // Top-left corner for region and quad
-        auto [tx1, ty1] = rotate(x, y);
-        rlTexCoord2f(texCoordLeft, texCoordTop);
-        rlVertex2f(tx1, ty1);
+        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
+        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
 
-        // Bottom-left corner for region and quad
-        auto [tx2, ty2] = rotate(x, y + texHeight);
-        rlTexCoord2f(texCoordLeft, texCoordBottom);
-        rlVertex2f(tx2, ty2);
+        const float texCoordLeft = static_cast<float>(region.offX) / atlasWidth;
+        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / atlasWidth;
+        const float texCoordTop = static_cast<float>(region.offY) / atlasHeight;
+        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / atlasHeight;
 
-        // Bottom-right corner for region and quad
-        auto [tx3, ty3] = rotate(x + texWidth, y + texHeight);
-        rlTexCoord2f(texCoordRight, texCoordBottom);
-        rlVertex2f(tx3, ty3);
+        rlSetTexture(region.id);
+        rlBegin(RL_QUADS);
 
-        // Top-right corner for region and quad
-        auto [tx4, ty4] = rotate(x + texWidth, y);
-        rlTexCoord2f(texCoordRight, texCoordTop);
-        rlVertex2f(tx4, ty4);
+        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+        rlNormal3f(0.0f, 0.0f, 1.0f);
+
+        if (rotation != 0)
+        {
+            // Rotation in radians
+            const float cosTheta = std::cos(rotation * DEG2RAD);
+            const float sinTheta = std::sin(rotation * DEG2RAD);
+
+            // Center of rotation
+            const float cx = x + texWidth / 2;
+            const float cy = y + texHeight / 2;
+
+            auto rotate = [&](const float px, const float py)
+            {
+                const float dx = px - cx;
+                const float dy = py - cy;
+                return std::make_pair(cx + dx * cosTheta - dy * sinTheta, cy + dx * sinTheta + dy * cosTheta);
+            };
+
+            // Top-left corner for region and quad
+            auto [tx1, ty1] = rotate(x, y);
+            rlTexCoord2f(texCoordLeft, texCoordTop);
+            rlVertex2f(tx1, ty1);
+
+            // Bottom-left corner for region and quad
+            auto [tx2, ty2] = rotate(x, y + texHeight);
+            rlTexCoord2f(texCoordLeft, texCoordBottom);
+            rlVertex2f(tx2, ty2);
+
+            // Bottom-right corner for region and quad
+            auto [tx3, ty3] = rotate(x + texWidth, y + texHeight);
+            rlTexCoord2f(texCoordRight, texCoordBottom);
+            rlVertex2f(tx3, ty3);
+
+            // Top-right corner for region and quad
+            auto [tx4, ty4] = rotate(x + texWidth, y);
+            rlTexCoord2f(texCoordRight, texCoordTop);
+            rlVertex2f(tx4, ty4);
+        }
+        else
+        {
+            // Top-left corner for region and quad
+            rlTexCoord2f(texCoordLeft, texCoordTop);
+            rlVertex2f(x, y);
+
+            // Bottom-left corner for region and quad
+            rlTexCoord2f(texCoordLeft, texCoordBottom);
+            rlVertex2f(x, y + texHeight);
+
+            // Bottom-right corner for region and quad
+            rlTexCoord2f(texCoordRight, texCoordBottom);
+            rlVertex2f(x + texWidth, y + texHeight);
+
+            // Top-right corner for region and quad
+            rlTexCoord2f(texCoordRight, texCoordTop);
+            rlVertex2f(x + texWidth, y);
+        }
+
+        rlEnd();
+        rlSetTexture(0);
     }
-    else
-    {
-        // Top-left corner for region and quad
-        rlTexCoord2f(texCoordLeft, texCoordTop);
-        rlVertex2f(x, y);
-
-        // Bottom-left corner for region and quad
-        rlTexCoord2f(texCoordLeft, texCoordBottom);
-        rlVertex2f(x, y + texHeight);
-
-        // Bottom-right corner for region and quad
-        rlTexCoord2f(texCoordRight, texCoordBottom);
-        rlVertex2f(x + texWidth, y + texHeight);
-
-        // Top-right corner for region and quad
-        rlTexCoord2f(texCoordRight, texCoordTop);
-        rlVertex2f(x + texWidth, y);
-    }
-
-    rlEnd();
-    rlSetTexture(0);
-}
-
-
 
     void DrawSprite(SpriteSheet sheet, float x, float y, const int frame, const bool flipX, const Color tint)
     {
@@ -265,5 +264,20 @@ namespace magique
         rlEnd();
         rlSetTexture(0);
     }
+
+    void DrawCenteredText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+                          const Color c)
+    {
+        const auto width = MeasureTextEx(f, txt, fs, spc).x;
+        DrawTextEx(f, txt, {pos.x - width / 2.0F, pos.y}, fs, spc, c);
+    }
+
+    void DrawRighBoundText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+                           const Color c)
+    {
+        const auto width = MeasureTextEx(f, txt, fs, spc).x;
+        DrawTextEx(f, txt, {pos.x - width, pos.y}, fs, spc, c);
+    }
+
 
 } // namespace magique

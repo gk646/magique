@@ -64,7 +64,7 @@ namespace magique
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
-    enum class AnchorPosition : uint8_t;
+    enum class AnchorPosition : int;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;

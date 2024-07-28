@@ -7,11 +7,14 @@
 // Types Modules
 //-----------------------------------------------
 // ................................................................................
-// These are common types used by the engine
+// These are the simple and public types/enums used and exposed by magique
+// Note that some enum use a explicit type to save memory when used in the ECS or networking
 // ................................................................................
 
 namespace magique
 {
+    //----------------- ASSETS  -----------------//
+
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
         uint16_t offX;  // Horizontal offset from the top left of the atlas
@@ -39,6 +42,8 @@ namespace magique
         [[nodiscard]] int getCurrentTexture(uint16_t spriteCount) const;
     };
 
+    //----------------- ENTITY COMPONENT SYSTEM -----------------//
+
     // Default action states
     enum class ActionState : uint8_t
     {
@@ -53,17 +58,7 @@ namespace magique
         STATES_END, // All custom state enums need this as last state
     };
 
-    struct Point final
-    {
-        float x;
-        float y;
-    };
-
-    struct CursorAttachment final
-    {
-        void* userPointer;
-    };
-
+    // Which lighting style the emitter has
     enum LightStyle : uint8_t
     {
         POINT_LIGHT_SOFT,         // Point ligtht
@@ -78,24 +73,44 @@ namespace magique
         POLYGON,
     };
 
-    enum class LightingModel : uint8_t
-    {
-        STATIC_SHADOWS, // Default
-        RAY_TRACING,
-        NONE,
-    };
-
     // Feel free to rename those!
     enum class CollisionLayer : uint8_t
     {
-        DEFAULT_LAYER = 1 << 1,
-        LAYER_1 = 1 << 2,
-        LAYER_2 = 1 << 3,
-        LAYER_3 = 1 << 4,
-        LAYER_4 = 1 << 5,
-        LAYER_5 = 1 << 6,
-        LAYER_6 = 1 << 7,
+        DEFAULT_LAYER = 1 << 0,
+        LAYER_1 = 1 << 1,
+        LAYER_2 = 1 << 2,
+        LAYER_3 = 1 << 3,
+        LAYER_4 = 1 << 4,
+        LAYER_5 = 1 << 5,
+        LAYER_6 = 1 << 6,
+        LAYER_7 = 1 << 7,
     };
+
+    //----------------- UI -----------------//
+
+    // Anchor position used in the UI module to position objects
+    enum class AnchorPosition
+    {
+        LEFT_TOP,      // LT
+        LEFT_MID,      // LM
+        LEFT_BOTTOM,   // LB
+        CENTER_TOP,    // CT
+        CENTER_MID,    // CM
+        CENTER_BOTTOM, // CB
+        RIGHT_TOP,     // RT
+        RIGHT_MID,     // RM
+        RIGHT_BOTTOM   // RB
+    };
+
+    enum Size
+    {
+        MINI,
+        SMALL,
+        MID,
+        BIG
+    };
+
+    //----------------- HELPER TYPES -----------------//
 
     // Efficient representation of a keybind with optional modifiers
     struct Keybind final
@@ -146,6 +161,7 @@ namespace magique
         int64_t data = 0;
     };
 
+    // Efficient representation of a achievement - done when the condition is true once
     struct Achievement final
     {
         bool finished = false;
@@ -156,18 +172,24 @@ namespace magique
         ~Achievement();
     };
 
-    // Always allocated with new []
-    template <typename T>
-    struct DataPointer final
-    {
-        T* pointer;
-        int size;
+    //----------------- MISC -----------------//
 
-        void free()
-        {
-            delete[] pointer;
-            size = -1;
-        }
+    struct Point final
+    {
+        float x;
+        float y;
+    };
+
+    struct CursorAttachment final
+    {
+        void* userPointer;
+    };
+
+    enum class LightingModel : uint8_t
+    {
+        STATIC_SHADOWS, // Default
+        RAY_TRACING,
+        NONE,
     };
 
     enum class KeyLayout
@@ -179,7 +201,7 @@ namespace magique
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
-    enum PriorityLevel : int8_t
+    enum PriorityLevel
     {
         LOW,
         MEDIUM,
@@ -188,36 +210,20 @@ namespace magique
         INSTANT,
     };
 
-    enum Thread : uint8_t
+    enum Thread
     {
         MAIN_THREAD,
         BACKGROUND_THREAD,
     };
 
-    // Anchor position used in the UI module to position objects
-    enum class AnchorPosition : uint8_t
+    enum TextAlign
     {
-        LEFT_TOP,      // LT
-        LEFT_MID,      // LM
-        LEFT_BOTTOM,   // LB
-        CENTER_TOP,    // CT
-        CENTER_MID,    // CM
-        CENTER_BOTTOM, // CB
-        RIGHT_TOP,     // RT
-        RIGHT_MID,     // RM
-        RIGHT_BOTTOM   // RB
-    };
-
-    enum Size : uint8_t
-    {
-        MINI,
-        SMALL,
-        MID,
-        BIG
+        LEFT,
+        CENTERED,
+        RIGHT
     };
 
     //----------------- MULTIPLAYER -----------------//
-
 
     enum class SendFlag : uint8_t
     {
