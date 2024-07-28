@@ -110,7 +110,6 @@ namespace magique
         return static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
     }
 
-
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
     {
         int count = 0;
@@ -130,7 +129,7 @@ namespace magique
             vec.clear();
         }
         pairSet.clear();
-        //printf("Pairs: %d\n", count);
+      // printf("Pairs: %d\n", count);
         // Scripts are default filled - with this we can skip the script check
     }
 

@@ -23,9 +23,7 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 #endif
     while (glfwGetTime() < destinationTime)
     {
-#if defined(_WIN32)
-        YieldProcessor();
-#endif
+
     }
 }
 
@@ -51,7 +49,7 @@ inline void SetupProcessPriority()
     HANDLE hProcess = GetCurrentProcess();
     SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
     return;
-    DWORD_PTR processAffinityMask = 0x3F;
+    DWORD_PTR processAffinityMask = 0x1F;
     if (!SetProcessAffinityMask(hProcess, processAffinityMask))
     {
         LOG_ERROR("Failed to setup process priority");

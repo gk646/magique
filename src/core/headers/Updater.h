@@ -42,9 +42,7 @@ namespace magique::updater
     inline void GameLoop(const bool& isRunning, Game& game)
     {
         Setup();
-
         auto& reg = internal::REGISTRY;
-
         while (isRunning) [[likely]]
         {
             StartTick();

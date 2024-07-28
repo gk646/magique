@@ -15,12 +15,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
 elseif (MSVC)
-    add_compile_options(/W4 /fp:fast /GR- /Zc:preprocessor /D "TBB_USE_THREADING_TOOLS")
+    add_compile_options(/W4 /fp:fast /GR- /Zc:preprocessor -D_HAS_EXCEPTIONS=0)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Od /Zi")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi")
 
-    set(CMAKE_C_FLAGS_RELEASE "/arch:AVX2 /O2 /GR-")
-    set(CMAKE_CXX_FLAGS_RELEASE "/arch:AVX2 /O2 /Ob3 /GA /Gw /GL /EHsc /GR- /GF")
+    set(CMAKE_C_FLAGS_RELEASE "/arch:AVX2 /O2 /GL /fp:fast /GR-")
+    set(CMAKE_CXX_FLAGS_RELEASE "/std:c++20 /arch:AVX2 /O2 /GL /Ob3 /Gy /GA /Gw /EHc /GF /GR-")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
     if (${PROJECT_PREFIX}_ENABLE_SANITIZER)
@@ -28,6 +28,20 @@ elseif (MSVC)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
         set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /fsanitize=address")
     endif ()
-endif ()
 
-add_compile_definitions(_HAS_EXCEPTIONS=0)
+    # Explanation of flags:
+    # /arch:AVX2       - Enable AVX2 instruction set
+    # /O2              - Maximize speed (Release optimization level)
+    # /Ob3             - Inline functions aggressively
+    # /GA              - Optimize for Windows applications (assumes no console)
+    # /Gy              - Enable function-level linking
+    # /GL              - Enable whole program optimization
+    # /EHc             - Synchronous exception handling, minimal overhead
+    # /GR-             - Disable RTTI (Runtime Type Information)
+    # /GF              - Enable read-only string pooling
+
+    # Linker flags for release configuration:
+    # /LTCG            - Link-time code generation
+    # /OPT:REF         - Eliminate unused functions/data
+    # /OPT:ICF         - Identical COMDAT folding (remove duplicate code)
+endif ()

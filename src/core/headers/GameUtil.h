@@ -66,6 +66,7 @@ namespace magique
     {
         global::UI_DATA.update();
         global::AUDIO_PLAYER.update();
+        global::COMMAND_LINE.update();
         InputSystem(registry);
         LogicSystem(registry);
         CollisionSystem(registry);

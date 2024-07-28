@@ -97,10 +97,11 @@ namespace magique
                 }
             }
 
-            // Wait more precisely with spinning at the end
+            // Wait more precisely with spinning at the end - only if necessary
             if (!waited)
             {
-                WaitTime(scheduler->startTime + tickDuration, wait - scheduler->tickTime);
+                const double finalTime = scheduler->startTime + tickDuration;
+                WaitTime(finalTime, (finalTime - glfwGetTime()) * 0.9F);
                 waited = true;
             }
         }

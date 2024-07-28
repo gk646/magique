@@ -14,6 +14,8 @@
 
 namespace magique
 {
+    //----------------- TEXTURES -----------------//
+
     // Draws a given texture region
     void DrawRegion(TextureRegion region, float x, float y, bool flipX = false, Color tint = WHITE);
 
@@ -35,6 +37,16 @@ namespace magique
     // If you need to scale your textures, provide a scaling factor when you load the sheet
     // 'layer' is 0-based indexing and starts from the bottom up in draw order
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
+
+    //----------------- TEXT -----------------//
+
+    // Draws the given text centered around the given position
+    // Drop in replacement for DrawTextEx()
+    void DrawCenteredText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
+
+    // Draws the given text aligned so that it ends on the given x positions
+    // Drop in replacement for DrawTextEx()
+    void DrawRighBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
 } // namespace magique
 

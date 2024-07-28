@@ -78,7 +78,6 @@ namespace magique
     Setting::Setting(bool val) { save(val); }
     Setting::Setting(float val) { save(val); }
 
-
     Achievement::~Achievement()
     {
 

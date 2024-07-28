@@ -206,7 +206,7 @@ namespace magique
         return {uniqueMarkers, unique2Markers};
     }
 
-    DataPointer<const char> GenerateCompressedData(BytePointer data, int size, const PatternVec& vec)
+    std::pair<const unsigned char*, int> GenerateCompressedData(BytePointer data, int size, const PatternVec& vec)
     {
         const auto [markers, markers2] = FindMarkers(data, size);
 
@@ -214,7 +214,7 @@ namespace magique
         int unique2 = static_cast<int>(markers2.size());
 
         if (unique == 0 && unique2 == 0) // No possible marker symbols
-            return {reinterpret_cast<const char*>(data), size};
+            return {reinterpret_cast<const unsigned char*>(data), size};
 
         printf("unique: %zu\n", markers.size());
         printf("unique2: %zu\n", markers2.size());
@@ -274,10 +274,10 @@ namespace magique
             compressedData[compressedIndex++] = data[i++];
         }
 
-        return {reinterpret_cast<const char*>(compressedData), compressedIndex};
+        return {reinterpret_cast<const unsigned char*>(compressedData), compressedIndex};
     }
 
-    DataPointer<const char> Compress(const char* in, const int size)
+    std::pair<const unsigned char*, int> Compress(const char* in, const int size)
     {
         const auto* data = reinterpret_cast<const unsigned char*>(in);
         if (data == nullptr || size <= 0)
@@ -306,6 +306,6 @@ namespace magique
         return GenerateCompressedData((BytePointer)data, size, topPatterns);
     }
 
-    DataPointer<const char> DeCompress(const char* data, int size) { return {nullptr, 0}; }
+    std::pair<const unsigned char*, int> DeCompress(const char* data, int size) { return {nullptr, 0}; }
 
 } // namespace magique

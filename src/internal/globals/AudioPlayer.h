@@ -4,13 +4,14 @@
 #include <vector>
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
+#include <magique/util/Defines.h>
 
 namespace magique
 {
     struct Track final
     {
         static constexpr float FADE_DURATION = 3.0F;
-        static constexpr float VOLUME_STEP = 1.0F / (60.0F * FADE_DURATION); // 1 to 0 volume at 60 ticks/s
+        static constexpr float VOLUME_STEP = 1.0F / (MAGIQUE_LOGIC_TICKS * FADE_DURATION); // 1 to 0 volume at x ticks/s
 
         Music music;
         float playBackVolume = 1.0F;

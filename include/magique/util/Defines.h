@@ -12,9 +12,9 @@
 
 //----------------- CORE -----------------//
 
-#define MAGIQUE_VERSION "0.0.2"
+#define MAGIQUE_VERSION "0.0.3"
 #define MAGIQUE_DEBUG 1
-#define MAGIQUE_LOGIC_TICKS 60   // 60 Ticks per second
+#define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
 #define MAGIQUE_WORKER_THREADS 2 // Amount of worker threads - 4 total threads which supports 95% of steam users
 
 //----------------- STEAM -----------------//

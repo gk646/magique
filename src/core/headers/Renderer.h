@@ -21,8 +21,8 @@ namespace magique::renderer
 
     inline void StartTick()
     {
+        PollInputEvents(); // This takes quite long and skews times
         startTime = glfwGetTime();
-        PollInputEvents();
         BeginDrawing();
         AssignDrawTickCamera();
     }
@@ -72,7 +72,6 @@ namespace magique::renderer
     inline void Run(bool& isLoading, Game& game)
     {
         Setup();
-
         auto& registry = internal::REGISTRY;
         auto& camera = global::DRAW_TICK_DATA.camera;
 
