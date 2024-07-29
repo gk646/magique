@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['layer_5f1_0',['LAYER_1',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9feafacb16a7ea65b9d485291e898833633f',1,'magique']]],
+  ['layer_5f2_1',['LAYER_2',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9feab0df9fdc14dd6ee4dc23cf17a2aca07a',1,'magique']]],
+  ['layer_5f3_2',['LAYER_3',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9feae3230e5645eee2f47e139a54af57fc39',1,'magique']]],
+  ['layer_5f4_3',['LAYER_4',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9fea03ffd42bd2033b7c3cc29744289371a1',1,'magique']]],
+  ['layer_5f5_4',['LAYER_5',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9feaf317090b49c9c6624c8486d48f15d934',1,'magique']]],
+  ['layer_5f6_5',['LAYER_6',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9fea0fd8b45b7b2baf209ee1034c45270cdb',1,'magique']]],
+  ['layer_5f7_6',['LAYER_7',['../namespacemagique.html#a33714ee75b1ff0fffb5e3067a170f9fea1526b5ac8759b5a48f135c22d40a5bec',1,'magique']]],
+  ['left_7',['LEFT',['../namespacemagique.html#ab2bee6135dfdec7699f6bbde3f35f05ba57bc9dcc02a640cafd0add122bc4cb98',1,'magique']]],
+  ['left_5fbottom_8',['LEFT_BOTTOM',['../namespacemagique.html#accc71abe59b54d6db2f85188a065fc78a54adef06a90e8b0326376c0eaf7404b1',1,'magique']]],
+  ['left_5fmid_9',['LEFT_MID',['../namespacemagique.html#accc71abe59b54d6db2f85188a065fc78acb778ce3a8b12f0767351baba810feeb',1,'magique']]],
+  ['left_5ftop_10',['LEFT_TOP',['../namespacemagique.html#accc71abe59b54d6db2f85188a065fc78a5eeb74f28a17e0cdf4b1661c80490df9',1,'magique']]],
+  ['level_5fallocation_11',['LEVEL_ALLOCATION',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdba6b5ce8fed98dc680003cd8632da0247b',1,'magique']]],
+  ['level_5ferror_12',['LEVEL_ERROR',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdba043329dc646eb12afe18e19b465c7ce7',1,'magique']]],
+  ['level_5ffatal_13',['LEVEL_FATAL',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdbae59dac68c992faf035eb84ce0c05de1f',1,'magique']]],
+  ['level_5finfo_14',['LEVEL_INFO',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdba07b43eebd0adcc2501b1525a2ff4ab9d',1,'magique']]],
+  ['level_5fnone_15',['LEVEL_NONE',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdba23e5c584ea250ba445e0c34fbca6689c',1,'magique']]],
+  ['level_5fwarning_16',['LEVEL_WARNING',['../namespacemagique.html#a5f473ed4e0fda63d9ab458b851d42fdba9a3e7ff64c97c067f1da27f2e82c9f26',1,'magique']]],
+  ['low_17',['LOW',['../namespacemagique.html#a3c5077c44ca55e8005b8618b34225e04af629a777f183299fe3a3de0b9a7cadaf',1,'magique']]]
+];

@@ -11,7 +11,6 @@
 #include <magique/core/Sound.h>
 #include <magique/assets/types/Playlist.h>
 #include <magique/ecs/ECS.h>
-#include <magique/util/Jobs.h>
 
 void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 {
@@ -129,18 +128,6 @@ void Asteroids::onCloseEvent() { shutDown(); }
 
 void Asteroids::updateGame(entt::registry& registry)
 {
-    auto* job = magique::CreateJob(
-        []
-        {
-            for (int i = 0; i < 1111111; ++i)
-            {
-                volatile int b = i % 123123123 % 13123;
-            }
-    });
-
-    //auto handle = magique::AddJob(job);
-    //magique::AwaitJobs<std::initializer_list<magique::jobHandle>>({handle});
-
     static int ROCK_COUNTER = 80;
     ROCK_COUNTER--;
     if (ROCK_COUNTER == 0)
@@ -155,7 +142,6 @@ void Asteroids::drawWorld(Camera2D& camera) { ClearBackground(BLACK); }
 void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
 {
     // As the entities dont have sprite sheets we use a simple switch
-
     // Get the entities that need to be drawn
     auto& drawEntities = magique::GetDrawEntities();
     for (const auto e : drawEntities)
@@ -230,9 +216,6 @@ void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self
 
 void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
 {
-    if (!magique::IsEntityExisting(other)) // If target was already destroyed in this tick
-        return;
-
     auto& oPos = magique::GetComponent<PositionC>(other);
     if (oPos.type == HOUSE)
     {
@@ -241,15 +224,12 @@ void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self,
     else if (oPos.type == PLAYER)
     {
         auto& stats = magique::GetComponent<PlayerStatsC>(other);
-        if (stats.hitCounter == 0)
-        {
-            stats.health--;
-            stats.hitCounter = PlayerStatsC::HIT_COOLDOWN;
-        }
+        stats.health--;
     }
     else if (oPos.type == BULLET)
     {
         magique::DestroyEntity(self);
+        magique::DestroyEntity(other);
     }
 }
 

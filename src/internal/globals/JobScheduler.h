@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include <vector>
 
+#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/OSUtil.h"
 #include "internal/types/Spinlock.h"
 

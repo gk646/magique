@@ -1,15 +1,12 @@
+#include <array>
 
 #include <magique/util/Jobs.h>
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 #include <magique/util/Defines.h>
 
-#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/IncludeWindows.h"
 #include "internal/globals/JobScheduler.h"
-
-#include <cxconfig.h>
-#include <cxstructs/SmallVector.h>
 
 static bool initCalled = false;
 
@@ -75,10 +72,10 @@ namespace magique
         }
     }
 
+    using WorkArray = std::array<jobHandle,MAGIQUE_WORKER_THREADS +1>;
+    template void AwaitJobs<WorkArray>(const WorkArray& container);
     template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
     template void AwaitJobs<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
-    template void AwaitJobs<cxstructs::SmallVector<jobHandle, MAGIQUE_WORKER_THREADS + 1>>(
-        const cxstructs::SmallVector<jobHandle, MAGIQUE_WORKER_THREADS + 1>& container);
 
     void AwaitAllJobs()
     {

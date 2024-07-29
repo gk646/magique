@@ -19,6 +19,14 @@ namespace magique
     // IF called manually needs to be done after InitWindow();
     bool InitMagique();
 
+    //----------------- CORE FEATURES -----------------//
+
+    // Sets the update radius distance around actors
+    // Entities in range will be collision checked and added to the update vector
+    // Default: 1000
+    void SetUpdateDistance(int distance);
+
+
     //----------------- SETTERS -----------------//
 
     // If enabled display performance metrics on the top left
@@ -27,13 +35,10 @@ namespace magique
     // Sets the new camera holder - removes the component from the current and adds it to the new holder
     void SetCameraEntity(entt::entity entity);
 
-    // Sets the update radius distance around actors
-    // Entities in range will be collision checked and added to the udpate vector
-    // Default: 1000
-    void SetUpdateDistance(int distance);
 
-    // Adds aditional padding to the sides of the normal camera rectangle - automatically scales with zoome
-    // Useful for when you have large effects or large entities
+
+    // Adds aditional padding to the sides of the normal camera rectangle - automatically scales with zoom
+    // Useful for when you have large effects or entities
     // Default: 250
     void SetCameraViewPadding(int distance);
 
@@ -44,8 +49,8 @@ namespace magique
     // Adds the entity to the update cache manually regardless of position
     void AddToUpdateCache(entt::entity e);
 
-    // Sets the engine font for overlays etc.
-    void SetFont(const Font& font);
+    // Sets the engine font for performance-overlay and console
+    void SetEngineFont(const Font& font);
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)

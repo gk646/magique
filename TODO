@@ -1,7 +1,3 @@
-collect collision pairs and process them all for each tick -> adjust entity destruction
-
-profile and optimize -> use simd
-
 Pathfinding -> with dimensions and strategy API
 
 AI -> actual AI
@@ -13,3 +9,11 @@ implement run length encoding in compression
 implement particle API
 
 implement inserting rotated and other shapes into hashgrid
+
+implement gameconfig loading and saving
+
+implement optional compression for asset image when exporting and importing
+
+implement localization
+
+implement networking: gamenetworking sockets for default - steam library if with steam features

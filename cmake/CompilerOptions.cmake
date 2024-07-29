@@ -1,12 +1,11 @@
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_compile_options(-Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
 
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -ffast-math -O3 -fno-exceptions -fno-rtti")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto -fno-exceptions -fno-rtti -ffast-math -O3")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast -ffast-math -fno-exceptions -fno-rtti")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -flto -fno-exceptions -fno-rtti -ffast-math")
 
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
     if (ENABLE_SANITIZER)
@@ -23,12 +22,6 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "/std:c++20 /arch:AVX2 /O2 /GL /Ob3 /Gy /GA /Gw /EHc /GF /GR-")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
-    if (${PROJECT_PREFIX}_ENABLE_SANITIZER)
-        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
-        set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /fsanitize=address")
-    endif ()
-
     # Explanation of flags:
     # /arch:AVX2       - Enable AVX2 instruction set
     # /O2              - Maximize speed (Release optimization level)
@@ -44,4 +37,10 @@ elseif (MSVC)
     # /LTCG            - Link-time code generation
     # /OPT:REF         - Eliminate unused functions/data
     # /OPT:ICF         - Identical COMDAT folding (remove duplicate code)
+
+    if (${PROJECT_PREFIX}_ENABLE_SANITIZER)
+        set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
+        set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /fsanitize=address")
+    endif ()
 endif ()

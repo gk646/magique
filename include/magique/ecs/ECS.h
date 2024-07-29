@@ -52,6 +52,10 @@ namespace magique
     // Failure: Returns entt::null
     entt::entity CreateEntity(EntityID type, float x, float y, MapID map);
 
+    // Creates a new entity with the given id
+    // Note: Should only be called in a networking context with a valid id
+    entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map);
+
     // Tries to destroy the entity and all its components
     // Failure: Returns false
     bool DestroyEntity(entt::entity e);
