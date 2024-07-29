@@ -40,21 +40,24 @@ namespace magique
 
     inline void RenderHitboxes(const entt::registry& reg)
     {
-        const auto view = reg.view<PositionC, CollisionC>();
+        const auto view = reg.view<const PositionC, const CollisionC>();
         for (const auto e : view)
         {
-            auto& pos = view.get<PositionC>(e);
-            auto& col = view.get<CollisionC>(e);
-
+            const auto& pos = view.get<const PositionC>(e);
+            const auto& col = view.get<const CollisionC>(e);
             switch (col.shape)
             {
-            case CIRCLE:
-                DrawCircleLinesV({pos.x + col.width / 2.0F, pos.y + col.height / 2.0F}, col.width, RED);
+            case Shape::CIRCLE:
+                DrawCircleLinesV({pos.x + col.p1 / 2.0F, pos.y + col.p1 / 2.0F}, col.p1, RED);
                 break;
-            case RECT:
-                DrawRectangleLinesEx({pos.x, pos.y, (float)col.width, (float)col.height}, 2.0F, RED);
+            case Shape::RECT:
+                DrawRectangleLinesEx({pos.x, pos.y, col.p1, col.p2}, 2.0F, RED);
                 break;
-            case POLYGON:
+            case Shape::TRIANGLE:
+                DrawTriangle({pos.x, pos.y}, {col.p1, col.p2}, {col.p3, col.p4}, RED);
+                break;
+            case Shape::CAPSULE:
+                DrawCapsule(pos.x, pos.y, col.p2, col.p1, RED);
                 break;
             }
         }

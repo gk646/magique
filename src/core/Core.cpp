@@ -69,7 +69,7 @@ namespace magique
 
     void SetEntityCacheDuration(int ticks) { global::CONFIGURATION.entityCacheDuration = ticks; }
 
-    void AddToUpdateCache(entt::entity e)
+    void AddToEntityCache(entt::entity e)
     {
         global::LOGIC_TICK_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
     }
@@ -78,7 +78,7 @@ namespace magique
 
     void SetLightingModel(LightingModel model) { global::CONFIGURATION.lighting = model; }
 
-    void SetWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
+    void SetStaticWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
 
     //----------------- GET -----------------//
 
@@ -124,4 +124,10 @@ namespace magique
     void UnSyncThreads() { global::LOGIC_TICK_DATA.unlock(); }
 
     void SetShowHitboxes(bool val) { global::CONFIGURATION.showHitboxes = val; }
+
+    void SetBenchmarkTicks(int ticks)
+    {
+        global::CONFIGURATION.benchmarkTicks = ticks;
+    }
+
 } // namespace magique

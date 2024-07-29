@@ -57,21 +57,32 @@ namespace magique
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map);
 
     // Tries to destroy the entity and all its components
-    // Failure: Returns false
+    // Failure: Returns false if entity is invalid or doesnt exist
     bool DestroyEntity(entt::entity e);
 
     //--------------Creating--------------//
 
-    // Note: All Create__ functions return a reference to the created component (where appropriate)
+    // Makes the entity collidable with others - Shape: RECT
+    // Pass the width and height of the rectangle
+    CollisionC& GiveCollisionRect(entt::entity e, float width, float height, int anchorX = 0, int anchorY = 0);
 
-    // Makes the entity collidable with others
-    CollisionC& GiveCollision(entt::entity entity, Shape shape, int width, int height, int anchorX = 0, int anchorY = 0);
+    // Makes the entity collidable with others - Shape: CIRCLE (vertical)
+    // Pass the height and the radius of the capsule
+    CollisionC& GiveCollisionCircle(entt::entity e, float radius, int anchorX = 0, int anchorY = 0);
+
+    // Makes the entity collidable with others - Shape: CAPSULE (vertical)
+    // Pass the height and the radius of the capsule
+    CollisionC& GiveCollisionCapsule(entt::entity e, float height, float radius, int anchorX = 0, int anchorY = 0);
+
+    // Makes the entity collidable with others - Shape: TRIANGLE
+    // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
+    CollisionC& GiveCollisionTri(entt::entity e, float x, float y, float x2, float y2, int anchorX = 0, int anchorY = 0);
 
     // Makes the entitiy emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
 
     // Makes the entitiy occlude light and throw shadows according to the current lighting model
-    OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape = RECT);
+    OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape = Shape::RECT);
 
     // Adds the camera component
     // Camera will automatically reflect the entity state (update)
@@ -83,14 +94,6 @@ namespace magique
     // Makes the entity react to its script
     // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
     void GiveScript(entt::entity entity);
-
-    //----------------- DEBUG -----------------//
-
-    // Draws entitiy as rectangles - only works in debug mode
-    void GiveDebugVisuals(entt::entity entity);
-
-    // Gives it w,a,s,d controls - only works in debug mode
-    void GiveDebugController(entt::entity entity);
 
 } // namespace magique
 

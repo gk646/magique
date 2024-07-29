@@ -12,7 +12,7 @@ namespace magique
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
-        auto& shadowQuads =shaders.shadowQuads;
+        auto& shadowQuads = shaders.shadowQuads;
         shadowQuads.clear();
 
         const auto occluders = registry.view<const PositionC, const OccluderC>();
@@ -22,11 +22,14 @@ namespace magique
             const auto& pos = occluders.get<PositionC>(e);
             switch (occ.shape)
             {
-            case CIRCLE:
+            case Shape::CIRCLE:
                 break;
-            case RECT:
+            case Shape::RECT:
                 CreateQuadsFromRect(shadowQuads, {pos.x, pos.y, (float)occ.width, (float)occ.height});
-            case POLYGON:
+                break;
+            case Shape::TRIANGLE:
+                break;
+            case Shape::CAPSULE:
                 break;
             }
         }
@@ -106,10 +109,8 @@ namespace magique
         rlSetBlendFactors(GL_ZERO, GL_SRC_COLOR, GL_FUNC_ADD);
         BeginBlendMode(BLEND_CUSTOM);
 
-        DrawTexturePro(shaders.shadowTexture.texture,
-                       {0, 0, 1920, -1080},
-                       {0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()},
-                       {0,0}, 0, {255, 255, 255, 200});
+        DrawTexturePro(shaders.shadowTexture.texture, {0, 0, 1920, -1080},
+                       {0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()}, {0, 0}, 0, {255, 255, 255, 200});
 
         EndBlendMode();
     }
@@ -159,7 +160,6 @@ namespace magique
         }
     }
 } // namespace magique
-
 
 
 #endif //LIGHTINGSYSTEM_H

@@ -1,14 +1,14 @@
 #ifndef MAGIQUE_TYPES_H
 #define MAGIQUE_TYPES_H
 
-#include "magique/fwd.hpp"
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // Types Modules
 //-----------------------------------------------
 // ................................................................................
 // These are the simple and public types/enums used and exposed by magique
-// Note that some enum use a explicit type to save memory when used in the ECS or networking
+// Note: Some enum use a explicit type to save memory when used in the ECS or networking
 // ................................................................................
 
 namespace magique
@@ -44,7 +44,7 @@ namespace magique
 
     //----------------- ENTITY COMPONENT SYSTEM -----------------//
 
-    // Default action states
+    // Default action states - Feel free to rename or create your own
     enum class ActionState : uint8_t
     {
         IDLE,
@@ -66,15 +66,23 @@ namespace magique
     };
 
     // Shape classes
-    enum Shape : uint8_t
+    enum class Shape : uint8_t
     {
-        CIRCLE, // Circle
-        RECT,   // Rectangle, can be rotated
-        POLYGON,
+        RECT,     // Rectangle
+        CIRCLE,   // Circle - not implemented yet
+        CAPSULE,  // Capsule - not implemented yet
+        TRIANGLE, // Triangle - not implemented yet
+    };
+
+    struct StaticCollider final
+    {
+        float x, y;           // Position
+        float p1, p2, p3, p4; // Extra values
+        Shape shape;
     };
 
     // Feel free to rename those!
-    enum class CollisionLayer : uint8_t
+    enum CollisionLayer : uint8_t
     {
         DEFAULT_LAYER = 1 << 0,
         LAYER_1 = 1 << 1,
@@ -281,5 +289,6 @@ namespace magique
     };
 
 } // namespace magique
+
 
 #endif //MAGIQUE_TYPES_H

@@ -101,7 +101,7 @@ namespace magique
         const auto [mx, my] = ui.getMousePos();
         const auto [rx, ry, rw, rh] = getBounds();
 
-        if (!PointIntersectsRect(mx, my, rx, ry, rw, rh))
+        if (!PointToRect(mx, my, rx, ry, rw, rh))
             return false;
 
         const auto it = std::ranges::find(ui.sortedObjects, this);
@@ -117,7 +117,7 @@ namespace magique
             if ((*iter)->getIsShown())
             {
                 const auto [ox, oy, ow, oh] = (*iter)->getBounds();
-                if (PointIntersectsRect(mx, my, ox, oy, ow, oh))
+                if (PointToRect(mx, my, ox, oy, ow, oh))
                 {
                     return false;
                 }

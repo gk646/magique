@@ -9,35 +9,17 @@ namespace magique
 {
     struct Configuration final
     {
-        //Shadow map resolution
-        Vector2 shadowResolution{};
-
-        // Current selected lighting mode
-        LightingModel lighting = LightingModel::STATIC_SHADOWS;
-
-        // Toggles the performance overlay
-        bool showPerformanceOverlay = true;
-
-        // All above info are visible
-        LogLevel logLevel = LEVEL_INFO;
-
-        // Update distance
-        float entityUpdateDistance = 1000;
-
-        // Padding around the cameras native bounds
-        float cameraViewPadding = 250;
-
-        // For how long entities in the cache are still updated after they are out of range
-        uint16_t entityCacheDuration = 300; // 300 Ticks -> 5 seconds
-
-        // Font
-        Font font{};
-
-        // Shows red outlines for the hitboxes
-        bool showHitboxes = false;
-
-        // World bounds
-        Rectangle worldBounds{};
+        Font font{};                        // Font
+        Rectangle worldBounds{};            // World bounds
+        Vector2 shadowResolution{};         //Shadow map resolution
+        float entityUpdateDistance = 1000;  // Update distance
+        float cameraViewPadding = 250;      // Padding around the cameras native bounds
+        int benchmarkTicks = 0;             // Ticks to run the game for
+        uint16_t entityCacheDuration = 300; // Ticks entities are still updated after they are out of range
+        LogLevel logLevel = LEVEL_INFO;     // All above info are visible
+        LightingModel lighting = LightingModel::STATIC_SHADOWS; // Current selected lighting mode
+        bool showPerformanceOverlay = true;                     // Toggles the performance overlay
+        bool showHitboxes = false;                              // Shows red outlines for the hitboxes
     };
 
     namespace global

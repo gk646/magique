@@ -10,8 +10,22 @@
 #include "internal/globals/ScriptEngine.h"
 #include "internal/headers/CollisionDetection.h"
 
-// Needs major addition: Collect collision pairs and call them single threaded after
-// Defer destruction of entities until after tick or just iterate pairs in order
+//-----------------------------------------------
+// Collision System
+//-----------------------------------------------
+// .....................................................................
+// Optimizations:
+// 1. Single Threaded pass through all entities inserting them into the hashgrid and collision vector
+//    -> uses custom cache friendly hashgrid (with custom hashmap)
+//    -> first checks if inside camera bounds otherwise if close to any actor
+// 2. Multithreaded broad phase (scalable to any amount)
+//    -> vector collects all entities in overlapping cells
+//    -> Collision is checked with SIMD enabled primitive functions
+//    -> if colliding collision pair is stored
+//    -> uses separate pair and cell collectors to prevent false sharing
+// 3. Single threaded pass over all pairs invoking event methods
+//    -> Uses custom Hashset with uint64_t key to mark checked pairs
+// .....................................................................
 
 // Give each thread a piece and the then main thread aswell - so it doesnt wait while doing nothing
 static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
@@ -21,6 +35,8 @@ namespace magique
     inline bool CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&);
 
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
+
+    inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid&, float x, float y, const CollisionC& col);
 
     inline void CollisionSystem(entt::registry& registry)
     {
@@ -41,7 +57,7 @@ namespace magique
             {
                 const auto first = *it;
                 const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-                grid.query<vector<entt::entity>>(collector, posA.x, posA.y, colA.width, colA.height);
+                QueryHashGrid(collector, grid, posA.x, posA.y, colA);
                 for (const auto second : collector)
                 {
                     if (first >= second)
@@ -105,14 +121,28 @@ namespace magique
         HandleCollisionPairs(colPairs, pairSet);
     }
 
-    inline uint64_t GetEntityHash(const entt::entity e1, const entt::entity e2)
+    inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid& grid, const float x, const float y,
+                              const CollisionC& col)
     {
-        return static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
+        switch (col.shape)
+        {
+        [[likely]] case Shape::RECT:
+            grid.query<vector<entt::entity>>(collector, x, y, col.p1, col.p2);
+            break;
+        case Shape::CAPSULE:
+            break;
+        case Shape::CIRCLE:
+            break;
+        case Shape::TRIANGLE:
+            break;
+        }
     }
 
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
     {
-        int count = 0;
+        const auto GetEntityHash = [](const entt::entity e1, const entt::entity e2)
+        { return static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2); };
+
         for (auto& [vec] : colPairs)
         {
             for (const auto [e1, id1, e2, id2] : vec)
@@ -124,13 +154,10 @@ namespace magique
                 InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id1], e1, e2);
                 // Invoke out of seconds view
                 InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id2], e2, e1);
-                count++;
             }
             vec.clear();
         }
         pairSet.clear();
-      // printf("Pairs: %d\n", count);
-        // Scripts are default filled - with this we can skip the script check
     }
 
     inline static constexpr c2x identityTransform{{0, 0}, {1, 0}};
@@ -174,51 +201,93 @@ namespace magique
     inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                const CollisionC& colB)
     {
-        if (colA.shape == RECT && colB.shape == RECT && posA.rotation == 0 && posB.rotation == 0) [[likely]]
+        switch (colA.shape)
         {
-            return RectIntersectsRect(posA.x, posA.y, colA.width, colA.height, posB.x, posB.y, colB.width, colB.height);
-        }
-        if (colA.shape == CIRCLE && colB.shape == CIRCLE)
-        {
-            const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F}, colA.width};
-            const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F}, colB.width};
-            return c2CircletoCircle(circleA, circleB) != 0;
-        } // Handle circle-AABB collision
-        if (colA.shape == CIRCLE && colB.shape == RECT)
-        {
-            const c2Circle circleA = {{posA.x + colA.width / 2.0F, posA.y + colA.height / 2.0F}, colA.width};
-            const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
-            return c2CircletoAABB(circleA, aabbB) != 0;
-        }
-        if (colA.shape == RECT && colB.shape == CIRCLE)
-        {
-            const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
-            const c2Circle circleB = {{posB.x + colB.width / 2.0F, posB.y + colB.height / 2.0F}, colB.width};
-            return c2CircletoAABB(circleB, aabbA) != 0;
-        }
-        // Handle AABB-AABB collision (considering rotation)
-        if (colA.shape == RECT && colB.shape == RECT)
-        {
-            if (posA.rotation == 0)
+        case Shape::RECT:
+            switch (colB.shape)
             {
-                const c2AABB aabbA = {{posA.x, posA.y}, {posA.x + colA.width, posA.y + colA.height}};
-                c2Poly polyB;
-                polyB = RotRect(posB.x, posB.y, colB.width, colB.height, posB.rotation, colB.anchorX, colB.anchorY);
-                return c2AABBtoPoly(aabbA, &polyB, &identityTransform) != 0;
-            }
-            if (posB.rotation == 0)
-            {
-                const c2AABB aabbB = {{posB.x, posB.y}, {posB.x + colB.width, posB.y + colB.height}};
-                c2Poly polyA;
-                polyA = RotRect(posA.x, posA.y, colA.width, colA.height, posA.rotation, colA.anchorX, colA.anchorY);
-                return c2AABBtoPoly(aabbB, &polyA, &identityTransform) != 0;
-            }
-            c2Poly polyA;
-            polyA = RotRect(posA.x, posA.y, colA.width, colA.height, posA.rotation, colA.anchorX, colA.anchorY);
+            case Shape::RECT:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    if (posB.rotation == 0) [[likely]]
+                    {
+                        return RectToRect(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2);
+                    }
+                    LOG_FATAL("Method not implemented");
+                    return false;
+                }
+                if (posB.rotation == 0) [[likely]]
+                {
+                    LOG_FATAL("Method not implemented");
+                }
+                else
+                {
+                    LOG_FATAL("Method not implemented");
+                }
+                return false;
 
-            c2Poly polyB;
-            polyB = RotRect(posB.x, posB.y, colB.width, colB.height, posB.rotation, colB.anchorX, colB.anchorY);
-            return c2PolytoPoly(&polyA, &identityTransform, &polyB, &identityTransform) != 0;
+            case Shape::CIRCLE:
+                if (posA.rotation == 0)
+                {
+                    return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1 / 2.0F,
+                                        posB.y + colB.p1 / 2.0F, colB.p1);
+                }
+                LOG_FATAL("Method not implemented");
+
+            case Shape::CAPSULE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
+        case Shape::CIRCLE:
+            switch (colB.shape)
+            {
+            case Shape::RECT:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CIRCLE:
+                return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p2);
+            case Shape::CAPSULE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
+        case Shape::CAPSULE:
+            switch (colB.shape)
+            {
+            case Shape::RECT:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CIRCLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CAPSULE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
+        case Shape::TRIANGLE:
+            switch (colB.shape)
+            {
+            case Shape::RECT:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CIRCLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CAPSULE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
         }
         return false;
     }

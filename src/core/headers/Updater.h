@@ -26,17 +26,24 @@ namespace magique::updater
         WakeUpJobs();
     }
 
-    inline void EndTick()
+    inline void EndTick(Game& game)
     {
-        if (global::CONFIGURATION.showPerformanceOverlay)
+        auto& config = global::CONFIGURATION;
+        if (config.showPerformanceOverlay)
         {
             global::PERF_DATA.perfOverlay.updateValues();
+        }
+        if (config.benchmarkTicks > 0) [[unlikely]]
+        {
+            config.benchmarkTicks--;
+            if (config.benchmarkTicks == 0)
+                game.shutDown();
         }
         TickInputEvents();
         const double tickTime = glfwGetTime() - startTime;
         tick = tickTime;
         global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * 1'000'000'000.0F));
-        HibernateJobs(startTime,tickTime);
+        HibernateJobs(startTime, tickTime);
     }
 
     inline void GameLoop(const bool& isRunning, Game& game)
@@ -51,7 +58,7 @@ namespace magique::updater
                 InternalUpdate(reg); // Internal update upfront
                 game.updateGame(reg);
             }
-            EndTick();
+            EndTick(game);
             WaitTime(startTime + tickDuration, wait - tick);
         }
     }

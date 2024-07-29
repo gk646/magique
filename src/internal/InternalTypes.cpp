@@ -34,6 +34,4 @@ namespace magique
         size = bytes;
     }
 
-
-
 } // namespace magique

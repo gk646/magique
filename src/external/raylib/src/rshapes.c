@@ -296,12 +296,12 @@ void DrawCircleSector(Vector2 center, float radius, float startAngle, float endA
         endAngle = tmp;
     }
 
-    int minSegments = (int)ceilf((endAngle - startAngle)/90);
+    const int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
+        const float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
         segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
 
         if (segments <= 0) segments = minSegments;
