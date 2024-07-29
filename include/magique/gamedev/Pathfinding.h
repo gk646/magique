@@ -1,9 +1,19 @@
 #ifndef MAGIQUE_PATHFINDING_H
 #define MAGIQUE_PATHFINDING_H
 
+#include <magique/core/Types.h>
 
-namespace magique{
+//-----------------------------------------------
+// Pathfinding Module
+//-----------------------------------------------
+// .....................................................................
+//
+// .....................................................................
 
+namespace magique
+{
+
+  Point FindPath(Point start, Point end);
 
 }
 

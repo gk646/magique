@@ -3,6 +3,7 @@
 
 #include <magique/core/Game.h>
 #include <magique/ecs/Scripting.h>
+#include <magique/ui/types/UIObject.h>
 
 // NOTE: the namespace magique:: can be avoided by using: "using namespace magique;"
 // Its used explicitly each time to denote magique functions
@@ -52,7 +53,7 @@ struct PlayerScript final : magique::EntityScript
 struct BulletScript final : magique::EntityScript
 {
     void onTick(entt::registry& registry, entt::entity self) override;
-    void onStaticCollision(entt::registry &registry, entt::entity self) override;
+    void onStaticCollision(entt::registry& registry, entt::entity self) override;
 };
 
 struct RockScript final : magique::EntityScript
@@ -61,5 +62,12 @@ struct RockScript final : magique::EntityScript
     void onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other) override;
 };
 
+
+struct PlayerBarUI final : magique::UIObject
+{
+    PlayerBarUI();
+    void draw() override;
+    void update() override;
+};
 
 #endif // ASTEROIDS_H

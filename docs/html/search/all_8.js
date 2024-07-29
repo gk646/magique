@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['h_0',['H',['../_handle_registry_8h.html#ab26d2f84c36410a28d55f1be6d5e4a3c',1,'HandleRegistry.h']]],
+  ['handle_1',['handle',['../structmagique_1_1_i_job.html#ab30454c79c047a3b675d9deef6dec6a5',1,'magique::IJob::handle'],['../namespacemagique.html#ab1cdde999a59cac1b3ab2237b023b6ce',1,'magique::handle']]],
+  ['handleregistry_2eh_2',['HandleRegistry.h',['../_handle_registry_8h.html',1,'']]],
+  ['hasalt_3',['hasAlt',['../structmagique_1_1_keybind.html#ab4785f2513458b34838e3e9d6e760ed9',1,'magique::Keybind']]],
+  ['hasctrl_4',['hasCtrl',['../structmagique_1_1_keybind.html#af6eb890aecf0f0e7591444fedeaeecb6',1,'magique::Keybind']]],
+  ['hasextension_5',['hasExtension',['../structmagique_1_1_asset.html#ae648befdfe4120822f68e2d6a3c0b58e',1,'magique::Asset']]],
+  ['hash_2eh_6',['Hash.h',['../_hash_8h.html',1,'']]],
+  ['hash_5fsalt_7',['HASH_SALT',['../namespacemagique.html#a5479f6eb30aba66b7c8fd5ad68a5cc7c',1,'magique']]],
+  ['hashmap_8',['HashMap',['../namespacemagique.html#a78de21e7a622da43dc7a346fcad585f3',1,'magique']]],
+  ['hashmapex_9',['HashMapEx',['../namespacemagique.html#a5cd1fc16df78c855b1d93af3feadb626',1,'magique']]],
+  ['hashset_10',['HashSet',['../namespacemagique.html#af7b5072298fdbc73259d5a1de0169e27',1,'magique']]],
+  ['hashstring_11',['HashString',['../namespacemagique.html#a82cc7ea9b22155fa7749b31b9f3116cf',1,'magique']]],
+  ['hashstringeval_12',['HashStringEval',['../namespacemagique.html#a042679d3d3b717d01785c2eb120379d8',1,'magique']]],
+  ['hasmouse_13',['hasMouse',['../structmagique_1_1_u_i_root.html#a60ac61f26fddc6eb83b280651dd2010f',1,'magique::UIRoot']]],
+  ['hasshift_14',['hasShift',['../structmagique_1_1_keybind.html#a1c2046c95dfa34693681b35977ac76df',1,'magique::Keybind']]],
+  ['height_15',['height',['../structmagique_1_1_texture_region.html#aa60a1f871467e77f3b2a05d0761be32d',1,'magique::TextureRegion::height'],['../structmagique_1_1_sprite_sheet.html#a3099fd9d674574b49a702db0706a80a4',1,'magique::SpriteSheet::height'],['../struct_collision_c.html#a34b5452112eb465d87c09729b14eaa9d',1,'CollisionC::height'],['../struct_occluder_c.html#a8bd767670691f94b3e37e6f39da0c19d',1,'OccluderC::height'],['../structmagique_1_1_emitter_data.html#afdaf480d4ee16a9e990f5734c528dda3',1,'magique::EmitterData::height']]],
+  ['hibernatejobs_16',['HibernateJobs',['../namespacemagique.html#a4a1e5938fb1e0d7209b30d7e16507287',1,'magique']]],
+  ['high_17',['HIGH',['../namespacemagique.html#a3c5077c44ca55e8005b8618b34225e04a2151b36185ac502881c5b3f0a0ed2c85',1,'magique']]],
+  ['hit_18',['HIT',['../namespacemagique.html#a93e0dc562ac22893c9f2d41f1517964fa4e5e3542d523b7fb9c61887d5bb7d642',1,'magique']]],
+  ['host_5fcharacter_5finfo_19',['HOST_CHARACTER_INFO',['../namespacemagique.html#a6063280004761e43d2c3ddb1eee30f90afc039f05b2590fad5226b263f1dd84c9',1,'magique']]],
+  ['host_5fplayer_5faction_20',['HOST_PLAYER_ACTION',['../namespacemagique.html#a6063280004761e43d2c3ddb1eee30f90aff24bb141ef46d1c618e1768796dadd6',1,'magique']]],
+  ['hover_21',['hover',['../structmagique_1_1_u_i_object.html#ae6693bc7c6bcfdf93bbf3c09e0b5d0b6',1,'magique::UIObject']]],
+  ['hoveredobject_22',['hoveredObject',['../structmagique_1_1_u_i_root.html#a4ccd555a2612120aa919283695c4f116',1,'magique::UIRoot']]]
+];

@@ -61,7 +61,7 @@ namespace magique
         const int size = static_cast<int>(collisionVec.size());
         if (size > 500)
         {
-            cxstructs::SmallVector<jobHandle, WORK_PARTS> handles;
+            std::array<jobHandle, WORK_PARTS> handles{};
             int end = 0;
             const int partSize = size / WORK_PARTS;
             for (int j = 0; j < WORK_PARTS; ++j)
@@ -75,7 +75,7 @@ namespace magique
                 }
                 if (start - end == 0)
                     continue;
-                handles.push_back(AddJob(CreateExplicitJob(collisionCheck, j, start, end)));
+                handles[j] = AddJob(CreateExplicitJob(collisionCheck, j, start, end));
             }
             AwaitJobs(handles);
         }

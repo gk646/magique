@@ -74,7 +74,7 @@ namespace magique
         global::LOGIC_TICK_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
     }
 
-    void SetFont(const Font& font) { global::CONFIGURATION.font = font; }
+    void SetEngineFont(const Font& font) { global::CONFIGURATION.font = font; }
 
     void SetLightingModel(LightingModel model) { global::CONFIGURATION.lighting = model; }
 

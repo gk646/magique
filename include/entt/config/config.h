@@ -4,7 +4,6 @@
 #include "version.h"
 
 #define ENTT_NOEXCEPTION
-#define ENTT_DISABLE_ASSERT
 
 #if defined(__cpp_exceptions) && !defined(ENTT_NOEXCEPTION)
 #    define ENTT_CONSTEXPR

@@ -2,13 +2,23 @@
 #define ENTITYTYPEMAP_H
 
 #include <magique/internal/DataStructures.h>
-#include <entt/fwd.hpp>
+#include <entt/entity/fwd.hpp>
 
-namespace magique::global
+namespace magique
 {
+    struct ECSData final
+    {
+        uint32_t entityID = 0;
+        HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> typeMap{50};
+    };
 
-    inline HashMap<EntityID, std::function<void(entt::registry&, entt::entity)>> ENT_TYPE_MAP{50};
-}
+    namespace global
+    {
+        inline ECSData ECS_DATA{};
+
+    }
+
+} // namespace magique
 
 
 #endif //ENTITYTYPEMAP_H
