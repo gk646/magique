@@ -87,7 +87,6 @@ namespace magique::renderer
         }
     }
 
-
 } // namespace magique::renderer
 
 #endif //RENDERER_H

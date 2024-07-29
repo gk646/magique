@@ -17,3 +17,5 @@ implement optional compression for asset image when exporting and importing
 implement localization
 
 implement networking: gamenetworking sockets for default - steam library if with steam features
+
+implement all shape to shape collisions including rotations

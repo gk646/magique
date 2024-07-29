@@ -279,5 +279,20 @@ namespace magique
         DrawTextEx(f, txt, {pos.x - width, pos.y}, fs, spc, c);
     }
 
+    void DrawCapsule(float x, float y, float height, float radius, Color tint)
+    {
+        if (radius <= 0.0f)
+            radius = 0.1f;
+
+        const Vector2 topCenter = {x + radius, y + radius};
+        const Vector2 bottomCenter = {x + radius, y + height - radius};
+
+        DrawCircleSector(topCenter, radius, 180.0f, 360.0f, 32, tint);
+
+        DrawCircleSector(bottomCenter, radius, 0.0f, 180.0f, 32, tint);
+
+        DrawRectangleRec({x, y + radius, 2 * radius, height - 2 * radius}, tint);
+    }
+
 
 } // namespace magique

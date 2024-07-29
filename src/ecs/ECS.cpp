@@ -3,7 +3,6 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
-#include <magique/util/Defines.h>
 
 #include "internal/globals/EntityTypeMap.h"
 #include "internal/globals/LogicTickData.h"
@@ -117,6 +116,29 @@ namespace magique
         return false;
     }
 
+    CollisionC& GiveCollisionRect(const entt::entity e, float width, float height, int anchorX, int anchorY)
+    {
+        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),static_cast<int16_t>(anchorY),DEFAULT_LAYER,
+                                                      Shape::RECT);
+    }
+
+    CollisionC& GiveCollisionCircle(const entt::entity e, float radius, int anchorX, int anchorY)
+    {
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(anchorX),static_cast<int16_t>(anchorY),DEFAULT_LAYER,
+                                                      Shape::CIRCLE);
+    }
+
+    CollisionC& GiveCollisionCapsule(const entt::entity e, float height, float radius, int anchorX, int anchorY)
+    {
+        return internal::REGISTRY.emplace<CollisionC>(e, height, radius, 0.0F, 0.0F, static_cast<int16_t>(anchorX),static_cast<int16_t>(anchorY),DEFAULT_LAYER,
+                                                      Shape::CAPSULE);
+    }
+
+    CollisionC& GiveCollisionTri(entt::entity e, float x, float y, float x2, float y2, int anchorX, int anchorY)
+    {
+        return internal::REGISTRY.emplace<CollisionC>(e, x, y, x2, y2, static_cast<int16_t>(anchorX),static_cast<int16_t>(anchorY),DEFAULT_LAYER, Shape::TRIANGLE);
+    }
+
     void GiveCamera(const entt::entity entity) { internal::REGISTRY.emplace<CameraC>(entity); }
 
     OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, Shape shape)
@@ -133,33 +155,8 @@ namespace magique
 
     void GiveActor(const entt::entity e) { return internal::REGISTRY.emplace<ActorC>(e); }
 
-    auto GiveCollision(const entt::entity e, Shape shape, const int width, const int height, const int anchorX,
-                       const int anchorY) -> CollisionC&
-    {
-        return internal::REGISTRY.emplace<CollisionC>(e, static_cast<float>(width), static_cast<float>(height),
-                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
-                                                      static_cast<uint8_t>(1), shape);
-    }
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
-
-    void GiveDebugVisuals(const entt::entity e)
-    {
-#ifdef MAGIQUE_DEBUG_ENTITIES
-        internal::REGISTRY.emplace<DebugVisualsC>(e);
-#else
-        LOG_WARNING("Using debug function but not in debug mode!");
-#endif
-    }
-
-    void GiveDebugController(entt::entity e)
-    {
-#ifdef MAGIQUE_DEBUG_ENTITIES
-        internal::REGISTRY.emplace<DebugControllerC>(e);
-#else
-        LOG_WARNING("Using debug function but not in debug mode!");
-#endif
-    }
 
 
 } // namespace magique

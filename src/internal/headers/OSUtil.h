@@ -23,7 +23,6 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 #endif
     while (glfwGetTime() < destinationTime)
     {
-
     }
 }
 
@@ -49,7 +48,9 @@ inline void SetupProcessPriority()
     HANDLE hProcess = GetCurrentProcess();
     SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
     return;
-    DWORD_PTR processAffinityMask = 0x1F;
+    // Generally dont wanna thread pin (at least not like this?)
+    // Performance is generally a bit less on average but no lags or hitches in high intensive workload
+    DWORD_PTR processAffinityMask = 0x3F;
     if (!SetProcessAffinityMask(hProcess, processAffinityMask))
     {
         LOG_ERROR("Failed to setup process priority");

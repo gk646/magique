@@ -128,8 +128,8 @@ namespace magique
         using ColorFunction = float (*)(Color& c, float t);
         bool resolutionScaling = true;
         uint8_t r = 0, g = 0, b = 0, a = 1;
-        Shape shape = RECT;
-        Shape emissionShape = RECT;
+        Shape shape = Shape::RECT;
+        Shape emissionShape = Shape::RECT;
         uint16_t amount = 1;
         uint16_t lifeTime = 1000;
         uint16_t width = 10, height = 10;

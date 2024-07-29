@@ -20,7 +20,7 @@ namespace magique
     using vector = std::vector<T>;
 
     template <typename K, typename V>
-    using HashMap = ankerl::unordered_dense::map<K, V>;
+    using HashMap = emhash7::HashMap<K, V>;
 
     template <typename K, typename V, typename Hash, typename Equals>
     using HashMapEx = ankerl::unordered_dense::map<K, V, Hash, Equals>;

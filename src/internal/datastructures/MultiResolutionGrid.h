@@ -124,6 +124,7 @@ struct SingleResolutionHashGrid final
         }
     }
 
+
     void clear()
     {
         cellMap.clear();

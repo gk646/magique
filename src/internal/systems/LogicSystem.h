@@ -34,44 +34,72 @@ namespace magique
     }
 
     // This is a bit complicated as we dont know how many total maps there are
-    // So we stay flexible with stack arrays and epxand if needed
+    // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
                            Vector3 (&actorCircles)[4], SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
-                           SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist)
+                           SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+                           int& actorCount)
     {
         std::memset(loadedMaps.data(), UINT8_MAX, MAGIQUE_MAX_PLAYERS);
         actorDist.resize(MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, -1);
         actorMaps.resize(MAGIQUE_MAX_EXPECTED_MAPS, false);
 
-        int count = 0;
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
         {
-            M_ASSERT(count < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
+            M_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
 
-            actorDist.resize((int)pos.map, -1);    // only resizes if needed - initializes new values to -1
-            actorMaps.resize((int)pos.map, false); // only resizes if needed - initializes new values to false
+            actorDist.resize(static_cast<int>(pos.map), -1); // only resizes if needed - initializes new values to -1
+            actorMaps.resize(static_cast<int>(pos.map),
+                             false); // only resizes if needed - initializes new values to false
 
-            actorMaps[(int)pos.map] = true;
-            loadedMaps[count] = pos.map;
-            actorCircles[count] = GetUpdateCircle(pos.x, pos.y);
-            InsertToActorDist(actorDist, (int)pos.map, count);
-            count++;
+            actorMaps[static_cast<int>(pos.map)] = true;
+            loadedMaps[actorCount] = pos.map;
+            actorCircles[actorCount] = GetUpdateCircle(pos.x, pos.y);
+            InsertToActorDist(actorDist, static_cast<int>(pos.map), actorCount);
+            actorCount++;
         }
     }
 
-    void HandleCollisionEntity(entt::entity e, CollisionC collision, const PositionC pos, auto& hashGrid, auto& cVec)
+    void HandleCollisionEntity(entt::entity e, const CollisionC& col, const PositionC pos, auto& hashGrid, auto& cVec)
     {
         cVec.push_back(e);
         if (pos.rotation == 0) [[likely]] // More likely
         {
-            hashGrid.insert(e, pos.x, pos.y, collision.width, collision.height);
+            switch (col.shape)
+            {
+            case Shape::RECT:
+                hashGrid.insert(e, pos.x, pos.y, col.p1, col.p2);
+                break;
+            case Shape::CIRCLE:
+                hashGrid.insert(e, pos.x, pos.y, col.p1, col.p1); // Top left and radius as width and height
+                break;
+            case Shape::CAPSULE:
+                hashGrid.insert(e, pos.x, pos.y, col.p1, col.p2); // Top left and height as height / radius as width
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
         }
         else
-        {
-            // Calculate rotation bounding rect
-            // hashGrids[zone].insert(pos.x, pos.y, pos.width, pos.height, 0, 0, 0, e);
+        { // Calculate rotation bounding rect
+            switch (col.shape)
+            {
+            case Shape::RECT:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::CIRCLE:
+                hashGrid.insert(e, pos.x, pos.y, col.p1, col.p1); // Top left and radius as width and height
+                break;
+            case Shape::CAPSULE:
+                LOG_FATAL("Method not implemented");
+                break;
+            case Shape::TRIANGLE:
+                LOG_FATAL("Method not implemented");
+                break;
+            }
         }
     }
 
@@ -99,8 +127,8 @@ namespace magique
         const auto coll = internal::REGISTRY.try_get<CollisionC>(global::LOGIC_TICK_DATA.cameraEntity);
         if (coll) [[likely]]
         {
-            tickData.camera.offset.x -= static_cast<float>(coll->width) / 2.0F;
-            tickData.camera.offset.y -= static_cast<float>(coll->height) / 2.0F;
+            tickData.camera.offset.x -= coll->p1 / 2.0F;
+            tickData.camera.offset.y -= coll->p2 / 2.0F;
         }
 #if MAGIQUE_DEBUG == 1
         //M_ASSERT(count < 2, "You have multiple cameras? O.O");
@@ -125,14 +153,14 @@ namespace magique
             const auto cameraMap = tickData.cameraMap;
             const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
             const auto cameraBounds = GetCameraRect();
-            // TODO cache actor count
+            int actorCount = 0;
 
             // Lookup tables
             SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
             SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
             Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
 
-            BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution);
+            BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);
             {
                 drawVec.clear();
                 hashGrid.clear();
@@ -148,8 +176,8 @@ namespace magique
                     {
                         // Check if inside the camera bounds already
                         if (map == cameraMap &&
-                            PointIntersectsRect(pos.x, pos.y, cameraBounds.x, cameraBounds.y, cameraBounds.width,
-                                                cameraBounds.height))
+                            PointToRect(pos.x, pos.y, cameraBounds.x, cameraBounds.y, cameraBounds.width,
+                                        cameraBounds.height))
                         {
                             drawVec.push_back(e); // Should be drawn
                             cache[e] = cacheDuration;
@@ -159,14 +187,14 @@ namespace magique
                         }
                         else
                         {
-                            for (int i = 0; i < MAGIQUE_MAX_PLAYERS; ++i)
+                            for (int i = 0; i < actorCount; ++i)
                             {
                                 const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
                                 if (actorNum == -1)
                                     break;
                                 const auto vec3 = actorCircles[actorNum];
                                 // Check if insdie any update circle
-                                if (CheckCollisionPointCircle({pos.x, pos.y}, {vec3.x, vec3.y}, vec3.z))
+                                if (PointToCircle(pos.x, pos.y, vec3.x, vec3.y, vec3.z))
                                 {
                                     cache[e] = cacheDuration;
                                     const auto collision = registry.try_get<CollisionC>(e);

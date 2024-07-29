@@ -19,8 +19,8 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi")
 
     set(CMAKE_C_FLAGS_RELEASE "/arch:AVX2 /O2 /GL /fp:fast /GR-")
-    set(CMAKE_CXX_FLAGS_RELEASE "/std:c++20 /arch:AVX2 /O2 /GL /Ob3 /Gy /GA /Gw /EHc /GF /GR-")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
+    set(CMAKE_CXX_FLAGS_RELEASE "/std:c++20 /arch:AVX2 /O2 /GL /Ob3 /Gy /GA /Oi /Gw /EHc /GF /GR- /openmp:experimental")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /LTCG /OPT:REF /OPT:ICF")
 
     # Explanation of flags:
     # /arch:AVX2       - Enable AVX2 instruction set

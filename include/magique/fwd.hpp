@@ -1,5 +1,6 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
+#ifdef __cplusplus
 
 #include <cstdint> // My favourite header
 
@@ -32,7 +33,8 @@ namespace magique
     //-----------------ECS-----------------//
     struct EntityScript;
     enum EventType : uint8_t;
-    enum class CollisionLayer : uint8_t;
+    enum CollisionLayer : uint8_t;
+    enum class Shape : uint8_t;
 
     //----------------- ASSETS -----------------//
     struct Asset;                 // Memory container for any asset
@@ -96,4 +98,5 @@ struct Music;
 struct Rectangle;
 
 
+#endif
 #endif // MAGIQUE_FWD_HPP

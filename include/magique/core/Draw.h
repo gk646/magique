@@ -48,6 +48,12 @@ namespace magique
     // Drop in replacement for DrawTextEx()
     void DrawRighBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
+    //----------------- SHAPES -----------------//
+
+    // Draws a capsule given its top left coordinates the height of the rectangle and the radius of the two circles
+    void DrawCapsule(float x, float y, float height, float radius, Color tint);
+
+
 } // namespace magique
 
 #endif //MAGIQUE_DRAW_H

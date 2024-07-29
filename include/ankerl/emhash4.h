@@ -26,7 +26,6 @@
 
 #include <cstring>
 #include <string>
-#include <cmath>
 #include <cstdlib>
 #include <type_traits>
 #include <cassert>
