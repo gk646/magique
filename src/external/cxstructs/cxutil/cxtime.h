@@ -21,7 +21,6 @@
 #ifndef CX_TIME_H
 #define CX_TIME_H
 
-#include "../cxconfig.h"
 #include <chrono>
 
 namespace cxstructs {

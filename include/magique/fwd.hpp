@@ -48,7 +48,7 @@ namespace magique
     struct Playlist;              // Stores mulitple music objects to easily play and loop them
 
     //----------------- GRAPHICS -----------------//
-    enum class LightingModel : uint8_t; // Raytracing, Static Shadows, None
+    enum class LightingModel; // Raytracing, Static Shadows, None
 
     //----------------- Multiplayer -----------------//
     enum UpdateFlag : uint8_t;
@@ -60,6 +60,7 @@ namespace magique
     struct TreeBuilder;
     struct Quest;
     struct QuestNode;
+    struct Achievement;
 
     //----------------- UI -----------------//
     struct UIRoot;

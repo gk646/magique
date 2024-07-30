@@ -65,9 +65,9 @@
 // Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
 //#define SUPPORT_GIF_RECORDING           1
 // Support CompressData() and DecompressData() functions
-#define SUPPORT_COMPRESSION_API         1
+//#define SUPPORT_COMPRESSION_API         1
 // Support automatic generated events, loading and recording of those events when required
-#define SUPPORT_AUTOMATION_EVENTS       1
+//#define SUPPORT_AUTOMATION_EVENTS       1
 // Support custom frame control, only for advanced users
 // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timing + PollInputEvents()
 // Enabling this flag allows manual control of the frame processes, use at your own risk
@@ -90,7 +90,7 @@
 
 #define MAX_DECOMPRESSION_SIZE         64       // Max size allocated for decompression in MB
 
-#define MAX_AUTOMATION_EVENTS       16384       // Maximum number of automation events to record
+#define MAX_AUTOMATION_EVENTS        4096       // Maximum number of automation events to record
 
 //------------------------------------------------------------------------------------
 // Module: rlgl - Configuration values
@@ -102,14 +102,14 @@
 // Show OpenGL extensions and capabilities detailed logs on init
 //#define RLGL_SHOW_GL_DETAILS_INFO              1
 
-//#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096    // Default internal render batch elements limits
+#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096    // Default internal render batch elements limits
 #define RL_DEFAULT_BATCH_BUFFERS               1      // Default number of batch buffers (multi-buffering)
 #define RL_DEFAULT_BATCH_DRAWCALLS           256      // Default number of batch draw calls (by state changes: mode, texture)
 #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS     4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
 
-#define RL_MAX_MATRIX_STACK_SIZE              16      // Maximum size of internal Matrix stack
+#define RL_MAX_MATRIX_STACK_SIZE              8      // Maximum size of internal Matrix stack
 
-#define RL_MAX_SHADER_LOCATIONS               32      // Maximum number of shader locations supported
+#define RL_MAX_SHADER_LOCATIONS               24      // Maximum number of shader locations supported
 
 #define RL_CULL_DISTANCE_NEAR               0.01      // Default projection matrix near cull distance
 #define RL_CULL_DISTANCE_FAR              1000.0      // Default projection matrix far cull distance
@@ -153,35 +153,34 @@
 //------------------------------------------------------------------------------------
 #define SPLINE_SEGMENT_DIVISIONS       24       // Spline segments subdivisions
 
-
 //------------------------------------------------------------------------------------
 // Module: rtextures - Configuration Flags
 //------------------------------------------------------------------------------------
 // Selecte desired fileformats to be supported for image data loading
 #define SUPPORT_FILEFORMAT_PNG      1
 #define SUPPORT_FILEFORMAT_BMP      1
-//#define SUPPORT_FILEFORMAT_TGA      1
-//#define SUPPORT_FILEFORMAT_JPG      1
+#define SUPPORT_FILEFORMAT_JPG      1
 #define SUPPORT_FILEFORMAT_GIF      1
+#define SUPPORT_FILEFORMAT_SVG      1
+
+//#define SUPPORT_FILEFORMAT_TGA      1
 //#define SUPPORT_FILEFORMAT_QOI      1
 //#define SUPPORT_FILEFORMAT_PSD      1
-#define SUPPORT_FILEFORMAT_DDS      1
+//#define SUPPORT_FILEFORMAT_DDS      1
 //#define SUPPORT_FILEFORMAT_HDR      1
 //#define SUPPORT_FILEFORMAT_PIC          1
 //#define SUPPORT_FILEFORMAT_KTX      1
 //#define SUPPORT_FILEFORMAT_ASTC     1
 //#define SUPPORT_FILEFORMAT_PKM      1
 //#define SUPPORT_FILEFORMAT_PVR      1
-#define SUPPORT_FILEFORMAT_SVG      1
 
 // Support image export functionality (.png, .bmp, .tga, .jpg, .qoi)
 #define SUPPORT_IMAGE_EXPORT            1
 // Support procedural image generation functionality (gradient, spot, perlin-noise, cellular)
-#define SUPPORT_IMAGE_GENERATION        1
+//#define SUPPORT_IMAGE_GENERATION        1
 // Support multiple image editing functions to scale, adjust colors, flip, draw on images, crop...
 // If not defined, still some functions are supported: ImageFormat(), ImageCrop(), ImageToPOT()
 #define SUPPORT_IMAGE_MANIPULATION      1
-
 
 //------------------------------------------------------------------------------------
 // Module: rtext - Configuration Flags
@@ -209,7 +208,6 @@
                                                 // TextFormat(), TextSubtext(), TextToUpper(), TextToLower(), TextToPascal(), TextSplit()
 #define MAX_TEXTSPLIT_COUNT           128       // Maximum number of substrings to split: TextSplit()
 
-
 //------------------------------------------------------------------------------------
 // Module: rmodels - Configuration Flags
 //------------------------------------------------------------------------------------
@@ -219,7 +217,7 @@
 #define SUPPORT_FILEFORMAT_IQM          1
 #define SUPPORT_FILEFORMAT_GLTF         1
 #define SUPPORT_FILEFORMAT_VOX          1
-#define SUPPORT_FILEFORMAT_M3D          1
+//#define SUPPORT_FILEFORMAT_M3D          1
 // Support procedural mesh generation functions, uses external par_shapes.h library
 // NOTE: Some generated meshes DO NOT include generated texture coordinates
 #define SUPPORT_MESH_GENERATION         1
@@ -235,9 +233,9 @@
 // Desired audio fileformats to be supported for loading
 #define SUPPORT_FILEFORMAT_WAV          1
 #define SUPPORT_FILEFORMAT_OGG          1
-#define SUPPORT_FILEFORMAT_MP3          1
+#define SUPPORT_FILEFORMAT_MP3 1
+#define SUPPORT_FILEFORMAT_FLAC 1
 //#define SUPPORT_FILEFORMAT_QOA          1
-#define SUPPORT_FILEFORMAT_FLAC         1
 //#define SUPPORT_FILEFORMAT_XM           1
 //#define SUPPORT_FILEFORMAT_MOD          1
 

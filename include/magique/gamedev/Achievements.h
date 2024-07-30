@@ -3,7 +3,7 @@
 
 #include <string>
 #include <functional>
-#include <magique/core/Types.h>
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // Achievements Module

@@ -167,6 +167,113 @@ inline bool CircleToCircle(const float x1, const float y1, const float r1, const
 #endif
 }
 
+inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr, const float (&pxs)[4],
+                                  const float (&pys)[4])
+{
+#ifdef MAGIQUE_USE_AVX2
+    int windingNumber = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        const int next = (i + 1) % 4;
+        if (pys[i] <= cy)
+        {
+            if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
+                ++windingNumber;
+        }
+        else
+        {
+            if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
+                --windingNumber;
+        }
+    }
+
+    if (windingNumber != 0)
+        return true;
+
+    const __m128 cx_vec = _mm_set1_ps(cx);
+    const __m128 cy_vec = _mm_set1_ps(cy);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        int next = (i + 1) % 4;
+
+        const __m128 px_vec = _mm_set_ps(pxs[next], pxs[next], pxs[i], pxs[i]);
+        const __m128 py_vec = _mm_set_ps(pys[next], pys[next], pys[i], pys[i]);
+        const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
+        const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
+        const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
+        const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
+
+        const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
+        const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
+        __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
+        t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
+
+        const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
+        const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
+
+        const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
+        const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
+        const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
+
+        float dist_sq[4];
+        _mm_storeu_ps(dist_sq, dist_sq_vec);
+
+        if (dist_sq[0] <= cr * cr || dist_sq[2] <= cr * cr)
+            return true;
+    }
+    return false;
+#else
+    int windingNumber = 0;
+    for (int i = 0; i < 4; ++i)
+    {
+        const int next = (i + 1) % 4;
+        if (pys[i] <= cy)
+        {
+            if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
+                ++windingNumber;
+        }
+        else
+        {
+            if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
+                --windingNumber;
+        }
+    }
+
+    if (windingNumber != 0)
+        return true;
+
+    const auto DistanceSquaredPointToSegment =
+        [](const float px, const float py, const float qx, const float qy, const float cx, const float cy)
+    {
+        const float pqx = qx - px;
+        const float pqy = qy - py;
+        const float pcx = cx - px;
+        const float pcy = cy - py;
+
+        const float pq_dot_pc = pqx * pcx + pqy * pcy;
+        const float pq_dot_pq = pqx * pqx + pqy * pqy;
+        float t = pq_dot_pc / pq_dot_pq;
+        t = (t < 0) ? 0 : (t > 1) ? 1 : t;
+
+        const float closestX = px + t * pqx;
+        const float closestY = py + t * pqy;
+
+        const float dx = closestX - cx;
+        const float dy = closestY - cy;
+        return dx * dx + dy * dy;
+    };
+    for (int i = 0; i < 4; ++i)
+    {
+        int next = (i + 1) % 4;
+        const float distSq = DistanceSquaredPointToSegment(pxs[i], pys[i], pxs[next], pys[next], cx, cy);
+        if (distSq <= cr * cr)
+            return true;
+    }
+    return false;
+#endif
+}
+
 //----------------- ROTATION -----------------//
 
 // Takes translation x and y / point coordinates relative to translation / rotation clockwise in degrees from the top / anchor is relative to the points
@@ -221,7 +328,8 @@ inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], co
 }
 
 // Same as RotatePoints4() but with 3
-inline void RotatePoints3(float x, float y, float (&pxs)[3], float (&pys)[3], const float rotation, const float anchorX, const float anchorY)
+inline void RotatePoints3(float x, float y, float (&pxs)[3], float (&pys)[3], const float rotation, const float anchorX,
+                          const float anchorY)
 {
 #ifdef MAGIQUE_USE_AVX2
     const float cosTheta = cosf(rotation * DEG2RAD);
@@ -258,7 +366,8 @@ inline void RotatePoints3(float x, float y, float (&pxs)[3], float (&pys)[3], co
     _mm_store_ps(rotatedXArr, rotatedX);
     _mm_store_ps(rotatedYArr, rotatedY);
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 3; ++i)
+    {
         pxs[i] = rotatedXArr[i];
         pys[i] = rotatedYArr[i];
     }
@@ -281,6 +390,99 @@ inline void RotatePoints3(float x, float y, float (&pxs)[3], float (&pys)[3], co
         pys[i] = y + rotatedY + anchorY;
     }
 #endif
+}
+
+//----------------- SAT -----------------//
+
+inline bool SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4])
+{
+#ifdef MAGIQUE_USE_AVX2
+    const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
+                                  const float(&p1ys)[4], const float axisX, const float axisY)
+    {
+        const auto project =
+            [](const float(&pxs)[4], const float(&pys)[4], const float axisX, const float axisY, float& min, float& max)
+        {
+            const __m128 axisX_vec = _mm_set1_ps(axisX);
+            const __m128 axisY_vec = _mm_set1_ps(axisY);
+
+            const __m128 pxs_vec = _mm_loadu_ps(pxs);
+            const __m128 pys_vec = _mm_loadu_ps(pys);
+
+            const __m128 proj_vec = _mm_add_ps(_mm_mul_ps(pxs_vec, axisX_vec), _mm_mul_ps(pys_vec, axisY_vec));
+
+            float projections[4];
+            _mm_storeu_ps(projections, proj_vec);
+
+            __m128 proj_min = proj_vec;
+            __m128 proj_max = proj_vec;
+
+            proj_min = _mm_min_ps(proj_min, _mm_shuffle_ps(proj_min, proj_min, _MM_SHUFFLE(2, 3, 0, 1)));
+            proj_min = _mm_min_ps(proj_min, _mm_shuffle_ps(proj_min, proj_min, _MM_SHUFFLE(1, 0, 3, 2)));
+
+            proj_max = _mm_max_ps(proj_max, _mm_shuffle_ps(proj_max, proj_max, _MM_SHUFFLE(2, 3, 0, 1)));
+            proj_max = _mm_max_ps(proj_max, _mm_shuffle_ps(proj_max, proj_max, _MM_SHUFFLE(1, 0, 3, 2)));
+
+            min = _mm_cvtss_f32(proj_min);
+            max = _mm_cvtss_f32(proj_max);
+        };
+
+        float minA, maxA, minB, maxB;
+        project(pxs, pys, axisX, axisY, minA, maxA);
+        project(p1xs, p1ys, axisX, axisY, minB, maxB);
+        return maxA >= minB && maxB >= minA;
+    };
+#else
+    const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
+                                  const float(&p1ys)[4], float axisX, float axisY)
+    {
+        const auto project =
+            [](const float(&pxs)[4], const float(&pys)[4], float axisX, float axisY, float& min, float& max)
+        {
+            min = max = (pxs[0] * axisX + pys[0] * axisY);
+            for (int i = 1; i < 4; ++i)
+            {
+                const float projection = (pxs[i] * axisX + pys[i] * axisY);
+                if (projection < min)
+                    min = projection;
+                if (projection > max)
+                    max = projection;
+            }
+        };
+
+
+        float minA, maxA, minB, maxB;
+        project(pxs, pys, axisX, axisY, minA, maxA);
+        project(p1xs, p1ys, axisX, axisY, minB, maxB);
+        return maxA >= minB && maxB >= minA;
+    };
+
+#endif
+    for (int i = 0; i < 4; ++i)
+    {
+        const int next = (i + 1) % 4;
+        const float edgeX = pxs[next] - pxs[i];
+        const float edgeY = pys[next] - pys[i];
+
+        const float axisX = -edgeY;
+        const float axisY = edgeX;
+
+        if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY))
+            return false;
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        const int next = (i + 1) % 4;
+        const float edgeX = p1xs[next] - p1xs[i];
+        const float edgeY = p1ys[next] - p1ys[i];
+        const float axisX = -edgeY;
+        const float axisY = edgeX;
+
+        if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY))
+            return false;
+    }
+    return true;
 }
 
 //----------------- BOUNDING BOX -----------------//
