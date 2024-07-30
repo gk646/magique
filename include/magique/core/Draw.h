@@ -50,8 +50,14 @@ namespace magique
 
     //----------------- SHAPES -----------------//
 
-    // Draws a capsule given its top left coordinates the height of the rectangle and the radius of the two circles
-    void DrawCapsule(float x, float y, float height, float radius, Color tint);
+    // Draws a capsule given its top left coordinates and the radius of the two circles
+    void DrawCapsule2D(float x, float y, float radius, float height, Color tint);
+
+    // Draws the outlines of a capsule given by the top left coordinates the height and the radius of the two circles
+    void DrawCapsule2DLines(float x, float y,  float radius, float height, Color tint);
+
+    // Draws the outlines of the given rectangle rotated clockwise around the given pivot in degree starting 12'o clock
+    void DrawRectangleLinesRot(const Rectangle& rect, float rotation, float pivotX, float pivotY, Color color);
 
 
 } // namespace magique

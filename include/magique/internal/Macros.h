@@ -34,35 +34,9 @@
 #define M_ASSERT(expr, message) ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
 #endif
 
-#define SWITCHA(first, second, third, fourth)                                                                           \
-    switch (colA.shape)                                                                                                 \
-    {                                                                                                                   \
-    case Shape::RECT:                                                                                                   \
-        first;                                                                                                          \
-    case Shape::CIRCLE:                                                                                                 \
-        second;                                                                                                         \
-    case Shape::CAPSULE:                                                                                                \
-        third;                                                                                                          \
-    case Shape::TRIANGLE:                                                                                               \
-        fourth;                                                                                                         \
-    }
-
-#define SWITCHB(first, second, third, fourth)                                                                           \
-    switch (colB.shape)                                                                                                 \
-    {                                                                                                                   \
-    case Shape::RECT:                                                                                                   \
-        first;                                                                                                          \
-    case Shape::CIRCLE:                                                                                                 \
-        second;                                                                                                         \
-    case Shape::CAPSULE:                                                                                                \
-        third;                                                                                                          \
-    case Shape::TRIANGLE:                                                                                               \
-        fourth;                                                                                                         \
-    }
-
 namespace magique::internal
 {
-    inline void AssertHandler(const char* expr, const char* file, int line, const char* message);
+    void AssertHandler(const char* expr, const char* file, int line, const char* message);
 } // namespace magique::internal
 
 
