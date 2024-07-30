@@ -13,7 +13,7 @@ namespace magique
 
     void SetLogLevel(const LogLevel level) { global::CONFIGURATION.logLevel = level; }
 
-    void Log(const LogLevel level, const char* file, const int line, const char* msg, ...)
+    void LogEx(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
         if (level < global::CONFIGURATION.logLevel)
         {
@@ -38,8 +38,6 @@ namespace magique
         case LEVEL_ALLOCATION:
             level_str = "ALLOC";
             break;
-        case LEVEL_NONE:
-            return;
         }
 
         // Log to stdout or stderr based on log level

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <array>
 
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
@@ -6,7 +7,13 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 
-#include <raylib/rlgl.h>
+#include <raylib/rlgl.h> // Has to be here
+
+#include "internal/headers/MathPrimitives.h"
+
+
+constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
+constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
 
 namespace magique
 {
@@ -23,13 +30,10 @@ namespace magique
             region.width *= -1;
         }
 
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
-
-        const float texCoordLeft = static_cast<float>(region.offX) / atlasWidth;
-        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / atlasWidth;
-        const float texCoordTop = static_cast<float>(region.offY) / atlasHeight;
-        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / atlasHeight;
+        const float texCoordLeft = static_cast<float>(region.offX) / ATLAS_WIDTH;
+        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / ATLAS_WIDTH;
+        const float texCoordTop = static_cast<float>(region.offY) / ATLAS_HEIGHT;
+        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / ATLAS_HEIGHT;
 
         rlSetTexture(region.id);
         rlBegin(RL_QUADS);
@@ -71,13 +75,10 @@ namespace magique
             region.width *= -1;
         }
 
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
-
-        const float texCoordLeft = static_cast<float>(region.offX) / atlasWidth;
-        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / atlasWidth;
-        const float texCoordTop = static_cast<float>(region.offY) / atlasHeight;
-        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / atlasHeight;
+        const float texCoordLeft = static_cast<float>(region.offX) / ATLAS_WIDTH;
+        const float texCoordRight = (static_cast<float>(region.offX) + texWidth) / ATLAS_WIDTH;
+        const float texCoordTop = static_cast<float>(region.offY) / ATLAS_HEIGHT;
+        const float texCoordBottom = (static_cast<float>(region.offY) + texHeight) / ATLAS_HEIGHT;
 
         rlSetTexture(region.id);
         rlBegin(RL_QUADS);
@@ -139,6 +140,37 @@ namespace magique
             // Top-right corner for region and quad
             rlTexCoord2f(texCoordRight, texCoordTop);
             rlVertex2f(x + texWidth, y);
+        }
+
+        rlEnd();
+        rlSetTexture(0);
+    }
+
+    void DrawRegionPro(TextureRegion region, Rectangle dest, float rotation, float rotX, float rotY, Color tint)
+    {
+        float sinRotation = sinf(rotation * DEG2RAD);
+        float cosRotation = cosf(rotation * DEG2RAD);
+
+        float pivotX = dest.x + rotX;
+        float pivotY = dest.y + rotY;
+
+        float offsetX[4] = {-rotX, -rotX, dest.width - rotX, dest.width - rotX};
+        float offsetY[4] = {-rotY, dest.height - rotY, dest.height - rotY, -rotY};
+
+        rlSetTexture(region.id);
+        rlBegin(RL_QUADS);
+        rlColor4ub(tint.r, tint.g, tint.b, tint.a);
+        rlNormal3f(0.0f, 0.0f, 1.0f);
+
+        float texCoords[4][2] = {{0.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}};
+
+        for (int i = 0; i < 4; ++i)
+        {
+            float rotatedX = cosRotation * offsetX[i] - sinRotation * offsetY[i] + pivotX;
+            float rotatedY = sinRotation * offsetX[i] + cosRotation * offsetY[i] + pivotY;
+
+            rlTexCoord2f(texCoords[i][0], texCoords[i][1]);
+            rlVertex2f(rotatedX, rotatedY);
         }
 
         rlEnd();
@@ -279,19 +311,44 @@ namespace magique
         DrawTextEx(f, txt, {pos.x - width, pos.y}, fs, spc, c);
     }
 
-    void DrawCapsule(float x, float y, float height, float radius, Color tint)
+    void DrawCapsule2D(const float x, const float y, float radius, float height, const Color tint)
     {
         if (radius <= 0.0f)
             radius = 0.1f;
 
         const Vector2 topCenter = {x + radius, y + radius};
         const Vector2 bottomCenter = {x + radius, y + height - radius};
-
         DrawCircleSector(topCenter, radius, 180.0f, 360.0f, 32, tint);
-
         DrawCircleSector(bottomCenter, radius, 0.0f, 180.0f, 32, tint);
-
         DrawRectangleRec({x, y + radius, 2 * radius, height - 2 * radius}, tint);
+    }
+
+    void DrawCapsule2DLines(const float x, const float y, float radius, float height, const Color tint)
+    {
+        if (radius <= 0.0f)
+            radius = 0.1f;
+
+        const Vector2 topCenter = {x + radius, y + radius};
+        const Vector2 bottomCenter = {x + radius, y + height - radius};
+        DrawCircleSectorLines(topCenter, radius, 180.0F, 360.0F, 32, tint);
+        DrawCircleSectorLines(bottomCenter, radius, 0.0F, 180.0F, 32, tint);
+
+        DrawLineV({x, y + radius}, {x, y + height - radius}, tint);
+        DrawLineV({x + radius * 2, y + radius}, {x + radius * 2, y + height - radius}, tint);
+    }
+
+    void DrawRectangleLinesRot(const Rectangle& rect, const float rotation, const float pivotX, const float pivotY,
+                               const Color color)
+    {
+        float pxs[4] = {0, rect.width, rect.width, 0}; // top-left // top-right// bottom-right// bottom-left
+        float pys[4] = {0, 0, rect.height, rect.height};
+        RotatePoints4(rect.x, rect.y, pxs, pys, rotation, pivotX, pivotY);
+
+        for (int i = 0; i < 4; ++i)
+        {
+            const int nextI = (i + 1) % 4;
+            DrawLineV({pxs[i], pys[i]}, {pxs[nextI], pys[nextI]}, color);
+        }
     }
 
 

@@ -1,14 +1,12 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
-#include <c2/cute_c2.h>
-
 #include <magique/ecs/Scripting.h>
 #include <magique/util/Jobs.h>
 #include <magique/util/Defines.h>
 
 #include "internal/globals/ScriptEngine.h"
-#include "internal/headers/CollisionDetection.h"
+#include "internal/headers/MathPrimitives.h"
 
 //-----------------------------------------------
 // Collision System
@@ -16,7 +14,7 @@
 // .....................................................................
 // Optimizations:
 // 1. Single Threaded pass through all entities inserting them into the hashgrid and collision vector
-//    -> uses custom cache friendly hashgrid (with custom hashmap)
+//    -> uses custom cache friendly hashgrid (with third-party hashmap)
 //    -> first checks if inside camera bounds otherwise if close to any actor
 // 2. Multithreaded broad phase (scalable to any amount)
 //    -> vector collects all entities in overlapping cells
@@ -33,11 +31,10 @@ static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
 namespace magique
 {
     inline bool CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&);
-
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
-
     inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid&, float x, float y, const CollisionC& col);
 
+    // System
     inline void CollisionSystem(entt::registry& registry)
     {
         auto& tickData = global::LOGIC_TICK_DATA;
@@ -124,16 +121,20 @@ namespace magique
     inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid& grid, const float x, const float y,
                               const CollisionC& col)
     {
+        //TODO missing rotatino - same as LogicSystem
         switch (col.shape)
         {
         [[likely]] case Shape::RECT:
             grid.query<vector<entt::entity>>(collector, x, y, col.p1, col.p2);
             break;
         case Shape::CAPSULE:
+            grid.query<vector<entt::entity>>(collector, x, y, col.p1 * 2.0F, col.p2);
             break;
         case Shape::CIRCLE:
+            grid.query<vector<entt::entity>>(collector, x, y, col.p1, col.p1);
             break;
         case Shape::TRIANGLE:
+            LOG_FATAL("Method not implemented");
             break;
         }
     }
@@ -158,44 +159,6 @@ namespace magique
             vec.clear();
         }
         pairSet.clear();
-    }
-
-    inline static constexpr c2x identityTransform{{0, 0}, {1, 0}};
-
-    inline c2Poly RotRect(const float x, const float y, const float width, const float height, const float rot,
-                          const float anchorX, const float anchorY)
-    {
-        c2Poly poly;
-        const float rad = rot * (DEG2RAD);
-        const float cosTheta = cosf(rad);
-        const float sinTheta = sinf(rad);
-
-        // Define local space rectangle corners
-        c2v localCorners[4] = {
-            {0, 0},          // top-left
-            {width, 0},      // top-right
-            {width, height}, // bottom-right
-            {0, height}      // bottom-left
-        };
-
-        // Rotate each corner around the local pivot and translate to world space
-        for (int i = 0; i < 4; ++i)
-        {
-            float localX = localCorners[i].x - anchorX;
-            float localY = localCorners[i].y - anchorY;
-
-            // Apply rotation
-            float rotatedX = localX * cosTheta - localY * sinTheta;
-            float rotatedY = localX * sinTheta + localY * cosTheta;
-
-            // Translate back and offset to world position
-            poly.verts[i].x = x + rotatedX + anchorX;
-            poly.verts[i].y = y + rotatedY + anchorY;
-        }
-
-        poly.count = 4;
-        c2MakePoly(&poly);
-        return poly;
     }
 
     inline bool CheckCollision(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
@@ -235,6 +198,10 @@ namespace magique
                 LOG_FATAL("Method not implemented");
 
             case Shape::CAPSULE:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    return RectToCapsule(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2);
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
@@ -245,6 +212,11 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
+                if (posB.rotation == 0)
+                {
+                    return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1 / 2.0F,
+                                        posA.y + colA.p1 / 2.0F, colA.p1);
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CIRCLE:
@@ -260,6 +232,10 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
+                if (posB.rotation == 0) [[likely]]
+                {
+                    return RectToCapsule(posB.x, posB.y, colB.p1, colB.p2, posA.x, posA.y, colA.p1, colA.p2);
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CIRCLE:

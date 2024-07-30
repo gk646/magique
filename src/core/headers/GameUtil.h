@@ -47,17 +47,17 @@ namespace magique
             const auto& col = view.get<const CollisionC>(e);
             switch (col.shape)
             {
+            [[likely]] case Shape::RECT:
+                DrawRectangleLinesEx({pos.x, pos.y, col.p1, col.p2}, 2.0F, RED);
+                break;
             case Shape::CIRCLE:
                 DrawCircleLinesV({pos.x + col.p1 / 2.0F, pos.y + col.p1 / 2.0F}, col.p1, RED);
                 break;
-            case Shape::RECT:
-                DrawRectangleLinesEx({pos.x, pos.y, col.p1, col.p2}, 2.0F, RED);
+            case Shape::CAPSULE:
+                DrawCapsule2DLines(pos.x, pos.y, col.p1, col.p2, RED);
                 break;
             case Shape::TRIANGLE:
-                DrawTriangle({pos.x, pos.y}, {col.p1, col.p2}, {col.p3, col.p4}, RED);
-                break;
-            case Shape::CAPSULE:
-                DrawCapsule(pos.x, pos.y, col.p2, col.p1, RED);
+                DrawTriangleLines({pos.x, pos.y}, {col.p1, col.p2}, {col.p3, col.p4}, RED);
                 break;
             }
         }
