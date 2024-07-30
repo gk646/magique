@@ -13,7 +13,40 @@
 
 namespace magique
 {
+    //----------------- CORE -----------------//
+
+    enum TextAlign
+    {
+        LEFT,
+        CENTERED,
+        RIGHT
+    };
+
+    enum class LightingModel
+    {
+        STATIC_SHADOWS, // Default
+        RAY_TRACING,
+        NONE,
+    };
+
     //----------------- ASSETS  -----------------//
+
+    // Used in any of the loader interfaces
+    // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
+    enum PriorityLevel
+    {
+        LOW,
+        MEDIUM,
+        HIGH,
+        CRITICAL,
+        INSTANT,
+    };
+
+    enum ThreadType
+    {
+        MAIN_THREAD,
+        BACKGROUND_THREAD,
+    };
 
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
@@ -110,12 +143,93 @@ namespace magique
         RIGHT_BOTTOM   // RB
     };
 
+    enum class KeyLayout
+    {
+        QWERTY,
+        QWERTZ,
+        AUTOMATIC,
+    };
+
     enum Size
     {
         MINI,
         SMALL,
         MID,
         BIG
+    };
+
+    struct CursorAttachment final
+    {
+        void* userPointer;
+    };
+
+    //----------------- MULTIPLAYER -----------------//
+
+    enum class SendFlag : uint8_t
+    {
+        // Reliable message send. Can send up to k_cbMaxSteamNetworkingSocketsMessageSizeSend bytes in a single message.
+        // Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for
+        // efficient sends of large chunks of data.
+        //
+        // The Nagle algorithm is used.
+        RELIABLE = 8,
+        // Send the message unreliably. Can be lost.  Messages *can* be larger than a
+        // single MTU (UDP packet), but there is no retransmission, so if any piece
+        // of the message is lost, the entire message will be dropped.
+        //
+        // The sending API does have some knowledge of the underlying connection, so
+        // if there is no NAT-traversal accomplished or there is a recognized adjustment
+        // happening on the connection, the packet will be batched until the connection
+        // is open again.
+        UN_RELIABLE = 0,
+    };
+
+    enum class Connection : uint32_t
+    {
+        INVALID_CONNECTION = 0,
+    };
+
+    enum UpdateFlag : uint8_t
+    {
+        UPDATE_DELETE_ENTITY = 1,
+        UPDATE_POSITION_ENTITY = 2,
+        UPDATE_HEALTH_ENTITY = 4,
+        UPDATE_SPAWN_ENTITY = 8,
+        FILLER2 = 16,
+        FILLER3 = 32,
+        FILLER4 = 64,
+        FILLER5 = 128,
+    };
+
+    enum UDP_Channel : uint8_t
+    {
+        //-----------FOR-HOST-----------//
+        HOST_PLAYER_ACTION,
+        HOST_CHARACTER_INFO,
+
+        //-----------FOR-CLIENT-----------//
+        CLIENT_PLAYER_NAME_UPDATE,
+        CLIENT_ID_ASSIGN,
+        CLIENT_ENTITY_POS,
+        CLIENT_ENTITY_POS_STAT,
+        CLIENT_ENTITY_STAT,
+        CLIENT_ENTITY_SPAWN,
+        CLIENT_ENTITY_DESPAWN,
+        CLIENT_ABILITY_USED,
+        CLIENT_QUEST_UPDATE,
+        CLIENT_EFFECT_UPDATE,
+    };
+
+    //----------------- GAMEDEV -----------------//
+
+    enum class NoiseType
+    {
+        OPEN_SIMPLEX_2,
+        OPEN_SIMPLEX_2S,
+        CELLULAR,
+        PERLIN,
+        VALUE_CUBIC,
+        VALUE,
     };
 
     //----------------- HELPER TYPES -----------------//
@@ -188,104 +302,21 @@ namespace magique
         float y;
     };
 
-    struct CursorAttachment final
+    // Pointer will always be allocated with new
+    template <typename T>
+    struct DataPointer final
     {
-        void* userPointer;
-    };
+        DataPointer(T* pointer, const int size) : pointer(pointer), size(size) {}
 
-    enum class LightingModel : uint8_t
-    {
-        STATIC_SHADOWS, // Default
-        RAY_TRACING,
-        NONE,
-    };
+        [[nodiscard]] int getSize() const { return size; }
 
-    enum class KeyLayout
-    {
-        QWERTY,
-        QWERTZ,
-        AUTOMATIC,
-    };
+        T* getData() const { return pointer; }
 
-    // Used in any of the loader interfaces
-    // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
-    enum PriorityLevel
-    {
-        LOW,
-        MEDIUM,
-        HIGH,
-        CRITICAL,
-        INSTANT,
-    };
+        void free() const { delete pointer; }
 
-    enum Thread
-    {
-        MAIN_THREAD,
-        BACKGROUND_THREAD,
-    };
-
-    enum TextAlign
-    {
-        LEFT,
-        CENTERED,
-        RIGHT
-    };
-
-    //----------------- MULTIPLAYER -----------------//
-
-    enum class SendFlag : uint8_t
-    {
-        // Reliable message send. Can send up to k_cbMaxSteamNetworkingSocketsMessageSizeSend bytes in a single message.
-        // Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for
-        // efficient sends of large chunks of data.
-        //
-        // The Nagle algorithm is used.
-        RELIABLE = 8,
-        // Send the message unreliably. Can be lost.  Messages *can* be larger than a
-        // single MTU (UDP packet), but there is no retransmission, so if any piece
-        // of the message is lost, the entire message will be dropped.
-        //
-        // The sending API does have some knowledge of the underlying connection, so
-        // if there is no NAT-traversal accomplished or there is a recognized adjustment
-        // happening on the connection, the packet will be batched until the connection
-        // is open again.
-        UN_RELIABLE = 0,
-    };
-
-    enum class Connection : uint32_t
-    {
-        INVALID_CONNECTION = 0,
-    };
-
-    enum UpdateFlag : uint8_t
-    {
-        UPDATE_DELETE_ENTITY = 1,
-        UPDATE_POSITION_ENTITY = 2,
-        UPDATE_HEALTH_ENTITY = 4,
-        UPDATE_SPAWN_ENTITY = 8,
-        FILLER2 = 16,
-        FILLER3 = 32,
-        FILLER4 = 64,
-        FILLER5 = 128,
-    };
-
-    enum UDP_Channel : uint8_t
-    {
-        //-----------FOR-HOST-----------//
-        HOST_PLAYER_ACTION,
-        HOST_CHARACTER_INFO,
-
-        //-----------FOR-CLIENT-----------//
-        CLIENT_PLAYER_NAME_UPDATE,
-        CLIENT_ID_ASSIGN,
-        CLIENT_ENTITY_POS,
-        CLIENT_ENTITY_POS_STAT,
-        CLIENT_ENTITY_STAT,
-        CLIENT_ENTITY_SPAWN,
-        CLIENT_ENTITY_DESPAWN,
-        CLIENT_ABILITY_USED,
-        CLIENT_QUEST_UPDATE,
-        CLIENT_EFFECT_UPDATE,
+    private:
+        T* pointer; // The data pointer
+        int size; // The size of the data pointer
     };
 
 } // namespace magique

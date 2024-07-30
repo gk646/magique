@@ -20,7 +20,6 @@
 
 namespace magique
 {
-
     //----------------- COMMANDS -----------------//
 
     // Registers a custom command with the given name and description

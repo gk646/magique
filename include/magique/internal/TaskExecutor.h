@@ -107,7 +107,7 @@ namespace magique
 
             return currentLevel == -1;
         }
-        void addTask(TaskI<T>* task, PriorityLevel pl, const Thread d, int impact)
+        void addTask(TaskI<T>* task, PriorityLevel pl, const ThreadType d, int impact)
         {
             if (!task)
             {
@@ -124,7 +124,7 @@ namespace magique
                 cpuTasks[pl].push_back(task);
             }
         }
-        void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const Thread d, const int impact)
+        void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const ThreadType d, const int impact)
         {
             addTask(new LambdaTask{func}, pl, d, impact);
         }

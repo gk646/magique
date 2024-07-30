@@ -1,6 +1,6 @@
 #include <magique/gamedev/Achievements.h>
-#include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
+#include <magique/core/Types.h>
 
 namespace magique
 {
@@ -14,13 +14,12 @@ namespace magique
             if (strcmp(a.name, name.c_str()))
                 return &a;
         }
-
         return nullptr;
     }
 
     bool AddAchievement(const std::string& name, const std::function<bool()>& constraint)
     {
-        auto existing = GetAchievement(name);
+        const auto existing = GetAchievement(name);
         if (existing != nullptr)
             return false;
 
@@ -32,7 +31,6 @@ namespace magique
         ACHIEVEMENTS.emplace_back(buff, (void*)new std::function(constraint));
         return true;
     }
-
 
     bool TriggerAchievement(const std::string& name)
     {
@@ -48,9 +46,7 @@ namespace magique
         return true;
     }
 
-
     void SetAchievementCallback(AchievementCallback callback) { CALL_BACK = callback; }
-
 
     void CheckAchievements()
     {
@@ -80,6 +76,7 @@ namespace magique
             LOG_ERROR("Invalid data - Failed to load achievements");
             return false;
         }
+        LOG_FATAL("Not implemented");
     }
 
 } // namespace magique

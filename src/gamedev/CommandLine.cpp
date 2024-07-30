@@ -31,5 +31,4 @@ namespace magique
 
     void SetMaxCommandHistory(const int len) { global::COMMAND_LINE.maxHistoryLen = len; }
 
-
 } // namespace magique

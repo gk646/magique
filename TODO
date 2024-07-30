@@ -4,8 +4,6 @@ AI -> actual AI
 
 implement saving game save and data table
 
-implement run length encoding in compression
-
 implement particle API
 
 implement inserting rotated and other shapes into hashgrid
@@ -19,3 +17,7 @@ implement localization
 implement networking: gamenetworking sockets for default - steam library if with steam features
 
 implement all shape to shape collisions including rotations
+
+implement game dev API's
+
+implement game loading interface / make save loading easy and quick / support multiple saves / quicksaves...

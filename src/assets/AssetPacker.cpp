@@ -1,7 +1,6 @@
 #include <fstream>
 #include <filesystem>
 
-#include <cxutil/cxstring.h>
 #include <cxutil/cxtime.h>
 
 #include <magique/assets/AssetPacker.h>
@@ -11,6 +10,7 @@
 namespace fs = std::filesystem;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
+inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
 
 namespace
 {
@@ -168,42 +168,11 @@ namespace magique
         return false;
     }
 
-    bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey)
+    inline void WriteData() {}
+
+    void WriteImage(const uint64_t encryptionKey, const std::vector<fs::path>& pathList, int& writtenSize,
+                    const fs::path& rootPath, FILE* imageFile, std::vector<char>& data)
     {
-        cxstructs::now();
-        std::vector<fs::path> pathList;
-        pathList.reserve(100);
-
-        if (!CreatePathList(directory, pathList))
-        {
-            return false;
-        }
-
-        if (pathList.empty())
-        {
-            LOG_ERROR("No files to compile into asset image");
-            return false;
-        }
-
-        int writtenSize = 0;
-        fs::path rootPath(directory);
-        FILE* imageFile = fopen(fileName, "wb");
-
-        if (!imageFile)
-        {
-            LOG_ERROR("Could not open file for writing: %s", fileName);
-            return false;
-        }
-        setvbuf(imageFile, nullptr, _IONBF, 0);
-
-        fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
-        fwrite(&writtenSize, 4, 1, imageFile);
-        const int size = pathList.size();
-        fwrite(&size, 4, 1, imageFile);
-        writtenSize += strlen(IMAGE_HEADER) + 4 + 4;
-
-        std::vector<char> data;
-        data.reserve(10000);
         for (auto& entry : pathList)
         {
             FILE* file = fopen(entry.generic_string().c_str(), "rb");
@@ -213,7 +182,6 @@ namespace magique
                 continue;
             }
             setvbuf(file, nullptr, _IONBF, 0);
-
             // Read file
             {
                 fseek(file, 0, SEEK_END);
@@ -239,8 +207,62 @@ namespace magique
             }
             fclose(file);
         }
+    }
+    bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey, const bool compress)
+    {
+        cxstructs::now();
+        std::vector<fs::path> pathList;
+        pathList.reserve(100);
+
+        if (!CreatePathList(directory, pathList))
+        {
+            return false;
+        }
+
+        if (pathList.empty())
+        {
+            LOG_ERROR("No files to compile into asset image");
+            return false;
+        }
+
+        // Open target file
+        int writtenSize = 0;
+        const fs::path rootPath(directory);
+        FILE* imageFile = fopen(fileName, "wb");
+        if (!imageFile)
+        {
+            LOG_ERROR("Could not open file for writing: %s", fileName);
+            return false;
+        }
+        setvbuf(imageFile, nullptr, _IONBF, 0);
+
+        // Header
+        if (compress)
+        {
+            fwrite(IMAGE_HEADER_COMPRESSED, strlen(IMAGE_HEADER_COMPRESSED), 1, imageFile);
+        }
+        else
+        {
+            fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
+        }
+        fwrite(&writtenSize, 4, 1, imageFile);
+
+        // write element count
+        const int size = static_cast<int>(pathList.size());
+        fwrite(&size, 4, 1, imageFile);
+        writtenSize += static_cast<int>(strlen(IMAGE_HEADER)) + 4 + 4;
+
+        std::vector<char> data;
+        data.reserve(10000);
+
+        // Write to file
+        WriteImage(encryptionKey, pathList, writtenSize, rootPath, imageFile, data);
+
+        // Write the total image size
         fseek(imageFile, 5, SEEK_SET);
         fwrite(&writtenSize, sizeof(int), 1, imageFile);
+
+        // Close and log
         fclose(imageFile);
         LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %.2f mb", directory, fileName,
                  cxstructs::getTime<std::chrono::milliseconds>(), writtenSize / 1'000'000.0F);

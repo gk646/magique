@@ -34,7 +34,7 @@ namespace magique
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(TaskI<AssetContainer>* task, Thread thread, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(TaskI<AssetContainer>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
         // Registers a new task
         // func     - a loading func (lambda)
@@ -42,7 +42,7 @@ namespace magique
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
         // Example: registerTask([](magique::AssetContainer &assets) {}, magique::MAIN_THREAD, magique::MEDIUM, 5);
-        void registerTask(AssetLoadFunc func, Thread thread, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(AssetLoadFunc func, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
         // Prints current stats - automatically called if all task are registered

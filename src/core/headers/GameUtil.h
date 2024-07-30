@@ -4,6 +4,7 @@
 namespace magique
 {
     //----------------- RENDERER -----------------//
+
     // Logic loop as authority over the state
     // Render thread just draws the current state
     inline void AssignDrawTickCamera()
@@ -48,7 +49,7 @@ namespace magique
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
-                DrawRectangleLinesEx({pos.x, pos.y, col.p1, col.p2}, 2.0F, RED);
+                DrawRectangleLinesRot({pos.x, pos.y, col.p1, col.p2}, pos.rotation, col.anchorX, col.anchorY, RED);
                 break;
             case Shape::CIRCLE:
                 DrawCircleLinesV({pos.x + col.p1 / 2.0F, pos.y + col.p1 / 2.0F}, col.p1, RED);

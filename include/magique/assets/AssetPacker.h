@@ -19,11 +19,13 @@ namespace magique
     // Failure: Returns false
     bool LoadAssetImage(const char* path, AssetContainer& assets, uint64_t encryptionKey = 0);
 
-
     // Compiles an asset image from all files inside the given directory as root
     // Saves it to disk with the given name relative to the current working directory
+    // Optional compression to make the image smaller -> automatically uncompressed which takes a bit longer
     // Failure: Returns false
-    bool CompileImage(const char* directory, const char* fileName = "data.bin", uint64_t encryptionKey = 0);
+    bool CompileImage(const char* dir, const char* name = "data.bin", uint64_t encryptionKey = 0, bool compress = false);
 
-} // namespace magique::assets
+
+
+} // namespace magique
 #endif

@@ -170,33 +170,49 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
-                if (posA.rotation == 0) [[likely]]
                 {
-                    if (posB.rotation == 0) [[likely]]
+                    if (posA.rotation == 0) [[likely]]
                     {
-                        return RectToRect(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2);
+                        if (posB.rotation == 0) [[likely]]
+                        {
+                            return RectToRect(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2);
+                        }
+                        float pxs[4] = {0, colB.p1, colB.p1, 0};                                            // rect b
+                        float pys[4] = {0, 0, colB.p2, colB.p2};                                            // rect b
+                        RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY); // rot
+                        const float p1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p1, posA.x};         // Rect a
+                        const float p1ys[4] = {posA.y, posA.y, posA.y + colA.p2, posA.y + colA.p2};         // Rect a
+                        return SAT(pxs, pys, p1xs, p1ys);
                     }
-                    LOG_FATAL("Method not implemented");
-                    return false;
+                    if (posB.rotation == 0) [[likely]] // Only a is rotated
+                    {
+                        float pxs[4] = {0, colA.p1, colA.p1, 0};                                            // rect a
+                        float pys[4] = {0, 0, colA.p2, colA.p2};                                            // rect a
+                        RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY); // rot
+                        const float p1xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p1, posB.x};         // Rect b
+                        const float p1ys[4] = {posB.y, posB.y, posB.y + colB.p2, posB.y + colB.p2};         // Rect b
+                        return SAT(pxs, pys, p1xs, p1ys);
+                    }                                         // Both are rotated
+                    float pxs[4] = {0, colA.p1, colA.p1, 0};  // rect a
+                    float pys[4] = {0, 0, colA.p2, colA.p2};  // rect a
+                    float p1xs[4] = {0, colB.p1, colB.p1, 0}; // Rect b
+                    float p1ys[4] = {0, 0, colB.p2, colB.p2}; // Rect b
+                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
+                    RotatePoints4(posB.x, posB.y, p1xs, p1ys, posB.rotation, colB.anchorX, colB.anchorY);
+                    return SAT(pxs, pys, p1xs, p1ys);
                 }
-                if (posB.rotation == 0) [[likely]]
-                {
-                    LOG_FATAL("Method not implemented");
-                }
-                else
-                {
-                    LOG_FATAL("Method not implemented");
-                }
-                return false;
-
             case Shape::CIRCLE:
-                if (posA.rotation == 0)
                 {
-                    return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1 / 2.0F,
-                                        posB.y + colB.p1 / 2.0F, colB.p1);
+                    if (posA.rotation == 0)
+                    {
+                        return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1 / 2.0F,
+                                            posB.y + colB.p1 / 2.0F, colB.p1);
+                    }
+                    float pxs[4] = {0, colA.p1, colA.p1, 0}; // rect a
+                    float pys[4] = {0, 0, colA.p2, colA.p2}; // rect a
+                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
+                    return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, pxs, pys);
                 }
-                LOG_FATAL("Method not implemented");
-
             case Shape::CAPSULE:
                 if (posA.rotation == 0) [[likely]]
                 {
@@ -212,15 +228,20 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
-                if (posB.rotation == 0)
                 {
-                    return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1 / 2.0F,
-                                        posA.y + colA.p1 / 2.0F, colA.p1);
+                    if (posB.rotation == 0)
+                    {
+                        return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1 / 2.0F,
+                                            posA.y + colA.p1 / 2.0F, colA.p1);
+                    }
+                    float pxs[4] = {0, colB.p1, colB.p1, 0}; // rect b
+                    float pys[4] = {0, 0, colB.p2, colB.p2}; // rect b
+                    RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY);
+                    return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, pxs, pys);
                 }
-                LOG_FATAL("Method not implemented");
-                break;
             case Shape::CIRCLE:
-                return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p2);
+                // We can skip the translation to the middle point as both are in the same system
+                return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p1);
             case Shape::CAPSULE:
                 LOG_FATAL("Method not implemented");
                 break;

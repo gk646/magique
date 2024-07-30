@@ -2141,7 +2141,6 @@ long GetFileModTime(const char *fileName)
 unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDataSize)
 {
     #define COMPRESSION_QUALITY_DEFLATE  8
-
     unsigned char *compData = NULL;
 
 #if defined(SUPPORT_COMPRESSION_API)
@@ -2155,7 +2154,6 @@ unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDa
 
     TRACELOG(LOG_INFO, "SYSTEM: Compress data: Original size: %i -> Comp. size: %i", dataSize, *compDataSize);
 #endif
-
     return compData;
 }
 

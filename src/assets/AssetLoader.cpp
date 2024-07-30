@@ -38,7 +38,7 @@ namespace magique
         return true;
     }
 
-    void AssetLoader::registerTask(TaskI<AssetContainer>* task, const Thread thread, const PriorityLevel pl,
+    void AssetLoader::registerTask(TaskI<AssetContainer>* task, const ThreadType thread, const PriorityLevel pl,
                                    const int impact)
     {
         if (!BasicChecks(task, pl, impact))
@@ -46,7 +46,7 @@ namespace magique
         addTask(task, pl, thread, impact);
     }
 
-    void AssetLoader::registerTask(AssetLoadFunc func, const Thread thread, const PriorityLevel pl, const int impact)
+    void AssetLoader::registerTask(AssetLoadFunc func, const ThreadType thread, const PriorityLevel pl, const int impact)
     {
         if (!BasicChecks(func, pl, impact))
             return;
