@@ -22,7 +22,7 @@ namespace magique
         RIGHT
     };
 
-    enum class LightingModel
+    enum class LightingMode
     {
         STATIC_SHADOWS, // Default
         RAY_TRACING,

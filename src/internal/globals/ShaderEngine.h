@@ -4,11 +4,14 @@
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
 
+#include "internal/headers/Shaders.h"
+
 namespace magique
 {
     struct Shaders final
     {
         vector<Vector3> shadowQuads; // Shadow segments
+        Vector2 shadowResolution{};  //Shadow map resolution
 
         Shader shadow;
         Shader light;
@@ -28,8 +31,9 @@ namespace magique
         unsigned int vao, vbo;
         unsigned int currentSize;
 
-        void init(size_t initialSize = 1024 * sizeof(Vector3))
+        void init(const size_t initialSize = 1024 * sizeof(Vector3))
         {
+            shadowResolution = {1280, 960};
             shadowQuads.reserve(500);
             shadowTexture = LoadRenderTexture(1920, 1080);
 
@@ -46,11 +50,22 @@ namespace magique
 
             // Unbind the VAO
             rlDisableVertexArray();
+
+            light = LoadShaderFromMemory(lightVert, lightFrag);
+            shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
+
+            lightLightLoc = GetShaderLocation(light, "lightPos");
+            lightColorLoc = GetShaderLocation(light, "lightColor");
+            lightTypeLoc = GetShaderLocation(light, "lightType");
+            lightIntensityLoc = GetShaderLocation(light, "intensity");
+
+            shadowLightLoc = GetShaderLocation(shadow, "lightPosition");
+            mvpLoc = GetShaderLocation(shadow, "mvp");
         }
 
         void updateObjectBuffer(const Vector3* vertices, const int vertexCount)
         {
-            size_t requiredSize = vertexCount * sizeof(Vector3);
+            const size_t requiredSize = vertexCount * sizeof(Vector3);
 
             // Check if the current buffer size is sufficient
             if (requiredSize > currentSize)

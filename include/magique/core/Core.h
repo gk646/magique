@@ -31,6 +31,11 @@ namespace magique
     // Default: 250
     void SetCameraViewPadding(int distance);
 
+    // Manually sets the camera offset from the top left of the screen
+    // Automatically set to half the screen dimensions and centered on the collision shape of the camera entity (if any)
+    // If any offset other than (0,0) is set there are no automatic adjustments
+    void SetManualCameraOffset(float x, float y);
+
     // Sets static collision bounds - this is only useful for simpler scenes
     // Everything outside the bounds is considered solid (static) automatically
     // Pass a width or height of 0 to disable
@@ -39,10 +44,10 @@ namespace magique
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
-    void SetLightingModel(LightingModel model);
+    void SetLightingModel(LightingMode model);
 
     // Adds a static collider to the world
-    void AddStaticCollider(Shape shape,float x, float y, float width, float height);
+    void AddStaticCollider(Shape shape, float x, float y, float width, float height);
 
     //----------------- ENTITIES -----------------//
 

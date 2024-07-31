@@ -281,7 +281,9 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
     int windingNumber = 0;
     for (int i = 0; i < 4; ++i)
     {
-        const int next = (i + 1) % 4;
+        int next = i + 1;
+        if (next == 4)
+            next = 0;
         if (pys[i] <= cy)
         {
             if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
@@ -302,7 +304,9 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
 
     for (int i = 0; i < 4; ++i)
     {
-        int next = (i + 1) % 4;
+        int next = i + 1;
+        if (next == 4)
+            next = 0;
 
         const __m128 px_vec = _mm_set_ps(pxs[next], pxs[next], pxs[i], pxs[i]);
         const __m128 py_vec = _mm_set_ps(pys[next], pys[next], pys[i], pys[i]);
@@ -334,7 +338,9 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
     int windingNumber = 0;
     for (int i = 0; i < 4; ++i)
     {
-        const int next = (i + 1) % 4;
+        int next = i + 1;
+        if (next == 4)
+            next = 0;
         if (pys[i] <= cy)
         {
             if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
@@ -372,7 +378,9 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
     };
     for (int i = 0; i < 4; ++i)
     {
-        int next = (i + 1) % 4;
+        int next = i + 1;
+        if (next == 4)
+            next = 0;
         const float distSq = DistanceSquaredPointToSegment(pxs[i], pys[i], pxs[next], pys[next], cx, cy);
         if (distSq <= cr * cr)
             return true;

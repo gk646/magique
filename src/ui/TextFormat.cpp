@@ -63,7 +63,7 @@ char FMT_PREFIX = '$';                               // The format prefix to sea
 char FMT_ENCAP_START = '{';                          // Format encapsulator start
 char FMT_ENCAP_END = '}';                            // Format encapsulator end
 std::string FORMAT_CACHE(64, '\0');                  // Length of 64 to ensure it is large enough for most values
-std::string STRING_BUILDER(512, '\0');
+std::string STRING_BUILDER(512, '\0');               // Cache for the final formatted string
 
 template <typename T>
 constexpr ValueType getValueType()

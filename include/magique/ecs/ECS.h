@@ -1,5 +1,5 @@
-#ifndef REGISTRY_H
-#define REGISTRY_H
+#ifndef MAGIQUE_ECS_H
+#define MAGIQUE_ECS_H
 
 #include <functional>
 #include <magique/ecs/Components.h>
@@ -116,4 +116,4 @@ void magique::GiveComponent(entt::entity e, Args... args)
     internal::REGISTRY.emplace<Component>(e, args...);
 }
 
-#endif // REGISTRY_H
+#endif // MAGIQUE_ECS_H
