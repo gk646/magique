@@ -5,6 +5,7 @@
 
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/container/AssetContainer.h>
+#include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
 
 namespace fs = std::filesystem;
@@ -12,18 +13,67 @@ namespace fs = std::filesystem;
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
 
-namespace
+void SymmetricEncrypt(char* data, const uint32_t size, const uint64_t key)
 {
-    void SymmetricEncrypt(char* data, const uint32_t size, const uint64_t key)
+    for (uint32_t i = 0; i < size; ++i)
     {
-        for (uint32_t i = 0; i < size; ++i)
+        data[i] ^= static_cast<char>(key >> i % 8 * 8);
+    }
+}
+
+void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
+{
+    for (const auto& entry : fs::directory_iterator(directory))
+    {
+        if (entry.is_directory())
         {
-            data[i] ^= static_cast<char>(key >> i % 8 * 8);
+            ScanDirectory(entry.path(), pathList);
+        }
+        else if (entry.is_regular_file())
+        {
+            pathList.push_back(entry.path());
         }
     }
+}
 
-    bool LoadImageFromMemory(char* imageData, uint32_t imageSize, std::vector<magique::Asset>& assets,
-                             const uint64_t encryptionKey)
+bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
+{
+    fs::path dirPath(directory);
+    std::error_code ec;
+    fs::file_status status = fs::status(dirPath, ec);
+
+    if (ec)
+    {
+        LOG_ERROR("Error: Cannot access path: %s", directory);
+        return false;
+    }
+
+    if (fs::is_directory(status))
+    {
+        ScanDirectory(fs::directory_entry(dirPath), pathList);
+        return true;
+    }
+    if (fs::is_regular_file(status))
+    {
+        pathList.emplace_back(dirPath);
+        return true;
+    }
+    LOG_ERROR("Error: Given path is not directory or file: %s", directory);
+    return false;
+}
+
+void UnCompressImage(char*& imageData, int& imageSize)
+{
+    const auto* start = (const unsigned char*)&imageData[5];
+    auto data = magique::DeCompress(start, imageSize);
+    delete[] imageData;
+    imageSize = data.getSize();
+    imageData = (char*)data.getData();
+}
+
+namespace magique
+{
+    bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
         uint32_t totalSize = 0;
         uint32_t filePointer = 0;
@@ -31,8 +81,15 @@ namespace
 
         if (memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
         {
-            LOG_ERROR("Malformed asset image File");
-            return false;
+            if (memcmp(IMAGE_HEADER_COMPRESSED, &imageData[filePointer], 5) == 0)
+            {
+                UnCompressImage(imageData, imageSize);
+            }
+            else
+            {
+                LOG_ERROR("Malformed asset image File");
+                return false;
+            }
         }
 
         filePointer += 5;
@@ -91,51 +148,6 @@ namespace
         }
         return true;
     }
-
-    void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
-    {
-        for (const auto& entry : fs::directory_iterator(directory))
-        {
-            if (entry.is_directory())
-            {
-                ScanDirectory(entry.path(), pathList);
-            }
-            else if (entry.is_regular_file())
-            {
-                pathList.push_back(entry.path());
-            }
-        }
-    }
-
-    bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
-    {
-        fs::path dirPath(directory);
-        std::error_code ec;
-        fs::file_status status = fs::status(dirPath, ec);
-
-        if (ec)
-        {
-            LOG_ERROR("Error: Cannot access path: %s", directory);
-            return false;
-        }
-
-        if (fs::is_directory(status))
-        {
-            ScanDirectory(fs::directory_entry(dirPath), pathList);
-            return true;
-        }
-        if (fs::is_regular_file(status))
-        {
-            pathList.emplace_back(dirPath);
-            return true;
-        }
-        LOG_ERROR("Error: Given path is not directory or file: %s", directory);
-        return false;
-    }
-} // namespace
-
-namespace magique
-{
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
         if (!std::filesystem::exists(path))
@@ -144,37 +156,54 @@ namespace magique
             return false;
         }
         cxstructs::now();
-        std::ifstream file(path, std::ios::binary);
+        // read file
+        FILE* file = fopen(path, "rb");
         if (file)
         {
-            const uint32_t imageSize = fs::file_size(path);
-            const auto fileData = new char[imageSize];
-            file.read(fileData, imageSize);
-            file.close();
+            // Get size
+            fseek(file, 0, SEEK_END);
+            int imageSize = ftell(file);
+            fseek(file, 0, SEEK_SET);
+
+            // Read image
+            auto imageData = new char[imageSize];
+            fread(imageData, imageSize, 1, file);
+            fclose(file);
+
+            int original = imageSize;
             std::vector<Asset> assetList;
-            const bool res = LoadImageFromMemory(fileData, imageSize, assetList, encryptionKey);
-            assets = AssetContainer{fileData, std::move(assetList)};
+            const bool res = ParseImage(imageData, imageSize, assetList, encryptionKey);
+            assets = AssetContainer{imageData, std::move(assetList)};
             if (res)
             {
-                LOG_INFO("Successfully loaded image %s - Took: %lld millis. Total Size: %.2f mb", path,
-                         cxstructs::getTime<std::chrono::milliseconds>(), imageSize / 1'000'000.0F);
+                const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+                if (original == imageSize)
+                {
+                    auto* logText = "Successfully loaded image %s | Took: %lld millis | Total Size: %.2f mb | Assets: %d";
+                    LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
+                }
+                else
+                {
+                    auto* logText =
+                        "Successfully loaded image %s | Took: %lld millis. Decompressed: %.2f mb -> %.2f mb | Assets: %d";
+                    LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
+                }
                 return true;
             }
-            LOG_ERROR("Failed to load asset image: %s", path);
+            LOG_ERROR("Failed to parse asset image: %s", path);
             return false;
         }
         LOG_ERROR("Failed to load file: %s", path);
-        file.close();
         return false;
     }
 
-    inline void WriteData() {}
-
     void WriteImage(const uint64_t encryptionKey, const std::vector<fs::path>& pathList, int& writtenSize,
-                    const fs::path& rootPath, FILE* imageFile, std::vector<char>& data)
+                    const fs::path& rootPath, FILE* imageFile, std::vector<char> data)
     {
+        std::string relativePathStr;
         for (auto& entry : pathList)
         {
+            // Open the input file for reading
             FILE* file = fopen(entry.generic_string().c_str(), "rb");
             if (!file)
             {
@@ -182,90 +211,137 @@ namespace magique
                 continue;
             }
             setvbuf(file, nullptr, _IONBF, 0);
-            // Read file
-            {
-                fseek(file, 0, SEEK_END);
-                const int fileSize = ftell(file);
-                if (fileSize > data.size())
-                    data.resize(fileSize, 0);
-                fseek(file, 0, SEEK_SET);
-                fread(data.data(), fileSize, 1, file);
-                SymmetricEncrypt(data.data(), fileSize, encryptionKey);
-                {
-                    fs::path relativePath = fs::relative(entry, rootPath);
-                    std::string relativePathStr = relativePath.generic_string();
-                    auto pathLen = static_cast<int>(relativePathStr.size() + 1);
-                    fwrite(&pathLen, sizeof(int), 1, imageFile);
-                    fwrite(relativePathStr.c_str(), pathLen, 1, imageFile);
-                    fwrite(&fileSize, sizeof(int), 1, imageFile);
-                    fwrite(data.data(), fileSize, 1, imageFile);
 
-                    writtenSize += fileSize;
-                    writtenSize += pathLen;
-                    writtenSize += 8; // two 4 byte ints
-                }
-            }
+            // Read the file size
+            fseek(file, 0, SEEK_END);
+            const int fileSize = ftell(file);
+            if (fileSize > data.size())
+                data.resize(fileSize, 0);
+            fseek(file, 0, SEEK_SET);
+
+            // Read the file data into the buffer
+            fread(data.data(), fileSize, 1, file);
+
+            // Encrypt the file data
+            SymmetricEncrypt(data.data(), fileSize, encryptionKey);
+
+            // Get the relative path for the file
+            fs::path relativePath = fs::relative(entry, rootPath);
+            relativePathStr = relativePath.generic_string();
+            auto pathLen = static_cast<int>(relativePathStr.size() + 1);
+
+            // Write the path length to the image file
+            fwrite(&pathLen, sizeof(int), 1, imageFile);
+
+            // Write the relative path to the image file
+            fwrite(relativePathStr.c_str(), pathLen, 1, imageFile);
+
+            // Write the file size to the image file
+            fwrite(&fileSize, sizeof(int), 1, imageFile);
+
+            // Write the encrypted file data to the image file
+            fwrite(data.data(), fileSize, 1, imageFile);
+
+            // Update the total written size - Two 4 byte integers for path length and file size
+            writtenSize += fileSize;
+            writtenSize += pathLen;
+            writtenSize += 8;
+
+            // Close the input file
             fclose(file);
         }
     }
+
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey, const bool compress)
     {
         cxstructs::now();
         std::vector<fs::path> pathList;
         pathList.reserve(100);
 
+        // Create the list of file paths
         if (!CreatePathList(directory, pathList))
         {
             return false;
         }
-
         if (pathList.empty())
         {
             LOG_ERROR("No files to compile into asset image");
             return false;
         }
 
-        // Open target file
         int writtenSize = 0;
         const fs::path rootPath(directory);
-        FILE* imageFile = fopen(fileName, "wb");
+
+        // Open the image file for writing
+        FILE* imageFile = fopen(fileName, "w+b");
         if (!imageFile)
         {
             LOG_ERROR("Could not open file for writing: %s", fileName);
             return false;
         }
-        setvbuf(imageFile, nullptr, _IONBF, 0);
 
-        // Header
-        if (compress)
-        {
-            fwrite(IMAGE_HEADER_COMPRESSED, strlen(IMAGE_HEADER_COMPRESSED), 1, imageFile);
-        }
-        else
-        {
-            fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
-        }
+        // Write the header
+        fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
+
+        // Write total size
         fwrite(&writtenSize, 4, 1, imageFile);
 
-        // write element count
-        const int size = static_cast<int>(pathList.size());
+        // Write elements
+        const int size = pathList.size();
         fwrite(&size, 4, 1, imageFile);
-        writtenSize += static_cast<int>(strlen(IMAGE_HEADER)) + 4 + 4;
+        writtenSize += strlen(IMAGE_HEADER) + 4 + 4;
 
+        // Temp data from files
         std::vector<char> data;
         data.reserve(10000);
 
-        // Write to file
+        // Write the image data
         WriteImage(encryptionKey, pathList, writtenSize, rootPath, imageFile, data);
 
-        // Write the total image size
+        // Update the total written size in the file header
         fseek(imageFile, 5, SEEK_SET);
         fwrite(&writtenSize, sizeof(int), 1, imageFile);
 
-        // Close and log
-        fclose(imageFile);
-        LOG_INFO("Successfully compiled %s into %s - Took %lld millis. Total Size: %.2f mb", directory, fileName,
-                 cxstructs::getTime<std::chrono::milliseconds>(), writtenSize / 1'000'000.0F);
+        if (compress)
+        {
+            // Read the file data into a vector for compression
+            if (writtenSize > data.size())
+                data.resize(writtenSize);
+
+            fseek(imageFile, 0, SEEK_SET);
+            fread(data.data(), writtenSize, 1, imageFile);
+            fclose(imageFile);
+
+            // Compress the data
+            auto comp = Compress((const unsigned char*)data.data(), writtenSize);
+
+            // Open the file again to write the compressed data
+            FILE* compFile = fopen(fileName, "wb");
+            if (!compFile)
+            {
+                LOG_ERROR("Could not open file for writing: %s", fileName);
+                return false;
+            }
+
+            // Write the compressed data to the file
+            fwrite(IMAGE_HEADER_COMPRESSED, 5, 1, compFile);
+            fwrite(comp.getData(), comp.getSize(), 1, compFile);
+            comp.free();
+            fclose(compFile);
+            auto* logText =
+                "Successfully compiled %s into %s | Took %lld millis | Compressed: %.2f mb -> %.2f mb "
+                "(%.0f%%) | Assets: %d";
+            const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+            LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
+                     ((float)comp.getSize() / writtenSize) * 100.0F, size);
+        }
+        else
+        {
+            fclose(imageFile);
+            auto* logText = "Successfully compiled %s into %s | Took %lld millis | Total Size: %.2f mb | Assets: %d";
+            const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+            LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
+        }
         return true;
     }
 } // namespace magique

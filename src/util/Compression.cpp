@@ -4,13 +4,13 @@
 #include <magique/util/Logging.h>
 
 #define SINFL_IMPLEMENTATION
+#define SINFL_NO_SIMD
 #include "external/raylib/src/external/sinfl.h"
 #define SDEFL_IMPLEMENTATION
 #include "external/raylib/src/external/sdefl.h"
 
 namespace magique
 {
-
     DataPointer<const unsigned char> Compress(const unsigned char* data, const int size)
     {
         if (!data || size <= 0)
@@ -48,13 +48,13 @@ namespace magique
             return {nullptr, 0};
         }
 
-        const int decompressedSizeEstimate = size * 4; // Guess the size
+        const int decompressedSizeEstimate = size * 7; // Guess the size
         auto* decompressedData = new unsigned char[decompressedSizeEstimate];
 
         // Decompress the data
-        int decompressedSize = sinfl_decompress(decompressedData, decompressedSizeEstimate, data, size);
+        int decompressedSize = sinflate(decompressedData, decompressedSizeEstimate, data, size);
 
-        if (decompressedSize < 0)
+        if (decompressedSize <= 0)
         {
             delete[] decompressedData;
             LOG_ERROR("Failed to decompress data");

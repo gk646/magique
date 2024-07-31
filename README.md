@@ -19,7 +19,7 @@ Most notable features:
 - Persistence interface for game saves and config including a custom database emulator
 - Lighting system featuring a hard shadow and raytracing mode through built in ECS components
 - Unique C++ scripting system
-- New types and methods to load and draw sprites and tilemaps (supports [Tiled](https://www.mapeditor.org/) exports)
+- New types and methods to load and draw sprites and tile maps (supports [Tiled](https://www.mapeditor.org/) exports)
 
 #### What magique IS:
 
@@ -45,13 +45,13 @@ Most notable features:
     - File loading: .mp3, .wav, .png, .gif, models and shaders...
     - Random Numbers: GetRandomInt()
     - Audio
-- cute headers
-    - 2D collision detection
 - entt
     - Entity component system
     - Views, groups, signals...
 - ankerl
     - Optimized hashmap and hashset
+- FastNoiseLize
+    - Fast and customizable noise generation
 
 Paradigms:
 

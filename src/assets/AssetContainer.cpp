@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstring>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
@@ -219,7 +218,10 @@ namespace magique
 
         return *this;
     }
-    AssetContainer::~AssetContainer() { delete[] nativeData; }
+    AssetContainer::~AssetContainer()
+    {
+        delete[] nativeData;
+    }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
@@ -276,6 +278,11 @@ namespace magique
 
         LOG_ERROR("No asset with name %s found! Returning empty asset", name);
         return Asset();
+    }
+
+    int AssetContainer::getSize() const
+    {
+        return static_cast<int>(assets.size());
     }
 
 

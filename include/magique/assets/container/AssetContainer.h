@@ -75,6 +75,9 @@ namespace magique
         // This is slower than ByPath
         const Asset& getAsset(const char* name) const;
 
+        // Returns the total amount of assets
+        [[nodiscard]] int getSize() const;
+
     private:
         const char* nativeData = nullptr; // Pointer to all the file data
         std::vector<Asset> assets;        // Internal file list
