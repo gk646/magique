@@ -302,7 +302,7 @@ namespace magique
         float y;
     };
 
-    // Pointer will always be allocated with new
+    // Pointer will always be allocated with new []
     template <typename T>
     struct DataPointer final
     {
@@ -312,7 +312,7 @@ namespace magique
 
         T* getData() const { return pointer; }
 
-        void free() const { delete pointer; }
+        void free() const { delete []pointer; }
 
     private:
         T* pointer; // The data pointer
