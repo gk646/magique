@@ -30,9 +30,9 @@ static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
 
 namespace magique
 {
-    inline bool CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&);
-    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
-    inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid&, float x, float y, const CollisionC& col);
+    bool CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&);
+    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
+    void QueryHashGrid(vector<entt::entity>& collector, const HashGrid&, const PositionC& pos, const CollisionC& col);
 
     // System
     inline void CollisionSystem(entt::registry& registry)
@@ -54,7 +54,7 @@ namespace magique
             {
                 const auto first = *it;
                 const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-                QueryHashGrid(collector, grid, posA.x, posA.y, colA);
+                QueryHashGrid(collector, grid, posA, colA);
                 for (const auto second : collector)
                 {
                     if (first >= second)
@@ -71,7 +71,7 @@ namespace magique
             }
         };
 
-        const int size = static_cast<int>(collisionVec.size());
+        const int size = static_cast<int>(collisionVec.size()); // Multithread over certain amount
         if (size > 500)
         {
             std::array<jobHandle, WORK_PARTS> handles{};
@@ -118,24 +118,46 @@ namespace magique
         HandleCollisionPairs(colPairs, pairSet);
     }
 
-    inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid& grid, const float x, const float y,
+    inline void QueryHashGrid(vector<entt::entity>& collector, const HashGrid& grid, const PositionC& pos,
                               const CollisionC& col)
     {
-        //TODO missing rotatino - same as LogicSystem
         switch (col.shape)
         {
         [[likely]] case Shape::RECT:
-            grid.query<vector<entt::entity>>(collector, x, y, col.p1, col.p2);
-            break;
-        case Shape::CAPSULE:
-            grid.query<vector<entt::entity>>(collector, x, y, col.p1 * 2.0F, col.p2);
-            break;
+            {
+                if (pos.rotation == 0) [[likely]]
+                {
+                    return grid.query(collector, pos.x, pos.y, col.p1, col.p2);
+                }
+                float pxs[4] = {0, col.p1, col.p1, 0};
+                float pys[4] = {0, 0, col.p2, col.p2};
+                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
+                const auto bb = GetBBQuadrilateral(pxs, pys);
+                return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
+            }
         case Shape::CIRCLE:
-            grid.query<vector<entt::entity>>(collector, x, y, col.p1, col.p1);
-            break;
-        case Shape::TRIANGLE:
+            return grid.query(collector, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
+        case Shape::CAPSULE:
+            if (pos.rotation == 0) [[likely]]
+            {
+                // Top left and height as height / diameter as w
+                return grid.query(collector, pos.x, pos.y, col.p1 * 2, col.p2);
+            }
             LOG_FATAL("Method not implemented");
             break;
+        case Shape::TRIANGLE:
+            {
+                if (pos.rotation == 0)
+                {
+                    const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
+                    return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
+                }
+                float txs[4] = {0, col.p1, col.p3, 0};
+                float tys[4] = {0, col.p2, col.p4, 0};
+                RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
+                const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
+                return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
+            }
         }
     }
 
@@ -221,6 +243,14 @@ namespace magique
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    if (posB.rotation == 0) [[likely]]
+                    {
+                        return RectToTriangle(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, posB.x + colB.p1,
+                                              posB.y + colB.p2, posB.x + colB.p3, posB.y + colB.p4);
+                    }
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             }
@@ -243,6 +273,11 @@ namespace magique
                 // We can skip the translation to the middle point as both are in the same system
                 return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p1);
             case Shape::CAPSULE:
+                if (posB.rotation == 0) [[likely]]
+                {
+                    return CircleToCapsule(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, posB.x, posB.y,
+                                           colB.p1, colB.p2);
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
@@ -253,16 +288,31 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
-                if (posB.rotation == 0) [[likely]]
+                if (posA.rotation == 0) [[likely]]
                 {
-                    return RectToCapsule(posB.x, posB.y, colB.p1, colB.p2, posA.x, posA.y, colA.p1, colA.p2);
+                    if (posB.rotation == 0) [[likely]]
+                    {
+                        return RectToCapsule(posB.x, posB.y, colB.p1, colB.p2, posA.x, posA.y, colA.p1, colA.p2);
+                    }
                 }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CIRCLE:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    return CircleToCapsule(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, posA.x, posA.y,
+                                           colA.p1, colA.p2);
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CAPSULE:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    if (posB.rotation == 0) [[likely]]
+                    {
+                        return CapsuleToCapsule(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2);
+                    }
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
@@ -273,6 +323,14 @@ namespace magique
             switch (colB.shape)
             {
             case Shape::RECT:
+                if (posA.rotation == 0) [[likely]]
+                {
+                    if (posB.rotation == 0) [[likely]]
+                    {
+                        return RectToTriangle(posB.x, posB.y, colB.p1, colB.p2, posA.x, posA.y, posA.x + colA.p1,
+                                              posA.y + colA.p2, posA.x + colA.p3, posA.y + colA.p4);
+                    }
+                }
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CIRCLE:
@@ -282,10 +340,41 @@ namespace magique
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
-                LOG_FATAL("Method not implemented");
-                break;
+                if (posA.rotation == 0) // For triangles we dont assume as they are likely rotated
+                {
+                    if (posB.rotation == 0)
+                    {
+                        return TriangleToTriangle(posA.x, posA.y, posA.x + colA.p1, posA.y + colA.p2, posA.x + colA.p3,
+                                                  posA.y + colA.p4, // Triangle 2
+                                                  posB.x, posB.y, posB.x + colB.p1, posB.y + colB.p2, posB.x + colB.p3,
+                                                  posB.y + colB.p4);
+                    }
+                    float txs[4] = {0, colB.p1, colB.p3, 0};
+                    float tys[4] = {0, colB.p2, colB.p4, 0};
+                    RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
+                    const float t1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
+                    const float t1ys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
+                    return SAT(txs, tys, t1xs, t1ys);
+                }
+                if (posB.rotation == 0)
+                {
+                    float txs[4] = {0, colA.p1, colA.p3, 0};
+                    float tys[4] = {0, colA.p2, colA.p4, 0};
+                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
+                    const float t1xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
+                    const float t1ys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
+                    return SAT(txs, tys, t1xs, t1ys);
+                }
+                float txs[4] = {0, colA.p1, colA.p3, 0};
+                float tys[4] = {0, colA.p2, colA.p4, 0};
+                float t1xs[4] = {0, colB.p1, colB.p3, 0};
+                float t1ys[4] = {0, colB.p2, colB.p4, 0};
+                RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
+                RotatePoints4(posB.x, posB.y, t1xs, t1ys, posB.rotation, colB.anchorX, colB.anchorY);
+                return SAT(txs, tys, t1xs, t1ys);
             }
         }
+        LOG_FATAL("Method not implemented");
         return false;
     }
 } // namespace magique

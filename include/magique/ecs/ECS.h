@@ -76,7 +76,7 @@ namespace magique
 
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
-    CollisionC& GiveCollisionTri(entt::entity e, float x, float y, float x2, float y2, int anchorX = 0, int anchorY = 0);
+    CollisionC& GiveCollisionTri(entt::entity e, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
 
     // Makes the entitiy emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);

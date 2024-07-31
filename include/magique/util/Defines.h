@@ -51,7 +51,7 @@
 
 //----------------- PERFORMANCE -----------------//
 
-#define MAGIQUE_USE_AVX2 // AVX2 intrinsics -> since 2013 haswell - 93% of steam users support this
+#define MAGIQUE_USE_AVX2 // AVX2 intrinsics -> 93% of steam users support this (intel since 2013, amd since 2015)
 
 //----------------- BRANCHES -----------------//
 

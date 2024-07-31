@@ -58,7 +58,8 @@ namespace magique
                 DrawCapsule2DLines(pos.x, pos.y, col.p1, col.p2, RED);
                 break;
             case Shape::TRIANGLE:
-                DrawTriangleLines({pos.x, pos.y}, {col.p1, col.p2}, {col.p3, col.p4}, RED);
+                DrawTriangleLinesRot({pos.x, pos.y}, {pos.x + col.p1, pos.y + col.p2}, {pos.x + col.p3, pos.y + col.p4},
+                                     pos.rotation, col.anchorX, col.anchorY, RED);
                 break;
             }
         }
