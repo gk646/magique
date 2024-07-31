@@ -146,7 +146,7 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawRegionPro(TextureRegion region, Rectangle dest, float rotation, float rotX, float rotY, Color tint)
+    void DrawRegionPro(const TextureRegion region, Rectangle dest,const float rotation,const float rotX,const float rotY, Color tint)
     {
         float sinRotation = sinf(rotation * DEG2RAD);
         float cosRotation = cosf(rotation * DEG2RAD);
@@ -311,7 +311,7 @@ namespace magique
         DrawTextEx(f, txt, {pos.x - width, pos.y}, fs, spc, c);
     }
 
-    void DrawCapsule2D(const float x, const float y, float radius, float height, const Color tint)
+    void DrawCapsule2D(const float x, const float y, float radius,const float height, const Color tint)
     {
         if (radius <= 0.0f)
             radius = 0.1f;
@@ -323,7 +323,7 @@ namespace magique
         DrawRectangleRec({x, y + radius, 2 * radius, height - 2 * radius}, tint);
     }
 
-    void DrawCapsule2DLines(const float x, const float y, float radius, float height, const Color tint)
+    void DrawCapsule2DLines(const float x, const float y, float radius,const float height, const Color tint)
     {
         if (radius <= 0.0f)
             radius = 0.1f;
@@ -349,6 +349,26 @@ namespace magique
             const int nextI = (i + 1) % 4;
             DrawLineV({pxs[i], pys[i]}, {pxs[nextI], pys[nextI]}, color);
         }
+    }
+
+    void DrawTriangleRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const float pivotX,
+                         const float pivotY, const Color color)
+    {
+        float txs[4] = {0, p2.x-p1.x, p3.x-p1.x,0};
+        float tys[4] = {0, p2.y-p1.y, p3.y-p1.y,0};
+        RotatePoints4(p1.x, p1.y, txs, tys, rot, pivotX, pivotY);
+
+
+        DrawTriangle({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
+    }
+
+    void DrawTriangleLinesRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const float pivotX,
+                              const float pivotY, const Color color)
+    {
+        float txs[4] = {0, p2.x-p1.x, p3.x-p1.x,0};
+        float tys[4] = {0, p2.y-p1.y, p3.y-p1.y,0};
+        RotatePoints4(p1.x, p1.y, txs, tys, rot, pivotX, pivotY);
+        DrawTriangleLines({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 
 

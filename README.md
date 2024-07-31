@@ -50,7 +50,7 @@ Most notable features:
     - Views, groups, signals...
 - ankerl
     - Optimized hashmap and hashset
-- FastNoiseLize
+- FastNoiseLite
     - Fast and customizable noise generation
 
 Paradigms:

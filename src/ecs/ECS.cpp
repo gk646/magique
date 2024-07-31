@@ -116,27 +116,29 @@ namespace magique
         return false;
     }
 
-    CollisionC& GiveCollisionRect(const entt::entity e, float width, float height, int anchorX, int anchorY)
+    CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
+                                  const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::RECT);
     }
 
-    CollisionC& GiveCollisionCircle(const entt::entity e, float radius, int anchorX, int anchorY)
+    CollisionC& GiveCollisionCircle(const entt::entity e, const float radius, const int anchorX, const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, radius, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::CIRCLE);
     }
 
-    CollisionC& GiveCollisionCapsule(const entt::entity e, float height, float radius, int anchorX, int anchorY)
+    CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, float radius, const int anchorX,
+                                     const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::CAPSULE);
     }
 
-    CollisionC& GiveCollisionTri(entt::entity e, float x, float y, float x2, float y2, int anchorX, int anchorY)
+    CollisionC& GiveCollisionTri(const entt::entity e, Point p2, Point p3, const int anchorX, const int anchorY)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, x, y, x2, y2, static_cast<int16_t>(anchorX),
+        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::TRIANGLE);
     }
 
@@ -157,6 +159,5 @@ namespace magique
     void GiveActor(const entt::entity e) { return internal::REGISTRY.emplace<ActorC>(e); }
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
-
 
 } // namespace magique

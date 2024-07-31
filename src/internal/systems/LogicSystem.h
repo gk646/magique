@@ -63,7 +63,7 @@ namespace magique
     void HandleCollisionEntity(entt::entity e, const PositionC pos, const CollisionC& col, auto& hashGrid, auto& cVec)
     {
         cVec.push_back(e);
-        switch (col.shape)
+        switch (col.shape) // Same as CollisionSystem::QueryHashGrid()
         {
         [[likely]] case Shape::RECT:
             {
@@ -82,14 +82,22 @@ namespace magique
         case Shape::CAPSULE:
             if (pos.rotation == 0) [[likely]]
             {
-                return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2,
-                                       col.p2); // Top left and height as height / diameter as w
+                // Top left and height as height / diameter as w
+                return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2, col.p2);
             }
             LOG_FATAL("Method not implemented");
             break;
         case Shape::TRIANGLE:
             {
-                const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
+                if (pos.rotation == 0)
+                {
+                    const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
+                    return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                }
+                float txs[4] = {0, col.p1, col.p3, 0};
+                float tys[4] = {0, col.p2, col.p4, 0};
+                RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
+                const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
                 return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
             }
         }

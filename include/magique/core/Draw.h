@@ -10,6 +10,9 @@
 // ................................................................................
 // Here are all the magique drawing function that take its custom types
 // Generally you cant really use raylib types anymore as texture are stored into atlases
+// Rotation is always a value in degree clockwise starting from the top with 0
+// | = 0      |           __| = 270
+// |__ = 90   |  == 180
 // ................................................................................
 
 namespace magique
@@ -54,11 +57,16 @@ namespace magique
     void DrawCapsule2D(float x, float y, float radius, float height, Color tint);
 
     // Draws the outlines of a capsule given by the top left coordinates the height and the radius of the two circles
-    void DrawCapsule2DLines(float x, float y,  float radius, float height, Color tint);
+    void DrawCapsule2DLines(float x, float y, float radius, float height, Color tint);
 
-    // Draws the outlines of the given rectangle rotated clockwise around the given pivot in degree starting 12'o clock
+    // Draws the outlines of the given rectangle rotated
     void DrawRectangleLinesRot(const Rectangle& rect, float rotation, float pivotX, float pivotY, Color color);
 
+    // Draws a triangle - points must be provided in counter-clockwise order
+    void DrawTriangleRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, float pivotX, float pivotY, Color color);
+
+    // Draw a triangle using lines - points must be provided in counter-clockwise order
+    void DrawTriangleLinesRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, float pivotX, float pivotY, Color color);
 
 } // namespace magique
 
