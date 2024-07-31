@@ -1,6 +1,5 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
-#ifdef __cplusplus
 
 #include <cstdint> // My favourite header
 
@@ -98,6 +97,4 @@ struct Sound;
 struct Music;
 struct Rectangle;
 
-
 #endif
-#endif // MAGIQUE_FWD_HPP

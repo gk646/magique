@@ -7,14 +7,13 @@
 #include "internal/globals/LogicTickData.h"
 #include "internal/globals/DrawTickData.h"
 #include "internal/globals/ShaderEngine.h"
-#include "internal/headers/Shaders.h"
 
-static bool initCalled = false;
 
 namespace magique
 {
     bool InitMagique()
     {
+        static bool initCalled = false;
         if (initCalled)
         {
             LOG_WARNING("Init called twice. Skipping...");
@@ -27,32 +26,9 @@ namespace magique
             global::TEXTURE_ATLASES.emplace_back();
         }
 
-        auto& config = global::CONFIGURATION;
-        config.shadowResolution = {1280, 960};
-        config.font = GetFontDefault();
-
-        if (config.font.texture.id == 0)
-        {
-            LOG_ERROR("Failed to load default font");
-            LOG_ERROR("Failed to initialize magique");
-            return false;
-        }
-
-        auto& shaders = global::SHADERS;
-        shaders.init();
-        shaders.light = LoadShaderFromMemory(lightVert, lightFrag);
-        shaders.shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
-
-        shaders.lightLightLoc = GetShaderLocation(shaders.light, "lightPos");
-        shaders.lightColorLoc = GetShaderLocation(shaders.light, "lightColor");
-        shaders.lightTypeLoc = GetShaderLocation(shaders.light, "lightType");
-        shaders.lightIntensityLoc = GetShaderLocation(shaders.light, "intensity");
-
-        shaders.shadowLightLoc = GetShaderLocation(shaders.shadow, "lightPosition");
-        shaders.mvpLoc = GetShaderLocation(shaders.shadow, "mvp");
-
+        global::CONFIGURATION.init();
+        global::SHADERS.init(); // Loads the shaders and
         InitJobSystem();
-
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
     }
@@ -61,22 +37,30 @@ namespace magique
 
     void SetShowPerformanceOverlay(const bool val) { global::CONFIGURATION.showPerformanceOverlay = val; }
 
-    void SetCameraEntity(entt::entity entity) {}
+    //void SetCameraEntity(entt::entity entity) { } // implemented in ECS.cpp cause of includes
 
-    void SetUpdateDistance(int distance) { global::CONFIGURATION.entityUpdateDistance = static_cast<float>(distance); }
+    void SetUpdateDistance(const int distance)
+    {
+        global::CONFIGURATION.entityUpdateDistance = static_cast<float>(distance);
+    }
 
-    void SetCameraViewPadding(int distance) { global::CONFIGURATION.cameraViewPadding = static_cast<float>(distance); }
+    void SetCameraViewPadding(const int distance)
+    {
+        global::CONFIGURATION.cameraViewPadding = static_cast<float>(distance);
+    }
 
-    void SetEntityCacheDuration(int ticks) { global::CONFIGURATION.entityCacheDuration = ticks; }
+    void SetManualCameraOffset(const float x, const float y) { global::CONFIGURATION.manualCamOff = {x, y}; }
 
-    void AddToEntityCache(entt::entity e)
+    void SetEntityCacheDuration(const int ticks) { global::CONFIGURATION.entityCacheDuration = ticks; }
+
+    void AddToEntityCache(const entt::entity e)
     {
         global::LOGIC_TICK_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
     }
 
     void SetEngineFont(const Font& font) { global::CONFIGURATION.font = font; }
 
-    void SetLightingModel(LightingModel model) { global::CONFIGURATION.lighting = model; }
+    void SetLightingModel(const LightingMode model) { global::CONFIGURATION.lighting = model; }
 
     void SetStaticWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
 
@@ -123,11 +107,8 @@ namespace magique
 
     void UnSyncThreads() { global::LOGIC_TICK_DATA.unlock(); }
 
-    void SetShowHitboxes(bool val) { global::CONFIGURATION.showHitboxes = val; }
+    void SetShowHitboxes(const bool val) { global::CONFIGURATION.showHitboxes = val; }
 
-    void SetBenchmarkTicks(int ticks)
-    {
-        global::CONFIGURATION.benchmarkTicks = ticks;
-    }
+    void SetBenchmarkTicks(const int ticks) { global::CONFIGURATION.benchmarkTicks = ticks; }
 
 } // namespace magique

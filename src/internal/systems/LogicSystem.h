@@ -116,22 +116,28 @@ namespace magique
         {
             const auto& pos = view.get<PositionC>(e);
             tickData.cameraMap = pos.map;
-            tickData.camera.offset = {sWidth / 2, sHeight / 2};
             tickData.cameraEntity = e;
+            const auto manualOff = global::CONFIGURATION.manualCamOff;
+            if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
+            {
+                tickData.camera.offset = manualOff;
+                break;
+            }
+            tickData.camera.offset = {sWidth / 2, sHeight / 2};
             tickData.camera.target = {pos.x, pos.y};
+            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
+            if (coll) [[likely]]
+            {
+                tickData.camera.offset.x -= coll->p1 / 2.0F;
+                tickData.camera.offset.y -= coll->p2 / 2.0F;
+            }
 #if MAGIQUE_DEBUG == 1
             count++;
 #endif
         }
         // Center the camera
-        const auto coll = internal::REGISTRY.try_get<CollisionC>(global::LOGIC_TICK_DATA.cameraEntity);
-        if (coll) [[likely]]
-        {
-            tickData.camera.offset.x -= coll->p1 / 2.0F;
-            tickData.camera.offset.y -= coll->p2 / 2.0F;
-        }
 #if MAGIQUE_DEBUG == 1
-        //M_ASSERT(count < 2, "You have multiple cameras? O.O");
+        M_ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
     }
 

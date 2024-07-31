@@ -12,7 +12,7 @@ Most notable features:
 - Every method and header is fully documented including return values, parameters, defaults or failure
 - Optimized for maximum usability following a simple code-style and clean headers
 - Every engine facility is implemented in the most memory and performance efficient way possible
-- Encrypted asset packing and loading into a single asset image
+- Encrypted and compressed asset packing and loading into a single asset image
 - Automatic texture stitching into a different texture atlases
 - Built in loading interface handling load-priority and background loading of assets
 - Particle system similar to Godot 4

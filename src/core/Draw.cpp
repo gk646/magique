@@ -371,5 +371,4 @@ namespace magique
         DrawTriangleLines({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 
-
 } // namespace magique
