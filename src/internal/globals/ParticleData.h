@@ -5,6 +5,7 @@
 #include <raylib/rlgl.h>
 
 #include <magique/util/Logging.h>
+#include <magique/core/Particles.h>
 
 #include "external/raylib/src/coredata.h"
 
@@ -38,6 +39,7 @@ namespace magique
 
         void render() const
         {
+            printf("Size: %d\n", rectangles.size());
             for (const auto& p : rectangles)
             {
                 const Color color = {p.r, p.g, p.b, p.a};
@@ -66,21 +68,53 @@ namespace magique
 
         void update()
         {
-            for (auto it = rectangles.begin(); it != rectangles.end();) {
-                it->age++;
-                if (it->age > it->lifetime) {
+            for (auto it = rectangles.begin(); it != rectangles.end();)
+            {
+                auto& p = *it;
+                const auto& emitter = p.emitter->data;
+                const float relTime = static_cast<float>(p.age) / static_cast<float>(emitter.lifeTime);
+                if (relTime >= 1.0F) [[unlikely]]
+                {
                     std::swap(*it, rectangles.back());
                     rectangles.pop_back();
-                } else {
+                }
+                else
+                {
+                    ++p.age;
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    p.vx += emitter.gravX;
+                    p.vy += emitter.gravY;
+
+                    if (emitter.scaleFunc)
+                    {
+                        p.scale = emitter.scaleFunc(p.scale, relTime);
+                    }
+
+                    if (emitter.colorFunc)
+                    {
+                        p.setColor(emitter.colorFunc(p.getColor(), relTime));
+                    }
+
+                    if (emitter.tickFunc)
+                    {
+                        emitter.tickFunc(p, relTime);
+                    }
                     ++it;
                 }
             }
-            for (auto it = triangles.begin(); it != triangles.end();) {
+
+            for (auto it = triangles.begin(); it != triangles.end();)
+            {
                 it->age++;
-                if (it->age > it->lifetime) {
+                if (it->age > it->emitter->data.lifeTime)
+                {
                     std::swap(*it, triangles.back());
                     triangles.pop_back();
-                } else {
+                }
+                else
+                {
                     ++it;
                 }
             }

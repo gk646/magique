@@ -102,9 +102,9 @@ namespace magique
     enum class Shape : uint8_t
     {
         RECT,     // Rectangle
-        CIRCLE,   // Circle - not implemented yet
-        CAPSULE,  // Capsule - not implemented yet
-        TRIANGLE, // Triangle - not implemented yet
+        CIRCLE,   // Circle
+        CAPSULE,  // Capsule (vertical) - https://docs.unity3d.com/Manual/class-CapsuleCollider2D.html
+        TRIANGLE, // Triangle
     };
 
     struct StaticCollider final
@@ -296,17 +296,17 @@ namespace magique
 
     struct ScreenParticle final
     {
-        float x, y;         // Position
-        int16_t p1;         // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        int16_t p2;         // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        int16_t p3;         //                                                   / TRIANGLE: offsetX2
-        int16_t p4;         //                                                   / TRIANGLE: offsetY2
-        float vx, vy;       // Velocity
-        float scale;        // Current scale
-        uint16_t age;       // Current age
-        uint16_t lifetime;  // Total lifetime
-        Shape shape;        // Shape
-        uint8_t r, g, b, a; // Current color
+        float x, y;                   // Position
+        int16_t p1;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        int16_t p2;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        int16_t p3;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        int16_t p4;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float vx, vy;                 // Velocity
+        float scale;                  // Current scale
+        uint16_t age;                 // Current age
+        Shape shape;                  // Shape
+        uint8_t r, g, b, a;           // Current color
+        const ScreenEmitter* emitter; // Function pointers are shared across all instances
 
         [[nodiscard]] Color getColor() const;
         void setColor(const Color& color);

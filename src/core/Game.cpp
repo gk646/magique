@@ -24,6 +24,7 @@
 #include "internal/globals/AudioPlayer.h"
 #include "internal/globals/UIData.h"
 #include "internal/globals/CommandLineData.h"
+#include "internal/globals/ParticleData.h"
 
 #include "internal/systems/CollisionSystem.h"
 #include "internal/systems/InputSystem.h"

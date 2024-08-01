@@ -1,3 +1,4 @@
+#include <cmath>
 #include <raylib/raylib.h>
 
 #include <entt/entity/entity.hpp>
@@ -7,61 +8,130 @@
 
 namespace magique
 {
+    void DrawParticles() { global::PARTICLE_DATA.render(); }
 
-    void CreateScreenParticle(const ScreenEmitter& emitter)
+    void CreateScreenParticle(const ScreenEmitter& emitter, const int amount)
     {
-        ScreenParticle particle{};
         const auto& data = emitter.data;
-
-        // Base
-        particle.r = data.r;
-        particle.g = data.g;
-        particle.b = data.b;
-        particle.a = data.a;
-
-        particle.age = 0;
-        particle.lifetime = data.lifeTime;
-
-        // Spawn position
-        switch (data.emShape)
+        for (int i = 0; i < amount; ++i)
         {
-        case Shape::RECT:
-            particle.x = GetRandomValue(data.emX, data.p1);
-            particle.y = GetRandomValue(data.emY, data.p2);
-            break;
-        case Shape::CIRCLE:
-            const float angle = GetRandomValue(0, 360);
-            const float dist = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
-            const float angle_rad = angle * (PI / 180.0f);
-            particle.x = dist * cos(angle_rad);
-            particle.y = dist * sin(angle_rad);
-            break;
-        case Shape::TRIANGLE:
-            break;
+            ScreenParticle particle;
+            particle.emitter = &emitter;
+
+            // x,y
+            switch (data.emShape) //  No triangle emission shape
+            {
+            case Shape::RECT:
+                particle.x = GetRandomValue(data.emX, data.emp1);
+                particle.y = GetRandomValue(data.emY, data.emp2);
+                break;
+            case Shape::CIRCLE:
+                {
+                    const float angle = (float)GetRandomValue(0, 360) * (PI / 180.0f);
+                    const float dist = data.emp1 * static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                    particle.x = dist * cos(angle);
+                    particle.y = dist * sin(angle);
+                }
+                break;
+            case Shape::CAPSULE: // Acts as point type
+                particle.x = data.emX;
+                particle.y = data.emY;
+                break;
+            }
+
+            // p1,p2,p3,p4
+            particle.p1 = static_cast<int16_t>(std::round(data.p1));
+            particle.p2 = static_cast<int16_t>(std::round(data.p2));
+            particle.p3 = static_cast<int16_t>(std::round(data.p3));
+            particle.p4 = static_cast<int16_t>(std::round(data.p4));
+
+            // Higher quality randomness should be worth it - we could just use 1 per particle and modify it but...
+            const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+            const float p1 = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+
+            // vx,vy - velocity
+            const float velocity = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
+            particle.vx = velocity * data.dirX;
+            particle.vy = velocity * data.dirY;
+
+            // scale
+            particle.scale = data.minScale + (data.maxScale - data.minScale) * p1;
+
+            // Rest
+            particle.age = 0;
+            particle.shape = data.shape;
+            particle.r = data.r;
+            particle.g = data.g;
+            particle.b = data.b;
+            particle.a = data.a;
+
+            global::PARTICLE_DATA.addParticle(particle);
         }
-
-        const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
-        particle.scale = (data.maxScale - data.minScale) * p;
-
-        global::PARTICLE_DATA.addParticle(particle);
     }
 
-    entt::entity CreateEntityParticle(const EntityEmitter& emitter) { return entt::null; }
+    entt::entity CreateEntityParticle(const EntityEmitter& emitter, const int amount) { return entt::null; }
 
     //----------------- EMITTER -----------------//
 
     EmitterBase& EmitterBase::setEmissionPosition(const float x, const float y)
     {
-        data.emissionX = x;
-        data.emissionY = y;
+        data.emX = x;
+        data.emY = y;
         return *this;
     }
 
-
-
-    EmitterBase& EmitterBase::setAmount(int amount)
+    EmitterBase& EmitterBase::setEmissionShape(const Shape shape, const float width, const float height,
+                                               const float radius)
     {
-        data.amount = amount;
+        if (!(shape == Shape::RECT || shape == Shape::CIRCLE))
+        {
+            LOG_ERROR("This emissionshape is not supported!");
+            return *this;
+        }
+
+        if (width == 0 && height == 0 && radius == 0)
+        {
+            data.emShape = Shape::CAPSULE; // Denotes just the single emission point
+            return *this;
+        }
+
+        data.emShape = shape;
+        if (shape == Shape::RECT)
+        {
+            data.emp1 = width;
+            data.emp2 = height;
+        }
+        else
+        {
+            data.emp1 = radius;
+        }
+        return *this;
+    }
+
+    //----------------- PARTICLE -----------------//
+
+    EmitterBase& EmitterBase::setParticleShapeRect(const float width, const float height)
+    {
+        data.shape = Shape::RECT;
+        data.p1 = width;
+        data.p2 = height;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setParticleShapeCircle(const float radius)
+    {
+        data.shape = Shape::CIRCLE;
+        data.p1 = radius;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setParticleShapeTri(Point p2, Point p3)
+    {
+        data.shape = Shape::TRIANGLE;
+        data.p1 = p2.x;
+        data.p2 = p2.y;
+        data.p3 = p3.x;
+        data.p4 = p3.y;
         return *this;
     }
 
@@ -74,84 +144,60 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setColorFunction(ColorFunction func)
-    {
-        data.colorFunc = func;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setShape(Shape shape)
-    {
-        data.shape = shape;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setDimensions(float w, float h)
-    {
-        data.width = w;
-        data.height = h;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setLifetime(int val)
+    EmitterBase& EmitterBase::setLifetime(const int val)
     {
         data.lifeTime = val;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setDirection(float x, float y)
+    //----------------- ADDITIONALS -----------------//
+
+    EmitterBase& EmitterBase::setGravity(float gravityX, float gravityY)
+    {
+        data.gravX = gravityX;
+        data.gravY = gravityY;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setScaling(const float minScale, const float maxScale)
+    {
+        data.minScale = minScale;
+        data.maxScale = maxScale;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setDirection(const float x, const float y)
     {
         data.dirX = x;
         data.dirY = y;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setMinScale(const float val)
-    {
-        data.minScale = val;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setMaxScale(const float val)
-    {
-        data.maxScale = val;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setScaleFunction(ScaleFunction func)
-    {
-        data.scaleFunc = func;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setSpread(float val)
+    EmitterBase& EmitterBase::setSpread(const float val)
     {
         data.spreadAngle = val;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setMinInitialVelocity(float val)
+    EmitterBase& EmitterBase::setInitialVelocity(const float minVeloc, const float maxVeloc)
     {
-        data.minInitVeloc = val;
+        data.minInitVeloc = minVeloc;
+        data.maxInitVeloc = maxVeloc;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setMaxInitialVelocity(float val)
+    //----------------- FUNCTIONS -----------------//
+
+
+    EmitterBase& EmitterBase::setColorFunction(const ColorFunction func)
     {
-        data.maxInitVeloc = val;
+        data.colorFunc = func;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setEmissionShape(Shape val)
+    EmitterBase& EmitterBase::setScaleFunction(const ScaleFunction func)
     {
-        data.emissionShape = val;
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setEmissionShapeDimensions(float w, float h)
-    {
-        data.emWidth = w;
-        data.emHeight = h;
+        data.scaleFunc = func;
         return *this;
     }
 
@@ -160,6 +206,8 @@ namespace magique
         data.resolutionScaling = val;
         return *this;
     }
+
+    //----------------- HELPERS -----------------//
 
     EmitterBase::ScaleFunction EmitterBase::GetSmoothStep()
     {

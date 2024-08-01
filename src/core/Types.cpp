@@ -1,7 +1,7 @@
 #include <functional>
-
-#include <magique/core/Types.h>
 #include <raylib/raylib.h>
+
+#include <magique/core/Particles.h>
 
 namespace magique
 {
