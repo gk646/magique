@@ -1,22 +1,63 @@
+#include <raylib/raylib.h>
+
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
 
-#include <raylib/raylib.h>
+#include "internal/globals/ParticleData.h"
 
 namespace magique
 {
-    void CreateScreenParticle(const ScreenEmitter& emitter) {}
+
+    void CreateScreenParticle(const ScreenEmitter& emitter)
+    {
+        ScreenParticle particle{};
+        const auto& data = emitter.data;
+
+        // Base
+        particle.r = data.r;
+        particle.g = data.g;
+        particle.b = data.b;
+        particle.a = data.a;
+
+        particle.age = 0;
+        particle.lifetime = data.lifeTime;
+
+        // Spawn position
+        switch (data.emShape)
+        {
+        case Shape::RECT:
+            particle.x = GetRandomValue(data.emX, data.p1);
+            particle.y = GetRandomValue(data.emY, data.p2);
+            break;
+        case Shape::CIRCLE:
+            const float angle = GetRandomValue(0, 360);
+            const float dist = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+            const float angle_rad = angle * (PI / 180.0f);
+            particle.x = dist * cos(angle_rad);
+            particle.y = dist * sin(angle_rad);
+            break;
+        case Shape::TRIANGLE:
+            break;
+        }
+
+        const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+        particle.scale = (data.maxScale - data.minScale) * p;
+
+        global::PARTICLE_DATA.addParticle(particle);
+    }
 
     entt::entity CreateEntityParticle(const EntityEmitter& emitter) { return entt::null; }
 
     //----------------- EMITTER -----------------//
 
-    EmitterBase& EmitterBase::setEmissionPosition(float x, float y)
+    EmitterBase& EmitterBase::setEmissionPosition(const float x, const float y)
     {
-        data.x = x;
-        data.y = y;
+        data.emissionX = x;
+        data.emissionY = y;
         return *this;
     }
+
+
 
     EmitterBase& EmitterBase::setAmount(int amount)
     {
@@ -38,7 +79,6 @@ namespace magique
         data.colorFunc = func;
         return *this;
     }
-
 
     EmitterBase& EmitterBase::setShape(Shape shape)
     {
@@ -66,13 +106,13 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setMinScale(float val)
+    EmitterBase& EmitterBase::setMinScale(const float val)
     {
         data.minScale = val;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setMaxScale(float val)
+    EmitterBase& EmitterBase::setMaxScale(const float val)
     {
         data.maxScale = val;
         return *this;
@@ -83,6 +123,7 @@ namespace magique
         data.scaleFunc = func;
         return *this;
     }
+
     EmitterBase& EmitterBase::setSpread(float val)
     {
         data.spreadAngle = val;
@@ -114,7 +155,7 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setResolutionScaling(bool val)
+    EmitterBase& EmitterBase::setResolutionScaling(const bool val)
     {
         data.resolutionScaling = val;
         return *this;
@@ -124,5 +165,6 @@ namespace magique
     {
         return [](const float scale, const float t) -> float { return scale * (t * t * (3 - 2 * t)); };
     }
+
 
 } // namespace magique

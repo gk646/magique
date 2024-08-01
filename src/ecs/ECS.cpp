@@ -1,8 +1,10 @@
 #include <raylib/raylib.h>
 
+#include <magique/core/Core.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
+#include <magique/util/Logging.h>
 
 #include "internal/globals/EntityTypeMap.h"
 #include "internal/globals/LogicTickData.h"
@@ -159,5 +161,26 @@ namespace magique
     void GiveActor(const entt::entity e) { return internal::REGISTRY.emplace<ActorC>(e); }
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
+
+    void SetCameraEntity(const entt::entity e)
+    {
+        auto& reg = internal::REGISTRY;
+        if (!reg.valid(e))
+        {
+            LOG_WARNING("Trying to assign camera to invalid entity: %d", static_cast<int>(e));
+            return;
+        }
+        const auto view = reg.view<CameraC>();
+        bool found = false;
+        for (const auto cam : view)
+        {
+            reg.erase<CameraC>(cam);
+            found = true;
+        }
+        if (found)
+            reg.emplace<CameraC>(e);
+        else
+            LOG_ERROR("No existing entity with a camera component found!");
+    }
 
 } // namespace magique

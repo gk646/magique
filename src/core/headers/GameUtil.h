@@ -23,7 +23,7 @@ namespace magique
 
     inline void HandleLoadingScreen(bool& isLoading, Game& game)
     {
-        auto& loader = global::CURRENT_GAME_LOADER;
+        auto& loader = global::LOADER;
         if (loader) [[likely]]
         {
             game.drawLoadingScreen(loader->getProgressPercent());
