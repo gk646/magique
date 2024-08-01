@@ -48,6 +48,7 @@ namespace magique
 
     //----------------- GRAPHICS -----------------//
     enum class LightingMode; // Raytracing, Static Shadows, None
+    struct EmitterData;      // Data for particle emitters
 
     //----------------- Multiplayer -----------------//
     enum UpdateFlag : uint8_t;

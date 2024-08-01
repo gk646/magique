@@ -9,39 +9,49 @@
 // Particle Module
 //-----------------------------------------------
 // .....................................................................
-// This module is for creating particle effects.
+// This module is for creating particle effects. Its interface is inspired by Godot4
 // You create a emitter first (either Entity or Screen) and then create the particle effect by calling
 // the global Create__ function with that emitter. A emitter can (and should) be reused as often as you like.
 // Uses the builder pattner for coincise syntax.
+// To begin create a ScreenEmitter emitter; and cusotmize it: emitter.setEmissionPosition(150,150).set...
 // .....................................................................
 
 namespace magique
 {
     // Renders all active particles
-    // IMPORTANT: Needs to be called manually - so you can control at which layer particles are renderd
-    void RenderParticles();
+    // Note: Needs to be called manually - so you can control at which layer particles are renderd
+    void DrawParticles();
 
     //----------------- CREATE -----------------//
 
-    // Creates a new screen particle
-    void CreateScreenParticle(const ScreenEmitter& emitter);
+    // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
+    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (dont pass stack values)
+    void CreateScreenParticle(const ScreenEmitter& emitter, int amount = 1);
 
     // Adds a entity particle to the ECS
-    entt::entity CreateEntityParticle(const EntityEmitter& emitter);
+    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (dont pass stack values)
+    entt::entity CreateEntityParticle(const EntityEmitter& emitter, int amount = 1);
 
     //----------------- EMITTERS -----------------//
 
     struct EmitterBase
     {
-        // Takes the current scale and the normalized time (0-1)
+        //----------------- FUNCTIONS -----------------//
+        // Note: They are called each tick for each particle!
+
+        // Takes the current scale and the normalized time (ticksAlive/totalLifetime / 0.0 - 1.0)
         // Returns: the new scale of the particle
         using ScaleFunction = float (*)(float scale, float t);
 
         // Takes the current color and the normalized time
         // Returns: the new color of the particle
-        using ColorFunction = float (*)(Color& color, float t);
+        using ColorFunction = Color (*)(const Color& color, float t);
 
-        //----------------- EMISSION -----------------//
+        // Takes the particles itself and the normalized time
+        // This allows you to do anything - even call gameplay related code!
+        using TickFunction = void (*)(ScreenParticle&, float t);
+
+        //----------------- EMISSION SHAPE -----------------//
         // Note: Emmision shape determines where particles can spawn
         //       Particles can spawn anywhere insdide the emission shape randomly!
 
@@ -50,58 +60,46 @@ namespace magique
         // Default: (0,0)
         EmitterBase& setEmissionPosition(float x, float y);
 
-        // Sets the emission shape to be a rect - Shape: RECT
-        // Pass the width and height of the rectangle
-        EmitterBase& setEmissionShapeRect(float width, float height);
-
-        // ets the emission shape to be a rect - Shape: CIRCLE (vertical)
-        // Pass the height and the radius of the capsule
-        EmitterBase& setEmissionShapeCircle(float radius);
-
-        // Makes the entity collidable with others - Shape: TRIANGLE
-        // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
-        EmitterBase& setEmissionShapeTri(Point p2, Point p3);
+        // Sets the emission shape - ONLY RECT and CIRCLE are supported!
+        // Pass the width and height of the rectangle or the radius of the circle OR (0,0,0) to reset
+        // Default: None - is directly spawn on the emission point
+        EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
 
         //----------------- PARTICLE -----------------//
 
-        // Sets the amount of particles to emit
-        // Default: 1
-        EmitterBase& setAmount(int amount);
+        // Sets the emission shape to be a rect
+        // Pass the width and height of the rectangle
+        EmitterBase& setParticleShapeRect(float width, float height);
+
+        // ets the emission shape to be a rect
+        // Pass the height and the radius of the capsule
+        EmitterBase& setParticleShapeCircle(float radius);
+
+        // Makes the entity collidable with others
+        // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
+        EmitterBase& setParticleShapeTri(Point p2, Point p3);
 
         // Sets the color of emitted particles
         // Default: BLACK
         EmitterBase& setColor(const Color& color);
 
-        // Sets the coloring function to dynamically set the particles color depending on the time
-        // Default: nullptr
-        EmitterBase& setColorFunction(ColorFunction func);
-
-        // Sets the shape of the emitted particles
-        // Default: Shape::RECT
-        EmitterBase& setShape(Shape shape);
-
-        // Sets the base dimensions of the emitted particles
-        // Default: (10,10)
-        EmitterBase& setDimensions(float w, float h);
-
         // Sets the lifetime in millis
         // Default: 1000
         EmitterBase& setLifetime(int val);
 
-        // Sets the scale of the emitted particle(s)
+        //----------------- ADDITIONALS -----------------//
+
+        // Sets the gravity (pixels/s**2) in both x and y direction
+        // Note: Gravity is applied every tick to the particles velocity
+        // Default: (0,0)
+        EmitterBase& setGravity(float gravityX, float gravityY);
+
+        // Sets the min and max scale of the emitted particle(s) - randomly chosen when created
+        // Note: Scaling is applied to the default dimensions of the particle
         // Default: 1
-        EmitterBase& setMinScale(float val);
+        EmitterBase& setScaling(float minScale, float maxScale);
 
-        // Sets the maximum scale of the emitted particle(s)
-        // Value is randomly picked between min and max
-        // Default: 1
-        EmitterBase& setMaxScale(float val);
-
-        // Sets the function that determines the scale across its lifetime
-        // Default: nullptr
-        EmitterBase& setScaleFunction(ScaleFunction func);
-
-        // Sets the direction vector - uses raylibs coordinate system
+        // Sets the initial direction vector - uses raylibs coordinate system
         //  - - - - - - -
         // |(0,0)   (1,0)|
         // |             |
@@ -109,27 +107,33 @@ namespace magique
         // |             |
         // |(0,1)   (1,1)|
         //  - - - - - - -
-        // => Straight up (0,-1) - => Top right (0.5,-0.5)
-        // Default: (0,0)
-        EmitterBase& setDirection(float x, float y);
+        // => Straight up (0,-1) => Top Right (0.5,-0.5) => Top Left (-0.5,-0.5) => Bottom Left (-0.5,0.5)
+        // Note: The values have to add up to 1!
+        // Default: (0,-1)
+        EmitterBase& setDirection(float dx, float dy);
 
         // Sets the angle for spread cone (centered on the direction)
         // A new direction is chosen randomly within the spread angle
         // Default: 0
         EmitterBase& setSpread(float val);
 
-        // Sets the minimal initial velocity in pixels per second
+        // Sets the min and max initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setMinInitialVelocity(float val);
-
-        // Sets the maximal initial velocity in pixels per second
-        // Value is randomly picked between min and max
-        // Default: 1
-        EmitterBase& setMaxInitialVelocity(float val);
+        EmitterBase& setInitialVelocity(float minVeloc, float maxVeloc);
 
         // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
         // Default: True
         EmitterBase& setResolutionScaling(bool val);
+
+        //----------------- FUNCTIONS -----------------//
+
+        // Sets the coloring function to dynamically set the particles color depending on the time
+        // Default: nullptr
+        EmitterBase& setColorFunction(ColorFunction func);
+
+        // Sets the function that determines the scale across its lifetime
+        // Default: nullptr
+        EmitterBase& setScaleFunction(ScaleFunction func);
 
         //----------------- HELPERS -----------------//
 
@@ -138,7 +142,8 @@ namespace magique
 
     private:
         EmitterData data{};
-        friend void CreateScreenParticle(const ScreenEmitter&);
+        friend struct ParticleData;
+        friend void CreateScreenParticle(const ScreenEmitter&, int);
     };
 
     // A simple and faster particle that doesnt interact with anything

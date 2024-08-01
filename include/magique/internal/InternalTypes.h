@@ -125,36 +125,33 @@ namespace magique
     struct EmitterData final
     {
         using ScaleFunction = float (*)(float s, float t);
-        using ColorFunction = float (*)(Color& c, float t);
+        using ColorFunction = Color (*)(const Color& c, float t);
+        using TickFunction = void (*)(ScreenParticle&, float t);
         ScaleFunction scaleFunc = nullptr;
         ColorFunction colorFunc = nullptr;
+        TickFunction tickFunc = nullptr;
+
         //----------------- EMISSION SHAPE -----------------//
-        float emX, emY;
-        float emp1; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float emp2; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        float emp3; //                                                   / TRIANGLE: offsetX2
-        float emp4; //                                                   / TRIANGLE: offsetY2
-        Shape emShape = Shape::RECT;
+        float emX = 0, emY = 0;
+        float emp1 = 0;                 // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float emp2 = 0;                 // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        Shape emShape = Shape::CAPSULE; // Default is point emission
 
         //----------------- PARTICLE -----------------//
-        float x, y;
-        float p1; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        float p3; //                                                   / TRIANGLE: offsetX2
-        float p4; //                                                   / TRIANGLE: offsetY2
+        float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
+        float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
         Shape shape = Shape::RECT;
 
-        float minScale = 1;
-        float maxScale = 1;
-        uint8_t r = 0, g = 0, b = 0, a = 1;
-        uint16_t lifeTime = 1000;
-        float minInitVeloc = 1;
-        float maxInitVeloc = 1;
-        float dirX = 0, dirY = 0;
-        float spreadAngle = 0;
-        bool resolutionScaling = true;
-
-        bool operator==(const EmitterData& other) const;
+        float minScale = 1, maxScale = 1;         // Scale
+        uint8_t r = 0, g = 0, b = 0, a = 1;       // Color
+        uint16_t lifeTime = 1000;                 // Total life time
+        float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
+        float dirX = 0, dirY = 0;                 // Direction
+        float spreadAngle = 0;                    // Spread angle around the direction
+        float gravX, gravY;                       // Gravity in x and y direction
+        bool resolutionScaling = true;            // resolution scaling
     };
 
 
