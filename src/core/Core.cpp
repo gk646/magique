@@ -60,7 +60,7 @@ namespace magique
 
     void SetEngineFont(const Font& font) { global::CONFIGURATION.font = font; }
 
-    void SetLightingModel(const LightingMode model) { global::CONFIGURATION.lighting = model; }
+    void SetLightingMode(const LightingMode model) { global::CONFIGURATION.lighting = model; }
 
     void SetStaticWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
 

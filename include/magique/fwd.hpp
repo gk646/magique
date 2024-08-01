@@ -47,7 +47,7 @@ namespace magique
     struct Playlist;              // Stores mulitple music objects to easily play and loop them
 
     //----------------- GRAPHICS -----------------//
-    enum class LightingModel; // Raytracing, Static Shadows, None
+    enum class LightingMode; // Raytracing, Static Shadows, None
 
     //----------------- Multiplayer -----------------//
     enum UpdateFlag : uint8_t;

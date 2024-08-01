@@ -126,33 +126,35 @@ namespace magique
     {
         using ScaleFunction = float (*)(float s, float t);
         using ColorFunction = float (*)(Color& c, float t);
-        bool resolutionScaling = true;
-        uint8_t r = 0, g = 0, b = 0, a = 1;
+        ScaleFunction scaleFunc = nullptr;
+        ColorFunction colorFunc = nullptr;
+        //----------------- EMISSION SHAPE -----------------//
+        float emX, emY;
+        float emp1; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float emp2; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float emp3; //                                                   / TRIANGLE: offsetX2
+        float emp4; //                                                   / TRIANGLE: offsetY2
+        Shape emShape = Shape::RECT;
+
+        //----------------- PARTICLE -----------------//
+        float x, y;
+        float p1; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float p3; //                                                   / TRIANGLE: offsetX2
+        float p4; //                                                   / TRIANGLE: offsetY2
         Shape shape = Shape::RECT;
-        Shape emissionShape = Shape::RECT;
-        uint16_t amount = 1;
-        uint16_t lifeTime = 1000;
-        uint16_t width = 10, height = 10;
-        uint16_t emWidth = 1, emHeight = 1;
-        uint16_t x = 1, y = 1;
+
         float minScale = 1;
         float maxScale = 1;
+        uint8_t r = 0, g = 0, b = 0, a = 1;
+        uint16_t lifeTime = 1000;
         float minInitVeloc = 1;
         float maxInitVeloc = 1;
         float dirX = 0, dirY = 0;
         float spreadAngle = 0;
-        ScaleFunction scaleFunc = nullptr;
-        ColorFunction colorFunc = nullptr;
-    };
+        bool resolutionScaling = true;
 
-    struct ParticleData final
-    {
-        float x, y;         // Position
-        float vx, vy;       // Velocity
-        uint16_t age;       // Current age
-        uint16_t lifetime;  // Total lifetime
-        float size;         // Current size
-        uint8_t r, g, b, a; // Current color
+        bool operator==(const EmitterData& other) const;
     };
 
 

@@ -44,7 +44,7 @@ namespace magique
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
-    void SetLightingModel(LightingMode model);
+    void SetLightingMode(LightingMode model);
 
     // Adds a static collider to the world
     void AddStaticCollider(Shape shape, float x, float y, float width, float height);

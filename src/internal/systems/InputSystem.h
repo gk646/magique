@@ -1,12 +1,11 @@
 #ifndef MAGIQUE_INPUTSYSTEM_H
 #define MAGIQUE_INPUTSYSTEM_H
 
-#include <magique/ecs/Scripting.h>
-
 namespace magique
 {
     inline bool IsAnyKeyDown()
     {
+#pragma simd omp
         for (const char i : CORE.Input.Keyboard.currentKeyState)
         {
             if (i == 1)
@@ -20,6 +19,7 @@ namespace magique
 
     inline bool IsAnyMouseDown()
     {
+#pragma simd omp
         for (const char i : CORE.Input.Mouse.previousButtonState)
         {
             if (i != 0)
@@ -30,7 +30,7 @@ namespace magique
         return false; // No key
     }
 
-    inline void InputSystem(entt::registry& registry)
+    inline void InputSystem(const entt::registry& registry)
     {
         // Should be a subtle optimization
         // Do some initial checks to avoid calling event function every tick

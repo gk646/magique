@@ -294,6 +294,24 @@ namespace magique
         ~Achievement();
     };
 
+    struct ScreenParticle final
+    {
+        float x, y;         // Position
+        int16_t p1;         // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        int16_t p2;         // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        int16_t p3;         //                                                   / TRIANGLE: offsetX2
+        int16_t p4;         //                                                   / TRIANGLE: offsetY2
+        float vx, vy;       // Velocity
+        float scale;        // Current scale
+        uint16_t age;       // Current age
+        uint16_t lifetime;  // Total lifetime
+        Shape shape;        // Shape
+        uint8_t r, g, b, a; // Current color
+
+        [[nodiscard]] Color getColor() const;
+        void setColor(const Color& color);
+    };
+
     //----------------- MISC -----------------//
 
     struct Point final
@@ -312,11 +330,11 @@ namespace magique
 
         T* getData() const { return pointer; }
 
-        void free() const { delete []pointer; }
+        void free() const { delete[] pointer; }
 
     private:
         T* pointer; // The data pointer
-        int size; // The size of the data pointer
+        int size;   // The size of the data pointer
     };
 
 } // namespace magique

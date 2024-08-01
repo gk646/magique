@@ -81,8 +81,8 @@ namespace magique
     Achievement::~Achievement()
     {
 
-            delete[] name;
-            delete static_cast<std::function<bool()>*>(condition);
+        delete[] name;
+        delete static_cast<std::function<bool()>*>(condition);
     }
 
     template <typename T>
@@ -138,6 +138,16 @@ namespace magique
         {
             static_assert(std::is_same_v<T, Vector2>, "This type is not supported!");
         }
+    }
+
+    Color ScreenParticle::getColor() const { return {r, g, b, a}; }
+
+    void ScreenParticle::setColor(const Color& color)
+    {
+        r = color.r;
+        g = color.g;
+        b = color.b;
+        a = color.a;
     }
 
 } // namespace magique

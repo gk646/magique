@@ -150,11 +150,11 @@ namespace magique
     inline void RenderLighting(entt::registry& registry)
     {
         const auto model = global::CONFIGURATION.lighting;
-        if (model == LightingModel::STATIC_SHADOWS)
+        if (model == LightingMode::STATIC_SHADOWS)
         {
             RenderHardShadows(registry);
         }
-        else if (model == LightingModel::RAY_TRACING)
+        else if (model == LightingMode::RAY_TRACING)
         {
             RenderRayTracing(registry);
         }

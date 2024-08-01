@@ -71,7 +71,7 @@ namespace magique
 
     int Game::run(const char* assetPath, const char* configPath, const uint64_t encryptionKey)
     {
-        auto& loader = global::CURRENT_GAME_LOADER;
+        auto& loader = global::LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
 
         //TODO load config
