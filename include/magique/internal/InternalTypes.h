@@ -133,25 +133,25 @@ namespace magique
 
         //----------------- EMISSION SHAPE -----------------//
         float emX = 0, emY = 0;
-        float emp1 = 0;                 // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float emp2 = 0;                 // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        Shape emShape = Shape::CAPSULE; // Default is point emission
+        float emp1 = 0; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float emp2 = 0; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
 
         //----------------- PARTICLE -----------------//
         float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
         float p2 = 0.0F; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
         float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
-        Shape shape = Shape::RECT;
 
         float minScale = 1, maxScale = 1;         // Scale
-        uint8_t r = 0, g = 0, b = 0, a = 1;       // Color
-        uint16_t lifeTime = 1000;                 // Total life time
         float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
         float dirX = 0, dirY = 0;                 // Direction
         float spreadAngle = 0;                    // Spread angle around the direction
         float gravX, gravY;                       // Gravity in x and y direction
+        uint16_t lifeTime = 1000;                 // Total life time
         bool resolutionScaling = true;            // resolution scaling
+        Shape shape = Shape::RECT;
+        Shape emShape = Shape::CAPSULE;     // Default is point emission
+        uint8_t r = 0, g = 0, b = 0, a = 1; // Color
     };
 
 

@@ -6,17 +6,21 @@
 
 #include <magique/util/Logging.h>
 #include <magique/core/Particles.h>
-
-#include "external/raylib/src/coredata.h"
+#include <magique/util/Defines.h>
 
 namespace magique
 {
+    constexpr float TICK_CONVERSION = 1.0F / MAGIQUE_LOGIC_TICKS;
+
     // Data driven
     struct ParticleData final
     {
+        std::vector<std::vector<ScreenParticle>::iterator> deleteCache;
         std::vector<ScreenParticle> rectangles;
         std::vector<ScreenParticle> circles;
         std::vector<ScreenParticle> triangles;
+
+        ParticleData() { deleteCache.reserve(500); }
 
         void addParticle(const ScreenParticle& sp)
         {
@@ -39,88 +43,86 @@ namespace magique
 
         void render() const
         {
-            printf("Size: %d\n", rectangles.size());
+            rlSetTexture(GetShapesTexture().id);
+            rlBegin(RL_QUADS);
             for (const auto& p : rectangles)
             {
-                const Color color = {p.r, p.g, p.b, p.a};
-                rlSetTexture(GetShapesTexture().id);
-                Rectangle shapeRect = GetShapesTextureRectangle();
-                rlNormal3f(0.0f, 0.0f, 1.0f);
-                rlColor4ub(color.r, color.g, color.b, color.a);
-
-                rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
+                rlColor4ub(p.r, p.g, p.b, p.a);
                 rlVertex2f(p.x, p.y);
-
-                rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
-                rlVertex2f(p.x, p.y + p.p2);
-
-                rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width,
-                             (shapeRect.y + shapeRect.height) / texShapes.height);
-                rlVertex2f(p.x + p.p1, p.y + p.p2);
-
-                rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
-                rlVertex2f(p.x + p.p1, p.y);
-
-                rlEnd();
-                rlSetTexture(0);
+                rlVertex2f(p.x, p.y + p.p2 * p.scale);
+                rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
+                rlVertex2f(p.x + p.p1 * p.scale, p.y);
             }
+
+            for (const auto& p : triangles)
+            {
+                rlColor4ub(p.r, p.g, p.b, p.a);
+                rlVertex2f(p.x, p.y);
+                rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
+                rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
+                rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
+            }
+
+            for (const auto& p : circles)
+            {
+                LOG_FATAL("Method not implemented");
+            }
+
+            rlEnd();
+            rlSetTexture(0);
         }
 
         void update()
         {
-            for (auto it = rectangles.begin(); it != rectangles.end();)
+            const auto updateVec =
+                [](std::vector<ScreenParticle>& vec)
             {
-                auto& p = *it;
-                const auto& emitter = p.emitter->data;
-                const float relTime = static_cast<float>(p.age) / static_cast<float>(emitter.lifeTime);
-                if (relTime >= 1.0F) [[unlikely]]
+                    int amount = 0;
+                for (auto it = vec.begin(); it != vec.end();)
                 {
-                    std::swap(*it, rectangles.back());
-                    rectangles.pop_back();
-                }
-                else
-                {
-                    ++p.age;
-                    p.x += p.vx;
-                    p.y += p.vy;
-
-                    p.vx += emitter.gravX;
-                    p.vy += emitter.gravY;
-
-                    if (emitter.scaleFunc)
+                    auto& p = *it;
+                    const auto& emitter = p.emitter->data;
+                    const float relTime = static_cast<float>(p.age) / static_cast<float>(emitter.lifeTime);
+                    if (relTime >= 1.0F) [[unlikely]]
                     {
-                        p.scale = emitter.scaleFunc(p.scale, relTime);
+                        auto lastEl = vec.end() - 1;
+                        if (it != lastEl) {
+                            *it = *lastEl;
+                        }
+                        vec.pop_back();
                     }
-
-                    if (emitter.colorFunc)
+                    else
                     {
-                        p.setColor(emitter.colorFunc(p.getColor(), relTime));
-                    }
+                        ++p.age;
+                        p.x += p.vx;
+                        p.y += p.vy;
 
-                    if (emitter.tickFunc)
-                    {
-                        emitter.tickFunc(p, relTime);
-                    }
-                    ++it;
-                }
-            }
+                        p.vx += emitter.gravX * TICK_CONVERSION; // pixel/s into pixel/tick
+                        p.vy += emitter.gravY * TICK_CONVERSION;
 
-            for (auto it = triangles.begin(); it != triangles.end();)
-            {
-                it->age++;
-                if (it->age > it->emitter->data.lifeTime)
-                {
-                    std::swap(*it, triangles.back());
-                    triangles.pop_back();
+                        if (emitter.scaleFunc)
+                        {
+                            p.scale = emitter.scaleFunc(p.scale, relTime);
+                        }
+
+                        if (emitter.colorFunc)
+                        {
+                            p.setColor(emitter.colorFunc(p.getColor(), relTime));
+                        }
+
+                        if (emitter.tickFunc)
+                        {
+                            emitter.tickFunc(p, relTime);
+                        }
+                        ++it;
+                    }
                 }
-                else
-                {
-                    ++it;
-                }
-            }
+            };
+            updateVec(rectangles);
+            updateVec(triangles);
+            updateVec(circles);
         }
     };
-
 
     namespace global
     {

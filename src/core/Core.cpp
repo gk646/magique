@@ -70,6 +70,8 @@ namespace magique
 
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::LOGIC_TICK_DATA.loadedMaps; }
 
+    const Camera2D& GetCamera() { return global::LOGIC_TICK_DATA.camera; }
+
     const std::vector<entt::entity>& GetDrawEntities() { return global::LOGIC_TICK_DATA.drawVec; }
 
     MapID GetCameraMap() { return global::LOGIC_TICK_DATA.cameraMap; }
