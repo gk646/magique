@@ -1,5 +1,5 @@
-#ifndef PARTICLES_H
-#define PARTICLES_H
+#ifndef MAGIQUE_PARTICLES_H
+#define MAGIQUE_PARTICLES_H
 
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
@@ -14,6 +14,7 @@
 // the global Create__ function with that emitter. A emitter can (and should) be reused as often as you like.
 // Uses the builder pattner for coincise syntax.
 // To begin create a ScreenEmitter emitter; and cusotmize it: emitter.setEmissionPosition(150,150).set...
+// Can currently handle well up to 250'000 screen particles at the same time on modern systems
 // .....................................................................
 
 namespace magique
@@ -97,7 +98,7 @@ namespace magique
         // Sets the min and max scale of the emitted particle(s) - randomly chosen when created
         // Note: Scaling is applied to the default dimensions of the particle
         // Default: 1
-        EmitterBase& setScaling(float minScale, float maxScale);
+        EmitterBase& setStartScale(float minScale, float maxScale);
 
         // Sets the initial direction vector - uses raylibs coordinate system
         //  - - - - - - -
@@ -119,7 +120,7 @@ namespace magique
 
         // Sets the min and max initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setInitialVelocity(float minVeloc, float maxVeloc);
+        EmitterBase& setStartVelocity(float minVeloc, float maxVeloc);
 
         // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
         // Default: True
@@ -158,4 +159,4 @@ namespace magique
     };
 
 } // namespace magique
-#endif //PARTICLES_H
+#endif //MAGIQUE_PARTICLES_H

@@ -78,6 +78,9 @@ namespace magique
     // Returns the currently loaded zones - fills up unused slots with UINT8_MAX
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
+    // Returns the global camera
+    const Camera2D& GetCamera();
+
     // Returns the map of the camera - you should probably draw this map
     MapID GetCameraMap();
 
@@ -97,6 +100,7 @@ namespace magique
     // Returns the game configuration
     // IMPORTANT: Only valid after the Game() constructor returned!
     GameConfig& GetGameConfig();
+
 
     //----------------- SETTINGS -----------------//
 

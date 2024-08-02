@@ -6,6 +6,8 @@
 
 #include "internal/globals/ParticleData.h"
 
+#include <magique/core/Core.h>
+
 namespace magique
 {
     void DrawParticles() { global::PARTICLE_DATA.render(); }
@@ -27,8 +29,8 @@ namespace magique
                 break;
             case Shape::CIRCLE:
                 {
-                    const float angle = (float)GetRandomValue(0, 360) * (PI / 180.0f);
-                    const float dist = data.emp1 * static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                    const float angle = static_cast<float>(GetRandomValue(0, 360)) * (PI / 180.0f);
+                    const float dist = data.emp1 * sqrt(static_cast<float>(GetRandomValue(0, 100)) / 100.0F);
                     particle.x = dist * cos(angle);
                     particle.y = dist * sin(angle);
                 }
@@ -38,24 +40,37 @@ namespace magique
                 particle.y = data.emY;
                 break;
             }
-
-            // p1,p2,p3,p4
-            particle.p1 = static_cast<int16_t>(std::round(data.p1));
-            particle.p2 = static_cast<int16_t>(std::round(data.p2));
-            particle.p3 = static_cast<int16_t>(std::round(data.p3));
-            particle.p4 = static_cast<int16_t>(std::round(data.p4));
-
-            // Higher quality randomness should be worth it - we could just use 1 per particle and modify it but...
+            // Higher quality randomness should be worth it - and the random is pretty fast
             const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
             const float p1 = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
 
+            // Scale
+            particle.scale = data.minScale + (data.maxScale - data.minScale) * p1;
+
+            // p1,p2,p3,p4
+            particle.p1 = static_cast<int16_t>(std::round(data.p1 * particle.scale));
+            particle.p2 = static_cast<int16_t>(std::round(data.p2 * particle.scale));
+            particle.p3 = static_cast<int16_t>(std::round(data.p3 * particle.scale));
+            particle.p4 = static_cast<int16_t>(std::round(data.p4 * particle.scale));
+
+            // Spread
+            float dirX = data.dirX;
+            float dirY = data.dirY;
+            if (data.spreadAngle > 0)
+            {
+                const float p2 = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                const float spreadAngle = (-data.spreadAngle / 2.0F + data.spreadAngle * p2) * DEG2RAD;
+                const float currentAngle = atan2(data.dirY, data.dirX);
+                const float newAngle = currentAngle + spreadAngle;
+                dirX = cos(newAngle);
+                dirY = sin(newAngle);
+            }
+
             // vx,vy - velocity
             const float velocity = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
-            particle.vx = velocity * data.dirX;
-            particle.vy = velocity * data.dirY;
+            particle.vx = velocity * dirX;
+            particle.vy = velocity * dirY;
 
-            // scale
-            particle.scale = data.minScale + (data.maxScale - data.minScale) * p1;
 
             // Rest
             particle.age = 0;
@@ -65,7 +80,9 @@ namespace magique
             particle.b = data.b;
             particle.a = data.a;
 
+            SyncThreads();
             global::PARTICLE_DATA.addParticle(particle);
+            UnSyncThreads();
         }
     }
 
@@ -152,14 +169,14 @@ namespace magique
 
     //----------------- ADDITIONALS -----------------//
 
-    EmitterBase& EmitterBase::setGravity(float gravityX, float gravityY)
+    EmitterBase& EmitterBase::setGravity(const float gravityX, const float gravityY)
     {
         data.gravX = gravityX;
         data.gravY = gravityY;
         return *this;
     }
 
-    EmitterBase& EmitterBase::setScaling(const float minScale, const float maxScale)
+    EmitterBase& EmitterBase::setStartScale(const float minScale, const float maxScale)
     {
         data.minScale = minScale;
         data.maxScale = maxScale;
@@ -179,7 +196,7 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setInitialVelocity(const float minVeloc, const float maxVeloc)
+    EmitterBase& EmitterBase::setStartVelocity(const float minVeloc, const float maxVeloc)
     {
         data.minInitVeloc = minVeloc;
         data.maxInitVeloc = maxVeloc;
