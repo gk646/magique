@@ -7,6 +7,7 @@
 #include "internal/globals/LogicTickData.h"
 #include "internal/globals/DrawTickData.h"
 #include "internal/globals/ShaderEngine.h"
+#include "internal/globals/PerfData.h"
 
 
 namespace magique
@@ -112,5 +113,12 @@ namespace magique
     void SetShowHitboxes(const bool val) { global::CONFIGURATION.showHitboxes = val; }
 
     void SetBenchmarkTicks(const int ticks) { global::CONFIGURATION.benchmarkTicks = ticks; }
+
+    void ResetBenchmarkTimes()
+    {
+        global::PERF_DATA.drawTimes.clear();
+        global::PERF_DATA.logicTimes.clear();
+    }
+
 
 } // namespace magique

@@ -26,7 +26,7 @@ namespace magique
         auto& loader = global::LOADER;
         if (loader) [[likely]]
         {
-            game.drawLoadingScreen(loader->getProgressPercent());
+            game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
             const auto res = loader->step();
             if (res == true)
             {

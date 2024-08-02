@@ -22,6 +22,7 @@ namespace magique
     //----------------- VALUES -----------------//
 
     // Sets the value with which the specified placeholder will be replaced
+    // Given string has to be valid until this method returns!
     // Note: If a given format already exists it will be overwritten silently!
     void SetFormatValue(const char* placeholder, const char* val);
     void SetFormatValue(const char* placeholder, const std::string& val);
@@ -37,7 +38,7 @@ namespace magique
 
     // Formats and draws the given text with the current placeholder state
     // Note: Acts as a drop in replacement for DrawTextEx()
-    void DrawTextFmt(const Font& font, const char* text, Vector2 pos, float size, float spacing, Color tint = WHITE);
+    void DrawTextFmt(const Font& f, const char* t, Vector2 p, float s, float sp, Color c = WHITE);
 
     // Formats and returns the given text with the current placeholder state
     // IMPORTANT: returned string will only be valid until this method is called again

@@ -7,6 +7,7 @@
 
 // NOTE: the namespace magique:: can be avoided by using: "using namespace magique;"
 // Its used explicitly each time to denote magique functions
+// It is advised and safe to use: "using namespace magique;"
 
 // Entity identifiers
 enum EntityID : uint16_t
@@ -69,5 +70,7 @@ struct PlayerBarUI final : magique::UIObject
     void draw() override;
     void update() override;
 };
+
+
 
 #endif // ASTEROIDS_H

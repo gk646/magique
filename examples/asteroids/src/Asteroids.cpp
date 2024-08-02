@@ -5,12 +5,15 @@
 #include <magique/assets/AssetLoader.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/HandleRegistry.h>
-#include <magique/persistence/container/GameSave.h>
+#include <magique/assets/types/Playlist.h>
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
+#include <magique/core/Particles.h>
 #include <magique/core/Sound.h>
-#include <magique/assets/types/Playlist.h>
 #include <magique/ecs/ECS.h>
+#include <magique/persistence/container/GameSave.h>
+
+inline magique::ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
 
 void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 {
@@ -86,7 +89,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
                                 // Texture dimensions scaled with 3 - and rotate around the middle
-                                magique::GiveCollisionRect(entity,  18, 18, 9, 9);
+                                magique::GiveCollisionRect(entity, 18, 18, 9, 9);
                             });
 
     // Register the house entity
@@ -122,7 +125,12 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
     {
         magique::CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
+
+    // Configure emitter
+    ROCK_PARTICLES.setColor(WHITE).setLifetime(35, 50).setSpread(360);
+    ROCK_PARTICLES.setStartVelocity(2, 3.5).setScale(0.75, 1.5F);
 }
+
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
@@ -141,6 +149,8 @@ void Asteroids::drawWorld(Camera2D& camera) { ClearBackground(BLACK); }
 
 void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
 {
+    magique::DrawParticles(); // Render particles below the entites
+
     // As the entities dont have sprite sheets we use a simple switch
     // Get the entities that need to be drawn
     auto& drawEntities = magique::GetDrawEntities();
@@ -171,7 +181,10 @@ void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
     }
 }
 
-void Asteroids::drawUI(magique::UIRoot& root) {}
+void Asteroids::drawUI(magique::UIRoot& root)
+{
+
+}
 
 // Scripting
 void PlayerScript::onKeyEvent(entt::registry& registry, entt::entity self)
@@ -219,7 +232,11 @@ void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self
 
 void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
 {
+    auto& pos = magique::GetComponent<magique::PositionC>(self);
+    auto& col = magique::GetComponent<magique::CollisionC>(self);
     auto& oPos = magique::GetComponent<magique::PositionC>(other);
+    ROCK_PARTICLES.setEmissionPosition(pos.x + col.p1 / 2.0F, pos.y + col.p2 / 2.0F);
+    magique::CreateScreenParticle(ROCK_PARTICLES, 100);
     if (oPos.type == HOUSE)
     {
         magique::DestroyEntity(other);

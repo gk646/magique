@@ -435,15 +435,15 @@ namespace cxstructs
     struct StringCharHash
     {
         using is_transparent = void;
-        std::size_t operator()(const std::string& key) const { return std::hash<std::string>()(key); }
-        std::size_t operator()(const char* key) const { return std::hash<std::string>()(key); }
+        std::size_t operator()(const std::string& key) const { return str_hash_fnv1a_32(key.c_str()); }
+        std::size_t operator()(const char* key) const { return str_hash_fnv1a_32(key); }
     };
     struct StringCharEquals
     {
         using is_transparent = void;
-        bool operator()(const std::string& lhs, const std::string& rhs) const { return lhs == rhs; }
-        bool operator()(const std::string& lhs, const char* rhs) const { return lhs == rhs; }
-        bool operator()(const char* lhs, const std::string& rhs) const { return lhs == rhs; }
+        bool operator()(const std::string& lhs, const std::string& rhs) const { return strcmp(lhs.c_str(),rhs.c_str()); }
+        bool operator()(const std::string& lhs, const char* rhs) const { return strcmp(lhs.c_str(),rhs); }
+        bool operator()(const char* lhs, const std::string& rhs) const { return strcmp(lhs,rhs.c_str()); }
     };
 #endif
 } // namespace cxstructs

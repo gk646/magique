@@ -304,6 +304,7 @@ namespace magique
         float vx, vy;                 // Velocity
         float scale;                  // Current scale
         uint16_t age;                 // Current age
+        uint16_t lifeTime;            // Lifetime
         Shape shape;                  // Shape
         uint8_t r, g, b, a;           // Current color
         const ScreenEmitter* emitter; // Function pointers are shared across all instances
