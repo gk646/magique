@@ -131,5 +131,8 @@ namespace magique
     // Default: 0 - off
     void SetBenchmarkTicks(int ticks);
 
+    // Clears the collected benchmark times
+    void ResetBenchmarkTimes();
+
 } // namespace magique
 #endif //MAGIQUE_CORE_H

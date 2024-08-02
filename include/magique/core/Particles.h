@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_PARTICLES_H
 #define MAGIQUE_PARTICLES_H
 
+#include <functional>
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
 #include <magique/core/Types.h>
@@ -50,7 +51,7 @@ namespace magique
 
         // Takes the particles itself and the normalized time
         // This allows you to do anything - even call gameplay related code!
-        using TickFunction = void (*)(ScreenParticle&, float t);
+        using TickFunction = std::function<void(ScreenParticle& p, float t)>;
 
         //----------------- EMISSION SHAPE -----------------//
         // Note: Emmision shape determines where particles can spawn
@@ -63,7 +64,8 @@ namespace magique
 
         // Sets the emission shape - ONLY RECT and CIRCLE are supported!
         // Pass the width and height of the rectangle or the radius of the circle OR (0,0,0) to reset
-        // Default: None - is directly spawn on the emission point
+        // A random point inside the emission shape is chosen for each particle
+        // Default: None - is directly spawned on the emission point
         EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
 
         //----------------- PARTICLE -----------------//
@@ -81,12 +83,12 @@ namespace magique
         EmitterBase& setParticleShapeTri(Point p2, Point p3);
 
         // Sets the color of emitted particles
-        // Default: BLACK
+        // Default: RED
         EmitterBase& setColor(const Color& color);
 
-        // Sets the lifetime in millis
-        // Default: 1000
-        EmitterBase& setLifetime(int val);
+        // Sets the lifetime in game ticks
+        // Default: 100
+        EmitterBase& setLifetime(int minLife, int maxLife = 0);
 
         //----------------- ADDITIONALS -----------------//
 
@@ -98,7 +100,7 @@ namespace magique
         // Sets the min and max scale of the emitted particle(s) - randomly chosen when created
         // Note: Scaling is applied to the default dimensions of the particle
         // Default: 1
-        EmitterBase& setStartScale(float minScale, float maxScale);
+        EmitterBase& setScale(float minScale, float maxScale = 0);
 
         // Sets the initial direction vector - uses raylibs coordinate system
         //  - - - - - - -
@@ -120,7 +122,7 @@ namespace magique
 
         // Sets the min and max initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setStartVelocity(float minVeloc, float maxVeloc);
+        EmitterBase& setStartVelocity(float minVeloc, float maxVeloc = 0);
 
         // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
         // Default: True
@@ -135,6 +137,10 @@ namespace magique
         // Sets the function that determines the scale across its lifetime
         // Default: nullptr
         EmitterBase& setScaleFunction(ScaleFunction func);
+
+        // Sets a arbitrary tick function that is also called every tick for the particles lifetime
+        // Default: nullptr
+        EmitterBase& setTickFunction(const TickFunction& func);
 
         //----------------- HELPERS -----------------//
 

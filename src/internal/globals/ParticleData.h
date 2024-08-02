@@ -5,23 +5,18 @@
 
 #include <magique/util/Logging.h>
 #include <magique/core/Particles.h>
-#include <magique/util/Defines.h>
 
 #include "external/fast_vector/fast_vector.h"
+#include "external/raylib/src/coredata.h"
 
 namespace magique
 {
-    constexpr float TICK_CONVERSION = 1.0F / MAGIQUE_LOGIC_TICKS;
-
     // Data driven
     struct ParticleData final
     {
-       fast_vector<std::vector<ScreenParticle>::iterator> deleteCache;
-       fast_vector<ScreenParticle> rectangles;
-       fast_vector<ScreenParticle> circles;
-       fast_vector<ScreenParticle> triangles;
-
-        ParticleData() { deleteCache.reserve(500); }
+        fast_vector<ScreenParticle> rectangles;
+        fast_vector<ScreenParticle> circles;
+        fast_vector<ScreenParticle> triangles;
 
         void addParticle(const ScreenParticle& sp)
         {
@@ -44,7 +39,16 @@ namespace magique
 
         void render() const
         {
+            // TODO optimize with custom vertex buffer - could even be filled multithreaded
             rlSetTexture(GetShapesTexture().id);
+            const auto shapeRect = texShapesRec;
+
+            rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
+            rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);
+            rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width,
+                         (shapeRect.y + shapeRect.height) / texShapes.height);
+            rlTexCoord2f((shapeRect.x + shapeRect.width) / texShapes.width, shapeRect.y / texShapes.height);
+
             rlBegin(RL_QUADS);
             for (const auto& p : rectangles)
             {
@@ -61,7 +65,6 @@ namespace magique
                 rlVertex2f(p.x, p.y);
                 rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
                 rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
-                rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
             }
 
             for (const auto& p : circles)
@@ -77,28 +80,24 @@ namespace magique
         {
             const auto updateVec = [](fast_vector<ScreenParticle>& vec)
             {
-                for (auto it = vec.begin(); it != vec.end();)
+                for (int i = 0; i < vec.size(); ++i)
                 {
-                    auto& p = *it;
-                    const auto& emitter = p.emitter->data;
-                    const float relTime = static_cast<float>(p.age) / static_cast<float>(emitter.lifeTime);
+                    auto& p = vec[i];
+                    const float relTime = static_cast<float>(p.age) / static_cast<float>(p.lifeTime);
                     if (relTime >= 1.0F) [[unlikely]]
                     {
-                        auto lastEl = vec.end() - 1;
-                        if (it != lastEl)
-                        {
-                            *it = *lastEl;
-                        }
+                        vec[i] = vec.back();
                         vec.pop_back();
                     }
                     else
                     {
+                        const auto& emitter = p.emitter->data;
                         ++p.age;
                         p.x += p.vx;
                         p.y += p.vy;
 
-                        p.vx += emitter.gravX * TICK_CONVERSION; // pixel/s into pixel/tick
-                        p.vy += emitter.gravY * TICK_CONVERSION;
+                        p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
+                        p.vy += emitter.gravY;
 
                         if (emitter.scaleFunc)
                         {
@@ -112,9 +111,8 @@ namespace magique
 
                         if (emitter.tickFunc)
                         {
-                            emitter.tickFunc(p, relTime);
+                            (*static_cast<EmitterBase::TickFunction*>(emitter.tickFunc))(p, relTime);
                         }
-                        ++it;
                     }
                 }
             };

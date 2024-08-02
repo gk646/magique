@@ -55,7 +55,7 @@ namespace magique
         virtual void preRender() {}
 
         // Called each tick when loading - skips all other draw methods
-        virtual void drawLoadingScreen(float progressPercent) {}
+        virtual void drawLoadingScreen(UIRoot& root,float progressPercent) {}
 
         // Called each tick to render the world
         // This is not thread synced - dont read any logic tick data or the registry

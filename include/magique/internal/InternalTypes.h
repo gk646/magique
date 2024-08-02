@@ -126,10 +126,9 @@ namespace magique
     {
         using ScaleFunction = float (*)(float s, float t);
         using ColorFunction = Color (*)(const Color& c, float t);
-        using TickFunction = void (*)(ScreenParticle&, float t);
         ScaleFunction scaleFunc = nullptr;
         ColorFunction colorFunc = nullptr;
-        TickFunction tickFunc = nullptr;
+        void* tickFunc = nullptr;
 
         //----------------- EMISSION SHAPE -----------------//
         float emX = 0, emY = 0;
@@ -137,21 +136,21 @@ namespace magique
         float emp2 = 0; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
 
         //----------------- PARTICLE -----------------//
-        float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float p1 = 5.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 5.0F; // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
         float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
 
         float minScale = 1, maxScale = 1;         // Scale
         float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
-        float dirX = 0, dirY = 0;                 // Direction
+        float dirX = 0, dirY = -1;                // Direction
         float spreadAngle = 0;                    // Spread angle around the direction
-        float gravX, gravY;                       // Gravity in x and y direction
-        uint16_t lifeTime = 1000;                 // Total life time
+        float gravX = 0, gravY = 0;               // Gravity in x and y direction
+        uint16_t minLife = 100, maxLife = 100;    // Total life time
         bool resolutionScaling = true;            // resolution scaling
         Shape shape = Shape::RECT;
-        Shape emShape = Shape::CAPSULE;     // Default is point emission
-        uint8_t r = 0, g = 0, b = 0, a = 1; // Color
+        Shape emShape = Shape::CAPSULE;       // Default is point emission
+        uint8_t r = 255, g = 0, b = 0, a = 1; // Color
     };
 
 

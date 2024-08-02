@@ -26,47 +26,44 @@ struct ValueInfo final
     uint8_t index = 0; // Index into the value vector
 };
 
-template <typename... ValueTypes>
 struct ValueStorage final
 {
-    std::tuple<std::vector<ValueTypes>...> valueVectors; // A tuple to hold the vectors
-
-    template <typename T, typename Tuple>
-    struct Index;
-
-    template <typename T, typename... Types>
-    struct Index<T, std::tuple<T, Types...>>
-    {
-        static constexpr std::size_t value = 0;
-    };
-
-    template <typename T, typename U, typename... Types>
-    struct Index<T, std::tuple<U, Types...>>
-    {
-        static constexpr std::size_t value = 1 + Index<T, std::tuple<Types...>>::value;
-    };
+    std::vector<std::string> strings;
+    std::vector<int> ints;
+    std::vector<float> floats;
 
     template <typename T>
     constexpr std::vector<T>& getValueVec()
     {
-        return std::get<Index<T, std::tuple<ValueTypes...>>::value>(valueVectors);
+        if constexpr (std::is_same_v<std::string, T>)
+        {
+            return strings;
+        }
+        else if constexpr (std::is_same_v<int, T>)
+        {
+            return ints;
+        }
+        else if constexpr (std::is_same_v<float, T>)
+        {
+            return floats;
+        }
     }
 };
 
 using namespace cxstructs;
-using TransparentStringHashMap = magique::HashMapEx<std::string, ValueInfo, StringCharHash, StringCharEquals>;
+using TransparentHashMap = magique::HashMapEx<std::string, ValueInfo, StringCharHash, StringCharEquals>;
 
 //----------------- STATE DATA -----------------//
-TransparentStringHashMap VALUES;                     // Placeholder to value mapping - transparent lookup enabled!
-ValueStorage<std::string, float, int> VALUE_STORAGE; // All values stored by the placeholders
-char FMT_PREFIX = '$';                               // The format prefix to seach for#
-char FMT_ENCAP_START = '{';                          // Format encapsulator start
-char FMT_ENCAP_END = '}';                            // Format encapsulator end
-std::string FORMAT_CACHE(64, '\0');                  // Length of 64 to ensure it is large enough for most values
-std::string STRING_BUILDER(512, '\0');               // Cache for the final formatted string
+TransparentHashMap VALUES;                  // Placeholder to value mapping - transparent lookup enabled!
+ValueStorage VALUE_STORAGE;            // All values stored by the placeholders
+char FMT_PREFIX = '$';                 // The format prefix to seach for#
+char FMT_ENCAP_START = '{';            // Format encapsulator start
+char FMT_ENCAP_END = '}';              // Format encapsulator end
+std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
+std::string STRING_BUILDER(512, '\0'); // Cache for the final formatted string
 
 template <typename T>
-constexpr ValueType getValueType()
+constexpr ValueType getValueType() // Function to get the ValueType for a given type T
 {
     if constexpr (std::is_same_v<T, float>)
     {
@@ -85,64 +82,86 @@ constexpr ValueType getValueType()
         static_assert(std::is_same_v<T, std::string>, "Passed invalid type");
     }
     return INT;
-} // Function to get the ValueType for a given type T
+}
 
-template <typename T>
 void eraseValue(const ValueInfo info)
 {
-    std::vector<T>& vec = VALUE_STORAGE.getValueVec<T>();
-    if (vec.empty())
-        return;
-    vec.erase(vec.begin() + info.index);
-    for (auto& [type, index] : VALUES | std::views::values)
+    const auto erase = []<typename T>(const ValueInfo info)
     {
-        if (type == info.type && index > info.index)
+        // Where we have to delete
+        auto& vec = VALUE_STORAGE.getValueVec<T>();
+
+        if (vec.empty())
+            return;
+        if (vec.size() == 1)
         {
-            index--;
+            vec.pop_back();
+            return;
         }
+
+        // The info to the value which we have to move
+        const ValueInfo replaceMent{getValueType<T>(), vec.size() - 1};
+
+        // Move and pop
+        vec[info.index] = vec.back();
+        vec.pop_back();
+
+        // Find the info to the moved value and set its index to where we just moved it
+        for (auto& pair : VALUES)
+        {
+            if (pair.second.index == replaceMent.index && pair.second.type == replaceMent.type)
+            {
+                pair.second.index = info.index;
+                break;
+            }
+        }
+    };
+    switch (info.type)
+    {
+    case FLOAT:
+        erase.operator()<float>(info);
+        break;
+    case STRING:
+        erase.operator()<std::string>(info);
+        break;
+    case INT:
+        erase.operator()<int>(info);
+        break;
     }
 }
 
 template <typename T>
-void SetFormatValueImpl(const char* ph, const T& val)
+void SetFormatValueImpl(const char* key, const auto& val)
 {
-    M_ASSERT(strlen(ph) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
-    if constexpr (std::is_same_v<T, std::string>)
-        M_ASSERT(val.size() < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
-    const auto it = VALUES.find(ph);
-    auto& valueVec = VALUE_STORAGE.getValueVec<T>();
-    if (it != VALUES.end())
+    M_ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
+    if constexpr (std::is_same_v<T, const char*>)
     {
-        if (it->second.type != getValueType<T>()) // placeholder has different type -> indices shifting
+        M_ASSERT(strlen(val) < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
+    }
+    const auto it = VALUES.find(key);
+    auto& valueVec = VALUE_STORAGE.getValueVec<T>(); // where to insert new value
+    if (it != VALUES.end())                          // placeholder exists
+    {
+        if (it->second.type != getValueType<T>()) [[unlikely]] // placeholder has different type -> erase old
         {
-            switch (it->second.type) // Erase old value and adjust existing indices
-            {
-            case FLOAT:
-                eraseValue<float>(it->second);
-                break;
-            case STRING:
-                eraseValue<std::string>(it->second);
-                break;
-            case INT:
-                eraseValue<int>(it->second);
-                break;
-            }
+            // Erase old value and adjust existing indices
+            // Can use T because T is the new type not the existing one!
+            eraseValue(it->second);
             const auto size = static_cast<int>(valueVec.size());
-            valueVec.emplace_back(std::move(val));
-            VALUES.erase(it);
-            VALUES.insert({ph, {getValueType<T>(), static_cast<uint8_t>(size)}});
+            valueVec.emplace_back(val);
+            it->second.index = static_cast<uint8_t>(size);
+            it->second.type = getValueType<T>();
         }
-        else // Just overwrite the existing value
+        else // placeholder has same type -> just overwrite old
         {
             valueVec[it->second.index] = val;
-            it->second.type = getValueType<T>();
         }
     }
     else // Just add a new value
     {
         const auto size = static_cast<int>(valueVec.size());
-        valueVec.emplace_back(std::move(val));
-        VALUES.insert({ph, {getValueType<T>(), static_cast<uint8_t>(size)}});
+        valueVec.emplace_back(val);
+        VALUES.insert({key, {getValueType<T>(), static_cast<uint8_t>(size)}});
     }
 }
 
@@ -161,7 +180,7 @@ const char* GetValueText(const ValueInfo info)
         }
     case INT:
         {
-            // Due to small buffer optimization doesnt cause allocation below 15 digits
+            // Due to small buffer optimization doesnt cause allocation below 15 digits - and its faster than snprintf
             const std::string intStr = std::to_string(VALUE_STORAGE.getValueVec<int>()[info.index]);
             std::memcpy(FORMAT_CACHE.data(), intStr.c_str(), intStr.size() + 1);
             break;
@@ -174,37 +193,21 @@ const char* GetValueText(const ValueInfo info)
 
 namespace magique
 {
-    void SetFormatValue(const char* placeholder, const char* val) { SetFormatValueImpl(placeholder, std::string(val)); }
+    void SetFormatValue(const char* placeholder, const char* val) { SetFormatValueImpl<std::string>(placeholder, val); }
 
-    void SetFormatValue(const char* placeholder, const float val) { SetFormatValueImpl(placeholder, val); }
+    void SetFormatValue(const char* placeholder, const float val) { SetFormatValueImpl<float>(placeholder, val); }
 
-    void SetFormatValue(const char* placeholder, const int val) { SetFormatValueImpl(placeholder, val); }
+    void SetFormatValue(const char* placeholder, const int val) { SetFormatValueImpl<int>(placeholder, val); }
 
     void SetFormatValue(const char* placeholder, const std::string& val)
     {
-        SetFormatValueImpl(placeholder, std::string(val));
+        SetFormatValueImpl<std::string>(placeholder, val.c_str());
     }
 
-    template <typename T>
-    T& GetFormatValue(const char* placeholder)
+    void DrawTextFmt(const Font& f, const char* t, const Vector2 p, const float s, const float sp, const Color c)
     {
-        const auto it = VALUES.find(placeholder);
-        if (it == VALUES.end())
-        {
-            LOG_FATAL("Value for given placholder does not exist: %s", placeholder);
-        }
-        if constexpr (std::is_same_v<T, const char*>)
-        {
-            return VALUE_STORAGE.getValueVec<std::string>()[it->second.index].c_str();
-        }
-        return VALUE_STORAGE.getValueVec<T>()[it->second.index];
-    }
-
-    void DrawTextFmt(const Font& font, const char* text, const Vector2 pos, const float size, const float spacing,
-                     const Color tint)
-    {
-        auto* fmtText = GetFormattedText(text);
-        DrawTextEx(font, fmtText, pos, size, spacing, tint);
+        auto* fmtText = GetFormattedText(t);
+        DrawTextEx(f, fmtText, p, s, sp, c);
     }
 
     const char* GetFormattedText(const char* text)
@@ -255,85 +258,21 @@ namespace magique
         return STRING_BUILDER.c_str();
     }
 
-
     void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
+    template <typename T>
+    auto& GetFormatValue(const char* placeholder)
+    {
+        const auto it = VALUES.find(placeholder);
+        if (it == VALUES.end())
+        {
+            LOG_FATAL("Value for given placholder does not exist: %s", placeholder);
+        }
+        return VALUE_STORAGE.getValueVec<T>()[it->second.index];
+    }
 
     template float& GetFormatValue(const char*);
     template std::string& GetFormatValue(const char*);
     template int& GetFormatValue(const char*);
-
-    // Old implementation - bit slower
-    /*
-    const char* GetFormattedText(const char* text)
-    {
-        if (text == nullptr) [[unlikely]]
-            return nullptr;
-
-        int i = 0;
-        const int maxLen = MAX_TEXT_BUFFER_LENGTH - 1;
-        char* work = const_cast<char*>(TextFormat("%s", text)); // Is valid up to maxLen
-        int placeStart = -1;
-        int placeEnd = -1;
-
-        while (i < maxLen && work[i] != '\0')
-        {
-            if (placeStart == -1)
-            {
-                if (work[i] == FMT_PREFIX && work[i + 1] == FMT_ENCAP_START)
-                {
-                    placeStart = i + 2;
-                }
-            }
-            else
-            {
-                while (i < maxLen)
-                {
-                    if (work[i] == FMT_ENCAP_END)
-                    {
-                        placeEnd = i - 1; // encap end -1 - thats why below +4 instead of +3
-                        auto placeHolder = work + placeStart;
-                        work[i] = '\0';
-                        auto it = VALUES.find(placeHolder);
-                        work[i] = FMT_ENCAP_END;
-                        if (it == VALUES.end())
-                        {
-                            placeStart = -1;
-                            placeEnd = -1;
-                            break;
-                        }
-                        const auto valueText = GetValueText(it->second);
-                        const auto valueLen = static_cast<int>(strlen(valueText));
-                        const auto placeLen = placeEnd - placeStart + 4; // Including prefix, encapstart + encap end
-
-                        if (placeLen > valueLen) [[likely]]
-                        {
-                            std::memcpy(work + (placeStart - 2), valueText, valueLen);
-                            std::memcpy(work + (placeStart - 2 + valueLen), work + (i + 1), maxLen - i);
-                            i = placeStart - 3 + valueLen;
-                        }
-                        else
-                        {
-                            const int newLen = i + valueLen - placeLen;
-                            if (newLen >= MAX_TEXT_BUFFER_LENGTH)
-                            {
-                                return nullptr;
-                            }
-                            std::memmove(work + (placeStart - 2 + valueLen), work + (i + 1), maxLen - i);
-                            std::memcpy(work + (placeStart - 2), valueText, valueLen);
-                            i = placeStart - 3 + valueLen;
-                        }
-                        placeStart = -1;
-                        placeEnd = -1;
-                        break;
-                    }
-                    ++i;
-                }
-            }
-            ++i;
-        }
-        return work;
-    }
-    */
 
 } // namespace magique
