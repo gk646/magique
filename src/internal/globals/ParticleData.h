@@ -1,12 +1,13 @@
 #ifndef MAGIQUE_PARTICLEDATA_H
 #define MAGIQUE_PARTICLEDATA_H
 
-#include <vector>
 #include <raylib/rlgl.h>
 
 #include <magique/util/Logging.h>
 #include <magique/core/Particles.h>
 #include <magique/util/Defines.h>
+
+#include "external/fast_vector/fast_vector.h"
 
 namespace magique
 {
@@ -15,10 +16,10 @@ namespace magique
     // Data driven
     struct ParticleData final
     {
-        std::vector<std::vector<ScreenParticle>::iterator> deleteCache;
-        std::vector<ScreenParticle> rectangles;
-        std::vector<ScreenParticle> circles;
-        std::vector<ScreenParticle> triangles;
+       fast_vector<std::vector<ScreenParticle>::iterator> deleteCache;
+       fast_vector<ScreenParticle> rectangles;
+       fast_vector<ScreenParticle> circles;
+       fast_vector<ScreenParticle> triangles;
 
         ParticleData() { deleteCache.reserve(500); }
 
@@ -74,10 +75,8 @@ namespace magique
 
         void update()
         {
-            const auto updateVec =
-                [](std::vector<ScreenParticle>& vec)
+            const auto updateVec = [](fast_vector<ScreenParticle>& vec)
             {
-                    int amount = 0;
                 for (auto it = vec.begin(); it != vec.end();)
                 {
                     auto& p = *it;
@@ -86,7 +85,8 @@ namespace magique
                     if (relTime >= 1.0F) [[unlikely]]
                     {
                         auto lastEl = vec.end() - 1;
-                        if (it != lastEl) {
+                        if (it != lastEl)
+                        {
                             *it = *lastEl;
                         }
                         vec.pop_back();
