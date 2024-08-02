@@ -3,8 +3,7 @@
 
 #include <magique/fwd.hpp>
 #include <ankerl/unordered_dense.h>
-#include <ankerl/emhash7.h>
-#include <ankerl/emhash4.h>
+
 
 //-----------------------------------------------
 // Datastructures Modules
@@ -20,13 +19,13 @@ namespace magique
     using vector = std::vector<T>;
 
     template <typename K, typename V>
-    using HashMap = emhash7::HashMap<K, V>;
+    using HashMap = ankerl::unordered_dense::map<K, V>;
 
     template <typename K, typename V, typename Hash, typename Equals>
     using HashMapEx = ankerl::unordered_dense::map<K, V, Hash, Equals>;
 
     template <typename K, typename Hash = std::hash<K>>
-    using HashSet = emhash9::HashSet<K, Hash>;
+    using HashSet = ankerl::unordered_dense::set<K, Hash>;
 
 } // namespace magique
 

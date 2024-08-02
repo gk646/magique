@@ -64,7 +64,7 @@ namespace magique
                         continue; // Not on the same map or not on the same collision layer
                     if (CheckCollision(posA, colA, posB, colB)) [[unlikely]]
                     {
-                        pairs.emplace_back(first, posA.type, second, posB.type);
+                        pairs.push_back({first, posA.type, second, posB.type});
                     }
                 }
                 collector.clear();

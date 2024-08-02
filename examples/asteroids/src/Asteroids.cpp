@@ -17,13 +17,13 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
     magique::SetShowHitboxes(true); // Shows red hitboxes
 
     // Turn off lighting
-    magique::SetLightingModel(magique::LightingModel::NONE);
+    magique::SetLightingMode(magique::LightingMode::NONE);
 
     // Setup screen bounds
     SetWindowSize(1280, 960);
 
     // Easy way to setup world bounds
-    magique::SetWorldBounds({0, 0, 1280, 960});
+    magique::SetStaticWorldBounds({0, 0, 1280, 960});
 
     // Set FPS to 120 - all raylib functions work as usual and are integrated
     SetTargetFPS(120);
@@ -77,7 +77,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                                 magique::GiveScript(entity);
                                 magique::GiveComponent<PlayerStatsC>(entity);
                                 // Texture dimensions scaled with 3 - and rotate around the middle
-                                magique::GiveCollision(entity, magique::RECT, 36, 36, 18, 18);
+                                magique::GiveCollisionRect(entity, 36, 36, 18, 18);
                             });
 
     // Register the bullet entity
@@ -86,7 +86,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
                                 // Texture dimensions scaled with 3 - and rotate around the middle
-                                magique::GiveCollision(entity, magique::RECT, 18, 18, 9, 9);
+                                magique::GiveCollisionRect(entity,  18, 18, 9, 9);
                             });
 
     // Register the house entity
@@ -94,7 +94,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                             [](entt::registry& registry, entt::entity entity)
                             {
                                 // Texture dimensions scaled with 3 - and rotate around the middle
-                                magique::GiveCollision(entity, magique::RECT, 45, 45, 22, 22);
+                                magique::GiveCollisionRect(entity, 45, 45, 22, 22);
                             });
 
     // Register the rock entity
@@ -103,7 +103,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
                                 // Texture dimensions scaled with 3 - and rotate around the middle
-                                magique::GiveCollision(entity, magique::RECT, 60, 60, 30, 30);
+                                magique::GiveCollisionRect(entity, 60, 60, 30, 30);
                             });
 
     // Register the invisible static camera
@@ -146,7 +146,7 @@ void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
     auto& drawEntities = magique::GetDrawEntities();
     for (const auto e : drawEntities)
     {
-        auto& pos = magique::GetComponent<PositionC>(e); // Get the implicit position component
+        auto& pos = magique::GetComponent<magique::PositionC>(e); // Get the implicit position component
         magique::handle handle;
         switch (pos.type)
         {
@@ -176,7 +176,7 @@ void Asteroids::drawUI(magique::UIRoot& root) {}
 // Scripting
 void PlayerScript::onKeyEvent(entt::registry& registry, entt::entity self)
 {
-    auto& pos = magique::GetComponent<PositionC>(self);
+    auto& pos = magique::GetComponent<magique::PositionC>(self);
     if (IsKeyDown(KEY_W))
         pos.y -= 6;
     if (IsKeyDown(KEY_S))
@@ -208,15 +208,18 @@ void PlayerScript::onTick(entt::registry& registry, entt::entity self)
 
 void BulletScript::onTick(entt::registry& registry, entt::entity self)
 {
-    auto& pos = magique::GetComponent<PositionC>(self);
+    auto& pos = magique::GetComponent<magique::PositionC>(self);
     pos.y -= 8; // Bullets only fly straight up
 }
 
-void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self) { magique::DestroyEntity(self); }
+void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self)
+{
+    magique::DestroyEntity(self);
+}
 
 void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
 {
-    auto& oPos = magique::GetComponent<PositionC>(other);
+    auto& oPos = magique::GetComponent<magique::PositionC>(other);
     if (oPos.type == HOUSE)
     {
         magique::DestroyEntity(other);
@@ -235,7 +238,7 @@ void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self,
 
 void RockScript::onTick(entt::registry& registry, entt::entity self)
 {
-    auto& pos = magique::GetComponent<PositionC>(self);
+    auto& pos = magique::GetComponent<magique::PositionC>(self);
     // pos.rotation++;
     pos.y += 1;
 }

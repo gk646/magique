@@ -3,10 +3,9 @@
 
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
+#include <magique/core/Core.h>
 
 #include "internal/globals/ParticleData.h"
-
-#include <magique/core/Core.h>
 
 namespace magique
 {

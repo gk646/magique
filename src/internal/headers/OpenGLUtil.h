@@ -18,20 +18,20 @@ void createSimpleObjectBuffer(const Vector3 *vertices, int vertexCount, unsigned
 }
 
 
-void CreateShadowQuads(std::vector<Vector3> &quads, Vector2 posA, Vector2 posB)
+void CreateShadowQuads(magique::vector<Vector3> &quads, Vector2 posA, Vector2 posB)
 {
     // Triangle 1
-    quads.emplace_back(Vector3{posA.x, posA.y, 0});
-    quads.emplace_back(Vector3{posB.x, posB.y, 0});
-    quads.emplace_back(Vector3{posA.x, posA.y, 1});
+    quads.push_back(Vector3{posA.x, posA.y, 0});
+    quads.push_back(Vector3{posB.x, posB.y, 0});
+    quads.push_back(Vector3{posA.x, posA.y, 1});
 
     // Triangle 2
-    quads.emplace_back(Vector3{posA.x, posA.y, 1});
-    quads.emplace_back(Vector3{posB.x, posB.y, 0});
-    quads.emplace_back(Vector3{posB.x, posB.y, 1});
+    quads.push_back(Vector3{posA.x, posA.y, 1});
+    quads.push_back(Vector3{posB.x, posB.y, 0});
+    quads.push_back(Vector3{posB.x, posB.y, 1});
 }
 
-void CreateQuadsFromRect(std::vector<Vector3> &quads, Rectangle rect)
+void CreateQuadsFromRect(magique::vector<Vector3> &quads, const Rectangle rect)
 {
     // Bottom edge
     CreateShadowQuads(quads, {rect.x, rect.y}, {rect.x + rect.width, rect.y});
@@ -42,7 +42,6 @@ void CreateQuadsFromRect(std::vector<Vector3> &quads, Rectangle rect)
     // Left edge
     CreateShadowQuads(quads, {rect.x, rect.y + rect.height}, {rect.x, rect.y});
 }
-
 
 Rectangle GetRelativeRect(Rectangle r)
 {

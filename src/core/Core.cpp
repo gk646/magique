@@ -66,7 +66,7 @@ namespace magique
 
     //----------------- GET -----------------//
 
-    const vector<entt::entity>& GetUpdateEntities() { return global::LOGIC_TICK_DATA.entityUpdateVec; }
+    const  std::vector<entt::entity>& GetUpdateEntities() { return global::LOGIC_TICK_DATA.entityUpdateVec; }
 
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::LOGIC_TICK_DATA.loadedMaps; }
 
