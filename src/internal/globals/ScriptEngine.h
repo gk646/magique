@@ -1,15 +1,15 @@
 #ifndef MAGIQUE_SCRIPTENGINE_H
 #define MAGIQUE_SCRIPTENGINE_H
 
-#include <vector>
 #include <magique/ecs/Scripting.h>
+#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
     struct ScriptEngine
     {
         inline static auto* defaultScript = new EntityScript();
-        std::vector<EntityScript*> scripts;
+        vector<EntityScript*> scripts;
 
         void padUpToEntity(const EntityID entity)
         {

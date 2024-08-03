@@ -1,14 +1,13 @@
-#ifndef JOBSCHEDULER_CUH
-#define JOBSCHEDULER_CUH
+#ifndef JOBSCHEDULER_H
+#define JOBSCHEDULER_H
 
 #include <deque>
-#include <atomic>
-#include <condition_variable>
-#include <vector>
+#include <thread>
 
 #include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/OSUtil.h"
 #include "internal/types/Spinlock.h"
+#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
@@ -30,10 +29,10 @@ namespace magique
         alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
         alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
         alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
-        alignas(64) std::vector<const IJob*> workedJobs;   // Currently processed jobs
+        alignas(64) vector<const IJob*> workedJobs;        // Currently processed jobs
         std::atomic<int> currentJobsSize = 0;              // Current jobs
         std::atomic<uint16_t> handleID = 0;                // The internal handle counter
-        std::vector<std::thread> threads;                  // All working threads
+        vector<std::thread> threads;                       // All working threads
         std::atomic<int> usingThreads = 0;
         double startTime = 0;
         double tickTime = 0;
@@ -52,7 +51,7 @@ namespace magique
             // allows for time tracking later on
             workedLock.lock();
             --currentJobsSize;
-            std::erase(workedJobs, job);
+            workedJobs.erase_unordered(job);
             workedLock.unlock();
             // Just spin the handles around
             if (handleID >= 65000)

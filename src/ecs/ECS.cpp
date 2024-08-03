@@ -13,7 +13,7 @@
 
 namespace magique
 {
-    bool RegisterEntity(const EntityID type, const std::function<void(entt::registry&, entt::entity)>& createFunc)
+    bool RegisterEntity(const EntityID type, const CreateFunc& createFunc)
     {
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
@@ -26,7 +26,8 @@ namespace magique
         global::SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
-            volatile int b = static_cast<int>(entity); // Try to instantiate all storage types
+            volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
+            b = 5;                                     // Suppress C4126
         }
         return true;
     }
@@ -61,7 +62,7 @@ namespace magique
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(ecs.entityID++));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(internal::REGISTRY, entity);
+            it->second(entity);
         }
         tickData.unlock();
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
@@ -87,7 +88,7 @@ namespace magique
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(id));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(internal::REGISTRY, entity);
+            it->second(entity);
         }
         tickData.unlock();
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]

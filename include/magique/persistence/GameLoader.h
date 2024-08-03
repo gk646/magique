@@ -32,9 +32,6 @@ namespace magique
         void registerTask(GameLoadFunc func, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
-        // Prints current stats - automatically called if all task are registered
-        void printStats() const;
-
         // Called each frame - progresses the loader
         bool step() override;
 

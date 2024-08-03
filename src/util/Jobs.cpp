@@ -1,4 +1,5 @@
 #include <array>
+#include <vector>
 
 #include <magique/util/Jobs.h>
 #include <magique/internal/Macros.h>

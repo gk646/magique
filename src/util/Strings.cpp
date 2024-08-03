@@ -276,7 +276,7 @@ namespace magique
         return str;
     }
 
-    const char* GetTimeString(int totalSeconds)
+    const char* GetTimeString(const int totalSeconds)
     {
         const int days = totalSeconds / 86400;
         const int hours = totalSeconds % 86400 / 3600;
@@ -285,9 +285,9 @@ namespace magique
         return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
     }
 
-    uint32_t HashString(char const* s, const int salt) noexcept
+    uint32_t HashString(char const* s) noexcept
     {
-        uint32_t hash = 2166136261U + salt;
+        uint32_t hash = 2166136261U ;
         while (*s != 0)
         {
             hash ^= static_cast<uint32_t>(*s++);

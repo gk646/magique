@@ -23,13 +23,16 @@ SOFTWARE.
 
 // This is a fixed and expanded version of the original header
 // Added iterator erase, erase, insert...
+// Main reasons: less compile time, actually slightly faster, less includes, less templates
 
 #pragma once
 #ifndef FAST_VECTOR_H
 #define FAST_VECTOR_H
 
+#include <type_traits>
 #include <cassert>
-#include <cstring> // std::memcpy()
+#include <cstdlib>
+#include <cstring>
 
 template <class T>
 struct fast_vector
@@ -37,12 +40,12 @@ struct fast_vector
     using size_type = int32_t;
 
     fast_vector() = default;
-    fast_vector(const fast_vector& other);
-    explicit fast_vector(size_type reserve);
+    fast_vector(const fast_vector& other) noexcept;
+    explicit fast_vector(size_type reserve) noexcept;
     fast_vector(fast_vector&& other) noexcept;
     fast_vector& operator=(const fast_vector& other);
     fast_vector& operator=(fast_vector&& other) noexcept;
-    ~fast_vector();
+    ~fast_vector() noexcept;
 
     // Element access
 
@@ -68,10 +71,10 @@ struct fast_vector
 
     // Capacity
 
-    bool empty() const noexcept;
-    size_type size() const noexcept;
-    void reserve(size_type new_cap);
-    size_type capacity() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
+    [[nodiscard]] size_type size() const noexcept;
+    void reserve(size_type new_cap) noexcept;
+    [[nodiscard]] size_type capacity() const noexcept;
     void shrink_to_fit();
 
     // Modifiers
@@ -95,12 +98,14 @@ struct fast_vector
 
     // Doesnt keep order
     void erase_unordered(const T& val);
+    void erase_unordered(T* pos);
 
     void pop_back();
 
     void resize(size_type count);
+    void resize(size_type count, const T& val);
 
-    static constexpr size_type grow_factor = 3;
+    static constexpr size_type grow_factor = 2;
 
 private:
     T* m_data = nullptr;
@@ -109,19 +114,19 @@ private:
 };
 
 template <class T>
-fast_vector<T>::fast_vector(size_type res)
+fast_vector<T>::fast_vector(const size_type res) noexcept
 {
     reserve(res);
 }
 
 template <class T>
-fast_vector<T>::fast_vector(const fast_vector& other) : m_size(other.m_size), m_capacity(other.m_capacity)
+fast_vector<T>::fast_vector(const fast_vector& other) noexcept : m_size(other.m_size), m_capacity(other.m_capacity)
 {
-    m_data = static_cast<T*>(std::malloc(sizeof(T) * other.m_capacity));
+    m_data = static_cast<T*>(malloc(sizeof(T) * other.m_capacity));
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
-        std::memcpy(m_data, other.m_data, m_size * sizeof(T));
+        memcpy(m_data, other.m_data, m_size * sizeof(T));
     }
     else
     {
@@ -137,18 +142,20 @@ fast_vector<T>::fast_vector(fast_vector&& other) noexcept :
     m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity)
 {
     other.m_data = nullptr;
+    other.m_size = 0;
+    other.m_capacity = 0;
 }
 
 template <class T>
-auto fast_vector<T>::operator=(const fast_vector& other) -> fast_vector<T>&
+fast_vector<T>& fast_vector<T>::operator=(const fast_vector& other)
 {
     if (this != &other)
     {
-        T* new_data = static_cast<T*>(std::malloc(sizeof(T) * other.m_capacity));
+        T* new_data = static_cast<T*>(malloc(sizeof(T) * other.m_capacity));
 
         if constexpr (std::is_trivially_copyable_v<T>)
         {
-            std::memcpy(new_data, other.m_data, other.m_size * sizeof(T));
+            mem(new_data, other.m_data, other.m_size * sizeof(T));
         }
         else
         {
@@ -166,7 +173,7 @@ auto fast_vector<T>::operator=(const fast_vector& other) -> fast_vector<T>&
             }
         }
 
-        std::free(m_data);
+        free(m_data);
 
         m_data = new_data;
         m_size = other.m_size;
@@ -177,7 +184,7 @@ auto fast_vector<T>::operator=(const fast_vector& other) -> fast_vector<T>&
 }
 
 template <class T>
-auto fast_vector<T>::operator=(fast_vector&& other) noexcept -> fast_vector<T>&
+fast_vector<T>& fast_vector<T>::operator=(fast_vector&& other) noexcept
 {
     if (this != &other)
     {
@@ -191,7 +198,7 @@ auto fast_vector<T>::operator=(fast_vector&& other) noexcept -> fast_vector<T>&
 }
 
 template <class T>
-fast_vector<T>::~fast_vector()
+fast_vector<T>::~fast_vector() noexcept
 {
     if constexpr (!std::is_trivially_destructible_v<T>)
     {
@@ -201,7 +208,7 @@ fast_vector<T>::~fast_vector()
         }
     }
 
-    std::free(m_data);
+    free(m_data);
 }
 
 // Element access
@@ -301,7 +308,7 @@ typename fast_vector<T>::size_type fast_vector<T>::size() const noexcept
 }
 
 template <class T>
-void fast_vector<T>::reserve(size_type new_cap)
+void fast_vector<T>::reserve(const size_type new_cap) noexcept
 {
     if (new_cap > m_capacity)
     {
@@ -309,18 +316,18 @@ void fast_vector<T>::reserve(size_type new_cap)
 
         if constexpr (std::is_trivially_move_constructible_v<T> && std::is_trivially_destructible_v<T>)
         {
-            std::memcpy(new_data, m_data, m_size * sizeof(T));
+            memcpy(new_data, m_data, m_size * sizeof(T));
         }
         else
         {
             for (size_type i = 0; i < m_size; ++i)
             {
-                new (new_data + i) T(move(m_data[i]));
+                new (new_data + i) T(std::move(m_data[i]));
                 m_data[i].~T();
             }
         }
 
-        std::free(m_data);
+        free(m_data);
         m_data = new_data;
         m_capacity = new_cap;
     }
@@ -339,18 +346,18 @@ void fast_vector<T>::shrink_to_fit()
     {
         if constexpr (std::is_trivial_v<T>)
         {
-            m_data = reinterpret_cast<T*>(std::realloc(m_data, sizeof(T) * m_size));
+            m_data = static_cast<T*>(realloc(m_data, sizeof(T) * m_size));
             assert(m_data != nullptr && "Reallocation failed");
         }
         else
         {
-            T* new_data_location = reinterpret_cast<T*>(std::malloc(sizeof(T) * m_size));
+            T* new_data_location = static_cast<T*>(malloc(sizeof(T) * m_size));
             assert(new_data_location != nullptr && "Allocation failed");
 
             copy_range(begin(), end(), new_data_location);
             destruct_range(begin(), end());
 
-            std::free(m_data);
+            free(m_data);
 
             m_data = new_data_location;
         }
@@ -416,7 +423,7 @@ template <class T>
 template <class... Args>
 void fast_vector<T>::emplace_back(Args&&... args)
 {
-    static_assert(!std::is_trivial_v<T>, "Use push_back() instead of emplace_back() with trivial types");
+    //    static_assert(!std::is_trivial_v<T>, "Use push_back() instead of emplace_back() with trivial types");
 
     if (m_size == m_capacity)
     {
@@ -442,7 +449,7 @@ void fast_vector<T>::insert(T* pos, T&& object)
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
-        std::memmove(m_data + index + 1, m_data + index, (m_size - index) * sizeof(T));
+        memmove(m_data + index + 1, m_data + index, (m_size - index) * sizeof(T));
         m_data[index] = std::move(object);
     }
     else
@@ -471,7 +478,7 @@ void fast_vector<T>::insert(T* pos, const T& object)
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
-        std::memmove(m_data + index + 1, m_data + index, (m_size - index) * sizeof(T));
+        memmove(m_data + index + 1, m_data + index, (m_size - index) * sizeof(T));
         m_data[index] = object;
     }
     else
@@ -497,7 +504,7 @@ void fast_vector<T>::erase(const T& val)
             --m_size;
             if constexpr (std::is_trivially_copyable_v<T>)
             {
-                std::memmove(m_data + i, m_data + i + 1, (m_size - i) * sizeof(T));
+                memmove(m_data + i, m_data + i + 1, (m_size - i) * sizeof(T));
             }
             else
             {
@@ -521,7 +528,7 @@ T* fast_vector<T>::erase(T* pos)
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
-        std::memmove(pos, pos + 1, (m_data + m_size - pos - 1) * sizeof(T));
+        memmove(pos, pos + 1, (m_data + m_size - pos - 1) * sizeof(T));
     }
     else
     {
@@ -554,7 +561,7 @@ auto fast_vector<T>::erase(T* start, T* end) -> T*
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
-        std::memmove(start, end, (m_data + m_size - end) * sizeof(T));
+        memmove(start, end, (m_data + m_size - end) * sizeof(T));
     }
     else
     {
@@ -597,6 +604,30 @@ void fast_vector<T>::erase_unordered(const T& val)
 }
 
 template <class T>
+void fast_vector<T>::erase_unordered(T* pos)
+{
+    const size_type idx = pos - m_data;
+    assert(idx < m_size && "Iterator out of bounds");
+
+    --m_size;
+
+    if constexpr (std::is_trivially_copyable_v<T>)
+    {
+        m_data[idx] = m_data[m_size];
+    }
+    else
+    {
+        m_data[idx] = std::move(m_data[m_size]);
+    }
+
+    if constexpr (!std::is_trivially_destructible_v<T>)
+    {
+        m_data[m_size].~T();
+    }
+}
+
+
+template <class T>
 void fast_vector<T>::pop_back()
 {
     assert(m_size > 0 && "Container is empty");
@@ -610,7 +641,7 @@ void fast_vector<T>::pop_back()
 }
 
 template <class T>
-void fast_vector<T>::resize(size_type count)
+void fast_vector<T>::resize(const size_type count)
 {
     if (count > m_capacity)
     {
@@ -634,6 +665,42 @@ void fast_vector<T>::resize(size_type count)
             }
         }
     }
+    m_size = count;
+}
+
+template <class T>
+void fast_vector<T>::resize(const size_type count, const T& val)
+{
+    if (count > m_capacity)
+    {
+        reserve(count);
+    }
+
+    if (count > m_size) [[likely]]
+    {
+        if constexpr (std::is_trivially_constructible_v<T>)
+        {
+            for (size_type i = m_size; i < count; ++i)
+            {
+                m_data[i] = val;
+            }
+        }
+        else
+        {
+            for (size_type i = m_size; i < count; ++i)
+            {
+                new (m_data + i) T(val);
+            }
+        }
+    }
+    else
+    {
+        for (size_type i = count; i < m_size; ++i)
+        {
+            m_data[i].~T();
+        }
+    }
+
     m_size = count;
 }
 #endif //FAST_VECTOR_H

@@ -19,6 +19,12 @@ enum EntityID : uint16_t
     STATIC_CAMERA, // In this example the camera is static and not attached to a entity
 };
 
+enum GameState
+{
+    GAME,
+    GAME_OVER,
+};
+
 enum class MapID : uint8_t
 {
     LEVEL_1
@@ -42,7 +48,7 @@ struct Asteroids final : magique::Game
     void updateGame(entt::registry& registry) override;
     void drawWorld(Camera2D& camera) override;
     void drawGame(entt::registry& registry, Camera2D& camera) override;
-    void drawUI(magique::UIRoot&) override;
+    void drawUI() override;
 };
 
 struct PlayerScript final : magique::EntityScript
@@ -70,6 +76,7 @@ struct PlayerBarUI final : magique::UIObject
     void draw() override;
     void update() override;
 };
+
 
 
 

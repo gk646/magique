@@ -1,5 +1,3 @@
-#include <vector>
-
 #include <magique/gamedev/CommandLine.h>
 
 #include "internal/globals/CommandLineData.h"
@@ -11,7 +9,7 @@ namespace magique
         auto& cmd = global::COMMAND_LINE;
         for (auto& info : cmd.commands)
         {
-            if (info.name == name)
+            if (strcmp(info.name.c_str(), name.c_str()) == 0)
             {
                 info.name = name;
                 info.description = description;
@@ -24,7 +22,15 @@ namespace magique
 
     void UnRegisterCommand(const std::string& name)
     {
-        std::erase_if(global::COMMAND_LINE.commands, [&](const CommandInfo& info) { return info.name == name; });
+        auto& cmds = global::COMMAND_LINE.commands;
+        for (auto it = cmds.begin(); it != cmds.end();)
+        {
+            if (strcmp(it->name.c_str(), name.c_str()) == 0)
+            {
+                cmds.erase_unordered(it);
+                return;
+            }
+        }
     }
 
     void SetCommandLineKey(const int key) { global::COMMAND_LINE.openKey = key; }

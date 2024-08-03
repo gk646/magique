@@ -1,10 +1,14 @@
+#include <functional>
+
 #include <magique/gamedev/Achievements.h>
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
 
+#include "internal/datastructures/VectorType.h"
+
 namespace magique
 {
-    std::vector<Achievement> ACHIEVEMENTS;
+    vector<Achievement> ACHIEVEMENTS;
     AchievementCallback CALL_BACK = nullptr;
 
     Achievement* GetAchievement(const std::string& name)
@@ -46,7 +50,7 @@ namespace magique
         return true;
     }
 
-    void SetAchievementCallback(AchievementCallback callback) { CALL_BACK = callback; }
+    void SetAchievementCallback(const AchievementCallback callback) { CALL_BACK = callback; }
 
     void CheckAchievements()
     {
@@ -69,7 +73,7 @@ namespace magique
         return {nullptr, 0};
     }
 
-    bool LoadAchievements(const unsigned char* data, int size)
+    bool LoadAchievements(const unsigned char* data, const int size)
     {
         if (data == nullptr || size == 0)
         {

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <raylib/raylib.h>
 
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/container/AssetContainer.h>
@@ -7,8 +8,6 @@
 #include <magique/assets/types/Playlist.h>
 #include <magique/internal/Macros.h>
 #include <magique/core/Types.h>
-
-#include <raylib/raylib.h>
 
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AssetManager.h"
@@ -79,7 +78,7 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, AtlasID at, float scale)
+    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, const AtlasID at,const float scale)
     {
         Image image;
         if (!ImageCheck(image, *assets[0], at))
@@ -184,7 +183,7 @@ namespace magique
 
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
 
-    handle RegisterTileSheet(const Asset& asset, int size, float scale)
+    handle RegisterTileSheet(const Asset& asset,const int size,const float scale)
     {
         const auto sheet = TileSheet(asset, size, scale);
 

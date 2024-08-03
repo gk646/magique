@@ -1,10 +1,9 @@
 #ifndef MAGIQUE_TASKEXECUTOR_H_
 #define MAGIQUE_TASKEXECUTOR_H_
 
-#include <thread>
-#include <map>
-#include <vector>
 #include <functional>
+#include <vector>
+#include <atomic>
 
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
@@ -41,22 +40,40 @@ namespace magique
     template <typename T>
     struct TaskExecutor : ExecutorI
     {
+
         ~TaskExecutor() override
         {
-            for (auto& loadLevel : cpuTasks)
+            for (auto& vec : cpuTasks)
             {
-                for (auto task : loadLevel.second)
+                for (auto task : vec)
                     delete task;
             }
-            for (auto& loadLevel : gpuTasks)
+            for (auto& vec : gpuTasks)
             {
-                for (auto task : loadLevel.second)
+                for (auto task : vec)
                     delete task;
             }
         }
         float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
+        void printStats() const
+        {
+            LOG_INFO("Registered %d tasks with a load pensum of: %d", getTotalTasks(), totalImpact);
+        }
+        int getTotalTasks() const
+        {
+            int tasks = 0;
+            for (const auto& vec : gpuTasks)
+            {
+                tasks += vec.size();
+            }
+            for (const auto& vec : cpuTasks)
+            {
+                tasks += vec.size();
+            }
+            return tasks;
+        }
         bool stepLoop(T& res)
         {
             if (currentLevel == -1)
@@ -64,7 +81,7 @@ namespace magique
                 return true;
             }
 
-            if (currentLevel == INSTANT && gpuTasks.contains(currentLevel))
+            if (currentLevel == INSTANT && !gpuTasks[currentLevel].empty())
             {
                 loadTasks(gpuTasks[currentLevel], res);
             }
@@ -128,8 +145,8 @@ namespace magique
         {
             addTask(new LambdaTask{func}, pl, d, impact);
         }
-        std::map<PriorityLevel, std::vector<TaskI<T>*>> cpuTasks;
-        std::map<PriorityLevel, std::vector<TaskI<T>*>> gpuTasks;
+        std::vector<TaskI<T>*> cpuTasks[INSTANT + 1]{};
+        std::vector<TaskI<T>*> gpuTasks[INSTANT + 1]{};
         int totalImpact = 0;
         std::atomic<int> loadedImpact = 0;
         PriorityLevel currentLevel = INSTANT;

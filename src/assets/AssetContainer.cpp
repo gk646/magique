@@ -1,10 +1,11 @@
 #include <algorithm>
+#include <functional>
+#include <cxutil/cxstring.h>
+#include <raylib/raylib.h>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-#include <raylib/raylib.h>
-#include <cxutil/cxstring.h>
 
 struct Sorter
 {
@@ -197,13 +198,13 @@ namespace magique
         {
             LOG_WARNING("Trying to load with image into a non-empty container");
             // This isnt necessarily bad - but is probably a mistake
-            delete[] nativeData;
+            delete[] this->nativeData;
             assets.clear();
         }
 
         assets = std::move(newAssets);
 
-        // This sorts all entries after directory and then insdie a directory after numbering
+        // This sorts all entries after directory and then inside a directory after numbering
         std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
     }
 
@@ -219,10 +220,7 @@ namespace magique
         return *this;
     }
 
-    AssetContainer::~AssetContainer()
-    {
-        delete[] nativeData;
-    }
+    AssetContainer::~AssetContainer() { delete[] nativeData; }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
@@ -281,10 +279,7 @@ namespace magique
         return Asset();
     }
 
-    int AssetContainer::getSize() const
-    {
-        return static_cast<int>(assets.size());
-    }
+    int AssetContainer::getSize() const { return static_cast<int>(assets.size()); }
 
 
 } // namespace magique

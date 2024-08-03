@@ -6,8 +6,12 @@
 
 #include "internal/datastructures/fast_vector.h"
 
-template <typename T>
-using vector = fast_vector<T>;
+namespace magique
+{
+    template <typename T>
+    using vector = fast_vector<T>;
+
+}
 
 
 #endif //MAGIQUE_VECTORTYPE_H

@@ -21,7 +21,6 @@
 #ifndef CXSTRUCTS_SRC_CXSTRUCTS_BITFLAG_H_
 #define CXSTRUCTS_SRC_CXSTRUCTS_BITFLAG_H_
 
-#include "../cxconfig.h"
 #include <initializer_list>
 
 namespace cxstructs {

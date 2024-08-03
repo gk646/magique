@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_ECS_H
 #define MAGIQUE_ECS_H
 
-#include <functional>
 #include <magique/ecs/Components.h>
 #include <entt/entity/registry.hpp>
 
@@ -21,7 +20,7 @@ namespace magique
 
     //-------------- REGISTER --------------//
 
-    using CreateFunc = std::function<void(entt::registry&, entt::entity)>;
+    using CreateFunc = std::function<void(entt::entity)>;
     // Registers an entity with a corresponding create function - replaces the existing function if present
     // Failure: Returns false
     bool RegisterEntity(EntityID type, const CreateFunc& createFunc);

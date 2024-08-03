@@ -11,9 +11,12 @@
 #include <magique/core/Particles.h>
 #include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
-#include <magique/persistence/container/GameSave.h>
+#include <magique/ui/types/UIRoot.h>
+#include <magique/ui/UI.h>
+#include <magique/ui/controls/Button.h>
 
 inline magique::ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
+inline GameState GAME_STATE = GameState::GAME;
 
 void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 {
@@ -32,40 +35,38 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
     SetTargetFPS(120);
 
     // Load the sounds on a background thread
-    al.registerTask(
-        [](magique::AssetContainer& assets)
-        {
-            // Iterate the sfx directory for the sounds
-            assets.iterateDirectory("SFX",
-                                    [](const magique::Asset& asset)
-                                    {
-                                        // Register the sound with the asset manager
-                                        auto handle = RegisterSound(asset);
-                                        // Register the handle to the sound with its direct filename - without extension
-                                        RegisterHandle(handle, asset.getFileName(false));
-                                    });
+    auto loadSound = [](magique::AssetContainer& assets)
+    {
+        // Iterate the sfx directory for the sounds
+        assets.iterateDirectory("SFX",
+                                [](const magique::Asset& asset)
+                                {
+                                    // Register the sound with the asset manager
+                                    auto handle = RegisterSound(asset);
+                                    // Register the handle to the sound with its direct filename - without extension
+                                    RegisterHandle(handle, asset.getFileName(false));
+                                });
 
-            auto& asset = assets.getAsset("Automatav2.mp3");
-            // Create a playlist so it automatically loops
-            auto* background = new magique::Playlist{magique::GetMusic(magique::RegisterMusic(asset))};
-            magique::PlayPlaylist(background, 0.6F); // Start playlist
-        },
-        magique::BACKGROUND_THREAD, magique::MEDIUM, 8);
+        auto& asset = assets.getAsset("Automatav2.mp3");
+        // Create a playlist so it automatically loops
+        auto* background = new magique::Playlist{magique::GetMusic(magique::RegisterMusic(asset))};
+        magique::PlayPlaylist(background, 0.6F); // Start playlist
+    };
+    al.registerTask(loadSound, magique::BACKGROUND_THREAD);
 
     // Load the texture on the main thread as they require gpu acess
-    al.registerTask(
-        [](magique::AssetContainer& assets)
-        {
-            // Iterate the sprites directory for the textures
-            assets.iterateDirectory("SPRITES",
-                                    [](const magique::Asset& asset)
-                                    {
-                                        magique::handle handle = RegisterTexture(asset, magique::DEFAULT, 3);
-                                        // Register the handle to the texture with its filename - without extension
-                                        RegisterHandle(handle, asset.getFileName(false));
-                                    });
-        },
-        magique::MAIN_THREAD, magique::MEDIUM, 2);
+    auto loadTextures = [](magique::AssetContainer& assets)
+    {
+        // Iterate the sprites directory for the textures
+        assets.iterateDirectory("SPRITES",
+                                [](const magique::Asset& asset)
+                                {
+                                    magique::handle handle = RegisterTexture(asset, magique::DEFAULT, 3);
+                                    // Register the handle to the texture with its filename - without extension
+                                    RegisterHandle(handle, asset.getFileName(false));
+                                });
+    };
+    al.registerTask(loadTextures, magique::MAIN_THREAD);
 
     // Set the entity scripts
     SetScript(PLAYER, new PlayerScript());
@@ -74,7 +75,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 
     // Register the player entity
     magique::RegisterEntity(EntityID::PLAYER,
-                            [](entt::registry& registry, entt::entity entity)
+                            [](entt::entity entity)
                             {
                                 magique::GiveActor(entity);
                                 magique::GiveScript(entity);
@@ -85,7 +86,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 
     // Register the bullet entity
     magique::RegisterEntity(EntityID::BULLET,
-                            [](entt::registry& registry, entt::entity entity)
+                            [](entt::entity entity)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
                                 // Texture dimensions scaled with 3 - and rotate around the middle
@@ -94,7 +95,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 
     // Register the house entity
     magique::RegisterEntity(EntityID::HOUSE,
-                            [](entt::registry& registry, entt::entity entity)
+                            [](entt::entity entity)
                             {
                                 // Texture dimensions scaled with 3 - and rotate around the middle
                                 magique::GiveCollisionRect(entity, 45, 45, 22, 22);
@@ -102,7 +103,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 
     // Register the rock entity
     magique::RegisterEntity(EntityID::ROCK,
-                            [](entt::registry& registry, entt::entity entity)
+                            [](entt::entity entity)
                             {
                                 magique::GiveScript(entity); // Make it scriptable
                                 // Texture dimensions scaled with 3 - and rotate around the middle
@@ -110,8 +111,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                             });
 
     // Register the invisible static camera
-    magique::RegisterEntity(EntityID::STATIC_CAMERA,
-                            [](entt::registry& registry, entt::entity entity) { magique::GiveCamera(entity); });
+    magique::RegisterEntity(EntityID::STATIC_CAMERA, [](entt::entity entity) { magique::GiveCamera(entity); });
 
     // Create a player
     magique::CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
@@ -126,11 +126,13 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
         magique::CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
 
-    // Configure emitter
+    // Configure emitter - make particles white - spread all around and different lifetime, scale and start velocity
     ROCK_PARTICLES.setColor(WHITE).setLifetime(35, 50).setSpread(360);
     ROCK_PARTICLES.setStartVelocity(2, 3.5).setScale(0.75, 1.5F);
-}
 
+    // Register the ui for the different game states
+    magique::GetStateUIRoot(GAME).addObject("PlayerBar", new PlayerBarUI());
+}
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
@@ -181,9 +183,16 @@ void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
     }
 }
 
-void Asteroids::drawUI(magique::UIRoot& root)
+void Asteroids::drawUI()
 {
+   switch (GAME_STATE)
+    {
+    case GAME:
 
+        break;
+    case GAME_OVER:
+        break;
+    }
 }
 
 // Scripting
@@ -225,10 +234,7 @@ void BulletScript::onTick(entt::registry& registry, entt::entity self)
     pos.y -= 8; // Bullets only fly straight up
 }
 
-void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self)
-{
-    magique::DestroyEntity(self);
-}
+void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self) { magique::DestroyEntity(self); }
 
 void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
 {

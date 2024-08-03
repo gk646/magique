@@ -1,11 +1,9 @@
 #ifndef PERFDATA_H
 #define PERFDATA_H
 
-#include <numeric>
-#include <vector>
-
 #include <magique/util/Defines.h>
 #include "ui/internal/PerformanceDisplay.h"
+#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
@@ -21,8 +19,8 @@ namespace magique
         uint32_t drawTickTime = 0;
         PerformanceDisplay perfOverlay;
 #ifdef MAGIQUE_DEBUG_PROFILE
-        std::vector<uint32_t> logicTimes;
-        std::vector<uint32_t> drawTimes;
+        vector<uint32_t> logicTimes;
+        vector<uint32_t> drawTimes;
 #endif
 
         PerfData()
@@ -56,7 +54,7 @@ namespace magique
 #ifdef MAGIQUE_DEBUG_PROFILE
         [[nodiscard]] float getAverageTime(const TickType t)
         {
-            std::vector<uint32_t>* times;
+            vector<uint32_t>* times;
             if (t == UPDATE)
             {
                 times = &logicTimes;
@@ -76,8 +74,12 @@ namespace magique
             }
             times->pop_back();
 
-            const uint64_t sum = std::accumulate(times->begin(), times->end(), static_cast<uint64_t>(0));
-            return static_cast<float>(sum) / times->size();
+            uint64_t sum = 0;
+            for (const auto num : *times)
+            {
+                sum += num;
+            }
+            return static_cast<float>(sum) / static_cast<float>(times->size());
         }
 #endif
     };

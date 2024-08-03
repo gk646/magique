@@ -1,4 +1,3 @@
-#include <functional>
 #include <raylib/raylib.h>
 
 #include <magique/core/Particles.h>

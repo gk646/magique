@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_H
 #define MAGIQUE_H
 
-// A single include header
+// The single include header
 
 // Assets
 #include "assets/AssetPacker.h"
@@ -27,6 +27,6 @@
 
 // UI
 #include "ui/UI.h"
-#include "ui/Text.h"
+#include "ui/types/UIRoot.h"
 
 #endif // MAGIQUE_H

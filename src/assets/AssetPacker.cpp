@@ -1,12 +1,12 @@
-#include <fstream>
 #include <filesystem>
-
 #include <cxutil/cxtime.h>
 
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
+
+#include "internal/datastructures/VectorType.h"
 
 namespace fs = std::filesystem;
 
@@ -21,7 +21,7 @@ void SymmetricEncrypt(char* data, const uint32_t size, const uint64_t key)
     }
 }
 
-void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
+void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
 {
     for (const auto& entry : fs::directory_iterator(directory))
     {
@@ -36,7 +36,7 @@ void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
     }
 }
 
-bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
+bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
 {
     fs::path dirPath(directory);
     std::error_code ec;
@@ -197,8 +197,8 @@ namespace magique
         return false;
     }
 
-    void WriteImage(const uint64_t encryptionKey, const std::vector<fs::path>& pathList, int& writtenSize,
-                    const fs::path& rootPath, FILE* imageFile, std::vector<char> data)
+    void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
+                    const fs::path& rootPath, FILE* imageFile, vector<char> data)
     {
         std::string relativePathStr;
         for (auto& entry : pathList)
@@ -255,7 +255,7 @@ namespace magique
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey, const bool compress)
     {
         cxstructs::now();
-        std::vector<fs::path> pathList;
+        vector<fs::path> pathList;
         pathList.reserve(100);
 
         // Create the list of file paths
@@ -292,7 +292,7 @@ namespace magique
         writtenSize += strlen(IMAGE_HEADER) + 4 + 4;
 
         // Temp data from files
-        std::vector<char> data;
+        vector<char> data;
         data.reserve(10000);
 
         // Write the image data

@@ -1,8 +1,8 @@
 #ifndef MAGIQUE_COMMANDLINE_H
 #define MAGIQUE_COMMANDLINE_H
 
-#include <functional>
 #include <string>
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // CommandLine Module

@@ -1,10 +1,6 @@
 #ifndef MULTIRESOLUTIONGRID_H
 #define MULTIRESOLUTIONGRID_H
 
-#include <cassert>
-#include <vector>
-#include <magique/internal/DataStructures.h>
-
 // This is a cache friendly "top-level" data structure
 // https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
 // Originally inspired by the above post to just move all the data of the structure to the top level
@@ -52,7 +48,7 @@ template <typename V, int blockSize = 16>
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int> cellMap{};
-    std::vector<DataBlock<V, blockSize>> dataBlocks{};
+    magique::vector<DataBlock<V, blockSize>> dataBlocks{};
     int cellSize;
 
     explicit SingleResolutionHashGrid(const int cellSize) : cellSize(cellSize) {}
@@ -123,7 +119,6 @@ struct SingleResolutionHashGrid final
             queryElements(cellID, elems);
         }
     }
-
 
     void clear()
     {

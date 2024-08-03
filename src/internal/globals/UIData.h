@@ -1,27 +1,29 @@
-#ifndef UIDATA_H
-#define UIDATA_H
+#ifndef MAGIQUE_UIDATA_H
+#define MAGIQUE_UIDATA_H
 
-#include <algorithm>
 #include <raylib/raylib.h>
 
 #include <magique/util/Defines.h>
 #include <magique/ui/types/UIRoot.h>
 
 #include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/HashTypes.h"
+#include "internal/datastructures/StringHashMap.h"
 #include "external/raylib/src/coredata.h"
 
 namespace magique
 {
     struct UIData final
     {
-        UIRoot uiRoot;
+        UIStateRoot uiRoot;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
         float mouseY = 0.0F;
-        uint64_t nextID = 1;
-        vector<UIObject*> sortedObjects; // Sorted after z-index
+        uint64_t nextID = 1;                // unique ids
+        vector<UIObject*> sortedObjects;    // Sorted after z-index
+        StringHashMap<UIObject*> objectMap; // Stores by name
+        UIObject* hoveredObject;            // Currently hovered object
+        CursorAttachment cursorAttachment;  // Current object attached to the cursor
 
         void update()
         {
@@ -43,14 +45,16 @@ namespace magique
 
         void registerObject(UIObject* object)
         {
-            if (sortedObjects.empty())
+            auto it = sortedObjects.begin();
+            const auto end = sortedObjects.end();
+            while (it != end)
             {
-                sortedObjects.push_back(object);
-                return;
+                if ((*it)->getZIndex() <= object->getZIndex())
+                {
+                    break;
+                }
+                ++it;
             }
-            const auto pred = [](const UIObject* ob1, const UIObject* ob2)
-            { return ob1->getZIndex() > ob2->getZIndex(); };
-            const auto it = std::ranges::lower_bound(sortedObjects, object, pred);
             sortedObjects.insert(it, object);
         }
 
