@@ -21,17 +21,17 @@ namespace magique
     int StringDistance(const char* s1, const char* s2, bool caseSensitive = false);
     int StringDistance(const std::string& s1, const std::string& s2, bool caseSensitive = false);
 
-    // Returns the similarity (0.0 - 1.0) of the two strings based on alphabetical distance
-    // This is very useful for finding the best matching entry to a user input (list of items, spells...)
-    // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
-    float StringSimilarity(const char* s1, const char* s2, bool caseSensitive = false);
-    float StringSimilarity(const std::string& s1, const std::string& s2, bool caseSensitive = false);
-
     // Returns the similarity (0.0 - 1.0) of the two strings based on their distance on the keyboard
     // This is useful for user input as it handles common mistakes better - not case sensitive per design
     // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
     float StringDistancePhysical(const char* s1, const char* s2, KeyLayout layout = KeyLayout::QWERTY);
     float StringDistancePhysical(const std::string& s1, const std::string& s2, KeyLayout layout = KeyLayout::QWERTY);
+
+    // Returns the similarity (0.0 - 1.0) of the two strings based on alphabetical distance
+    // This is very useful for finding the best matching entry to a user input (list of items, spells...)
+    // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
+    float StringSimilarity(const char* s1, const char* s2, bool caseSensitive = false);
+    float StringSimilarity(const std::string& s1, const std::string& s2, bool caseSensitive = false);
 
     //----------------- OPERATIONS -----------------//
 
@@ -57,6 +57,12 @@ namespace magique
 
     // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
     const char* GetTimeString(int seconds);
+
+    //----------------- HASHING -----------------//
+
+    // Uses fnav32 to hash the string
+    uint32_t HashString(char const* s, const int salt) noexcept;
+
 
 } // namespace magique
 

@@ -2,10 +2,9 @@
 #define MAGIQUE_ASSETREGISTRY_H
 
 #include <magique/fwd.hpp>
-#include <magique/internal/Hash.h>
 
 //-----------------------------------------------
-// Handle Registry (optional)
+// Handle Registry
 //-----------------------------------------------
 // ................................................................................
 // This module helps organizing, storing and retrieving handles
@@ -38,7 +37,7 @@ namespace magique
 
     // Retrieves a handle based on string hashing
     // IMPORTANT: You have to use this macro to get compile time hashing - sadly you can pass constexpr strings
-#define H(msg) magique::HashStringEval(msg, magique::HASH_SALT)
+#define H(msg) magique::internal::HashStringEval(msg, magique::HASH_SALT)
     // Example: GetHandle(H("player"));
     handle GetHandle(uint32_t hash);
 
@@ -47,5 +46,24 @@ namespace magique
 
 } // namespace magique
 
+
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique::interal
+{
+    // Compile time string hashing function
+    // Takes an optional salt parameter (arbitrary defined value) to make it customizable in terms of collision handling
+    consteval uint32_t HashStringEval(char const* s, const int salt) noexcept
+    {
+        uint32_t hash = 2166136261U + salt;
+        while (*s != 0)
+        {
+            hash ^= static_cast<uint32_t>(*s++);
+            hash *= 16777619U;
+        }
+        return hash;
+    }
+
+} // namespace magique::interal
 
 #endif //MAGIQUE_ASSETREGISTRY_H

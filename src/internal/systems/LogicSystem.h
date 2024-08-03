@@ -80,13 +80,18 @@ namespace magique
         case Shape::CIRCLE:
             return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
         case Shape::CAPSULE:
-            if (pos.rotation == 0) [[likely]]
             {
-                // Top left and height as height / diameter as w
-                return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2, col.p2);
+                if (pos.rotation == 0) [[likely]]
+                {
+                    // Top left and height as height / diameter as w
+                    return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2, col.p2);
+                }
+                float pxs[4] = {0, col.p1 * 2.0F, col.p1 * 2.0F, 0}; // radius * 2 = width / height = height
+                float pys[4] = {0, 0, col.p2, col.p2};
+                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
+                const auto bb = GetBBQuadrilateral(pxs, pys);
+                return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
             }
-            LOG_FATAL("Method not implemented");
-            break;
         case Shape::TRIANGLE:
             {
                 if (pos.rotation == 0)

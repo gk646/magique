@@ -3,20 +3,19 @@
 
 #include <raylib/rlgl.h>
 
-#include <magique/util/Logging.h>
 #include <magique/core/Particles.h>
 
-#include "external/fast_vector/fast_vector.h"
 #include "external/raylib/src/coredata.h"
+#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
     // Data driven
     struct ParticleData final
     {
-        fast_vector<ScreenParticle> rectangles;
-        fast_vector<ScreenParticle> circles;
-        fast_vector<ScreenParticle> triangles;
+        vector<ScreenParticle> rectangles;
+        vector<ScreenParticle> circles;
+        vector<ScreenParticle> triangles;
 
         void addParticle(const ScreenParticle& sp)
         {
@@ -69,7 +68,8 @@ namespace magique
 
             for (const auto& p : circles)
             {
-                LOG_FATAL("Method not implemented");
+                assert(false, "Method not implemente");
+                //LOG_FATAL("Method not implemented");
             }
 
             rlEnd();
@@ -78,7 +78,7 @@ namespace magique
 
         void update()
         {
-            const auto updateVec = [](fast_vector<ScreenParticle>& vec)
+            const auto updateVec = [](vector<ScreenParticle>& vec)
             {
                 for (int i = 0; i < vec.size(); ++i)
                 {

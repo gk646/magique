@@ -1,16 +1,16 @@
 #ifndef HANDLEREGISTRY_H
 #define HANDLEREGISTRY_H
 
-#include <vector>
-
-#include <magique/internal/DataStructures.h>
 #include <magique/util/Defines.h>
+
+#include "internal/datastructures/VectorType.h"
+#include "internal/datastructures/HashTypes.h"
 
 namespace magique
 {
     struct HandleRegistry final
     {
-        std::vector<handle> handles;
+        vector<handle> handles;
         HashMap<uint32_t, handle> handleMap{100};
         uint16_t fastHandles[MAGIQUE_DIRECT_HANDLES]{};
 
@@ -19,7 +19,6 @@ namespace magique
             // Intitialize to null handles for 16 bit
             memset(fastHandles, UINT16_MAX, MAGIQUE_DIRECT_HANDLES * sizeof(uint16_t));
             handles.resize(100);
-            handleMap.reserve(50);
         }
     };
 

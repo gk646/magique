@@ -2,15 +2,7 @@ Pathfinding -> with dimensions and strategy API
 
 AI -> actual AI
 
-implement saving game save and data table
-
-implement particle API
-
-implement inserting rotated and other shapes into hashgrid
-
 implement gameconfig loading and saving
-
-implement optional compression for asset image when exporting and importing
 
 implement localization
 
