@@ -14,7 +14,6 @@ namespace magique
         global::HANDLE_REGISTRY.fastHandles[id] = static_cast<uint16_t>(handle);
     }
 
-
     void RegisterHandle(const handle handle, const HandleID id)
     {
         auto& registry = global::HANDLE_REGISTRY;
@@ -37,7 +36,7 @@ namespace magique
 
     void RegisterHandle(handle handle, const char* name)
     {
-        auto hash = HashString(name, HASH_SALT);
+        auto hash = internal::HashString(name, HASH_SALT);
         M_ASSERT(!global::HANDLE_REGISTRY.handleMap.contains(hash),
                  "Collision! You either registered a handle twice (with the same name) or suffered an unlucky hash "
                  "collision. Change the HASH_SALT parameter until no collisions occur!");

@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <raylib/raylib.h>
 
 #include "PerformanceDisplay.h"

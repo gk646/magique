@@ -5,9 +5,10 @@
 #include <cxstructs/BitMask.h>
 
 #include <magique/fwd.hpp>
-#include <magique/internal/DataStructures.h>
 #include <magique/util/Defines.h>
 
+#include "internal/datastructures/VectorType.h"
+#include "internal/datastructures/HashTypes.h"
 #include "internal/datastructures/MultiResolutionGrid.h"
 
 namespace magique
@@ -41,9 +42,9 @@ namespace magique
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
         EntityFlagMap changedSet{500};                       // Change set for multiplayer events
         EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
-        std::vector<entt::entity> entityUpdateVec;                // vector containing the entites to update for this tick
+        std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
         vector<entt::entity> collisionVec{};                 // vector containing the entites to check for collision
-        std::vector<entt::entity> drawVec;                        // vector containing all entites to be drawn this tick
+        std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
         CollPairCollector collisionPairs{};                  // Collision pair collectors
         HashSet<uint64_t> pairSet{};                         // Filters unique collision pairs
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads

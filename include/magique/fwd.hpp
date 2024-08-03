@@ -63,7 +63,7 @@ namespace magique
     struct Achievement;
 
     //----------------- UI -----------------//
-    struct UIRoot;
+    struct UIStateRoot;
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
@@ -97,5 +97,14 @@ struct Texture;
 struct Sound;
 struct Music;
 struct Rectangle;
+
+//----------------- STD -----------------//
+
+namespace std
+{
+    template <class>
+    class function;
+} // namespace std
+
 
 #endif

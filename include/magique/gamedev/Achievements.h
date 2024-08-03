@@ -2,7 +2,6 @@
 #define MAGIQUE_ACHIEVEMENTS_H
 
 #include <string>
-#include <functional>
 #include <magique/fwd.hpp>
 
 //-----------------------------------------------
@@ -10,6 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // This helps to create dynamic and flexible achievements that are automatically managed
+
 
 namespace magique
 {

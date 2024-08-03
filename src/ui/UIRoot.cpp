@@ -3,7 +3,7 @@
 
 namespace magique
 {
-    UIRoot::UIRoot() noexcept : UIContainer(0, 0, 1280, 960) // Default resolution
+    UIStateRoot::UIStateRoot() noexcept : UIContainer(0, 0, 1280, 960) // Default resolution
     {
 
     }

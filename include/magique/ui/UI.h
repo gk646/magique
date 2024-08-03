@@ -11,13 +11,26 @@
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
 // To fit all screen rations (16:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
-// This makes it easy to follow designs or reason about distances while the engine handles scaling automatically,
+// This makes it easy to follow designs or reason about distances while the engine handles scaling automatically.
+//
+// States: Additionally, the UI is divided into custom states (most likely game states like MAIN_MENU, GAME_OVER...)
+// StateRoots will automatically be created when you first need them!
+//       MAIN_MENU
+//           |
+//        StateRoot
+//           |
+//         / | \
+//  UIObject or UIContainer
+//
+//
 // .....................................................................
-
 namespace magique
 {
-    // Returns a reference to the global ui-root
-    UIRoot& GetUIRoot();
+
+    //----------------- GETTERS -----------------//
+
+    // Returns a reference to the root for the given state (automatically created when called first)
+    UIStateRoot& GetStateUIRoot(int uiState);
 
     //----------------- UTIL -----------------//
 
@@ -34,10 +47,10 @@ namespace magique
     // Passing width and height aligns the coordinates to fit them and inset applies a inset for the border points inwards
     Point GetUIAnchor(AnchorPosition anchor, float width = 0, float height = 0, float inset = 0);
 
-    // Accepts a value in the logical resolution and returns the value in the current ui scale (horizontal)
+    // Accepts a value in the logical resolution and returns the value in the current resolution (scaled horizontally)
     float GetScaled(float val);
 
-    // Returns the current scale factor for x and y dimensions
+    // Returns the current scale horizontal and vertical scaling
     Point GetUIScaling();
 
 } // namespace magique

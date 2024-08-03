@@ -1,38 +1,59 @@
 #ifndef MAGIQUE_UIROOT_H_
 #define MAGIQUE_UIROOT_H_
 
-#include <memory>
-#include <optional>
 #include <magique/core/Types.h>
 #include <magique/ui/types/UIContainer.h>
 
 //-----------------------------------------------
-// UI Root
+// UIStateRoot
 //-----------------------------------------------
 // .....................................................................
-// The UI module in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
-// offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
-// To fit all screen rations (16:9, 4:3) you can use anchor points.
+// This class is the root of all ui-elements for a given state. States are basically scenes in other engines.
+// This helps to split up logic
 // .....................................................................
 
 namespace magique
 {
-    struct UIRoot final : UIContainer
+    struct UIStateRoot final
     {
-        // Currently hovered object
-        std::optional<UIObject*> hoveredObject;
+        //----------------- ACCESS -----------------//
 
-        // Current object attached to the cursor
-        std::optional<std::shared_ptr<CursorAttachment>> cursorAttachment;
+        // Adds a new ui element to the root - elements within the same layer are drawn in the order they are added
+        // Takes owner ship of the pointer - dont save or access it after passing it to this method - use new MyClass()
+        // Note: name is copied and only has to be valid until this method returns
+        void addObject(const char* name, UIObject* object, UILayer layer = UILayer::MEDIUM);
 
-        // Returns true if the mouse is not hovered over any UI element
-        [[nodiscard]] bool hasMouse() const { return _hasMouse; }
+        // Returns a pointer to the ui-object with the given name - optionally pass a specific type
+        // Failure: returns nullptr if the given element does not exist!
+        template <typename T = UIObject>
+        T* getObject(const char* name) const;
+
+        // Removes and deletes the uiobject with the given name
+        // Failure: returns false if the element wasnt found
+        bool removeObject(const char* name) const;
+
+        //----------------- DRAW -----------------//
+
+        // Calls the draw method on all elements in the correct order
+        void draw();
 
     private:
-        UIRoot() noexcept;
-        bool _hasMouse = false; // If the mouse is hovering any UI element
+        UIObject* getObjectImpl(const char* name) const;
+        int state = 0;
         friend struct UIData;
     };
+} // namespace magique
+
+
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique
+{
+    template <typename T>
+    T* UIStateRoot::getObject(const char* name) const
+    {
+        return static_cast<T>(getObjectImpl(name));
+    }
 
 } // namespace magique
 #endif //MAGIQUE_UIROOT_H_

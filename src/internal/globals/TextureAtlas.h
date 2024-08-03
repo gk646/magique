@@ -23,7 +23,7 @@ namespace magique
         int currentStepHeight = 0;                 // Highest height of a texture in current row
         void* imageData = nullptr;                 // Save memory by only saving data ptr
 
-        TextureRegion addTexture(const Image& image, int tarW, int tarH)
+        TextureRegion addTexture(const Image& image, const int tarW,const int tarH)
         {
             initialize();
             TextureRegion region = {0};
@@ -57,11 +57,11 @@ namespace magique
             if (!checkStep(totalWidth, tarH))
                 return sheet;
 
-            sheet.width = static_cast<uint16_t>(tarW);
-            sheet.height = static_cast<uint16_t>(tarH);
+            sheet.width = static_cast<int16_t>(tarW);
+            sheet.height = static_cast<int16_t>(tarH);
             sheet.offX = static_cast<uint16_t>(posX);
             sheet.offY = static_cast<uint16_t>(posY);
-            sheet.id = static_cast<uint16_t>(id);
+            sheet.id = id;
             sheet.frames = frames;
 
             Image atlasImage = getImg();

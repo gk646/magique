@@ -3,13 +3,15 @@
 
 #include <cstdint>
 
+#include "internal/datastructures/VectorType.h"
+
 namespace magique
 {
     template <typename... Resources>
     struct AssetManager final
     {
         // A tuple to hold the vectors
-        std::tuple<std::vector<Resources>...> resourceVectors;
+        std::tuple<vector<Resources>...> resourceVectors;
 
         template <typename T, typename Tuple>
         struct Index;

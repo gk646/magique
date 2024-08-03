@@ -9,7 +9,8 @@
 // Strings Module
 //-----------------------------------------------
 // .....................................................................
-// This module is supposed to extend raylibs. Check raylib for some more fundamental text options like number parsing etc.
+// This module allows for advanced and useful string operations in the context of games.
+// Check raylib for some more fundamental text options like number parsing etc.
 // .....................................................................
 
 namespace magique
@@ -61,7 +62,7 @@ namespace magique
     //----------------- HASHING -----------------//
 
     // Uses fnav32 to hash the string
-    uint32_t HashString(char const* s, const int salt) noexcept;
+    uint32_t HashString(char const* s) noexcept;
 
 
 } // namespace magique

@@ -7,7 +7,7 @@
 // Public Internal Module
 //-----------------------------------------------
 // .....................................................................
-// Dont modify these types or methods.
+// Internal but public simple types or methods. Dont modify them!.
 // They have to be public due to templates (or other reasons) and are used internally
 // .....................................................................
 

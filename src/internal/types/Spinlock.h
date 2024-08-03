@@ -1,8 +1,6 @@
 #ifndef SPINLOCK_H
 #define SPINLOCK_H
 
-#include <atomic>
-
 // Wrapper for a spinlock
   struct Spinlock final
   {

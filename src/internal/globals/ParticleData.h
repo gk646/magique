@@ -1,9 +1,11 @@
 #ifndef MAGIQUE_PARTICLEDATA_H
 #define MAGIQUE_PARTICLEDATA_H
 
+#include <functional>
 #include <raylib/rlgl.h>
 
 #include <magique/core/Particles.h>
+#include <magique/util/Logging.h>
 
 #include "external/raylib/src/coredata.h"
 #include "internal/datastructures/VectorType.h"
@@ -68,8 +70,7 @@ namespace magique
 
             for (const auto& p : circles)
             {
-                assert(false, "Method not implemente");
-                //LOG_FATAL("Method not implemented");
+                LOG_FATAL("Method not implemented");
             }
 
             rlEnd();

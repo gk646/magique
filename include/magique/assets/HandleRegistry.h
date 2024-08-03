@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_ASSETREGISTRY_H
-#define MAGIQUE_ASSETREGISTRY_H
+#ifndef MAGIQUE_HANDLE_REGISTRY_H
+#define MAGIQUE_HANDLE_REGISTRY_H
 
 #include <magique/fwd.hpp>
 
@@ -49,7 +49,7 @@ namespace magique
 
 //----------------- IMPLEMENTATION -----------------//
 
-namespace magique::interal
+namespace magique::internal
 {
     // Compile time string hashing function
     // Takes an optional salt parameter (arbitrary defined value) to make it customizable in terms of collision handling
@@ -64,6 +64,16 @@ namespace magique::interal
         return hash;
     }
 
+    constexpr uint32_t HashString(char const* s, const int salt) noexcept
+    {
+        uint32_t hash = 2166136261U + salt;
+        while (*s != 0)
+        {
+            hash ^= static_cast<uint32_t>(*s++);
+            hash *= 16777619U;
+        }
+        return hash;
+    }
 } // namespace magique::interal
 
-#endif //MAGIQUE_ASSETREGISTRY_H
+#endif //MAGIQUE_HANDLE_REGISTRY_H

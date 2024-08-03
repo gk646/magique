@@ -33,7 +33,7 @@ namespace magique
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
-    enum PriorityLevel
+    enum class PriorityLevel
     {
         LOW,
         MEDIUM,
@@ -156,6 +156,17 @@ namespace magique
         SMALL,
         MID,
         BIG
+    };
+
+    // The render order of ui elements from top to bottom (hight to low)
+    enum class UILayer
+    {
+        BACK_GROUND,
+        LOW,
+        MEDIUM,
+        HIGH,
+        ONTOP,
+        ROOT,
     };
 
     struct CursorAttachment final

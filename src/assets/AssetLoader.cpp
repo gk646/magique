@@ -9,11 +9,6 @@ namespace magique
         LoadAssetImage(assetPath, assets, encryptionKey);
     }
 
-    void AssetLoader::printStats() const
-    {
-        LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
-    }
-
     bool AssetLoader::step() { return stepLoop(assets); }
 
     template <typename Func>

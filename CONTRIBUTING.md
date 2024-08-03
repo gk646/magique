@@ -14,7 +14,7 @@ Three exceptions:
 
 The folders should follow a specific naming convention:
 
-- headers: Contains headers that help with the implementation of any of the source files
+- headers: Contains headers that help with the implementation of the source files
 
 Other than that choose a descriptive name based on their function.
 Existing ones: systems, globals, datastructures
@@ -24,7 +24,7 @@ Existing ones: systems, globals, datastructures
 The include order and style is the following:
 
 - 1: third-party or STL includes with `<..>`
-- 2: first party (./include/) includes includes with `<..>`
+- 2: first party (./include/) includes with `<..>`
 - 3: internal includes with `"..."`
 
 Always include from the root and specify the full include path. No relative includes. After every category one newline.
@@ -39,3 +39,10 @@ Example:
 #include "headers/Helper.h"
 #include "headers/Helper2.h"
 ```
+
+### Types
+
+Use fast_vector internally by including:
+`#include "internal/datastructures/VectorType.h"`
+
+It can be slightly faster, but compiles faster and less templates and more control

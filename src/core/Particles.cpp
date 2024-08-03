@@ -182,9 +182,9 @@ namespace magique
             max = min;
         }
 
-        if (max > min)
+        if ( min > max)
         {
-            LOG_ERROR("Skipping! Maximum value is bigger than minimal value! Min: %d | Max: %d", min, max);
+            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %d | Max: %d", min, max);
             return *this;
         }
         data.minLife = min;
@@ -210,7 +210,7 @@ namespace magique
         }
         if (minScale > maxScale)
         {
-            LOG_ERROR("Skipping! Maximum value is bigger than minimal value! Min: %.2f | Max: %.2f", minScale, maxScale);
+            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %.2f | Max: %.2f", minScale, maxScale);
             return *this;
         }
         data.minScale = minScale;
@@ -239,7 +239,7 @@ namespace magique
         }
         if (minVeloc > maxVeloc)
         {
-            LOG_ERROR("Skipping! Maximum value is bigger than minimal value! Min: %.2f | Max: %.2f", minVeloc, maxVeloc);
+            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %.2f | Max: %.2f", minVeloc, maxVeloc);
             return *this;
         }
         data.minInitVeloc = minVeloc;

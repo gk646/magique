@@ -1,13 +1,13 @@
 #ifndef COMMANDLINEDATA_H
 #define COMMANDLINEDATA_H
 
-#include <vector>
+#include <functional>
 #include <string>
-#include <raylib/raylib.h>
 
 #include <magique/util/RayUtils.h>
 #include <magique/core/Draw.h>
 
+#include "internal/datastructures/VectorType.h"
 #include "internal/globals/Configuration.h"
 #include "external/raylib/src/coredata.h"
 
@@ -22,10 +22,10 @@ namespace magique
 
     struct CommandLineData final
     {
-        std::vector<CommandInfo> commands;
-        std::vector<std::string> history;
-        std::vector<std::string> terminalLines;
-        std::vector<const CommandInfo*> suggestions;
+        vector<CommandInfo> commands;
+        vector<std::string> history;
+        vector<std::string> terminalLines;
+        vector<const CommandInfo*> suggestions;
         std::string input;
         int openKey = KEY_PAGE_UP;
         int historyPos = 0;

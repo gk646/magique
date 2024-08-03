@@ -20,8 +20,11 @@ namespace magique
 {
     struct UIObject
     {
+        //----------------- CONSTRUCTORS -----------------//
+        //Note: name will be copied and only has to be valid until the constructor returns
+
         // Doesnt initialize the dimensions - use align()
-        UIObject();
+        explicit UIObject();
 
         // Aligns the object object after the anchor position relative to the given ui object
         UIObject(AnchorPosition anchor, const UIObject& relativeTo, float inset = 0.0F);

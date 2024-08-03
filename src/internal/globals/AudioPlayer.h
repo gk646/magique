@@ -1,10 +1,11 @@
 #ifndef SOUNDDATA_H
 #define SOUNDDATA_H
 
-#include <vector>
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
 #include <magique/util/Defines.h>
+
+#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
@@ -41,10 +42,10 @@ namespace magique
 
     struct AudioPlayer final
     {
-        std::vector<SoundWrapper> sounds;
-        std::vector<Sound2D> sounds2D;
-        std::vector<Track> tracks;
-        std::vector<Playlist*> playlists;
+        vector<SoundWrapper> sounds;
+        vector<Sound2D> sounds2D;
+        vector<Track> tracks;
+        vector<Playlist*> playlists;
 
         float soundVolume = 1.0F;
         float musicVolume = 1.0F;

@@ -24,12 +24,6 @@ namespace magique
         return true;
     }
 
-
-    void GameLoader::printStats() const
-    {
-        LOG_INFO("Registered %d tasks with a load pensum of: %d", gpuTasks.size() + cpuTasks.size(), totalImpact);
-    }
-
     bool GameLoader::step() { return stepLoop(gameSave); }
 
     void GameLoader::registerTask(TaskI<GameSave>* task, PriorityLevel pl, int impact)

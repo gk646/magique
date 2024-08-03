@@ -1,10 +1,8 @@
 #ifndef MAGIQUE_PARTICLES_H
 #define MAGIQUE_PARTICLES_H
 
-#include <functional>
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
-#include <magique/core/Types.h>
 
 //-----------------------------------------------
 // Particle Module
