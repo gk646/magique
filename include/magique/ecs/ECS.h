@@ -56,7 +56,7 @@ namespace magique
     // Note: Should only be called in a networking context with a valid id
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map);
 
-    // Tries to destroy the entity and all its components
+    // Immediately (sequentially) tries destroys the entity
     // Failure: Returns false if entity is invalid or doesnt exist
     bool DestroyEntity(entt::entity e);
 

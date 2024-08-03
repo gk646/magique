@@ -1,4 +1,3 @@
-
 #include <magique/ui/UI.h>
 
 #include "internal/globals/UIData.h"
@@ -42,6 +41,11 @@ namespace magique
         point.x *= sx;
         point.y *= sy;
         return point;
+    }
+
+    float GetScaled(const float val)
+    {
+        return global::UI_DATA.scaleX * val;
     }
 
     UIRoot& GetUIRoot() { return global::UI_DATA.uiRoot; }

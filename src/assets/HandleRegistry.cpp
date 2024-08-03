@@ -31,8 +31,7 @@ namespace magique
             return;
         }
 
-        LOG_INFO("Resizing the handle vector to size: %d", hID + 1);
-        registry.handles.resize(hID + 1);
+        registry.handles.resize(hID + 5);
         registry.handles[hID] = handle;
     }
 

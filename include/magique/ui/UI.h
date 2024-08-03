@@ -16,6 +16,11 @@
 
 namespace magique
 {
+    // Returns a reference to the global ui-root
+    UIRoot& GetUIRoot();
+
+    //----------------- UTIL -----------------//
+
     // L = Left / C = Center / R = Right
     // T = Top / M = Middle / B = Bottom
     // -------------------------
@@ -29,8 +34,8 @@ namespace magique
     // Passing width and height aligns the coordinates to fit them and inset applies a inset for the border points inwards
     Point GetUIAnchor(AnchorPosition anchor, float width = 0, float height = 0, float inset = 0);
 
-    // Returns a reference to the global ui-root
-    UIRoot& GetUIRoot();
+    // Accepts a value in the logical resolution and returns the value in the current ui scale (horizontal)
+    float GetScaled(float val);
 
     // Returns the current scale factor for x and y dimensions
     Point GetUIScaling();

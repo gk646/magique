@@ -50,7 +50,7 @@ namespace magique
         using ColorFunction = Color (*)(const Color& color, float t);
 
         // Takes the particles itself and the normalized time
-        // This allows you to do anything - even call gameplay related code!
+        // This allows you to do anything - call gameplay related code and create new particles!
         using TickFunction = std::function<void(ScreenParticle& p, float t)>;
 
         //----------------- EMISSION SHAPE -----------------//

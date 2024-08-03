@@ -285,5 +285,16 @@ namespace magique
         return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
     }
 
+    uint32_t HashString(char const* s, const int salt) noexcept
+    {
+        uint32_t hash = 2166136261U + salt;
+        while (*s != 0)
+        {
+            hash ^= static_cast<uint32_t>(*s++);
+            hash *= 16777619U;
+        }
+        return hash;
+    }
+
 
 } // namespace magique

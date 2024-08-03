@@ -21,16 +21,14 @@
 #ifndef CXSTRUCTS_BINARYSEARCH_H
 #define CXSTRUCTS_BINARYSEARCH_H
 
-#include <cstdint>
-#include "../cxconfig.h"
 
 namespace cxhelper {  // helper methods to provide clean calling interface
 template <typename T>
-bool binarySearch_recursive_internal(T* arr, T target, int_32_cx low, int_32_cx high) {
+bool binarySearch_recursive_internal(T* arr, T target, int low, int high) {
   if (low > high) {
     return false;
   }
-  int_32_cx mid = low + (high - low) / 2;
+  int mid = low + (high - low) / 2;
 
   if (arr[mid] == target) {
     return true;
@@ -53,10 +51,10 @@ namespace cxstructs {
  * @return true if the target was found inside arr_
  */
 template <typename T>
-bool binary_search(T* arr, T target, int_32_cx len) {
-  int_32_cx low = 0;
-  int_32_cx high = len - 1;
-  int_32_cx mid;
+bool binary_search(T* arr, T target, int len) {
+  int low = 0;
+  int high = len - 1;
+  int mid;
   while (low <= high) {
     mid = low + (high - low) / 2;
     if (arr[mid] == target) {
@@ -71,6 +69,44 @@ bool binary_search(T* arr, T target, int_32_cx len) {
   return false;
 }
 
+    /**
+     * Binary search on the specified ASCENDED SORTED array without recursion <p>
+     * runtime: O(log(n))
+     * @tparam T the used datatype
+     * @param arr search array
+     * @param target target value to search for
+     * @param len the length of the given array
+     * @return either the position element int he array or the position to insert the next one
+     */
+    template <typename T>
+ T* binary_search_pos(T* arr, T target, int len, bool ascending = true) {
+    int low = 0;
+    int high = len - 1;
+    int mid;
+
+    while (low <= high) {
+        mid = low + (high - low) / 2;
+        if (arr[mid] == target) {
+            return &arr[mid];
+        }
+        if (ascending) {
+            if (arr[mid] < target) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        } else {
+            if (arr[mid] > target) {
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+    }
+    return &arr[low]; // Return the position to insert the next item
+}
+
+
 /**
  * Binary search on the specified ASCENDED SORTED array with recursion <p>
 * runtime: O(log(n))<p>
@@ -83,7 +119,7 @@ bool binary_search(T* arr, T target, int_32_cx len) {
  * @return true if the target was found inside arr_
  */
 template <typename T>
-bool binary_search_recursive(T* arr, T target, int_32_cx len) {
+bool binary_search_recursive(T* arr, T target, int len) {
   if (len == 0) {
     return false;
   }
@@ -92,12 +128,12 @@ bool binary_search_recursive(T* arr, T target, int_32_cx len) {
 
 // Returns the index at which the element should be inserted
 template <typename T>
-int binary_search_index(T* arr, T target, int_32_cx len, bool ascending) {
+int binary_search_index(T* arr, T target, int len, bool ascending) {
   if (ascending) {
-    int_32_cx low = 0;
-    int_32_cx high = len;
+    int low = 0;
+    int high = len;
     while (low < high) {
-      int_32_cx mid = low + (high - low) / 2;
+      int mid = low + (high - low) / 2;
       if (arr[mid] < target) {
         low = mid + 1;
       } else {
@@ -107,11 +143,11 @@ int binary_search_index(T* arr, T target, int_32_cx len, bool ascending) {
     return low;
   }
 
-  int_32_cx low = 0;
-  int_32_cx high = len;
+  int low = 0;
+  int high = len;
 
   while (low < high) {
-    int_32_cx mid = low + (high - low) / 2;
+    int mid = low + (high - low) / 2;
     if (arr[mid] > target) {
       low = mid + 1;
     } else {

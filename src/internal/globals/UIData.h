@@ -1,13 +1,14 @@
 #ifndef UIDATA_H
 #define UIDATA_H
 
-#include <vector>
 #include <algorithm>
 #include <raylib/raylib.h>
 
 #include <magique/util/Defines.h>
 #include <magique/ui/types/UIRoot.h>
 
+#include "internal/datastructures/VectorType.h"
+#include "internal/datastructures/HashTypes.h"
 #include "external/raylib/src/coredata.h"
 
 namespace magique
@@ -20,7 +21,7 @@ namespace magique
         float mouseX = 0.0F;
         float mouseY = 0.0F;
         uint64_t nextID = 1;
-        std::vector<UIObject*> sortedObjects; // Sorted after z-index
+        vector<UIObject*> sortedObjects; // Sorted after z-index
 
         void update()
         {
@@ -32,7 +33,6 @@ namespace magique
         }
 
         [[nodiscard]] Point getScaling() const { return {scaleX, scaleY}; }
-
 
         [[nodiscard]] static Point getScreenDims()
         {
@@ -58,7 +58,7 @@ namespace magique
         {
             if (sortedObjects.empty())
                 return;
-            std::erase(sortedObjects, object);
+            sortedObjects.erase(object);
         }
 
         uint16_t getNextID() { return nextID++; }
