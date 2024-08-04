@@ -48,6 +48,7 @@
 //----------------- GRAPHICS -----------------//
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
+#define MAGIQUE_MAX_PARTICLE_COLOURS 5 // Maximum size of the color pool for particles
 
 //----------------- PERFORMANCE -----------------//
 
