@@ -33,7 +33,7 @@ namespace magique
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
-    enum class PriorityLevel
+    enum PriorityLevel
     {
         LOW,
         MEDIUM,

@@ -26,7 +26,6 @@
 // .....................................................................
 namespace magique
 {
-
     //----------------- GETTERS -----------------//
 
     // Returns a reference to the root for the given state (automatically created when called first)

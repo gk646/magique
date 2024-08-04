@@ -64,6 +64,7 @@ namespace magique
 
     //----------------- UI -----------------//
     struct UIStateRoot;
+    struct UIRoot;
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
