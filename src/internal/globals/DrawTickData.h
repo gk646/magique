@@ -7,7 +7,7 @@ namespace magique
     // The information is guaranteed to not change during a tick!
     struct DrawTickData final
     {
-        Camera2D camera;
+        Camera2D camera{};
         MapID cameraMap;
         entt::entity cameraEntity;
     };

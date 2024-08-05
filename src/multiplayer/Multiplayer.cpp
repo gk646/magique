@@ -1,4 +1,4 @@
-
+/*
 #include <fstream>
 #include <steam/steam_api.h>
 #include <cxstructs/SmallVector.h>
@@ -54,14 +54,12 @@ namespace magique
             return false;
 
         // Allocate with buffer
-        /*
         const auto msg = SteamNetworkingUtils()->AllocateMessage(size);
         std::memcpy(msg->m_pData, message, size);
         msg->m_nFlags = static_cast<int>(flag);
         msg->m_conn = static_cast<uint32_t>(conn);
 
         MESSAGES.push_back(msg);
-        */
         return true;
     }
 
@@ -72,4 +70,6 @@ namespace magique
     }
 
 
-} // namespace magique
+} // namespace magiqu
+
+*/

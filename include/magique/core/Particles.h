@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_PARTICLES_H
 #define MAGIQUE_PARTICLES_H
 
+#include <initializer_list>
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
 
@@ -8,10 +9,11 @@
 // Particle Module
 //-----------------------------------------------
 // .....................................................................
-// This module is for creating particle effects. Its interface is inspired by Godot4
+// This module is for creating particle effects. The interface is inspired by Godot4's CPUParticle2D node.
 // You create a emitter first (either Entity or Screen) and then create the particle effect by calling
-// the global Create__ function with that emitter. A emitter can (and should) be reused as often as you like.
-// Uses the builder pattner for coincise syntax.
+// the global Create() function with that emitter. An emitter can (and should) be reused as often as you like.
+// Note: Changing the emitter doesnt change already spawned particles (except the tick functions)
+// Uses the builder pattern for syntactic sugar.
 // To begin create a ScreenEmitter emitter; and cusotmize it: emitter.setEmissionPosition(150,150).set...
 // Can currently handle well up to 250'000 screen particles at the same time on modern systems
 // .....................................................................
@@ -84,6 +86,11 @@ namespace magique
         // Default: RED
         EmitterBase& setColor(const Color& color);
 
+        // Sets the pool of colors from which one is randomly chosen - up to 5 colors
+        // If set will override the value of setColor() - using setColor() after will override the pool!
+        // Default: empty
+        EmitterBase& setColorPool(const std::initializer_list<Color>& colors);
+
         // Sets the lifetime in game ticks
         // Default: 100
         EmitterBase& setLifetime(int minLife, int maxLife = 0);
@@ -120,7 +127,7 @@ namespace magique
 
         // Sets the min and max initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setStartVelocity(float minVeloc, float maxVeloc = 0);
+        EmitterBase& setVelocity(float minVeloc, float maxVeloc = 0);
 
         // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
         // Default: True
@@ -151,6 +158,7 @@ namespace magique
         friend void CreateScreenParticle(const ScreenEmitter&, int);
     };
 
+
     // A simple and faster particle that doesnt interact with anything
     struct ScreenEmitter final : EmitterBase
     {
@@ -163,4 +171,13 @@ namespace magique
     };
 
 } // namespace magique
+
+
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique
+{
+
+} // namespace magique
+// namespace magique
 #endif //MAGIQUE_PARTICLES_H

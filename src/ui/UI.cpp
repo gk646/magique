@@ -48,7 +48,7 @@ namespace magique
         return global::UI_DATA.scaleX * val;
     }
 
-    UIStateRoot& GetUIRoot() { return global::UI_DATA.uiRoot; }
+    UIRoot& GetUIRoot() { return global::UI_DATA.uiRoot; }
 
     Point GetUIScaling() { return global::UI_DATA.getScaling(); }
 

@@ -1,6 +1,7 @@
 #ifndef STRINGHASHMAP_H
 #define STRINGHASHMAP_H
 
+#include <string>
 #include <cxutil/cxstring.h>
 #include "internal/datastructures/HashTypes.h"
 

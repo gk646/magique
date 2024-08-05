@@ -28,6 +28,8 @@ namespace magique
 {
     //----------------- GETTERS -----------------//
 
+    UIRoot& GetUIRoot();
+
     // Returns a reference to the root for the given state (automatically created when called first)
     UIStateRoot& GetStateUIRoot(int uiState);
 

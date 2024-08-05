@@ -3,9 +3,10 @@
 
 inline void WaitTime(const double destinationTime, double sleepSeconds)
 {
-    if (sleepSeconds < 0)
+    if (sleepSeconds < 0) [[unlikely]]
         return; // Security check
-                // System halt functions
+
+        // System halt functions
 #if defined(_WIN32)
     Sleep((unsigned long)(sleepSeconds * 1000.0));
 #endif

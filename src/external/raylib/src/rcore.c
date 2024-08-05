@@ -540,7 +540,6 @@ void InitWindow(int width, int height, const char *title)
     }
 #endif
 
-    CORE.Time.frameCounter = 0;
     CORE.Window.shouldClose = false;
 
     // Initialize random seed
@@ -1438,54 +1437,11 @@ Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera)
 //double GetTime(void)
 
 // Set target FPS (maximum)
-void SetTargetFPS(int fps)
-{
-    if (fps < 1) CORE.Time.target = 0;
-    else
-    {
-        CORE.Time.target = 1.0 / (double)fps;
-        CORE.Time.wait = CORE.Time.target * 0.9;
-    }
-}
+// void SetTargetFPS(int fps)  IMPLEMENTED in src/core/headers/MainThread
 
 // Get current FPS
 // NOTE: We calculate an average framerate
-int GetFPS(void)
-{
-#define FPS_BUFF_SIZE 15
-    static float lastTime = 0;
-    static int fpsBuffer[FPS_BUFF_SIZE] = {0};
-    static int index = 0;
-    static int sumFPS = 0;
-    static int count = 0;
 
-    const double currentTime = glfwGetTime();
-
-    const int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
-
-    sumFPS -= fpsBuffer[index];
-    fpsBuffer[index] = currFPS;
-    sumFPS += currFPS;
-    index = (index + 1) % FPS_BUFF_SIZE;
-
-    if (count < FPS_BUFF_SIZE)
-    {
-        count++;
-    }
-
-    const int ret = (int)ceil((float)sumFPS / count);
-
-    lastTime = currentTime;
-    CORE.Time.frameCounter = 0;
-
-    return ret;
-}
-
-// Get time in seconds for last frame drawn (delta time)
-float GetFrameTime(void)
-{
-    return (float)CORE.Time.frame / 1'000'000'000.0F;
-}
 
 //----------------------------------------------------------------------------------
 // Module Functions Definition: Misc
@@ -2430,7 +2386,7 @@ void SetAutomationEventList(AutomationEventList *list)
 // Set automation event internal base frame to start recording
 void SetAutomationEventBaseFrame(int frame)
 {
-    CORE.Time.frameCounter = frame;
+    //CORE.Time.frameCounter = frame;
 }
 
 // Start recording automation events (AutomationEventList must be set)

@@ -34,9 +34,10 @@
 #include "internal/headers/IncludeWindows.h"
 #include "internal/headers/OSUtil.h"
 
-#include "headers/GameUtil.h"
-#include "headers/Updater.h"
-#include "headers/Renderer.h"
+#include "core/headers/MainThreadUtil.h"
+#include "core/headers/Updater.h"
+#include "core/headers/Renderer.h"
+#include "core/headers/MainThread.h"
 
 CoreData CORE = {0};
 rlglData RLGL = {0};

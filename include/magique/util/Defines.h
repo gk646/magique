@@ -48,11 +48,10 @@
 //----------------- GRAPHICS -----------------//
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
-#define MAGIQUE_MAX_PARTICLE_COLOURS 5 // Maximum size of the color pool for particles
 
 //----------------- PERFORMANCE -----------------//
 
-#define MAGIQUE_USE_AVX2 // AVX2 intrinsics -> 93% of steam users support this (intel since 2013, amd since 2015)
+#define MAGIQUE_USE_SIMD // AVX2 intrinsics -> 93% of steam users support this (intel since 2013, amd since 2015)
 
 //----------------- BRANCHES -----------------//
 
@@ -74,6 +73,10 @@
 #else
 #define STEAMNETWORKINGSOCKETS_STANDALONELIB
 #define MAGIQUE_STEAM 0
+#endif
+
+#if MAGIQUE_NO_SIMD // Remove simd usage
+#undef MAGIQUE_USE_SIMD
 #endif
 
 #endif //MAGIQUE_DEFINES_H

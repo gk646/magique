@@ -14,7 +14,7 @@ namespace magique
 {
     struct UIData final
     {
-        UIStateRoot uiRoot;
+        UIRoot uiRoot;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
