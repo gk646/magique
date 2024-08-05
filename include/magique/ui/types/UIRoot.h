@@ -14,7 +14,7 @@
 
 namespace magique
 {
-    struct UIStateRoot final
+    struct UIRoot final
     {
         //----------------- ACCESS -----------------//
 
@@ -50,7 +50,7 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    T* UIStateRoot::getObject(const char* name) const
+    T* UIRoot::getObject(const char* name) const
     {
         return static_cast<T>(getObjectImpl(name));
     }

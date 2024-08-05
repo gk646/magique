@@ -86,13 +86,28 @@ namespace magique
             particle.vx = velo * dirX;
             particle.vy = velo * dirY;
 
+            // Color
+            if (data.colors[0] != -1) // Use pool
+            {
+                const int p = GetRandomValue(0, data.r - 1);
+                const auto color = GetColor(data.colors[p]);
+                particle.r = color.r;
+                particle.g = color.g;
+                particle.b = color.b;
+                particle.a = color.a;
+            }
+            else
+            {
+                particle.r = data.r;
+                particle.g = data.g;
+                particle.b = data.b;
+                particle.a = data.a;
+            }
+
             // Rest
             particle.age = 0;
             particle.shape = data.shape;
-            particle.r = data.r;
-            particle.g = data.g;
-            particle.b = data.b;
-            particle.a = data.a;
+
 
             SyncThreads();
             global::PARTICLE_DATA.addParticle(particle);
@@ -172,6 +187,33 @@ namespace magique
         data.g = color.g;
         data.b = color.b;
         data.a = color.a;
+        data.colors[0] = -1; // Signal not using color pool
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setColorPool(const std::initializer_list<Color>& colors)
+    {
+        if (colors.size() == 0)
+        {
+            LOG_ERROR("Skipping! You have to pass at least 1 color!");
+            return *this;
+        }
+
+        if (colors.size() > 5)
+        {
+            LOG_WARNING("Passing more than 5 colors! Skipping rest");
+        }
+
+        int i = 0;
+        for (const auto c : colors)
+        {
+            data.colors[i] = ColorToInt(c);
+            ++i;
+            if (i > 5)
+                break;
+        }
+        data.r = colors.size(); // Save valid size in r
+
         return *this;
     }
 
@@ -182,7 +224,7 @@ namespace magique
             max = min;
         }
 
-        if ( min > max)
+        if (min > max)
         {
             LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %d | Max: %d", min, max);
             return *this;
@@ -231,7 +273,7 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setStartVelocity(const float minVeloc, float maxVeloc)
+    EmitterBase& EmitterBase::setVelocity(const float minVeloc, float maxVeloc)
     {
         if (maxVeloc == 0)
         {

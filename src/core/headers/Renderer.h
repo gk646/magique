@@ -3,13 +3,7 @@
 
 namespace magique::renderer
 {
-    static double startTime;
-
-    inline void Setup()
-    {
-        SetupThreadPriority(0); // Thread 0
-        SetupProcessPriority();
-    }
+    inline double START_TIME = 0.0F;
 
     inline void Close()
     {
@@ -21,8 +15,8 @@ namespace magique::renderer
 
     inline void StartTick()
     {
+        START_TIME = glfwGetTime();
         PollInputEvents(); // This takes quite long and skews times
-        startTime = glfwGetTime();
         BeginDrawing();
         AssignDrawTickCamera();
     }
@@ -34,21 +28,21 @@ namespace magique::renderer
             global::PERF_DATA.perfOverlay.draw();
         }
         EndDrawing();
-        const double frameTime = glfwGetTime() - startTime;
+        const double frameTime = glfwGetTime() - START_TIME;
         CORE.Time.frame = frameTime;
         CORE.Time.frameCounter++;
         global::PERF_DATA.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
     }
 
-    inline void RenderTick(bool& isLoading, Game& game, entt::registry& registry, Camera2D& camera)
+    inline void Tick(Game& game, entt::registry& registry, Camera2D& camera)
     {
         StartTick();
         {
             ClearBackground(RAYWHITE); // Thanks ray
             game.preRender();          // Pre render
-            if (isLoading) [[unlikely]]
+            if (game.getIsRunning()) [[unlikely]]
             {
-                HandleLoadingScreen(isLoading, game);
+                HandleLoadingScreen(game);
                 EndTick();
                 return;
             }
@@ -69,23 +63,6 @@ namespace magique::renderer
         EndTick();
     }
 
-    inline void Run(bool& isLoading, Game& game)
-    {
-        Setup();
-        auto& registry = internal::REGISTRY;
-        auto& camera = global::DRAW_TICK_DATA.camera;
-
-        // Double loop to catch the close event
-        while (game.isRunning()) [[likely]]
-        {
-            while (!WindowShouldClose() && game.isRunning()) [[likely]]
-            {
-                RenderTick(isLoading, game, registry, camera);
-                WaitTime(startTime + CORE.Time.target, CORE.Time.wait - CORE.Time.frame);
-            }
-            game.onCloseEvent();
-        }
-    }
 
 } // namespace magique::renderer
 

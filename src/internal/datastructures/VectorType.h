@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_VECTORTYPE_H
 #define MAGIQUE_VECTORTYPE_H
 
-// Made for minimal compile time and binary bloat
+// Made for minimal compile time and less binary bloat
 // And to switch implementation easily
 
 #include "internal/datastructures/fast_vector.h"

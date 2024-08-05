@@ -24,8 +24,6 @@ namespace magique
 {
     struct Game
     {
-        const char* const gameName;
-
         explicit Game(const char* name = "MyGame");
         virtual ~Game();
 
@@ -55,7 +53,7 @@ namespace magique
         virtual void preRender() {}
 
         // Called each tick when loading - skips all other draw methods
-        virtual void drawLoadingScreen(UIRoot& root,float progressPercent) {}
+        virtual void drawLoadingScreen(UIRoot& root, float progressPercent) {}
 
         // Called each tick to render the world
         // This is not thread synced - dont read any logic tick data or the registry
@@ -79,12 +77,16 @@ namespace magique
 
         //----------------- GETTERS -----------------//
 
-        [[nodiscard]] bool isRunning() const { return _isRunning; }
-        [[nodiscard]] bool isLoading() const { return _isLoading; }
+        [[nodiscard]] bool getIsRunning() const { return isRunning; }
+        [[nodiscard]] bool getIsLoading() const { return isLoading; }
+        [[nodiscard]] const char* getName() const { return gameName; }
 
     private:
-        bool _isRunning = false;
-        bool _isLoading = false;
+        bool isRunning = false;
+        bool isLoading = false;
+        const char* gameName;
+        friend void HandleLoadingScreen(Game& game);
+        friend void Run(Game& game);
     };
 
 } // namespace magique

@@ -118,7 +118,7 @@ namespace magique
             Keybind keybind;
             Setting setting;
             void* string;
-            unsigned char buffer[8]{};
+            char buffer[8]{};
         };
     };
 
@@ -141,6 +141,7 @@ namespace magique
         float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
 
+        int colors[6]{-1};                        // Color pool
         float minScale = 1, maxScale = 1;         // Scale
         float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
         float dirX = 0, dirY = -1;                // Direction

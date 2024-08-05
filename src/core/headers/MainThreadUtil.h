@@ -1,6 +1,64 @@
 #ifndef RENDERUTIL_H
 #define RENDERUTIL_H
 
+inline double FRAME_TARGET = 0.0F;
+inline double WAIT_TIME = 0.0F;
+inline double START_TIME = 0.0F;
+inline double PREV_UPDATE_TIME = 0.0F;
+inline double PREV_RENDER_TIME = 0.0F;
+inline double UPDATE_WORK = 0.0F;
+inline double WORK_PER_TICK = 0.0F;
+
+void SetTargetFPS(const int fps) // raylib function implemented here
+{
+    if (fps < 1)
+        FRAME_TARGET = 0;
+    else
+    {
+        FRAME_TARGET = 1.0 / static_cast<double>(fps);
+        // Round down cause minimal accuracy is only 1ms - so wait 1 ms less to be accurate
+        WAIT_TIME = std::floor((FRAME_TARGET * 1000) * 0.95F);
+        WORK_PER_TICK = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
+    }
+}
+
+int GetFPS(void)
+{
+#define FPS_BUFF_SIZE 15
+    static float lastTime = 0;
+    static int fpsBuffer[FPS_BUFF_SIZE] = {0};
+    static int index = 0;
+    static int sumFPS = 0;
+    static int count = 0;
+
+    const double currentTime = glfwGetTime();
+
+    const int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
+
+    sumFPS -= fpsBuffer[index];
+    fpsBuffer[index] = currFPS;
+    sumFPS += currFPS;
+    index = (index + 1) % FPS_BUFF_SIZE;
+
+    if (count < FPS_BUFF_SIZE)
+    {
+        count++;
+    }
+
+    const int ret = (int)ceil((float)sumFPS / count);
+
+    lastTime = currentTime;
+    CORE.Time.frameCounter = 0;
+
+    return ret;
+}
+
+// Get time in seconds for last frame drawn (delta time)
+float GetFrameTime(void)
+{
+    return (float)CORE.Time.frame / 1'000'000'000.0F;
+}
+
 namespace magique
 {
     //----------------- RENDERER -----------------//
@@ -21,20 +79,20 @@ namespace magique
         global::LOGIC_TICK_DATA.unlock();
     }
 
-    inline void HandleLoadingScreen(bool& isLoading, Game& game)
+    inline void HandleLoadingScreen(Game& game)
     {
         auto& loader = global::LOADER;
-        if (loader) [[likely]]
+        if (loader != nullptr) [[likely]]
         {
-           game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
+            game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
             const auto res = loader->step();
-            if (res == true)
+            if (res)
             {
                 global::PERF_DATA.drawTimes.clear();
                 global::PERF_DATA.logicTimes.clear();
                 delete loader;
                 loader = nullptr;
-                isLoading = false;
+                game.isLoading = false;
             }
         }
     }

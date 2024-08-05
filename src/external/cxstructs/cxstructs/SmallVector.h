@@ -139,7 +139,7 @@ struct SmallVector {
 
   T* data() { return data_; }
 
-  bool empty() const { return size_ == 0; }
+  [[nodiscard]] bool empty() const { return size_ == 0; }
 
   using iterator = VectorIterator<T>;
   using const_iterator = VectorIterator<const T>;
