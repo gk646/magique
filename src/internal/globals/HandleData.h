@@ -12,12 +12,12 @@ namespace magique
     {
         vector<handle> handles;
         HashMap<uint32_t, handle> handleMap{100};
-        uint16_t fastHandles[MAGIQUE_DIRECT_HANDLES]{};
+        uint16_t directHandles[MAGIQUE_DIRECT_HANDLES]{};
 
         HandleRegistry()
         {
             // Intitialize to null handles for 16 bit
-            memset(fastHandles, UINT16_MAX, MAGIQUE_DIRECT_HANDLES * sizeof(uint16_t));
+            memset(directHandles, UINT16_MAX, MAGIQUE_DIRECT_HANDLES * sizeof(uint16_t));
             handles.resize(100);
         }
     };

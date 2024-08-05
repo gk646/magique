@@ -1,14 +1,19 @@
 namespace magique::updater
 {
-    static double startTime;
-
-    inline void StartTick()
+    inline void InternalUpdate(entt::registry& registry)
     {
-        startTime = glfwGetTime();
-        WakeUpJobs();
+        global::UI_DATA.update();
+        global::AUDIO_PLAYER.update();
+        global::COMMAND_LINE.update();
+        global::PARTICLE_DATA.update();
+        InputSystem(registry);
+        LogicSystem(registry);
+        CollisionSystem(registry);
     }
 
-    inline double EndTick(Game& game)
+    inline void StartTick() { PollInputEvents(); }
+
+    inline double EndTick(const double startTime, Game& game)
     {
         auto& config = global::CONFIGURATION;
         if (config.showPerformanceOverlay)
@@ -21,14 +26,12 @@ namespace magique::updater
             if (config.benchmarkTicks == 0)
                 game.shutDown();
         }
-        TickInputEvents();
         const double tickTime = glfwGetTime() - startTime;
         global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * 1'000'000'000.0F));
-        HibernateJobs(startTime, tickTime);
-        return
+        return tickTime;
     }
 
-    inline void Tick(entt::registry& reg, Game& game)
+    inline double Tick(const double startTime, entt::registry& reg, Game& game)
     {
         StartTick();
         //Tick game
@@ -36,7 +39,7 @@ namespace magique::updater
             InternalUpdate(reg); // Internal update upfront
             game.updateGame(reg);
         }
-        EndTick(game);
+        return EndTick(startTime, game);
     }
 
 } // namespace magique::updater

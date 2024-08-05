@@ -1,5 +1,4 @@
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     add_compile_options(-Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
@@ -14,13 +13,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
 elseif (MSVC)
-    add_compile_options(/W4 /fp:fast /GR- /Zc:preprocessor -D_HAS_EXCEPTIONS=0)
+    add_compile_options( /fp:fast /arch:AVX2 /O2 /Gy /GA /Oi /Gw /EHc /GF /Ob3 /GL /GR- /Zc:preprocessor -D_HAS_EXCEPTIONS=0)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Od /Zi")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi")
 
-    set(CMAKE_C_FLAGS_RELEASE "/arch:AVX2 /O2 /GL /fp:fast /GR-")
-    set(CMAKE_CXX_FLAGS_RELEASE "/std:c++20 /arch:AVX2 /O2 /GL /Ob3 /Gy /GA /Oi /Gw /EHc /GF /GR- /openmp:experimental")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/DEBUG /LTCG /OPT:REF /OPT:ICF")
+    set(CMAKE_C_FLAGS_RELEASE "/W3 /arch:AVX2 /EHs /GL")
+    set(CMAKE_CXX_FLAGS_RELEASE "/W4 /std:c++20 /openmp:experimental")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
     # Explanation of flags:
     # /arch:AVX2       - Enable AVX2 instruction set

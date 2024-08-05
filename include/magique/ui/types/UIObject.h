@@ -36,11 +36,8 @@ namespace magique
 
         //----------------- CORE -----------------//
 
-        // Called each tick on the main thread
         virtual void draw() {}
 
-        // Called each tick
-        // Thread: On the update thread
         virtual void update() {}
 
         // Aligns the object object after the anchor position relative to the given ui object

@@ -13,7 +13,7 @@ namespace magique
         DRAW
     };
 
-    struct PerfData
+    struct PerformanceData final
     {
         uint32_t logicTickTime = 0;
         uint32_t drawTickTime = 0;
@@ -23,7 +23,7 @@ namespace magique
         vector<uint32_t> drawTimes;
 #endif
 
-        PerfData()
+        PerformanceData()
         {
 #ifdef MAGIQUE_DEBUG_PROFILE
             // Reserve much upfront to not impede benchmarks
@@ -86,7 +86,7 @@ namespace magique
 
     namespace global
     {
-        inline PerfData PERF_DATA;
+        inline PerformanceData PERF_DATA;
     }
 
 } // namespace magique

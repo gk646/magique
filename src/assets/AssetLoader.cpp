@@ -4,7 +4,7 @@
 
 namespace magique
 {
-    AssetLoader::AssetLoader(const char* assetPath, uint64_t encryptionKey)
+    AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
         LoadAssetImage(assetPath, assets, encryptionKey);
     }

@@ -2,12 +2,12 @@
 #define RENDERUTIL_H
 
 inline double FRAME_TARGET = 0.0F;
-inline double WAIT_TIME = 0.0F;
-inline double START_TIME = 0.0F;
+inline double SLEEP_TIME = 0.0F;
 inline double PREV_UPDATE_TIME = 0.0F;
 inline double PREV_RENDER_TIME = 0.0F;
 inline double UPDATE_WORK = 0.0F;
 inline double WORK_PER_TICK = 0.0F;
+inline double FRAME_COUNT = 0;
 
 void SetTargetFPS(const int fps) // raylib function implemented here
 {
@@ -17,12 +17,12 @@ void SetTargetFPS(const int fps) // raylib function implemented here
     {
         FRAME_TARGET = 1.0 / static_cast<double>(fps);
         // Round down cause minimal accuracy is only 1ms - so wait 1 ms less to be accurate
-        WAIT_TIME = std::floor((FRAME_TARGET * 1000) * 0.95F);
+        SLEEP_TIME = std::floor( FRAME_TARGET * 1000) / 1000;
         WORK_PER_TICK = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
     }
 }
 
-int GetFPS(void)
+int GetFPS()
 {
 #define FPS_BUFF_SIZE 15
     static float lastTime = 0;
@@ -33,7 +33,7 @@ int GetFPS(void)
 
     const double currentTime = glfwGetTime();
 
-    const int currFPS = CORE.Time.frameCounter / (currentTime - lastTime);
+    const int currFPS = FRAME_COUNT / (currentTime - lastTime);
 
     sumFPS -= fpsBuffer[index];
     fpsBuffer[index] = currFPS;
@@ -48,37 +48,20 @@ int GetFPS(void)
     const int ret = (int)ceil((float)sumFPS / count);
 
     lastTime = currentTime;
-    CORE.Time.frameCounter = 0;
+    FRAME_COUNT = 0;
 
     return ret;
 }
 
 // Get time in seconds for last frame drawn (delta time)
-float GetFrameTime(void)
+inline float GetFrameTime()
 {
-    return (float)CORE.Time.frame / 1'000'000'000.0F;
+    const auto& perf = magique::global::PERF_DATA;
+    return (float)(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
 }
 
 namespace magique
 {
-    //----------------- RENDERER -----------------//
-
-    // Logic loop as authority over the state
-    // Render thread just draws the current state
-    inline void AssignDrawTickCamera()
-    {
-        global::LOGIC_TICK_DATA.lock();
-        {
-            auto& drawTick = global::DRAW_TICK_DATA;
-            auto& logicTick = global::LOGIC_TICK_DATA;
-
-            drawTick.camera = logicTick.camera;
-            drawTick.cameraMap = logicTick.cameraMap;
-            drawTick.cameraEntity = logicTick.cameraEntity;
-        }
-        global::LOGIC_TICK_DATA.unlock();
-    }
-
     inline void HandleLoadingScreen(Game& game)
     {
         auto& loader = global::LOADER;
@@ -125,16 +108,6 @@ namespace magique
 
     //----------------- UPDATER -----------------//
 
-    inline void InternalUpdate(entt::registry& registry)
-    {
-        global::UI_DATA.update();
-        global::AUDIO_PLAYER.update();
-        global::COMMAND_LINE.update();
-        global::PARTICLE_DATA.update();
-        InputSystem(registry);
-        LogicSystem(registry);
-        CollisionSystem(registry);
-    }
 
 } // namespace magique
 

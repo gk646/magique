@@ -6,10 +6,9 @@
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
 
-#include "internal/globals/EntityTypeMap.h"
+#include "internal/globals/ECSData.h"
 #include "internal/globals/LogicTickData.h"
-#include "internal/globals/LogicThread.h"
-#include "internal/globals/ScriptEngine.h"
+#include "internal/globals/ScriptData.h"
 
 namespace magique
 {
@@ -23,7 +22,7 @@ namespace magique
         }
 
         map.insert({type, createFunc});
-        global::SCRIPT_ENGINE.padUpToEntity(type); // This assures its always valid to index with type
+        global::SCRIPT_DATA.padUpToEntity(type); // This assures its always valid to index with type
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
@@ -48,9 +47,7 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, float x, float y, const MapID map)
     {
-        auto& tickData = global::LOGIC_TICK_DATA;
-        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id() || !tickData.flag.test(),
-                 "Has to be called from the logic thread OR without active lock on the draw thread");
+        auto& tickData = global::ENGINE_DATA;
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
@@ -74,9 +71,7 @@ namespace magique
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map)
     {
-        auto& tickData = global::LOGIC_TICK_DATA;
-        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id() || !tickData.flag.test(),
-                 "Has to be called from the logic thread OR without active lock on the draw thread");
+        auto& tickData = global::ENGINE_DATA;
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
@@ -100,8 +95,7 @@ namespace magique
 
     bool DestroyEntity(const entt::entity entity)
     {
-        M_ASSERT(std::this_thread::get_id() == global::LOGIC_THREAD.get_id(), "Has to be called from the logic thread");
-        auto& tickData = global::LOGIC_TICK_DATA;
+        auto& tickData = global::ENGINE_DATA;
         if (internal::REGISTRY.valid(entity)) [[likely]]
         {
             if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]

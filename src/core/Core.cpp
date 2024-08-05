@@ -5,10 +5,10 @@
 #include "internal/globals/Configuration.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/LogicTickData.h"
-#include "internal/globals/DrawTickData.h"
-#include "internal/globals/ShaderEngine.h"
-#include "internal/globals/PerfData.h"
+#include "internal/globals/ShaderData.h"
+#include "internal/globals/PerformanceData.h"
 
+#include <magique/persistence/container/GameConfig.h>
 
 namespace magique
 {
@@ -29,6 +29,7 @@ namespace magique
 
         global::CONFIGURATION.init();
         global::SHADERS.init(); // Loads the shaders and
+        global::ENGINE_DATA.camera.zoom = 1.0F;
         InitJobSystem();
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
@@ -56,8 +57,10 @@ namespace magique
 
     void AddToEntityCache(const entt::entity e)
     {
-        global::LOGIC_TICK_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
+        global::ENGINE_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
     }
+
+    void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
     void SetEngineFont(const Font& font) { global::CONFIGURATION.font = font; }
 
@@ -67,22 +70,22 @@ namespace magique
 
     //----------------- GET -----------------//
 
-    const  std::vector<entt::entity>& GetUpdateEntities() { return global::LOGIC_TICK_DATA.entityUpdateVec; }
+    const std::vector<entt::entity>& GetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
 
-    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::LOGIC_TICK_DATA.loadedMaps; }
+    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::ENGINE_DATA.loadedMaps; }
 
-    const Camera2D& GetCamera() { return global::LOGIC_TICK_DATA.camera; }
+    const Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
 
-    const std::vector<entt::entity>& GetDrawEntities() { return global::LOGIC_TICK_DATA.drawVec; }
+    const std::vector<entt::entity>& GetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
-    MapID GetCameraMap() { return global::LOGIC_TICK_DATA.cameraMap; }
+    MapID GetCameraMap() { return global::ENGINE_DATA.cameraMap; }
 
-    Vector2 GetCameraPosition() { return global::DRAW_TICK_DATA.camera.target; }
+    Vector2 GetCameraPosition() { return global::ENGINE_DATA.camera.target; }
 
     Rectangle GetCameraBounds()
     {
         const auto pad = global::CONFIGURATION.cameraViewPadding;
-        const auto& [offset, target, rotation, zoom] = global::LOGIC_TICK_DATA.camera;
+        const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
         const float camLeft = target.x - offset.x / zoom - pad;
         const float camTop = target.y - offset.y / zoom - pad;
@@ -94,7 +97,7 @@ namespace magique
 
     Rectangle GetCameraNativeBounds()
     {
-        const auto& [offset, target, rotation, zoom] = global::LOGIC_TICK_DATA.camera;
+        const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
         const float camLeft = target.x - offset.x / zoom;
         const float camTop = target.y - offset.y / zoom;
@@ -104,11 +107,14 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    entt::entity GetCameraEntity() { return global::LOGIC_TICK_DATA.cameraEntity; }
+    entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
 
-    void SyncThreads() { global::LOGIC_TICK_DATA.lock(); }
-
-    void UnSyncThreads() { global::LOGIC_TICK_DATA.unlock(); }
+    GameConfig& GetGameConfig()
+    {
+        GameConfig config;
+        //TODO implement config loading
+        return config;
+    }
 
     void SetShowHitboxes(const bool val) { global::CONFIGURATION.showHitboxes = val; }
 

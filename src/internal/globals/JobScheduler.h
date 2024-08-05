@@ -4,6 +4,8 @@
 #include <deque>
 #include <thread>
 
+#include <magique/internal/Macros.h>
+
 #include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/OSUtil.h"
 #include "internal/types/Spinlock.h"
@@ -13,17 +15,6 @@ namespace magique
 {
     struct Scheduler final
     {
-        ~Scheduler()
-        {
-            shutDown = true;
-            isHibernate = true;
-            for (auto& t : threads)
-            {
-                if (t.joinable())
-                    t.join();
-            }
-            threads.clear();
-        }
         alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
         alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
         alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
@@ -34,8 +25,8 @@ namespace magique
         std::atomic<uint16_t> handleID = 0;                // The internal handle counter
         vector<std::thread> threads;                       // All working threads
         std::atomic<int> usingThreads = 0;
-        double startTime = 0;
-        double tickTime = 0;
+        double targetTime = 0;
+        double sleepTime = 0;
 
         void addWorkedJob(const IJob* job)
         {
@@ -60,13 +51,22 @@ namespace magique
             }
         }
 
+        void close()
+        {
+            shutDown = true;
+            isHibernate = true;
+            for (auto& t : threads)
+            {
+                if (t.joinable())
+                    t.join();
+            }
+            threads.clear();
+        }
+
         jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
 
         friend void WorkerThreadFunc(Scheduler* scheduler, int threadNumber);
     };
-
-    constexpr auto tickDuration = 1.0 / MAGIQUE_LOGIC_TICKS;
-    constexpr auto wait = tickDuration * 0.90;
 
     inline void WorkerThreadFunc(Scheduler* scheduler, const int threadNumber)
     {
@@ -100,13 +100,12 @@ namespace magique
             // Wait more precisely with spinning at the end - only if necessary
             if (!waited)
             {
-                const double finalTime = scheduler->startTime + tickDuration;
-                WaitTime(finalTime, (finalTime - glfwGetTime()) * 0.9F);
+                if (glfwGetTime() + scheduler->sleepTime < scheduler->targetTime)
+                    WaitTime(scheduler->targetTime, scheduler->sleepTime);
                 waited = true;
             }
         }
     }
-
 
     namespace global
     {

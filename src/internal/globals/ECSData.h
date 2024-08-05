@@ -1,5 +1,5 @@
-#ifndef ENTITYTYPEMAP_H
-#define ENTITYTYPEMAP_H
+#ifndef MAGIQUE_ECSDATA_H
+#define MAGIQUE_ECSDATA_H
 
 #include "internal/datastructures/HashTypes.h"
 
@@ -19,4 +19,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //ENTITYTYPEMAP_H
+#endif //MAGIQUE_ECSDATA_H

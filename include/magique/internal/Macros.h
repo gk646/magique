@@ -28,6 +28,7 @@
     {                                                                                                                   \
         FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                            \
     }
+
 #if !defined(_DEBUG) || defined(NDEBUG)
 #define M_ASSERT(expr, message) ((void)0)
 #else

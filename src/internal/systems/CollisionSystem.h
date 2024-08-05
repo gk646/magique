@@ -1,13 +1,6 @@
 #ifndef COLLISIONSYSTEM_H
 #define COLLISIONSYSTEM_H
 
-#include <magique/ecs/Scripting.h>
-#include <magique/util/Jobs.h>
-#include <magique/util/Defines.h>
-
-#include "internal/globals/ScriptEngine.h"
-#include "internal/headers/MathPrimitives.h"
-
 //-----------------------------------------------
 // Collision System
 //-----------------------------------------------
@@ -37,7 +30,7 @@ namespace magique
     // System
     inline void CollisionSystem(entt::registry& registry)
     {
-        auto& tickData = global::LOGIC_TICK_DATA;
+        auto& tickData = global::ENGINE_DATA;
         auto& grid = tickData.hashGrid;
         auto& collisionVec = tickData.collisionVec;
         auto& collectors = tickData.collectors;
@@ -144,7 +137,7 @@ namespace magique
                     // Top left and height as height / diameter as w
                     return grid.query(collector, pos.x, pos.y, col.p1 * 2, col.p2);
                 }
-                float pxs[4] = {0, col.p1*2.0F, col.p1*2.0F, 0};
+                float pxs[4] = {0, col.p1 * 2.0F, col.p1 * 2.0F, 0};
                 float pys[4] = {0, 0, col.p2, col.p2};
                 RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
                 const auto bb = GetBBQuadrilateral(pxs, pys);
@@ -179,9 +172,9 @@ namespace magique
                 if (pairSet.contains(num))
                     continue;
                 pairSet.insert(num);
-                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id1], e1, e2);
+                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_DATA.scripts[id1], e1, e2);
                 // Invoke out of seconds view
-                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_ENGINE.scripts[id2], e2, e1);
+                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_DATA.scripts[id2], e2, e1);
             }
             vec.clear();
         }

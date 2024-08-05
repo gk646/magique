@@ -1,5 +1,4 @@
 #include <cmath>
-#include <array>
 
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
@@ -9,8 +8,7 @@
 
 #include <raylib/rlgl.h> // Has to be here
 
-#include "internal/headers/MathPrimitives.h"
-
+#include "internal/headers/CollisionPrimitives.h"
 
 constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
 constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);

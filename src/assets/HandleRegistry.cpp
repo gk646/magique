@@ -3,7 +3,7 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
-#include "internal/globals/HandleRegistry.h"
+#include "internal/globals/HandleData.h"
 
 namespace magique
 {
@@ -11,7 +11,7 @@ namespace magique
     {
         static_assert(MAGIQUE_DIRECT_HANDLES < UINT16_MAX && "Has to fit into 16 bit");
         M_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
-        global::HANDLE_REGISTRY.fastHandles[id] = static_cast<uint16_t>(handle);
+        global::HANDLE_REGISTRY.directHandles[id] = static_cast<uint16_t>(handle);
     }
 
     void RegisterHandle(const handle handle, const HandleID id)
@@ -58,8 +58,8 @@ namespace magique
     handle GetDirectHandle(const int id)
     {
         M_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
-        M_ASSERT(global::HANDLE_REGISTRY.fastHandles[id] != UINT16_MAX, "Null handle");
-        return static_cast<handle>(global::HANDLE_REGISTRY.fastHandles[id]);
+        M_ASSERT(global::HANDLE_REGISTRY.directHandles[id] != UINT16_MAX, "Null handle");
+        return static_cast<handle>(global::HANDLE_REGISTRY.directHandles[id]);
     }
 
 } // namespace magique

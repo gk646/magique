@@ -73,11 +73,6 @@
     #include "raudio.h"
 #else
     #include <raylib/raylib.h>         // Declares module functions
-
-    // Check if config flags have been externally provided on compilation line
-    #if !defined(EXTERNAL_CONFIG_FLAGS)
-        #include "config.h"     // Defines module configuration flags
-    #endif
     #include "utils.h"          // Required for: fopen() Android mapping
 #endif
 

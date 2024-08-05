@@ -52,7 +52,7 @@ namespace magique
 
         Matrix projectionMatrix =
             MatrixOrtho(0.0f, CORE.Window.currentFbo.width, CORE.Window.currentFbo.height, 0.0f, 0.0f, 1.0f);
-        Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(global::DRAW_TICK_DATA.camera), projectionMatrix);
+        Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(global::ENGINE_DATA.camera), projectionMatrix);
 
         float matMVPfloat[16] = {matMVP.m0,  matMVP.m1,  matMVP.m2,  matMVP.m3, matMVP.m4,  matMVP.m5,
                                  matMVP.m6,  matMVP.m7,  matMVP.m8,  matMVP.m9, matMVP.m10, matMVP.m11,

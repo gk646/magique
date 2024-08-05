@@ -97,11 +97,6 @@
 
 #include <raylib/raylib.h>                 // Declares module functions
 
-// Check if config flags have been externally provided on compilation line
-#if !defined(EXTERNAL_CONFIG_FLAGS)
-    #include "config.h"             // Defines module configuration flags
-#endif
-
 #include "utils.h"                  // Required for: TRACELOG() macros
 
 #include <stdlib.h>                 // Required for: srand(), rand(), atexit()
@@ -530,20 +525,8 @@ void InitWindow(int width, int height, const char *title)
     SetShapesTexture(texture, (Rectangle){ 0.0f, 0.0f, 1.0f, 1.0f });    // WARNING: Module required: rshapes
     #endif
 #endif
-#if defined(SUPPORT_MODULE_RTEXT) && defined(SUPPORT_DEFAULT_FONT)
-    if ((CORE.Window.flags & FLAG_WINDOW_HIGHDPI) > 0)
-    {
-        // Set default font texture filter for HighDPI (blurry)
-        // RL_TEXTURE_FILTER_LINEAR - tex filter: BILINEAR, no mipmaps
-        rlTextureParameters(GetFontDefault().texture.id, RL_TEXTURE_MIN_FILTER, RL_TEXTURE_FILTER_LINEAR);
-        rlTextureParameters(GetFontDefault().texture.id, RL_TEXTURE_MAG_FILTER, RL_TEXTURE_FILTER_LINEAR);
-    }
-#endif
 
     CORE.Window.shouldClose = false;
-
-    // Initialize random seed
-    SetRandomSeed((unsigned int)time(NULL));
 }
 
 // Close window and unload OpenGL context
@@ -697,7 +680,8 @@ void ClearBackground(Color color)
 // Setup canvas (framebuffer) to start drawing
 void BeginDrawing(void)
 {
-
+    // WARNING: Previously to BeginDrawing() other render textures drawing could happen,
+    // consequently the measure for update vs draw is not accurate (only the total frame time is accurate)
     rlLoadIdentity();                   // Reset current matrix (modelview)
     rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling
 
@@ -708,7 +692,8 @@ void BeginDrawing(void)
 // End canvas drawing and swap buffers (double buffering)
 void EndDrawing(void)
 {
-   rlDrawRenderBatchActive();      // Update and draw internal render batch
+    rlDrawRenderBatchActive();      // Update and draw internal render batch
+
 #if defined(SUPPORT_GIF_RECORDING)
     // Draw record indicator
     if (gifRecording)
@@ -716,7 +701,7 @@ void EndDrawing(void)
         #ifndef GIF_RECORD_FRAMERATE
         #define GIF_RECORD_FRAMERATE    10
         #endif
-        gifFrameCounter += GetFrameTime()*1000;
+        gifFrameCounter += (unsigned int)(GetFrameTime()*1000);
 
         // NOTE: We record one gif frame depending on the desired gif framerate
         if (gifFrameCounter > 1000/GIF_RECORD_FRAMERATE)
@@ -789,14 +774,6 @@ void EndDrawing(void)
         }
     }
 #endif  // SUPPORT_SCREEN_CAPTURE
-
-    // While window minimized, stop loop execution
-    // while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)) glfwWaitEvents();
-
-    CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
-
-    // Reset close status for next frame
-    glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
 
 // Initialize 2D mode with custom camera (2D)
@@ -1438,6 +1415,8 @@ Vector2 GetScreenToWorld2D(Vector2 position, Camera2D camera)
 
 // Set target FPS (maximum)
 // void SetTargetFPS(int fps)  IMPLEMENTED in src/core/headers/MainThread
+// void GetFPS()  IMPLEMENTED in src/core/headers/MainThread
+// void GetFrameTime()  IMPLEMENTED in src/core/headers/MainThread
 
 // Get current FPS
 // NOTE: We calculate an average framerate
@@ -2093,51 +2072,6 @@ long GetFileModTime(const char *fileName)
 // Module Functions Definition: Compression and Encoding
 //----------------------------------------------------------------------------------
 
-// Compress data (DEFLATE algorithm)
-unsigned char *CompressData(const unsigned char *data, int dataSize, int *compDataSize)
-{
-    #define COMPRESSION_QUALITY_DEFLATE  8
-    unsigned char *compData = NULL;
-
-#if defined(SUPPORT_COMPRESSION_API)
-    // Compress data and generate a valid DEFLATE stream
-    struct sdefl *sdefl = RL_CALLOC(1, sizeof(struct sdefl));   // WARNING: Possible stack overflow, struct sdefl is almost 1MB
-    int bounds = sdefl_bound(dataSize);
-    compData = (unsigned char *)RL_CALLOC(bounds, 1);
-
-    *compDataSize = sdeflate(sdefl, compData, data, dataSize, COMPRESSION_QUALITY_DEFLATE);   // Compression level 8, same as stbiw
-    RL_FREE(sdefl);
-
-    TRACELOG(LOG_INFO, "SYSTEM: Compress data: Original size: %i -> Comp. size: %i", dataSize, *compDataSize);
-#endif
-    return compData;
-}
-
-// Decompress data (DEFLATE algorithm)
-unsigned char *DecompressData(const unsigned char *compData, int compDataSize, int *dataSize)
-{
-    unsigned char *data = NULL;
-
-#if defined(SUPPORT_COMPRESSION_API)
-    // Decompress data from a valid DEFLATE stream
-    data = (unsigned char *)RL_CALLOC(MAX_DECOMPRESSION_SIZE*1024*1024, 1);
-    int length = sinflate(data, MAX_DECOMPRESSION_SIZE*1024*1024, compData, compDataSize);
-
-    // WARNING: RL_REALLOC can make (and leave) data copies in memory, be careful with sensitive compressed data!
-    // TODO: Use a different approach, create another buffer, copy data manually to it and wipe original buffer memory
-    unsigned char *temp = (unsigned char *)RL_REALLOC(data, length);
-
-    if (temp != NULL) data = temp;
-    else TRACELOG(LOG_WARNING, "SYSTEM: Failed to re-allocate required decompression memory");
-
-    *dataSize = length;
-
-    TRACELOG(LOG_INFO, "SYSTEM: Decompress data: Comp. size: %i -> Original size: %i", compDataSize, *dataSize);
-#endif
-
-    return data;
-}
-
 // Encode data to Base64 string
 char *EncodeDataBase64(const unsigned char *data, int dataSize, int *outputSize)
 {
@@ -2386,7 +2320,7 @@ void SetAutomationEventList(AutomationEventList *list)
 // Set automation event internal base frame to start recording
 void SetAutomationEventBaseFrame(int frame)
 {
-    //CORE.Time.frameCounter = frame;
+//    CORE.Time.frameCounter = frame;
 }
 
 // Start recording automation events (AutomationEventList must be set)
@@ -2684,10 +2618,14 @@ int GetGamepadAxisCount(int gamepad)
 // Get axis movement vector for a gamepad
 float GetGamepadAxisMovement(int gamepad, int axis)
 {
-    float value = 0;
+    float value = (axis == GAMEPAD_AXIS_LEFT_TRIGGER || axis == GAMEPAD_AXIS_RIGHT_TRIGGER)? -1.0f : 0.0f;
 
-    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (axis < MAX_GAMEPAD_AXIS) &&
-        (fabsf(CORE.Input.Gamepad.axisState[gamepad][axis]) > 0.1f)) value = CORE.Input.Gamepad.axisState[gamepad][axis];      // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
+    if ((gamepad < MAX_GAMEPADS) && CORE.Input.Gamepad.ready[gamepad] && (axis < MAX_GAMEPAD_AXIS)) {
+        const double movement = value < 0.0f ? CORE.Input.Gamepad.axisState[gamepad][axis] : fabs(CORE.Input.Gamepad.axisState[gamepad][axis]);
+
+        // 0.1f = GAMEPAD_AXIS_MINIMUM_DRIFT/DELTA
+        if (movement > value + 0.1f) value = CORE.Input.Gamepad.axisState[gamepad][axis];
+    }
 
     return value;
 }
@@ -2897,7 +2835,6 @@ void InitTimer(void)
     }
     else TRACELOG(LOG_WARNING, "TIMER: Hi-resolution timer not available");
 #endif
-
 }
 
 // Set viewport for a provided width and height
@@ -3207,7 +3144,7 @@ static void RecordAutomationEvent(void)
         currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
         currentEventList->events[currentEventList->count].type = INPUT_MOUSE_WHEEL_MOTION;
         currentEventList->events[currentEventList->count].params[0] = (int)CORE.Input.Mouse.currentWheelMove.x;
-        currentEventList->events[currentEventList->count].params[1] = (int)CORE.Input.Mouse.currentWheelMove.y;;
+        currentEventList->events[currentEventList->count].params[1] = (int)CORE.Input.Mouse.currentWheelMove.y;
         currentEventList->events[currentEventList->count].params[2] = 0;
 
         TRACELOG(LOG_INFO, "AUTOMATION: Frame: %i | Event type: INPUT_MOUSE_WHEEL_MOTION | Event parameters: %i, %i, %i", currentEventList->events[currentEventList->count].frame, currentEventList->events[currentEventList->count].params[0], currentEventList->events[currentEventList->count].params[1], currentEventList->events[currentEventList->count].params[2]);
@@ -3330,7 +3267,8 @@ static void RecordAutomationEvent(void)
         for (int axis = 0; axis < MAX_GAMEPAD_AXIS; axis++)
         {
             // Event type: INPUT_GAMEPAD_AXIS_MOTION
-            if (CORE.Input.Gamepad.axisState[gamepad][axis] > 0.1f)
+            float defaultMovement = (axis == GAMEPAD_AXIS_LEFT_TRIGGER || axis == GAMEPAD_AXIS_RIGHT_TRIGGER)? -1.0f : 0.0f;
+            if (GetGamepadAxisMovement(gamepad, axis) != defaultMovement)
             {
                 currentEventList->events[currentEventList->count].frame = CORE.Time.frameCounter;
                 currentEventList->events[currentEventList->count].type = INPUT_GAMEPAD_AXIS_MOTION;
