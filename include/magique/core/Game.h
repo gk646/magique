@@ -11,13 +11,16 @@
 // Game module
 //-----------------------------------------------
 // ................................................................................
-// Core game class you should subclass
-// All methods are called on the main thread unless specified otherwise.
-// A note on the threading behavior:
-// There is a update thread and the main thread. They almost fully run in paralell expect when some shared state is mutated
-// So if you add or destoy entities they have to be synced. If you use the ECS API of magique you dont have to worry about that
-// Also magique uses primitive atomics with spinlocks to avoid context switching! Generally 95% of the time no thread will wait!
-// All input getters of raylib work on either thread correctly and are updated at the end of each update tick!
+// Core game class you should subclass. You then override and implement the methods which are then called automatically.
+// All raylib timing and input functions work just as normal and have the same effect (e.g. SetTargetFPS(),...)
+// Note: The asset image and game config are loaded with their default names if not specified.
+//       To get assets you have to call assets/AssetPacker::CompileAssetImage()! Read its documentation for more infos.
+// You should create your game and call run in the main function:
+//      MyGameClass game{};
+//      return game.run();
+//
+// Making the engine usable without the game class is a low priority task for the future.
+// All functions are called on the main thread
 // ................................................................................
 
 namespace magique
@@ -29,13 +32,14 @@ namespace magique
 
         //-----------------LIFE CYCLE-----------------//
 
-        // Called on startup - register your loaders here
+        // Called once on startup - register your loaders here
         virtual void onStartup(AssetLoader& al, GameConfig& config) {}
 
-        // Called when the game closes
+        // Called once when the game closes
         virtual void onShutDown(GameConfig& config) {}
 
         // Called when the window close button is pressed
+        // Note: If overridden you have to call shutDown() manually to close the game!
         virtual void onCloseEvent() { shutDown(); }
 
         // Stops the game
@@ -44,25 +48,19 @@ namespace magique
         //-----------------UPDATING-----------------//
 
         // Called each update tick
-        // Thread: Called on the update thread!
         virtual void updateGame(entt::registry& registry) {}
 
         //-----------------RENDERING-----------------//  // In chronological call order
-
-        // Called each tick before rendering happens
-        virtual void preRender() {}
 
         // Called each tick when loading - skips all other draw methods
         virtual void drawLoadingScreen(UIRoot& root, float progressPercent) {}
 
         // Called each tick to render the world
-        // This is not thread synced - dont read any logic tick data or the registry
-        // This should just be pure tile drawing of the background
+        // Should be used to draw the background world
         virtual void drawWorld(Camera2D& camera) {}
 
         // Called each render tick
-        // Synchronized with the logic tick - its save to access logic tick data (drawVec) or the registry
-        // Note: BeginMode2D is already called
+        // Note: BeginMode2D is already called - everything inside this method happens relative to the camera
         virtual void drawGame(entt::registry& registry, Camera2D& camera) {}
 
         // Called each render tick after all other draw calls
@@ -70,9 +68,9 @@ namespace magique
 
         //----------------- START -----------------//
 
-        // Call this to start the game
-        // Tries to load an asset image from the default path
-        // Tries to load the game config from the default path
+        // Call this to start the game - should be call in the main method: return game.run();
+        // Tries to load an asset image from the default path - assets will be empty if none exists!
+        // Tries to load the game config from the default path - will be created if none exists!
         int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
         //----------------- GETTERS -----------------//
@@ -86,7 +84,6 @@ namespace magique
         bool isLoading = false;
         const char* gameName;
         friend void HandleLoadingScreen(Game& game);
-        friend void Run(Game& game);
     };
 
 } // namespace magique

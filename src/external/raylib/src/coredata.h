@@ -4,7 +4,7 @@
 // Added so we can easily access the core data internally
 // Should change nothing in any setup - just made this piece include-able anywhere else
 
-#include "config.h"
+#include <raylib/config.h>
 #include <raylib/rlgl.h>
 
 #ifdef __cplusplus

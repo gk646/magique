@@ -36,6 +36,18 @@ Most notable features:
 
 ### 1. Installation
 
+There are 2 supported ways of installing `magique`:
+
+#### By source (CMake)
+
+If you use CMake (recommended) just download or clone this repository and add the directory with:
+```cmake
+add_subdirectory(path/to/magique)
+```
+This will automatically build and link magique to your current project for all supported platforms!
+Check the wiki for optional config flags you can set before adding magique.
+
+
 ### 2. The Wiki
 
 ### 2. The tech-stack of `magique`:
@@ -45,7 +57,7 @@ Most notable features:
     - File loading: .mp3, .wav, .png, .gif, models and shaders...
     - Random Numbers: GetRandomInt()
     - Audio
-- entt
+- EnTT
     - Entity component system
     - Views, groups, signals...
 - ankerl
@@ -55,11 +67,10 @@ Most notable features:
 
 Paradigms:
 
-- 2 Thread model
-    - Main thread for drawing
-    - Update thread for updates
-    - Helper threads for additional work
+- 1 Main Thread + Job System
+    - Main thread handles calling render and update functions correctly
+    - Job system allows to submit and await concurrent work packages
 
 - Fixed update tick rate
-    - Default is 60 update per second
+    - Default is 60 updates per second
 - Entity Component System

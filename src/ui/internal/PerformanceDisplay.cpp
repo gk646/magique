@@ -3,8 +3,9 @@
 
 #include "PerformanceDisplay.h"
 #include "internal/globals/Configuration.h"
-#include "internal/globals/PerfData.h"
+#include "internal/globals/PerformanceData.h"
 #include "external/raylib/src/coredata.h"
+
 
 #if MAGIQUE_MULITPLAYER_SUPPORT == 1
 #include <steam/steam_api.h>
@@ -36,13 +37,15 @@ void AssignConnectionInfo(bool isHost, float& inBytes, float& outBytes)
 }
 #endif
 
-float drawBlock(const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
+float DrawBlock(const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
 {
-    const float blockHeight = fs + fs * 0.15F;
+    const float blockHeight = fs * 1.15F;
+    const float borderWidth = fs * 0.1F;
+    const Vector2 textPosition = {pos.x + w * 0.07F, pos.y + (blockHeight - fs) / 2};
+
     const Rectangle container = {pos.x, pos.y, w, blockHeight};
     DrawRectangleRec(container, GRAY);
-    DrawRectangleLinesEx(container, fs * 0.1F, LIGHTGRAY);
-    const Vector2 textPosition = {pos.x + w * 0.07F, pos.y + (blockHeight - fs) / 2};
+    DrawRectangleLinesEx(container, borderWidth, LIGHTGRAY);
     DrawTextEx(f, text, textPosition, fs, 0.5F, LIGHTGRAY);
     return w;
 }
@@ -114,6 +117,6 @@ void PerformanceDisplay::draw()
     {
         if (block.width == 0)
             continue;
-        position.x += drawBlock(block.text, font, fs, position, block.width);
+        position.x += DrawBlock(block.text, font, fs, position, block.width);
     }
 }

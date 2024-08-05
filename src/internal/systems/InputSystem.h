@@ -42,7 +42,7 @@ namespace magique
 
         if (invokeKey && invokeMouse)
         {
-            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
+            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {
@@ -53,7 +53,7 @@ namespace magique
         }
         else if (invokeKey)
         {
-            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
+            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {
@@ -63,7 +63,7 @@ namespace magique
         }
         else if (invokeMouse)
         {
-            for (const auto e : global::LOGIC_TICK_DATA.entityUpdateVec)
+            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {

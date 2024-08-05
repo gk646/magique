@@ -23,8 +23,8 @@ namespace magique
             switch (data.emShape) //  No triangle emission shape
             {
             case Shape::RECT:
-                particle.x = GetRandomValue(data.emX, data.emp1);
-                particle.y = GetRandomValue(data.emY, data.emp2);
+                particle.x = GetRandomValue(static_cast<int>(data.emX), static_cast<int>(data.emp1));
+                particle.y = GetRandomValue(static_cast<int>(data.emY), static_cast<int>(data.emp2));
                 break;
             case Shape::CIRCLE:
                 {
@@ -108,10 +108,7 @@ namespace magique
             particle.age = 0;
             particle.shape = data.shape;
 
-
-            SyncThreads();
             global::PARTICLE_DATA.addParticle(particle);
-            UnSyncThreads();
         }
     }
 
@@ -212,7 +209,7 @@ namespace magique
             if (i > 5)
                 break;
         }
-        data.r = colors.size(); // Save valid size in r
+        data.r = static_cast<uint8_t>(colors.size()); // Save valid size in r
 
         return *this;
     }

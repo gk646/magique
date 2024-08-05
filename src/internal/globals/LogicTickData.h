@@ -34,7 +34,7 @@ namespace magique
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using HashGrid = SingleResolutionHashGrid<entt::entity, 32>;
 
-    struct LogicTickData final
+    struct EngineData final
     {
         MapID cameraMap;                                     // Map the camera is in
         Camera2D camera{};                                   // current camera
@@ -43,15 +43,14 @@ namespace magique
         EntityFlagMap changedSet{500};                       // Change set for multiplayer events
         EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
         std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
-        vector<entt::entity> collisionVec{};                 // vector containing the entites to check for collision
+        vector<entt::entity> collisionVec;                   // vector containing the entites to check for collision
         std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
         CollPairCollector collisionPairs{};                  // Collision pair collectors
-        HashSet<uint64_t> pairSet{};                         // Filters unique collision pairs
+        HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
         HashGrid hashGrid{200};                              // Global hashGrid for all entities
-        std::atomic_flag flag; // Atomic spinlock - whenever any data is accessed on the draw thread
 
-        LogicTickData()
+        EngineData()
         {
             hashGrid.reserve(150, 1000);
             drawVec.reserve(1000);
@@ -59,15 +58,6 @@ namespace magique
             collisionVec.reserve(500);
             pairSet.reserve(1000);
         }
-
-        void lock()
-        {
-            while (flag.test_and_set(std::memory_order_acquire))
-            {
-            }
-        }
-
-        void unlock() { flag.clear(std::memory_order_release); }
 
         void clear()
         {
@@ -81,7 +71,7 @@ namespace magique
 
     namespace global
     {
-        inline LogicTickData LOGIC_TICK_DATA;
+        inline EngineData ENGINE_DATA;
     }
 
 } // namespace magique

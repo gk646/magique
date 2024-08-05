@@ -4,6 +4,9 @@
 
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <magique/ecs/ECS.h>
+#include <magique/ecs/Components.h>
+#include <magique/ecs/Scripting.h>
 #include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/Jobs.h>
@@ -14,17 +17,18 @@
 #include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 
 #include "internal/globals/LogicTickData.h"
-#include "internal/globals/DrawTickData.h"
 #include "internal/globals/Configuration.h"
-#include "internal/globals/Loaders.h"
-#include "internal/globals/PerfData.h"
-#include "internal/globals/LogicThread.h"
-#include "internal/globals/ShaderEngine.h"
+#include "internal/globals/LoadingData.h"
+#include "internal/globals/PerformanceData.h"
+#include "internal/globals/ShaderData.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AudioPlayer.h"
+#include "internal/globals/ScriptData.h"
 #include "internal/globals/UIData.h"
 #include "internal/globals/CommandLineData.h"
 #include "internal/globals/ParticleData.h"
+
+#include "internal/headers/CollisionPrimitives.h"
 
 #include "internal/systems/CollisionSystem.h"
 #include "internal/systems/InputSystem.h"
@@ -33,6 +37,7 @@
 
 #include "internal/headers/IncludeWindows.h"
 #include "internal/headers/OSUtil.h"
+#include "internal/globals/JobScheduler.h"
 
 #include "core/headers/MainThreadUtil.h"
 #include "core/headers/Updater.h"
@@ -47,19 +52,15 @@ rlglData RLGL = {0};
 
 namespace magique
 {
-    Game::Game(const char* name) : gameName(name)
+    Game::Game(const char* name) : isRunning(true), gameName(name)
     {
-        _isRunning = true;
-#ifdef MAGIQUE_DEBUG
-        SetTraceLogLevel(LOG_WARNING);
-#endif
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
-        InitWindow(1280, 720, name);
+        // Init Window
+        InitWindow(1280, 960, name);
         InitAudioDevice();
         SetExitKey(0);
         SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
-        global::LOGIC_TICK_DATA.camera.zoom = 1.0F;
         InitMagique();
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
@@ -93,16 +94,13 @@ namespace magique
 
         static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW);
         static_cast<AssetLoader*>(loader)->printStats();
-        _isLoading = true;
+        isLoading = true;
 
-        // Start threads
-        updater::Run(_isRunning, *this);
-        renderer::Run(_isLoading, *this);
-
+        // Run main thread
+        mainthread::Setup();
+        mainthread::Run(*this);
         onShutDown(config);
-
-        renderer::Close();
-        updater::Close();
+        mainthread::Close();
 
 #ifdef MAGIQUE_DEBUG_PROFILE
         LOG_INFO("Average DrawTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(DRAW) / 1'000);
@@ -111,5 +109,5 @@ namespace magique
         return 0;
     }
 
-    void Game::shutDown() { _isRunning = false; }
+    void Game::shutDown() { isRunning = false; }
 } // namespace magique

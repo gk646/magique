@@ -76,7 +76,7 @@ namespace magique
         // Draws the current sprite
         void draw();
 
-        // Progresses the sprite - should be called on the update thread to be frame rate independant
+        // Progresses the sprite - should be called from the update method to be frame rate independant
         void update();
 
         // Sets a new action state

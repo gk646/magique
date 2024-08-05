@@ -29,9 +29,9 @@ namespace magique
         RenderTexture shadowTexture;
 
         unsigned int vao, vbo;
-        unsigned int currentSize;
+        int currentSize;
 
-        void init(const size_t initialSize = 1024 * sizeof(Vector3))
+        void init(const int initialSize = 1024 * sizeof(Vector3))
         {
             shadowResolution = {1280, 960};
             shadowQuads.reserve(500);

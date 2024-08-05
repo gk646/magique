@@ -1091,91 +1091,6 @@ void PollInputEvents(void)
     UpdateGestures();
 #endif
 
-    // Check if gamepads are ready
-    // NOTE: We do it here in case of disconnection
-    for (int i = 0; i < MAX_GAMEPADS; i++)
-    {
-        if (glfwJoystickPresent(i)) CORE.Input.Gamepad.ready[i] = true;
-        else CORE.Input.Gamepad.ready[i] = false;
-    }
-
-    // Register gamepads buttons events
-    for (int i = 0; i < MAX_GAMEPADS; i++)
-    {
-        if (CORE.Input.Gamepad.ready[i])     // Check if gamepad is available
-        {
-            // Register previous gamepad states
-            for (int k = 0; k < MAX_GAMEPAD_BUTTONS; k++) CORE.Input.Gamepad.previousButtonState[i][k] = CORE.Input.Gamepad.currentButtonState[i][k];
-
-            // Get current gamepad state
-            // NOTE: There is no callback available, so we get it manually
-            GLFWgamepadstate state = { 0 };
-            glfwGetGamepadState(i, &state); // This remapps all gamepads so they have their buttons mapped like an xbox controller
-
-            const unsigned char *buttons = state.buttons;
-
-            for (int k = 0; (buttons != NULL) && (k < MAX_GAMEPAD_BUTTONS); k++)
-            {
-                int button = -1;        // GamepadButton enum values assigned
-
-                switch (k)
-                {
-                    case GLFW_GAMEPAD_BUTTON_Y: button = GAMEPAD_BUTTON_RIGHT_FACE_UP; break;
-                    case GLFW_GAMEPAD_BUTTON_B: button = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT; break;
-                    case GLFW_GAMEPAD_BUTTON_A: button = GAMEPAD_BUTTON_RIGHT_FACE_DOWN; break;
-                    case GLFW_GAMEPAD_BUTTON_X: button = GAMEPAD_BUTTON_RIGHT_FACE_LEFT; break;
-
-                    case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER: button = GAMEPAD_BUTTON_LEFT_TRIGGER_1; break;
-                    case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER: button = GAMEPAD_BUTTON_RIGHT_TRIGGER_1; break;
-
-                    case GLFW_GAMEPAD_BUTTON_BACK: button = GAMEPAD_BUTTON_MIDDLE_LEFT; break;
-                    case GLFW_GAMEPAD_BUTTON_GUIDE: button = GAMEPAD_BUTTON_MIDDLE; break;
-                    case GLFW_GAMEPAD_BUTTON_START: button = GAMEPAD_BUTTON_MIDDLE_RIGHT; break;
-
-                    case GLFW_GAMEPAD_BUTTON_DPAD_UP: button = GAMEPAD_BUTTON_LEFT_FACE_UP; break;
-                    case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT: button = GAMEPAD_BUTTON_LEFT_FACE_RIGHT; break;
-                    case GLFW_GAMEPAD_BUTTON_DPAD_DOWN: button = GAMEPAD_BUTTON_LEFT_FACE_DOWN; break;
-                    case GLFW_GAMEPAD_BUTTON_DPAD_LEFT: button = GAMEPAD_BUTTON_LEFT_FACE_LEFT; break;
-
-                    case GLFW_GAMEPAD_BUTTON_LEFT_THUMB: button = GAMEPAD_BUTTON_LEFT_THUMB; break;
-                    case GLFW_GAMEPAD_BUTTON_RIGHT_THUMB: button = GAMEPAD_BUTTON_RIGHT_THUMB; break;
-                    default: break;
-                }
-
-                if (button != -1)   // Check for valid button
-                {
-                    if (buttons[k] == GLFW_PRESS)
-                    {
-                        CORE.Input.Gamepad.currentButtonState[i][button] = 1;
-                        CORE.Input.Gamepad.lastButtonPressed = button;
-                    }
-                    else CORE.Input.Gamepad.currentButtonState[i][button] = 0;
-                }
-            }
-
-            // Get current axis state
-            const float *axes = state.axes;
-
-            for (int k = 0; (axes != NULL) && (k < GLFW_GAMEPAD_AXIS_LAST + 1); k++)
-            {
-                CORE.Input.Gamepad.axisState[i][k] = axes[k];
-            }
-
-            // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
-            CORE.Input.Gamepad.currentButtonState[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2] = (char)(CORE.Input.Gamepad.axisState[i][GAMEPAD_AXIS_LEFT_TRIGGER] > 0.1f);
-            CORE.Input.Gamepad.currentButtonState[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2] = (char)(CORE.Input.Gamepad.axisState[i][GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.1f);
-
-            CORE.Input.Gamepad.axisCount[i] = GLFW_GAMEPAD_AXIS_LAST + 1;
-        }
-    }
-    CORE.Window.resizedLastFrame = false;
-
-    glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
-}
-
-// Ticks input events once - allows to pick a arbitrary update tickrate
-void TickInputEvents(void)
-{
     // Reset keys/chars pressed registered
     CORE.Input.Keyboard.keyPressedQueueCount = 0;
     CORE.Input.Keyboard.charPressedQueueCount = 0;
@@ -1215,7 +1130,14 @@ void TickInputEvents(void)
     // https://www.codeproject.com/Articles/668404/Programming-for-Multi-Touch
     // https://docs.microsoft.com/en-us/windows/win32/wintouch/getting-started-with-multi-touch-messages
     CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;
+
+    CORE.Window.resizedLastFrame = false;
+    glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
+    CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
+    // Reset close status for next frame
+    glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
+
 
 //----------------------------------------------------------------------------------
 // Module Internal Functions Definition
@@ -1268,6 +1190,11 @@ int InitPlatform(void)
     //glfwWindowHint(GLFW_REFRESH_RATE, 0);         // Refresh rate for fullscreen window
     //glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API); // OpenGL API to use. Alternative: GLFW_OPENGL_ES_API
     //glfwWindowHint(GLFW_AUX_BUFFERS, 0);          // Number of auxiliar buffers
+
+    // Disable GlFW auto iconify behaviour
+    // Auto Iconify automatically minimizes (iconifies) the window if the window loses focus
+    // additionally auto iconify restores the hardware resolution of the monitor if the window that loses focus is a fullscreen window
+    glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
 
     // Check window creation flags
     if ((CORE.Window.flags & FLAG_FULLSCREEN_MODE) > 0) CORE.Window.fullscreen = true;
@@ -1448,11 +1375,6 @@ int InitPlatform(void)
         // No-fullscreen window creation
         bool requestWindowedFullscreen = (CORE.Window.screen.height == 0) && (CORE.Window.screen.width == 0);
 
-        // If we are windowed fullscreen, ensures that window does not minimize when focus is lost.
-        // This hinting code will not work if the user already specified the correct monitor dimensions;
-        // at this point we don't know the monitor's dimensions. (Though, how did the user then?)
-        if (requestWindowedFullscreen) glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
-
         // Default to at least one pixel in size, as creation with a zero dimension is not allowed.
         int creationWidth = CORE.Window.screen.width != 0 ? CORE.Window.screen.width : 1;
         int creationHeight = CORE.Window.screen.height != 0 ? CORE.Window.screen.height : 1;
@@ -1624,16 +1546,16 @@ int InitPlatform(void)
     char *glfwPlatform = "";
     switch (glfwGetPlatform())
     {
-        case GLFW_PLATFORM_WIN32:   glfwPlatform = "Win32";   break;
-        case GLFW_PLATFORM_COCOA:   glfwPlatform = "Cocoa";   break;
+        case GLFW_PLATFORM_WIN32: glfwPlatform = "Win32"; break;
+        case GLFW_PLATFORM_COCOA: glfwPlatform = "Cocoa"; break;
         case GLFW_PLATFORM_WAYLAND: glfwPlatform = "Wayland"; break;
-        case GLFW_PLATFORM_X11:     glfwPlatform = "X11";     break;
-        case GLFW_PLATFORM_NULL:    glfwPlatform = "Null";    break;
+        case GLFW_PLATFORM_X11: glfwPlatform = "X11"; break;
+        case GLFW_PLATFORM_NULL: glfwPlatform = "Null"; break;
+        default: break;
     }
 #endif
 
-    TRACELOG(LOG_INFO, "GLFW platform: %s", glfwPlatform);
-    TRACELOG(LOG_INFO, "PLATFORM: DESKTOP (GLFW): Initialized successfully");
+    TRACELOG(LOG_INFO, "PLATFORM: DESKTOP (GLFW - %s): Initialized successfully", glfwPlatform);
 
     return 0;
 }

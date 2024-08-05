@@ -52,8 +52,8 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetEx(const Asset& asset, const int width, const int height, const int frames,
-                                 const int offX, const int offY, const AtlasID at, const float scale)
+    handle RegisterSpritesheetEx(const Asset& asset, const int width, const int height, const int frames, const int offX,
+                                 const int offY, const AtlasID at, const float scale)
     {
         Image image;
         if (!ImageCheck(image, asset, at))
@@ -78,7 +78,7 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, const AtlasID at,const float scale)
+    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, const AtlasID at, const float scale)
     {
         Image image;
         if (!ImageCheck(image, *assets[0], at))
@@ -87,8 +87,8 @@ namespace magique
         const int width = image.width;
         const int height = image.height;
 
-        const float tarWidth = std::floor(static_cast<float>(width) * scale);
-        const float tarHeight = std::floor(static_cast<float>(height) * scale);
+        const auto tarWidth = static_cast<int>(static_cast<float>(width) * scale);
+        const auto tarHeight = static_cast<int>(static_cast<float>(height) * scale);
 
         if (assets.size() * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
         {
@@ -97,9 +97,9 @@ namespace magique
             return handle::null;
         }
 
-        const Rectangle source = {0, 0, (float)width, (float)height};
-        Image singleImage = GenImageColor(assets.size() * width, height, BLANK);
-        ImageDraw(&singleImage, image, source, {0, 0, (float)width, (float)height}, WHITE);
+        const Rectangle source = {0, 0, static_cast<float>(width), static_cast<float>(height)};
+        Image singleImage = GenImageColor(static_cast<int>(assets.size()) * width, height, BLANK);
+        ImageDraw(&singleImage, image, source, {0, 0, static_cast<float>(width), static_cast<float>(height)}, WHITE);
 
         auto offX = static_cast<float>(width);
         for (int i = 1; i < assets.size(); ++i)
@@ -125,7 +125,7 @@ namespace magique
         }
 
         auto& atlas = global::TEXTURE_ATLASES[at];
-        const auto sheet = atlas.addSpritesheet(singleImage, assets.size(), tarWidth, tarHeight, 0, 0);
+        const auto sheet = atlas.addSpritesheet(singleImage, (int)assets.size(), tarWidth, tarHeight, 0, 0);
 
         return global::ASSET_MANAGER.addResource(sheet);
     }
@@ -183,7 +183,7 @@ namespace magique
 
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
 
-    handle RegisterTileSheet(const Asset& asset,const int size,const float scale)
+    handle RegisterTileSheet(const Asset& asset, const int size, const float scale)
     {
         const auto sheet = TileSheet(asset, size, scale);
 

@@ -12,20 +12,20 @@
 
 //----------------- CORE -----------------//
 
-#define MAGIQUE_VERSION "0.0.3"
-#define MAGIQUE_DEBUG 1
+#define MAGIQUE_VERSION "0.0.5"  // Version number
+#define MAGIQUE_DEBUG 1          // 1 to enable debug - 0 to disable
 #define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
-#define MAGIQUE_WORKER_THREADS 2 // Amount of worker threads - 4 total threads which supports 95% of steam users
+#define MAGIQUE_WORKER_THREADS 3 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores
 
 //----------------- STEAM -----------------//
 
-// add "set(MAGIQUE_STEAM ON)" to your CMakeLists.txt before including magique to enable steam features
+// add "set(MAGIQUE_USE_STEAM ON)" to your CMakeLists.txt before including magique to enable steam features
 #define MAGIQUE_STEAM 0
 
 //----------------- MULTIPLAYER -----------------//
 
-#define MAGIQUE_MAX_PLAYERS 4         // Needs to be set to the maximum amount of players
-#define MAGIQUE_MESSAGES_ESTIMATE 150 // Estimate how many multiplayer messages are sent each tick
+#define MAGIQUE_MAX_PLAYERS 4         // Maximum amount of actors supported
+#define MAGIQUE_MESSAGES_ESTIMATE 200 // Estimate how many multiplayer messages are sent each tick
 
 //----------------- ASSETS -----------------//
 
@@ -41,7 +41,7 @@
 #define MAGIQUE_UI_RESOLUTION_Y 1080.0F // Logical resolution of 1920x1080 since its the most common
 #define MAGIQUE_MAX_FORMAT_LEN 64       // Limits both placeholders and string values
 
-//----------------- LOADING -----------------//
+//----------------- PERSISTENCE -----------------//
 
 #define MAGIQUE_MAX_TABLE_NAME_SIZE 16
 
@@ -51,13 +51,12 @@
 
 //----------------- PERFORMANCE -----------------//
 
-#define MAGIQUE_USE_SIMD // AVX2 intrinsics -> 93% of steam users support this (intel since 2013, amd since 2015)
+#define MAGIQUE_USE_SIMD // up to AVX2 -> supported by 93% of steam users (Intel since 2013, AMD since 2015)
 
-//----------------- BRANCHES -----------------//
+//----------------- CONDITIONALS -----------------//
 
 #if MAGIQUE_DEBUG == 1
 //#define MAGIQUE_DEBUG_COLLISIONS  // Uses O(n**2) collision checking for double checking
-#define MAGIQUE_DEBUG_ENTITIES
 #define MAGIQUE_DEBUG_PROFILE
 #endif
 

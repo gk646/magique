@@ -69,6 +69,7 @@ namespace magique
         EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
 
         //----------------- PARTICLE -----------------//
+        // Note: Default shape is Rect with dimensions (5,5)
 
         // Sets the emission shape to be a rect
         // Pass the width and height of the rectangle
@@ -91,7 +92,7 @@ namespace magique
         // Default: empty
         EmitterBase& setColorPool(const std::initializer_list<Color>& colors);
 
-        // Sets the lifetime in game ticks
+        // Sets the lifetime in game ticks - randomly chosen between the min and max
         // Default: 100
         EmitterBase& setLifetime(int minLife, int maxLife = 0);
 

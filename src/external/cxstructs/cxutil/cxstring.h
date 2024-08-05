@@ -140,7 +140,7 @@ namespace cxstructs
             }
         }
 
-        return (ptr1 - str1) - (ptr2 - str2);
+        return static_cast<int>((ptr1 - str1) - (ptr2 - str2));
     }
     // Case insensitive! - Tries to find and return the first occurrence of sequence in string
     inline const char* str_substr_case(const char* string, const char* sequence)

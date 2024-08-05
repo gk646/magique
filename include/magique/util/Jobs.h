@@ -68,9 +68,9 @@ namespace magique
     // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
     void WakeUpJobs();
 
-    // Puts all workers to hibernation - pass the time the worker threads should hibernate (until next logic tick)
+    // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
     // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
-    void HibernateJobs(double tickStart, double tickTime);
+    void HibernateJobs(double target, double sleepTime);
 
     //----------------- JOBS -----------------//
 

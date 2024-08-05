@@ -606,7 +606,7 @@ void fast_vector<T>::erase_unordered(const T& val)
 template <class T>
 void fast_vector<T>::erase_unordered(T* pos)
 {
-    const size_type idx = pos - m_data;
+    const auto idx = pos - m_data;
     assert(idx < m_size && "Iterator out of bounds");
 
     --m_size;

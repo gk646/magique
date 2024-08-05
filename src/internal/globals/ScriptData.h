@@ -2,11 +2,12 @@
 #define MAGIQUE_SCRIPTENGINE_H
 
 #include <magique/ecs/Scripting.h>
+
 #include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
-    struct ScriptEngine
+    struct ScriptData final
     {
         inline static auto* defaultScript = new EntityScript();
         vector<EntityScript*> scripts;
@@ -23,7 +24,7 @@ namespace magique
     namespace global
     {
 
-        inline ScriptEngine SCRIPT_ENGINE;
+        inline ScriptData SCRIPT_DATA;
     }
 } // namespace magique
 

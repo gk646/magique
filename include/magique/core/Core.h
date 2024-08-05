@@ -101,7 +101,6 @@ namespace magique
     // IMPORTANT: Only valid after the Game() constructor returned!
     GameConfig& GetGameConfig();
 
-
     //----------------- SETTINGS -----------------//
 
     // If enabled display performance metrics on the top left
@@ -110,16 +109,6 @@ namespace magique
 
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);
-
-
-    //----------------- THREADING -----------------//
-
-    // You generally dont have to call this - only call this if you know what it does
-    // IMPORTANT: Must not be called from Game::drawGame()! - its already synced -> Deadlock
-    void SyncThreads();
-
-    // You generally dont have to call this - only call this if you know what it does
-    void UnSyncThreads();
 
     //----------------- UTILS -----------------//
 

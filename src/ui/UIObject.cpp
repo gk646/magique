@@ -5,7 +5,7 @@
 #include <magique/core/Types.h>
 
 #include "internal/globals/UIData.h"
-#include "internal/headers/MathPrimitives.h"
+#include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
 {

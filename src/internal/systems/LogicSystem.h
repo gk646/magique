@@ -13,7 +13,7 @@ namespace magique
     inline Rectangle GetCameraRect()
     {
         const auto pad = global::CONFIGURATION.cameraViewPadding;
-        auto& camera = global::LOGIC_TICK_DATA.camera;
+        auto& camera = global::ENGINE_DATA.camera;
         auto& target = camera.target;
         auto& offset = camera.offset;
         return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
@@ -111,7 +111,7 @@ namespace magique
     inline void AssignCameraData(entt::registry& registry)
     {
         const auto view = registry.view<const CameraC, const PositionC>();
-        auto& tickData = global::LOGIC_TICK_DATA;
+        auto& tickData = global::ENGINE_DATA;
 #if MAGIQUE_DEBUG == 1
         int count = 0;
 #endif
@@ -148,7 +148,7 @@ namespace magique
 
     inline void LogicSystem(entt::registry& registry)
     {
-        auto& tickData = global::LOGIC_TICK_DATA;
+        auto& tickData = global::ENGINE_DATA;
         auto& hashGrid = tickData.hashGrid;
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;

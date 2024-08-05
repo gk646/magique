@@ -5,7 +5,7 @@ set(TARGET_NAME "magique")
 # Set the library path
 set(DEPENDENCY_PATH "C:/Users/gk646/Documents/Libraries")
 
-set(${PROJECT_PREFIX}_VERSION "0.0.2")
+set(${PROJECT_PREFIX}_VERSION "0.0.5")
 
 option(${PROJECT_PREFIX}_ENABLE_SANITIZER "Set to compile with adress sanitizer")
 option(${PROJECT_PREFIX}_BUILD_TESTS "Set to compile the test executable")

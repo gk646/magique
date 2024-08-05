@@ -100,17 +100,17 @@ namespace magique
                         p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
                         p.vy += emitter.gravY;
 
-                        if (emitter.scaleFunc)
+                        if (emitter.scaleFunc != nullptr)
                         {
                             p.scale = emitter.scaleFunc(p.scale, relTime);
                         }
 
-                        if (emitter.colorFunc)
+                        if (emitter.colorFunc != nullptr)
                         {
                             p.setColor(emitter.colorFunc(p.getColor(), relTime));
                         }
 
-                        if (emitter.tickFunc)
+                        if (emitter.tickFunc != nullptr)
                         {
                             (*static_cast<EmitterBase::TickFunction*>(emitter.tickFunc))(p, relTime);
                         }

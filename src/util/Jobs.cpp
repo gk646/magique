@@ -2,19 +2,18 @@
 #include <vector>
 
 #include <magique/util/Jobs.h>
-#include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 #include <magique/util/Defines.h>
 
 #include "internal/headers/IncludeWindows.h"
 #include "internal/globals/JobScheduler.h"
 
-static bool initCalled = false;
-
 namespace magique
 {
     bool InitJobSystem()
     {
+
+        static bool initCalled = false;
         if (initCalled)
         {
             LOG_WARNING("Init called twice. Skipping...");
@@ -24,7 +23,7 @@ namespace magique
         auto& scd = global::SCHEDULER;
         scd.shutDown = false;
         scd.isHibernate = true;
-        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 2 Worker Threads + 1 Main Thread + 1 Update Thread = 4
+        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 3 Worker Threads + 1 Main Thread = 4
         {
             scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
         }
@@ -73,7 +72,7 @@ namespace magique
         }
     }
 
-    using WorkArray = std::array<jobHandle,MAGIQUE_WORKER_THREADS +1>;
+    using WorkArray = std::array<jobHandle, MAGIQUE_WORKER_THREADS + 1>;
     template void AwaitJobs<WorkArray>(const WorkArray& container);
     template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
     template void AwaitJobs<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
@@ -90,21 +89,15 @@ namespace magique
     void WakeUpJobs()
     {
         auto& scd = global::SCHEDULER;
-        ++scd.usingThreads;
         scd.isHibernate = false;
     }
 
-    void HibernateJobs(const double startTime, const double tickTime)
+    void HibernateJobs(const double target, const double sleepTime)
     {
         auto& scd = global::SCHEDULER;
-        scd.startTime = startTime;
-        scd.tickTime = tickTime;
-        --scd.usingThreads;
-        M_ASSERT(scd.usingThreads >= 0, "Mismatch between wakup() and hibernate() calls!");
-        if (scd.usingThreads == 0)
-        {
-            scd.isHibernate = true;
-        }
+        scd.targetTime = target;
+        scd.sleepTime = sleepTime;
+        scd.isHibernate = true;
     }
 
 

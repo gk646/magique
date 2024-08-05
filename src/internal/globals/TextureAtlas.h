@@ -23,7 +23,7 @@ namespace magique
         int currentStepHeight = 0;                 // Highest height of a texture in current row
         void* imageData = nullptr;                 // Save memory by only saving data ptr
 
-        TextureRegion addTexture(const Image& image, const int tarW,const int tarH)
+        TextureRegion addTexture(const Image& image, const int tarW, const int tarH)
         {
             initialize();
             TextureRegion region = {0};
@@ -48,7 +48,8 @@ namespace magique
             return region;
         }
 
-        SpriteSheet addSpritesheet(const Image& image, const int frames, int tarW, int tarH, int offX, int offY)
+        SpriteSheet addSpritesheet(const Image& image, const int frames, const int tarW, const int tarH, int offX,
+                                   int offY)
         {
             initialize();
             SpriteSheet sheet = {0};
@@ -62,7 +63,7 @@ namespace magique
             sheet.offX = static_cast<uint16_t>(posX);
             sheet.offY = static_cast<uint16_t>(posY);
             sheet.id = id;
-            sheet.frames = frames;
+            sheet.frames = static_cast<uint16_t>(frames);
 
             Image atlasImage = getImg();
 
@@ -128,7 +129,7 @@ namespace magique
                 LOG_ERROR("Failed to load texture atlas texture! No textures will work");
                 UnloadImage(getImg());
             }
-            id = tex.id;
+            id = static_cast<uint16_t>(tex.id);
         }
         [[nodiscard]] Image getImg() const
         {

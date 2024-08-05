@@ -63,8 +63,8 @@ namespace magique
             LOG_WARNING("Could not load tilemap layer dimensions: %s", asset.path);
             return;
         }
-        width = layerWidth;
-        height = layerHeight;
+        width = static_cast<int16_t>(layerWidth);
+        height = static_cast<int16_t>(layerHeight);
 
         cxstructs::str_skip_char(workPtr, '\n', 2); // Skip to data start
 

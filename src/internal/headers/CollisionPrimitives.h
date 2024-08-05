@@ -23,7 +23,7 @@ inline bool PointInCircle(const float px, const float py, const float cx, const 
 
 inline bool PointInRect(const float px, const float py, const float rx, const float ry, const float rw, const float rh)
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const __m256 point = _mm256_set_ps(py, py, py, py, px, px, px, px);
     const __m256 rect_min = _mm256_set_ps(ry, ry, ry, ry, rx, rx, rx, rx);
     const __m256 rect_max = _mm256_set_ps(ry + rh, ry + rh, ry + rh, ry + rh, rx + rw, rx + rw, rx + rw, rx + rw);
@@ -44,7 +44,7 @@ inline bool PointInRect(const float px, const float py, const float rx, const fl
 // checks 4 points against another 4 points
 inline bool SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4])
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
                                   const float(&p1ys)[4], const float axisX, const float axisY)
     {
@@ -144,7 +144,7 @@ inline bool RectToRect(const float x1, const float y1, const float w1, const flo
                        const float w2, const float h2)
 {
     // This looks a bit faster in under mass load
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const __m256 rect1 = _mm256_set_ps(y1 + h1, y1, x1 + w1, x1, y1 + h1, y1, x1 + w1, x1);
     const __m256 rect2 = _mm256_set_ps(y2, y2 + h2, x2, x2 + w2, y2, y2 + h2, x2, x2 + w2);
 
@@ -166,7 +166,7 @@ inline bool RectToRect(const float x1, const float y1, const float w1, const flo
 inline bool RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx, const float cy,
                          const float cr)
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const __m128 circle_center = _mm_set_ps(0.0f, 0.0f, cy, cx);
 
     const __m128 rect_min = _mm_set_ps(0.0f, 0.0f, ry, rx);
@@ -248,7 +248,7 @@ inline bool RectToTriangle(const float x1, const float y1, const float w1, const
 inline bool CircleToCircle(const float x1, const float y1, const float r1, const float x2, const float y2,
                            const float r2)
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const __m128 center1 = _mm_set_ps(0, 0, y1, x1);
     const __m128 center2 = _mm_set_ps(0, 0, y2, x2);
 
@@ -277,7 +277,7 @@ inline bool CircleToCircle(const float x1, const float y1, const float r1, const
 inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr, const float (&pxs)[4],
                                   const float (&pys)[4])
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     int windingNumber = 0;
     for (int i = 0; i < 4; ++i)
     {
@@ -463,7 +463,7 @@ inline bool TriangleToTriangle(const float t1x1, const float t1y1, const float t
 inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], const float rotation, const float anchorX,
                           const float anchorY)
 {
-#ifdef MAGIQUE_USE_AVX2
+#ifdef MAGIQUE_USE_SIMD
     const float cosTheta = cosf(rotation * DEG2RAD);
     const float sinTheta = sinf(rotation * DEG2RAD);
 
