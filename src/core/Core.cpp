@@ -111,9 +111,7 @@ namespace magique
 
     GameConfig& GetGameConfig()
     {
-        GameConfig config;
-        //TODO implement config loading
-        return config;
+        return global::ENGINE_DATA.gameConfig;
     }
 
     void SetShowHitboxes(const bool val) { global::CONFIGURATION.showHitboxes = val; }

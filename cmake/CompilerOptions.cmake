@@ -13,12 +13,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
 elseif (MSVC)
-    add_compile_options( /fp:fast /arch:AVX2 /O2 /Gy /GA /Oi /Gw /EHc /GF /Ob3 /GL /GR- /Zc:preprocessor -D_HAS_EXCEPTIONS=0)
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /Od /Zi")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi")
+    add_compile_options(/fp:fast /arch:AVX2 /Gy /GA /Oi /Gw /GF /GL /GR- /Zc:preprocessor -D_HAS_EXCEPTIONS=0)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}  /W3 /Od /Zi")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /Od /Zi")
 
-    set(CMAKE_C_FLAGS_RELEASE "/W3 /arch:AVX2 /EHs /GL")
-    set(CMAKE_CXX_FLAGS_RELEASE "/W4 /std:c++20 /openmp:experimental")
+    set(CMAKE_C_FLAGS_RELEASE "/O2 /Ob3 /EHc /W3 /arch:AVX2 /EHs /GL")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /EHc /W4 /std:c++20 /openmp:experimental")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
     # Explanation of flags:

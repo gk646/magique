@@ -6,6 +6,7 @@
 
 #include <magique/fwd.hpp>
 #include <magique/util/Defines.h>
+#include <magique/persistence/container/GameConfig.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
@@ -49,6 +50,7 @@ namespace magique
         HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
         HashGrid hashGrid{200};                              // Global hashGrid for all entities
+        GameConfig gameConfig{};
 
         EngineData()
         {

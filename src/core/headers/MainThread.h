@@ -1,6 +1,5 @@
 #ifndef MAINTHREAD_H
 #define MAINTHREAD_H
-#include <cxutil/cxtime.h>
 
 namespace magique::mainthread
 {

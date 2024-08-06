@@ -1,6 +1,7 @@
+#include <functional>
 #include <raylib/raylib.h>
 
-#include <magique/core/Particles.h>
+#include <magique/core/Types.h>
 
 namespace magique
 {
@@ -72,71 +73,10 @@ namespace magique
 
     auto Keybind::hasAlt() const -> bool { return data & 1 << 15; }
 
-    Setting::Setting(Vector2& val) { save(val); }
-    Setting::Setting(int val) { save(val); }
-    Setting::Setting(bool val) { save(val); }
-    Setting::Setting(float val) { save(val); }
-
     Achievement::~Achievement()
     {
-
         delete[] name;
         delete static_cast<std::function<bool()>*>(condition);
-    }
-
-    template <typename T>
-    T Setting::get() const
-    {
-        if constexpr (std::is_same_v<T, bool>)
-        {
-            return (data & 1) != 0;
-        }
-        else if constexpr (std::is_same_v<T, float>)
-        {
-            return *reinterpret_cast<const float*>(&data);
-        }
-        else if constexpr (std::is_same_v<T, int>)
-        {
-            return static_cast<int>(data);
-        }
-        else if constexpr (std::is_same_v<T, Vector2>)
-        {
-            Vector2 vec;
-            auto* intPtr = reinterpret_cast<int32_t*>(&vec);
-            intPtr[0] = static_cast<int32_t>(data >> 32);
-            intPtr[1] = static_cast<int32_t>(data & 0xFFFFFFFF);
-            return vec;
-        }
-        else
-        {
-            static_assert(std::is_same_v<T, Vector2>, "This type is not supported!");
-        }
-    }
-
-    template <typename T>
-    void Setting::save(const T& value)
-    {
-        if constexpr (std::is_same_v<T, bool>)
-        {
-            data = (data & ~1UL) | (value ? 1 : 0);
-        }
-        else if constexpr (std::is_same_v<T, float>)
-        {
-            data = *reinterpret_cast<const int64_t*>(&value);
-        }
-        else if constexpr (std::is_same_v<T, int>)
-        {
-            data = value;
-        }
-        else if constexpr (std::is_same_v<T, Vector2>)
-        {
-            const auto* intPtr = reinterpret_cast<int32_t*>(&const_cast<Vector2&>(value));
-            data = static_cast<int64_t>(intPtr[0]) << 32 | static_cast<uint32_t>(intPtr[1]) & 0xFFFFFFFF;
-        }
-        else
-        {
-            static_assert(std::is_same_v<T, Vector2>, "This type is not supported!");
-        }
     }
 
     Color ScreenParticle::getColor() const { return {r, g, b, a}; }
