@@ -77,8 +77,8 @@ namespace magique
         auto& loader = global::LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
 
-        //TODO load config
-        GameConfig config;
+        auto& config = global::ENGINE_DATA.gameConfig;
+        config = GameConfig::LoadFromFile(configPath, encryptionKey);
 
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader), config);
@@ -99,8 +99,10 @@ namespace magique
         // Run main thread
         mainthread::Setup();
         mainthread::Run(*this);
-        onShutDown(config);
+        onShutDown();
         mainthread::Close();
+
+        GameConfig::SaveToFile(config, configPath, encryptionKey);
 
 #ifdef MAGIQUE_DEBUG_PROFILE
         LOG_INFO("Average DrawTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(DRAW) / 1'000);

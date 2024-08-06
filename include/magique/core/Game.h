@@ -36,7 +36,7 @@ namespace magique
         virtual void onStartup(AssetLoader& al, GameConfig& config) {}
 
         // Called once when the game closes
-        virtual void onShutDown(GameConfig& config) {}
+        virtual void onShutDown() {}
 
         // Called when the window close button is pressed
         // Note: If overridden you have to call shutDown() manually to close the game!
@@ -71,6 +71,7 @@ namespace magique
         // Call this to start the game - should be call in the main method: return game.run();
         // Tries to load an asset image from the default path - assets will be empty if none exists!
         // Tries to load the game config from the default path - will be created if none exists!
+        // Note: The encryption key is applied to both assets and config - make sure they match
         int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
         //----------------- GETTERS -----------------//

@@ -55,13 +55,11 @@ namespace magique
         {
             return entt::null; // EntityID not registered
         }
-        tickData.lock();
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(ecs.entityID++));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity);
         }
-        tickData.unlock();
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
@@ -79,13 +77,11 @@ namespace magique
         {
             return entt::null; // EntityID not registered
         }
-        tickData.lock();
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(id));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity);
         }
-        tickData.unlock();
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
@@ -102,12 +98,10 @@ namespace magique
             {
                 InvokeEvent<onDestroy>(entity);
             }
-            tickData.lock();
             internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
             std::erase(tickData.drawVec, entity);
             std::erase(tickData.entityUpdateVec, entity);
-            tickData.unlock();
             return true;
         }
         return false;

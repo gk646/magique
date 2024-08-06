@@ -270,30 +270,6 @@ namespace magique
         uint16_t data = 0;
     };
 
-    // Efficient representation of a setting with mulitple different types
-    struct Setting final
-    {
-        Setting() = default;
-        // Supported types:
-        explicit Setting(Vector2& val);
-        explicit Setting(int val);
-        explicit Setting(bool val);
-        explicit Setting(float val);
-
-        // Retrieve the settings values
-        // IMPORTANT: needs to be the same type that was used to save!
-        template <typename T>
-        T get() const;
-
-        // Saves this value for the setting
-        // Can be used to override datatype aswell
-        template <typename T>
-        void save(const T& value);
-
-    private:
-        int64_t data = 0;
-    };
-
     // Efficient representation of a achievement - done when the condition is true once
     struct Achievement final
     {
@@ -337,12 +313,13 @@ namespace magique
     struct DataPointer final
     {
         DataPointer(T* pointer, const int size) : pointer(pointer), size(size) {}
+        ~DataPointer() noexcept { delete[] pointer; }
 
         [[nodiscard]] int getSize() const { return size; }
 
         T* getData() const { return pointer; }
 
-        void free() const { delete[] pointer; }
+        void free() const noexcept { delete[] pointer; }
 
     private:
         T* pointer; // The data pointer

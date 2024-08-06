@@ -7,19 +7,12 @@
 #include <magique/util/Logging.h>
 
 #include "internal/datastructures/VectorType.h"
+#include "internal/headers/Security.h"
 
 namespace fs = std::filesystem;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
-
-void SymmetricEncrypt(char* data, const uint32_t size, const uint64_t key)
-{
-    for (uint32_t i = 0; i < size; ++i)
-    {
-        data[i] ^= static_cast<char>(key >> i % 8 * 8);
-    }
-}
 
 void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
 {
@@ -148,6 +141,7 @@ namespace magique
         }
         return true;
     }
+
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
         if (!std::filesystem::exists(path))

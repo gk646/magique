@@ -115,10 +115,9 @@ namespace magique
     {
         union
         {
+            int stringIndex = 0;
             Keybind keybind;
-            Setting setting;
-            void* string;
-            char buffer[8]{};
+            char buffer[8];
         };
     };
 
