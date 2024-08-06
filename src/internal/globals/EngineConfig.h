@@ -7,10 +7,19 @@
 
 namespace magique
 {
+
+
     struct Configuration final
     {
-        Font font{};                                // Font
-        Rectangle worldBounds{};                    // World bounds
+        Font font{};             // Font
+        Rectangle worldBounds{}; // World bounds
+        struct Timing final
+        {
+            double frameTarget = 0.0F; // How long a single frame can take at maximum
+            double sleepTime = 0.0F;   // How long to sleep of the total wait time (sleep accuracy is at best 1ms)
+            double workPerTick = 0.0F; // How much of an update has to happen per render tick
+            int frameCounter = 0;      // Current frames counter
+        } timing;
         Vector2 manualCamOff{0, 0};                 // Manual camera offset
         float entityUpdateDistance = 1000;          // Update distance
         float cameraViewPadding = 250;              // Padding around the cameras native bounds
@@ -35,7 +44,7 @@ namespace magique
     namespace global
     {
 
-        inline Configuration CONFIGURATION;
+        inline Configuration ENGINE_CONFIG;
 
     }
 

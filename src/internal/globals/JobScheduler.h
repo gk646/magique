@@ -3,10 +3,10 @@
 
 #include <deque>
 #include <thread>
+#include <raylib/raylib.h>
 
 #include <magique/internal/Macros.h>
 
-#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 #include "internal/headers/OSUtil.h"
 #include "internal/types/Spinlock.h"
 #include "internal/datastructures/VectorType.h"
@@ -15,15 +15,15 @@ namespace magique
 {
     struct Scheduler final
     {
-        alignas(64) Spinlock queueLock;                    // The lock to make queue access thread safe
-        alignas(64) Spinlock workedLock;                   // The lock to worked vector thread safe
-        alignas(64) std::atomic<bool> isHibernate = false; // If the scheduler is running
-        alignas(64) std::atomic<bool> shutDown = false;    // Signal to shutdown all threads
-        alignas(64) std::deque<IJob*> jobQueue;            // Global job queue
-        alignas(64) vector<const IJob*> workedJobs;        // Currently processed jobs
-        std::atomic<int> currentJobsSize = 0;              // Current jobs
-        std::atomic<uint16_t> handleID = 0;                // The internal handle counter
-        vector<std::thread> threads;                       // All working threads
+        alignas(64) std::deque<IJob*> jobQueue;     // Global job queue
+        alignas(64) vector<const IJob*> workedJobs; // Currently processed jobs
+        Spinlock queueLock;                         // The lock to make queue access thread safe
+        Spinlock workedLock;                        // The lock to worked vector thread safe
+        std::atomic<bool> shutDown = false;         // Signal to shutdown all threads
+        std::atomic<bool> isHibernate = false;      // If the scheduler is running
+        std::atomic<int> currentJobsSize = 0;       // Current jobs
+        std::atomic<uint16_t> handleID = 0;         // The internal handle counter
+        vector<std::thread> threads;                // All working threads
         std::atomic<int> usingThreads = 0;
         double targetTime = 0;
         double sleepTime = 0;
@@ -100,7 +100,7 @@ namespace magique
             // Wait more precisely with spinning at the end - only if necessary
             if (!waited)
             {
-                if (glfwGetTime() + scheduler->sleepTime < scheduler->targetTime)
+                if (GetTime() + scheduler->sleepTime < scheduler->targetTime)
                     WaitTime(scheduler->targetTime, scheduler->sleepTime);
                 waited = true;
             }

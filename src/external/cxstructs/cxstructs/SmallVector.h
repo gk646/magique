@@ -90,7 +90,7 @@ class VectorIterator {
 };
 
 namespace cxstructs {
-template <typename T, uint32_t N = 16, typename size_type = uint16_t>
+template <typename T, uint32_t N = 16, typename size_type = int32_t>
 struct SmallVector {
   SmallVector() : size_(0), capacity_(N), data_(stack_data_) {}
 

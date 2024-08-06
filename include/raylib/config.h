@@ -215,7 +215,7 @@
 #define SUPPORT_FILEFORMAT_IQM          1
 #define SUPPORT_FILEFORMAT_GLTF         1
 #define SUPPORT_FILEFORMAT_VOX          1
-//#define SUPPORT_FILEFORMAT_M3D          1
+//#define SUPPORT_FILEFORMAT_M3D        1
 // Support procedural mesh generation functions, uses external par_shapes.h library
 // NOTE: Some generated meshes DO NOT include generated texture coordinates
 #define SUPPORT_MESH_GENERATION         1
@@ -231,8 +231,8 @@
 // Desired audio fileformats to be supported for loading
 #define SUPPORT_FILEFORMAT_WAV          1
 #define SUPPORT_FILEFORMAT_OGG          1
-#define SUPPORT_FILEFORMAT_MP3 1
-#define SUPPORT_FILEFORMAT_FLAC 1
+#define SUPPORT_FILEFORMAT_MP3          1
+#define SUPPORT_FILEFORMAT_FLAC         1
 //#define SUPPORT_FILEFORMAT_QOA          1
 //#define SUPPORT_FILEFORMAT_XM           1
 //#define SUPPORT_FILEFORMAT_MOD          1

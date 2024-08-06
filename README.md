@@ -1,6 +1,6 @@
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/YAsvnxAmX7)
 
-STILL IN ALPHA STATE - NOT PUBLICLY RELEASED
+STILL IN BETA STATE - NOT PUBLICLY RELEASED
 
 `magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant to answer all game
 development
@@ -39,9 +39,9 @@ Most notable features:
 
 There are 2 supported ways of installing `magique`:
 
-#### CMake subproject
+#### CMake (recommended)
 
-If you use CMake (recommended) just download or clone this repository and add the directory with:
+When using CMake just download or clone this repository and add the directory to your project with:
 
 ```cmake
 add_subdirectory(path/to/magique)
@@ -49,12 +49,17 @@ add_subdirectory(path/to/magique)
 target_link_libraries(MyGame PRIVATE magique)
 ```
 
-This will automatically build magique with your project and set up the include path. Don't forget to link your project against magique! This approach will automatically build for the platform your using.
+This will automatically build magique with your project and set up the include path. Don't forget to link your project
+against magique! This approach will automatically build for the platform your using.
 Check the wiki for optional CMake flags you can set before adding magique.
 
-#### Prebuilt binaries
+#### Prebuilt binaries / Custom
 
 The other option is to download the prebuilt binaries for your platform and link your program against them.
+
+Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the modules can easily be
+made into
+standalone units.
 
 ### 2. Documentation
 
@@ -66,10 +71,11 @@ There are 2 main ways magique is documented:
         - `Note:` A helpful sidenote about usage, behavior, relation to other methods or common errors
         - `Default:` The default value or behavior for that method or struct
         - `Failure:` The behavior or return value if the method fails its purpose
+        - `Example:` Shows how this method or struct is correctly used
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
 - **GitHub Wiki**
-    - Written more like a tutorial and focuses on general examples rather than individual methods
-    - Each module has its own page plus additional pages for combined functionality
+    - Written like a tutorial and focuses on general examples rather than individual methods
+    - Each module has its own page plus additional pages for combined functionality and extras
 
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
@@ -79,7 +85,7 @@ Contrary if you have experience with the concepts the in-header documentation wi
 - raylib
     - Drawing, shaders
     - File loading: .mp3, .wav, .png, .gif, models and shaders...
-    - Random Numbers: GetRandomInt()
+    - Random Numbers: GetRandomValue()
     - Audio
 - EnTT
     - Entity component system
@@ -97,4 +103,6 @@ Paradigms:
 
 - Fixed update tick rate
     - Default is 60 updates per second
+- Variable render rate
+    - Supports any framerate (60-240fps)
 - Entity Component System

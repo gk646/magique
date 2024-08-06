@@ -25,7 +25,6 @@ namespace magique
     struct LambdaTask final : TaskI<T>
     {
         std::function<void(T&)> func;
-
         explicit LambdaTask(std::function<void(T&)> func) : func(std::move(func)) {}
         void execute(T& res) override { func(res); }
     };
@@ -64,13 +63,13 @@ namespace magique
         int getTotalTasks() const
         {
             int tasks = 0;
-            for (const auto& vec : gpuTasks)
+            for (int i = 0; i < CRITICAL; ++i)
             {
-                tasks += vec.size();
+                tasks += static_cast<int>(gpuTasks[i].size());
             }
-            for (const auto& vec : cpuTasks)
+            for (int i = 0; i < CRITICAL; ++i)
             {
-                tasks += vec.size();
+                tasks += static_cast<int>(cpuTasks[i].size());
             }
             return tasks;
         }
@@ -81,7 +80,7 @@ namespace magique
                 return true;
             }
 
-            if (currentLevel == INSTANT && !gpuTasks[currentLevel].empty())
+            if (currentLevel == INTERNAL && !gpuTasks[currentLevel].empty())
             {
                 loadTasks(gpuTasks[currentLevel], res);
             }
@@ -145,11 +144,11 @@ namespace magique
         {
             addTask(new LambdaTask{func}, pl, d, impact);
         }
-        std::vector<TaskI<T>*> cpuTasks[INSTANT + 1]{};
-        std::vector<TaskI<T>*> gpuTasks[INSTANT + 1]{};
+        std::vector<TaskI<T>*> cpuTasks[INTERNAL + 1]{};
+        std::vector<TaskI<T>*> gpuTasks[INTERNAL + 1]{};
         int totalImpact = 0;
         std::atomic<int> loadedImpact = 0;
-        PriorityLevel currentLevel = INSTANT;
+        PriorityLevel currentLevel = INTERNAL;
         bool cpuDone = false;
         bool gpuDone = false;
         bool cpuWorking = false;
@@ -171,6 +170,10 @@ namespace magique
             task->execute(res);
             loadedImpact += task->impact;
             task->isLoaded = true;
+            if (currentLevel == INTERNAL)
+            {
+                return;
+            }
             LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }

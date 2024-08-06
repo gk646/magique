@@ -9,7 +9,7 @@
 
 namespace magique
 {
-    TileSheet::TileSheet(const Asset& asset, int textureSize, float scale)
+    TileSheet::TileSheet(const Asset& asset, const int textureSize, const float scale)
     {
         const auto img = internal::LoadImage(asset);
         auto texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_WIDTH, MAGIQUE_TEXTURE_ATLAS_HEIGHT, BLANK);
@@ -17,10 +17,10 @@ namespace magique
         Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};
         Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
 
-        texPerRow = texImage.width / static_cast<int>(dst.width);
+        texPerRow = static_cast<uint16_t>(texImage.width / static_cast<int>(dst.width));
         texSize = static_cast<int16_t>(dst.width);
 
-        // Can be optimized a lot by manually doing the resizing and reusing a buffer
+        // TODO Can be optimized a lot by manually doing the image resizing and reusing a buffer
         while (src.y < img.height)
         {
             for (int i = 0; i < texPerRow; ++i)
@@ -48,13 +48,13 @@ namespace magique
         {
             LOG_ERROR("Failed to load tilesheet to GPU: %s", asset.path);
         }
-        textureID = tex.id;
+        textureID = static_cast<uint16_t>(tex.id);
 
         UnloadImage(texImage);
         UnloadImage(img);
     }
 
-    TileSheet::TileSheet(const std::vector<const Asset*>& assets, int textureSize, float scale) {}
+    TileSheet::TileSheet(const std::vector<const Asset*>& assets, const int textureSize, const float scale) {}
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {

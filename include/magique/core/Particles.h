@@ -117,7 +117,7 @@ namespace magique
         // |(0,1)   (1,1)|
         //  - - - - - - -
         // => Straight up (0,-1) => Top Right (0.5,-0.5) => Top Left (-0.5,-0.5) => Bottom Left (-0.5,0.5)
-        // Note: The values have to add up to 1!
+        // Note: The (absolute) values have to add up to 1!
         // Default: (0,-1)
         EmitterBase& setDirection(float dx, float dy);
 

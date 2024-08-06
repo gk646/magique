@@ -1,26 +1,51 @@
+## Contributing to `magique`
+
+Iam very happy about any contributions, specifically:
+
+- Improving the documentation in the wiki or in the source files
+- Reviewing code and fixing mistakes (leaks, rare bugs)
+- Improving performance or usability of existing code
+- Adding new features and completely new modules
+
+Everything besides new features will likely be merged instantly after review.
+
+### Contributing New Features
+
+If you want to contribute a new feature the following points can help you shape it into magique:
+
+- Is the new feature highly usable
+    - This means intuitive, logical and clearly formulated
+    - Can be more complex if it's optional and not central
+- Does the new feature solve a new problem
+    - Make sure it's not already solved
+- Is the new feature in a state that it won't be replaced soon
+    - The feature and its use cases should be evaluated from different angles
+
+Drafts and suggestions are very welcome all the time!
+
 ### Folder structure
 
 #### src/
 
-All sub folders should only contain implementation files of their public interface header. E.g. magique/core/Core.h ->
-src/core/Core.cpp. If the include folder has a subfolder so should the implementation e.g
-magique/assets/types -> src/assets/types
+All sub folders should only contain implementation files of their public interface header:
 
-Three exceptions:
+- `magique/core/Core.h -> src/core/Core.cpp`
 
-- The root can contain folders for other files
-- CMakeLists.txt
-- internal module can be more chaotic
+If the include folder has a subfolder the implementation avoids this:
 
-The folders should follow a specific naming convention:
+- `magique/assets/types/Playlist.h -> src/assets/Playlist.cpp`
 
-- headers: Contains headers that help with the implementation of the source files
+This is to avoid confusion with other folders in the source directory.
 
-Other than that choose a descriptive name based on their function.
-Existing ones: systems, globals, datastructures
+Other than implementation files the source directory should only contain select folders:
+
+- **headers**: Contains headers that help with the implementation of the source files
+
+**Exception**: src/internal is also the place to put all internal code used throughout the modules and has multiple folders
 
 ### Include style
 
+#### For implementation files
 The include order and style is the following:
 
 - 1: third-party or STL includes with `<..>`
@@ -40,9 +65,15 @@ Example:
 #include "headers/Helper2.h"
 ```
 
+#### For public headers
+
+Same as for implementation files but without new lines between the categories to save space.
+
+
 ### Types
 
-Use fast_vector internally by including:
+Use fast_vector (magique::vector) internally by including:
 `#include "internal/datastructures/VectorType.h"`
 
-It can be slightly faster, but compiles faster and less templates and more control
+It can be slightly faster, but compiles faster and uses fewer templates and more allows control (e.g. unordered erase).
+Don't expose it to the user, which means dont use it in public structs or when you return a vector to the user.

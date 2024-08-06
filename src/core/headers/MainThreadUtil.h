@@ -1,39 +1,33 @@
 #ifndef RENDERUTIL_H
 #define RENDERUTIL_H
 
-inline double FRAME_TARGET = 0.0F;
-inline double SLEEP_TIME = 0.0F;
-inline double PREV_UPDATE_TIME = 0.0F;
-inline double PREV_RENDER_TIME = 0.0F;
-inline double UPDATE_WORK = 0.0F;
-inline double WORK_PER_TICK = 0.0F;
-inline double FRAME_COUNT = 0;
-
 void SetTargetFPS(const int fps) // raylib function implemented here
 {
+    auto& config = magique::global::ENGINE_CONFIG.timing;
     if (fps < 1)
-        FRAME_TARGET = 0;
+        config.frameTarget = 0;
     else
     {
-        FRAME_TARGET = 1.0 / static_cast<double>(fps);
+        config.frameTarget = 1.0 / static_cast<double>(fps);
         // Round down cause minimal accuracy is only 1ms - so wait 1 ms less to be accurate
-        SLEEP_TIME = std::floor( FRAME_TARGET * 1000) / 1000;
-        WORK_PER_TICK = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
+        config.sleepTime = std::floor(config.frameTarget * 1000) / 1000;
+        config.workPerTick = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
     }
 }
 
 int GetFPS()
 {
+    auto& config = magique::global::ENGINE_CONFIG.timing;
 #define FPS_BUFF_SIZE 15
-    static float lastTime = 0;
+    static double lastTime = 0;
     static int fpsBuffer[FPS_BUFF_SIZE] = {0};
     static int index = 0;
     static int sumFPS = 0;
-    static int count = 0;
+    static float count = 0;
 
-    const double currentTime = glfwGetTime();
+    const double currentTime = GetTime();
 
-    const int currFPS = FRAME_COUNT / (currentTime - lastTime);
+    const int currFPS = static_cast<int>(static_cast<double>(config.frameCounter) / (currentTime - lastTime));
 
     sumFPS -= fpsBuffer[index];
     fpsBuffer[index] = currFPS;
@@ -44,11 +38,10 @@ int GetFPS()
     {
         count++;
     }
-
-    const int ret = (int)ceil((float)sumFPS / count);
+    const int ret = static_cast<int>(ceil(static_cast<float>(sumFPS) / count));
 
     lastTime = currentTime;
-    FRAME_COUNT = 0;
+    config.frameCounter = 0;
 
     return ret;
 }
@@ -57,7 +50,7 @@ int GetFPS()
 inline float GetFrameTime()
 {
     const auto& perf = magique::global::PERF_DATA;
-    return (float)(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
+    return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
 }
 
 namespace magique

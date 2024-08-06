@@ -1,4 +1,5 @@
 #include <functional>
+#include <raylib/raylib.h>
 
 #include <magique/persistence/container/GameConfig.h>
 #include <magique/core/Types.h>
@@ -13,6 +14,7 @@ namespace magique
 {
     GameConfig GameConfig::LoadFromFile(const char* fileName, const uint64_t encryptionKey)
     {
+        const auto time = GetTime();
         FILE* file = fopen(fileName, "rb");
         if (!file)
         {
@@ -79,12 +81,14 @@ namespace magique
             config.stringStorage.emplace_back(reinterpret_cast<char*>(&fileData[idx]), stringSize);
             idx += stringSize;
         }
-
+        const auto* format = "Successfully loaded config: %s | Took %d millis | Entries: %d";
+        LOG_INFO(format, fileName, (int)std::round((GetTime() - time) * 1000), static_cast<int>(config.storage.size()));
         return config;
     }
 
     void GameConfig::SaveToFile(const GameConfig& config, const char* fileName, const uint64_t encryptionKey)
     {
+        const auto time = GetTime();
         if (config.storage.empty() && config.stringStorage.empty())
         {
             FILE* file = fopen(fileName, "wb");
@@ -108,49 +112,51 @@ namespace magique
         }
         totalSize += static_cast<int>(config.storage.size()) * sizeof(GameConfigStorageCell);
 
+        // Allocate memory for the data to be encrypted
+        auto* data = new unsigned char[totalSize - 6];
+        int idx = 0;
+
+        const auto entries = static_cast<uint16_t>(config.storage.size());
+        std::memcpy(&data[idx], &entries, 2);
+        idx += 2;
+
+        for (const auto& cell : config.storage)
+        {
+            std::memcpy(&data[idx], &cell, sizeof(GameConfigStorageCell));
+            idx += sizeof(GameConfigStorageCell);
+        }
+
+        for (const auto& s : config.stringStorage)
+        {
+            auto stringSize = static_cast<uint16_t>(s.size());
+            std::memcpy(&data[idx], &stringSize, 2);
+            idx += 2; // Size
+            std::memcpy(&data[idx], s.data(), stringSize);
+            idx += stringSize;
+        }
+
+        // Encrypt the data
+        SymmetricEncrypt((char*)data, totalSize - 6, encryptionKey);
+
         FILE* file = fopen(fileName, "wb");
         if (!file)
         {
             LOG_ERROR("Failed to save GameConfig to: %s", fileName);
+            delete[] data;
             return;
         }
 
-        // Write header
         fwrite(HEADER, 1, 6, file);
 
-        // Write number of entries
-        const auto entries = static_cast<uint16_t>(config.storage.size());
-        fwrite(&entries, sizeof(entries), 1, file);
+        fwrite(data, 1, totalSize - 6, file);
 
-        // Write storage data
-        for (const auto& cell : config.storage)
-        {
-            fwrite(&cell, sizeof(GameConfigStorageCell), 1, file);
-        }
-
-        // Write string storage data
-        for (const auto& s : config.stringStorage)
-        {
-            auto stringSize = static_cast<uint16_t>(s.size());
-            fwrite(&stringSize, sizeof(stringSize), 1, file);
-            fwrite(s.data(), 1, stringSize, file);
-        }
-
-        // Encrypt the file data except the header
-        unsigned char* buffer = new unsigned char[totalSize - 8];
-        fseek(file, 8, SEEK_SET);
-        fread(buffer, 1, totalSize - 8, file);
-        SymmetricEncrypt((char*)buffer, totalSize - 8, encryptionKey);
-        fseek(file, 8, SEEK_SET);
-        fwrite(buffer, 1, totalSize - 8, file);
-
-        // Cleanup
-        delete[] buffer;
+        delete[] data;
         fclose(file);
+        auto t = (GetTime() - time)*1000;
 
-        LOG_INFO("Successfully saved game config. Total entries: %u", entries);
+        const auto* format = "Successfully saved config: %s | Took %d millis | Entries: %d";
+        LOG_INFO(format, fileName, (int)std::round((GetTime() - time) * 1000), static_cast<int>(config.storage.size()));
     }
-
 
     void GameConfig::initializeIfEmpty(const std::function<void(GameConfig& config)>& func)
     {

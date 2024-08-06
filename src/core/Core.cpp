@@ -2,13 +2,11 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/util/Jobs.h>
 
-#include "internal/globals/Configuration.h"
+#include "internal/globals/EngineConfig.h"
 #include "internal/globals/TextureAtlas.h"
-#include "internal/globals/LogicTickData.h"
+#include "internal/globals/EngineData.h"
 #include "internal/globals/ShaderData.h"
 #include "internal/globals/PerformanceData.h"
-
-#include <magique/persistence/container/GameConfig.h>
 
 namespace magique
 {
@@ -27,7 +25,7 @@ namespace magique
             global::TEXTURE_ATLASES.emplace_back();
         }
 
-        global::CONFIGURATION.init();
+        global::ENGINE_CONFIG.init();
         global::SHADERS.init(); // Loads the shaders and
         global::ENGINE_DATA.camera.zoom = 1.0F;
         InitJobSystem();
@@ -37,36 +35,39 @@ namespace magique
 
     //----------------- SET -----------------//
 
-    void SetShowPerformanceOverlay(const bool val) { global::CONFIGURATION.showPerformanceOverlay = val; }
+    void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
 
     //void SetCameraEntity(entt::entity entity) { } // implemented in ECS.cpp cause of includes
 
     void SetUpdateDistance(const int distance)
     {
-        global::CONFIGURATION.entityUpdateDistance = static_cast<float>(distance);
+        global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
     }
 
     void SetCameraViewPadding(const int distance)
     {
-        global::CONFIGURATION.cameraViewPadding = static_cast<float>(distance);
+        global::ENGINE_CONFIG.cameraViewPadding = static_cast<float>(distance);
     }
 
-    void SetManualCameraOffset(const float x, const float y) { global::CONFIGURATION.manualCamOff = {x, y}; }
+    void SetManualCameraOffset(const float x, const float y) { global::ENGINE_CONFIG.manualCamOff = {x, y}; }
 
-    void SetEntityCacheDuration(const int ticks) { global::CONFIGURATION.entityCacheDuration = ticks; }
+    void SetEntityCacheDuration(const int ticks)
+    {
+        global::ENGINE_CONFIG.entityCacheDuration = static_cast<uint16_t>(ticks);
+    }
 
     void AddToEntityCache(const entt::entity e)
     {
-        global::ENGINE_DATA.entityUpdateCache[e] = global::CONFIGURATION.entityCacheDuration;
+        global::ENGINE_DATA.entityUpdateCache[e] = global::ENGINE_CONFIG.entityCacheDuration;
     }
 
     void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
-    void SetEngineFont(const Font& font) { global::CONFIGURATION.font = font; }
+    void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
 
-    void SetLightingMode(const LightingMode model) { global::CONFIGURATION.lighting = model; }
+    void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
-    void SetStaticWorldBounds(const Rectangle& rectangle) { global::CONFIGURATION.worldBounds = rectangle; }
+    void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
 
     //----------------- GET -----------------//
 
@@ -84,7 +85,7 @@ namespace magique
 
     Rectangle GetCameraBounds()
     {
-        const auto pad = global::CONFIGURATION.cameraViewPadding;
+        const auto pad = global::ENGINE_CONFIG.cameraViewPadding;
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
         const float camLeft = target.x - offset.x / zoom - pad;
@@ -109,14 +110,11 @@ namespace magique
 
     entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
 
-    GameConfig& GetGameConfig()
-    {
-        return global::ENGINE_DATA.gameConfig;
-    }
+    GameConfig& GetGameConfig() { return global::ENGINE_DATA.gameConfig; }
 
-    void SetShowHitboxes(const bool val) { global::CONFIGURATION.showHitboxes = val; }
+    void SetShowHitboxes(const bool val) { global::ENGINE_CONFIG.showHitboxes = val; }
 
-    void SetBenchmarkTicks(const int ticks) { global::CONFIGURATION.benchmarkTicks = ticks; }
+    void SetBenchmarkTicks(const int ticks) { global::ENGINE_CONFIG.benchmarkTicks = ticks; }
 
     void ResetBenchmarkTimes()
     {

@@ -8,10 +8,11 @@
 // Job System
 //-----------------------------------------------
 // .....................................................................
-// This is for advanced users. This systems is trimmed for speed, it busy waits during the tick to quickly pickup tasks.
-// Between ticks its in hibernation sleeping until woken up again.
-// Allows to submit concurrent jobs to distribute compatible work across threads.
-// Per default has 2 worker threads.
+// This is for advanced users. This systems is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
+// Between ticks its in hibernation, sleeping until woken up again.
+// Allows to submit concurrent jobs to distribute compatible work across threads and await their completion.
+// Note: Dont forget to give the main thread work BEFORE waiting for the jobs to return!
+// Per default has 3 worker threads.
 // .....................................................................
 
 namespace magique
@@ -42,11 +43,9 @@ namespace magique
     // Note: Takes ownership of all passed pointers (should not be accessed after)
 
     // Adds a new job to the global queue
-    // Note: Takes ownership of the pointer (deletes it after finishing)
     jobHandle AddJob(IJob* job);
 
     // Adds the job to a group
-    // Note: Takes ownership of the pointer (deletes it after finishing)
     //jobHandle AddGroupJob(IJob* job, int group);
 
     //----------------- WAITING -----------------//
@@ -55,7 +54,7 @@ namespace magique
     void AwaitJob(jobHandle handle);
 
     // Awaits the completion of all given handles if they exist
-    // Can pass a vector<jobhandle> or initializer_list<job_handle>
+    // Allows for std::vector<>, std::array<>, and std::initializer_list<>
     template <typename Iterable>
     void AwaitJobs(const Iterable& handles);
 
@@ -63,13 +62,12 @@ namespace magique
     void AwaitAllJobs();
 
     //----------------- LIFECYCLE -----------------//
+    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
 
     // Brings all workers back to speed (out of hibernate)
-    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
     void WakeUpJobs();
 
     // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
-    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
     void HibernateJobs(double target, double sleepTime);
 
     //----------------- JOBS -----------------//

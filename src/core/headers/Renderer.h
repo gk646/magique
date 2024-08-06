@@ -15,12 +15,12 @@ namespace magique::renderer
 
     inline double EndTick(const double starTime)
     {
-        if (global::CONFIGURATION.showPerformanceOverlay)
+        if (global::ENGINE_CONFIG.showPerformanceOverlay)
         {
             global::PERF_DATA.perfOverlay.draw();
         }
         EndDrawing();
-        const double frameTime = glfwGetTime() - starTime;
+        const double frameTime = GetTime() - starTime;
         global::PERF_DATA.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
         return frameTime;
     }
@@ -40,7 +40,7 @@ namespace magique::renderer
             {
                 game.drawWorld(camera);
                 game.drawGame(registry, camera); // Draw game
-                if (global::CONFIGURATION.showHitboxes) [[unlikely]]
+                if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
                     RenderHitboxes(registry);
                 RenderLighting(registry);
             }

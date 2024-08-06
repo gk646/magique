@@ -469,7 +469,7 @@ void fast_vector<T>::insert(T* pos, const T& object)
 {
     assert(pos >= m_data && pos <= m_data + m_size && "Iterator out of bounds");
 
-    size_type index = pos - m_data;
+    const auto index =  pos - m_data;
 
     if (m_size == m_capacity)
     {
@@ -524,7 +524,7 @@ T* fast_vector<T>::erase(T* pos)
 {
     assert(pos >= m_data && pos < m_data + m_size && "Iterator out of bounds");
 
-    size_type index = pos - m_data; // Calculate index of the element to be erased
+    const auto index = pos - m_data; // Calculate index of the element to be erased
 
     if constexpr (std::is_trivially_copyable_v<T>)
     {
@@ -532,7 +532,7 @@ T* fast_vector<T>::erase(T* pos)
     }
     else
     {
-        for (size_type i = index; i < m_size - 1; ++i)
+        for (auto i = index; i < m_size - 1; ++i)
         {
             m_data[i] = std::move(m_data[i + 1]);
         }
