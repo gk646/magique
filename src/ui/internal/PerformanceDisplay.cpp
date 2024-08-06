@@ -2,7 +2,7 @@
 #include <raylib/raylib.h>
 
 #include "PerformanceDisplay.h"
-#include "internal/globals/Configuration.h"
+#include "internal/globals/EngineConfig.h"
 #include "internal/globals/PerformanceData.h"
 #include "external/raylib/src/coredata.h"
 
@@ -57,7 +57,7 @@ void PerformanceDisplay::updateValues()
     if (tickCounter != updateDelayTicks) [[likely]]
         return;
 
-    auto& font = magique::global::CONFIGURATION.font;
+    auto& font = magique::global::ENGINE_CONFIG.font;
     constexpr auto fs = 20;
 
     int block = 0;
@@ -111,7 +111,7 @@ void PerformanceDisplay::updateValues()
 void PerformanceDisplay::draw()
 {
     Vector2 position = {15, 0};
-    auto& font = magique::global::CONFIGURATION.font;
+    auto& font = magique::global::ENGINE_CONFIG.font;
     const auto fs = 20;
     for (const auto& block : blocks)
     {

@@ -1,3 +1,4 @@
+#include <random>
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
 #include <cxstructs/SmallVector.h>
@@ -14,10 +15,9 @@
 
 #include "external/raylib/src/external/glad.h"
 #include "external/raylib/src/coredata.h"
-#include "external/raylib/src/external/glfw/include/GLFW/glfw3.h"
 
-#include "internal/globals/LogicTickData.h"
-#include "internal/globals/Configuration.h"
+#include "internal/globals/EngineData.h"
+#include "internal/globals/EngineConfig.h"
 #include "internal/globals/LoadingData.h"
 #include "internal/globals/PerformanceData.h"
 #include "internal/globals/ShaderData.h"
@@ -60,7 +60,10 @@ namespace magique
         InitWindow(1280, 960, name);
         InitAudioDevice();
         SetExitKey(0);
-        SetRandomSeed(rand() ^ std::chrono::steady_clock::now().time_since_epoch().count());
+        using namespace std;
+        using namespace chrono;
+        // Generate seed
+        SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
         InitMagique();
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
@@ -83,7 +86,7 @@ namespace magique
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader), config);
 
-        // Load atlas to gpu
+        // Load atlas to gpu - needs to be the last task
         const auto loadAtlasGPU = [](AssetContainer&)
         {
             for (auto& atlas : global::TEXTURE_ATLASES)
@@ -91,8 +94,7 @@ namespace magique
                 atlas.loadToGPU();
             }
         };
-
-        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW);
+        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW,1);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;
 

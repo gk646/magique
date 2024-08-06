@@ -39,7 +39,7 @@ namespace magique
         MEDIUM,
         HIGH,
         CRITICAL,
-        INSTANT,
+        INTERNAL, // Reserved
     };
 
     enum ThreadType

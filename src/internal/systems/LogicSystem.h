@@ -7,15 +7,15 @@ namespace magique
 {
     inline Vector3 GetUpdateCircle(const float x, const float y)
     {
-        return {x, y, global::CONFIGURATION.entityUpdateDistance};
+        return {x, y, global::ENGINE_CONFIG.entityUpdateDistance};
     }
 
     inline Rectangle GetCameraRect()
     {
-        const auto pad = global::CONFIGURATION.cameraViewPadding;
-        auto& camera = global::ENGINE_DATA.camera;
-        auto& target = camera.target;
-        auto& offset = camera.offset;
+        const auto pad = global::ENGINE_CONFIG.cameraViewPadding;
+        const auto& camera = global::ENGINE_DATA.camera;
+        const auto& target = camera.target;
+        const auto& offset = camera.offset;
         return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
     }
 
@@ -122,7 +122,7 @@ namespace magique
             const auto& pos = view.get<PositionC>(e);
             tickData.cameraMap = pos.map;
             tickData.cameraEntity = e;
-            const auto manualOff = global::CONFIGURATION.manualCamOff;
+            const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
                 tickData.camera.offset = manualOff;
@@ -160,7 +160,7 @@ namespace magique
 
         // Cache
         const auto cameraMap = tickData.cameraMap;
-        const uint16_t cacheDuration = global::CONFIGURATION.entityCacheDuration;
+        const uint16_t cacheDuration = global::ENGINE_CONFIG.entityCacheDuration;
         const auto camBound = GetCameraRect();
         int actorCount = 0;
 

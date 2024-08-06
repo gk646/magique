@@ -8,7 +8,7 @@
 #include <magique/core/Draw.h>
 
 #include "internal/datastructures/VectorType.h"
-#include "internal/globals/Configuration.h"
+#include "internal/globals/EngineConfig.h"
 #include "external/raylib/src/coredata.h"
 
 namespace magique
@@ -39,7 +39,7 @@ namespace magique
         {
             if (showConsole) [[unlikely]]
             {
-                const auto& font = global::CONFIGURATION.font;
+                const auto& font = global::ENGINE_CONFIG.font;
                 const auto scw = static_cast<float>(GetScreenWidth());  // screen height
                 const auto sch = static_cast<float>(GetScreenHeight()); // screen width
                 const auto width = scw * 0.7F;
@@ -119,7 +119,7 @@ namespace magique
                 {
                     ++historyPos;
                     input = history[history.size() - 1 - historyPos];
-                    cursorPos = input.size();
+                    cursorPos = static_cast<int>(input.size());
                 }
                 else if ((IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)) && historyPos > -1)
                 {
@@ -132,7 +132,7 @@ namespace magique
                     {
                         input = history[history.size() - 1 - historyPos];
                     }
-                    cursorPos = input.size();
+                    cursorPos = static_cast<int>(input.size());
                 }
 
                 char c;
@@ -159,9 +159,10 @@ namespace magique
             suggestions.clear();
             if (input.empty())
                 return;
+            const size_t inputLen = input.size();
             for (const auto& cmd : commands)
             {
-                if (cmd.name.starts_with(input.c_str()) && cmd.name != input)
+                if (strncmp(cmd.name.c_str(), input.c_str(), inputLen) == 0 && cmd.name.size() != inputLen)
                 {
                     suggestions.push_back(&cmd);
                 }

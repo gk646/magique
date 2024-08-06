@@ -23,8 +23,8 @@ namespace magique
             switch (data.emShape) //  No triangle emission shape
             {
             case Shape::RECT:
-                particle.x = GetRandomValue(static_cast<int>(data.emX), static_cast<int>(data.emp1));
-                particle.y = GetRandomValue(static_cast<int>(data.emY), static_cast<int>(data.emp2));
+                particle.x = static_cast<float>(GetRandomValue(static_cast<int>(data.emX), static_cast<int>(data.emp1)));
+                particle.y = static_cast<float>(GetRandomValue(static_cast<int>(data.emY), static_cast<int>(data.emp2)));
                 break;
             case Shape::CIRCLE:
                 {
@@ -60,7 +60,7 @@ namespace magique
             if (data.minLife != data.maxLife)
             {
                 const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
-                particle.lifeTime = data.minLife + (data.maxLife - data.minLife) * p;
+                particle.lifeTime = static_cast<uint16_t>((float)(data.minLife + (data.maxLife - data.minLife)) * p);
             }
 
             // Spread
@@ -226,8 +226,8 @@ namespace magique
             LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %d | Max: %d", min, max);
             return *this;
         }
-        data.minLife = min;
-        data.maxLife = max;
+        data.minLife = static_cast<uint16_t>(min);
+        data.maxLife = static_cast<uint16_t>(max);
         return *this;
     }
 
@@ -259,6 +259,11 @@ namespace magique
 
     EmitterBase& EmitterBase::setDirection(const float x, const float y)
     {
+        if (std::abs(x) + std::abs(y) != 1)
+        {
+            LOG_ERROR("Given vector isnt not a normalized direction vector! (x and y has to add up to 1)");
+            return *this;
+        }
         data.dirX = x;
         data.dirY = y;
         return *this;

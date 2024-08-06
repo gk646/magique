@@ -16,7 +16,7 @@ namespace magique
             return false;
         }
 
-        if (pl < 0 || pl > INSTANT)
+        if (pl < 0 || pl > INTERNAL)
         {
             LOG_WARNING("Tried to register task with invalid priority");
             return false;

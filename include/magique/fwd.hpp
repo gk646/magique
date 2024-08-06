@@ -101,6 +101,7 @@ struct Rectangle;
 
 //----------------- STD -----------------//
 
+// Feel free to comment this out and #include <functional> - worked fine for me
 namespace std
 {
     template <class>

@@ -19,7 +19,7 @@ namespace magique
         float scaleY = 1.0F;
         float mouseX = 0.0F;
         float mouseY = 0.0F;
-        uint64_t nextID = 1;                // unique ids
+        uint16_t nextID = 1;                // unique ids
         vector<UIObject*> sortedObjects;    // Sorted after z-index
         StringHashMap<UIObject*> objectMap; // Stores by name
         UIObject* hoveredObject;            // Currently hovered object
@@ -45,8 +45,8 @@ namespace magique
 
         void registerObject(UIObject* object)
         {
-            auto it = sortedObjects.begin();
-            const auto end = sortedObjects.end();
+            auto** it = sortedObjects.begin();
+            const auto* const end = sortedObjects.end();
             while (it != end)
             {
                 if ((*it)->getZIndex() <= object->getZIndex())

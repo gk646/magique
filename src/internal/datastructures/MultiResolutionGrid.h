@@ -53,12 +53,12 @@ struct SingleResolutionHashGrid final
 
     explicit SingleResolutionHashGrid(const int cellSize) : cellSize(cellSize) {}
 
-    void insert(V val, const float x, const float y, const int w, const int h)
+    void insert(V val, const float x, const float y, const float w, const float h)
     {
-        int x1 = static_cast<int>(x) / cellSize;
-        int y1 = static_cast<int>(y) / cellSize;
-        int x2 = (static_cast<int>(x) + w) / cellSize;
-        int y2 = (static_cast<int>(y) + h) / cellSize;
+        const int x1 = static_cast<int>(x) / cellSize;
+        const int y1 = static_cast<int>(y) / cellSize;
+        const int x2 = static_cast<int>(x + w) / cellSize;
+        const int y2 = static_cast<int>(y + h) / cellSize;
 
         CellID cellID = GetCellID(x1, y1);
         insertElement(cellID, val);

@@ -33,7 +33,7 @@ bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
 {
     fs::path dirPath(directory);
     std::error_code ec;
-    fs::file_status status = fs::status(dirPath, ec);
+    const fs::file_status status = fs::status(dirPath, ec);
 
     if (ec)
     {
@@ -68,9 +68,9 @@ namespace magique
 {
     bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
-        uint32_t totalSize = 0;
-        uint32_t filePointer = 0;
-        uint32_t totalEntries = 0;
+        int totalSize = 0;
+        int filePointer = 0;
+        int totalEntries = 0;
 
         if (memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
         {
@@ -108,13 +108,12 @@ namespace magique
 
         filePointer += 4;
 
-
         while (filePointer < imageSize && filePointer < totalSize)
         {
             int titleLen = 0;
             int fileSize = 0;
             const char* titlePointer = nullptr;
-            // Get title pointe
+            // Get title pointer
             {
                 memcpy(&titleLen, &imageData[filePointer], 4);
                 if (titleLen > 512)
@@ -173,13 +172,13 @@ namespace magique
                 const auto time = cxstructs::getTime<std::chrono::milliseconds>();
                 if (original == imageSize)
                 {
-                    auto* logText = "Successfully loaded image %s | Took: %lld millis | Total Size: %.2f mb | Assets: %d";
+                    auto* logText = "Successfully loaded asset image %s | Took: %lld millis | Total Size: %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 else
                 {
                     auto* logText =
-                        "Successfully loaded image %s | Took: %lld millis. Decompressed: %.2f mb -> %.2f mb | Assets: %d";
+                        "Successfully loaded asset image %s | Took: %lld millis. Decompressed: %.2f mb -> %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 return true;
@@ -187,7 +186,7 @@ namespace magique
             LOG_ERROR("Failed to parse asset image: %s", path);
             return false;
         }
-        LOG_ERROR("Failed to load file: %s", path);
+        LOG_ERROR("Failed to load asset image file: %s", path);
         return false;
     }
 
@@ -195,11 +194,11 @@ namespace magique
                     const fs::path& rootPath, FILE* imageFile, vector<char> data)
     {
         std::string relativePathStr;
-        for (auto& entry : pathList)
+        for (const auto& entry : pathList)
         {
             // Open the input file for reading
             FILE* file = fopen(entry.generic_string().c_str(), "rb");
-            if (!file)
+            if (file == nullptr)
             {
                 LOG_ERROR("Could not open input file: %s", entry.generic_string().c_str());
                 continue;
@@ -283,7 +282,7 @@ namespace magique
         // Write elements
         const int size = pathList.size();
         fwrite(&size, 4, 1, imageFile);
-        writtenSize += strlen(IMAGE_HEADER) + 4 + 4;
+        writtenSize += static_cast<int>(strlen(IMAGE_HEADER)) + 4 + 4;
 
         // Temp data from files
         vector<char> data;

@@ -22,7 +22,7 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 #if defined(__APPLE__)
     usleep(sleepSeconds * 1000000.0);
 #endif
-    while (glfwGetTime() < destinationTime)
+    while (GetTime() < destinationTime)
     {
     }
 }

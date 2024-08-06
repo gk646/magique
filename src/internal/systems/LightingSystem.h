@@ -8,7 +8,6 @@ namespace magique
 {
     inline void RenderHardShadows(entt::registry& registry)
     {
-
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
         auto& lightShader = shaders.light;
@@ -149,7 +148,7 @@ namespace magique
 
     inline void RenderLighting(entt::registry& registry)
     {
-        const auto model = global::CONFIGURATION.lighting;
+        const auto model = global::ENGINE_CONFIG.lighting;
         if (model == LightingMode::STATIC_SHADOWS)
         {
             RenderHardShadows(registry);

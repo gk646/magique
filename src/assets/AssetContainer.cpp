@@ -112,7 +112,6 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
 
 namespace magique
 {
-
     bool Asset::hasExtension(const char* extension) const
     {
         M_ASSERT(extension != nullptr, "Passing nullptr");
@@ -122,18 +121,24 @@ namespace magique
         return strcmp(extension, ext);
     }
 
-    const char* Asset::getFileName(bool extension) const
+    bool Asset::startsWith(const char* prefix) const
+    {
+        M_ASSERT(prefix != nullptr, "Passing nullptr");
+        const auto len = strlen(prefix);
+        return strncmp(path, prefix, len) == 0;
+    }
+
+    const char* Asset::getFileName(const bool extension) const
     {
         const char* lastSep = nullptr;
 
     beginning:
-
         const char* workPtr = path;
         int len = 0;
 
-        while (*workPtr)
+        while (*workPtr != 0)
         {
-            if (lastSep)
+            if (lastSep != nullptr)
             {
                 if (!extension && *workPtr == '.')
                     break;
@@ -154,7 +159,6 @@ namespace magique
             goto beginning;
         }
 
-
         memcpy(stringBuffer, lastSep, std::min(64, len));
         stringBuffer[std::min(64, len)] = '\0';
         return stringBuffer;
@@ -165,7 +169,7 @@ namespace magique
         const char* workPtr = path;
         const char* lastDot = nullptr;
 
-        while (*workPtr)
+        while (*workPtr != 0)
         {
             if (*workPtr == '.')
             {
@@ -179,7 +183,7 @@ namespace magique
 
         int len = 0;
         workPtr = lastDot;
-        while (*workPtr)
+        while (*workPtr != 0)
         {
             len++;
             workPtr++;

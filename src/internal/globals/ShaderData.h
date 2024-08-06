@@ -65,7 +65,7 @@ namespace magique
 
         void updateObjectBuffer(const Vector3* vertices, const int vertexCount)
         {
-            const size_t requiredSize = vertexCount * sizeof(Vector3);
+            const int requiredSize = vertexCount * static_cast<int>(sizeof(Vector3));
 
             // Check if the current buffer size is sufficient
             if (requiredSize > currentSize)

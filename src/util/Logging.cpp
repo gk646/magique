@@ -4,18 +4,18 @@
 
 #include <magique/util/Logging.h>
 
-#include "internal/globals/Configuration.h"
+#include "internal/globals/EngineConfig.h"
 
 
 namespace magique
 {
     LogCallbackFunc CALL_BACK = nullptr;
 
-    void SetLogLevel(const LogLevel level) { global::CONFIGURATION.logLevel = level; }
+    void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
     void LogEx(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
-        if (level < global::CONFIGURATION.logLevel)
+        if (level < global::ENGINE_CONFIG.logLevel)
         {
             return;
         }

@@ -2,8 +2,6 @@ Pathfinding -> with dimensions and strategy API
 
 AI -> actual AI
 
-implement gameconfig loading and saving
-
 implement localization
 
 implement networking: gamenetworking sockets for default - steam library if with steam features

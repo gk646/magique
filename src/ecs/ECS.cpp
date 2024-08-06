@@ -7,7 +7,7 @@
 #include <magique/util/Logging.h>
 
 #include "internal/globals/ECSData.h"
-#include "internal/globals/LogicTickData.h"
+#include "internal/globals/EngineData.h"
 #include "internal/globals/ScriptData.h"
 
 namespace magique
@@ -47,7 +47,6 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, float x, float y, const MapID map)
     {
-        auto& tickData = global::ENGINE_DATA;
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
@@ -69,7 +68,6 @@ namespace magique
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map)
     {
-        auto& tickData = global::ENGINE_DATA;
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);

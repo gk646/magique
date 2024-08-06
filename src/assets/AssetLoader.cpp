@@ -6,13 +6,18 @@ namespace magique
 {
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
-        LoadAssetImage(assetPath, assets, encryptionKey);
+        addLambdaTask(
+            [=](AssetContainer& assets)
+            {
+                LoadAssetImage(assetPath, assets, encryptionKey);
+            },
+            INTERNAL, BACKGROUND_THREAD, 0);
     }
 
     bool AssetLoader::step() { return stepLoop(assets); }
 
     template <typename Func>
-    bool BasicChecks(const Func func, const PriorityLevel pl, const int impact)
+    bool BasicChecks(const Func& func, const PriorityLevel pl, const int impact)
     {
         if (func == nullptr)
         {
@@ -25,7 +30,7 @@ namespace magique
             return false;
         }
 
-        if (pl < 0 || pl > INSTANT)
+        if (pl < 0 || pl > CRITICAL)
         {
             LOG_WARNING("Tried to register task with invalid priority");
             return false;
@@ -41,7 +46,7 @@ namespace magique
         addTask(task, pl, thread, impact);
     }
 
-    void AssetLoader::registerTask(AssetLoadFunc func, const ThreadType thread, const PriorityLevel pl, const int impact)
+    void AssetLoader::registerTask(const AssetLoadFunc& func, const ThreadType thread, const PriorityLevel pl, const int impact)
     {
         if (!BasicChecks(func, pl, impact))
             return;
