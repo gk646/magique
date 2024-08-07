@@ -56,7 +56,7 @@ namespace magique
         virtual void drawLoadingScreen(UIRoot& root, float progressPercent) {}
 
         // Called each tick to render the world
-        // Should be used to draw the background world
+        // Note: BeginMode2D is already called - everything inside this method happens relative to the camera
         virtual void drawWorld(Camera2D& camera) {}
 
         // Called each render tick

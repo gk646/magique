@@ -100,7 +100,7 @@ namespace magique
             }
 
             // The info to the value which we have to move
-            const ValueInfo replaceMent{getValueType<T>(), static_cast<uint8_t>(vec.size()) - 1};
+            const ValueInfo replaceMent{getValueType<T>(), static_cast<uint8_t>(vec.size() - 1)};
 
             // Move and pop
             vec[info.index] = vec.back();

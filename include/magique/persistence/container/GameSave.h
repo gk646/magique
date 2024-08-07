@@ -12,12 +12,6 @@
 // This is a manual interface to manage gamesaves (compared to the automatic game config and assets)
 // It works by saving plain bytes from the given data which has some limitations for cross platform saves
 // Check the wiki for more infos: https://github.com/gk646/magique/wiki/Persistence
-
-// E.g if a compiler introduces padding to a struct, this can make it impossible to deserialize the data with a different compiler.
-// Strong guarantee: A save can always be loaded by the program that made it!
-// Generally true: If a game is compiled with different compilers (GCC, Clang, MSVC), saves can still be loaded the other version
-// This strategy is chosen mainly for its flexibility but also simplicity.
-
 // POD means Plain Old Data which means that all data is stored directly in the struct.
 // For example if your class contains a pointer to something (e.g a vector) this data is stored outside your class!
 // If you save non-POD types you have to manually handles the data that is stored outside the struct!
@@ -99,7 +93,7 @@ namespace magique
         [[nodiscard]] GameSaveStorageCell* getCell(StorageID id);
         void assignDataImpl(StorageID id, const void* data, int bytes, StorageType type);
         std::vector<GameSaveStorageCell> storage; // Internal data holder
-        bool isPersisted = false;
+        bool isPersisted = false;                 // If the game save has been saved to disk
     };
 
 } // namespace magique

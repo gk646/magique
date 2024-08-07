@@ -1,17 +1,9 @@
 namespace magique::updater
 {
-    inline void InternalUpdate(entt::registry& registry)
+    inline void StartTick()
     {
-        global::UI_DATA.update();
-        global::AUDIO_PLAYER.update();
-        global::COMMAND_LINE.update();
-        global::PARTICLE_DATA.update();
-        InputSystem(registry);
-        LogicSystem(registry);
-        CollisionSystem(registry);
+        PollInputEvents();
     }
-
-    inline void StartTick() { PollInputEvents(); }
 
     inline double EndTick(const double startTime, Game& game)
     {
@@ -33,8 +25,8 @@ namespace magique::updater
 
     inline double Tick(const double startTime, entt::registry& reg, Game& game)
     {
+
         StartTick();
-        //Tick game
         {
             InternalUpdate(reg); // Internal update upfront
             game.updateGame(reg);

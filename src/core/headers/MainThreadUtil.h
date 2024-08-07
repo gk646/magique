@@ -47,7 +47,7 @@ int GetFPS()
 }
 
 // Get time in seconds for last frame drawn (delta time)
-inline float GetFrameTime()
+float GetFrameTime()
 {
     const auto& perf = magique::global::PERF_DATA;
     return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
@@ -101,6 +101,16 @@ namespace magique
 
     //----------------- UPDATER -----------------//
 
+    inline void InternalUpdate(entt::registry& registry)
+    {
+        global::UI_DATA.update();
+        global::AUDIO_PLAYER.update();
+        global::COMMAND_LINE.update();
+        global::PARTICLE_DATA.update();
+        InputSystem(registry);
+        LogicSystem(registry);
+        CollisionSystem(registry);
+    }
 
 } // namespace magique
 

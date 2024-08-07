@@ -35,7 +35,7 @@ namespace magique
 
     // This is a bit complicated as we dont know how many total maps there are
     // So we stay flexible with sbo vectors that expand if needed
-    inline void BuildCache(entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
+    inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
                            Vector3 (&actorCircles)[4], SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
                            SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                            int& actorCount)
@@ -108,7 +108,7 @@ namespace magique
         }
     }
 
-    inline void AssignCameraData(entt::registry& registry)
+    inline void AssignCameraData(const entt::registry& registry)
     {
         const auto view = registry.view<const CameraC, const PositionC>();
         auto& tickData = global::ENGINE_DATA;
@@ -146,7 +146,7 @@ namespace magique
 #endif
     }
 
-    inline void LogicSystem(entt::registry& registry)
+    inline void LogicSystem(const entt::registry& registry)
     {
         auto& tickData = global::ENGINE_DATA;
         auto& hashGrid = tickData.hashGrid;

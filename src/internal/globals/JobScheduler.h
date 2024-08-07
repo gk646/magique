@@ -1,5 +1,5 @@
-#ifndef JOBSCHEDULER_H
-#define JOBSCHEDULER_H
+#ifndef MAGIQUE_JOBSCHEDULER_H
+#define MAGIQUE_JOBSCHEDULER_H
 
 #include <deque>
 #include <thread>
@@ -24,7 +24,6 @@ namespace magique
         std::atomic<int> currentJobsSize = 0;       // Current jobs
         std::atomic<uint16_t> handleID = 0;         // The internal handle counter
         vector<std::thread> threads;                // All working threads
-        std::atomic<int> usingThreads = 0;
         double targetTime = 0;
         double sleepTime = 0;
 
@@ -113,4 +112,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //JOBSCHEDULER_CUH
+#endif //MAGIQUE_JOBSCHEDULER_H

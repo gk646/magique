@@ -1,5 +1,6 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <filesystem>
-#include <cxutil/cxtime.h>
+#include <raylib/raylib.h>
 
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/container/AssetContainer.h>
@@ -148,7 +149,8 @@ namespace magique
             LOG_WARNING("No asset image at path: %s", path);
             return false;
         }
-        cxstructs::now();
+        const auto startTime = GetTime();
+
         // read file
         FILE* file = fopen(path, "rb");
         if (file)
@@ -169,16 +171,17 @@ namespace magique
             assets = AssetContainer{imageData, std::move(assetList)};
             if (res)
             {
-                const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+                const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
                 if (original == imageSize)
                 {
-                    auto* logText = "Successfully loaded asset image %s | Took: %lld millis | Total Size: %.2f mb | Assets: %d";
+                    auto* logText =
+                        "Successfully loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 else
                 {
-                    auto* logText =
-                        "Successfully loaded asset image %s | Took: %lld millis. Decompressed: %.2f mb -> %.2f mb | Assets: %d";
+                    auto* logText = "Successfully loaded asset image %s | Took: %d millis. Decompressed: %.2f mb -> "
+                                    "%.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 return true;
@@ -247,7 +250,7 @@ namespace magique
 
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey, const bool compress)
     {
-        cxstructs::now();
+        const auto startTime = GetTime();
         vector<fs::path> pathList;
         pathList.reserve(100);
 
@@ -321,10 +324,9 @@ namespace magique
             fwrite(comp.getData(), comp.getSize(), 1, compFile);
             comp.free();
             fclose(compFile);
-            auto* logText =
-                "Successfully compiled %s into %s | Took %lld millis | Compressed: %.2f mb -> %.2f mb "
-                "(%.0f%%) | Assets: %d";
-            const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+            auto* logText = "Successfully compiled %s into %s | Took %lld millis | Compressed: %.2f mb -> %.2f mb "
+                            "(%.0f%%) | Assets: %d";
+            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
                      ((float)comp.getSize() / writtenSize) * 100.0F, size);
         }
@@ -332,7 +334,7 @@ namespace magique
         {
             fclose(imageFile);
             auto* logText = "Successfully compiled %s into %s | Took %lld millis | Total Size: %.2f mb | Assets: %d";
-            const auto time = cxstructs::getTime<std::chrono::milliseconds>();
+            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
         return true;
