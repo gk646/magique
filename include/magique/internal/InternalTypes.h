@@ -100,17 +100,17 @@ namespace magique
     // Stores information used in the GameSave
     struct GameSaveStorageCell final
     {
-        StorageID id{};
         char* data = nullptr;
+        StorageID id{};
         int size = 0;
         int allocatedSize = 0;
-        bool operator==(const GameSaveStorageCell& o) const { return id == o.id; }
-        bool operator<(const GameSaveStorageCell& o) const { return id < o.id; }
+        StorageType type = StorageType::EMPTY;
+        void free();
         void assign(const char* ptr, int bytes);
-        void append(const char* ptr, int bytes);
         void grow(int newSize);
     };
 
+    // Storest information for the game config
     struct GameConfigStorageCell final
     {
         union

@@ -127,51 +127,16 @@ namespace magique
         LAYER_7 = 1 << 7,
     };
 
-    //----------------- UI -----------------//
+    //----------------- GAMEDEV -----------------//
 
-    // Anchor position used in the UI module to position objects
-    enum class AnchorPosition
+    enum class NoiseType
     {
-        LEFT_TOP,      // LT
-        LEFT_MID,      // LM
-        LEFT_BOTTOM,   // LB
-        CENTER_TOP,    // CT
-        CENTER_MID,    // CM
-        CENTER_BOTTOM, // CB
-        RIGHT_TOP,     // RT
-        RIGHT_MID,     // RM
-        RIGHT_BOTTOM   // RB
-    };
-
-    enum class KeyLayout
-    {
-        QWERTY,
-        QWERTZ,
-        AUTOMATIC,
-    };
-
-    enum Size
-    {
-        MINI,
-        SMALL,
-        MID,
-        BIG
-    };
-
-    // The render order of ui elements from top to bottom (hight to low)
-    enum class UILayer
-    {
-        BACK_GROUND,
-        LOW,
-        MEDIUM,
-        HIGH,
-        ONTOP,
-        ROOT,
-    };
-
-    struct CursorAttachment final
-    {
-        void* userPointer;
+        OPEN_SIMPLEX_2,
+        OPEN_SIMPLEX_2S,
+        CELLULAR,
+        PERLIN,
+        VALUE_CUBIC,
+        VALUE,
     };
 
     //----------------- MULTIPLAYER -----------------//
@@ -231,16 +196,62 @@ namespace magique
         CLIENT_EFFECT_UPDATE,
     };
 
-    //----------------- GAMEDEV -----------------//
+    //----------------- PERSISTENCE -----------------//
 
-    enum class NoiseType
+    enum class StorageType : uint8_t // The type of the storage cell
     {
-        OPEN_SIMPLEX_2,
-        OPEN_SIMPLEX_2S,
-        CELLULAR,
-        PERLIN,
-        VALUE_CUBIC,
-        VALUE,
+        STRING,     // Stores a string
+        DATA,       // Stores arbitrary data
+        VECTOR,     // Stores (typed) vector data
+        DATA_TABLE, // Saves data for a magique::DataTable
+        EMPTY,      // Storage is empty
+    };
+
+    //----------------- UI -----------------//
+
+    // Anchor position used in the UI module to position objects
+    enum class AnchorPosition
+    {
+        LEFT_TOP,      // LT
+        LEFT_MID,      // LM
+        LEFT_BOTTOM,   // LB
+        CENTER_TOP,    // CT
+        CENTER_MID,    // CM
+        CENTER_BOTTOM, // CB
+        RIGHT_TOP,     // RT
+        RIGHT_MID,     // RM
+        RIGHT_BOTTOM   // RB
+    };
+
+    enum class KeyLayout
+    {
+        QWERTY,
+        QWERTZ,
+        AUTOMATIC,
+    };
+
+    enum Size
+    {
+        MINI,
+        SMALL,
+        MID,
+        BIG
+    };
+
+    // The render order of ui elements from top to bottom (hight to low)
+    enum class UILayer
+    {
+        BACK_GROUND,
+        LOW,
+        MEDIUM,
+        HIGH,
+        ONTOP,
+        ROOT,
+    };
+
+    struct CursorAttachment final
+    {
+        void* userPointer;
     };
 
     //----------------- HELPER TYPES -----------------//

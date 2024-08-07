@@ -5,8 +5,7 @@ STILL IN BETA STATE - NOT PUBLICLY RELEASED
 `magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant to answer all game
 development
 needs in a simple but definitive way both in performance and usability. `magique` achieves this by providing core
-functionalities around a stack of proven libraries to create a productive 2D engine. You like raylib? You like C++? You
-will love `magique`!
+functionalities around a stack of proven libraries to create a productive 2D engine in C++ 20.
 
 Most notable features:
 
@@ -57,7 +56,8 @@ Check the wiki for optional CMake flags you can set before adding magique.
 
 The other option is to download the prebuilt binaries for your platform and link your program against them.
 
-Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the modules can easily be
+Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
+modules can easily be
 made into
 standalone units.
 

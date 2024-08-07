@@ -3,19 +3,19 @@
 
 #include <string>
 #include <vector>
-#include <magique/core/Types.h>
-#include <magique/persistence/types/DataTable.h>
-#include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
+#include <magique/internal/InternalTypes.h>
+#include <magique/persistence/types/DataTable.h>
 
 //-----------------------------------------------
 // Game Save
 //-----------------------------------------------
 // .....................................................................
+// This is a manual interface to manage gamesaves (compared to the automatic game config and assets)
 // POD means Plain Old Data which means that all data is stored directly in the struct.
-// For example if you class contains a pointer to something (e.g a vector) this data is stored outside your class
+// For example if you class contains a pointer to something (e.g a vector) this data is stored outside your class!
 // Note: All save calls copy the passed data on call. The total data is only persisted when you call SaveGameSave()!
-// Note: All calls overwrite the existing data of the slot. They are NOT additive.
+// Note: All save calls overwrite the existing data of the slot. They are NOT additive.
 // .....................................................................
 
 enum class StorageID : int; // User implemented to identify stored information
@@ -24,9 +24,7 @@ namespace magique
 {
     struct GameSave final
     {
-        ~GameSave(); // Will clean itself up automatically
-
-        //----------------- LIFE CYCLE -----------------//
+        //----------------- PERSISTENCE -----------------//
 
         // Loads a save from disk
         // Failure: GameSave.data will be null
@@ -44,76 +42,91 @@ namespace magique
         // Saves arbitrary data to the specified slot
         void saveData(StorageID id, const void* data, int bytes);
 
-        // Saves 1 or many objects of a POD (Plain old data) type
-        // To save an array pass the first element and set count to array length
+        // Saves the vector to the specified slot
+        // Note: the type of the vector must be a POD type (see module header)
         template <typename T>
-        void saveType(StorageID id, const T& obj, int count = 1);
-
-        // Built-In types
+        void saveVector(StorageID id, const std::vector<T>& vector);
 
         // Savest the given data table to the specified slot
         template <typename... Types>
-        void saveTable(StorageID id, const DataTable<Types...>& table);
+        void saveDataTable(StorageID id, const DataTable<Types...>& table);
 
         //----------------- GETTING -----------------//
-        // IMPORTANT: the data is COPIED on each call to a "get" Function!
 
-        // Returns the string value from the slot
-        std::string getString(StorageID id);
+        // If the storage cell exists AND stores a string returns a copy of it
+        // Failure: else returns the given default value
+        std::string getStringOrElse(StorageID id, const std::string& defaultVal);
 
-        // Returns the data from this slot
+        // Returns a pointer to the data from this slot
         // Optional: Specify the type to get the correct type back
         template <typename T = void>
         T* getData(StorageID id);
 
-        // Returns the data from this slot
         template <typename T>
-        T* getType(StorageID id);
+        std::vector<T> getVector(StorageID id);
 
-        // Returns a fully built data table
-        // Includes column names
+        // Built-In types
+
+        // Returns a fully built data table - includes column names
         template <typename... Types>
-        DataTable<Types...> getTable(StorageID id)
-        {
-            return DataTable<Types...>({"hey"});
-        }
+        DataTable<Types...> getTable(StorageID id);
+
+        //----------------- UTIL -----------------//
+
+        // Returns the storage type of the specified cell
+        // Failure: if the cell doesnt exist returns StorageType::EMPTY
+        StorageType getStorageInfo(StorageID id);
+
+        GameSave() = default;
+        GameSave(const GameSave& other);
+        GameSave(GameSave&& other) noexcept;
+        GameSave& operator=(const GameSave& other) = delete;
+        GameSave& operator=(GameSave&& other) noexcept = delete;
+        ~GameSave(); // Will clean itself up automatically
 
     private:
-        [[nodiscard]] GameSaveStorageCell* getDataImpl(StorageID id);
+        [[nodiscard]] GameSaveStorageCell* getCell(StorageID id);
         void assignDataImpl(StorageID id, const char* data, int bytes);
-        void appendDataImpl(StorageID id, const char* data, int bytes);
-
-        bool isPersisted = false;
         std::vector<GameSaveStorageCell> storage; // Internal data holder
+        std::vector<std::string> stringStorage;
+        bool isPersisted = false;
     };
 
 } // namespace magique
 
 
-    //----------------- IMPLEMENTATION -----------------//
-
-template <typename T>
-    void magique::GameSave::saveType(const StorageID id, const T& obj, const int count)
+//----------------- IMPLEMENTATION -----------------//
+namespace magique
+{
+    template <typename T>
+    void GameSave::saveType(const StorageID id, const T& obj, const int count)
     {
         return saveDataImpl(id, &obj, count, sizeof(T));
     }
     template <typename... Types>
-    void magique::GameSave::saveTable(const StorageID id, const DataTable<Types...>& table)
+    void GameSave::saveTable(const StorageID id, const DataTable<Types...>& table)
     {
         auto data = table.getData();
         return saveDataImpl(id, data.data(), data.size());
     }
     template <typename T>
-    T* magique::GameSave::getData(StorageID id)
+    T* GameSave::getData(const StorageID id)
     {
         M_ASSERT(getDataImpl(id) != nullptr, "Storage with given id does not exist!");
-        return static_cast<T*>(getDataImpl(id));
+        return static_cast<T*>(getCell(id));
     }
     template <typename T>
-    T* magique::GameSave::getType(StorageID id)
+    T& GameSave::getType(const StorageID id)
     {
         M_ASSERT(getDataImpl(id) != nullptr, "Storage with given id does not exist!");
-        return static_cast<T*>(getDataImpl(id));
+        return *static_cast<T*>(getCell(id));
     }
+    template <typename... Types>
+    DataTable<Types...> GameSave::getTable(StorageID id)
+    {
+        return DataTable<Types...>({"hey"});
+    }
+
+} // namespace magique
 
 #endif //MAGIQUE_GAMESAVE_H
