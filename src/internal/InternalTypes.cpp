@@ -21,14 +21,15 @@ namespace magique
         }
     }
 
-    void GameSaveStorageCell::append(const char* ptr, const int bytes)
+    void GameSaveStorageCell::free()
     {
-        grow(size + bytes);
-        std::memcpy(data + size, ptr, bytes);
-        size += bytes;
+        delete[] data;
+        data = nullptr;
+        size = 0;
+        allocatedSize = 0;
     }
 
-    void GameSaveStorageCell::assign(const char* ptr, int bytes)
+    void GameSaveStorageCell::assign(const char* ptr, const int bytes)
     {
         grow(bytes);
         std::memcpy(data, ptr, bytes);

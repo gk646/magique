@@ -1,30 +1,17 @@
 #include <algorithm>
-#include <filesystem>
 
 #include <magique/persistence/container/GameSave.h>
 #include <magique/util/Logging.h>
 
-#include <cxutil/cxio.h>
+using StorageCell = magique::GameSaveStorageCell;
 
 namespace magique
 {
-    using StorageCell = GameSaveStorageCell;
     constexpr auto* FILE_HEADER = "MAGIQUE_SAVE_FILE";
 
-    bool ContainsCell(const StorageID id, const std::vector<StorageCell>& storage)
-    {
-        return std::ranges::binary_search(storage, StorageCell{id, nullptr, 0}, &StorageCell::operator<);
-    }
+    GameSave::GameSave(const GameSave& other) : isPersisted(other.isPersisted), storage(other.storage) {}
 
-    bool SizeCheck(const int currenSize, const int totalSize)
-    {
-        if (currenSize > totalSize)
-        {
-            LOG_ERROR("Error reading save data");
-            return false;
-        }
-        return true;
-    }
+    GameSave::GameSave(GameSave&& other) noexcept : isPersisted(other.isPersisted), storage(std::move(other.storage)) {}
 
     GameSave::~GameSave()
     {
@@ -33,6 +20,8 @@ namespace magique
             LOG_WARNING("GameSave is deleted without being saved!");
         }
     }
+
+    //----------------- PERSISTENCE -----------------//
 
     GameSave GameSave::LoadGameSave(const char* filePath, uint64_t encryptionKey)
     {
@@ -128,7 +117,54 @@ namespace magique
         return true;
     }
 
-    GameSaveStorageCell* GameSave::getDataImpl(StorageID id)
+    //----------------- SAVING -----------------//
+
+    void GameSave::saveString(const StorageID id, const std::string& string)
+    {
+        auto* cell = getCell(id);
+        if (cell == nullptr) // Doesnt exist
+        {
+            const auto stringIdx = static_cast<int>(stringStorage.size());
+            storage.push_back({nullptr, id, stringIdx, 0, StorageCell::Type::STRING});
+            stringStorage.emplace_back(string);
+        }
+        else // Exists
+        {
+            if (cell->type == StorageType::STRING) // Its a string
+            {
+                stringStorage[cell->size] = string; // Just replace the old string for this cell
+            }
+            else // Its something else - delete and add new string
+            {
+                cell->free();
+                const auto stringIdx = static_cast<int>(stringStorage.size());
+                cell->size = stringIdx;
+                cell->type = StorageType::STRING;
+                stringStorage.emplace_back(string);
+            }
+        }
+    }
+
+    //----------------- GETTING -----------------//
+
+    std::string GameSave::getStringOrElse(const StorageID id, const std::string& defaultVal)
+    {
+        const auto* cell = getCell(id);
+        if (cell == nullptr)
+        {
+            return defaultVal;
+        }
+        if (cell->type == StorageType::STRING)
+        {
+            return stringStorage[cell->size];
+        }
+        return defaultVal;
+    }
+
+
+    //----------------- PRIVATE -----------------//
+
+    GameSaveStorageCell* GameSave::getCell(const StorageID id)
     {
         for (auto& cell : storage)
         {
@@ -140,25 +176,14 @@ namespace magique
         return nullptr;
     }
 
-    void GameSave::assignDataImpl(StorageID id, const char* data, int bytes)
+    void GameSave::assignDataImpl(const StorageID id, const char* data, const int bytes)
     {
-        auto cell = getDataImpl(id);
+        auto cell = getCell(id);
         if (cell == nullptr)
         {
             cell = &storage.emplace_back(id, nullptr, 0, 0);
         }
         cell->assign(data, bytes);
-    }
-
-    void GameSave::appendDataImpl(StorageID id, const char* data, int bytes)
-    {
-        const auto cell = getDataImpl(id);
-        if (cell == nullptr)
-        {
-            LOG_ERROR("Cell does not exist!:%s", id);
-            return;
-        }
-        cell->append(data, bytes);
     }
 
 } // namespace magique

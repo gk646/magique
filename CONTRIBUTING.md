@@ -5,6 +5,7 @@ Iam very happy about any contributions, specifically:
 - Improving the documentation in the wiki or in the source files
 - Reviewing code and fixing mistakes (leaks, rare bugs)
 - Improving performance or usability of existing code
+- Testing and bug reports!
 - Adding new features and completely new modules
 
 Everything besides new features will likely be merged instantly after review.

@@ -9,15 +9,15 @@
 // Game Saver
 //-----------------------------------------------
 // ................................................................................
-// All tasks automatically run on a background thread
+// Uses the same interface as magique::AssetLoader but all tasks automatically run on a background thread
 // ................................................................................
+
 namespace magique
 {
-    using GameLoadFunc = void (*)(GameSave&); // Typedef for simple tasks not requiring variables
+    using GameLoadFunc = std::function<void(GameSave&)>; // For simple tasks not requiring variables
 
     struct GameLoader final : TaskExecutor<GameSave>
     {
-        GameLoader(const char* assetPath, uint64_t encryptionKey);
 
         // Registers a new task
         // task     - a new instance of a subclass of ITask, takes owner ship
@@ -29,14 +29,12 @@ namespace magique
         // func     - a loading func (lambda)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(GameLoadFunc func, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(const GameLoadFunc& func, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
-        // Called each frame - progresses the loader
+        GameLoader(const char* assetPath, uint64_t encryptionKey);
         bool step() override;
-
         GameSave gameSave;
-        friend Game;
     };
 
 } // namespace magique

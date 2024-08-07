@@ -84,7 +84,7 @@ namespace magique
         const std::vector<ColumnsTuple>& getData() const;
 
         //----------------- ITERATORS -----------------//
-        // iterators for rows - use with structure binding for a very nice syntax
+        // iterators for rows - use with structured bindings for a very nice syntax
 
         Iterator<ColumnsTuple> begin();
         Iterator<ColumnsTuple> end();

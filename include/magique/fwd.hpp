@@ -7,10 +7,9 @@ namespace magique
 {
     //----------------- CORE -----------------//
     struct Keybind;       // Efficient representation of a keybind
-    struct Setting;       // Efficient representation of a setting
     struct Game;          // Core Game class
-    struct ScreenEmitter; // Particle emitter
-    struct EntityEmitter; // Particle emitter
+    struct ScreenEmitter; // Particle emitter for screen (simple) particles
+    struct EntityEmitter; // Particle emitter for entity (complex) particles
 
     //----------------- LOADING & SAVING -----------------//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
@@ -82,8 +81,8 @@ namespace magique
 } // namespace magique
 
 //----------------- USER DEFINED -----------------//
-enum EntityID : uint16_t;   // User implemented to identify entity types
-enum class MapID : uint8_t; // User implemented to identify maps
+enum EntityID : uint16_t;   // User implemented to identify entity types - uses uint16_t to be small for networking
+enum class MapID : uint8_t; // User implemented to identify maps - uses uint8_t to be small for networking
 enum class HandleID : int;  // User implemented to identify handles
 enum class ConfigID : int;  // User implemented to identify config string
 enum class StorageID : int; // User implemented to identify stored information
