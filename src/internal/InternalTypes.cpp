@@ -39,15 +39,13 @@ namespace magique
         type = newType;
     }
 
-
     void GameConfigStorageCell::assign(const char* data, const int size, const StorageType newType, const Keybind bind)
     {
-        if (type == StorageType::STRING)
+        if (type == StorageType::STRING) // If it was a string delete it
         {
             delete[] string;
             string = nullptr;
         }
-
 
         if (newType == StorageType::STRING)
         {

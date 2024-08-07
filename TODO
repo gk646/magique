@@ -12,6 +12,4 @@ implement game dev API's
 
 implement game loading interface / make save loading easy and quick / support multiple saves / quicksaves...
 
-load assets are part of a loading function
-
 implement default loading screen

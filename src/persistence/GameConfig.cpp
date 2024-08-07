@@ -9,7 +9,7 @@ inline constexpr auto FILE_HEADER = "CONFIG";
 
 namespace magique
 {
-    void GameConfig::SaveToFile(const GameConfig& config, const char* filePath, const uint64_t encryptionKey)
+    void GameConfig::SaveToFile(const GameConfig& config, const char* filePath, const uint64_t key)
     {
         int totalSize = 0;
         for (const auto& cell : config.storage)
@@ -18,7 +18,7 @@ namespace magique
             totalSize += 4; // ID
             if (cell.type == StorageType::STRING)
             {
-                totalSize += strlen(cell.string); // String
+                totalSize += static_cast<int>(strlen(cell.string)); // String
             }
             else
             {
@@ -42,7 +42,7 @@ namespace magique
             {
                 const auto len = strlen(cell.string); // String
                 std::memcpy(&data[idx], cell.string, len);
-                idx += len;
+                idx += static_cast<int>(len);
             }
             else
             {
@@ -51,7 +51,7 @@ namespace magique
             }
         }
 
-        SymmetricEncrypt((char*)data, totalSize, encryptionKey);
+        SymmetricEncrypt(reinterpret_cast<char*>(data), totalSize, key);
 
         FILE* file = fopen(filePath, "wb");
         if (file == nullptr)
@@ -70,19 +70,20 @@ namespace magique
         fclose(file);
         delete[] data;
 
-        LOG_INFO("Successfully saved gamesave: %s | Entires: %d", filePath, static_cast<int>(config.storage.size()));
+        LOG_INFO("Successfully saved GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
     }
 
-    GameConfig GameConfig::LoadFromFile(const char* filePath, const uint64_t encryptionKey)
+    GameConfig GameConfig::LoadFromFile(const char* filePath, const uint64_t key)
     {
         GameConfig config;
         FILE* file = fopen(filePath, "rb");
         if (file == nullptr)
         {
-            LOG_ERROR("File does not exist: %s", filePath);
+            LOG_WARNING("Config does not exist. Will be created on shutdown: %s", filePath);
             return config;
         }
         auto constexpr headerSize = static_cast<int>(std::char_traits<char>::length(FILE_HEADER));
+        setvbuf(file, nullptr, _IONBF, 0);
 
         fseek(file, 0, SEEK_END);
         const int totalSize = static_cast<int>(ftell(file)) - headerSize;
@@ -98,11 +99,11 @@ namespace magique
             return config;
         }
 
-        auto* data = new char[totalSize];
+        auto* data = static_cast<char*>(malloc(totalSize));
         fread(data, totalSize, 1, file);
 
         // Decrypt
-        SymmetricEncrypt(data, totalSize, encryptionKey);
+        SymmetricEncrypt(data, totalSize, key);
 
         int i = 0;
         while (i < totalSize)
@@ -119,7 +120,7 @@ namespace magique
 
             if (type == static_cast<uint8_t>(StorageType::STRING))
             {
-                const int len = strlen(&data[i]); // thats funny
+                const auto len = static_cast<int>(strlen(&data[i])); // thats funny
                 cell.assign(&data[i], len, static_cast<StorageType>(type));
                 i += len;
             }
@@ -132,8 +133,8 @@ namespace magique
         }
 
         fclose(file);
-        delete[] data;
-        LOG_INFO("Successfully loaded gamesave: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
+        free(data);
+        LOG_INFO("Successfully loaded GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
         return config;
     }
 
@@ -206,4 +207,41 @@ namespace magique
         }
         return {cell->string}; // is null terminated
     }
+
+    void GameConfig::erase(const ConfigID id)
+    {
+        if (storage.empty())
+            return;
+
+        if (storage.size() == 1)
+        {
+            storage.front().assign(nullptr, 0, StorageType::KEY_BIND); // If was a string delete it
+            storage.clear();
+            return;
+        }
+
+        for (auto& cell : storage)
+        {
+            if (cell.id == id)
+            {
+                cell.assign(nullptr, 0, StorageType::KEY_BIND); // If was a string delete it
+                cell = storage.back();
+                storage.pop_back();
+                return;
+            }
+        }
+    }
+
+    void GameConfig::clear()
+    {
+        for (auto& cell : storage)
+        {
+            if (cell.type == StorageType::STRING)
+            {
+                cell.assign(nullptr, 0, StorageType::KEY_BIND); // If was a string delete it
+            }
+        }
+        storage.clear();
+    }
+
 } // namespace magique

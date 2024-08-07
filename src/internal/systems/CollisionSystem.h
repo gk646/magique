@@ -28,7 +28,7 @@ namespace magique
     void QueryHashGrid(vector<entt::entity>& collector, const HashGrid&, const PositionC& pos, const CollisionC& col);
 
     // System
-    inline void CollisionSystem(entt::registry& registry)
+    inline void CollisionSystem(const entt::registry& registry)
     {
         auto& tickData = global::ENGINE_DATA;
         auto& grid = tickData.hashGrid;
@@ -279,8 +279,19 @@ namespace magique
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
-                LOG_FATAL("Method not implemented");
-                break;
+                {
+                    if (posB.rotation == 0)
+                    {
+                        const float txs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
+                        const float tys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
+                        return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, txs,
+                                                     tys);
+                    }
+                    float txs[4] = {0, colB.p1, colB.p3, 0};
+                    float tys[4] = {0, colB.p2, colB.p4, 0};
+                    RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
+                    return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, txs, tys);
+                }
             }
         case Shape::CAPSULE:
             switch (colB.shape)
@@ -332,8 +343,19 @@ namespace magique
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::CIRCLE:
-                LOG_FATAL("Method not implemented");
-                break;
+                {
+                    if (posA.rotation == 0)
+                    {
+                        const float txs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
+                        const float tys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
+                        return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, txs,
+                                                     tys);
+                    }
+                    float txs[4] = {0, colA.p1, colA.p3, 0};
+                    float tys[4] = {0, colA.p2, colA.p4, 0};
+                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
+                    return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, txs, tys);
+                }
             case Shape::CAPSULE:
                 LOG_FATAL("Method not implemented");
                 break;
