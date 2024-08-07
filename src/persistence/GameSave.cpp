@@ -1,7 +1,9 @@
-#include <algorithm>
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <magique/persistence/container/GameSave.h>
 #include <magique/util/Logging.h>
+
+#include "internal/headers/Security.h"
 
 using StorageCell = magique::GameSaveStorageCell;
 
@@ -9,158 +11,198 @@ namespace magique
 {
     constexpr auto* FILE_HEADER = "MAGIQUE_SAVE_FILE";
 
-    GameSave::GameSave(const GameSave& other) : isPersisted(other.isPersisted), storage(other.storage) {}
+    GameSave::GameSave(GameSave&& other) noexcept : storage(std::move(other.storage)), isPersisted(other.isPersisted) {}
 
-    GameSave::GameSave(GameSave&& other) noexcept : isPersisted(other.isPersisted), storage(std::move(other.storage)) {}
+    GameSave& GameSave::operator=(GameSave&& other) noexcept
+    {
+        if (this == &other)
+        {
+            return *this;
+        }
+
+        for (auto& cell : storage)
+        {
+            cell.free();
+        }
+
+        storage = std::move(other.storage);
+        isPersisted = other.isPersisted;
+
+        return *this;
+    }
 
     GameSave::~GameSave()
     {
-        if (!isPersisted)
+        if (!isPersisted && !storage.empty())
         {
             LOG_WARNING("GameSave is deleted without being saved!");
         }
+
+        for (auto& cell : storage)
+        {
+            cell.free();
+        }
+    }
+
+    StorageType GameSave::getStorageInfo(const StorageID id)
+    {
+        const auto* cell = getCell(id);
+        if (cell == nullptr)
+        {
+            return StorageType::EMPTY;
+        }
+        return cell->type;
     }
 
     //----------------- PERSISTENCE -----------------//
 
-    GameSave GameSave::LoadGameSave(const char* filePath, uint64_t encryptionKey)
+    bool GameSave::Save(GameSave& save, const char* filePath, const uint64_t encryptionKey)
     {
-        char buffer[24];
-        GameSave save{};
-
-        FILE* file = fopen(filePath, "rb");
-        if (!file)
+        int totalSize = 0;
+        for (const auto& cell : save.storage)
         {
-            LOG_ERROR("File does not exist | Will be created when saving: %s", filePath);
-            return save;
+            totalSize += 1;         // Type
+            totalSize += 4;         // ID
+            totalSize += 4;         // Size
+            totalSize += cell.size; // Data
         }
 
-        int32_t totalSize = 0;
-        int32_t totalEntries = 0;
+        // Generate data
+        auto* data = new unsigned char[totalSize];
 
-        // Header
-        fread(buffer, strlen(FILE_HEADER), 1, file);
-        if (memcmp(FILE_HEADER, buffer, strlen(FILE_HEADER)) != 0)
+        int idx = 0;
+        for (const auto& cell : save.storage)
         {
-            LOG_ERROR("Malformed save file: %s", filePath);
-            fclose(file);
-            return save;
+            auto type = static_cast<uint8_t>(cell.type); // only 5 types - but type int cause its in user space
+            std::memcpy(&data[idx], &type, sizeof(uint8_t));
+            ++idx;
+            std::memcpy(&data[idx], &cell.id, sizeof(int));
+            idx += 4;
+            std::memcpy(&data[idx], &cell.size, sizeof(int));
+            idx += 4;
+            std::memcpy(&data[idx], cell.data, cell.size);
+            idx += cell.size;
         }
 
-        // Saved size
-        fread(&totalSize, sizeof(int32_t), 1, file);
+        SymmetricEncrypt((char*)data, totalSize, encryptionKey);
 
-        // Saved entries
-        fread(&totalEntries, sizeof(int32_t), 1, file);
-        if (totalEntries < 0 || totalEntries > 50'000)
-        { // Sanity check
-            LOG_ERROR("Invalid number of entries in save file: %s", filePath);
-            fclose(file);
-            return save;
-        }
-        save.storage.reserve(totalEntries);
-
-        while (ftell(file) < totalSize)
-        {
-            int id;
-            fread(&id, sizeof(int), 1, file);
-
-            int size;
-            fread(&size, sizeof(int), 1, file);
-
-            auto* data = new char[size];
-            fread(data, 1, size, file);
-
-            save.storage.push_back(StorageCell{static_cast<StorageID>(id), data, size});
-        }
-        fclose(file);
-        return save;
-    }
-
-    bool GameSave::SaveGameSave(GameSave& save, const char* filePath, uint64_t encryptionKey)
-    {
         FILE* file = fopen(filePath, "wb");
-        if (!file)
+        if (file == nullptr)
         {
             LOG_ERROR("Failed to open file for writing: %s", filePath);
+            delete[] data;
             return false;
         }
+        setvbuf(file, nullptr, _IONBF, 0);
 
         // Header
-        fwrite(FILE_HEADER, 1, strlen(FILE_HEADER), file);
-
-        // Total size
-        int32_t totalSize = 0;
-        fwrite(&totalSize, sizeof(int32_t), 1, file);
-
-        // Total entries
-        const auto totalEntries = static_cast<int32_t>(save.storage.size());
-        fwrite(&totalEntries, sizeof(int32_t), 1, file);
-
-        int32_t dataSize = 0;
-
-        for (const auto& [id, data, size, _] : save.storage)
-        {
-            fwrite(&id, sizeof(int), 1, file);
-            fwrite(&size, sizeof(int), 1, file);
-            fwrite(data, 1, size, file);
-            dataSize += sizeof(int) * 2 + size;
-        }
-
-        // Calculate and write the total size at the beginning of the file
-        totalSize = strlen(FILE_HEADER) + sizeof(int32_t) * 2 + dataSize;
-        fseek(file, strlen(FILE_HEADER), SEEK_SET);
-        fwrite(&totalSize, sizeof(int32_t), 1, file);
+        fwrite(FILE_HEADER, strlen(FILE_HEADER), 1, file);
+        // Data
+        fwrite(data, totalSize, 1, file);
 
         fclose(file);
         save.isPersisted = true;
+        delete[] data;
+
+        LOG_INFO("Successfully saved gamesave: %s | Size: %.2fkb", filePath, (float)totalSize / 1000.0F);
         return true;
+    }
+
+    GameSave GameSave::Load(const char* filePath, const uint64_t encryptionKey)
+    {
+        GameSave save;
+        FILE* file = fopen(filePath, "rb");
+        if (file == nullptr)
+        {
+            LOG_WARNING("File does not exist. Will be created once you save: %s", filePath);
+            return save;
+        }
+        auto constexpr headerSize = static_cast<int>(std::char_traits<char>::length(FILE_HEADER));
+
+        fseek(file, 0, SEEK_END);
+        const int totalSize = static_cast<int>(ftell(file)) - headerSize;
+        fseek(file, 0, SEEK_SET);
+
+        // Check header first
+        char buffer[headerSize];
+        fread(buffer, headerSize, 1, file);
+        if (memcmp(FILE_HEADER, buffer, headerSize) != 0)
+        {
+            LOG_ERROR("Malformed gamesave file: %s", filePath);
+            fclose(file);
+            return save;
+        }
+
+        auto* data = new char[totalSize];
+        fread(data, totalSize, 1, file);
+
+        // Decrypt
+        SymmetricEncrypt(data, totalSize, encryptionKey);
+
+        int i = 0;
+        while (i < totalSize)
+        {
+            uint8_t type = 0;
+            std::memcpy(&type, &data[i], sizeof(uint8_t));
+            ++i;
+
+            int storageID = 0;
+            std::memcpy(&storageID, &data[i], sizeof(int));
+            i += 4;
+
+            int size = 0;
+            std::memcpy(&size, &data[i], sizeof(int));
+            i += 4;
+
+            // Sanity check
+            if (size > 1'000'000 || size <= 0) // Bigger than 1mb
+            {
+                delete[] data;
+                LOG_ERROR("Failed to parse game save. Invalid entry!");
+                return {};
+            }
+
+            GameSaveStorageCell cell{static_cast<StorageID>(storageID)};
+            cell.assign(&data[i], size, StorageType(type));
+            save.storage.push_back(cell);
+            i += size;
+        }
+
+        fclose(file);
+        delete[] data;
+        LOG_INFO("Successfully loaded gamesave: %s | Size: %.2fkb", filePath, (float)totalSize / 1000.0F);
+        return save;
     }
 
     //----------------- SAVING -----------------//
 
     void GameSave::saveString(const StorageID id, const std::string& string)
     {
-        auto* cell = getCell(id);
-        if (cell == nullptr) // Doesnt exist
-        {
-            const auto stringIdx = static_cast<int>(stringStorage.size());
-            storage.push_back({nullptr, id, stringIdx, 0, StorageCell::Type::STRING});
-            stringStorage.emplace_back(string);
-        }
-        else // Exists
-        {
-            if (cell->type == StorageType::STRING) // Its a string
-            {
-                stringStorage[cell->size] = string; // Just replace the old string for this cell
-            }
-            else // Its something else - delete and add new string
-            {
-                cell->free();
-                const auto stringIdx = static_cast<int>(stringStorage.size());
-                cell->size = stringIdx;
-                cell->type = StorageType::STRING;
-                stringStorage.emplace_back(string);
-            }
-        }
+        assignDataImpl(id, string.data(), static_cast<int>(string.size()), StorageType::STRING);
+    }
+
+    void GameSave::saveData(const StorageID id, const void* data, const int bytes)
+    {
+        assignDataImpl(id, data, bytes, StorageType::DATA);
     }
 
     //----------------- GETTING -----------------//
 
     std::string GameSave::getStringOrElse(const StorageID id, const std::string& defaultVal)
     {
-        const auto* cell = getCell(id);
-        if (cell == nullptr)
+        const auto* const cell = getCell(id);
+        if (cell == nullptr) [[unlikely]]
         {
+            LOG_ERROR("Storage with given id does not exist!");
             return defaultVal;
         }
-        if (cell->type == StorageType::STRING)
+        if (cell->type != StorageType::STRING)
         {
-            return stringStorage[cell->size];
+            LOG_ERROR("This storage does not save a string! %d", id);
+            return defaultVal;
         }
-        return defaultVal;
+        return {cell->data, static_cast<size_t>(cell->size)};
     }
-
 
     //----------------- PRIVATE -----------------//
 
@@ -176,14 +218,19 @@ namespace magique
         return nullptr;
     }
 
-    void GameSave::assignDataImpl(const StorageID id, const char* data, const int bytes)
+    void GameSave::assignDataImpl(const StorageID id, const void* data, const int bytes, const StorageType type)
     {
-        auto cell = getCell(id);
+        auto* cell = getCell(id);
         if (cell == nullptr)
         {
-            cell = &storage.emplace_back(id, nullptr, 0, 0);
+            GameSaveStorageCell newCell{id};
+            newCell.assign(static_cast<const char*>(data), bytes, type);
+            storage.push_back(newCell);
         }
-        cell->assign(data, bytes);
+        else
+        {
+            cell->assign(static_cast<const char*>(data), bytes, type);
+        }
     }
 
 } // namespace magique

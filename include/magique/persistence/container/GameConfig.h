@@ -16,7 +16,7 @@
 //   - ...
 // magique automatically loads (or creates) a config based on the given path in Game::run()
 // This global instance can be accessed freely with GetGameConfig() - You should only need this single config per game
-// Note: The game config owns and stores the data and is persisted automatically when the game is shutdown gracefully
+// Note: The game config is persisted automatically when the game is shutdown gracefully
 // .....................................................................
 
 enum class ConfigID; // User implemented - used as direct index
@@ -25,53 +25,86 @@ namespace magique
 {
     struct GameConfig
     {
-        //----------------- PERSISTENCE -----------------//
-
-        // Calls the given function once to initialize the config IF AND ONLY IF the config is empty
-        // This is very useful to make sure the config contains some base parameters if the game is opened for the first time
-        void initializeIfEmpty(const std::function<void(GameConfig& config)>& func);
-
         //----------------- SAVE -----------------//
 
         // Saves a keybind at the given id
-        // Example: SaveKeyBind(Keybind(KEY_M), ConfigID::OPEN_MAP);
+        // Example: saveKeyBind(ConfigID::OPEN_MAP, Keybind{KEY_M});
         void saveKeybind(ConfigID id, Keybind keybind);
 
         // Saves a string
         // Note: String is passed by value and moved
-        void saveString(ConfigID id, std::string string);
+        void saveString(ConfigID id, const std::string& string);
 
-        // Saves any primitive datatype (bool, char, int, float, double, ...) plus magique::Point
+        // Saves any plain old data type up to 8 bytes
         template <typename T>
         void saveValue(ConfigID id, T val);
 
         //----------------- GET -----------------//
 
-        // Returns a modifiable reference to this keybind at the given id
-        [[nodiscard]] Keybind& getKeybind(ConfigID id);
+        // If present returns a copy to the keybind at the given id
+        // Failure: if the value is not present returns the default
+        Keybind getKeybindOrElse(ConfigID id, Keybind defaultKeybind = Keybind{0});
 
-        // Returns a modifiable reference to the string at the given id
-        [[nodiscard]] std::string& getString(ConfigID id);
+        // If present returns a copy to the string at the given id
+        // Failure: if the value is not present returns the default
+        [[nodiscard]] std::string getStringOrElse(ConfigID id, const std::string& defaultString = "");
 
-        // Returns a modifiable reference to the value at the given id
-        // The correct type has to be specified
+        // If present returns a copy to the value at the given id
+        // Failure: if the value is not present returns the default
         template <typename T>
-        [[nodiscard]] T& getValue(ConfigID id);
+        T getValueOrElse(ConfigID id, const T& defaultValue = {});
 
         //----------------- REMOVE -----------------//
 
-        void remove(ConfigID id);
+        // Erases the storage with the given id
+        void erase(ConfigID id);
 
+        // Erases all storages
         void clear();
 
     private:
         static GameConfig LoadFromFile(const char* fName, uint64_t key = 0);
         static void SaveToFile(const GameConfig& config, const char* fName, uint64_t key = 0);
+        GameConfigStorageCell* getCell(ConfigID id);
         std::vector<GameConfigStorageCell> storage; // Saves all types except string
-        std::vector<std::string> stringStorage;     // Stores strings
         friend struct Game;
     };
-
 } // namespace magique
 
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique
+{
+    template <typename T>
+    void GameConfig::saveValue(const ConfigID id, T val)
+    {
+        auto* cell = getCell(id);
+        if (cell == nullptr)
+        {
+            GameConfigStorageCell newCell{id};
+            newCell.assign((const char*)&val, sizeof(T), StorageType::VALUE);
+            storage.push_back(newCell);
+        }
+        else
+        {
+            cell->assign((const char*)&val, sizeof(T), StorageType::VALUE);
+        }
+    }
+    template <typename T>
+    T GameConfig::getValueOrElse(const ConfigID id, const T& defaultValue)
+    {
+        const auto* cell = getCell(id);
+        if (cell == nullptr)
+        {
+            return defaultValue;
+        }
+        if (cell->type != StorageType::KEY_BIND)
+        {
+            return defaultValue;
+        }
+        T val;
+        std::memcpy(&val, cell->buffer, sizeof(T));
+        return val;
+    }
+} // namespace magique
 #endif //MAGIQUE_GAMECONFIG_H

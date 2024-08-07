@@ -101,24 +101,30 @@ namespace magique
     struct GameSaveStorageCell final
     {
         char* data = nullptr;
-        StorageID id{};
+        StorageID id;
         int size = 0;
         int allocatedSize = 0;
         StorageType type = StorageType::EMPTY;
+        explicit GameSaveStorageCell(const StorageID id) : id(id) {}
         void free();
-        void assign(const char* ptr, int bytes);
+        void assign(const char* ptr, int bytes, StorageType type);
         void grow(int newSize);
     };
 
-    // Storest information for the game config
+    // Stores information for the game config
     struct GameConfigStorageCell final
     {
+        ConfigID id;
+        StorageType type = StorageType::EMPTY;
         union
         {
-            int stringIndex = 0;
             Keybind keybind;
+            char* string = nullptr;
             char buffer[8];
         };
+        explicit GameConfigStorageCell(const ConfigID id) : id(id) {}
+
+        void assign(const char* data, int size, StorageType type, Keybind bind = Keybind{0});
     };
 
     struct EmitterData final

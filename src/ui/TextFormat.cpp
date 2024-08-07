@@ -54,7 +54,7 @@ namespace magique
 
     //----------------- STATE DATA -----------------//
 
-    StringHashMap<ValueInfo> VALUES;                  // Placeholder to value mapping - transparent lookup enabled!
+    StringHashMap<ValueInfo> VALUES;       // Placeholder to value mapping - transparent lookup enabled!
     ValueStorage VALUE_STORAGE;            // All values stored by the placeholders
     char FMT_PREFIX = '$';                 // The format prefix to seach for#
     char FMT_ENCAP_START = '{';            // Format encapsulator start
@@ -100,7 +100,7 @@ namespace magique
             }
 
             // The info to the value which we have to move
-            const ValueInfo replaceMent{getValueType<T>(), vec.size() - 1};
+            const ValueInfo replaceMent{getValueType<T>(), static_cast<uint8_t>(vec.size()) - 1};
 
             // Move and pop
             vec[info.index] = vec.back();
