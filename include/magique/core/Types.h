@@ -204,6 +204,8 @@ namespace magique
         DATA,       // Stores arbitrary data
         VECTOR,     // Stores (typed) vector data
         DATA_TABLE, // Saves data for a magique::DataTable
+        KEY_BIND,   // Stores a key bind (used only by GameConfig)
+        VALUE,      // Stores a 8 bytes value (used only by GameConfig)
         EMPTY,      // Storage is empty
     };
 
