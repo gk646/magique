@@ -71,6 +71,7 @@ namespace magique
 
     // Makes the entity collidable with others - Shape: CAPSULE (vertical)
     // Pass the height and the radius of the capsule - a capsule cant be rotated
+    // Note: The total height must be greater than 2 * radius!
     CollisionC& GiveCollisionCapsule(entt::entity entity, float height, float radius);
 
     // Makes the entity collidable with others - Shape: TRIANGLE

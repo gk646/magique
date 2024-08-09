@@ -684,9 +684,6 @@ void BeginDrawing(void)
     // consequently the measure for update vs draw is not accurate (only the total frame time is accurate)
     rlLoadIdentity();                   // Reset current matrix (modelview)
     rlMultMatrixf(MatrixToFloat(CORE.Window.screenScale)); // Apply screen scaling
-
-    RLGL.State.prevDrawCalls = RLGL.State.drawCalls;
-    RLGL.State.drawCalls = 0;
 }
 
 // End canvas drawing and swap buffers (double buffering)

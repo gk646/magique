@@ -11,7 +11,12 @@ namespace magique::renderer
         }
     }
 
-    inline void StartTick() { BeginDrawing(); }
+    inline void StartTick()
+    {
+        BeginDrawing();
+        RLGL.State.prevDrawCalls = RLGL.State.drawCalls;
+        RLGL.State.drawCalls = 0;
+    }
 
     inline double EndTick(const double starTime)
     {

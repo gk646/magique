@@ -59,6 +59,7 @@ namespace magique
         // Init Window
         InitWindow(1280, 960, name);
         InitAudioDevice();
+        SetTargetFPS(60);
         SetExitKey(0);
         using namespace std;
         using namespace chrono;

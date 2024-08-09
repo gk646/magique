@@ -25,7 +25,6 @@ namespace magique::updater
 
     inline double Tick(const double startTime, entt::registry& reg, Game& game)
     {
-
         StartTick();
         {
             InternalUpdate(reg); // Internal update upfront
