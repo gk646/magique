@@ -94,7 +94,7 @@ namespace magique
                 atlas.loadToGPU();
             }
         };
-        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW,1);
+        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW, 1);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;
 

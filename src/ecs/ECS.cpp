@@ -45,7 +45,7 @@ namespace magique
 
     bool IsEntityExisting(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
-    entt::entity CreateEntity(const EntityID type, float x, float y, const MapID map)
+    entt::entity CreateEntity(const EntityID type, const float x, const float y, const MapID map)
     {
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
@@ -66,7 +66,7 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map)
+    entt::entity CreateEntityNetwork(uint32_t id, EntityID type, const float x, const float y, MapID map)
     {
         M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
@@ -112,20 +112,20 @@ namespace magique
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::RECT);
     }
 
-    CollisionC& GiveCollisionCircle(const entt::entity e, const float radius, const int anchorX, const int anchorY)
+    CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::CIRCLE);
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(0),
+                                                      static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CIRCLE);
     }
 
-    CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, float radius, const int anchorX,
-                                     const int anchorY)
+    CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::CAPSULE);
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
+                                                      static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
     }
 
-    CollisionC& GiveCollisionTri(const entt::entity e, Point p2, Point p3, const int anchorX, const int anchorY)
+    CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, const int anchorX,
+                                 const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::TRIANGLE);
@@ -133,13 +133,13 @@ namespace magique
 
     void GiveCamera(const entt::entity entity) { internal::REGISTRY.emplace<CameraC>(entity); }
 
-    OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, Shape shape)
+    OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, const Shape shape)
     {
         return internal::REGISTRY.emplace<OccluderC>(entity, static_cast<int16_t>(width), static_cast<int16_t>(height),
                                                      shape);
     }
 
-    EmitterC& GiveEmitter(const entt::entity entity, Color color, const int intensity, LightStyle style)
+    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
     {
         return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity,
                                                     style);

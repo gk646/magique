@@ -33,16 +33,16 @@ namespace magique
 
     // Retrieves the specified component from the public registry
     template <typename T>
-    T& GetComponent(entt::entity e);
+    T& GetComponent(entt::entity entity);
 
     // Uses emplace_back to add the component to the given entity
     // Args are the constructor arguments (if any)
     // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
     template <typename Component, typename... Args>
-    void GiveComponent(entt::entity e, Args... args);
+    void GiveComponent(entt::entity entity, Args... args);
 
     // Returns true if the given entity exist in the registry
-    bool IsEntityExisting(entt::entity e);
+    bool IsEntityExisting(entt::entity entity);
 
     //-------------- LIFE CYCLE --------------//
 
@@ -57,25 +57,25 @@ namespace magique
 
     // Immediately (sequentially) tries destroys the entity
     // Failure: Returns false if entity is invalid or doesnt exist
-    bool DestroyEntity(entt::entity e);
+    bool DestroyEntity(entt::entity entity);
 
     //--------------Creating--------------//
 
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
-    CollisionC& GiveCollisionRect(entt::entity e, float width, float height, int anchorX = 0, int anchorY = 0);
+    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height, int anchorX = 0, int anchorY = 0);
 
     // Makes the entity collidable with others - Shape: CIRCLE (vertical)
-    // Pass the height and the radius of the capsule
-    CollisionC& GiveCollisionCircle(entt::entity e, float radius, int anchorX = 0, int anchorY = 0);
+    // Pass the height and the radius of the capsule - circles always rotated around their middle point!
+    CollisionC& GiveCollisionCircle(entt::entity entity, float radius);
 
     // Makes the entity collidable with others - Shape: CAPSULE (vertical)
-    // Pass the height and the radius of the capsule
-    CollisionC& GiveCollisionCapsule(entt::entity e, float height, float radius, int anchorX = 0, int anchorY = 0);
+    // Pass the height and the radius of the capsule - a capsule cant be rotated
+    CollisionC& GiveCollisionCapsule(entt::entity entity, float height, float radius);
 
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
-    CollisionC& GiveCollisionTri(entt::entity e, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
+    CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
 
     // Makes the entitiy emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
@@ -105,14 +105,14 @@ namespace magique::internal
 }
 inline entt::registry& magique::GetRegistry() { return internal::REGISTRY; }
 template <typename T>
-T& magique::GetComponent(const entt::entity e)
+T& magique::GetComponent(const entt::entity entity)
 {
-    return internal::REGISTRY.get<T>(e);
+    return internal::REGISTRY.get<T>(entity);
 }
 template <class Component, typename... Args>
-void magique::GiveComponent(entt::entity e, Args... args)
+void magique::GiveComponent(entt::entity entity, Args... args)
 {
-    internal::REGISTRY.emplace<Component>(e, args...);
+    internal::REGISTRY.emplace<Component>(entity, args...);
 }
 
 #endif // MAGIQUE_ECS_H

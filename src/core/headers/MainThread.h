@@ -45,7 +45,7 @@ namespace magique::mainthread
                 const auto nextFrameTime = PREV_RENDER_TIME + (UPDATE_WORK >= 1.0F) * PREV_UPDATE_TIME;
                 const auto endTime = startTime + PREV_RENDER_TIME;
                 // How much of the time we sleep - round down to nearest millisecond as sleep accuracy is 1ms
-                const auto sleepTime = config.sleepTime - nextFrameTime;
+                const auto sleepTime = std::floor((config.sleepTime - nextFrameTime) * 1000) / 1000;
                 const auto target = endTime + (config.frameTarget - nextFrameTime); // How long we wait in total
                 HibernateJobs(target, sleepTime);
                 WaitTime(target, sleepTime);

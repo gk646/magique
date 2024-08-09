@@ -102,8 +102,8 @@ namespace magique
     enum class Shape : uint8_t
     {
         RECT,     // Rectangle
-        CIRCLE,   // Circle
-        CAPSULE,  // Capsule (vertical) - https://docs.unity3d.com/Manual/class-CapsuleCollider2D.html
+        CIRCLE,   // Circle - rotated around its middle point
+        CAPSULE,  // Capsule (vertical - non rotated) - https://docs.unity3d.com/Manual/class-CapsuleCollider2D.html
         TRIANGLE, // Triangle
     };
 
