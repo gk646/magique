@@ -9,6 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // In pure benchmark scenarios they are equal, but in game stress tests simd is much faster
+// Some individual methods may be slower, can be optimized probably
 // .....................................................................
 
 //----------------- POINT -----------------//
@@ -185,11 +186,11 @@ inline bool RectToCircle(const float rx, const float ry, const float rw, const f
     const float radius_squared = cr * cr;
     return distance_squared <= radius_squared;
 #else
-    float closestX = (cx < rx) ? rx : (cx > rx + rw) ? rx + rw : cx;
-    float closestY = (cy < ry) ? ry : (cy > ry + rh) ? ry + rh : cy;
+    const float closestX = (cx < rx) ? rx : (cx > rx + rw) ? rx + rw : cx;
+    const float closestY = (cy < ry) ? ry : (cy > ry + rh) ? ry + rh : cy;
 
-    float dx = cx - closestX;
-    float dy = cy - closestY;
+    const float dx = cx - closestX;
+    const float dy = cy - closestY;
 
     return (dx * dx + dy * dy) <= (cr * cr);
 #endif
@@ -391,14 +392,9 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
 inline bool CircleToCapsule(const float cx, const float cy, const float cr, const float x2, const float y2,
                             const float radius, const float height)
 {
-
-    if (CircleToCircle(cx, cy, cr, x2 + radius, y2 + radius, radius) ||
-        CircleToCircle(cx, cy, cr, x2 + radius, y2 + height - radius, radius))
-    {
-        return true;
-    }
-
-    return RectToCircle(x2, y2 + radius, radius * 2.0F, height - radius * 2.0F, cx, cy, cr);
+    return CircleToCircle(cx, cy, cr, x2 + radius, y2 + radius, radius) ||
+        CircleToCircle(cx, cy, cr, x2 + radius, y2 + height - radius, radius) ||
+        RectToCircle(x2, y2 + radius, radius * 2.0F, height - radius * 2.0F, cx, cy, cr);
 }
 
 //----------------- CAPSULE -----------------//
@@ -407,7 +403,7 @@ inline bool CapsuleToCapsule(const float x1, const float y1, const float r1, con
                              const float y2, const float r2, const float h2)
 {
     // Fast bounding box check using RectToRect
-    if (!RectToRect(x1, y1, 2.0F * r1, h1, x2, y2, 2.0F * r2, h2)) [[likely]]
+    if (!RectToRect(x1, y1, r1 * 2.0F, h1, x2, y2, 2.0F * r2, h2)) [[likely]]
     {
         return false; // most of the time we skip
     }
@@ -428,14 +424,13 @@ inline bool CapsuleToCapsule(const float x1, const float y1, const float r1, con
     }
 
     // Check if the circles intersect rect
-    if (RectToCircle(x2, y2 + r2, h2 - r2 * 2, r2 * 2, x1 + r1, y1 + r1, r1) ||
-        RectToCircle(x2, y2 + r2, h2 - r2 * 2, r2 * 2, x1 + r1, y1 + h1 - r1, r1) ||
-        RectToCircle(x1, y1 + r1, h1 - r1 * 2, r1 * 2, x2 + r2, y2 + r2, r2) ||
-        RectToCircle(x1, y1 + r1, h1 - r1 * 2, r1 * 2, x2 + r2, y2 + h2 - r2, r2))
+    if (RectToCircle(x2, y2 + r2, r2 * 2.0F, h2 - r2 * 2.0F, x1 + r1, y1 + r1, r1) ||
+        RectToCircle(x2, y2 + r2, r2 * 2.0F, h2 - r2 * 2.0F, x1 + r1, y1 + h1 - r1, r1) ||
+        RectToCircle(x1, y1 + r1, r1 * 2.0F, h1 - r1 * 2.0F, x2 + r2, y2 + r2, r2) ||
+        RectToCircle(x1, y1 + r1, r1 * 2.0F, h1 - r1 * 2.0F, x2 + r2, y2 + h2 - r2, r2))
     {
         return true;
     }
-
     return false;
 }
 
@@ -523,6 +518,7 @@ inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], co
 
 //----------------- BOUNDING BOX -----------------//
 
+// returns the bounding box of a triangle given by the 3 points
 inline Rectangle GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
                                const float y3)
 {

@@ -79,7 +79,7 @@ namespace magique
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
     // Returns the global camera
-    const Camera2D& GetCamera();
+    Camera2D& GetCamera();
 
     // Returns the map of the camera - you should probably draw this map
     MapID GetCameraMap();

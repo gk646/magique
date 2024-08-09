@@ -75,7 +75,7 @@ namespace magique
 
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::ENGINE_DATA.loadedMaps; }
 
-    const Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
+    Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
 
     const std::vector<entt::entity>& GetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
@@ -88,10 +88,13 @@ namespace magique
         const auto pad = global::ENGINE_CONFIG.cameraViewPadding;
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
-        const float camLeft = target.x - offset.x / zoom - pad;
-        const float camTop = target.y - offset.y / zoom - pad;
-        const float camWidth = offset.x * 2 / zoom + (pad * 2);
-        const float camHeight = offset.y * 2 / zoom + (pad * 2);
+        const float halfWidth = offset.x / zoom;
+        const float halfHeight = offset.y / zoom;
+
+        const float camLeft = target.x - halfWidth - pad;
+        const float camTop = target.y - halfHeight - pad;
+        const float camWidth = 2 * halfWidth + (pad * 2);
+        const float camHeight = 2 * halfHeight + (pad * 2);
 
         return {camLeft, camTop, camWidth, camHeight};
     }

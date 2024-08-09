@@ -120,6 +120,8 @@ namespace magique
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
+        M_ASSERT(height > 2 * radius,
+                 "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
     }

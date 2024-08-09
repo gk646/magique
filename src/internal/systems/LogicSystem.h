@@ -1,8 +1,6 @@
 #ifndef LOGICSYSTEM_H
 #define LOGICSYSTEM_H
 
-using namespace cxstructs;
-
 namespace magique
 {
     inline Vector3 GetUpdateCircle(const float x, const float y)
@@ -10,18 +8,10 @@ namespace magique
         return {x, y, global::ENGINE_CONFIG.entityUpdateDistance};
     }
 
-    inline Rectangle GetCameraRect()
-    {
-        const auto pad = global::ENGINE_CONFIG.cameraViewPadding;
-        const auto& camera = global::ENGINE_DATA.camera;
-        const auto& target = camera.target;
-        const auto& offset = camera.offset;
-        return {target.x - offset.x - pad, target.y - offset.y - pad, offset.x * 2 + pad * 2, offset.y * 2 + pad * 2};
-    }
-
     // Insert numbers into flattened array
-    inline void InsertToActorDist(SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
-                                  const int map, const int num)
+    inline void
+    InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+                      const int map, const int num)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -36,8 +26,9 @@ namespace magique
     // This is a bit complicated as we dont know how many total maps there are
     // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
-                           Vector3 (&actorCircles)[4], SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
-                           SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+                           Vector3 (&actorCircles)[4],
+                           cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
+                           cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                            int& actorCount)
     {
         std::memset(loadedMaps.data(), UINT8_MAX, MAGIQUE_MAX_PLAYERS);
@@ -60,7 +51,7 @@ namespace magique
         }
     }
 
-    void HandleCollisionEntity(entt::entity e, const PositionC pos, const CollisionC& col, auto& hashGrid, auto& cVec)
+    void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col, auto& grid, auto& cVec)
     {
         cVec.push_back(e);
         switch (col.shape) // Same as CollisionSystem::QueryHashGrid()
@@ -69,41 +60,31 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    return hashGrid.insert(e, pos.x, pos.y, col.p1, col.p2);
+                    return grid.insert(e, pos.x, pos.y, col.p1, col.p2);
                 }
                 float pxs[4] = {0, col.p1, col.p1, 0};
                 float pys[4] = {0, 0, col.p2, col.p2};
                 RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
                 const auto bb = GetBBQuadrilateral(pxs, pys);
-                return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
             }
         case Shape::CIRCLE:
-            return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
+            return grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
         case Shape::CAPSULE:
-            {
-                if (pos.rotation == 0) [[likely]]
-                {
-                    // Top left and height as height / diameter as w
-                    return hashGrid.insert(e, pos.x, pos.y, col.p1 * 2, col.p2);
-                }
-                float pxs[4] = {0, col.p1 * 2.0F, col.p1 * 2.0F, 0}; // radius * 2 = width / height = height
-                float pys[4] = {0, 0, col.p2, col.p2};
-                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBQuadrilateral(pxs, pys);
-                return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
-            }
+            // Top left and height as height / diameter as w
+            return grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p2);
         case Shape::TRIANGLE:
             {
                 if (pos.rotation == 0)
                 {
                     const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
-                    return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                    return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                 }
                 float txs[4] = {0, col.p1, col.p3, 0};
                 float tys[4] = {0, col.p2, col.p4, 0};
                 RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
                 const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
-                return hashGrid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
             }
         }
     }
@@ -122,19 +103,34 @@ namespace magique
             const auto& pos = view.get<PositionC>(e);
             tickData.cameraMap = pos.map;
             tickData.cameraEntity = e;
+            tickData.camera.target = {pos.x, pos.y};
+            tickData.camera.offset = {sWidth / 2.0F, sHeight / 2.0F};
+            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
+            if (coll) [[likely]]
+            {
+                switch (coll->shape)
+                {
+                case Shape::RECT:
+                    tickData.camera.target.x += coll->p1 / 2.0F;
+                    tickData.camera.target.y += coll->p2 / 2.0F;
+                    break;
+                case Shape::CIRCLE:
+                    tickData.camera.target.x += coll->p1;
+                    tickData.camera.target.y += coll->p1;
+                    break;
+                case Shape::CAPSULE:
+                    tickData.camera.target.x += coll->p1;
+                    tickData.camera.target.y += coll->p2 / 2.0F;
+                    break;
+                case Shape::TRIANGLE:
+                    break;
+                }
+            }
+
             const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
                 tickData.camera.offset = manualOff;
-                break;
-            }
-            tickData.camera.offset = {sWidth / 2, sHeight / 2};
-            tickData.camera.target = {pos.x, pos.y};
-            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
-            if (coll) [[likely]]
-            {
-                tickData.camera.offset.x -= coll->p1 / 2.0F;
-                tickData.camera.offset.y -= coll->p2 / 2.0F;
             }
 #if MAGIQUE_DEBUG == 1
             count++;
@@ -161,12 +157,13 @@ namespace magique
         // Cache
         const auto cameraMap = tickData.cameraMap;
         const uint16_t cacheDuration = global::ENGINE_CONFIG.entityCacheDuration;
-        const auto camBound = GetCameraRect();
+        const auto camBound = GetCameraBounds();
         int actorCount = 0;
 
         // Lookup tables
-        SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
-        SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
+        // Dist is just a flattened array: int [Count Maps][Count Players]
+        cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
+        cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
         Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);
@@ -208,6 +205,7 @@ namespace magique
                                 const auto collision = registry.try_get<CollisionC>(e);
                                 if (collision != nullptr) [[likely]]
                                     HandleCollisionEntity(e, pos, *collision, hashGrid, collisionVec);
+                                break;
                             }
                         }
                     }

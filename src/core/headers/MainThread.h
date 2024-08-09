@@ -30,6 +30,7 @@ namespace magique::mainthread
             while (!WindowShouldClose() && game.getIsRunning()) [[likely]]
             {
                 auto startTime = GetTime();
+                config.frameCounter++;
                 WakeUpJobs();
                 if (UPDATE_WORK >= 1.0F)
                 {
@@ -39,9 +40,8 @@ namespace magique::mainthread
                 }
                 PREV_RENDER_TIME = renderer::Tick(startTime, game, registry);
                 UPDATE_WORK += config.workPerTick;
-                config.frameCounter++;
 
-                // Predict next frame time by last time - sleep shorter if next tick a update happens
+                // Predict next frame time by last time - sleep shorter if next tick an update happens
                 const auto nextFrameTime = PREV_RENDER_TIME + (UPDATE_WORK >= 1.0F) * PREV_UPDATE_TIME;
                 const auto endTime = startTime + PREV_RENDER_TIME;
                 // How much of the time we sleep - round down to nearest millisecond as sleep accuracy is 1ms
@@ -50,7 +50,6 @@ namespace magique::mainthread
                 HibernateJobs(target, sleepTime);
                 WaitTime(target, sleepTime);
             }
-
             game.onCloseEvent();
         }
     }

@@ -27,7 +27,7 @@ int GetFPS()
 
     const double currentTime = GetTime();
 
-    const int currFPS = static_cast<int>(static_cast<double>(config.frameCounter) / (currentTime - lastTime));
+    const int currFPS = static_cast<int>(std::ceil(static_cast<double>(config.frameCounter) / (currentTime - lastTime)));
 
     sumFPS -= fpsBuffer[index];
     fpsBuffer[index] = currFPS;
@@ -38,7 +38,7 @@ int GetFPS()
     {
         count++;
     }
-    const int ret = static_cast<int>(ceil(static_cast<float>(sumFPS) / count));
+    const int ret = static_cast<int>(std::round(static_cast<float>(sumFPS) / count));
 
     lastTime = currentTime;
     config.frameCounter = 0;
@@ -64,8 +64,7 @@ namespace magique
             const auto res = loader->step();
             if (res)
             {
-                global::PERF_DATA.drawTimes.clear();
-                global::PERF_DATA.logicTimes.clear();
+                ResetBenchmarkTimes();
                 delete loader;
                 loader = nullptr;
                 game.isLoading = false;
@@ -75,11 +74,10 @@ namespace magique
 
     inline void RenderHitboxes(const entt::registry& reg)
     {
-        const auto view = reg.view<const PositionC, const CollisionC>();
-        for (const auto e : view)
+        for (const auto e : GetDrawEntities())
         {
-            const auto& pos = view.get<const PositionC>(e);
-            const auto& col = view.get<const CollisionC>(e);
+            const auto& pos = reg.get<const PositionC>(e);
+            const auto& col = reg.get<const CollisionC>(e);
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
@@ -101,13 +99,13 @@ namespace magique
 
     //----------------- UPDATER -----------------//
 
-    inline void InternalUpdate(entt::registry& registry)
+    inline void InternalUpdate(const entt::registry& registry)
     {
+        global::COMMAND_LINE.update(); // First incase needs to block input
+        InputSystem(registry);
         global::UI_DATA.update();
         global::AUDIO_PLAYER.update();
-        global::COMMAND_LINE.update();
         global::PARTICLE_DATA.update();
-        InputSystem(registry);
         LogicSystem(registry);
         CollisionSystem(registry);
     }

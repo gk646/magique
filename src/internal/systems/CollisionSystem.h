@@ -30,12 +30,12 @@ namespace magique
     // System
     inline void CollisionSystem(const entt::registry& registry)
     {
-        auto& tickData = global::ENGINE_DATA;
-        auto& grid = tickData.hashGrid;
-        auto& collisionVec = tickData.collisionVec;
-        auto& collectors = tickData.collectors;
-        auto& colPairs = tickData.collisionPairs;
-        auto& pairSet = tickData.pairSet;
+        auto& data = global::ENGINE_DATA;
+        auto& grid = data.hashGrid;
+        auto& collisionVec = data.collisionVec;
+        auto& collectors = data.collectors;
+        auto& colPairs = data.collisionPairs;
+        auto& pairSet = data.pairSet;
 
         const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
@@ -64,25 +64,19 @@ namespace magique
             }
         };
 
-        const int size = static_cast<int>(collisionVec.size()); // Multithread over certain amount
-        if (size > 500)
+        const int size = collisionVec.size(); // Multithread over certain amount
+        if (size > 1000)
         {
             std::array<jobHandle, WORK_PARTS> handles{};
             int end = 0;
             const int partSize = size / WORK_PARTS;
-            for (int j = 0; j < WORK_PARTS; ++j)
+            for (int j = 0; j < WORK_PARTS-1; ++j)
             {
                 const int start = end;
                 end = start + partSize;
-                if (j == WORK_PARTS - 1)
-                {
-                    collisionCheck(j, start, end);
-                    break;
-                }
-                if (start - end == 0)
-                    continue;
                 handles[j] = AddJob(CreateExplicitJob(collisionCheck, j, start, end));
             }
+            collisionCheck(WORK_PARTS - 1, end, size);
             AwaitJobs(handles);
         }
         else
@@ -131,18 +125,8 @@ namespace magique
         case Shape::CIRCLE:
             return grid.query(collector, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
         case Shape::CAPSULE:
-            {
-                if (pos.rotation == 0) [[likely]]
-                {
-                    // Top left and height as height / diameter as w
-                    return grid.query(collector, pos.x, pos.y, col.p1 * 2, col.p2);
-                }
-                float pxs[4] = {0, col.p1 * 2.0F, col.p1 * 2.0F, 0};
-                float pys[4] = {0, 0, col.p2, col.p2};
-                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBQuadrilateral(pxs, pys);
-                return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
-            }
+            // Top left and height as height / diameter as w
+            return grid.query(collector, pos.x, pos.y, col.p1 * 2.0F, col.p2);
         case Shape::TRIANGLE:
             {
                 if (pos.rotation == 0)
@@ -399,12 +383,12 @@ namespace magique
                     {
                         const float txs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
                         const float tys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        return CapsuleToQuadrilateral(posB.y, posB.y, colB.p1, colB.p2, txs, tys);
+                        return CapsuleToQuadrilateral(posB.x, posB.y, colB.p1, colB.p2, txs, tys);
                     }
                     float txs[4] = {0, colA.p1, colA.p3, 0};
                     float tys[4] = {0, colA.p2, colA.p4, 0};
                     RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CapsuleToQuadrilateral(posB.y, posB.y, colB.p1, colB.p2, txs, tys);
+                    return CapsuleToQuadrilateral(posB.x, posB.y, colB.p1, colB.p2, txs, tys);
                 }
             case Shape::TRIANGLE:
                 if (posA.rotation == 0) // For triangles we dont assume as they are likely rotated
@@ -441,7 +425,6 @@ namespace magique
                 return SAT(txs, tys, t1xs, t1ys);
             }
         }
-        LOG_FATAL("Method not implemented");
         return false;
     }
 } // namespace magique
