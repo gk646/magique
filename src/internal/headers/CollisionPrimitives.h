@@ -199,13 +199,11 @@ inline bool RectToCircle(const float rx, const float ry, const float rw, const f
 inline bool RectToCapsule(const float x1, const float y1, const float w1, const float h1, const float x2, const float y2,
                           const float radius, const float height)
 {
-
     // Fast bounding box check using RectToRect
     if (!RectToRect(x1, y1, w1, h1, x2, y2, 2.0F * radius, height))
     {
         return false;
     }
-
 
     const float rx2 = x1 + w1;
     const float ry2 = y1 + h1;
@@ -278,6 +276,43 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
                                   const float (&pys)[4])
 {
 #ifdef MAGIQUE_USE_SIMD
+    const __m128 cx_vec = _mm_set1_ps(cx);
+    const __m128 cy_vec = _mm_set1_ps(cy);
+    const __m128 cr_sq_vec = _mm_set1_ps(cr * cr);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        int next = i + 1;
+        if (next == 4)
+            next = 0;
+
+        const __m128 px_vec = _mm_set_ps(pxs[i], pxs[i], pxs[next], pxs[next]);
+        const __m128 py_vec = _mm_set_ps(pys[i], pys[i], pys[next], pys[next]);
+
+        const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
+        const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
+
+        const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
+        const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
+
+        const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
+        const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
+        __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
+        t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
+
+        const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
+        const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
+
+        const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
+        const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
+        const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
+
+        if (_mm_movemask_ps(_mm_cmple_ps(dist_sq_vec, cr_sq_vec)))
+        {
+            return true;
+        }
+    }
+
     int windingNumber = 0;
     for (int i = 0; i < 4; ++i)
     {
@@ -296,44 +331,7 @@ inline bool CircleToQuadrilateral(const float cx, const float cy, const float cr
         }
     }
 
-    if (windingNumber != 0)
-        return true;
-
-    const __m128 cx_vec = _mm_set1_ps(cx);
-    const __m128 cy_vec = _mm_set1_ps(cy);
-
-    for (int i = 0; i < 4; ++i)
-    {
-        int next = i + 1;
-        if (next == 4)
-            next = 0;
-
-        const __m128 px_vec = _mm_set_ps(pxs[next], pxs[next], pxs[i], pxs[i]);
-        const __m128 py_vec = _mm_set_ps(pys[next], pys[next], pys[i], pys[i]);
-        const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
-        const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
-        const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
-        const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
-
-        const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
-        const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
-        __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
-        t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
-
-        const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
-        const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
-
-        const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
-        const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
-        const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
-
-        float dist_sq[4];
-        _mm_storeu_ps(dist_sq, dist_sq_vec);
-
-        if (dist_sq[0] <= cr * cr || dist_sq[2] <= cr * cr)
-            return true;
-    }
-    return false;
+    return windingNumber != 0;
 #else
     int windingNumber = 0;
     for (int i = 0; i < 4; ++i)
@@ -441,12 +439,25 @@ inline bool CapsuleToCapsule(const float x1, const float y1, const float r1, con
     return false;
 }
 
+inline bool CapsuleToQuadrilateral(const float x, const float y, const float r, const float h, const float (&pxs)[4],
+                                   const float (&pys)[4])
+{
+    const float crxs[4] = {x, x + r * 2.0F, x + r * 2.0F, x}; // clockwise
+    const float crys[4] = {y, y, y + h, y + h};
+
+    if (!SAT(crxs, crys, pxs, pys)) [[likely]]
+    {
+        return false;
+    }
+    return CircleToQuadrilateral(x + r, y + r, r, pxs, pys) || CircleToQuadrilateral(x + r, y + (h - r), r, pxs, pys);
+}
+
 //----------------- TRIANGLE -----------------//
 
 // Two triangles given by their respective x and y coordinate arrays AND
-inline bool TriangleToTriangle(const float t1x1, const float t1y1, const float t1x2, const float t1y2,
-                               const float t1x3, const float t1y3, const float t2x1, const float t2y1,
-                               const float t2x2, const float t2y2, const float t2x3, const float t2y3)
+inline bool TriangleToTriangle(const float t1x1, const float t1y1, const float t1x2, const float t1y2, const float t1x3,
+                               const float t1y3, const float t2x1, const float t2y1, const float t2x2, const float t2y2,
+                               const float t2x3, const float t2y3)
 {
     // Last point is first point repeated
     const float t1xs[4] = {t1x1, t1x2, t1x3, t1x1};

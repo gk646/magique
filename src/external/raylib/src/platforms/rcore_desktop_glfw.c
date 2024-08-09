@@ -1065,7 +1065,7 @@ void SetMousePosition(int x, int y)
 }
 
 // Set mouse cursor
-void SetMouseCursor(int cursor)
+void SetMouseCursor(const int cursor)
 {
     CORE.Input.Mouse.cursor = cursor;
     if (cursor == MOUSE_CURSOR_DEFAULT) glfwSetCursor(platform.handle, NULL);

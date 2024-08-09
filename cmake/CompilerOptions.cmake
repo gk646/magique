@@ -18,7 +18,7 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /Od /Zi")
 
     set(CMAKE_C_FLAGS_RELEASE "/O2 /Ob3 /EHc /W3 /arch:AVX2 /EHs /GL")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /EHc /W4 /std:c++20 /openmp:experimental")
+    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /EHc /W4 /std:c++20")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
     # Explanation of flags:

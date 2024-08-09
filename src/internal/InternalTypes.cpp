@@ -68,5 +68,4 @@ namespace magique
         type = newType;
     }
 
-
 } // namespace magique
