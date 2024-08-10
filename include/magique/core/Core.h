@@ -21,6 +21,13 @@ namespace magique
 
     //----------------- CORE FEATURES -----------------//
 
+    // Returns the current gamestate
+    // Default: if unset returns GameState(INT32_MAX)
+    GameState GetGameState();
+
+    // Sets the current gamestate
+    void SetGameState(GameState gameState);
+
     // Sets the update radius distance around actors
     // Entities in range will be collision checked and added to the update vector
     // Default: 1000

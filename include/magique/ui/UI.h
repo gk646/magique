@@ -9,29 +9,35 @@
 // .....................................................................
 // The UI module in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
-// To fit all screen rations (16:9, 4:3) you can use anchor points.
+// To fit all screen ratios (16:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
-// This makes it easy to follow designs or reason about distances while the engine handles scaling automatically.
+// This makes it easy to follow designs and reason about distances while the engine handles scaling automatically.
 //
-// States: Additionally, the UI is divided into custom states (most likely game states like MAIN_MENU, GAME_OVER...)
-// StateRoots will automatically be created when you first need them!
-//       MAIN_MENU
-//           |
-//        StateRoot
-//           |
-//         / | \
-//  UIObject or UIContainer
-//
-//
+// States: Additionally, the UI is divided into game states (e.g. MAIN_MENU, GAME_OVER...)
+// This helps to organize what to draw and when
 // .....................................................................
+
 namespace magique
 {
-    //----------------- GETTERS -----------------//
+    // Adds a new ui element to the root - elements within the same layer are drawn in the order they are added
+    // Takes owner ship of the pointer - dont save or access it after passing it to this method - use new MyClass()
+    // Note: the name has to be unique across all states - else will be overwritten silently
+    // Note: The same object can be added to multiple gamestates!
+    void AddUIObject(const char* name, GameState gameState, UIObject* object, UILayer layer = UILayer::MEDIUM);
 
-    UIRoot& GetUIRoot();
+    // Returns a pointer to the ui-object with the given name - optionally pass a specific type
+    // Failure: returns nullptr if the given element does not exist!
+    template <typename T = UIObject>
+    T* GetUIObject(const char* name);
 
-    // Returns a reference to the root for the given state (automatically created when called first)
-    UIStateRoot& GetStateUIRoot(int uiState);
+    // Removes and deletes all objects with the given name - optionally limit to a given gamestate
+    // Failure: returns false if the element wasnt found
+    bool RemoveUIObject(const char* name, GameState gameState = GameState(INT32_MAX));
+
+    //----------------- SETTERS -----------------//
+
+    // Sets the loading screen instance to handle different loading screens - see ui/LoadingScreen.h for more info
+    void SetLoadingScreen(LoadingScreen* loadingScreen);
 
     //----------------- UTIL -----------------//
 
@@ -55,5 +61,18 @@ namespace magique
     Point GetUIScaling();
 
 } // namespace magique
+
+
+//----------------- IMPLEMENTATION -----------------//
+namespace magique
+{
+    template <typename T>
+    T* GetUIObject(const char* name)
+    {
+        return static_cast<T*>(GetUIObject<void>(name));
+    }
+
+} // namespace magique
+
 
 #endif //MAGIQUE_UI_H

@@ -60,11 +60,10 @@ namespace magique
         auto& loader = global::LOADER;
         if (loader != nullptr) [[likely]]
         {
-            game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
+            //game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
             const auto res = loader->step();
             if (res)
             {
-                ResetBenchmarkTimes();
                 delete loader;
                 loader = nullptr;
                 game.isLoading = false;
@@ -99,7 +98,7 @@ namespace magique
 
     //----------------- UPDATER -----------------//
 
-    inline void InternalUpdate(const entt::registry& registry)
+    inline void InternalUpdate(const entt::registry& registry, Game& game)
     {
         global::COMMAND_LINE.update(); // First incase needs to block input
         InputSystem(registry);
@@ -108,6 +107,18 @@ namespace magique
         global::PARTICLE_DATA.update();
         LogicSystem(registry);
         CollisionSystem(registry);
+
+        auto& config = global::ENGINE_CONFIG;
+        if (config.showPerformanceOverlay)
+        {
+            global::PERF_DATA.updateValues();
+        }
+        if (config.benchmarkTicks > 0) [[unlikely]]
+        {
+            config.benchmarkTicks--;
+            if (config.benchmarkTicks == 0)
+                game.shutDown();
+        }
     }
 
 } // namespace magique

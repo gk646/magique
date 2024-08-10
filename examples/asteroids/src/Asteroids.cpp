@@ -1,7 +1,5 @@
 #include "Asteroids.h"
 
-#include <raylib/raylib.h>
-
 #include <magique/assets/AssetLoader.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/HandleRegistry.h>
@@ -12,13 +10,12 @@
 #include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ui/types/UIRoot.h>
-#include <magique/ui/UI.h>
 #include <magique/ui/controls/Button.h>
 
 inline magique::ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
 inline GameState GAME_STATE = GameState::GAME;
 
-void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
+void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& config)
 {
     magique::SetShowHitboxes(true); // Shows red hitboxes
 
@@ -52,7 +49,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
         auto* background = new magique::Playlist{magique::GetMusic(magique::RegisterMusic(asset))};
         magique::PlayPlaylist(background, 0.6F); // Start playlist
     };
-    al.registerTask(loadSound, magique::BACKGROUND_THREAD);
+    loader.registerTask(loadSound, magique::BACKGROUND_THREAD);
 
     // Load the texture on the main thread as they require gpu acess
     auto loadTextures = [](magique::AssetContainer& assets)
@@ -66,7 +63,7 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
                                     RegisterHandle(handle, asset.getFileName(false));
                                 });
     };
-    al.registerTask(loadTextures, magique::MAIN_THREAD);
+    loader.registerTask(loadTextures, magique::MAIN_THREAD);
 
     // Set the entity scripts
     SetScript(PLAYER, new PlayerScript());
@@ -128,15 +125,15 @@ void Asteroids::onStartup(magique::AssetLoader& al, magique::GameConfig& config)
 
     // Configure emitter - make particles white - spread all around and different lifetime, scale and start velocity
     ROCK_PARTICLES.setColor(WHITE).setLifetime(35, 50).setSpread(360);
-    ROCK_PARTICLES.setStartVelocity(2, 3.5).setScale(0.75, 1.5F);
-
-    // Register the ui for the different game states
-    magique::GetStateUIRoot(GAME).addObject("PlayerBar", new PlayerBarUI());
+    ROCK_PARTICLES.setVelocity(2, 3.5).setScale(0.75, 1.5F);
+    setGameState(GameState::GAME);
 }
+
+void Asteroids::setupUI(magique::UIRoot& root) { root.addObject("PlayerBar", GameState::GAME, new PlayerBarUI()); }
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
-void Asteroids::updateGame(entt::registry& registry)
+void Asteroids::updateGame(GameState gameState)
 {
     static int ROCK_COUNTER = 80;
     ROCK_COUNTER--;
@@ -147,9 +144,7 @@ void Asteroids::updateGame(entt::registry& registry)
     }
 }
 
-void Asteroids::drawWorld(Camera2D& camera) { ClearBackground(BLACK); }
-
-void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
+void Asteroids::drawGame(GameState gameState)
 {
     magique::DrawParticles(); // Render particles below the entites
 
@@ -180,18 +175,6 @@ void Asteroids::drawGame(entt::registry& registry, Camera2D& camera)
         case STATIC_CAMERA:
             break; // Invisible camera
         }
-    }
-}
-
-void Asteroids::drawUI()
-{
-   switch (GAME_STATE)
-    {
-    case GAME:
-
-        break;
-    case GAME_OVER:
-        break;
     }
 }
 

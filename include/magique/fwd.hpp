@@ -3,6 +3,15 @@
 
 #include <cstdint> // My favourite header
 
+//----------------- USER DEFINED -----------------//
+
+enum class GameState : int; // Identifies different game states
+enum EntityID : uint16_t;   // Identifies entity types - uses uint16_t to be small for networking
+enum class MapID : uint8_t; // Identifies maps         - uses uint8_t  to be small for networking
+enum class HandleID : int;  // Identifies handles
+enum class ConfigID : int;  // Identifies stored config data
+enum class StorageID : int; // Identifies stored game save data
+
 namespace magique
 {
     //----------------- CORE -----------------//
@@ -62,11 +71,11 @@ namespace magique
     struct Achievement;
 
     //----------------- UI -----------------//
-    struct UIStateRoot;
     struct UIRoot;
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
+    struct LoadingScreen;
     enum class AnchorPosition : int;
 
     //----------------- UTIL -----------------//
@@ -80,12 +89,6 @@ namespace magique
 
 } // namespace magique
 
-//----------------- USER DEFINED -----------------//
-enum EntityID : uint16_t;   // User implemented to identify entity types - uses uint16_t to be small for networking
-enum class MapID : uint8_t; // User implemented to identify maps - uses uint8_t to be small for networking
-enum class HandleID : int;  // User implemented to identify handles
-enum class ConfigID : int;  // User implemented to identify config string
-enum class StorageID : int; // User implemented to identify stored information
 
 //-----------------RAYLIB-----------------//
 struct Camera2D;

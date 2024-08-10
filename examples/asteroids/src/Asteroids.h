@@ -19,7 +19,7 @@ enum EntityID : uint16_t
     STATIC_CAMERA, // In this example the camera is static and not attached to a entity
 };
 
-enum GameState
+enum class GameState
 {
     GAME,
     GAME_OVER,
@@ -43,12 +43,11 @@ struct PlayerStatsC final
 struct Asteroids final : magique::Game
 {
     Asteroids() : Game("Asteroids") {}
-    void onStartup(magique::AssetLoader& al, magique::GameConfig& config) override;
+    void onStartup(magique::AssetLoader& loader, magique::GameConfig& config) override;
+    void setupUI(magique::UIRoot& root) override;
     void onCloseEvent() override;
-    void updateGame(entt::registry& registry) override;
-    void drawWorld(Camera2D& camera) override;
-    void drawGame(entt::registry& registry, Camera2D& camera) override;
-    void drawUI() override;
+    void updateGame(GameState gameState) override;
+    void drawGame(GameState gameState) override;
 };
 
 struct PlayerScript final : magique::EntityScript
@@ -76,8 +75,5 @@ struct PlayerBarUI final : magique::UIObject
     void draw() override;
     void update() override;
 };
-
-
-
 
 #endif // ASTEROIDS_H

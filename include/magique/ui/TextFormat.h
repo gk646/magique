@@ -41,7 +41,7 @@ namespace magique
     void DrawTextFmt(const Font& f, const char* t, Vector2 p, float s, float sp, Color c = WHITE);
 
     // Formats and returns the given text with the current placeholder state
-    // IMPORTANT: returned string will only be valid until this method is called again
+    // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again
     const char* GetFormattedText(const char* text);
 
     //----------------- CUSTOMIZE -----------------//
