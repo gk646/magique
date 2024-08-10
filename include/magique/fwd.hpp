@@ -71,12 +71,12 @@ namespace magique
     struct Achievement;
 
     //----------------- UI -----------------//
-    struct UIRoot;
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
     struct LoadingScreen;
     enum class AnchorPosition : int;
+    enum class UILayer : uint8_t;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;

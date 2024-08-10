@@ -23,7 +23,7 @@ struct DataBlock final
     static constexpr int NO_NEXT_BLOCK = UINT16_MAX;
     T data[size];                  // Fixed size data block
     uint16_t count = 0;            // Current number of elements
-    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or -1 if if its the end
+    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if if its the end
 
     [[nodiscard]] bool isFull() const { return count == size; }
     // Can happen that its full but no next one is inserted yet
@@ -34,6 +34,7 @@ struct DataBlock final
         assert(count < size);
         data[count++] = val;
     }
+
     template <typename Container>
     void append(Container& elems) const
     {
@@ -124,6 +125,29 @@ struct SingleResolutionHashGrid final
     {
         cellMap.clear();
         dataBlocks.clear();
+    }
+
+    // This is expensive and only valid when no elements are inserted anymore until the next clear - Leaves holes
+    void remove(V val)
+    {
+        for (auto& block : dataBlocks)
+        {
+            if (block.count == 0)
+                continue;
+            for (int i = 0; i < blockSize; ++i)
+            {
+                if (block.data[i] == val)
+                {
+                    if (block.count == 1)
+                    {
+                        block.count = 0;
+                        break;
+                    }
+                    --block.count;
+                    block.data[i] = block.data[block.count];
+                }
+            }
+        }
     }
 
     void reserve(const int cells, const int expectedTotalEntites)

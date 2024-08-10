@@ -45,12 +45,13 @@ namespace magique
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
         std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
         std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
-        GameConfig gameConfig{};                             // Global game config instance
-        vector<entt::entity> collisionVec;                   // vector containing the entites to check for collision
-        Camera2D camera{};                                   // current camera
-        entt::entity cameraEntity = entt::null;              // entity id of the camera
-        GameState gameState;                                 // global gamestate
-        MapID cameraMap;                                     // Map the camera is in
+        std::function<void(GameState, GameState)> stateCallback{}; // Callback funtion for gamstate changes
+        GameConfig gameConfig{};                                   // Global game config instance
+        vector<entt::entity> collisionVec;      // vector containing the entites to check for collision
+        Camera2D camera{};                      // current camera
+        entt::entity cameraEntity = entt::null; // entity id of the camera
+        GameState gameState;                    // global gamestate
+        MapID cameraMap;                        // Map the camera is in
 
         EngineData()
         {

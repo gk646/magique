@@ -214,15 +214,15 @@ namespace magique
     // Anchor position used in the UI module to position objects
     enum class AnchorPosition
     {
-        LEFT_TOP,      // LT
-        LEFT_MID,      // LM
-        LEFT_BOTTOM,   // LB
-        CENTER_TOP,    // CT
-        CENTER_MID,    // CM
-        CENTER_BOTTOM, // CB
-        RIGHT_TOP,     // RT
-        RIGHT_MID,     // RM
-        RIGHT_BOTTOM   // RB
+        TOP_LEFT,      // LT
+        MID_LEFT,      // LM
+        BOTTOM_LEFT,   // LB
+        TOP_CENTER,    // CT
+        MID_CENTER,    // CM
+        BOTTOM_CENTER, // CB
+        TOP_RIGHT,     // RT
+        MID_RIGHT,     // RM
+        BOTTOM_RIGHT   // RB
     };
 
     enum class KeyLayout
@@ -240,8 +240,8 @@ namespace magique
         BIG
     };
 
-    // The render order of ui elements from top to bottom (hight to low)
-    enum class UILayer
+    // The render order of ui elements - the higher the layer the closer the element is to the screen
+    enum class UILayer : uint8_t
     {
         BACK_GROUND,
         LOW,

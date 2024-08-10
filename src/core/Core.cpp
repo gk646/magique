@@ -35,7 +35,22 @@ namespace magique
 
     GameState GetGameState() { return global::ENGINE_DATA.gameState; }
 
-    void SetGameState(const GameState newGameState) { global::ENGINE_DATA.gameState = newGameState; }
+    void SetGameState(const GameState newGameState)
+    {
+        if (global::ENGINE_DATA.gameState != newGameState)
+        {
+            if (global::ENGINE_DATA.stateCallback)
+            {
+                global::ENGINE_DATA.stateCallback(global::ENGINE_DATA.gameState, newGameState);
+            }
+            global::ENGINE_DATA.gameState = newGameState;
+        }
+    }
+
+    void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func)
+    {
+        global::ENGINE_DATA.stateCallback = func;
+    }
 
     //----------------- SET -----------------//
 

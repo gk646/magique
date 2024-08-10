@@ -89,7 +89,7 @@ namespace magique
 
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader), config);
-
+        setupUI();
         // Load atlas to gpu - needs to be the last task
         const auto loadAtlasGPU = [](AssetContainer&)
         {

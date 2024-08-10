@@ -7,9 +7,11 @@
 #include "internal/globals/UIData.h"
 #include "internal/headers/CollisionPrimitives.h"
 
+#include <magique/internal/Macros.h>
+
 namespace magique
 {
-    UIObject::UIObject() : id(global::UI_DATA.getNextID()) { global::UI_DATA.registerObject(this); }
+    UIObject::UIObject() : id(global::UI_DATA.getNextID()) {}
 
     UIObject::UIObject(const float x, const float y, const float w, const float h) : UIObject()
     {
@@ -21,7 +23,7 @@ namespace magique
         align(anchor, relativeTo, inset);
     }
 
-    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
+    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this, GameState(INT32_MAX)); }
 
     void UIObject::align(const AnchorPosition anchor, const UIObject& relativeTo, const float inset)
     {
@@ -32,39 +34,39 @@ namespace magique
 
         switch (anchor)
         {
-        case AnchorPosition::LEFT_TOP:
+        case AnchorPosition::TOP_LEFT:
             newX += inset;
             newY += inset;
             break;
-        case AnchorPosition::LEFT_MID:
+        case AnchorPosition::MID_LEFT:
             newX += inset;
             newY += (relHeight / 2) - (myHeight / 2);
             break;
-        case AnchorPosition::LEFT_BOTTOM:
+        case AnchorPosition::BOTTOM_LEFT:
             newX += inset;
             newY += relHeight - myHeight - inset;
             break;
-        case AnchorPosition::CENTER_TOP:
+        case AnchorPosition::TOP_CENTER:
             newX += (relWidth / 2) - (myWidth / 2);
             newY += inset;
             break;
-        case AnchorPosition::CENTER_MID:
+        case AnchorPosition::MID_CENTER:
             newX += (relWidth / 2) - (myWidth / 2);
             newY += (relHeight / 2) - (myHeight / 2);
             break;
-        case AnchorPosition::CENTER_BOTTOM:
+        case AnchorPosition::BOTTOM_CENTER:
             newX += (relWidth / 2) - (myWidth / 2);
             newY += relHeight - myHeight - inset;
             break;
-        case AnchorPosition::RIGHT_TOP:
+        case AnchorPosition::TOP_RIGHT:
             newX += relWidth - myWidth - inset;
             newY += inset;
             break;
-        case AnchorPosition::RIGHT_MID:
+        case AnchorPosition::MID_RIGHT:
             newX += relWidth - myWidth - inset;
             newY += (relHeight / 2) - (myHeight / 2);
             break;
-        case AnchorPosition::RIGHT_BOTTOM:
+        case AnchorPosition::BOTTOM_RIGHT:
             newX += relWidth - myWidth - inset;
             newY += relHeight - myHeight - inset;
             break;
@@ -81,17 +83,17 @@ namespace magique
         ph = h / MAGIQUE_UI_RESOLUTION_Y;
     }
 
-    void UIObject::setZIndex(const int newZ) { z = static_cast<uint16_t>(newZ); }
+    void UIObject::setLayer(const UILayer newLayer) { layer = static_cast<uint8_t>(newLayer); }
 
     void UIObject::setShown(const bool val) { isShown = val; }
 
+    UILayer UIObject::getLayer() const { return static_cast<UILayer>(layer); }
+
     Rectangle UIObject::getBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getScreenDims();
+        const auto [sx, sy] = magique::UIData::getScreenDims();
         return {px * sx, py * sy, pw * sx, ph * sy};
     }
-
-    int UIObject::getZIndex() const { return z; }
 
     bool UIObject::getIsShown() const { return isShown; }
 
@@ -104,15 +106,20 @@ namespace magique
         if (!PointInRect(mx, my, rx, ry, rw, rh))
             return false;
 
-        const auto it = std::ranges::find(ui.sortedObjects, this);
-        if (it == ui.sortedObjects.end()) [[unlikely]]
+        // For safety dont use operator[]
+        auto mapIt = ui.stateData.find(GetGameState());
+        M_ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
+        auto& sortedObjects = mapIt->second;
+
+        const auto it = std::ranges::find(sortedObjects, this);
+        if (it == sortedObjects.end()) [[unlikely]]
         {
             LOG_ERROR("Internal Error: UIObject not found");
             return false;
         }
 
         // Iterate from the beginning of the vector to the current object's position
-        for (auto iter = ui.sortedObjects.begin(); iter != it; ++iter)
+        for (auto iter = sortedObjects.begin(); iter != it; ++iter)
         {
             if ((*iter)->getIsShown())
             {
