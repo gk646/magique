@@ -9,6 +9,7 @@
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/ScriptData.h"
+#include "internal/headers/STLUtil.h"
 
 namespace magique
 {
@@ -43,7 +44,7 @@ namespace magique
         return true;
     }
 
-    bool IsEntityExisting(const entt::entity e) { return internal::REGISTRY.valid(e); }
+    bool EntityExists(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
     entt::entity CreateEntity(const EntityID type, const float x, const float y, const MapID map)
     {
@@ -96,14 +97,71 @@ namespace magique
             {
                 InvokeEvent<onDestroy>(entity);
             }
+            if (internal::REGISTRY.all_of<CollisionC>(entity)) [[likely]]
+            {
+                UnorderedDelete(tickData.collisionVec, entity);
+            }
             internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
-            std::erase(tickData.drawVec, entity);
-            std::erase(tickData.entityUpdateVec, entity);
+            tickData.hashGrid.remove(entity);
+            UnorderedDelete(tickData.drawVec, entity);
+            UnorderedDelete(tickData.entityUpdateVec, entity);
             return true;
         }
         return false;
     }
+
+
+    void DestroyAllEntities(const std::initializer_list<EntityID>& ids)
+    {
+        auto& reg = internal::REGISTRY;
+        auto& tickData = global::ENGINE_DATA;
+        const auto view = reg.view<PositionC>(); // Get all entities
+
+        if (ids.size() == 0)
+        {
+            for (const auto e : view)
+            {
+                if (reg.all_of<ScriptC>(e)) [[likely]]
+                {
+                    InvokeEvent<onDestroy>(e);
+                }
+            }
+            tickData.entityUpdateCache.clear();
+            tickData.drawVec.clear();
+            tickData.entityUpdateVec.clear();
+            tickData.collisionVec.clear();
+            tickData.hashGrid.clear();
+        }
+        else
+        {
+            for (const auto e : view)
+            {
+                const auto& pos = view.get<PositionC>(e);
+                for (const auto id : ids)
+                {
+                    if (pos.type == id)
+                    {
+                        if (reg.all_of<ScriptC>(e)) [[likely]]
+                        {
+                            InvokeEvent<onDestroy>(e);
+                        }
+                        if (reg.all_of<CollisionC>(e)) [[likely]]
+                        {
+                            UnorderedDelete(tickData.collisionVec, e);
+                        }
+                        internal::REGISTRY.destroy(e);
+                        tickData.entityUpdateCache.erase(e);
+                        UnorderedDelete(tickData.drawVec, e);
+                        UnorderedDelete(tickData.entityUpdateVec, e);
+                        tickData.hashGrid.remove(e);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
 
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)

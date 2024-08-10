@@ -28,6 +28,10 @@ namespace magique
     // Sets the current gamestate
     void SetGameState(GameState gameState);
 
+    // Sets the callback function that is called each time the gamestate is changed
+    // Note: Called after the new gamestate has been assigned internally
+    void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func);
+
     // Sets the update radius distance around actors
     // Entities in range will be collision checked and added to the update vector
     // Default: 1000

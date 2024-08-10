@@ -9,33 +9,22 @@
 #include <magique/core/Particles.h>
 #include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
-#include <magique/ui/types/UIRoot.h>
-#include <magique/ui/controls/Button.h>
+#include <magique/ui/UI.h>
 
 inline magique::ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
-inline GameState GAME_STATE = GameState::GAME;
+inline entt::entity PLAYER_ID = entt::null;
 
 void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& config)
 {
-    magique::SetShowHitboxes(true); // Shows red hitboxes
+    SetWindowSize(1280, 960); // Setup screen bounds
 
-    // Turn off lighting
-    magique::SetLightingMode(magique::LightingMode::NONE);
+    magique::SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to setup world bounds
 
-    // Setup screen bounds
-    SetWindowSize(1280, 960);
+    SetTargetFPS(120); // Set FPS to 120 - all raylib functions work as usual and are integrated
 
-    // Easy way to setup world bounds
-    magique::SetStaticWorldBounds({0, 0, 1280, 960});
-
-    // Set FPS to 120 - all raylib functions work as usual and are integrated
-    SetTargetFPS(120);
-
-    // Load the sounds on a background thread
-    auto loadSound = [](magique::AssetContainer& assets)
+    auto loadSound = [](magique::AssetContainer& assets) // Load the sounds on a background thread
     {
-        // Iterate the sfx directory for the sounds
-        assets.iterateDirectory("SFX",
+        assets.iterateDirectory("SFX", // Iterate the sfx directory for the sounds
                                 [](const magique::Asset& asset)
                                 {
                                     // Register the sound with the asset manager
@@ -43,19 +32,17 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
                                     // Register the handle to the sound with its direct filename - without extension
                                     RegisterHandle(handle, asset.getFileName(false));
                                 });
+        auto& asset = assets.getAsset("Automatav2.mp3"); // Create a playlist so it automatically loops
 
-        auto& asset = assets.getAsset("Automatav2.mp3");
-        // Create a playlist so it automatically loops
         auto* background = new magique::Playlist{magique::GetMusic(magique::RegisterMusic(asset))};
         magique::PlayPlaylist(background, 0.6F); // Start playlist
     };
-    loader.registerTask(loadSound, magique::BACKGROUND_THREAD);
+    loader.registerTask(loadSound, magique::BACKGROUND_THREAD); // Add the task
 
     // Load the texture on the main thread as they require gpu acess
     auto loadTextures = [](magique::AssetContainer& assets)
     {
-        // Iterate the sprites directory for the textures
-        assets.iterateDirectory("SPRITES",
+        assets.iterateDirectory("SPRITES", // Iterate the sprites directory for the textures
                                 [](const magique::Asset& asset)
                                 {
                                     magique::handle handle = RegisterTexture(asset, magique::DEFAULT, 3);
@@ -110,8 +97,7 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
     // Register the invisible static camera
     magique::RegisterEntity(EntityID::STATIC_CAMERA, [](entt::entity entity) { magique::GiveCamera(entity); });
 
-    // Create a player
-    magique::CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
+    PLAYER_ID = magique::CreateEntity(PLAYER, 640, 480, MapID::LEVEL_1); // Create a player
 
     // Create the static camera in the middle of the screen
     magique::CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
@@ -126,27 +112,38 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
     // Configure emitter - make particles white - spread all around and different lifetime, scale and start velocity
     ROCK_PARTICLES.setColor(WHITE).setLifetime(35, 50).setSpread(360);
     ROCK_PARTICLES.setVelocity(2, 3.5).setScale(0.75, 1.5F);
-    setGameState(GameState::GAME);
+
+    magique::SetGameState(GameState::GAME); // Set the initial gamestate
 }
 
-void Asteroids::setupUI(magique::UIRoot& root) { root.addObject("PlayerBar", GameState::GAME, new PlayerBarUI()); }
+void Asteroids::setupUI()
+{
+    magique::AddUIObject("PlayerBar", GameState::GAME, new PlayerBarUI());
+    magique::AddUIObject("GameOver", GameState::GAME_OVER, new GameOverUI());
+}
 
 void Asteroids::onCloseEvent() { shutDown(); }
 
 void Asteroids::updateGame(GameState gameState)
 {
+    if (gameState != GameState::GAME)
+        return;
     static int ROCK_COUNTER = 80;
     ROCK_COUNTER--;
     if (ROCK_COUNTER == 0)
     {
-        auto e = magique::CreateEntity(ROCK, GetRandomValue(0, GetScreenWidth()), 0, MapID::LEVEL_1);
+        magique::CreateEntity(ROCK, GetRandomValue(0, GetScreenWidth()), 0, MapID::LEVEL_1);
         ROCK_COUNTER = 80;
     }
 }
 
 void Asteroids::drawGame(GameState gameState)
 {
-    magique::DrawParticles(); // Render particles below the entites
+    ClearBackground(BLACK);
+    if (gameState != GameState::GAME)
+        return;
+
+    magique::DrawParticles(); // Render particles below the entities
 
     // As the entities dont have sprite sheets we use a simple switch
     // Get the entities that need to be drawn
@@ -178,7 +175,40 @@ void Asteroids::drawGame(GameState gameState)
     }
 }
 
+// UI
+
+void PlayerBarUI::draw()
+{
+    magique::Point anchor = magique::GetUIAnchor(magique::AnchorPosition::TOP_LEFT);
+    anchor.y += 50; // Show below the overlay
+    auto& stats = magique::GetComponent<PlayerStatsC>(PLAYER_ID);
+    DrawRectangleRec({anchor.x, anchor.y, 152, 25}, ColorAlpha(DARKGRAY, 0.8F));
+    DrawText("Player Health", anchor.x, anchor.y - 20, 20, WHITE);
+    for (int i = 0; i < stats.health; ++i)
+    {
+        DrawRectangleRec({1 + anchor.x + i * 30, anchor.y + 2, 25, 20}, ColorAlpha(RED, 0.8F));
+    }
+}
+
+void GameOverUI::onClick(const Rectangle& bounds)
+{
+    // Spawn new houses
+    auto y = (float)GetScreenHeight() - 45;
+    for (int x = 17; x < GetScreenWidth() - 45; x += 50)
+    {
+        magique::CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
+    }
+    auto& stats = magique::GetComponent<PlayerStatsC>(PLAYER_ID);
+    auto& pos = magique::GetComponent<magique::PositionC>(PLAYER_ID);
+    stats.health = 5;
+    pos.x = 640; // Reset player position
+    pos.y = 480;
+    pos.map = MapID::LEVEL_1;
+    magique::SetGameState(GameState::GAME);
+}
+
 // Scripting
+
 void PlayerScript::onKeyEvent(entt::registry& registry, entt::entity self)
 {
     auto& pos = magique::GetComponent<magique::PositionC>(self);
@@ -209,6 +239,15 @@ void PlayerScript::onTick(entt::registry& registry, entt::entity self)
     auto& stats = magique::GetComponent<PlayerStatsC>(self);
     if (stats.shootCounter > 0)
         stats.shootCounter--;
+    if (stats.health <= 0)
+    {
+        magique::SetGameState(GameState::GAME_OVER);
+        // Move player (actor) to different map to avoid updating all entities and destroy all current ones
+        auto& pos = magique::GetComponent<magique::PositionC>(self);
+        pos.map = MapID::GAME_OVER_LEVEL;
+        magique::ClearEntityCache();
+        magique::DestroyAllEntities({ROCK, HOUSE}); // Destroy all rocks + houses
+    }
 }
 
 void BulletScript::onTick(entt::registry& registry, entt::entity self)
@@ -221,13 +260,17 @@ void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self
 
 void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
 {
+    if (!magique::EntityExists(self)) // If multiple collisions happen and rock was already destroyed
+        return;
     auto& pos = magique::GetComponent<magique::PositionC>(self);
     auto& col = magique::GetComponent<magique::CollisionC>(self);
     auto& oPos = magique::GetComponent<magique::PositionC>(other);
-    ROCK_PARTICLES.setEmissionPosition(pos.x + col.p1 / 2.0F, pos.y + col.p2 / 2.0F);
-    magique::CreateScreenParticle(ROCK_PARTICLES, 100);
+
+    ROCK_PARTICLES.setEmissionPosition(pos.x + col.p1 / 2.0F, pos.y + col.p2 / 2.0F); // Set to emit from the center
+    magique::CreateScreenParticle(ROCK_PARTICLES, 100);                               // Instantiate 100 times
     if (oPos.type == HOUSE)
     {
+        magique::GetComponent<PlayerStatsC>(PLAYER_ID).health--; // Lower health when house is hit
         magique::DestroyEntity(other);
     }
     else if (oPos.type == PLAYER)
@@ -237,9 +280,9 @@ void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self,
     }
     else if (oPos.type == BULLET)
     {
-        magique::DestroyEntity(self);
         magique::DestroyEntity(other);
     }
+    magique::DestroyEntity(self);
 }
 
 void RockScript::onTick(entt::registry& registry, entt::entity self)

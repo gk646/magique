@@ -4,6 +4,7 @@
 #include <magique/core/Game.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/ui/types/UIObject.h>
+#include <magique/ui/controls/Button.h>
 
 // NOTE: the namespace magique:: can be avoided by using: "using namespace magique;"
 // Its used explicitly each time to denote magique functions
@@ -27,7 +28,8 @@ enum class GameState
 
 enum class MapID : uint8_t
 {
-    LEVEL_1
+    LEVEL_1,
+    GAME_OVER_LEVEL,
 };
 
 struct PlayerStatsC final
@@ -44,7 +46,7 @@ struct Asteroids final : magique::Game
 {
     Asteroids() : Game("Asteroids") {}
     void onStartup(magique::AssetLoader& loader, magique::GameConfig& config) override;
-    void setupUI(magique::UIRoot& root) override;
+    void setupUI() override;
     void onCloseEvent() override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState) override;
@@ -68,12 +70,16 @@ struct RockScript final : magique::EntityScript
     void onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other) override;
 };
 
-
 struct PlayerBarUI final : magique::UIObject
 {
-    PlayerBarUI();
+    PlayerBarUI() = default;
     void draw() override;
-    void update() override;
+};
+
+struct GameOverUI final : magique::Button
+{
+    GameOverUI() : Button(960, 520, 150, 50) {}
+    void onClick(const Rectangle &bounds) override;
 };
 
 #endif // ASTEROIDS_H

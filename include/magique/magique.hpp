@@ -27,6 +27,5 @@
 
 // UI
 #include "ui/UI.h"
-#include "ui/types/UIRoot.h"
 
 #endif // MAGIQUE_H

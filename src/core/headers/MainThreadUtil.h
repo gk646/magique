@@ -73,8 +73,11 @@ namespace magique
 
     inline void RenderHitboxes(const entt::registry& reg)
     {
+        const auto view = reg.view<const PositionC, const CollisionC>();
         for (const auto e : GetDrawEntities())
         {
+            if (!view.contains(e))
+                continue;
             const auto& pos = reg.get<const PositionC>(e);
             const auto& col = reg.get<const CollisionC>(e);
             switch (col.shape)

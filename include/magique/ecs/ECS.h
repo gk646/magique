@@ -42,7 +42,7 @@ namespace magique
     void GiveComponent(entt::entity entity, Args... args);
 
     // Returns true if the given entity exist in the registry
-    bool IsEntityExisting(entt::entity entity);
+    bool EntityExists(entt::entity entity);
 
     //-------------- LIFE CYCLE --------------//
 
@@ -58,6 +58,9 @@ namespace magique
     // Immediately (sequentially) tries destroys the entity
     // Failure: Returns false if entity is invalid or doesnt exist
     bool DestroyEntity(entt::entity entity);
+
+    // Immediately destroys all entities that have the given type - pass a empty list to destroy all types
+    void DestroyAllEntities(const std::initializer_list<EntityID>& ids);
 
     //--------------Creating--------------//
 

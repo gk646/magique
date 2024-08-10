@@ -49,6 +49,7 @@ namespace magique::renderer
                 RenderLighting(registry);
             }
             EndMode2D();
+            global::UI_DATA.draw();
             global::COMMAND_LINE.draw();
         }
         return EndTick(startTime);

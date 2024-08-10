@@ -18,7 +18,7 @@
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
 // .....................................................................
 
-// Give each thread a piece and the then main thread aswell - so it doesnt wait while doing nothing
+// Give each thread a piece and the main thread aswell - so it doesnt wait while doing nothing
 static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
 
 namespace magique
@@ -37,6 +37,7 @@ namespace magique
         auto& colPairs = data.collisionPairs;
         auto& pairSet = data.pairSet;
 
+        printf("Size: %d\n",collisionVec.size());
         const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
             const auto start = collisionVec.begin() + startIdx;
@@ -70,7 +71,7 @@ namespace magique
             std::array<jobHandle, WORK_PARTS> handles{};
             int end = 0;
             const int partSize = size / WORK_PARTS;
-            for (int j = 0; j < WORK_PARTS-1; ++j)
+            for (int j = 0; j < WORK_PARTS - 1; ++j)
             {
                 const int start = end;
                 end = start + partSize;
@@ -145,14 +146,11 @@ namespace magique
 
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
     {
-        const auto GetEntityHash = [](const entt::entity e1, const entt::entity e2)
-        { return static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2); };
-
         for (auto& [vec] : colPairs)
         {
             for (const auto [e1, id1, e2, id2] : vec)
             {
-                auto num = GetEntityHash(e1, e2);
+                auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
                 if (pairSet.contains(num))
                     continue;
                 pairSet.insert(num);
