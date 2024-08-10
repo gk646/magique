@@ -55,8 +55,8 @@ namespace magique
         // Called when this object is added as children
         virtual void onAdd() {}
 
-        // Called when its moved or resized
-        virtual void onMove() {}
+        // Called when its object is move
+        virtual void onMove(float x, float y) {}
 
         //----------------- SETTERS -----------------//
 

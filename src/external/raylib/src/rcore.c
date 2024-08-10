@@ -102,9 +102,6 @@
 #include <stdlib.h>                 // Required for: srand(), rand(), atexit()
 #include <stdio.h>                  // Required for: sprintf() [Used in OpenURL()]
 #include <string.h>                 // Required for: strrchr(), strcmp(), strlen(), memset()
-#include <time.h>                   // Required for: time() [Used in InitTimer()]
-#include <math.h>                   // Required for: tan() [Used in BeginMode3D()], atan2f() [Used in LoadVrStereoConfig()]
-
 
 #define RAYMATH_IMPLEMENTATION
 #include <raylib/raymath.h>                // Vector2, Vector3, Quaternion and Matrix functionality

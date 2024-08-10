@@ -5,7 +5,6 @@
 #pragma warning(disable : 4100) // unreferenced formal parameter
 
 #include <magique/fwd.hpp>
-#include <entt/entity/fwd.hpp>
 
 //-----------------------------------------------
 // Game module
@@ -33,40 +32,31 @@ namespace magique
         //-----------------LIFE CYCLE-----------------//
 
         // Called once on startup - register your loaders here
-        virtual void onStartup(AssetLoader& al, GameConfig& config) {}
+        virtual void onStartup(AssetLoader& loader, GameConfig& config) {}
+
+        // Called once after onStartup() - register your ui elements here
+        virtual void setupUI(UIRoot& root) {}
 
         // Called once when the game closes
         virtual void onShutDown() {}
 
         // Called when the window close button is pressed
-        // Note: If overridden you have to call shutDown() manually to close the game!
+        // IMPORTANT: When overridden, shutDown() has to be called manually to stop the game!
         virtual void onCloseEvent() { shutDown(); }
 
         // Stops the game
         void shutDown();
 
-        //-----------------UPDATING-----------------//
+        //----------------- CORE -----------------//
 
         // Called each update tick
-        virtual void updateGame(entt::registry& registry) {}
-
-        //-----------------RENDERING-----------------//  // In chronological call order
-
-        // Called each tick when loading - skips all other draw methods
-        virtual void drawLoadingScreen(UIRoot& root, float progressPercent) {}
-
-        // Called each tick to render the world
-        // Note: BeginMode2D is already called - everything inside this method happens relative to the camera
-        virtual void drawWorld(Camera2D& camera) {}
+        // Default: called 60 times per second
+        virtual void updateGame(GameState gameState) {}
 
         // Called each render tick
         // Note: BeginMode2D is already called - everything inside this method happens relative to the camera
-        virtual void drawGame(entt::registry& registry, Camera2D& camera) {}
-
-        // Called each render tick after all other draw calls
-        virtual void drawUI(UIRoot& root) {}
-
-        //----------------- START -----------------//
+        // Default: called 90 times per second
+        virtual void drawGame(GameState gameState) {}
 
         // Call this to start the game - should be call in the main method: return game.run();
         // Tries to load an asset image from the default path - assets will be empty if none exists!
@@ -74,11 +64,11 @@ namespace magique
         // Note: The encryption key is applied to both assets and config - make sure they match
         int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
-        //----------------- GETTERS -----------------//
+        //----------------- VARIABLES -----------------//
 
-        [[nodiscard]] bool getIsRunning() const { return isRunning; }
-        [[nodiscard]] bool getIsLoading() const { return isLoading; }
-        [[nodiscard]] const char* getName() const { return gameName; }
+        [[nodiscard]] bool getIsRunning() const;
+        [[nodiscard]] bool getIsLoading() const;
+        [[nodiscard]] const char* getName() const;
 
     private:
         bool isRunning = false;

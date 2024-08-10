@@ -22,7 +22,7 @@ namespace magique::renderer
     {
         if (global::ENGINE_CONFIG.showPerformanceOverlay)
         {
-            global::PERF_DATA.perfOverlay.draw();
+            global::PERF_DATA.draw();
         }
         EndDrawing();
         const double frameTime = GetTime() - starTime;
@@ -43,14 +43,12 @@ namespace magique::renderer
             }
             BeginMode2D(camera);
             {
-                game.drawWorld(camera);
-                game.drawGame(registry, camera); // Draw game
+                game.drawGame(GetGameState()); // Draw game
                 if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
                     RenderHitboxes(registry);
                 RenderLighting(registry);
             }
             EndMode2D();
-            game.drawUI(GetUIRoot()); // Draw UI
             global::COMMAND_LINE.draw();
         }
         return EndTick(startTime);

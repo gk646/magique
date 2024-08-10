@@ -19,10 +19,10 @@ namespace magique
         // If not specified the mover is 10% of the total height
         Window(float x, float y, float w, float h, float moverHeight = 0.0F);
 
-        // Draws the control - call each tick on draw thread
+        // Draws the control - called each tick on draw thread
         void draw() override;
 
-        // Updates the control - call each tick on update thread
+        // Updates the control - called each tick on update thread
         void update() override;
 
         //----------------- DRAW -----------------//

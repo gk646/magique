@@ -33,6 +33,10 @@ namespace magique
         return true;
     }
 
+    GameState GetGameState() { return global::ENGINE_DATA.gameState; }
+
+    void SetGameState(const GameState newGameState) { global::ENGINE_DATA.gameState = newGameState; }
+
     //----------------- SET -----------------//
 
     void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }

@@ -12,7 +12,7 @@
 
 //----------------- CORE -----------------//
 
-#define MAGIQUE_VERSION "0.0.5"  // Version number
+#define MAGIQUE_VERSION "0.0.6"  // Version number
 #define MAGIQUE_DEBUG 1          // 1 to enable debug - 0 to disable
 #define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
 #define MAGIQUE_WORKER_THREADS 3 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores

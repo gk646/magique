@@ -34,6 +34,25 @@ Most notable features:
 - A AAA engine with all possible bells and whistles
 - An engine for complete C++ beginners
 
+#### Minimal Example
+
+```cpp
+using namespace magique:
+struct MyGame : Game{
+
+    
+
+};
+
+
+int main(){
+
+MyGame game{};
+return game.run();
+
+}
+```
+
 ### 1. Installation
 
 There are 2 supported ways of installing `magique`:

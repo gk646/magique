@@ -4,7 +4,6 @@
 #include <entt/entity/entity.hpp>
 #include <cxstructs/BitMask.h>
 
-#include <magique/fwd.hpp>
 #include <magique/util/Defines.h>
 #include <magique/persistence/container/GameConfig.h>
 
@@ -29,28 +28,29 @@ namespace magique
         alignas(64) vector<T> vec;
     };
 
-    using CollPairCollector = std::array<AlignedVec<PairInfo>, MAGIQUE_WORKER_THREADS + 1>;
-    using EntityCollector = std::array<AlignedVec<entt::entity>, MAGIQUE_WORKER_THREADS + 1>;
+    using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
+    using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
     using EntityFlagMap = HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>>;
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using HashGrid = SingleResolutionHashGrid<entt::entity, 32>;
 
     struct EngineData final
     {
-        MapID cameraMap;                                     // Map the camera is in
-        Camera2D camera{};                                   // current camera
-        entt::entity cameraEntity = entt::null;              // entity id of the camera
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
-        EntityFlagMap changedSet{500};                       // Change set for multiplayer events
-        EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
-        std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
-        vector<entt::entity> collisionVec;                   // vector containing the entites to check for collision
-        std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
         CollPairCollector collisionPairs{};                  // Collision pair collectors
-        HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
         HashGrid hashGrid{200};                              // Global hashGrid for all entities
-        GameConfig gameConfig{};
+        EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
+        EntityFlagMap changedSet{500};                       // Change set for multiplayer events
+        HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
+        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
+        std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
+        std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
+        GameConfig gameConfig{};                             // Global game config instance
+        vector<entt::entity> collisionVec;                   // vector containing the entites to check for collision
+        Camera2D camera{};                                   // current camera
+        entt::entity cameraEntity = entt::null;              // entity id of the camera
+        GameState gameState;                                 // global gamestate
+        MapID cameraMap;                                     // Map the camera is in
 
         EngineData()
         {
