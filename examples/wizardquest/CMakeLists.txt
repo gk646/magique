@@ -1,19 +1,14 @@
 cmake_minimum_required(VERSION 3.28)
-project(wizardquest)
-
+project(wizardquest CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+# Set the path to the magique directory
 set(MAGIQUE_PATH "C:/Users/gk646/Documents/CodingProjects/C++/magique")
+add_subdirectory(${MAGIQUE_PATH})
 
+# Collect the source files
 file(GLOB_RECURSE GAME_FILES "src/*.cpp")
+add_executable(wizardquest ${GAME_FILES})
 
-add_compile_options(/Zc:preprocessor)
-
-add_executable(asteroids ${GAME_FILES})
-
-target_include_directories(asteroids PRIVATE "${MAGIQUE_PATH}/include")
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_libraries(asteroids PRIVATE "${MAGIQUE_PATH}/cmake-build-debug/magique.lib" winmm)
-else ()
-    target_link_libraries(asteroids PRIVATE "${MAGIQUE_PATH}/cmake-build-release/magique.lib" winmm)
-endif ()
+# Dont forget to link against magique
+target_link_libraries(wizardquest magique)

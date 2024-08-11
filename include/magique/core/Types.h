@@ -209,6 +209,10 @@ namespace magique
         EMPTY,      // Storage is empty
     };
 
+    //----------------- STEAM -----------------//
+
+    enum class SteamID : uint64_t;
+
     //----------------- UI -----------------//
 
     // Anchor position used in the UI module to position objects

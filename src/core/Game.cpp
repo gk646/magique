@@ -55,7 +55,7 @@ namespace magique
     Game::Game(const char* name) : isRunning(true), gameName(name)
     {
         static bool madeGame = false;
-        M_ASSERT(madeGame == false, "There can only be 1 game class per program!");
+        ASSERT(madeGame == false, "There can only be 1 game class per program!");
         madeGame = true;
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT);

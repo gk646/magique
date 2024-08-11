@@ -30,9 +30,9 @@
     }
 
 #if !defined(_DEBUG) || defined(NDEBUG)
-#define M_ASSERT(expr, message) ((void)0)
+#define ASSERT(expr, message) ((void)0)
 #else
-#define M_ASSERT(expr, message) ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
+#define ASSERT(expr, message) ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
 #endif
 
 namespace magique::internal

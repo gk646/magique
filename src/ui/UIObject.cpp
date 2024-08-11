@@ -108,7 +108,7 @@ namespace magique
 
         // For safety dont use operator[]
         auto mapIt = ui.stateData.find(GetGameState());
-        M_ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
+        ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
         auto& sortedObjects = mapIt->second;
 
         const auto it = std::ranges::find(sortedObjects, this);

@@ -110,7 +110,7 @@ template <typename ActionStateEnum>
 void magique::AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, magique::SpriteSheet sheet,
                                                         uint16_t frameDuration)
 {
-    M_ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
+    ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
     auto& anim = animations[(int)state];
     anim.duration = frameDuration;
     anim.sheet = sheet;
@@ -118,7 +118,7 @@ void magique::AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, m
 template <typename ActionStateEnum>
 void magique::AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
 {
-    M_ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
+    ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
     auto& anim = animations[(int)state];
     anim.duration = UINT16_MAX;
     anim.sheet = magique::SpriteSheet{};

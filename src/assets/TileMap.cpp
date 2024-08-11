@@ -117,7 +117,7 @@ namespace magique
 
     int TileMap::getLayerStartIndex(const int layer) const
     {
-        M_ASSERT(layer < layerCount, "Layer out of bounds! 0-based indexing!");
+        ASSERT(layer < layerCount, "Layer out of bounds! 0-based indexing!");
         return static_cast<int>(layerIndices[layer]);
     }
 } // namespace magique

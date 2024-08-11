@@ -14,15 +14,15 @@ namespace magique::internal
 
     inline Image LoadImage(const Asset& asset)
     {
-        M_ASSERT(AssetBaseCheck(asset), "Failed asset check");
+        ASSERT(AssetBaseCheck(asset), "Failed asset check");
 
         auto ext = GetFileExtension(asset.path);
 
-        M_ASSERT(ext != nullptr, "No valid extension");
+        ASSERT(ext != nullptr, "No valid extension");
 
         auto img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
 
-        M_ASSERT(img.data != nullptr, "No image data loaded");
+        ASSERT(img.data != nullptr, "No image data loaded");
 
         return img;
     }

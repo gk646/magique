@@ -15,7 +15,7 @@ namespace magique
 {
     bool RegisterEntity(const EntityID type, const CreateFunc& createFunc)
     {
-        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityID>(UINT16_MAX) || map.contains(type))
         {
@@ -34,7 +34,7 @@ namespace magique
 
     bool UnRegisterEntity(const EntityID type)
     {
-        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityID>(UINT16_MAX) || !map.contains(type))
         {
@@ -48,7 +48,7 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, const float x, const float y, const MapID map)
     {
-        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
@@ -69,7 +69,7 @@ namespace magique
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, const float x, const float y, MapID map)
     {
-        M_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
@@ -178,7 +178,7 @@ namespace magique
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
-        M_ASSERT(height > 2 * radius,
+        ASSERT(height > 2 * radius,
                  "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);

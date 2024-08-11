@@ -32,7 +32,7 @@ namespace magique
         if (!ImageCheck(image, asset, at))
             return handle::null;
 
-        M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
 
         const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
         const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
@@ -59,8 +59,8 @@ namespace magique
         if (!ImageCheck(image, asset, at))
             return handle::null;
 
-        M_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
-        M_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
+        ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
 
         const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
         const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
