@@ -114,7 +114,7 @@ namespace magique
 {
     bool Asset::hasExtension(const char* extension) const
     {
-        M_ASSERT(extension != nullptr, "Passing nullptr");
+        ASSERT(extension != nullptr, "Passing nullptr");
         const auto* ext = GetFileExtension(path);
         if (ext == nullptr)
             return false;
@@ -123,7 +123,7 @@ namespace magique
 
     bool Asset::startsWith(const char* prefix) const
     {
-        M_ASSERT(prefix != nullptr, "Passing nullptr");
+        ASSERT(prefix != nullptr, "Passing nullptr");
         const auto len = strlen(prefix);
         return strncmp(path, prefix, len) == 0;
     }
@@ -228,7 +228,7 @@ namespace magique
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
-        M_ASSERT(name != nullptr, "Passing nullptr!");
+        ASSERT(name != nullptr, "Passing nullptr!");
 
         const int size = static_cast<int>(strlen(name));
         int pos = FindDirectoryPos(assets, name, size);
@@ -254,8 +254,8 @@ namespace magique
 
     const Asset& AssetContainer::getAssetByPath(const char* name) const
     {
-        M_ASSERT(name != nullptr, "Passing nullptr!");
-        M_ASSERT(!assets.empty(), "No assets loaded!");
+        ASSERT(name != nullptr, "Passing nullptr!");
+        ASSERT(!assets.empty(), "No assets loaded!");
 
         const int pos = FindAssetPos(assets, name);
 
@@ -270,8 +270,8 @@ namespace magique
 
     const Asset& AssetContainer::getAsset(const char* name) const
     {
-        M_ASSERT(name != nullptr, "Passing nullptr!");
-        M_ASSERT(!assets.empty(), "No assets loaded!");
+        ASSERT(name != nullptr, "Passing nullptr!");
+        ASSERT(!assets.empty(), "No assets loaded!");
 
         for (const auto& a : assets)
         {

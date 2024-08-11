@@ -10,7 +10,7 @@ namespace magique
     void RegisterDirectHandle(handle handle, const int id)
     {
         static_assert(MAGIQUE_DIRECT_HANDLES < UINT16_MAX && "Has to fit into 16 bit");
-        M_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
+        ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
         global::HANDLE_REGISTRY.directHandles[id] = static_cast<uint16_t>(handle);
     }
 
@@ -37,7 +37,7 @@ namespace magique
     void RegisterHandle(handle handle, const char* name)
     {
         auto hash = internal::HashString(name, HASH_SALT);
-        M_ASSERT(!global::HANDLE_REGISTRY.handleMap.contains(hash),
+        ASSERT(!global::HANDLE_REGISTRY.handleMap.contains(hash),
                  "Collision! You either registered a handle twice (with the same name) or suffered an unlucky hash "
                  "collision. Change the HASH_SALT parameter until no collisions occur!");
         global::HANDLE_REGISTRY.handleMap.insert({hash, handle});
@@ -45,20 +45,20 @@ namespace magique
 
     handle GetHandle(HandleID type)
     {
-        M_ASSERT(static_cast<int>(type) < global::HANDLE_REGISTRY.handles.size(), "No such handle!");
+        ASSERT(static_cast<int>(type) < global::HANDLE_REGISTRY.handles.size(), "No such handle!");
         return global::HANDLE_REGISTRY.handles[static_cast<int>(type)];
     }
 
     handle GetHandle(const uint32_t hash)
     {
-        M_ASSERT(global::HANDLE_REGISTRY.handleMap.contains(hash), "No handle with that name (hash)!");
+        ASSERT(global::HANDLE_REGISTRY.handleMap.contains(hash), "No handle with that name (hash)!");
         return global::HANDLE_REGISTRY.handleMap[hash];
     }
 
     handle GetDirectHandle(const int id)
     {
-        M_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
-        M_ASSERT(global::HANDLE_REGISTRY.directHandles[id] != UINT16_MAX, "Null handle");
+        ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
+        ASSERT(global::HANDLE_REGISTRY.directHandles[id] != UINT16_MAX, "Null handle");
         return static_cast<handle>(global::HANDLE_REGISTRY.directHandles[id]);
     }
 

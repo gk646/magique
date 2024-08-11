@@ -198,14 +198,14 @@ namespace magique
     template <typename T>
     auto& DataTable<Types...>::getCell(int row, int column)
     {
-        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        ASSERT(column >= 0 && column < columns, "Given column out of bounds");
         return getTupleColumn<T>(column, data[row]);
     }
     template <typename... Types>
     template <typename T>
     const auto& DataTable<Types...>::getCell(int row, int column) const
     {
-        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        ASSERT(column >= 0 && column < columns, "Given column out of bounds");
         return getTupleColumn<T>(column, data[row]);
     }
     template <typename... Types>
@@ -261,7 +261,7 @@ namespace magique
     T& DataTable<Types...>::getTupleColumn(int column, std::tuple<Types...>& t)
     {
         static_assert((std::is_same_v<T, Types> || ...), "Given type does not exist in the table!");
-        M_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
+        ASSERT(column >= 0 && column < columns, "Given column out of bounds");
         return getTupleColumnImpl<T>(column, t, std::index_sequence_for<Types...>{});
     }
     template <typename... Types>

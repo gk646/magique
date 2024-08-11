@@ -18,7 +18,7 @@ namespace magique
     void DrawRegion(TextureRegion region, const float x, const float y, const bool flipX, const Color tint)
     {
         // Check if the region is valid
-        M_ASSERT(region.id > 0, "The texture for this region is invalid");
+        ASSERT(region.id > 0, "The texture for this region is invalid");
 
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
@@ -63,7 +63,7 @@ namespace magique
                       const Color tint)
     {
         // Check if the region is valid
-        M_ASSERT(region.id > 0, "The texture for this region is invalid");
+        ASSERT(region.id > 0, "The texture for this region is invalid");
 
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
@@ -179,8 +179,8 @@ namespace magique
     void DrawSprite(SpriteSheet sheet, float x, float y, const int frame, const bool flipX, const Color tint)
     {
         // Check if the region is valid
-        M_ASSERT(sheet.id > 0, "The texture for this region is invalid");
-        M_ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
+        ASSERT(sheet.id > 0, "The texture for this region is invalid");
+        ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
 
         x = std::floor(x); // Flooring to avoid texture glitches
         y = std::floor(y);
@@ -234,7 +234,7 @@ namespace magique
 
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
     {
-        M_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
+        ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
 
         const auto cameraBounds = GetCameraNativeBounds();
 
@@ -312,7 +312,7 @@ namespace magique
 
     void DrawCapsule2D(const float x, const float y, const float radius, const float height, const Color tint)
     {
-        M_ASSERT(radius > 0, "Math error. Radius is 0");
+        ASSERT(radius > 0, "Math error. Radius is 0");
         const Vector2 topCenter = {x + radius, y + radius};
         const Vector2 bottomCenter = {x + radius, y + height - radius};
         DrawCircleSector(topCenter, radius, 180.0f, 360.0f, 32, tint);
@@ -322,7 +322,7 @@ namespace magique
 
     void DrawCapsule2DLines(const float x, const float y, const float radius, const float height, const Color tint)
     {
-        M_ASSERT(radius > 0, "Math error. Radius is 0");
+        ASSERT(radius > 0, "Math error. Radius is 0");
         const Vector2 topCenter = {x + radius, y + radius};
         const Vector2 bottomCenter = {x + radius, y + height - radius};
         DrawCircleSectorLines(topCenter, radius, 180.0F, 360.0F, 32, tint);

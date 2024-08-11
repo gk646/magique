@@ -83,7 +83,7 @@ namespace magique
                     const auto job = scheduler->jobQueue.front();
                     scheduler->jobQueue.pop_front();
                     scheduler->queueLock.unlock();
-                    M_ASSERT(job->handle != jobHandle::null, "Null handle");
+                    ASSERT(job->handle != jobHandle::null, "Null handle");
                     //cxstructs::now(1);
                     job->run();
                     //cxstructs::printTime<std::chrono::nanoseconds>("Took:", 1);

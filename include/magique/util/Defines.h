@@ -67,11 +67,10 @@
 #define MAGIQUE_DEBUG 0
 #endif
 
-#if MAGIQUE_CMAKE_USE_STEAM
+#if MAGIQUE_USE_STEAM
 #define MAGIQUE_STEAM 1
 #else
 #define STEAMNETWORKINGSOCKETS_STANDALONELIB
-#define MAGIQUE_STEAM 0
 #endif
 
 #if MAGIQUE_NO_SIMD // Remove simd usage

@@ -26,152 +26,175 @@
 #include <cassert>
 
 template <typename T>
-class VectorIterator {
- public:
-  using difference_type = int64_t;
-  using value_type = T;
-  using pointer = T*;
-  using reference = T&;
+class VectorIterator
+{
+public:
+    using difference_type = int64_t;
+    using value_type = T;
+    using pointer = T*;
+    using reference = T&;
 
-  VectorIterator(pointer ptr) : ptr_(ptr) {}
+    explicit VectorIterator(pointer ptr) : ptr_(ptr) {}
 
-  reference operator*() const { return *ptr_; }
-  pointer operator->() { return ptr_; }
+    reference operator*() const { return *ptr_; }
+    pointer operator->() { return ptr_; }
 
-  // Prefix increment
-  VectorIterator& operator++() {
-    ++ptr_;
-    return *this;
-  }
-  // Postfix increment
-  VectorIterator operator++(int) {
-    VectorIterator tmp = *this;
-    ++*this;
-    return tmp;
-  }
+    // Prefix increment
+    VectorIterator& operator++()
+    {
+        ++ptr_;
+        return *this;
+    }
+    // Postfix increment
+    VectorIterator operator++(int)
+    {
+        VectorIterator tmp = *this;
+        ++*this;
+        return tmp;
+    }
 
-  // Prefix decrement
-  VectorIterator& operator--() {
-    --ptr_;
-    return *this;
-  }
-  // Postfix decrement
-  VectorIterator operator--(int) {
-    VectorIterator tmp = *this;
-    --*this;
-    return tmp;
-  }
+    // Prefix decrement
+    VectorIterator& operator--()
+    {
+        --ptr_;
+        return *this;
+    }
+    // Postfix decrement
+    VectorIterator operator--(int)
+    {
+        VectorIterator tmp = *this;
+        --*this;
+        return tmp;
+    }
 
-  // Arithmetic operators
-  VectorIterator& operator+=(difference_type offset) {
-    ptr_ += offset;
-    return *this;
-  }
-  VectorIterator operator+(difference_type offset) const { return VectorIterator(ptr_ + offset); }
-  VectorIterator& operator-=(difference_type offset) {
-    ptr_ -= offset;
-    return *this;
-  }
-  VectorIterator operator-(difference_type offset) const { return VectorIterator(ptr_ - offset); }
-  difference_type operator-(const VectorIterator& other) const { return ptr_ - other.ptr_; }
+    // Arithmetic operators
+    VectorIterator& operator+=(difference_type offset)
+    {
+        ptr_ += offset;
+        return *this;
+    }
+    VectorIterator operator+(difference_type offset) const { return VectorIterator(ptr_ + offset); }
+    VectorIterator& operator-=(difference_type offset)
+    {
+        ptr_ -= offset;
+        return *this;
+    }
+    VectorIterator operator-(difference_type offset) const { return VectorIterator(ptr_ - offset); }
+    difference_type operator-(const VectorIterator& other) const { return ptr_ - other.ptr_; }
 
-  reference operator[](difference_type index) const { return *(ptr_ + index); }
+    reference operator[](difference_type index) const { return *(ptr_ + index); }
 
-  // Comparison operators
-  bool operator==(const VectorIterator& other) const { return ptr_ == other.ptr_; }
-  bool operator!=(const VectorIterator& other) const { return ptr_ != other.ptr_; }
-  bool operator<(const VectorIterator& other) const { return ptr_ < other.ptr_; }
-  bool operator<=(const VectorIterator& other) const { return ptr_ <= other.ptr_; }
-  bool operator>(const VectorIterator& other) const { return ptr_ > other.ptr_; }
-  bool operator>=(const VectorIterator& other) const { return ptr_ >= other.ptr_; }
+    // Comparison operators
+    bool operator==(const VectorIterator& other) const { return ptr_ == other.ptr_; }
+    bool operator!=(const VectorIterator& other) const { return ptr_ != other.ptr_; }
+    bool operator<(const VectorIterator& other) const { return ptr_ < other.ptr_; }
+    bool operator<=(const VectorIterator& other) const { return ptr_ <= other.ptr_; }
+    bool operator>(const VectorIterator& other) const { return ptr_ > other.ptr_; }
+    bool operator>=(const VectorIterator& other) const { return ptr_ >= other.ptr_; }
 
- private:
-  pointer ptr_;
+private:
+    pointer ptr_;
 };
 
-namespace cxstructs {
-template <typename T, uint32_t N = 16, typename size_type = int32_t>
-struct SmallVector {
-  SmallVector() : size_(0), capacity_(N), data_(stack_data_) {}
+namespace cxstructs
+{
+    template <typename T, uint32_t N = 16, typename size_type = int32_t>
+    struct SmallVector
+    {
+        SmallVector() : size_(0), capacity_(N), data_(stack_data_) {}
 
-  ~SmallVector() {
-    if (data_ != stack_data_) {
-      delete[] data_;
-    }
-  }
+        ~SmallVector()
+        {
+            if (data_ != stack_data_)
+            {
+                delete[] data_;
+            }
+        }
 
-  void push_back(const T& value) {
-    ensure_capacity(size_ + 1);
-    data_[size_++] = value;
-  }
+        void push_back(const T& value)
+        {
+            ensure_capacity(size_ + 1);
+            data_[size_++] = value;
+        }
 
-  void pop_back() {
-    assert(size_ > 0);
-    --size_;
-  }
+        void pop_back()
+        {
+            assert(size_ > 0);
+            --size_;
+        }
 
-  // ensures capacity - initializes all new values
-  void resize(size_type new_size, const T& val) {
-    if (new_size > size_) {
-      ensure_capacity(new_size);
-      for (size_type i = size_; i < new_size; ++i) {
-        data_[i] = val;
-      }
-      size_ = new_size;
-    }
-  }
+        // ensures capacity - initializes all new values
+        void resize(size_type new_size, const T& val)
+        {
+            if (new_size > size_)
+            {
+                ensure_capacity(new_size);
+                for (size_type i = size_; i < new_size; ++i)
+                {
+                    data_[i] = val;
+                }
+                size_ = new_size;
+            }
+        }
 
-  T& operator[](size_type index) {
-    assert(index < size_);
-    return data_[index];
-  }
+        T& operator[](size_type index)
+        {
+            assert(index < size_);
+            return data_[index];
+        }
 
-  const T& operator[](size_type index) const {
-    assert(index < size_);
-    return data_[index];
-  }
+        const T& operator[](size_type index) const
+        {
+            assert(index < size_);
+            return data_[index];
+        }
 
-  size_type size() const { return size_; }
+        size_type size() const { return size_; }
 
-  size_type capacity() const { return capacity_; }
+        size_type capacity() const { return capacity_; }
 
-  const T* data() const { return data_; }
+        const T* data() const { return data_; }
 
-  T* data() { return data_; }
+        T* data() { return data_; }
 
-  [[nodiscard]] bool empty() const { return size_ == 0; }
+        [[nodiscard]] bool empty() const { return size_ == 0; }
 
-  using iterator = VectorIterator<T>;
-  using const_iterator = VectorIterator<const T>;
+        void clear() { size_ = 0; }
 
-  iterator begin() { return iterator(data_); }
-  const_iterator begin() const { return const_iterator(data_); }
-  iterator end() { return iterator(data_ + size_); }
-  const_iterator end() const { return const_iterator(data_ + size_); }
+        using iterator = VectorIterator<T>;
+        using const_iterator = VectorIterator<const T>;
 
- private:
-  void ensure_capacity(size_type new_capacity) {
-    if (new_capacity <= capacity_) {
-      return;
-    }
+        iterator begin() { return iterator(data_); }
+        const_iterator begin() const { return const_iterator(data_); }
+        iterator end() { return iterator(data_ + size_); }
+        const_iterator end() const { return const_iterator(data_ + size_); }
 
-    new_capacity = capacity_ * 2;
-    T* new_data = new T[new_capacity];
+    private:
+        void ensure_capacity(size_type new_capacity)
+        {
+            if (new_capacity <= capacity_)
+            {
+                return;
+            }
 
-    std::memcpy(new_data, data_, size_ * sizeof(T));
+            new_capacity = capacity_ * 2;
+            T* new_data = new T[new_capacity];
 
-    if (data_ != stack_data_) {
-      delete[] data_;
-    }
+            std::memcpy(new_data, data_, size_ * sizeof(T));
 
-    data_ = new_data;
-    capacity_ = new_capacity;
-  }
+            if (data_ != stack_data_)
+            {
+                delete[] data_;
+            }
 
-  size_type size_;
-  size_type capacity_;
-  T* data_;
-  T stack_data_[N];
-};
-}  // namespace cxstructs
-#endif  //SMALLVECTOR_H
+            data_ = new_data;
+            capacity_ = new_capacity;
+        }
+
+        size_type size_;
+        size_type capacity_;
+        T* data_;
+        T stack_data_[N];
+    };
+} // namespace cxstructs
+#endif //SMALLVECTOR_H

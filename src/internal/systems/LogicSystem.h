@@ -38,7 +38,7 @@ namespace magique
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
         {
-            M_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
+            ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
             actorDist.resize(static_cast<int>(pos.map), -1);    // initializes new values to -1
             actorMaps.resize(static_cast<int>(pos.map), false); // initializes new values to false
@@ -138,7 +138,7 @@ namespace magique
         }
         // Center the camera
 #if MAGIQUE_DEBUG == 1
-        M_ASSERT(count < 2, "You have multiple cameras? O.O");
+        ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
     }
 

@@ -18,11 +18,11 @@ namespace magique
 
     void AddUIObject(const char* name, const GameState gameState, UIObject* object, const UILayer layer)
     {
-        M_ASSERT(gameState != GameState(INT32_MAX),
+        ASSERT(gameState != GameState(INT32_MAX),
                  "Using the default gamestate! Make your own enum and use SetGameState()");
-        M_ASSERT(object != nullptr, "Passing nullptr");
-        M_ASSERT(name != nullptr, "Passing nullptr");
-        M_ASSERT(layer <= UILayer::ROOT, "Passing invalid layer");
+        ASSERT(object != nullptr, "Passing nullptr");
+        ASSERT(name != nullptr, "Passing nullptr");
+        ASSERT(layer <= UILayer::ROOT, "Passing invalid layer");
         global::UI_DATA.registerObject(name, gameState, object, layer);
     }
 

@@ -59,8 +59,8 @@ namespace magique
         T& getResource(handle handle)
         {
             // If you get an error here you probably used a wrong handle or in the wrong method
-            M_ASSERT(handle != handle::null, "Null handle!");
-            M_ASSERT(getResourceVec<T>().size() > static_cast<int>(handle), "Cannot contain the resource");
+            ASSERT(handle != handle::null, "Null handle!");
+            ASSERT(getResourceVec<T>().size() > static_cast<int>(handle), "Cannot contain the resource");
             return getResourceVec<T>()[static_cast<uint32_t>(handle)];
         }
     };
