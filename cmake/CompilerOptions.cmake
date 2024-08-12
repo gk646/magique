@@ -1,3 +1,4 @@
+
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g")
@@ -21,7 +22,7 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /Ob3 /EHc /W4")
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "/LTCG /OPT:REF /OPT:ICF")
 
-    if (${PROJECT_PREFIX}_ENABLE_SANITIZER)
+    if (MAGIQUE_ENABLE_SANITIZER)
         set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /fsanitize=address")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
         set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /fsanitize=address")

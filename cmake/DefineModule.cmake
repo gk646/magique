@@ -7,10 +7,10 @@ endif ()
 
 file(GLOB_RECURSE MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
-add_library(${TARGET_NAME}_${MODULE_NAME} OBJECT ${MODULE_FILES})
+add_library(magique-${MODULE_NAME} OBJECT ${MODULE_FILES})
 
-
-target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
-target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
-
-target_include_directories(${TARGET_NAME}_${MODULE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src/external/cxstructs)
+target_include_directories(magique-${MODULE_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/src/external/cxstructs
+)

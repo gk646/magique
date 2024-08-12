@@ -1,10 +1,8 @@
 #ifndef MAGIQUE_STEAM_H
 #define MAGIQUE_STEAM_H
 
-namespace magique{
-
-
-
+namespace magique
+{
 
     const char* GetUserDataLocation();
 

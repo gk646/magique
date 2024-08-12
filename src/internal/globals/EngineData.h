@@ -30,7 +30,7 @@ namespace magique
 
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityFlagMap = HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>>;
+//    using EntityFlagMap = HashMap<entt::entity, cxstructs::EnumMask<UpdateFlag>>;
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using HashGrid = SingleResolutionHashGrid<entt::entity, 32>;
 
@@ -40,7 +40,7 @@ namespace magique
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
         HashGrid hashGrid{200};                              // Global hashGrid for all entities
         EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
-        EntityFlagMap changedSet{500};                       // Change set for multiplayer events
+      //  EntityFlagMap changedSet{500};                       // Change set for multiplayer events
         HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
         std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
@@ -64,7 +64,7 @@ namespace magique
 
         void clear()
         {
-            changedSet.clear();
+           // changedSet.clear();
             entityUpdateCache.clear();
             entityUpdateVec.clear();
             drawVec.clear();

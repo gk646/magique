@@ -143,57 +143,28 @@ namespace magique
 
     enum class SendFlag : uint8_t
     {
-        // Reliable message send. Can send up to k_cbMaxSteamNetworkingSocketsMessageSizeSend bytes in a single message.
-        // Does fragmentation/re-assembly of messages under the hood, as well as a sliding window for
-        // efficient sends of large chunks of data.
-        //
-        // The Nagle algorithm is used.
+        // Reliable message send. Does fragmentation/re-assembly of messages under the hood, as well as a sliding window
+        // for efficient sends of large chunks of data - The Nagle algorithm is used.
         RELIABLE = 8,
         // Send the message unreliably. Can be lost.  Messages *can* be larger than a
         // single MTU (UDP packet), but there is no retransmission, so if any piece
         // of the message is lost, the entire message will be dropped.
-        //
-        // The sending API does have some knowledge of the underlying connection, so
-        // if there is no NAT-traversal accomplished or there is a recognized adjustment
-        // happening on the connection, the packet will be batched until the connection
-        // is open again.
         UN_RELIABLE = 0,
     };
 
-    enum class Connection : uint32_t
+    enum class LocalConnection : uint32_t
     {
         INVALID_CONNECTION = 0,
     };
 
-    enum UpdateFlag : uint8_t
+    enum class MultiplayerEvent : uint8_t
     {
-        UPDATE_DELETE_ENTITY = 1,
-        UPDATE_POSITION_ENTITY = 2,
-        UPDATE_HEALTH_ENTITY = 4,
-        UPDATE_SPAWN_ENTITY = 8,
-        FILLER2 = 16,
-        FILLER3 = 32,
-        FILLER4 = 64,
-        FILLER5 = 128,
-    };
-
-    enum UDP_Channel : uint8_t
-    {
-        //-----------FOR-HOST-----------//
-        HOST_PLAYER_ACTION,
-        HOST_CHARACTER_INFO,
-
-        //-----------FOR-CLIENT-----------//
-        CLIENT_PLAYER_NAME_UPDATE,
-        CLIENT_ID_ASSIGN,
-        CLIENT_ENTITY_POS,
-        CLIENT_ENTITY_POS_STAT,
-        CLIENT_ENTITY_STAT,
-        CLIENT_ENTITY_SPAWN,
-        CLIENT_ENTITY_DESPAWN,
-        CLIENT_ABILITY_USED,
-        CLIENT_QUEST_UPDATE,
-        CLIENT_EFFECT_UPDATE,
+        //----------------- HOST -----------------//
+        HOST_NEW_CONNECTION,           // Posted when when we accept a new client connection
+        HOST_CLIENT_CLOSED_CONNECTION, // Posted when when the client closed the connection
+        //----------------- CLIENT -----------------//
+        CLIENT_CONNECTION_ACCEPTED, // Posted when the host accepted our connection
+        CLIENT_CONNECTION_CLOSED,   // Posted when the host closed our connection
     };
 
     //----------------- PERSISTENCE -----------------//
@@ -212,6 +183,8 @@ namespace magique
     //----------------- STEAM -----------------//
 
     enum class SteamID : uint64_t;
+
+    enum class Connection : uint32_t;
 
     //----------------- UI -----------------//
 
