@@ -26,7 +26,7 @@ namespace magique
 
     bool GameLoader::step() { return stepLoop(gameSave); }
 
-    void GameLoader::registerTask(TaskI<GameSave>* task, const PriorityLevel pl, const int impact)
+    void GameLoader::registerTask(ITask<GameSave>* task, const PriorityLevel pl, const int impact)
     {
         if (!BasicChecks(task, pl, impact))
             return;

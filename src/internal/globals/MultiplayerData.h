@@ -5,6 +5,8 @@
 
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
+#include <magique/internal/Macros.h>
+#include <magique/util/Defines.h>
 
 #if MAGIQUE_STEAM == 0
 #include "external/networkingsockets/steamnetworkingsockets.h"
@@ -28,33 +30,45 @@ namespace magique
 {
     struct MultiplayerData final
     {
-        HSteamListenSocket broadcastSocket = k_HSteamListenSocket_Invalid; // Broadcast available games
-        HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid;    // The global listen socket
-        bool isHost = false;                                               // If the program is host or client
-        bool isOnline = false;                                             // If program is part of multiplayer activity
-        HSteamNetConnection connections[MAGIQUE_MAX_PLAYERS]{};            // All possible outgoing connections as host
-        std::function<void(MultiplayerEvent)> callback;                    // Callback
-        vector<SteamNetworkingMessage_t*> outMsgs;                         // Outgoing message buffer
-        std::vector<Message> msgVec{};                                     // Incoming message buffer
-        SteamNetworkingMessage_t** msgBuffer = nullptr;                    // Incoming message data buffer
-        int buffSize = 0;                                                  // Buffer size
-        int buffCap = 0;                                                   // Buffer capacity
+        HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
+        bool isHost = false;                                            // If the program is host or client
+        bool inSession = false;                                         // If program is part of multiplayer activity
+        HSteamNetConnection connections[MAGIQUE_MAX_PLAYERS]{};         // All possible outgoing connections as host
+        std::function<void(MultiplayerEvent)> callback;                 // Callback
+        vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
+        std::vector<Message> msgVec{};                                  // Message buffer
+        SteamNetworkingMessage_t** msgBuffer = nullptr;                 // Incoming message data buffer
+        int buffSize = 0;                                               // Buffer size
+        int buffCap = 0;                                                // Buffer capacity
 
         MultiplayerData()
         {
-            outMsgs.reserve(MAGIQUE_MESSAGES_ESTIMATE);
+            batchedMsgs.reserve(MAGIQUE_MESSAGES_ESTIMATE);
             msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_MESSAGES_ESTIMATE];
             buffSize = MAGIQUE_MESSAGES_ESTIMATE;
             buffCap = MAGIQUE_MESSAGES_ESTIMATE;
         }
 
-        void clearState()
+        void goOnline(const bool asHost)
         {
+            inSession = true;
+            isHost = asHost;
+        }
+
+        void goOffline()
+        {
+            ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
             std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_PLAYERS);
-            outMsgs.clear();
             isHost = false;
-            isOnline = false;
-            listenSocket = k_HSteamListenSocket_Invalid;
+            inSession = false;
+            msgVec.clear();
+            buffSize = 0;
+            // Release the batch if exists
+            for (const auto msg : batchedMsgs)
+            {
+                msg->Release();
+            }
+            batchedMsgs.clear();
         }
 
         void close()
@@ -63,12 +77,12 @@ namespace magique
 #if MAGIQUE_STEAM == 0
             GameNetworkingSockets_Kill();
 #endif
-            isOnline = false;
+            inSession = false;
         }
 
         void update() const
         {
-            if (isOnline)
+            if (inSession)
             {
 #if MAGIQUE_STEAM == 0
                 SteamNetworkingSockets()->RunCallbacks();
@@ -145,7 +159,7 @@ namespace magique
                 else // If you're a client and the host disconnects
                 {
                     LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
-                    clearState();
+                    goOffline();
                 }
             }
 
@@ -171,7 +185,7 @@ namespace magique
                 }
                 else
                 {
-                    clearState();
+                    goOffline();
                 }
             }
         }

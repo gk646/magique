@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_UIOBJECT_H
 #define MAGIQUE_UIOBJECT_H
 
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 
 //-----------------------------------------------
 // UIObject
@@ -22,23 +22,23 @@ namespace magique
     {
         //----------------- CONSTRUCTORS -----------------//
 
-        // Doesnt initialize the dimensions - use align()
-        explicit UIObject();
+        // Doesnt initialize the dimensions - use setDimensions()
+        explicit UIObject(GameState gameState, UILayer layer = UILayer::MEDIUM);
 
         // Aligns the object object after the anchor position relative to the given ui object
         UIObject(AnchorPosition anchor, const UIObject& relativeTo, float inset = 0.0F);
 
         // Creates the object from absolute dimensions in the logical UI resolution
-        UIObject(float x, float y, float w, float h);
+        UIObject(GameState gameState, float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
 
         virtual ~UIObject();
 
         //----------------- CORE -----------------//
 
-        // Called each upate tick
+        // Called each update tick automatically - DONT call manually
         virtual void draw() {}
 
-        // Called each render tick
+        // Called each render tick automatically - DONT call manually
         virtual void update() {}
 
         // Aligns the object object after the anchor position relative to the given ui object

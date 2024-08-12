@@ -16,7 +16,8 @@ namespace magique
 {
     struct UIContainer : UIObject
     {
-        UIContainer(float x, float y, float w, float h);
+        // Constructor with absolute coordinates in the logical resolution
+        UIContainer(GameState gameState, float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
         ~UIContainer() override = default;
 
         // Draws the container itself

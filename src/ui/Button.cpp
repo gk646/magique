@@ -2,7 +2,10 @@
 
 namespace magique
 {
-    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
+    Button::Button(const GameState gameState, const float x, const float y, const float w, const float h,
+                   const UILayer layer) : UIObject(gameState, x, y, w, h, layer)
+    {
+    }
 
     void Button::draw()
     {

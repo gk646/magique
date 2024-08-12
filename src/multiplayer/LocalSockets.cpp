@@ -21,23 +21,26 @@ namespace magique
 
     //----------------- HOST -----------------//
 
-    bool CreateLocalSocket(int port)
+    bool CreateLocalSocket(const int port)
     {
         auto& data = global::MP_DATA;
-        SteamNetworkingConfigValue_t opt{};
+        ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+
+        SteamNetworkingConfigValue_t opt{}; // Register callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
+
         SteamNetworkingIPAddr ip{};
-        ip.SetIPv4(0,port);
+        ip.SetIPv4(0, static_cast<uint16>(port));
         data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, &opt);
-        data.isHost = false;
-        data.isOnline = true;
+
+        data.goOnline(true);
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
     bool CloseLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
             return false;
 
         for (const auto conn : data.connections)
@@ -47,36 +50,48 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true);
             }
         }
-        return SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
+
+        const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
+        data.goOffline();
+
+        return res;
     }
 
     //----------------- CLIENT -----------------//
 
-    Connection ConnectToLocalSocket(const int port)
+    Connection ConnectToLocalSocket(const int ip, const int port)
     {
         auto& data = global::MP_DATA;
+        ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+
         SteamNetworkingIPAddr addr{};
-        addr.SetIPv4(0, static_cast<uint16>(port));
-        SteamNetworkingConfigValue_t opt{};
+        addr.SetIPv4(ip, static_cast<uint16>(port));
+
+        SteamNetworkingConfigValue_t opt{}; // Set callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
+
         data.connections[0] = SteamNetworkingSockets()->ConnectByIPAddress(addr, 1, &opt);
-        global::MP_DATA.isHost = false;
+
+        data.goOnline(false);
         return static_cast<Connection>(data.connections[0]);
     }
 
     bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
+        if (!data.inSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
             return false;
-        return SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
+
+        const auto res = SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
+        data.goOffline();
+        return res;
     }
 
     //----------------- UTIL -----------------//
 
     uint32_t GetIPAdress()
     {
-        SteamNetworkingIdentity id;
+        SteamNetworkingIdentity id{};
         SteamNetworkingSockets()->GetIdentity(&id);
         return id.GetIPv4();
     }

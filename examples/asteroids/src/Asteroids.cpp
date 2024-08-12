@@ -116,11 +116,8 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
     magique::SetGameState(GameState::GAME); // Set the initial gamestate
 }
 
-void Asteroids::setupUI()
-{
-    magique::AddUIObject("PlayerBar", GameState::GAME, new PlayerBarUI());
-    magique::AddUIObject("GameOver", GameState::GAME_OVER, new GameOverUI());
-}
+    //magique::AddUIObject("PlayerBar", GameState::GAME, new PlayerBarUI());
+   // magique::AddUIObject("GameOver", GameState::GAME_OVER, new GameOverUI());
 
 void Asteroids::onCloseEvent() { shutDown(); }
 

@@ -6,7 +6,7 @@
 namespace magique
 {
 
-    Payload CreateMessage(const void* data, int size, MessageType type) {}
+    Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
@@ -22,19 +22,19 @@ namespace magique
         std::memcpy(msg->m_pData, payload.data, payload.size);
         msg->m_nFlags = static_cast<int>(flag);
         msg->m_conn = static_cast<HSteamNetConnection>(conn);
-        global::MP_DATA.outMsgs.push_back(msg);
+        global::MP_DATA.batchedMsgs.push_back(msg);
         return true;
     }
 
     bool SendBatch()
     {
         auto& data = global::MP_DATA;
-        if (data.outMsgs.empty())
+        if (data.batchedMsgs.empty())
             return false;
 
-        const auto size = data.outMsgs.size();
-        SteamNetworkingSockets()->SendMessages(size, data.outMsgs.data(), nullptr);
-        data.outMsgs.clear();
+        const auto size = data.batchedMsgs.size();
+        SteamNetworkingSockets()->SendMessages(size, data.batchedMsgs.data(), nullptr);
+        data.batchedMsgs.clear();
         return true;
     }
 
@@ -62,7 +62,7 @@ namespace magique
             data.msgVec.clear();
         }
 
-        if (!data.isOnline) [[unlikely]]
+        if (!data.inSession) [[unlikely]]
         {
             return data.msgVec;
         }
@@ -129,8 +129,10 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    bool IsHost() { return global::MP_DATA.isHost; }
+    bool IsInSession() { return global::MP_DATA.inSession; }
 
-    bool IsClient() { return global::MP_DATA.isHost == false; }
+    bool IsHost() { return global::MP_DATA.inSession && global::MP_DATA.isHost; }
+
+    bool IsClient() { return global::MP_DATA.inSession && global::MP_DATA.isHost == false; }
 
 } // namespace magique

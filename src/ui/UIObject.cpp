@@ -11,14 +11,19 @@
 
 namespace magique
 {
-    UIObject::UIObject() : id(global::UI_DATA.getNextID()) {}
 
-    UIObject::UIObject(const float x, const float y, const float w, const float h) : UIObject()
+    UIObject::UIObject(GameState gameState, UILayer layer) : UIObject(gameState, 0,0,0,0,layer)
+    {
+
+    }
+
+    UIObject::UIObject(const GameState gameState, const float x, const float y, const float w, const float h,
+                       UILayer layer)
     {
         setDimensions(x, y, w, h);
     }
 
-    UIObject::UIObject(const AnchorPosition anchor, const UIObject& relativeTo, const float inset) : UIObject()
+    UIObject::UIObject(const AnchorPosition anchor, const UIObject& relativeTo, const float inset) 
     {
         align(anchor, relativeTo, inset);
     }
