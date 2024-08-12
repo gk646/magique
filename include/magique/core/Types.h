@@ -152,7 +152,7 @@ namespace magique
         UN_RELIABLE = 0,
     };
 
-    enum class LocalConnection : uint32_t
+    enum class Connection : uint32_t
     {
         INVALID_CONNECTION = 0,
     };
@@ -165,6 +165,20 @@ namespace magique
         //----------------- CLIENT -----------------//
         CLIENT_CONNECTION_ACCEPTED, // Posted when the host accepted our connection
         CLIENT_CONNECTION_CLOSED,   // Posted when the host closed our connection
+    };
+
+    struct Payload final
+    {
+        void* data;       // Direct pointer to the given data
+        int size;         // Valid size of the data
+        MessageType type; // Type of the message (very useful for handling messages on the receiver)
+    };
+
+    struct Message final
+    {
+        Payload payload;       // Same payload that was sent
+        Connection connection; // Who sent the payload
+        int64_t timeStamp;     // When the message was received (micros) - should only be compared to other timestamps
     };
 
     //----------------- PERSISTENCE -----------------//
@@ -184,7 +198,6 @@ namespace magique
 
     enum class SteamID : uint64_t;
 
-    enum class Connection : uint32_t;
 
     //----------------- UI -----------------//
 

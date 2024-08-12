@@ -18,10 +18,10 @@ else ()
 endif ()
 
 # Options
-option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration" OFF)
+option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration (Must set STEAM_SDK_PATH)" OFF)
 option(MAGIQUE_BUILD_SHARED "Set to enable building magique as shared library" OFF)
+option(MAGIQUE_USE_SIMD "Set enabled usage of SIMD (faster)" ON)
 option(MAGIQUE_ENABLE_SANITIZER "Set to compile with address sanitizer" OFF)
-
 
 # Parse the options and set parameters
 include(ParseOptions)
@@ -29,4 +29,5 @@ include(ParseOptions)
 # Setup compiler options
 include(CompilerOptions)
 
+# Add the source targets
 add_subdirectory(src)

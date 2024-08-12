@@ -19,8 +19,7 @@
 
 //----------------- STEAM -----------------//
 
-// add "set(MAGIQUE_USE_STEAM ON)" to your CMakeLists.txt before including magique to enable steam features
-#define MAGIQUE_STEAM 0
+#define MAGIQUE_STEAM 0 // Turn on steam integration in CMake
 
 //----------------- MULTIPLAYER -----------------//
 
@@ -68,6 +67,7 @@
 #endif
 
 #if MAGIQUE_USE_STEAM
+#undef MAGIQUE_STEAM
 #define MAGIQUE_STEAM 1
 #else
 #define STEAMNETWORKINGSOCKETS_STANDALONELIB

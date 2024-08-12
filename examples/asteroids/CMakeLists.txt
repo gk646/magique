@@ -3,17 +3,17 @@ project(asteroids)
 
 set(CMAKE_CXX_STANDARD 20)
 
-set(MAGIQUE_PATH "C:/Users/gk646/Documents/CodingProjects/C++/magique")
+# Set the path to the magique directory
+# Note: This is used when the magique directory is outside your project root directory
+#       You can simply copy it into the root of your project as well
 
+set(MAGIQUE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+
+add_subdirectory(${MAGIQUE_PATH} magique)
+
+# Collect the source files
 file(GLOB_RECURSE GAME_FILES "src/*.cpp")
-
-add_compile_options(/Zc:preprocessor)
-
 add_executable(asteroids ${GAME_FILES})
 
-target_include_directories(asteroids PRIVATE "${MAGIQUE_PATH}/include")
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_libraries(asteroids PRIVATE "${MAGIQUE_PATH}/cmake-build-debug/magique.lib" winmm)
-else ()
-    target_link_libraries(asteroids PRIVATE "${MAGIQUE_PATH}/cmake-build-release/magique.lib" winmm )
-endif ()
+# Dont forget to link against magique
+target_link_libraries(asteroids PRIVATE magique)

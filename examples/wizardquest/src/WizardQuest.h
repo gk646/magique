@@ -1,13 +1,22 @@
 #ifndef WIZARDQUEST_H
 #define WIZARDQUEST_H
 
-
 #include <magique/core/Game.h>
 
-using namespace magique;
+using namespace magique; // using namespace is recommended and allowed
 
-struct WizardQuest final : Game{
-
+enum class GameState
+{
+    MAIN_MENU,
+    GAME,
+    GAME_OVER
 };
 
-#endif //WIZARDQUEST_H
+struct WizardQuest final : Game
+{
+    void onStartup(AssetLoader &loader, GameConfig &config) override;
+    void updateGame(GameState gameState) override;
+    void drawGame(GameState gameState) override;
+};
+
+#endif // WIZARDQUEST_H
