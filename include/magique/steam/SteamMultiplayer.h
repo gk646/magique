@@ -1,0 +1,9 @@
+#ifndef MAGIQUE_STEAM_MULTIPLAYER_H
+#define MAGIQUE_STEAM_MULTIPLAYER_H
+
+
+namespace magique{
+
+}
+
+#endif //MAGIQUE_STEAM_MULTIPLAYER_H

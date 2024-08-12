@@ -59,7 +59,6 @@ namespace magique
     struct EmitterData;      // Data for particle emitters
 
     //----------------- Multiplayer -----------------//
-    enum UpdateFlag : uint8_t;
 
     //----------------- GAMEDEV -----------------//
     template <typename CustomData = int>
