@@ -46,7 +46,6 @@ struct Asteroids final : magique::Game
 {
     Asteroids() : Game("Asteroids") {}
     void onStartup(magique::AssetLoader& loader, magique::GameConfig& config) override;
-    void setupUI() override;
     void onCloseEvent() override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState) override;
@@ -78,7 +77,7 @@ struct PlayerBarUI final : magique::UIObject
 
 struct GameOverUI final : magique::Button
 {
-    GameOverUI() : Button(960, 520, 150, 50) {}
+    GameOverUI() : Button(GameState::GAME, 960, 520, 150, 50) {}
     void onClick(const Rectangle &bounds) override;
 };
 

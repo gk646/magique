@@ -7,7 +7,7 @@ namespace magique
 {
     namespace global
     {
-        inline ExecutorI* LOADER = nullptr;
+        inline IExecutor* LOADER = nullptr;
     }
 } // namespace magique
 

@@ -2,10 +2,9 @@
 
 namespace magique
 {
-    UIContainer::UIContainer(const float percentX, const float percentY, const float percentHeight,
-                             const float percentWidth) : UIObject(percentX, percentY, percentHeight, percentWidth)
+    UIContainer::UIContainer(const GameState gameState, const float x, const float y, const float w, const float h,
+                             const UILayer layer) : UIObject(gameState, x, y, w, h, layer)
     {
-
     }
 
     void UIContainer::drawChildren() const

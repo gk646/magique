@@ -169,7 +169,7 @@ namespace magique
 
     struct Payload final
     {
-        void* data;       // Direct pointer to the given data
+        const void* data; // Direct pointer to the given data
         int size;         // Valid size of the data
         MessageType type; // Type of the message (very useful for handling messages on the receiver)
     };

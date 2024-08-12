@@ -31,15 +31,17 @@ namespace magique
     //----------------- CLIENT -----------------//
 
     // Connects to an open socket on that port
-    Connection ConnectLocalSocket(int port);
+    Connection ConnectToLocalSocket(int ip, int port);
 
     // Disconnects from the socket (if any)
     // Optionally specify a close code or string that can be read on the receiver
     // Returns true if and existing connection was closed successfully
-    bool DisconnectLocalSocket(int closeCode = 0, const char* closeReason = nullptr);
+    bool DisconnectFromLocalSocket(int closeCode = 0, const char* closeReason = nullptr);
 
     //----------------- UTIL -----------------//
 
+    // Returns your own IP4 adress
+    // Failure: returns 0
     uint32_t GetIPAdress();
 
 } // namespace magique

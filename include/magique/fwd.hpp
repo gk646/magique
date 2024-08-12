@@ -33,7 +33,7 @@ namespace magique
     struct ConfigSaver;  // Handles saving the config
     struct GameConfig;   // The config persistence object
 
-    struct ExecutorI; // Task loading interface
+    struct IExecutor; // Task loading interface
 
     template <typename... Columns>
     struct DataTable; // Type-safe database-like interface to save game data

@@ -18,7 +18,7 @@ namespace magique
     // Returns a network message object to be sent via the network - should be used directly and not stored
     // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
     // Note: The passed data will be copied when batching or sending so you should pass it directly (stack and heap memory)
-    Payload CreateMessage(const void* data, int size, MessageType type);
+    Payload CreatePayload(const void* data, int size, MessageType type);
 
     // Starts a new batch or appends to an existing one - batches until SendLocalBatch() is called
     // Note: there is only be 1 batch at a time!
@@ -42,13 +42,16 @@ namespace magique
     //----------------- UTIL -----------------//
 
     // Sets the callback function that is called on various multiplayer events
-    // See the MultiplayerEvent enum for more info and type of events
+    // See the MultiplayerEvent enum for more info about the type of events and when they are triggered
     void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func);
 
-    // Returns true if currently the host
+    // Returns true if currently hosting or connected to a host
+    bool IsInSession();
+
+    // Returns true if currently in a session as host
     bool IsHost();
 
-    // Returns true if currently a client
+    // Returns true if currently in a session as client
     bool IsClient();
 
 } // namespace magique

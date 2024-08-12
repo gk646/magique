@@ -34,9 +34,6 @@ namespace magique
         // Called once on startup - register your loaders here
         virtual void onStartup(AssetLoader& loader, GameConfig& config) {}
 
-        // Called once after onStartup() - register your ui elements here
-        virtual void setupUI() {}
-
         // Called once when the game closes
         virtual void onShutDown() {}
 

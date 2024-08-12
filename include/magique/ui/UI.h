@@ -19,32 +19,6 @@
 
 namespace magique
 {
-    //----------------- UI OBJECTS -----------------//
-
-    // Adds a new ui element to the given state - elements within the same layer are in the order they are added
-    // Takes owner ship of the pointer - dont save or access it after passing it to this method
-    // Note: the name has to be unique across all states - else will be overwritten silently
-    // Note: The same object can be added to multiple gamestates (with the same name)!
-    void AddUIObject(const char* name, GameState gameState, UIObject* object, UILayer layer = UILayer::MEDIUM);
-
-    // Returns a pointer to the ui-object with the given name - optionally pass a specific type
-    // Failure: returns nullptr if the given element does not exist!
-    template <typename T = UIObject>
-    T* GetUIObject(const char* name);
-
-    // Removes the object with the given name from all states - optionally limit to a given gamestate
-    // Failure: returns false if the element wasnt found
-    bool RemoveUIObject(const char* name, GameState gameState = GameState(INT32_MAX));
-    bool RemoveUIObject(UIObject* object, GameState gameState = GameState(INT32_MAX));
-
-    //----------------- SETTERS -----------------//
-
-    // Sets the loading screen instance to handle different loading scenarios - see ui/LoadingScreen.h for more info
-    // Note: Takes ownership of the pointer - dont save or access it after passing it to this method
-    void SetLoadingScreen(LoadingScreen* loadingScreen);
-
-    //----------------- UTIL -----------------//
-
     // T = Top / M = Middle / B = Bottom
     // L = Left / C = Center / R = Right
     // -------------------------
@@ -63,18 +37,6 @@ namespace magique
 
     // Returns the current scale horizontal and vertical scaling
     Point GetUIScaling();
-
-} // namespace magique
-
-
-//----------------- IMPLEMENTATION -----------------//
-namespace magique
-{
-    template <typename T>
-    T* GetUIObject(const char* name)
-    {
-        return static_cast<T*>(GetUIObject<void>(name));
-    }
 
 } // namespace magique
 

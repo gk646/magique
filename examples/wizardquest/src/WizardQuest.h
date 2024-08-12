@@ -12,6 +12,11 @@ enum class GameState
     GAME_OVER
 };
 
+enum class MessageType : uint8_t
+{
+    STRING,
+};
+
 struct WizardQuest final : Game
 {
     void onStartup(AssetLoader &loader, GameConfig &config) override;
