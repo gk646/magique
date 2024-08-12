@@ -4,4 +4,4 @@ set(OPENGL_VERSION "4.3" CACHE STRING "OpenGL Version to build raylib with")
 
 add_subdirectory(raylib)
 
-target_include_directories(raylib PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(raylib PRIVATE ${MAGIQUE_PUBLIC_INCLUDE})

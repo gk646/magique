@@ -5,12 +5,13 @@
 
 //----------------- USER DEFINED -----------------//
 
-enum class GameState : int; // Identifies different game states
-enum EntityID : uint16_t;   // Identifies entity types - uses uint16_t to be small for networking
-enum class MapID : uint8_t; // Identifies maps         - uses uint8_t  to be small for networking
-enum class HandleID : int;  // Identifies handles
-enum class ConfigID : int;  // Identifies stored config data
-enum class StorageID : int; // Identifies stored game save data
+enum class GameState : int;       // Identifies different game states
+enum EntityID : uint16_t;         // Identifies entity types - uses uint16_t to be small for networking
+enum class MapID : uint8_t;       // Identifies maps         - uses uint8_t  to be small for networking
+enum class HandleID : int;        // Identifies handles
+enum class ConfigID : int;        // Identifies stored config data
+enum class StorageID : int;       // Identifies stored game save data
+enum class MessageType : uint8_t; // Identifies different network messages
 
 namespace magique
 {

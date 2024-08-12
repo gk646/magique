@@ -1,4 +1,3 @@
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden)
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g")

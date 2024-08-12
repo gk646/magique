@@ -15,7 +15,7 @@ if (MAGIQUE_STEAM_INTEGRATION)
     add_subdirectory(steam)
 endif ()
 
-# Collect all object files into a list
+# Collect all sources in a list
 set(MAGIQUE_OBJECTS
         $<TARGET_OBJECTS:magique-core>
         $<TARGET_OBJECTS:magique-assets>
@@ -43,17 +43,17 @@ else ()
 endif ()
 
 # Include directories
-target_include_directories(magique PUBLIC ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE})
 
-if (WIN32)
-    target_link_libraries(magique PRIVATE winmm)
+# Compile definitions
+if(MAGIQUE_STEAM_INTEGRATION)
+    target_compile_definitions(magique PRIVATE MAGIQUE_USE_STEAM)
+endif ()
+
+if(NOT MAGIQUE_USE_SIMD)
+    target_compile_definitions(magique PRIVATE MAGIQUE_NO_SIMD)
 endif ()
 
 
-if (MAGIQUE_STEAM_INTEGRATION)
-    if (WIN32)
-        target_link_libraries(magique PRIVATE winmm ${CMAKE_SOURCE_DIR}/bin/steam/win64/steam_api64)
-    elseif ()
-    endif ()
-else ()
-endif ()
+# Link against the GameNetworkingSockets or the Steam SDK (and platform specific libs)
+include(LinkBinaries)

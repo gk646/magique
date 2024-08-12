@@ -1,5 +1,7 @@
+#include "WizardQuest.h"
 
-
-int main(){
-
+int main()
+{
+    WizardQuest game{};
+    return game.run();
 }

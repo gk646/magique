@@ -37,7 +37,6 @@ namespace magique
         auto& colPairs = data.collisionPairs;
         auto& pairSet = data.pairSet;
 
-        printf("Size: %d\n",collisionVec.size());
         const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
         {
             const auto start = collisionVec.begin() + startIdx;

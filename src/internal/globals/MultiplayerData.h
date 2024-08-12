@@ -2,13 +2,18 @@
 #define MULTIPLAYERDATA_H
 
 #include <functional>
-#include <cxstructs/SmallVector.h>
 
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 
+#if MAGIQUE_STEAM == 0
 #include "external/networkingsockets/steamnetworkingsockets.h"
 #include "external/networkingsockets/isteamnetworkingutils.h"
+#else
+#include <steam/steam_api.h>
+#endif
+
+#include "internal/datastructures/VectorType.h"
 
 static void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
@@ -21,8 +26,6 @@ static void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, cons
 
 namespace magique
 {
-    using MessageBuffer = cxstructs::SmallVector<SteamNetworkingMessage_t*, MAGIQUE_MESSAGES_ESTIMATE>;
-
     struct MultiplayerData final
     {
         HSteamListenSocket broadcastSocket = k_HSteamListenSocket_Invalid; // Broadcast available games
@@ -31,12 +34,24 @@ namespace magique
         bool isOnline = false;                                             // If program is part of multiplayer activity
         HSteamNetConnection connections[MAGIQUE_MAX_PLAYERS]{};            // All possible outgoing connections as host
         std::function<void(MultiplayerEvent)> callback;                    // Callback
-        MessageBuffer messages;                                            // Message buffer
+        vector<SteamNetworkingMessage_t*> outMsgs;                         // Outgoing message buffer
+        std::vector<Message> msgVec{};                                     // Incoming message buffer
+        SteamNetworkingMessage_t** msgBuffer = nullptr;                    // Incoming message data buffer
+        int buffSize = 0;                                                  // Buffer size
+        int buffCap = 0;                                                   // Buffer capacity
+
+        MultiplayerData()
+        {
+            outMsgs.reserve(MAGIQUE_MESSAGES_ESTIMATE);
+            msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_MESSAGES_ESTIMATE];
+            buffSize = MAGIQUE_MESSAGES_ESTIMATE;
+            buffCap = MAGIQUE_MESSAGES_ESTIMATE;
+        }
 
         void clearState()
         {
             std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_PLAYERS);
-            messages.clear();
+            outMsgs.clear();
             isHost = false;
             isOnline = false;
             listenSocket = k_HSteamListenSocket_Invalid;
@@ -44,11 +59,14 @@ namespace magique
 
         void close()
         {
+            delete[] msgBuffer;
+#if MAGIQUE_STEAM == 0
             GameNetworkingSockets_Kill();
+#endif
             isOnline = false;
         }
 
-        void update()
+        void update() const
         {
             if (isOnline)
             {
@@ -158,7 +176,6 @@ namespace magique
             }
         }
     };
-
 
     namespace global
     {

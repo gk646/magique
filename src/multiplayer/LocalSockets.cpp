@@ -1,8 +1,7 @@
 #include <magique/util/Defines.h>
-#include <magique/multiplayer/LocalMultiplayer.h>
-#include <magique/internal/Macros.h>
+#include <magique/multiplayer/LocalSockets.h>
 
-#include "internal/globals/LocalMultiplayerData.h"
+#include "internal/globals/MultiplayerData.h"
 
 namespace magique
 {
@@ -22,15 +21,16 @@ namespace magique
 
     //----------------- HOST -----------------//
 
-    bool CreateLocalSocket(const char* adress)
+    bool CreateLocalSocket(int port)
     {
         auto& data = global::MP_DATA;
         SteamNetworkingConfigValue_t opt{};
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
         SteamNetworkingIPAddr ip{};
-        ip.ParseString(adress);
+        ip.SetIPv4(0,port);
         data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, &opt);
         data.isHost = false;
+        data.isOnline = true;
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
@@ -52,7 +52,7 @@ namespace magique
 
     //----------------- CLIENT -----------------//
 
-    LocalConnection ConnectLocalSocket(const int port)
+    Connection ConnectToLocalSocket(const int port)
     {
         auto& data = global::MP_DATA;
         SteamNetworkingIPAddr addr{};
@@ -61,10 +61,10 @@ namespace magique
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
         data.connections[0] = SteamNetworkingSockets()->ConnectByIPAddress(addr, 1, &opt);
         global::MP_DATA.isHost = false;
-        return static_cast<LocalConnection>(data.connections[0]);
+        return static_cast<Connection>(data.connections[0]);
     }
 
-    bool DisconnectLocalSocket(const int closeCode, const char* closeReason)
+    bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
         if (data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
@@ -72,44 +72,7 @@ namespace magique
         return SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
     }
 
-    bool BatchLocalMessage(const LocalConnection conn, const void* message, const int size, const SendFlag flag)
-    {
-        ASSERT(conn == LocalConnection::INVALID_CONNECTION || message == nullptr || size == 0 ||
-                   (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE),
-               "Passed invalid input parameters");
-
-        if (message == nullptr) [[unlikely]] // This can cause crash
-            return false;
-
-        // Allocate with buffer
-        const auto msg = SteamNetworkingUtils()->AllocateMessage(size);
-        std::memcpy(msg->m_pData, message, size);
-        msg->m_nFlags = static_cast<int>(flag);
-        msg->m_conn = static_cast<HSteamNetConnection>(conn);
-        global::MP_DATA.messages.push_back(msg);
-        return true;
-    }
-
-    bool SendLocalBatch()
-    {
-        auto& data = global::MP_DATA;
-        if (data.messages.empty())
-            return false;
-
-        SteamNetworkingSockets()->SendMessages(data.messages.size(), data.messages.data(), nullptr);
-        data.messages.clear();
-        return true;
-    }
-
-    bool SendLocalMessage(LocalConnection conn, const void* message, int size, SendFlag flag)
-    {
-        ASSERT((int)conn != k_HSteamNetConnection_Invalid, "Invalid connection");
-        ASSERT(flag == SendFlag::RELIABLE || flag == SendFlag::UN_RELIABLE, "Invalid flag");
-        if (message == nullptr || size == 0) [[unlikely]]
-            return false;
-        SteamNetworkingSockets()->SendMessageToConnection((int)conn, message, size, (int)flag, nullptr);
-        return true;
-    }
+    //----------------- UTIL -----------------//
 
     uint32_t GetIPAdress()
     {
@@ -117,9 +80,5 @@ namespace magique
         SteamNetworkingSockets()->GetIdentity(&id);
         return id.GetIPv4();
     }
-
-    //----------------- UTIL -----------------//
-
-    bool IsHost() { return global::MP_DATA.isHost; }
 
 } // namespace magique

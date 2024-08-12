@@ -2,7 +2,7 @@
 
 if (NOT DEFINED MODULE_NAME)
     message(FATAL_ERROR "MODULE_NAME is not defined")
-    message("Use set(MODULE_NAME MyModule) to set the name")
+    message("Use set(MODULE_NAME \"MyModule\") to set the name")
 endif ()
 
 file(GLOB_RECURSE MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
@@ -10,7 +10,7 @@ file(GLOB_RECURSE MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 add_library(magique-${MODULE_NAME} OBJECT ${MODULE_FILES})
 
 target_include_directories(magique-${MODULE_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_SOURCE_DIR}/src
-        ${CMAKE_SOURCE_DIR}/src/external/cxstructs
+        ${MAGIQUE_PUBLIC_INCLUDE} # Public includes
+        ${MAGIQUE_PRIVATE_INCLUDE} # Private includes
+        ${MAGIQUE_CXSTRUCTS_INCLUDE} # cxstructs includes
 )
