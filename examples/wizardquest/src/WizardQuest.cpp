@@ -15,6 +15,8 @@ void WizardQuest::onStartup(AssetLoader &loader, GameConfig &config)
 
     auto ls = GetLoadingScreen();
 
+
+
 }
 
 void WizardQuest::drawGame(GameState gameState) {}

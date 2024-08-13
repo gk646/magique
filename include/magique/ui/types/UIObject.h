@@ -35,12 +35,15 @@ namespace magique
 
         //----------------- CORE -----------------//
 
-        // Called each update tick automatically - DONT call manually
+    protected:
+
+        // Called each update tick automatically
         virtual void draw() {}
 
-        // Called each render tick automatically - DONT call manually
+        // Called each render tick automatically
         virtual void update() {}
 
+    public:
         // Aligns the object object after the anchor position relative to the given ui object
         void align(AnchorPosition anchor, const UIObject& relativeTo, float inset = 0.0F);
 
