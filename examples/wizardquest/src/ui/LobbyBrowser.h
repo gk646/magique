@@ -1,6 +1,0 @@
-#ifndef LOBBYBROWSER_H
-#define LOBBYBROWSER_H
-
-
-
-#endif //LOBBYBROWSER_H

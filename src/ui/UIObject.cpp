@@ -7,28 +7,17 @@
 #include "internal/globals/UIData.h"
 #include "internal/headers/CollisionPrimitives.h"
 
-#include <magique/internal/Macros.h>
-
 namespace magique
 {
-
-    UIObject::UIObject(GameState gameState, UILayer layer) : UIObject(gameState, 0,0,0,0,layer)
-    {
-
-    }
-
-    UIObject::UIObject(const GameState gameState, const float x, const float y, const float w, const float h,
-                       UILayer layer)
+    UIObject::UIObject(const float x, const float y, const float w, const float h, UILayer layer)
     {
         setDimensions(x, y, w, h);
     }
 
-    UIObject::UIObject(const AnchorPosition anchor, const UIObject& relativeTo, const float inset) 
+    UIObject::~UIObject()
     {
-        align(anchor, relativeTo, inset);
+        //global::UI_DATA.unregisterObject(this, GameState(INT32_MAX));
     }
-
-    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this, GameState(INT32_MAX)); }
 
     void UIObject::align(const AnchorPosition anchor, const UIObject& relativeTo, const float inset)
     {
@@ -90,8 +79,6 @@ namespace magique
 
     void UIObject::setLayer(const UILayer newLayer) { layer = static_cast<uint8_t>(newLayer); }
 
-    void UIObject::setShown(const bool val) { isShown = val; }
-
     UILayer UIObject::getLayer() const { return static_cast<UILayer>(layer); }
 
     Rectangle UIObject::getBounds() const
@@ -99,8 +86,6 @@ namespace magique
         const auto [sx, sy] = magique::UIData::getScreenDims();
         return {px * sx, py * sy, pw * sx, ph * sy};
     }
-
-    bool UIObject::getIsShown() const { return isShown; }
 
     bool UIObject::getIsHovered() const
     {
@@ -112,9 +97,9 @@ namespace magique
             return false;
 
         // For safety dont use operator[]
-        auto mapIt = ui.stateData.find(GetGameState());
-        ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
-        auto& sortedObjects = mapIt->second;
+        //auto mapIt = ui.stateData.find(GetGameState());
+        //ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
+        std::vector<UIObject*> sortedObjects = {};
 
         const auto it = std::ranges::find(sortedObjects, this);
         if (it == sortedObjects.end()) [[unlikely]]
@@ -126,7 +111,7 @@ namespace magique
         // Iterate from the beginning of the vector to the current object's position
         for (auto iter = sortedObjects.begin(); iter != it; ++iter)
         {
-            if ((*iter)->getIsShown())
+            if ((*iter))
             {
                 const auto [ox, oy, ow, oh] = (*iter)->getBounds();
                 if (PointInRect(mx, my, ox, oy, ow, oh))

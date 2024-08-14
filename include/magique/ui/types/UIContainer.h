@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <magique/ui/types/UIObject.h>
+#include <raylib/raylib.h>
 
 //-----------------------------------------------
 // UI Container - Base UI Class
@@ -21,10 +22,10 @@ namespace magique
         ~UIContainer() override = default;
 
         // Draws the container itself
-        void draw() override {}
+        void draw(const Rectangle& bounds) override {}
 
         // Updates the container itself
-        void update() override {}
+        void update(const Rectangle& bounds, bool isDrawn) override {}
 
         //----------------- CHILDREN -----------------//
 

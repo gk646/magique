@@ -45,7 +45,6 @@ namespace magique
         {
             batchedMsgs.reserve(MAGIQUE_MESSAGES_ESTIMATE);
             msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_MESSAGES_ESTIMATE];
-            buffSize = MAGIQUE_MESSAGES_ESTIMATE;
             buffCap = MAGIQUE_MESSAGES_ESTIMATE;
         }
 

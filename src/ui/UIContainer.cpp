@@ -3,7 +3,7 @@
 namespace magique
 {
     UIContainer::UIContainer(const GameState gameState, const float x, const float y, const float w, const float h,
-                             const UILayer layer) : UIObject(gameState, x, y, w, h, layer)
+                             const UILayer layer) : UIObject( x, y, w, h, layer)
     {
     }
 
@@ -11,10 +11,7 @@ namespace magique
     {
         for (auto* const obj : children)
         {
-            if (obj->getIsShown())
-            {
-                obj->draw();
-            }
+
         }
     }
 
@@ -22,13 +19,12 @@ namespace magique
     {
         for (auto* const obj : children)
         {
-            obj->update();
+          //  obj->update();
         }
     }
 
     void UIContainer::addChild(const char* name, UIObject* child)
     {
-        child->onAdd();
         children.push_back(child);
     }
 

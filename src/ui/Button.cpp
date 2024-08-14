@@ -2,14 +2,13 @@
 
 namespace magique
 {
-    Button::Button(const GameState gameState, const float x, const float y, const float w, const float h,
-                   const UILayer layer) : UIObject(gameState, x, y, w, h, layer)
+    Button::Button(const float x, const float y, const float w, const float h, const UILayer layer) :
+        UIObject(x, y, w, h, layer)
     {
     }
 
-    void Button::draw()
+    void Button::draw(const Rectangle& bounds)
     {
-        const auto bounds = getBounds();
         if (wasHovered) // 1 Tick delayed but saves us the lookup
         {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) || IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -27,12 +26,11 @@ namespace magique
         }
     }
 
-    void Button::update()
+    void Button::update(const Rectangle& bounds, bool isDrawn)
     {
         const bool hovered = getIsHovered();
         if (hovered)
         {
-            const auto bounds = getBounds();
             if (!wasHovered)
             {
                 onHover(bounds);

@@ -10,16 +10,17 @@
 // Game module
 //-----------------------------------------------
 // ................................................................................
-// Core game class you should subclass. You then override and implement the methods which are then called automatically.
+// Core game class you should subclass. You then override and implement the methods which are called automatically.
 // All raylib timing and input functions work just as normal and have the same effect (e.g. SetTargetFPS(),...)
 // Note: The asset image and game config are loaded with their default names if not specified.
-//       To get assets you have to call assets/AssetPacker::CompileAssetImage()! Read its documentation for more infos.
+//       To get a asset image you have to call assets/AssetPacker.h::CompileAssetImage()! (see module for more info)
+//
 // You should create your game and call run in the main function:
 //      MyGameClass game{};
 //      return game.run();
 //
+// Note: All functions are called on the main thread!
 // Making the engine usable without the game class is a low priority task for the future.
-// All functions are called on the main thread
 // ................................................................................
 
 namespace magique
@@ -46,14 +47,16 @@ namespace magique
 
         //----------------- CORE -----------------//
 
-        // Called each update tick
-        // Default: called 60 times per second
+        // Called each update tick BEFORE drawGame()
+        // Default: called 60 times per second (constant)
         virtual void updateGame(GameState gameState) {}
 
-        // Called each render tick
-        // Note: BeginMode2D is already called - everything inside this method happens relative to the camera
-        // Default: called 90 times per second
-        virtual void drawGame(GameState gameState) {}
+        // Called each render tick - passed the current gamestate and camera
+        // Default: called 90 times per second (changable: SetTargetFPS())
+        virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
+
+        // Called each render tick after drawGame()
+        virtual void drawUI(GameState gameState) {}
 
         // Call this to start the game - should be call in the main method: return game.run();
         // Tries to load an asset image from the default path - assets will be empty if none exists!

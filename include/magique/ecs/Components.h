@@ -2,15 +2,15 @@
 #define MAGIQUE_COMPONENTS_H
 
 #include <magique/core/Types.h>
+#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // Components Module
 //-----------------------------------------------
 // ................................................................................
-// These are the built in components
-// They are quite basic and shouldnt limit
-// Note that EntityID and MapID are user defined types. These represent the notion of different type
-// of maps (levels, zones...) and entity types (classes...).
+// These are the built in ECS components
+// Note that EntityID and MapID are both user defined types. They are used to identify different maps (levels, zones...)
+// and entity types (classes...).
 // ................................................................................
 
 namespace magique
@@ -25,7 +25,7 @@ namespace magique
     {
     };
 
-    // Denotes that the entity is scripted - will recieve script updates
+    // Denotes that the entity is scripted - will receive script updates
     struct ScriptC final
     {
     };
@@ -104,43 +104,42 @@ namespace magique
 
 //----------------- IMPLEMENTATION -----------------//
 
-#include <magique/internal/Macros.h>
-
-template <typename ActionStateEnum>
-void magique::AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, magique::SpriteSheet sheet,
-                                                        uint16_t frameDuration)
+namespace magique
 {
-    ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
-    auto& anim = animations[(int)state];
-    anim.duration = frameDuration;
-    anim.sheet = sheet;
-}
-template <typename ActionStateEnum>
-void magique::AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
-{
-    ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
-    auto& anim = animations[(int)state];
-    anim.duration = UINT16_MAX;
-    anim.sheet = magique::SpriteSheet{};
-}
-template <typename ActionStateEnum>
-void magique::AnimationC<ActionStateEnum>::draw()
-{
-    auto frame = animations[3].getCurrentTexture(currentSpriteCount);
-}
-template <typename ActionStateEnum>
-void magique::AnimationC<ActionStateEnum>::update()
-{
-    currentSpriteCount++;
-}
-template <typename ActionStateEnum>
-void magique::AnimationC<ActionStateEnum>::setActionState(ActionStateEnum actionState)
-{
-    if (lastActionState != actionState)
+    template <typename ActionStateEnum>
+    void AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, SpriteSheet sheet, uint16_t frameDuration)
     {
-        lastActionState = actionState;
-        currentSpriteCount = 0;
+        ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
+        auto& anim = animations[(int)state];
+        anim.duration = frameDuration;
+        anim.sheet = sheet;
     }
-}
-
+    template <typename ActionStateEnum>
+    void AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
+    {
+        ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
+        auto& anim = animations[(int)state];
+        anim.duration = UINT16_MAX;
+        anim.sheet = SpriteSheet{};
+    }
+    template <typename ActionStateEnum>
+    void AnimationC<ActionStateEnum>::draw()
+    {
+        auto frame = animations[3].getCurrentTexture(currentSpriteCount);
+    }
+    template <typename ActionStateEnum>
+    void AnimationC<ActionStateEnum>::update()
+    {
+        currentSpriteCount++;
+    }
+    template <typename ActionStateEnum>
+    void AnimationC<ActionStateEnum>::setActionState(ActionStateEnum actionState)
+    {
+        if (lastActionState != actionState)
+        {
+            lastActionState = actionState;
+            currentSpriteCount = 0;
+        }
+    }
+} // namespace magique
 #endif // MAGIQUE_COMPONENTS_H

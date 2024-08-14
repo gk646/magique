@@ -241,9 +241,22 @@ namespace magique
         ROOT,
     };
 
-    struct CursorAttachment final
+    struct KeyEvent final
     {
-        void* userPointer;
+        bool isShift() const { return shift; }
+
+        int getKey() const { return key; }
+
+    private:
+        int key = 0;
+        bool shift = false;
+        bool alt = false;
+        bool control = false;
+    };
+
+    struct MouseEvent final
+    {
+
     };
 
     //----------------- HELPER TYPES -----------------//

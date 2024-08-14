@@ -16,8 +16,7 @@ namespace magique
 
     bool AssetLoader::step() { return stepLoop(assets); }
 
-    template <typename Func>
-    bool BasicChecks(const Func& func, const PriorityLevel pl, const int impact)
+    bool BasicChecks(const void* func, const PriorityLevel pl, const int impact)
     {
         if (func == nullptr)
         {
@@ -48,7 +47,7 @@ namespace magique
 
     void AssetLoader::registerTask(const AssetLoadFunc& func, const ThreadType thread, const PriorityLevel pl, const int impact)
     {
-        if (!BasicChecks(func, pl, impact))
+        if (!BasicChecks(&func, pl, impact))
             return;
         addLambdaTask(func, pl, thread, impact);
     }

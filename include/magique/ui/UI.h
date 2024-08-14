@@ -12,9 +12,7 @@
 // To fit all screen ratios (16:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
 // This makes it easy to follow designs and reason about distances while the engine handles scaling automatically.
-//
-// States: Additionally, the UI is divided into game states (e.g. MAIN_MENU, GAME_OVER...)
-// This helps to organize what to draw and when
+// Scenes
 // .....................................................................
 
 namespace magique
@@ -37,6 +35,19 @@ namespace magique
 
     // Returns the current scale horizontal and vertical scaling
     Point GetUIScaling();
+
+    // Getters for input that allows for consumption - when consumed all methods return false
+    // Is automatically reset each tick before UIObjects are updated
+    struct UIInput final
+    {
+        // Returns true only if input state AND not consumed
+        static bool IsKeyPressed(int key);
+        static bool IsKeyDown(int key);
+        static bool IsKeyUp(int key);
+
+        static bool IsConsumed();
+        static void Consume();
+    };
 
 } // namespace magique
 

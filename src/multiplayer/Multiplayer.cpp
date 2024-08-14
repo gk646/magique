@@ -71,7 +71,7 @@ namespace magique
         {
             if (newCap > data.buffCap) [[unlikely]]
             {
-                auto newBuff = new SteamNetworkingMessage_t*[data.buffCap * 2];
+                auto* newBuff = new SteamNetworkingMessage_t*[data.buffCap * 2];
                 std::memcpy(newBuff, data.msgBuffer, data.buffSize * sizeof(SteamNetworkingMessage_t*));
                 delete[] data.msgBuffer;
                 data.msgBuffer = newBuff;
@@ -84,7 +84,7 @@ namespace magique
         {
             for (int i = startIdx; i < startIdx + count; ++i)
             {
-                auto msg = data.msgBuffer[i];
+                const auto* msg = data.msgBuffer[i];
                 Message message;
                 message.payload.data = static_cast<uint8_t*>(msg->m_pData) + 1;
                 message.payload.size = msg->m_cbSize - 1;

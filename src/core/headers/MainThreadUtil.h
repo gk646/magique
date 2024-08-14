@@ -60,19 +60,25 @@ namespace magique
         auto& loader = global::LOADER;
         if (loader != nullptr) [[likely]]
         {
-            //game.drawLoadingScreen(GetUIRoot(), loader->getProgressPercent());
+            auto& lScreen = *global::ENGINE_CONFIG.loadingScreen;
+            const auto drawRes = lScreen.draw(false, loader->getProgressPercent());
             const auto res = loader->step();
-            if (res)
+            if (res && drawRes)
             {
                 delete loader;
                 loader = nullptr;
                 game.isLoading = false;
             }
         }
+        else
+        {
+            game.isLoading = false;
+        }
     }
 
     inline void RenderHitboxes(const entt::registry& reg)
     {
+        BeginMode2D(GetCamera());
         const auto view = reg.view<const PositionC, const CollisionC>();
         for (const auto e : GetDrawEntities())
         {
@@ -97,20 +103,20 @@ namespace magique
                 break;
             }
         }
+        EndMode2D();
     }
 
     //----------------- UPDATER -----------------//
 
-    inline void InternalUpdate(const entt::registry& registry, Game& game)
+    inline void InternalUpdatePre(const entt::registry& registry, Game& game)
     {
-        global::COMMAND_LINE.update(); // First incase needs to block input
-        InputSystem(registry);
-        global::UI_DATA.update();
-        global::AUDIO_PLAYER.update();
-        global::PARTICLE_DATA.update();
-        LogicSystem(registry);
-        CollisionSystem(registry);
+        global::COMMAND_LINE.update();  // First incase needs to block input
+        InputSystem(registry);          // Before gametick per contract (scripting system)
+        global::PARTICLE_DATA.update(); // Doesnt matter
+        LogicSystem(registry);          // Before gametick cause essential
+        CollisionSystem(registry);      // Before gametick cause essential
 
+        // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
         if (config.showPerformanceOverlay)
         {
@@ -122,6 +128,11 @@ namespace magique
             if (config.benchmarkTicks == 0)
                 game.shutDown();
         }
+    }
+    inline void InternalUpdatePost(const entt::registry& registry)
+    {
+        global::UI_DATA.update();      // After gametick so ui reflects current state
+        global::AUDIO_PLAYER.update(); // After game tick cause position updates
     }
 
 } // namespace magique
