@@ -3,12 +3,12 @@
 
 namespace magique
 {
-    void Window::draw()
+    void Window::draw(const Rectangle& bounds)
     {
 
     }
 
-    void Window::update()
+    void Window::update(const Rectangle& bounds, bool isDrawn)
     {
 
     }

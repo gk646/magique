@@ -13,24 +13,17 @@
 
 namespace magique
 {
-    struct SceneData final
-    {
-        vector<UIObject*> objects; // Sorted objects
-        float workBuildup = 0.0F;
-    };
-
     struct UIData final
     {
-        vector<SceneData> sceneData;
         vector<UIObject*> renderObjects;
-        StringHashMap<Scene*> sceneMap;      // Stores by name
-        UIObject* hoveredObject = nullptr;   // Currently hovered object
-        CursorAttachment cursorAttachment{}; // Current object attached to the cursor
+        StringHashMap<UIScene*> sceneMap;  // Stores by name
+        UIObject* hoveredObject = nullptr; // Currently hovered object
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
         float mouseY = 0.0F;
         int dataIndex = 0;
+        bool inputConsumed = false;
 
         void update()
         {
@@ -39,6 +32,7 @@ namespace magique
             const auto [mx, my] = GetMousePosition();
             mouseX = mx;
             mouseY = my;
+            inputConsumed = false;
         }
 
         [[nodiscard]] Point getScaling() const { return {scaleX, scaleY}; }
@@ -52,19 +46,16 @@ namespace magique
 
         //----------------- SCENES -----------------//
 
-        void renderScenes()
+        void renderUI()
         {
             const auto start = renderObjects.size() - 1;
             for (int i = start; i > -1; --i)
             {
-                renderObjects[i]->draw();
+                auto& obj = *renderObjects[i];
+                obj.draw(obj.getBounds());
             }
         }
 
-        void updateScenes()
-        {
-
-        }
     };
 
     namespace global

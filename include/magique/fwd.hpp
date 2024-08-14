@@ -77,7 +77,7 @@ namespace magique
     struct LoadingScreen;
     enum class AnchorPosition : int;
     enum class UILayer : uint8_t;
-    struct Scene;
+    struct UIScene;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;

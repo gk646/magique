@@ -17,13 +17,13 @@ namespace magique
     struct Button : UIObject
     {
         // Creates a new button from coordinates in the logical UI resolution
-        Button(GameState gameState, float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
-
-        // Called each tick on draw thread
-        void draw() override;
+        Button(float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
 
         // Called each tick on update thread
-        void update() override;
+        void update(const Rectangle& bounds, bool isDrawn) override;
+
+        // Called each tick on draw thread
+        void draw(const Rectangle& bounds) override;
 
         // Called everytime the button is hovered if it wasnt before
         virtual void onHover(const Rectangle& bounds) {}

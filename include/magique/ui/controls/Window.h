@@ -20,10 +20,10 @@ namespace magique
         Window(float x, float y, float w, float h, float moverHeight = 0.0F);
 
         // Draws the control - called each tick on draw thread
-        void draw() override;
+        void draw(const Rectangle& bounds) override;
 
         // Updates the control - called each tick on update thread
-        void update() override;
+        void update(const Rectangle& bounds, bool isDrawn) override;
 
         //----------------- DRAW -----------------//
         // Override them to achieve custom visuals

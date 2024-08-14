@@ -33,6 +33,7 @@ namespace magique::renderer
     inline double Tick(const double startTime, Game& game, entt::registry& registry)
     {
         auto& camera = global::ENGINE_DATA.camera;
+        const auto gameState = GetGameState();
         StartTick();
         {
             ClearBackground(RAYWHITE); // Thanks ray
@@ -41,15 +42,11 @@ namespace magique::renderer
                 HandleLoadingScreen(game);
                 return EndTick(startTime);
             }
-            BeginMode2D(camera);
-            {
-                game.drawGame(GetGameState()); // Draw game
-                if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
-                    RenderHitboxes(registry);
-                RenderLighting(registry);
-            }
-            EndMode2D();
-            global::UI_DATA.draw();
+            game.drawGame(gameState, camera); // Draw game
+            if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
+                RenderHitboxes(registry);
+            RenderLighting(registry);
+            game.drawUI(gameState);
             global::COMMAND_LINE.draw();
         }
         return EndTick(startTime);

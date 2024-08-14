@@ -232,10 +232,10 @@ namespace magique
                 if (text[j] == FMT_ENCAP_END)
                 {
                     FORMAT_CACHE.assign(text + placeStart, j - placeStart);
-                    auto it = VALUES.find(FORMAT_CACHE);
+                    const auto it = VALUES.find(FORMAT_CACHE);
                     if (it != VALUES.end())
                     {
-                        auto* valueText = GetValueText(it->second);
+                        const auto* valueText = GetValueText(it->second);
                         STRING_BUILDER.append(valueText);
                         i = j;
                     }

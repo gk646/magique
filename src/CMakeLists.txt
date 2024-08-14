@@ -54,6 +54,7 @@ if(NOT MAGIQUE_USE_SIMD)
     target_compile_definitions(magique PRIVATE MAGIQUE_NO_SIMD)
 endif ()
 
+target_compile_options(magique PUBLIC  /Zc:preprocessor)
 
 # Link against the GameNetworkingSockets or the Steam SDK (and platform specific libs)
 include(LinkBinaries)

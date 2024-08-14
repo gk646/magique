@@ -18,15 +18,15 @@ namespace magique
     // Registers a new scene - accepts inherited classed aswell
     // Takes ownership of the pointer - pass with "new MyScene()"
     // Failure: returns false if given name is not unique
-    bool RegisterScene(Scene* scene, const char* name);
+    bool RegisterScene(UIScene* scene, const char* name);
 
     // Returns the scene witht the given name - optionally specify your custom type
     // Example: MyScene& myScene = GetScene<MyScene>("MyScene")
     // Failure: if name is not unique returns nullptr
-    template <class T = Scene>
+    template <class T = UIScene>
     T& GetScene(const char* name);
 
-    struct Scene
+    struct UIScene
     {
         // Adds a new UIObject to the scene
         // If needed the returned pointer can be stored inside the scene - same lifetime as the scene
@@ -46,9 +46,10 @@ namespace magique
         // Called BEFORE the scene is rendered
         virtual void onDraw() {}
 
+        UIScene();
+
     private:
         int dataIdx = -1;
-        Scene();
         void addObjetctImpl(UIObject* object) const;
     };
 
@@ -56,14 +57,14 @@ namespace magique
 
 namespace magique
 {
-    Scene* GetSceneImpl(const char* name);
+    UIScene* GetSceneImpl(const char* name);
     template <typename T>
     T& GetScene(const char* name)
     {
         return *static_cast<T*>(GetSceneImpl(name));
     }
     template <typename T, typename... Args>
-    T* Scene::addUIObject(Args&&... args)
+    T* UIScene::addUIObject(Args&&... args)
     {
         auto* object = new T(std::forward<Args>(args)...);
         addObjetctImpl(object);

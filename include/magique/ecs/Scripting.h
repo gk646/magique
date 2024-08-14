@@ -19,9 +19,9 @@
 // This approach allows for vast, type safe! customization inside C++, while keeping
 // the configuration manageable. Also this is still universal enough that supporting
 // external scripting is still possible without changing the model.
-// A script here is actually universal for all entities of that type and only exists once!
+// A script here is actually global for all entities of that type and only exists once!
 // All players have the same logic, all skeletons have the same base logic.
-// Of course their component state can be different and they will behave differently
+// Of course their component state can be different and they will behave differently...
 // ................................................................................
 
 namespace magique

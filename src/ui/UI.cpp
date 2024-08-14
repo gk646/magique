@@ -47,5 +47,8 @@ namespace magique
 
     Point GetUIScaling() { return global::UI_DATA.getScaling(); }
 
+    bool UIInput::IsKeyPressed(const int key) { return global::UI_DATA.inputConsumed && IsKeyPressed(key); }
+    bool UIInput::IsKeyDown(const int key) { return global::UI_DATA.inputConsumed && IsKeyDown(key); }
+    bool UIInput::IsKeyUp(const int key) { return global::UI_DATA.inputConsumed && IsKeyUp(key); }
 
 } // namespace magique
