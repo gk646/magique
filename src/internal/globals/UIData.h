@@ -59,14 +59,15 @@ namespace magique
             {
                 auto& data = renderObjects[i];
                 const auto bounds = data.obj->getBounds();
-                if(data.scissor)
+                if (data.scissor)
                 {
-                    BeginScissorMode(bounds.x,bounds.y,bounds.width,bounds.height);
+                    BeginScissorMode(bounds.x, bounds.y, bounds.width, bounds.height);
                     data.obj->draw(bounds);
                     EndScissorMode();
-                }else
+                }
+                else
                 {
-                    obj.draw(bounds);
+                    data.obj->draw(bounds);
                 }
             }
             renderObjects.clear();
@@ -79,14 +80,16 @@ namespace magique
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject& object) { allObjects.push_back(&object); }
+        void registerObject(UIObject& object)
+        {
+            allObjects.push_back(&object);
+        }
 
         // All objects are un-registered in the dtor
         void unregisterObject(const UIObject& object)
         {
-            UnorderedDelete(renderObjects, object);
-            UnorderedDelete(allObjects, object,
-                [](const RenderData& rd, UIObject* obj) { return rd.obj == obj; });
+            UnorderedDelete(allObjects, &object);
+            UnorderedDelete(renderObjects, &object, [](const RenderData& rd, const UIObject* obj) { return rd.obj == obj; });
             renderSet.erase(&object);
         }
 

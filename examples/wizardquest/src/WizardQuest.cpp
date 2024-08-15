@@ -9,20 +9,14 @@
 #include "Components.h"
 #include "ui/UiScenes.h"
 
-void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
-{
-    InitLocalMultiplayer();
+void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config) { InitLocalMultiplayer(); }
 
-    GameHUD* hud = new GameHUD();
+void WizardQuest::drawGame(GameState gameState, Camera2D& camera) {}
 
-    RegisterScene(hud,"GameHUD");
+PlayerHUD hudd = PlayerHUD();
 
-}
+void WizardQuest::drawUI(GameState gameState) { hudd.render(); }
 
-void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
-{
-
-}
 
 void WizardQuest::updateGame(GameState gameState)
 {
@@ -39,5 +33,9 @@ void WizardQuest::updateGame(GameState gameState)
 
     if (IsKeyPressed(KEY_J))
     {
+        if(IsHost())
+        {
+
+        }
     }
 }

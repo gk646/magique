@@ -34,7 +34,7 @@ void UnorderedDelete(Container& container, const T& value, Pred pred)
 
     if (container.size() == 1)
     {
-        if (container.front() == value)
+        if (pred(container.front(), value))
             container.clear();
         return;
     }

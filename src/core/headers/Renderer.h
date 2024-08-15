@@ -47,6 +47,7 @@ namespace magique::renderer
                 RenderHitboxes(registry);
             RenderLighting(registry);
             game.drawUI(gameState);
+            global::UI_DATA.draw();
             global::COMMAND_LINE.draw();
         }
         return EndTick(startTime);

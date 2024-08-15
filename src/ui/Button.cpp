@@ -3,7 +3,7 @@
 namespace magique
 {
     Button::Button(const float x, const float y, const float w, const float h, const UILayer layer) :
-        UIObject(x, y, w, h, layer)
+        UIObject(x, y, w, h)
     {
     }
 

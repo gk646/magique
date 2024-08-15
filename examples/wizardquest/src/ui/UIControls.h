@@ -8,7 +8,9 @@ using namespace magique;
 
 struct PlayerHUD final : UIObject
 {
-    void draw(const Rectangle &bounds) override;
+    PlayerHUD() : UIObject(25, 50, 200, 50) {}
+    void draw(const Rectangle& bounds) override;
+    void update(const Rectangle& bounds, bool isDrawn) override;
 };
 
 struct LobbyBrowser final : UIObject
@@ -17,11 +19,7 @@ struct LobbyBrowser final : UIObject
 };
 
 
-struct LobbyWindow  final : UIContainer
+struct LobbyWindow final : UIContainer
 {
-    void draw(const Rectangle &bounds) override
-    {
-
-    }
 };
 #endif //UICONTROLS_H
