@@ -9,7 +9,7 @@
 // UI Container - Base UI Class
 //-----------------------------------------------
 // .....................................................................
-// A container for ui-objects. All positions of its children are relative to it!
+// A container for ui-objects. The position of all children is relative to the container position.
 // Moving the parent automatically moves all children!
 // .....................................................................
 
@@ -21,20 +21,19 @@ namespace magique
         UIContainer(GameState gameState, float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
         ~UIContainer() override = default;
 
+        // Submits the container (and all its children) to be rendered (and updated) this tick
+        // transparency         - controls the opacity of container and its children
+        // scissor              - if set everything outside the container bounds will not be visible (scissors mode)
+        void render(float transparency = 1.0F, bool scissor = false);
+
+    protected:
         // Draws the container itself
         void draw(const Rectangle& bounds) override {}
 
         // Updates the container itself
         void update(const Rectangle& bounds, bool isDrawn) override {}
 
-        //----------------- CHILDREN -----------------//
-
-        // Draws all visible children
-        void updateChildren() const;
-
-        // Updates all children
-        void drawChildren() const;
-
+    public:
         // Adds a new child - pass a new Instance of your class with new MyClass()
         // Note: passed pointer is managed by the engine and must not be accessed anymore
         void addChild(const char* name, UIObject* child);

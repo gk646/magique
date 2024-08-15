@@ -9,15 +9,17 @@
 
 namespace magique
 {
-    UIObject::UIObject(const float x, const float y, const float w, const float h, UILayer layer)
+    UIObject::UIObject(const float x, const float y, const float w, const float h) : layer((uint8_t)UILayer::MEDIUM)
     {
         setDimensions(x, y, w, h);
+        global::UI_DATA.registerObject(*this);
     }
 
-    UIObject::~UIObject()
-    {
-        //global::UI_DATA.unregisterObject(this, GameState(INT32_MAX));
-    }
+    UIObject::~UIObject() { global::UI_DATA.unregisterObject(*this); }
+
+    void UIObject::render(float transparency, bool scissor) { global::UI_DATA.addRenderObject(*this); }
+
+    //----------------- UTIL -----------------//
 
     void UIObject::align(const AnchorPosition anchor, const UIObject& relativeTo, const float inset)
     {
@@ -34,7 +36,7 @@ namespace magique
             break;
         case AnchorPosition::MID_LEFT:
             newX += inset;
-            newY += (relHeight / 2) - (myHeight / 2);
+            newY += relHeight / 2 - myHeight / 2;
             break;
         case AnchorPosition::BOTTOM_LEFT:
             newX += inset;
@@ -46,7 +48,7 @@ namespace magique
             break;
         case AnchorPosition::MID_CENTER:
             newX += (relWidth / 2) - (myWidth / 2);
-            newY += (relHeight / 2) - (myHeight / 2);
+            newY += relHeight / 2 - myHeight / 2;
             break;
         case AnchorPosition::BOTTOM_CENTER:
             newX += (relWidth / 2) - (myWidth / 2);
@@ -76,10 +78,6 @@ namespace magique
         pw = w / MAGIQUE_UI_RESOLUTION_X;
         ph = h / MAGIQUE_UI_RESOLUTION_Y;
     }
-
-    void UIObject::setLayer(const UILayer newLayer) { layer = static_cast<uint8_t>(newLayer); }
-
-    UILayer UIObject::getLayer() const { return static_cast<UILayer>(layer); }
 
     Rectangle UIObject::getBounds() const
     {
@@ -124,5 +122,14 @@ namespace magique
     }
 
     bool UIObject::getIsPressed(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
+
+    void UIObject::setLayer(const UILayer newLayer) { layer = newLayer; }
+
+    UILayer UIObject::getLayer() const { return layer; }
+
+    void UIObject::setOpaque(bool val) { isOpaque = val; }
+
+    bool UIObject::getIsOpaque() const { return isOpaque; }
+
 
 } // namespace magique
