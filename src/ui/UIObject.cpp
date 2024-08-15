@@ -9,7 +9,7 @@
 
 namespace magique
 {
-    UIObject::UIObject(const float x, const float y, const float w, const float h) : layer((uint8_t)UILayer::MEDIUM)
+    UIObject::UIObject(const float x, const float y, const float w, const float h)
     {
         setDimensions(x, y, w, h);
         global::UI_DATA.registerObject(*this);
@@ -17,7 +17,10 @@ namespace magique
 
     UIObject::~UIObject() { global::UI_DATA.unregisterObject(*this); }
 
-    void UIObject::render(float transparency, bool scissor) { global::UI_DATA.addRenderObject(*this); }
+    void UIObject::render(const float transparency, const bool scissor)
+    {
+        global::UI_DATA.addRenderObject(*this, transparency, scissor);
+    }
 
     //----------------- UTIL -----------------//
 
