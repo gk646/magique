@@ -10,13 +10,24 @@
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/StringHashMap.h"
 #include "external/raylib/src/coredata.h"
+#include "internal/headers/STLUtil.h"
 
 namespace magique
 {
+    struct RenderData final
+    {
+        UIObject* obj;
+        float transparency = 1.0F;
+        bool scissor = false;
+    };
+
     struct UIData final
     {
-        vector<UIObject*> renderObjects;
-        StringHashMap<UIScene*> sceneMap;  // Stores by name
+        StringHashMap<UIScene*> sceneMap;   // Stores by name
+        HashSet<const UIObject*> renderSet; // Stores existence of rendered objects
+        vector<RenderData> renderObjects;
+        vector<UIObject*> allObjects;
+
         UIObject* hoveredObject = nullptr; // Currently hovered object
         float scaleX = 1.0F;
         float scaleY = 1.0F;
@@ -33,7 +44,53 @@ namespace magique
             mouseX = mx;
             mouseY = my;
             inputConsumed = false;
+
+            for (int i = 0; i < allObjects.size(); ++i) // Using fori to support deletions in the update methods
+            {
+                auto& obj = *allObjects[i];
+                obj.update(obj.getBounds(), renderSet.contains(&obj));
+            }
         }
+
+        void draw()
+        {
+            const auto start = renderObjects.size() - 1;
+            for (int i = start; i > -1; --i)
+            {
+                auto& data = renderObjects[i];
+                const auto bounds = data.obj->getBounds();
+                if(data.scissor)
+                {
+                    BeginScissorMode(bounds.x,bounds.y,bounds.width,bounds.height);
+                    data.obj->draw(bounds);
+                    EndScissorMode();
+                }else
+                {
+                    obj.draw(bounds);
+                }
+            }
+            renderObjects.clear();
+        }
+
+        void addRenderObject(UIObject& object, const float t, const bool sc)
+        {
+            renderSet.insert(&object);
+            renderObjects.push_back({&object, t, sc});
+        }
+
+        // All objects are registered in their ctor
+        void registerObject(UIObject& object) { allObjects.push_back(&object); }
+
+        // All objects are un-registered in the dtor
+        void unregisterObject(const UIObject& object)
+        {
+            UnorderedDelete(renderObjects, object);
+            UnorderedDelete(allObjects, object,
+                [](const RenderData& rd, UIObject* obj) { return rd.obj == obj; });
+            renderSet.erase(&object);
+        }
+
+        // UTIL
 
         [[nodiscard]] Point getScaling() const { return {scaleX, scaleY}; }
 
@@ -43,19 +100,6 @@ namespace magique
         }
 
         [[nodiscard]] Point getMousePos() const { return {mouseX, mouseY}; }
-
-        //----------------- SCENES -----------------//
-
-        void renderUI()
-        {
-            const auto start = renderObjects.size() - 1;
-            for (int i = start; i > -1; --i)
-            {
-                auto& obj = *renderObjects[i];
-                obj.draw(obj.getBounds());
-            }
-        }
-
     };
 
     namespace global
@@ -64,4 +108,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //UIDATA_H
+#endif //MAGIQUE_UIDATA_H

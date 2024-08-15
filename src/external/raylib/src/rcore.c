@@ -925,8 +925,13 @@ void EndBlendMode(void)
 
 // Begin scissor mode (define screen area for following drawing)
 // NOTE: Scissor rec refers to bottom-left corner, we change it to upper-left
-void BeginScissorMode(int x, int y, int width, int height)
+void BeginScissorMode(float fx, float fy, float fwidth, float fheight)
 {
+    int x = (int)fx;
+    int y = (int)fy;
+    int width = (int)fwidth;
+    int height = (int)fheight;
+
     rlDrawRenderBatchActive();      // Update and draw internal render batch
 
     rlEnableScissorTest();
