@@ -256,7 +256,6 @@ namespace magique
 
     struct MouseEvent final
     {
-
     };
 
     //----------------- HELPER TYPES -----------------//
@@ -284,17 +283,6 @@ namespace magique
 
     private:
         uint16_t data = 0;
-    };
-
-    // Efficient representation of a achievement - done when the condition is true once
-    struct Achievement final
-    {
-        bool finished = false;
-        const char* name = nullptr;
-        void* condition;
-
-        Achievement(const char* name, void* condition) : name(name), condition(condition) {}
-        ~Achievement();
     };
 
     struct ScreenParticle final
@@ -329,17 +317,23 @@ namespace magique
     struct DataPointer final
     {
         DataPointer(T* pointer, const int size) : pointer(pointer), size(size) {}
-        ~DataPointer() noexcept { delete[] pointer; }
+        ~DataPointer() noexcept
+        {
+            delete[] pointer;
+            pointer = nullptr;
+        }
 
+        // Returns size in bytes
         [[nodiscard]] int getSize() const { return size; }
 
+        // Returns the underlying data pointer
         T* getData() const { return pointer; }
 
         void free() const noexcept { delete[] pointer; }
 
     private:
         T* pointer; // The data pointer
-        int size;   // The size of the data pointer
+        int size;   // The size of the data pointer in bytes
     };
 
 } // namespace magique

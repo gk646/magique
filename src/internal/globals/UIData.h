@@ -70,7 +70,12 @@ namespace magique
                     data.obj->draw(bounds);
                 }
             }
+        }
+
+        void clearRenderObjects()
+        {
             renderObjects.clear();
+            renderSet.clear();
         }
 
         void addRenderObject(UIObject& object, const float t, const bool sc)

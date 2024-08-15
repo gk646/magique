@@ -111,6 +111,7 @@ namespace magique
     GameSave GameSave::Load(const char* filePath, const uint64_t encryptionKey)
     {
         GameSave save;
+        save.isPersisted = true; // The loaded gamesave is not expected to be saved (?)
         FILE* file = fopen(filePath, "rb");
         if (file == nullptr)
         {

@@ -73,12 +73,6 @@ namespace magique
 
     auto Keybind::hasAlt() const -> bool { return data & 1 << 15; }
 
-    Achievement::~Achievement()
-    {
-        delete[] name;
-        delete static_cast<std::function<bool()>*>(condition);
-    }
-
     Color ScreenParticle::getColor() const { return {r, g, b, a}; }
 
     void ScreenParticle::setColor(const Color& color)
