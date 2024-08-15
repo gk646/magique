@@ -46,8 +46,11 @@ namespace magique::renderer
             if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
                 RenderHitboxes(registry);
             RenderLighting(registry);
+
+            global::UI_DATA.clearRenderObjects();
             game.drawUI(gameState);
             global::UI_DATA.draw();
+
             global::COMMAND_LINE.draw();
         }
         return EndTick(startTime);

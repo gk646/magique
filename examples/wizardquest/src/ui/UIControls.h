@@ -18,7 +18,6 @@ struct LobbyBrowser final : UIObject
     LobbyBrowser() : UIObject(0, 0, 1920, 1080) {}
 };
 
-
 struct LobbyWindow final : UIContainer
 {
 };

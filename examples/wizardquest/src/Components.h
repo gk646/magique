@@ -2,13 +2,13 @@
 #define COMPONENTS_H
 
 
-struct PlayerStateC final{
-static constexpr float MAX_HEALTH = 10.0F;
-static constexpr float MAX_MANA= 5.0F;
+struct PlayerStateC final
+{
+    static constexpr float MAX_HEALTH = 10.0F;
+    static constexpr float MAX_MANA = 5.0F;
 
-float health = MAX_HEALTH;
-float mana;
-
+    float health = MAX_HEALTH;
+    float mana = MAX_MANA;
 };
 
 #endif //COMPONENTS_H

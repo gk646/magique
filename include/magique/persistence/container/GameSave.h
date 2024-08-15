@@ -59,11 +59,11 @@ namespace magique
         // Failure: else returns the given default value
         std::string getStringOrElse(StorageID id, const std::string& defaultVal = "");
 
-        // Returns the pointer and its size from this slot
+        // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
         // Failure: returns {nullptr,0} if the storage doesnt exist or type doesnt match
         template <typename T = void>
-        std::pair<T*, int> getData(StorageID id);
+        DataPointer<T> getData(StorageID id);
 
         // Returns a copy of the vector stored at this slot
         // Failure: returns an empty vector
@@ -108,7 +108,7 @@ namespace magique
         assignDataImpl(id, vector.data(), static_cast<int>(vector.size() * sizeof(T)), StorageType::VECTOR);
     }
     template <typename T>
-    std::pair<T*, int> GameSave::getData(const StorageID id)
+    DataPointer<T> GameSave::getData(const StorageID id)
     {
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]
@@ -121,7 +121,29 @@ namespace magique
             LOG_ERROR("This storage does not save data! %d", id);
             return {nullptr, 0};
         }
-        return {static_cast<T*>(cell->data), cell->size};
+
+        const auto size = cell->size;
+        if constexpr (std::is_same_v<T, void>)
+        {
+            auto* copy = new unsigned char[size];
+            std::memcpy(copy, cell->data, size);
+            return {reinterpret_cast<T*>(copy), size};
+        }
+        else
+        {
+            if (size % sizeof(T) != 0)
+            {
+                LOG_ERROR("Type error - Saved data doesnt match to the given type - You likely used the wrong type or "
+                          "wrong storage id!");
+                return {nullptr, 0};
+            }
+
+            const auto numElements = size / sizeof(T);
+            auto* data = new T[numElements];
+            std::memcpy(data, cell->data, size);
+
+            return {data, size};
+        }
     }
     template <typename T>
     std::vector<T> GameSave::getVector(const StorageID id)

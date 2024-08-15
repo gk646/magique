@@ -441,9 +441,12 @@ namespace cxstructs
     struct StringCharEquals
     {
         using is_transparent = void;
-        bool operator()(const std::string& lhs, const std::string& rhs) const { return strcmp(lhs.c_str(),rhs.c_str()); }
-        bool operator()(const std::string& lhs, const char* rhs) const { return strcmp(lhs.c_str(),rhs); }
-        bool operator()(const char* lhs, const std::string& rhs) const { return strcmp(lhs,rhs.c_str()); }
+        bool operator()(const std::string& lhs, const std::string& rhs) const
+        {
+            return strcmp(lhs.c_str(), rhs.c_str()) == 0;
+        }
+        bool operator()(const std::string& lhs, const char* rhs) const { return strcmp(lhs.c_str(), rhs) == 0; }
+        bool operator()(const char* lhs, const std::string& rhs) const { return strcmp(lhs, rhs.c_str()) == 0; }
     };
 #endif
 } // namespace cxstructs
