@@ -31,7 +31,8 @@
 #define MAGIQUE_TEXTURE_ATLAS_WIDTH 8192  // Height of each texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192 // Width of each texture atlas
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles
-#define MAGIQUE_MAX_TILEMAP_LAYERS 5      // Maximum amount of layers for tilemaps
+#define MAGIQUE_MAX_TILE_LAYERS 4      // Maximum amount of layers for tilemaps
+#define MAGIQUE_MAX_OBJECT_LAYERS 2     // Maximum amount of layers for tilemaps
 #define MAGIQUE_MAX_EXPECTED_MAPS 32      // Maximum amount of expected maps
 
 //----------------- UI -----------------//
@@ -47,6 +48,7 @@
 //----------------- GRAPHICS -----------------//
 
 #define MAGIQUE_MAX_RAYTRACING_ENTITIES 50
+#define MAGIQUE_PARTICLE_COLORPOOL_SIZE 5
 
 //----------------- PERFORMANCE -----------------//
 

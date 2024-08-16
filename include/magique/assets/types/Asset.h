@@ -1,6 +1,14 @@
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
+//-----------------------------------------------
+// Asset
+//-----------------------------------------------
+// ................................................................................
+// Every resources thats loaded into the game is an asset first.
+// By using the AssetLoad
+// ................................................................................
+
 namespace magique
 {
     struct Asset final

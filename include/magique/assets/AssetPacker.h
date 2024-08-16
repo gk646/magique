@@ -1,8 +1,7 @@
 #ifndef MAGIQUE_ASSET_PACKER_H
 #define MAGIQUE_ASSET_PACKER_H
 
-#include <cstdint>
-#include "magique/fwd.hpp"
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // Assetpacker Module
@@ -24,8 +23,6 @@ namespace magique
     // Optional compression to make the image smaller
     // Failure: Returns false
     bool CompileImage(const char* dir, const char* name = "data.bin", uint64_t encryptionKey = 0, bool compress = false);
-
-
 
 } // namespace magique
 #endif

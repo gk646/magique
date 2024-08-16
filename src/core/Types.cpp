@@ -1,4 +1,3 @@
-#include <functional>
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
@@ -9,6 +8,23 @@ namespace magique
     {
         return spriteCount % sheet.frames * duration / duration;
     }
+
+    //----------------- TILE OBJECT -----------------//
+
+    const char* TileObject::getName() const
+    {
+        if (name == nullptr)
+            return "";
+        return name;
+    }
+
+    int TileObject::getClass() const { return type; }
+
+    int TileObject::getID() const { return id; }
+
+    Rectangle TileObject::getRect() const { return {x, y, width, height}; }
+
+    //----------------- KEYBIND -----------------//
 
     Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)
     {
@@ -72,6 +88,8 @@ namespace magique
     auto Keybind::hasCtrl() const -> bool { return data & 1 << 14; }
 
     auto Keybind::hasAlt() const -> bool { return data & 1 << 15; }
+
+    //----------------- PARTICLE -----------------//
 
     Color ScreenParticle::getColor() const { return {r, g, b, a}; }
 
