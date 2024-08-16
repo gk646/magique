@@ -96,10 +96,6 @@ struct fast_vector
     T* erase(T* pos);
     T* erase(T* start, T* end);
 
-    // Doesnt keep order
-    void erase_unordered(const T& val);
-    void erase_unordered(T* pos);
-
     void pop_back();
 
     void resize(size_type count);
@@ -545,7 +541,6 @@ T* fast_vector<T>::erase(T* pos)
     return m_data + index;
 }
 
-
 template <class T>
 auto fast_vector<T>::erase(T* start, T* end) -> T*
 {
@@ -580,53 +575,6 @@ auto fast_vector<T>::erase(T* start, T* end) -> T*
 
     return m_data + start_index;
 }
-
-template <class T>
-void fast_vector<T>::erase_unordered(const T& val)
-{
-    const size_type size = m_size;
-    for (size_type i = 0; i < size; ++i)
-    {
-        if (m_data[i] == val)
-        {
-            --m_size;
-            if constexpr (std::is_trivially_copyable_v<T>)
-            {
-                m_data[i] = m_data[m_size];
-            }
-            else
-            {
-                m_data[i] = std::move(m_data[m_size]);
-                m_data[m_size].~T();
-            }
-            return;
-        }
-    }
-}
-
-template <class T>
-void fast_vector<T>::erase_unordered(T* pos)
-{
-    const auto idx = pos - m_data;
-    assert(idx < m_size && "Iterator out of bounds");
-
-    --m_size;
-
-    if constexpr (std::is_trivially_copyable_v<T>)
-    {
-        m_data[idx] = m_data[m_size];
-    }
-    else
-    {
-        m_data[idx] = std::move(m_data[m_size]);
-    }
-
-    if constexpr (!std::is_trivially_destructible_v<T>)
-    {
-        m_data[m_size].~T();
-    }
-}
-
 
 template <class T>
 void fast_vector<T>::pop_back()

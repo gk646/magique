@@ -8,6 +8,7 @@
 #include <magique/internal/Macros.h>
 
 #include "internal/headers/OSUtil.h"
+#include "internal/headers/STLUtil.h"
 #include "internal/types/Spinlock.h"
 #include "internal/datastructures/VectorType.h"
 
@@ -41,7 +42,7 @@ namespace magique
             // allows for time tracking later on
             workedLock.lock();
             --currentJobsSize;
-            workedJobs.erase_unordered(job);
+            UnorderedDelete(workedJobs,job);
             workedLock.unlock();
             // Just spin the handles around
             if (handleID >= 65000)

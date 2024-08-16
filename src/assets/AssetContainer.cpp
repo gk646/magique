@@ -1,11 +1,11 @@
-#include <algorithm>
 #include <functional>
 #include <cxutil/cxstring.h>
-#include <raylib/raylib.h>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
+
+#include "internal/headers/STLUtil.h"
 
 struct Sorter
 {
@@ -112,90 +112,6 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
 
 namespace magique
 {
-    bool Asset::hasExtension(const char* extension) const
-    {
-        ASSERT(extension != nullptr, "Passing nullptr");
-        const auto* ext = GetFileExtension(path);
-        if (ext == nullptr)
-            return false;
-        return strcmp(extension, ext);
-    }
-
-    bool Asset::startsWith(const char* prefix) const
-    {
-        ASSERT(prefix != nullptr, "Passing nullptr");
-        const auto len = strlen(prefix);
-        return strncmp(path, prefix, len) == 0;
-    }
-
-    const char* Asset::getFileName(const bool extension) const
-    {
-        const char* lastSep = nullptr;
-
-    beginning:
-        const char* workPtr = path;
-        int len = 0;
-
-        while (*workPtr != 0)
-        {
-            if (lastSep != nullptr)
-            {
-                if (!extension && *workPtr == '.')
-                    break;
-                len++;
-            }
-
-            if (*workPtr == '/')
-            {
-                len = 0;
-                lastSep = workPtr + 1;
-            }
-            workPtr++;
-        }
-
-        if (lastSep == nullptr)
-        {
-            lastSep = path;
-            goto beginning;
-        }
-
-        memcpy(stringBuffer, lastSep, std::min(64, len));
-        stringBuffer[std::min(64, len)] = '\0';
-        return stringBuffer;
-    }
-
-    const char* Asset::getExtension() const
-    {
-        const char* workPtr = path;
-        const char* lastDot = nullptr;
-
-        while (*workPtr != 0)
-        {
-            if (*workPtr == '.')
-            {
-                lastDot = workPtr;
-            }
-            workPtr++;
-        }
-
-        if (lastDot == nullptr)
-            return nullptr;
-
-        int len = 0;
-        workPtr = lastDot;
-        while (*workPtr != 0)
-        {
-            len++;
-            workPtr++;
-        }
-
-        memcpy(stringBuffer, lastDot, std::min(64, len));
-        stringBuffer[std::min(64, len)] = '\0';
-        return stringBuffer;
-    }
-
-    //----------------- CONTAINER -----------------//
-
     AssetContainer::AssetContainer(const char* nativeData, std::vector<Asset>&& newAssets) : nativeData(nativeData)
     {
         if (!assets.empty())
@@ -209,7 +125,8 @@ namespace magique
         assets = std::move(newAssets);
 
         // This sorts all entries after directory and then inside a directory after numbering
-        std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
+        //std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
+        QuickSort(assets.data(),assets.size(),[](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
     }
 
     AssetContainer& AssetContainer::operator=(AssetContainer&& container) noexcept
@@ -284,6 +201,5 @@ namespace magique
     }
 
     int AssetContainer::getSize() const { return static_cast<int>(assets.size()); }
-
 
 } // namespace magique

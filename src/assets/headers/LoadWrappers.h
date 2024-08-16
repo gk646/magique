@@ -16,7 +16,7 @@ namespace magique::internal
     {
         ASSERT(AssetBaseCheck(asset), "Failed asset check");
 
-        auto ext = GetFileExtension(asset.path);
+        const auto* ext = GetFileExtension(asset.path);
 
         ASSERT(ext != nullptr, "No valid extension");
 
@@ -26,7 +26,6 @@ namespace magique::internal
 
         return img;
     }
-
 
 } // namespace magique::internal
 

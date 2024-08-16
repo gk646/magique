@@ -177,6 +177,21 @@ namespace magique
 
     handle RegisterTileMap(const Asset& asset)
     {
+        if (!internal::AssetBaseCheck(asset))
+            return handle::null;
+        const auto* ext = GetFileExtension(asset.path);
+
+        if (ext == nullptr)
+        {
+            LOG_WARNING("No valid extension: %s", asset.path);
+            return handle::null;
+        }
+
+        if (strcmp(ext, ".tmx") != 0)
+        {
+            LOG_WARNING("Not a valid tilemap extension: %s", asset.path);
+            return handle::null;
+        }
         auto tileMap = TileMap(asset);
         return global::ASSET_MANAGER.addResource(std::move(tileMap));
     }
