@@ -86,8 +86,6 @@ namespace magique
 
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
-    void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
-
     //----------------- GET -----------------//
 
     const std::vector<entt::entity>& GetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }

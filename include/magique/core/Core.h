@@ -10,17 +10,12 @@
 // Core Module
 //-----------------------------------------------
 // ................................................................................
-// This is the core API interface with access to many underlying details
+// This module allows access and control over the core behavior of the engine
+// Also provides util methods regarding hitboxes, benchmarking and performance stats
 // ................................................................................
 
 namespace magique
 {
-    // Initializes the engine - does not need to be called when using the game template
-    // IF called manually needs to be done after InitWindow();
-    bool InitMagique();
-
-    //----------------- CORE FEATURES -----------------//
-
     // Returns the current gamestate
     // Default: if unset returns GameState(INT32_MAX)
     GameState GetGameState();
@@ -31,6 +26,8 @@ namespace magique
     // Sets the callback function that is called each time the gamestate is changed
     // Note: Called after the new gamestate has been assigned internally
     void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func);
+
+    //----------------- CORE BEHAVIOR -----------------//
 
     // Sets the update radius distance around actors
     // Entities in range will be collision checked and added to the update vector
@@ -47,18 +44,9 @@ namespace magique
     // If any offset other than (0,0) is set there are no automatic adjustments
     void SetManualCameraOffset(float x, float y);
 
-    // Sets static collision bounds - this is only useful for simpler scenes
-    // Everything outside the bounds is considered solid (static) automatically
-    // Pass a width or height of 0 to disable
-    // Default: Disabled
-    void SetStaticWorldBounds(const Rectangle& rectangle);
-
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
     void SetLightingMode(LightingMode model);
-
-    // Adds a static collider to the world
-    void AddStaticCollider(Shape shape, float x, float y, float width, float height);
 
     //----------------- ENTITIES -----------------//
 
@@ -75,8 +63,7 @@ namespace magique
     // Manually clears the entity cache in this tick
     void ClearEntityCache();
 
-    //----------------- Logic Tick Data -----------------// // Updated at the beginning of each update tick
-    // IMPORTANT: If you access this data on the draw thread (main thread) AND outside of drawGame() needs to be synced
+    //----------------- DATA ACCESS -----------------//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!
     const std::vector<entt::entity>& GetUpdateEntities();
@@ -84,9 +71,7 @@ namespace magique
     // Returns a list of all entities that should be drawn - culled with the current camera
     const std::vector<entt::entity>& GetDrawEntities();
 
-    //----------------- ACCESS -----------------//
-
-    // Returns the currently loaded zones - fills up unused slots with UINT8_MAX
+    // Returns the currently loaded maps - fills up unused slots with UINT8_MAX
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
     // Returns the global camera
@@ -96,23 +81,21 @@ namespace magique
     MapID GetCameraMap();
 
     // Returns the current position (target) of the camera
-    // Specifically the entities position offset by its collision bounds (if any)
     Vector2 GetCameraPosition();
 
     // Returns the bounds of the camera rect including the view padding and zoom scaling
     Rectangle GetCameraBounds();
 
-    // Returns the bounds of camera without padding
+    // Returns the bounds of the camera without padding
     Rectangle GetCameraNativeBounds();
 
     // Returns the current camera holder
     entt::entity GetCameraEntity();
 
     // Returns the game configuration
-    // IMPORTANT: Only valid after the Game() constructor returned!
     GameConfig& GetGameConfig();
 
-    //----------------- SETTINGS -----------------//
+    //----------------- UTILS -----------------//
 
     // If enabled display performance metrics on the top left
     // Default: false
@@ -121,9 +104,12 @@ namespace magique
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);
 
-    //----------------- UTILS -----------------//
+    // Initializes the engine - does not need to be called when using the game template
+    // Needs to be called after InitWindow();
+    bool InitMagique();
 
     // If true shows red hitboxes for collidable entities
+    // This is the single point of truth - If two hitboxes visually overlap then a collision happened!
     void SetShowHitboxes(bool val);
 
     // Sets the amount of logic ticks until the game closes automatically

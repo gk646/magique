@@ -1,10 +1,9 @@
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/types/TileMap.h>
+#include <magique/assets/types/Asset.h>
 #include <magique/util/Logging.h>
-
-#include <raylib/raylib.h>
-#include <cxutil/cxstring.h>
 #include <magique/internal/Macros.h>
+
+#include "internal/headers/XMLUtil.h"
 
 namespace magique
 {
@@ -14,21 +13,7 @@ namespace magique
 
     TileMap::TileMap(const Asset& asset)
     {
-        auto ext = GetFileExtension(asset.path);
-
-        if (ext == nullptr)
-        {
-            LOG_WARNING("No valid extension: %s", asset.path);
-            return;
-        }
-
-        if (strcmp(ext, ".tmx") != 0)
-        {
-            LOG_WARNING("Not a valid tilemap extension: %s", asset.path);
-            return;
-        }
-
-        auto workPtr = const_cast<char*>(asset.data); // keep user api const
+        auto* workPtr = const_cast<char*>(asset.data); // keep user api const
 
         int layerWidth = -1;
         int layerHeight = -1;
@@ -63,6 +48,7 @@ namespace magique
             LOG_WARNING("Could not load tilemap layer dimensions: %s", asset.path);
             return;
         }
+
         width = static_cast<int16_t>(layerWidth);
         height = static_cast<int16_t>(layerHeight);
 

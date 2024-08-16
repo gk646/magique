@@ -3,6 +3,7 @@ cmake-*
 
 res*
 /test
+/tiled
 
 examples/**/*.clang-format
 

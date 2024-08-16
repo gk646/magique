@@ -28,7 +28,8 @@ namespace magique
 
         // If true each track fades in and out automatically when transitioning
         // Default: True
-        void setFade(bool val);
+        void setFading(bool val);
+        bool getIsFading() const;
 
         // Returns the number of total tracks in the playlist
         [[nodiscard]] int getSize() const;

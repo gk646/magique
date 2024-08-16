@@ -6,7 +6,7 @@ namespace magique
         volume(volume), fading(fade)
     {
         tracks.reserve(musics.size() + 1);
-        for (auto& m : musics)
+        for (const auto& m : musics)
             tracks.push_back(m);
     }
 
@@ -27,7 +27,9 @@ namespace magique
         }
     }
 
-    void Playlist::setFade(const bool val) { fading = val; }
+    void Playlist::setFading(const bool val) { fading = val; }
+
+    bool Playlist::getIsFading() const { return fading; }
 
     int Playlist::getSize() const { return static_cast<int>(tracks.size()); }
 
@@ -38,7 +40,7 @@ namespace magique
     int Playlist::getNextTrack()
     {
         currentTrack++;
-        if (forwardFunction)
+        if (forwardFunction != nullptr)
             currentTrack = forwardFunction(*this, currentTrack);
         else
         {
@@ -47,9 +49,6 @@ namespace magique
         return currentTrack;
     }
 
-    void Playlist::setVolume(const float newVolume)
-    {
-        volume = newVolume;
-    }
+    void Playlist::setVolume(const float newVolume) { volume = newVolume; }
 
 } // namespace magique

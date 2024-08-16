@@ -21,8 +21,6 @@
 #ifndef CXSTRUCTS_SRC_CXUTIL_CXSTRING_H_
 #define CXSTRUCTS_SRC_CXUTIL_CXSTRING_H_
 
-#include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <cctype>
 
@@ -63,7 +61,7 @@ namespace cxstructs
     constexpr int str_len(const char* arg)
     {
         int len = 0;
-        while (*arg)
+        while (*arg != 0)
         {
             arg++;
             len++;
@@ -201,12 +199,12 @@ namespace cxstructs
         return negative ? -result : result;
     }
     // Parses the given string into a int64 on best effort basis
-    inline int64_t str_parse_long(const char* str, const int radix = 10)
+    inline long long str_parse_long(const char* str, const int radix = 10)
     {
         if (str == nullptr || *str == '\0')
             return 0;
 
-        int64_t result = 0;
+        long long result = 0;
         bool negative = false;
         if (*str == '-')
         {
@@ -217,7 +215,7 @@ namespace cxstructs
         while (*str)
         {
             char digit = *str;
-            int64_t value;
+            long long value;
             if (digit >= '0' && digit <= '9')
                 value = digit - '0';
             else if (digit >= 'a' && digit <= 'z')
@@ -251,7 +249,7 @@ namespace cxstructs
         }
 
         // Parse the integer part
-        while (*str && *str != '.')
+        while (*str != 0 && *str != '.')
         {
             if (*str < '0' || *str > '9')
                 break;
@@ -264,7 +262,7 @@ namespace cxstructs
         {
             ++str;
             float factor = 0.1;
-            while (*str && *str >= '0' && *str <= '9')
+            while (*str != 0 && *str >= '0' && *str <= '9')
             {
                 result += (*str - '0') * factor;
                 factor *= 0.1;
@@ -392,12 +390,12 @@ namespace cxstructs
         return d[len1][len2];
     }
     // string hash function
-    constexpr auto str_hash_fnv1a_32(char const* s) noexcept -> uint32_t
+    constexpr unsigned int str_hash_fnv1a_32(char const* s) noexcept
     {
-        uint32_t hash = 2166136261U;
+        unsigned int hash = 2166136261U;
         while (*s != 0)
         {
-            hash ^= (uint32_t)*s++;
+            hash ^= (unsigned int)*s++;
             hash *= 16777619U;
         }
         return hash;
@@ -407,10 +405,10 @@ namespace cxstructs
     {
         auto operator()(const char* s) const noexcept -> std::size_t
         {
-            uint32_t hash = 2166136261U;
+            unsigned int hash = 2166136261U;
             while (*s != 0)
             {
-                hash ^= (uint32_t)(*s++);
+                hash ^= (unsigned int)(*s++);
                 hash *= 16777619U;
             }
             return hash;
