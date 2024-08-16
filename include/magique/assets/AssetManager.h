@@ -96,7 +96,6 @@ namespace magique
     // This is useful if you have split images instead of a single tilesheet - Use with iterateDirectory()
     handle RegisterTileSheet(std::vector<const Asset*>& assets, int tileSize, float scale = 1);
 
-
     //----------------- Get -----------------//
 
     // Returns the texture identified by this handle

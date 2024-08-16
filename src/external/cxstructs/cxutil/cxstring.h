@@ -82,7 +82,7 @@ namespace cxstructs
     // Compares to string with a while loop
     inline bool str_cmp(const char* arg, const char* arg2)
     {
-        while (*arg && *arg2)
+        while (*arg != 0 && *arg2 != 0)
         {
             if (*arg != *arg2)
                 return false;

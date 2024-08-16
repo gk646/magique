@@ -2,16 +2,17 @@
 #define INTERNALTYPES_H
 
 #include <magique/core/Types.h>
+#include <magique/util/Defines.h>
 
 //-----------------------------------------------
 // Public Internal Module
 //-----------------------------------------------
 // .....................................................................
-// Internal but public simple types or methods. Dont modify them!.
+// Internal but public simple types or methods. Dont modify or use them.
 // They have to be public due to templates (or other reasons) and are used internally
 // .....................................................................
 
-namespace magique
+namespace magique::internal
 {
     // Array Iterator template
     template <typename U>
@@ -123,7 +124,6 @@ namespace magique
             char buffer[8];
         };
         explicit GameConfigStorageCell(const ConfigID id) : id(id) {}
-
         void assign(const char* data, int size, StorageType type, Keybind bind = Keybind{0});
     };
 
@@ -146,14 +146,14 @@ namespace magique
         float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
 
-        int colors[6]{-1};                        // Color pool
-        float minScale = 1, maxScale = 1;         // Scale
-        float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
-        float dirX = 0, dirY = -1;                // Direction
-        float spreadAngle = 0;                    // Spread angle around the direction
-        float gravX = 0, gravY = 0;               // Gravity in x and y direction
-        uint16_t minLife = 100, maxLife = 100;    // Total life time
-        bool resolutionScaling = true;            // resolution scaling
+        int colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{-1}; // Color pool
+        float minScale = 1, maxScale = 1;                // Scale
+        float minInitVeloc = 1, maxInitVeloc = 1;        // Initial velocity
+        float dirX = 0, dirY = -1;                       // Direction
+        float spreadAngle = 0;                           // Spread angle around the direction
+        float gravX = 0, gravY = 0;                      // Gravity in x and y direction
+        uint16_t minLife = 100, maxLife = 100;           // Total life time
+        bool resolutionScaling = true;                   // resolution scaling
         Shape shape = Shape::RECT;
         Shape emShape = Shape::CAPSULE;       // Default is point emission
         uint8_t r = 255, g = 0, b = 0, a = 1; // Color

@@ -15,18 +15,11 @@ namespace magique
 {
     //----------------- CORE -----------------//
 
-    enum TextAlign
-    {
-        LEFT,
-        CENTERED,
-        RIGHT
-    };
-
     enum class LightingMode
     {
-        STATIC_SHADOWS, // Default
+        STATIC_SHADOWS,
         RAY_TRACING,
-        NONE,
+        NONE, // Default
     };
 
     //----------------- ASSETS  -----------------//
@@ -73,6 +66,24 @@ namespace magique
         uint16_t duration = UINT16_MAX;
 
         [[nodiscard]] int getCurrentTexture(uint16_t spriteCount) const;
+    };
+
+    // Objects saved with the tilemap
+    struct TileObject final
+    {
+        [[nodiscard]] const char* getName() const; // Can be null
+        [[nodiscard]] int getClass() const;        // Only ints allows as class
+        [[nodiscard]] int getID() const;
+        [[nodiscard]] Rectangle getRect() const;
+
+        float x = 0, y = 0, width = 0, height = 0; // Mutable
+        bool visible = false;                      // Mutable
+
+    private:
+        char* name = nullptr;
+        int type = -1; // Class
+        int id = -1;
+        friend TileObject ParseObject(char*);
     };
 
     //----------------- ENTITY COMPONENT SYSTEM -----------------//

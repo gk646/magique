@@ -2,9 +2,10 @@
 #include <cmath>
 
 #include <magique/internal/InternalTypes.h>
+#include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
-namespace magique
+namespace magique::internal
 {
     void GameSaveStorageCell::grow(const int newSize)
     {
@@ -68,4 +69,4 @@ namespace magique
         type = newType;
     }
 
-} // namespace magique
+} // namespace magique::internal
