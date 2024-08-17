@@ -1,9 +1,10 @@
 #include <cstring>
+#include <utility> // Needed for std::move() in STLUtil.h
 
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
 
-#include "internal/headers/STLUtil.h"
+#include "internal/utils/STLUtil.h"
 
 namespace magique
 {

@@ -17,7 +17,7 @@ namespace magique
         return global::ENGINE_CONFIG.loadingScreen;
     }
 
-    void LoadingScreen::DrawDefault(const bool isIntro, const float progressPercent)
+    void LoadingScreen::DrawDefault(const bool /**/, const float progressPercent)
     {
         constexpr float beginX = 0.65f;
         constexpr float beginY = 0.90f;

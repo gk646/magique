@@ -17,7 +17,7 @@ raylib
       3. This notice may not be removed or altered from any source distribution.
 
 
-Hash map/set - https://github.com/martinus/unordered_dense
+Hash-Map/Set - https://github.com/martinus/unordered_dense
     MIT License
 
     Copyright (c) 2022 Martin Leitner-Ankerl
@@ -41,7 +41,7 @@ Hash map/set - https://github.com/martinus/unordered_dense
     SOFTWARE.
 
 
-EC System - https://github.com/skypjack/entt
+EC-System - https://github.com/skypjack/entt
     The MIT License (MIT)
 
     Copyright (c) 2017-2024 Michele Caini, author of EnTT

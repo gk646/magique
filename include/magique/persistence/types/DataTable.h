@@ -1,12 +1,12 @@
 #ifndef MAGIQUE_DATATABLE_H
 #define MAGIQUE_DATATABLE_H
 
-#include <initializer_list>
 #include <vector>
-#include <magique/util/Defines.h>
-#include <magique/util/Logging.h>
+#include <initializer_list>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
+#include <magique/util/Defines.h>
+#include <magique/util/Logging.h>
 
 //-----------------------------------------------
 // DataTable
@@ -106,9 +106,13 @@ namespace magique
         std::vector<ColumnsTuple> data;                              // Data storage row-wise
         int columns = sizeof...(Types);                              // Amount of columns
     };
+} // namespace magique
 
 
-    //----------------- IMPLEMENTATION -----------------//
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique
+{
     template <typename... Types>
     DataTable<Types...>::DataTable(const std::initializer_list<const char*>& args) :
         offsets(calculateOffsets(std::make_index_sequence<sizeof...(Types) - 1>{}))
@@ -269,7 +273,7 @@ namespace magique
     constexpr std::array<int, sizeof...(Types)> DataTable<Types...>::calculateOffsets(std::index_sequence<Indices...>)
     {
         OffsetArray ret = {0};
-        ((ret[Indices + 1] = ret[Indices] + SizeOf<std::tuple_element_t<Indices, std::tuple<Types...>>>()), ...);
+        ((ret[Indices + 1] = ret[Indices] + internal::SizeOf<std::tuple_element_t<Indices, std::tuple<Types...>>>()), ...);
         return ret;
     }
 

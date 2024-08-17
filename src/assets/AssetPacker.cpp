@@ -8,7 +8,7 @@
 #include <magique/util/Logging.h>
 
 #include "internal/datastructures/VectorType.h"
-#include "internal/headers/Security.h"
+#include "internal/utils/EncryptionUtil.h"
 
 namespace fs = std::filesystem;
 
@@ -58,8 +58,8 @@ bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
 
 void UnCompressImage(char*& imageData, int& imageSize)
 {
-    const auto* start = (const unsigned char*)&imageData[5];
-    auto data = magique::DeCompress(start, imageSize);
+    const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
+    const auto data = magique::DeCompress(start, imageSize);
     delete[] imageData;
     imageSize = data.getSize();
     imageData = (char*)data.getData();
@@ -113,7 +113,7 @@ namespace magique
         {
             int titleLen = 0;
             int fileSize = 0;
-            const char* titlePointer = nullptr;
+            const char* titlePointer;
             // Get title pointer
             {
                 memcpy(&titleLen, &imageData[filePointer], 4);
@@ -144,7 +144,7 @@ namespace magique
 
     bool LoadAssetImage(const char* path, AssetContainer& assets, const uint64_t encryptionKey)
     {
-        if (!std::filesystem::exists(path))
+        if (!std::filesystem::exists(path)) // User cant use AssetContainer -> its empty
         {
             LOG_WARNING("No asset image at path: %s", path);
             return false;
@@ -165,10 +165,10 @@ namespace magique
             fread(imageData, imageSize, 1, file);
             fclose(file);
 
-            int original = imageSize;
-            std::vector<Asset> assetList;
-            const bool res = ParseImage(imageData, imageSize, assetList, encryptionKey);
-            assets = AssetContainer{imageData, std::move(assetList)};
+            const int original = imageSize;
+            const bool res = ParseImage(imageData, imageSize, assets.assets, encryptionKey);
+            assets.nativeData = imageData;
+            assets.sort();
             if (res)
             {
                 const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
@@ -309,7 +309,7 @@ namespace magique
             fclose(imageFile);
 
             // Compress the data
-            auto comp = Compress((const unsigned char*)data.data(), writtenSize);
+            const auto comp = Compress(reinterpret_cast<const unsigned char*>(data.data()), writtenSize);
 
             // Open the file again to write the compressed data
             FILE* compFile = fopen(fileName, "wb");
@@ -328,7 +328,7 @@ namespace magique
                             "(%.0f%%) | Assets: %d";
             const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
-                     ((float)comp.getSize() / writtenSize) * 100.0F, size);
+                     static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
         }
         else
         {

@@ -3,9 +3,7 @@
 
 #include <cxstructs/StackVector.h>
 
-#include <magique/assets/AssetManager.h>
 #include <magique/util/Logging.h>
-#include <magique/core/Types.h>
 
 namespace magique
 {

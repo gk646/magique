@@ -16,13 +16,21 @@ if (EXISTS STEAM_SDK_PATH)
     set(MAGIQUE_STEAM_INTEGRATION ON)
 endif ()
 
-
 if (MAGIQUE_STEAM_INTEGRATION)
     set(MAGIQUE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin/steam")
     message(STATUS "Using magique WITH steam integration")
-else ()
+elseif (MAGIQUE_NETWORKING)
     set(MAGIQUE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin/gamenetworkingsockets")
+    message(STATUS "Using magique WITH local networking only")
+else ()
     message(STATUS "Using magique WITHOUT steam integration")
+    message(STATUS "Using magique WITHOUT local networking only")
+endif ()
+
+if(MAGIQUE_USE_SIMD)
+    message(STATUS "Using magique WITH SIMD")
+else ()
+    message(STATUS "Using magique WITHOUT SIMD")
 endif ()
 
 # Set parameters

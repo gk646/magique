@@ -2,7 +2,6 @@
 #include <raylib/raylib.h>
 
 #include <magique/assets/AssetManager.h>
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 #include <magique/assets/types/Playlist.h>

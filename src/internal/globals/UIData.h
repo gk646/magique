@@ -5,12 +5,11 @@
 
 #include <magique/util/Defines.h>
 #include <magique/ui/types/UIObject.h>
-#include <magique/core/Core.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/StringHashMap.h"
 #include "external/raylib/src/coredata.h"
-#include "internal/headers/STLUtil.h"
+#include "internal/utils/STLUtil.h"
 
 namespace magique
 {
@@ -85,20 +84,28 @@ namespace magique
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject& object)
-        {
-            allObjects.push_back(&object);
-        }
+        void registerObject(UIObject& object) { allObjects.push_back(&object); }
 
         // All objects are un-registered in the dtor
         void unregisterObject(const UIObject& object)
         {
             UnorderedDelete(allObjects, &object);
-            UnorderedDelete(renderObjects, &object, [](const RenderData& rd, const UIObject* obj) { return rd.obj == obj; });
-            renderSet.erase(&object);
+            const auto it = renderSet.find(&object);
+            if(it != renderSet.end())
+            {
+                renderSet.erase(it);
+                for (auto jt = renderObjects.begin(); jt != renderObjects.end(); ++jt)
+                {
+                    if (jt->obj == &object)
+                    {
+                        renderObjects.erase(jt);
+                        break;
+                    }
+                }
+            }
         }
 
-        // UTIL
+        //----------------- UTIL -----------------//
 
         [[nodiscard]] Point getScaling() const { return {scaleX, scaleY}; }
 

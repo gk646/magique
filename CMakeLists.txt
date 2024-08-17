@@ -4,7 +4,7 @@ project(magique CXX C)
 set(CMAKE_CXX_STANDARD 20)
 
 # Set project properties
-set(MAGIQUE_VERSION "0.0.6")
+set(MAGIQUE_VERSION "0.0.7")
 
 # Set cmake files directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -19,8 +19,9 @@ endif ()
 
 # Options
 option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration (Must set STEAM_SDK_PATH)" OFF)
+option(MAGIQUE_NETWORKING "Set to enable local networking" ON)
 option(MAGIQUE_BUILD_SHARED "Set to enable building magique as shared library" OFF)
-option(MAGIQUE_USE_SIMD "Set enabled usage of SIMD (faster)" ON)
+option(MAGIQUE_USE_SIMD "Set to enable usage of SIMD (faster)" ON)
 option(MAGIQUE_ENABLE_SANITIZER "Set to compile with address sanitizer" OFF)
 
 # Parse the options and set parameters

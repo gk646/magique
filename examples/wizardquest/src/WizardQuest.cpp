@@ -1,22 +1,27 @@
 #include "WizardQuest.h"
 
+#include <raylib/raylib.h>
+
 #include <magique/multiplayer/LocalSockets.h>
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/ui/LoadingScreen.h>
 #include <magique/ecs/ECS.h>
 #include <magique/persistence/container/GameSave.h>
-
-#include "Components.h"
-#include "Scripts.h"
-#include "ui/UiScenes.h"
-
 #include <magique/core/Core.h>
 #include <magique/gamedev/Achievements.h>
+
+#include "Components.h"
+#include "ui/UiScenes.h"
+#include "loading/Loaders.h"
+
+#include <magique/assets/AssetLoader.h>
+
 
 PlayerHUD* hudd;
 
 void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 {
+    loader.registerTask(new TileLoader(), BACKGROUND_THREAD);
     hudd = new PlayerHUD();
     InitLocalMultiplayer();
     RegisterEntity(PLAYER,
@@ -37,7 +42,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
     auto achData = save.getData<unsigned char>(StorageID::ACHIEVEMENTS);
 
-    LoadAchievements(achData.getData(),achData.getSize());
+    LoadAchievements(achData.getData(), achData.getSize());
 
     SetGameState(GameState::GAME);
 }

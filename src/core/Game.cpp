@@ -36,7 +36,7 @@
 #include "internal/systems/LightingSystem.h"
 
 #include "internal/headers/IncludeWindows.h"
-#include "internal/headers/OSUtil.h"
+#include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
 #include "core/headers/MainThreadUtil.h"

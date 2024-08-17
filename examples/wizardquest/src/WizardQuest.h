@@ -3,8 +3,6 @@
 
 #include <magique/core/Game.h>
 
-#include "ui/UiControls.h"
-
 using namespace magique; // using namespace is recommended and allowed
 
 enum class GameState

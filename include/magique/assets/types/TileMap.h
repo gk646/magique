@@ -24,7 +24,7 @@ namespace magique
         uint16_t& getTileIndex(int x, int y, int layer);
 
         // Returns a the tileindex at the given position
-        uint16_t getTileIndex(int x, int y, int layer) const;
+        [[nodiscard]] uint16_t getTileIndex(int x, int y, int layer) const;
 
         // Returns the pointer to the start of the layer
         [[nodiscard]] const uint16_t* getLayerData(int layer) const;
@@ -52,7 +52,7 @@ namespace magique
         uint8_t objectLayers = 0;
         uint8_t layers = 0;
         friend handle RegisterTileMap(const Asset&);
-        friend void ParseTileLayer(TileMap&, char*);
+        friend void ParseTileLayer(TileMap&, char*&);
     };
 
 } // namespace magique

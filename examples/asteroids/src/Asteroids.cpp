@@ -18,7 +18,7 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
 {
     SetWindowSize(1280, 960); // Setup screen bounds
 
-    magique::SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to setup world bounds
+    //magique::SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to setup world bounds
 
     SetTargetFPS(120); // Set FPS to 120 - all raylib functions work as usual and are integrated
 
@@ -116,9 +116,6 @@ void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& con
     magique::SetGameState(GameState::GAME); // Set the initial gamestate
 }
 
-    //magique::AddUIObject("PlayerBar", GameState::GAME, new PlayerBarUI());
-   // magique::AddUIObject("GameOver", GameState::GAME_OVER, new GameOverUI());
-
 void Asteroids::onCloseEvent() { shutDown(); }
 
 void Asteroids::updateGame(GameState gameState)
@@ -134,8 +131,9 @@ void Asteroids::updateGame(GameState gameState)
     }
 }
 
-void Asteroids::drawGame(GameState gameState)
+void Asteroids::drawGame(GameState gameState, Camera2D& camera)
 {
+    BeginMode2D(camera);
     ClearBackground(BLACK);
     if (gameState != GameState::GAME)
         return;
@@ -170,11 +168,12 @@ void Asteroids::drawGame(GameState gameState)
             break; // Invisible camera
         }
     }
+    EndMode2D();
 }
 
 // UI
 
-void PlayerBarUI::draw()
+void PlayerBarUI::draw(const Rectangle& bounds)
 {
     magique::Point anchor = magique::GetUIAnchor(magique::AnchorPosition::TOP_LEFT);
     anchor.y += 50; // Show below the overlay

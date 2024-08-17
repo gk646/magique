@@ -48,7 +48,7 @@ struct Asteroids final : magique::Game
     void onStartup(magique::AssetLoader& loader, magique::GameConfig& config) override;
     void onCloseEvent() override;
     void updateGame(GameState gameState) override;
-    void drawGame(GameState gameState) override;
+    void drawGame(GameState gameState, Camera2D& camera) override;
 };
 
 struct PlayerScript final : magique::EntityScript
@@ -71,13 +71,13 @@ struct RockScript final : magique::EntityScript
 
 struct PlayerBarUI final : magique::UIObject
 {
-    PlayerBarUI() = default;
-    void draw() override;
+    PlayerBarUI() : UIObject(50,50,200,50){}
+    void draw(const Rectangle &bounds) override;
 };
 
 struct GameOverUI final : magique::Button
 {
-    GameOverUI() : Button(GameState::GAME, 960, 520, 150, 50) {}
+    GameOverUI() : Button( 960, 520, 150, 50) {}
     void onClick(const Rectangle &bounds) override;
 };
 

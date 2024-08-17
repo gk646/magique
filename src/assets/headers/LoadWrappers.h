@@ -1,9 +1,8 @@
 #ifndef LOADWRAPPERS_H
 #define LOADWRAPPERS_H
 
-#include <magique/assets/container/AssetContainer.h>
+#include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
-#include <raylib/raylib.h>
 
 namespace magique::internal
 {

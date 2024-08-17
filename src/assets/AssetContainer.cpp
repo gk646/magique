@@ -5,7 +5,7 @@
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
-#include "internal/headers/STLUtil.h"
+#include "internal/utils/STLUtil.h"
 
 struct Sorter
 {
@@ -112,36 +112,16 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
 
 namespace magique
 {
-    AssetContainer::AssetContainer(const char* nativeData, std::vector<Asset>&& newAssets) : nativeData(nativeData)
-    {
-        if (!assets.empty())
-        {
-            LOG_WARNING("Trying to load with image into a non-empty container");
-            // This isnt necessarily bad - but is probably a mistake
-            delete[] this->nativeData;
-            assets.clear();
-        }
-
-        assets = std::move(newAssets);
-
-        // This sorts all entries after directory and then inside a directory after numbering
-        //std::ranges::sort(assets, [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
-        QuickSort(assets.data(),assets.size(),[](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); });
-    }
-
-    AssetContainer& AssetContainer::operator=(AssetContainer&& container) noexcept
-    {
-        if (this == &container)
-            return *this;
-
-        assets = std::move(container.assets);
-        nativeData = container.nativeData;
-        container.nativeData = nullptr;
-
-        return *this;
-    }
 
     AssetContainer::~AssetContainer() { delete[] nativeData; }
+
+    void AssetContainer::sort()
+    {
+        auto comparator = [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); };
+        // This sorts all entries after directory and then inside a directory after numbering
+        //std::ranges::sort(assets, comparator);
+        QuickSort(assets.data(), static_cast<int>(assets.size()), comparator);
+    }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
