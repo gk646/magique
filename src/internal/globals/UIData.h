@@ -22,7 +22,7 @@ namespace magique
 
     struct UIData final
     {
-        StringHashMap<UIScene*> sceneMap;   // Stores by name
+        StringHashMap<UIScene*> sceneMap;     // Stores by name
         HashSet<const UIObject*> renderSet; // Stores existence of rendered objects
         vector<RenderData> renderObjects;
         vector<UIObject*> allObjects;
@@ -91,7 +91,7 @@ namespace magique
         {
             UnorderedDelete(allObjects, &object);
             const auto it = renderSet.find(&object);
-            if(it != renderSet.end())
+            if (it != renderSet.end())
             {
                 renderSet.erase(it);
                 for (auto jt = renderObjects.begin(); jt != renderObjects.end(); ++jt)
@@ -119,7 +119,7 @@ namespace magique
 
     namespace global
     {
-        inline UIData UI_DATA;
+        inline UIData UI_DATA{};
     }
 } // namespace magique
 

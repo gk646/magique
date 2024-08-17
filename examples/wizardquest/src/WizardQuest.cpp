@@ -2,52 +2,60 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/multiplayer/LocalSockets.h>
-#include <magique/multiplayer/Multiplayer.h>
-#include <magique/ui/LoadingScreen.h>
-#include <magique/ecs/ECS.h>
-#include <magique/persistence/container/GameSave.h>
-#include <magique/core/Core.h>
-#include <magique/gamedev/Achievements.h>
+#include <magique/magique.hpp>
 
-#include "Components.h"
+#include "ecs/Components.h"
+#include "ecs/Scripts.h"
+#include "ecs/Systems.h"
+
 #include "ui/UiScenes.h"
+
 #include "loading/Loaders.h"
 
-#include <magique/assets/AssetLoader.h>
-
-
-PlayerHUD* hudd;
+PlayerHUD hudd{};
 
 void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 {
-    loader.registerTask(new TileLoader(), BACKGROUND_THREAD);
-    hudd = new PlayerHUD();
+    SetTargetFPS(110);
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
     InitLocalMultiplayer();
+
+    loader.registerTask(new TileLoader(), BACKGROUND_THREAD, MEDIUM, 3);
+    loader.registerTask(new TextureLoader(), MAIN_THREAD, MEDIUM, 5);
+
+    // Set scripts
+    SetScript(PLAYER, new PlayerScript());
+
     RegisterEntity(PLAYER,
                    [](entt::entity e)
                    {
                        GiveActor(e);
                        GiveCamera(e);
                        GiveCollisionRect(e, 20, 30);
-                       GiveComponent<PlayerStateC>(e);
+                       GiveComponent<EntityStatsC>(e);
+                       GiveScript(e);
+                       GiveComponent<MovementC>(e);
                    });
 
     CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
 
-
     auto save = GameSave::Load("MySave.save");
-
     AddAchievement("HeyFirst", []() { return true; });
-
     auto achData = save.getData<unsigned char>(StorageID::ACHIEVEMENTS);
-
     LoadAchievements(achData.getData(), achData.getSize());
-
     SetGameState(GameState::GAME);
 }
 
-void WizardQuest::drawGame(GameState gameState, Camera2D& camera) {}
+void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
+{
+    BeginMode2D(camera);
+
+    auto map = GetCameraMap();
+    auto& tileMap = GetTileMap(GetHandle(HandleID((int)HandleID::MAPS + (int)map)));
+    DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 0);
+    DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 1);
+    EndMode2D();
+}
 
 void WizardQuest::drawUI(GameState gameState)
 {
@@ -56,7 +64,7 @@ void WizardQuest::drawUI(GameState gameState)
     case GameState::MAIN_MENU:
         break;
     case GameState::GAME:
-        hudd->render();
+        hudd.render();
         break;
     case GameState::GAME_OVER:
         break;
@@ -65,6 +73,17 @@ void WizardQuest::drawUI(GameState gameState)
 
 void WizardQuest::updateGame(GameState gameState)
 {
+    switch (gameState)
+    {
+    case GameState::MAIN_MENU:
+        break;
+    case GameState::GAME:
+        MovementSystem::update();
+        break;
+    case GameState::GAME_OVER:
+        break;
+    }
+
     auto& messages = ReceiveMessages();
     for (auto& msg : messages)
     {

@@ -113,7 +113,7 @@ namespace magique
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]
         {
-            LOG_ERROR("Storage with given id does not exist!");
+            LOG_WARNING("Storage with given id does not exist!");
             return {nullptr, 0};
         }
         if (cell->type != StorageType::DATA)

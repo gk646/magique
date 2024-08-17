@@ -219,7 +219,10 @@ namespace magique
 
     SpriteSheet GetSpriteSheet(const handle handle) { return global::ASSET_MANAGER.getResource<SpriteSheet>(handle); }
 
-    TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
+    TileMap& GetTileMap(const handle handle)
+    {
+        return global::ASSET_MANAGER.getResource<TileMap>(handle);
+    }
 
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
 

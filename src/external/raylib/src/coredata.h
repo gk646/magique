@@ -18,7 +18,8 @@ typedef struct
 {
     int x;
     int y;
-} Point;
+} Pint;
+
 typedef struct
 {
     unsigned int width;
@@ -39,14 +40,14 @@ typedef struct CoreData
         bool eventWaiting;     // Wait for events before ending frame
         bool usingFbo;         // Using FBO (RenderTexture) for rendering instead of default framebuffer
 
-        Point position;         // Window position (required on fullscreen toggle)
-        Point previousPosition; // Window previous position (required on borderless windowed toggle)
+        Pint position;         // Window position (required on fullscreen toggle)
+        Pint previousPosition; // Window previous position (required on borderless windowed toggle)
         Size display;           // Display width and height (monitor, device-screen, LCD, ...)
         Size screen;            // Screen width and height (used render area)
         Size previousScreen;    // Screen previous width and height (required on borderless windowed toggle)
         Size currentFbo;        // Current render width and height (depends on active fbo)
         Size render;            // Framebuffer width and height (render area, including black bars if required)
-        Point renderOffset;     // Offset from render area (must be divided by 2)
+        Pint renderOffset;     // Offset from render area (must be divided by 2)
         Size screenMin;         // Screen minimum width and height (for resizable window)
         Size screenMax;         // Screen maximum width and height (for resizable window)
         Matrix screenScale;     // Matrix to scale screen (framebuffer rendering)

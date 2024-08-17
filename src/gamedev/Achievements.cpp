@@ -77,8 +77,8 @@ namespace magique
         int totalSize = 0;
         for (const auto& a : ACHIEVEMENTS)
         {
-            totalSize += a.name.size() + 1; // Name
-            ++totalSize;                    // 1 Bytes for completion state
+            totalSize += static_cast<int>(a.name.size()) + 1; // Name
+            ++totalSize;                                      // 1 Bytes for completion state
         }
 
         auto* data = new unsigned char[totalSize];

@@ -108,13 +108,12 @@ namespace magique
 
     //----------------- UPDATER -----------------//
 
-    inline void InternalUpdatePre(const entt::registry& registry, Game& game)
+    inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
         global::COMMAND_LINE.update();  // First incase needs to block input
         InputSystem(registry);          // Before gametick per contract (scripting system)
-        global::PARTICLE_DATA.update(); // Doesnt matter
+        global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
-        CollisionSystem(registry);      // Before gametick cause essential
 
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
@@ -128,12 +127,24 @@ namespace magique
             if (config.benchmarkTicks == 0)
                 game.shutDown();
         }
+
+        // Before so user can react to changes
+        static int achieveCounter = 0;
+        if (achieveCounter > 30)
+        {
+            CheckAchievements();
+            achieveCounter = 0;
+        }
+        ++achieveCounter;
     }
-    inline void InternalUpdatePost(const entt::registry& registry)
+
+    inline void InternalUpdatePost(const entt::registry& registry) // After user space update
     {
+        CollisionSystem(registry);     // After cause user systems can modify entity state
         global::UI_DATA.update();      // After gametick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
     }
+
 
 } // namespace magique
 

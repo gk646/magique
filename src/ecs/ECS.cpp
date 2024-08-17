@@ -111,7 +111,6 @@ namespace magique
         return false;
     }
 
-
     void DestroyAllEntities(const std::initializer_list<EntityID>& ids)
     {
         auto& reg = internal::REGISTRY;
@@ -161,7 +160,6 @@ namespace magique
             }
         }
     }
-
 
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)

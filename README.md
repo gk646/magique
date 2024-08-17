@@ -2,60 +2,66 @@
 
 STILL IN BETA STATE - NOT PUBLICLY RELEASED
 
-`magique` is a beginner-friendly 2D engine for programmers (or those yet to be!). It's meant to answer all game
+`magique` is a beginner-friendly 2D game engine for programmers (or those yet to be!). It's meant to answer all game
 development
 needs in a simple but definitive way both in performance and usability. `magique` achieves this by providing core
 functionalities around a stack of proven libraries to create a productive 2D engine in C++ 20.
 
 Most notable features:
 
-- Every method and header is fully documented often including return values, parameters, defaults or failure
-- Optimized for maximum usability following a simple code-style and clean headers
-- Every engine facility is implemented in the most memory and performance efficient way possible
-- Encrypted and compressed asset packing and loading into a single asset image
-- Automatic texture stitching into a different texture atlases
-- Built in loading interface handling load-priority and background loading of assets
-- Particle system similar to Godot 4
-- Persistence interface for game saves and config including a custom database emulator
-- Lighting system featuring a hard shadow and raytracing mode through built in ECS components
-- Unique C++ scripting system
-- New types and methods to load and draw sprites and tile maps (supports [Tiled](https://www.mapeditor.org/) exports)
+- **Easy to learn and use**
+    - **Fully documented headers** and GitHub wiki
+    - Multiple example games included (see examples/)
+    - Beginner-friendly public API optimized for usability
+- **Fast and modern**
+    - Internally uses many **custom datastructures and algorithms** to provide maximum performance
+    - Favours **runtime speed over memory usage** (as there's plenty of that)
+    - Explicitly **optimized for compile time** internally and externally!
+    - Uses data-driven design principles where applicable
+- **Large feature set with `pay for what you use` mentality**
+    - Asset-Packing and Loading with compression and encryption support
+    - Automatic texture stitching into configurable atlases
+    - Task based loading interface handling load-priority and background loading of assets
+    - Procedural particle system inspired by Godot4
+    - Persistence API for gamesaves, gameconfigs and database emulator
+    - Typesafe C++ scripting system allowing for custom methods and classes with native speed
+    - Out of the box support for working with **[Tiled](https://www.mapeditor.org/) exports** (.tmx, .tsx)
+    - Object-oriented UI framework handling layering with built-in controls
+    - **Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**
+- **Multiplayer support**
+    - Send and receive messages using the same interface for global and local multiplayer
+      through [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets))
+    - Even without steam provides local networking support with
+- **Steam integration**
+    - Provided a Steam SDK, allows access to **steam features** like matchmaking and chat
 
-#### What magique IS:
+`magique` is using the following popular libraries:
 
-- A free, fast and easy-to-use open-source 2D engine
-- An engine with solutions similar engines usually don't have: asset-packing, asset-loading, creating and saving
-  game saves/configs
-- A C++ library requiring some initial understanding of C++
+- **[raylib](https://github.com/raysan5/raylib):** rendering, resource loading, sound,...
+- **[EnTT](https://github.com/skypjack/entt):** fast and modern entity-component system
+- **[ankerl](https://github.com/martinus/unordered_dense):** optimized dense hashmap and hashset
+- **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite):** fast and easy noise generation
+- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets):** local networking via IP
+- **[Steam SDK](https://partner.steamgames.com/)** _(if provided)_:  steam features and global P2P networking
 
-#### What `magique` is NOT:
+### Minimal Example
 
-- A 3D engine
-- A AAA engine with all possible bells and whistles
-- An engine for complete C++ beginners
-
-#### Minimal Example
-
-```cpp
-using namespace magique:
+```c++
+using namespace magique;
 struct MyGame : Game{
-
-    
-
+     void updateGame(GameState gameState) override;
+     void drawGame(GameState gameState, Camera2D& camera) override;
 };
 
-
 int main(){
-
-MyGame game{};
-return game.run();
-
+  MyGame game{};
+  return game.run();
 }
 ```
 
 ### 1. Installation
 
-There are 2 supported ways of installing `magique`:
+`magique` is using CMake as its build system, and wh it's recommended for consuming project aswell but not mandatory.
 
 #### CMake (recommended)
 
@@ -75,10 +81,10 @@ Check the wiki for optional CMake flags you can set before adding magique.
 
 The other option is to download the prebuilt binaries for your platform and link your program against them.
 
-Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
+**Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
 modules can easily be
 made into
-standalone units.
+standalone units.**
 
 ### 2. Documentation
 
@@ -99,22 +105,8 @@ There are 2 main ways magique is documented:
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
-### 3. The tech-stack of `magique`:
+### 3. Paradigms and design philosophy of `magique`:
 
-- raylib
-    - Drawing, shaders
-    - File loading: .mp3, .wav, .png, .gif, models and shaders...
-    - Random Numbers: GetRandomValue()
-    - Audio
-- EnTT
-    - Entity component system
-    - Views, groups, signals...
-- ankerl
-    - Optimized hashmap and hashset
-- FastNoiseLite
-    - Fast and customizable noise generation
-
-Paradigms:
 
 - 1 Main Thread + Job System
     - Main thread handles calling render and update functions correctly

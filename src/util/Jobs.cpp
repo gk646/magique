@@ -12,12 +12,11 @@ namespace magique
 {
     bool InitJobSystem()
     {
-
         static bool initCalled = false;
         if (initCalled)
         {
             LOG_WARNING("Init called twice. Skipping...");
-            return true;
+            return false;
         }
         initCalled = true;
         auto& scd = global::SCHEDULER;
@@ -42,7 +41,7 @@ namespace magique
         return handle;
     }
 
-    jobHandle AddGroupJob(IJob* job, int group) { return jobHandle::null; }
+    jobHandle AddGroupJob(IJob* /**/, int /**/) { return jobHandle::null; }
 
     template <typename Iterable>
     void AwaitJobs(const Iterable& handles)
@@ -99,6 +98,5 @@ namespace magique
         scd.sleepTime = sleepTime;
         scd.isHibernate = true;
     }
-
 
 } // namespace magique

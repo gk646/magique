@@ -4,9 +4,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4100) // unreferenced formal parameter
 
-#include <magique/fwd.hpp>
 #include <magique/ecs/ECS.h>
-#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // Internal Scripting Module
@@ -41,7 +39,7 @@ namespace magique
     // You can also create behavior hierarchies!
 
     // How to add your own functions!
-    // IMPORTANT: All event functions need the registry and the self id as the first 2 parameters!
+    // IMPORTANT: All event functions need the self id as the first parameter!
     // Step 1: Add a new EventType enum with the name of your function
     // Step 2: Add your new enum value to the REGISTER_EVENTS macro
     // Step 3: Done! You can now invoke your event!
@@ -54,38 +52,38 @@ namespace magique
         //----------------- AUTOMATIC -----------------// // These events are called automatically
 
         // Called once after all components have been added
-        virtual void onCreate(entt::registry& registry, entt::entity self) {}
+        virtual void onCreate(entt::entity self) {}
 
         // Called once before the entity is destroyed
-        virtual void onDestroy(entt::registry& registry, entt::entity self) {}
+        virtual void onDestroy(entt::entity self) {}
 
         // Called when this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other) {}
+        virtual void onDynamicCollision(entt::entity self, entt::entity other) {}
 
         // Called when this entity collides with a static collision object - walls...
-        virtual void onStaticCollision(entt::registry& registry, entt::entity self) {}
+        virtual void onStaticCollision(entt::entity self) {}
 
         // Called at the beginning of each tick - only called on entities in update range
-        virtual void onTick(entt::registry& registry, entt::entity self) {}
+        virtual void onTick(entt::entity self) {}
 
         // Called once at the beginning of each tick IF keystate changed - press or release
-        virtual void onKeyEvent(entt::registry& registry, entt::entity self) {}
+        virtual void onKeyEvent(entt::entity self) {}
 
         // Called once at the beginning of each tick IF mouse state changed - includes mouse movement
-        virtual void onMouseEvent(entt::registry& registry, entt::entity self) {}
+        virtual void onMouseEvent(entt::entity self) {}
 
         //----------------- USER -----------------// // These events have to be called by the user
         // Examples:
 
-        // virtual void onMove(entt::registry& registry, entt::entity self, float newX, float newY) {}
+        // virtual void onMove(entt::entity self, float newX, float newY) {}
 
-        // virtual void onDeath(entt::registry& registry, entt::entity self, entt::entity killedBy) {}
+        // virtual void onDeath(entt::entity self, entt::entity killedBy) {}
 
-        // virtual void onInteract(entt::registry& registry, entt::entity self, entt::entity target) {}
+        // virtual void onInteract(entt::entity self, entt::entity target) {}
 
-        // virtual void onItemPickup(entt::registry& registry, entt::entity self, Item& item) {}
+        // virtual void onItemPickup(entt::entity self, Item& item) {}
 
-        // virtual void onLevelUp(entt::registry& registry, entt::entity self) {}
+        // virtual void onLevelUp(entt::entity self) {}
 
         // ... feel free to add more global methods or create subclasses with special methods!
     };
@@ -101,10 +99,10 @@ namespace magique
 
     // Calls the given event function on the given entity
     // Note: If you want to access non inherited methods you HAVE to pass your subclass type
-    // IMPORTANT: 'arguments' are only parameters after the registry and self id - they are passed implicitly
+    // IMPORTANT: 'arguments' are only parameters after the self id - its passed implicitly
     // Examples:   InvokeEvent<onKeyEvent>(self);
-    //             InvokeEvent<onItemPickup, MyPlayerScript>(player, item);
-    //             InvokeEvent<onExplosion, MyGrenadeScript>(grenade, radius, damage);
+    //             InvokeEvent<onItemPickup, MyPlayerScript>(self, item);
+    //             InvokeEvent<onExplosion, MyGrenadeScript>(self, radius, damage);
     template <EventType event, class Script = EntityScript, class... Args>
     void InvokeEvent(entt::entity entity, Args... arguments);
 
@@ -124,16 +122,14 @@ void magique::InvokeEvent(entt::entity entity, Args... arguments)
     const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
     auto* script = static_cast<Script*>(GetScript(pos.type));
     ASSERT(script != nullptr, "No Script for this type!");
-    Call<event, Script, entt::registry&, entt::entity, Args...>(script, internal::REGISTRY, entity,
-                                                                std::forward<Args>(arguments)...);
+    Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
 }
 template <magique::EventType event, class Script, class... Args>
 void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
 {
 
     ASSERT(script != nullptr, "Passing a null script");
-    Call<event, Script, entt::registry&, entt::entity, Args...>(static_cast<Script*>(script), internal::REGISTRY, entity,
-                                                                std::forward<Args>(arguments)...);
+    Call<event, Script, entt::entity, Args...>(static_cast<Script*>(script), entity, std::forward<Args>(arguments)...);
 }
 
 #endif //MAGIQUE_INTERNAL_SCRIPTING_H
