@@ -33,7 +33,7 @@ namespace magique
     void SetAchievementCallback(AchievementCallback callback);
 
     // Checks for completion of any achievements
-    // Note: This is called automatically every 30 ticks
+    // Note: This is called automatically every 30 ticks - but may wanna be invoked manually
     void CheckAchievements();
 
     //----------------- PERSISTENCE -----------------//
@@ -46,7 +46,6 @@ namespace magique
     // Restores a previous achievements state from the given data
     // Note: only sets the completion state of existing achievements and only if the name matches with the saved data
     bool LoadAchievements(const unsigned char* data, int size);
-
 
 }; // namespace magique
 

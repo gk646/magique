@@ -25,6 +25,6 @@ namespace magique{
 }
 
 
-void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
+//void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
 
 #endif //MAGIQUE_COLLISION_H

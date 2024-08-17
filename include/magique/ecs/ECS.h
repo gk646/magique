@@ -44,6 +44,10 @@ namespace magique
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
 
+    // Returns true if the given entity has ALL of the specified component types
+    template <typename... Args>
+    bool EntityHasComponents(entt::entity entity);
+
     //-------------- LIFE CYCLE --------------//
 
     // Creates a new entity by calling the registered function for that type
@@ -55,7 +59,7 @@ namespace magique
     // Note: Should only be called in a networking context with a valid id
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map);
 
-    // Immediately (sequentially) tries destroys the entity
+    // Immediately tries destroys the entity
     // Failure: Returns false if entity is invalid or doesnt exist
     bool DestroyEntity(entt::entity entity);
 
@@ -103,20 +107,28 @@ namespace magique
 
 //----------------- IMPLEMENTATION -----------------//
 
-namespace magique::internal
+namespace magique
 {
-    inline entt::registry REGISTRY; // The used registry - lives user side cause of big includes
-}
-inline entt::registry& magique::GetRegistry() { return internal::REGISTRY; }
-template <typename T>
-T& magique::GetComponent(const entt::entity entity)
-{
-    return internal::REGISTRY.get<T>(entity);
-}
-template <class Component, typename... Args>
-void magique::GiveComponent(entt::entity entity, Args... args)
-{
-    internal::REGISTRY.emplace<Component>(entity, args...);
-}
+    namespace internal
+    {
+        inline entt::registry REGISTRY; // The used registry
+    }
+    inline entt::registry& magique::GetRegistry() { return internal::REGISTRY; }
+    template <typename T>
+    T& magique::GetComponent(const entt::entity entity)
+    {
+        return internal::REGISTRY.get<T>(entity);
+    }
+    template <class Component, typename... Args>
+    void GiveComponent(entt::entity entity, Args... args)
+    {
+        internal::REGISTRY.emplace<Component>(entity, args...);
+    }
+    template <typename... Args>
+    bool EntityHasComponents(const entt::entity entity)
+    {
+        return internal::REGISTRY.all_of<Args...>(entity);
+    }
+} // namespace magique
 
 #endif // MAGIQUE_ECS_H

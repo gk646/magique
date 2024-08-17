@@ -12,6 +12,7 @@
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/Jobs.h>
 #include <magique/persistence/container/GameConfig.h>
+#include <magique/gamedev/Achievements.h>
 
 #include "external/raylib/src/external/glad.h"
 #include "external/raylib/src/coredata.h"

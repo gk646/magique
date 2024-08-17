@@ -63,7 +63,7 @@ namespace magique
         cxstructs::str_skip_char(data, '\n', 3);
     }
 
-    TileObject ParseObject(char* data)
+    TileObject ParseObject(const char* data)
     {
         TileObject object;
         object.id = XMLGetValueInLine<int>(data, "id", -1);
@@ -133,7 +133,8 @@ namespace magique
                 }
                 ++objectLayers;
                 cxstructs::str_skip_char(data, '\n', 1);
-            }else
+            }
+            else
             {
                 break;
             }
@@ -143,7 +144,10 @@ namespace magique
                  mapHeight);
     }
 
-    uint16_t& TileMap::getTileIndex(const int x, const int y, const int layer) { return tileData[layer]; }
+    uint16_t& TileMap::getTileIndex(const int x, const int y, const int layer)
+    {
+        return tileData[width * height * layer + x + y * width];
+    }
 
     uint16_t TileMap::getTileIndex(const int x, const int y, const int layer) const
     {

@@ -12,6 +12,9 @@
 #include "internal/types/Spinlock.h"
 #include "internal/datastructures/VectorType.h"
 
+#pragma warning(push)
+#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+
 namespace magique
 {
     struct Scheduler final
@@ -42,7 +45,7 @@ namespace magique
             // allows for time tracking later on
             workedLock.lock();
             --currentJobsSize;
-            UnorderedDelete(workedJobs,job);
+            UnorderedDelete(workedJobs, job);
             workedLock.unlock();
             // Just spin the handles around
             if (handleID >= 65000)
@@ -112,5 +115,7 @@ namespace magique
         inline Scheduler SCHEDULER{};
     }
 } // namespace magique
+
+#pragma warning(pop)
 
 #endif //MAGIQUE_JOBSCHEDULER_H

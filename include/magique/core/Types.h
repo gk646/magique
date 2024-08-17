@@ -94,7 +94,7 @@ namespace magique
         char* name = nullptr;
         int type = -1; // Class
         int id = -1;
-        friend TileObject ParseObject(char*);
+        friend TileObject ParseObject(const char*);
     };
 
     //----------------- ENTITY COMPONENT SYSTEM -----------------//
@@ -347,6 +347,7 @@ namespace magique
     {
         float x;
         float y;
+
     };
 
     // Pointer will always be allocated with new []

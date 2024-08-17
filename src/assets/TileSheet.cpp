@@ -59,7 +59,7 @@ namespace magique
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {
-        if (tileNum == 0)
+        if (tileNum == 0) [[unlikely]]
         {
             return {static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
                     static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize), texSize, texSize, textureID};
@@ -67,21 +67,19 @@ namespace magique
 
         const int row = (tileNum - 1) / texPerRow;
         const int colum = tileNum - 1 - row * texPerRow;
-
         return {static_cast<uint16_t>(colum * texSize), static_cast<uint16_t>(row * texSize), texSize, texSize,
                 textureID};
     }
 
     Vector2 TileSheet::getOffset(const uint16_t tileNum) const
     {
-        if (tileNum == 0)
+        if (tileNum == 0) [[unlikely]]
         {
             return {static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
                     static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize)};
         }
         const int row = (tileNum - 1) / texPerRow;
         const int colum = tileNum - 1 - row * texPerRow;
-
         return {static_cast<float>(colum * texSize), static_cast<float>(row * texSize)};
     }
 

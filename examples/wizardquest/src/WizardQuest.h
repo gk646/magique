@@ -26,13 +26,21 @@ enum EntityID : uint16_t
 
 enum class MapID : uint8_t
 {
-    LEVEL_1,
+    LEVEL_1 = 1,
     LEVEL_2
 };
 
 enum class StorageID
 {
     ACHIEVEMENTS,
+};
+
+enum class HandleID
+{
+    MAPS = 0,
+    LEVEL_1,
+    MAPS_END = 10,
+    TILESHEET,
 };
 
 struct WizardQuest final : Game
@@ -43,6 +51,5 @@ struct WizardQuest final : Game
     void drawUI(GameState gameState) override;
     void onShutDown() override;
 };
-
 
 #endif // WIZARDQUEST_H

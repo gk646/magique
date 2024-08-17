@@ -1,6 +1,9 @@
 #ifndef MAGIQUE_UIOBJECT_H
 #define MAGIQUE_UIOBJECT_H
 
+#pragma warning(push)
+#pragma warning(disable : 4100) // unreferenced formal parameter
+
 #include <magique/core/Types.h>
 
 //-----------------------------------------------
@@ -12,7 +15,7 @@
 // in the correct order after Game::drawUI() returns.
 //
 // IMPORTANT: Render order is determined first by layer, then by draw call order.
-//            If no layers are explicitly set, UIObjects will appear on screen in the order they are drawn.
+//            If no layers are explicitly set, UIObjects will appear on screen in the order they are called to render!
 //
 // Note: Passed coordinates are assumed to be in the logical UI resolution of 1920x1080 (see ui/UI.h for more info)
 // .....................................................................
@@ -84,4 +87,7 @@ namespace magique
     };
 
 } // namespace magique
+
+#pragma warning(pop)
+
 #endif //MAGIQUE_UIOBJECT_H

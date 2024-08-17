@@ -104,7 +104,7 @@ namespace magique
             tickData.cameraMap = pos.map;
             tickData.cameraEntity = e;
             tickData.camera.target = {pos.x, pos.y};
-            tickData.camera.offset = {sWidth / 2.0F, sHeight / 2.0F};
+            tickData.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
             const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
             if (coll) [[likely]]
             {
@@ -126,6 +126,8 @@ namespace magique
                     break;
                 }
             }
+            tickData.camera.target.x = std::floor( tickData.camera.target.x);
+            tickData.camera.target.y = std::floor( tickData.camera.target.y);
 
             const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
