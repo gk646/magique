@@ -9,7 +9,7 @@
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/ScriptData.h"
-#include "internal/headers/STLUtil.h"
+#include "internal/utils/STLUtil.h"
 
 namespace magique
 {

@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <magique/ui/types/UIObject.h>
-#include <raylib/raylib.h>
 
 //-----------------------------------------------
 // UI Container - Base UI Class
@@ -18,7 +17,7 @@ namespace magique
     struct UIContainer : UIObject
     {
         // Constructor with absolute coordinates in the logical resolution
-        UIContainer(GameState gameState, float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
+        UIContainer(float x, float y, float w, float h);
         ~UIContainer() override = default;
 
         // Submits the container (and all its children) to be rendered (and updated) this tick

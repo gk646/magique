@@ -11,17 +11,7 @@
 
 namespace magique
 {
-    template <typename T>
-    struct ITask
-    {
-        bool isLoaded = false;
-        int impact = 0;
-
-        virtual ~ITask() = default;
-        virtual void execute(T& res) = 0;
-    };
-
-    template <typename T>
+     template <typename T>
     struct LambdaTask final : ITask<T>
     {
         std::function<void(T&)> func;
@@ -158,7 +148,7 @@ namespace magique
         {
             for (auto task : tasks)
             {
-                if (!task->isLoaded)
+                if (!task->getIsLoaded())
                 {
                     loadTask(task, res);
                 }
@@ -181,13 +171,14 @@ namespace magique
         {
             for (const auto task : tasks)
             {
-                if (!task->isLoaded)
+                if (!task->getIsLoaded())
                 {
                     return false;
                 }
             }
             return true;
         }
+        friend struct ITask<T>;
     };
 } // namespace magique
 #endif //MAGIQUE_TASKEXECUTOR_H_

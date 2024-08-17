@@ -1,8 +1,8 @@
 #ifndef MAGIQUE_ASSETLOADER_H
 #define MAGIQUE_ASSETLOADER_H
 
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/internal/TaskExecutor.h>
+#include <magique/assets/container/AssetContainer.h>
 
 //-----------------------------------------------
 // Asset Loader

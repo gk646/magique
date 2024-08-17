@@ -28,24 +28,25 @@ namespace magique
         void iterateDirectory(const char* directory, const std::function<void(const Asset&)>& func) const;
 
         // Retrieves the first asset that matches the given path
-        // This is fast operation
+        // This is a fast operation
         const Asset& getAssetByPath(const char* path) const;
 
-        // Retrieves the first asset that matches the given
+        // Retrieves the first asset that matches the given name
         // This is slower than ByPath
         const Asset& getAsset(const char* name) const;
 
         // Returns the total amount of assets
         [[nodiscard]] int getSize() const;
 
-    private:
-        AssetContainer() = default;
-        AssetContainer(const char* nativeData, std::vector<Asset>&& assets);
-        AssetContainer& operator=(AssetContainer&& other) noexcept;
         ~AssetContainer();
 
+    private:
+        AssetContainer() = default;
+        void sort();
         const char* nativeData = nullptr; // Pointer to all the file data
         std::vector<Asset> assets;        // Internal file list
+        friend struct AssetLoader;
+        friend bool LoadAssetImage(const char*, AssetContainer&, uint64_t);
     };
 } // namespace magique
 

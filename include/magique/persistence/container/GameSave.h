@@ -90,10 +90,10 @@ namespace magique
         ~GameSave(); // Will clean itself up automatically
 
     private:
-        [[nodiscard]] GameSaveStorageCell* getCell(StorageID id);
+        [[nodiscard]] internal::GameSaveStorageCell* getCell(StorageID id);
         void assignDataImpl(StorageID id, const void* data, int bytes, StorageType type);
-        std::vector<GameSaveStorageCell> storage; // Internal data holder
-        bool isPersisted = false;                 // If the game save has been saved to disk
+        std::vector<internal::GameSaveStorageCell> storage; // Internal data holder
+        bool isPersisted = false;                           // If the game save has been saved to disk
     };
 
 } // namespace magique

@@ -4,10 +4,6 @@ AI -> actual AI
 
 implement localization
 
-implement networking: gamenetworking sockets for default - steam library if with steam features
-
 implement game dev API's
 
 implement game loading interface / make save loading easy and quick / support multiple saves / quicksaves...
-
-implement default loading screen

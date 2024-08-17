@@ -1,4 +1,5 @@
 #include <cmath>
+#include <raylib/raylib.h>
 
 #include <magique/assets/types/TileSheet.h>
 #include <magique/core/Types.h>
@@ -83,5 +84,9 @@ namespace magique
 
         return {static_cast<float>(colum * texSize), static_cast<float>(row * texSize)};
     }
+
+    float TileSheet::getTextureSize() const { return texSize; }
+
+    unsigned int TileSheet::getTextureID() const { return textureID; }
 
 } // namespace magique

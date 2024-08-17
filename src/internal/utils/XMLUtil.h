@@ -4,7 +4,7 @@
 #include <cxutil/cxstring.h>
 
 template <typename T>
-T XMLGetValueInLine(const char* line, const char* name)
+T XMLGetValueInLine(const char* line, const char* name, T orElse)
 {
     const int nameLen = static_cast<int>(std::strlen(name));
     int i = 0;
@@ -30,18 +30,7 @@ T XMLGetValueInLine(const char* line, const char* name)
         ++i;
     }
 
-    if constexpr (std::is_same_v<T, int>)
-    {
-        return INT32_MIN;
-    }
-    else if constexpr (std::is_same_v<T, float>)
-    {
-        return FLT_MIN;
-    }
-    else if constexpr (std::is_same_v<T, const char*>)
-    {
-        return nullptr;
-    }
+    return  orElse;
 }
 
 inline bool XMLLineContainsTag(const char* line, const char* tag)

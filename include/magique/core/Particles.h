@@ -154,7 +154,7 @@ namespace magique
         static ScaleFunction GetSmoothStep();
 
     private:
-        EmitterData data{};
+        internal::EmitterData data{};
         friend struct ParticleData;
         friend void CreateScreenParticle(const ScreenEmitter&, int);
     };

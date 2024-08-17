@@ -238,7 +238,7 @@ namespace magique
 
         const auto cameraBounds = GetCameraNativeBounds();
 
-        const float tileSize = tileSheet.texSize;
+        const float tileSize = tileSheet.getTextureSize();
         const int mapWidth = tileMap.getWidth() * static_cast<int>(tileSize);
         const int mapHeight = tileMap.getHeight() * static_cast<int>(tileSize);
         const int mapWidthTiles = tileMap.getWidth();
@@ -250,14 +250,14 @@ namespace magique
         const int endTileY =
             std::min(mapHeight, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize) + 1));
 
-        auto* start = tileMap.getLayerStart(layer) + startTileX + startTileY * mapWidthTiles;
+        auto* start = tileMap.getLayerData(layer) + startTileX + startTileY * mapWidthTiles;
         const int diffX = endTileX - startTileX;
         const int diffY = endTileY - startTileY;
         const float startX = static_cast<float>(startTileX) * tileSize;
 
         float screenY = static_cast<float>(startTileY) * tileSize;
 
-        rlSetTexture(tileSheet.textureID);
+        rlSetTexture(tileSheet.getTextureID());
         rlBegin(RL_QUADS);
         rlColor4ub(255, 255, 255, 255);
         rlNormal3f(0.0f, 0.0f, 1.0f);

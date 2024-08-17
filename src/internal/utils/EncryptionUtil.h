@@ -13,5 +13,4 @@ inline void SymmetricEncrypt(char* data, const int size, const unsigned long lon
 }
 
 
-
 #endif //MAGIQUE_SECURITY_H

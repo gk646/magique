@@ -7,8 +7,8 @@
 
 #include <magique/internal/Macros.h>
 
-#include "internal/headers/OSUtil.h"
-#include "internal/headers/STLUtil.h"
+#include "internal/utils/OSUtil.h"
+#include "internal/utils/STLUtil.h"
 #include "internal/types/Spinlock.h"
 #include "internal/datastructures/VectorType.h"
 

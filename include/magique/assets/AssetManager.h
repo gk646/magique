@@ -2,7 +2,7 @@
 #define MAGIQUE_ASSETMANAGER_H
 
 #include <vector>
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 
 //-----------------------------------------------
 // Asset Management Module
@@ -26,17 +26,6 @@ namespace magique
     enum class handle : uint32_t
     {
         null = UINT32_MAX // The null handle - identifies invalid handles
-    };
-
-    enum AtlasID : uint8_t // Can add new ones or rename them
-    {
-        DEFAULT, // Default atlas
-        CHARACTER,
-        USER_INTERFACE, // All UI related textures
-        ENTITIES_1,
-        ENTITIES_2,
-        ENTITIES_3,
-        ATLAS_END // Always needs to be last
     };
 
     //----------------- Textures -----------------//

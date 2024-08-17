@@ -34,6 +34,8 @@ namespace magique
     struct GameConfig;   // The config persistence object
 
     struct IExecutor; // Task loading interface
+    template<typename T>
+    struct TaskExecutor;
 
     template <typename... Columns>
     struct DataTable; // Type-safe database-like interface to save game data

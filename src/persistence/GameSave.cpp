@@ -3,9 +3,9 @@
 #include <magique/persistence/container/GameSave.h>
 #include <magique/util/Logging.h>
 
-#include "internal/headers/Security.h"
+#include "internal/utils/EncryptionUtil.h"
 
-using StorageCell = magique::GameSaveStorageCell;
+using StorageCell = magique::internal::GameSaveStorageCell;
 
 namespace magique
 {
@@ -163,7 +163,7 @@ namespace magique
                 return {};
             }
 
-            GameSaveStorageCell cell{static_cast<StorageID>(storageID)};
+            StorageCell cell{static_cast<StorageID>(storageID)};
             cell.assign(&data[i], size, StorageType(type));
             save.storage.push_back(cell);
             i += size;
@@ -207,7 +207,7 @@ namespace magique
 
     //----------------- PRIVATE -----------------//
 
-    GameSaveStorageCell* GameSave::getCell(const StorageID id)
+    StorageCell* GameSave::getCell(const StorageID id)
     {
         for (auto& cell : storage)
         {
@@ -224,7 +224,7 @@ namespace magique
         auto* cell = getCell(id);
         if (cell == nullptr)
         {
-            GameSaveStorageCell newCell{id};
+            StorageCell newCell{id};
             newCell.assign(static_cast<const char*>(data), bytes, type);
             storage.push_back(newCell);
         }

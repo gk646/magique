@@ -26,37 +26,6 @@
 
 namespace cxstructs
 {
-    // Pads the given string "arg" inside "buff" with the "padSymbol" - optional prefix and suffix
-    inline void str_pad(char* buff, const int size, const char* arg, const char padSymbol, const char* prefix = nullptr,
-                        const char* suffix = nullptr)
-    {
-        int currPos = 0;
-        std::memset(buff, 0, size);
-
-        if (prefix)
-        {
-            currPos += snprintf(buff, size, "%s", prefix);
-            currPos = currPos > size ? size : currPos;
-        }
-        if (currPos < size)
-        {
-            currPos += snprintf(buff + currPos, size - currPos, "%s", arg);
-            currPos = currPos > size ? size : currPos;
-        }
-        if (suffix && currPos < size)
-        {
-            snprintf(buff + currPos, size - currPos, "%s", suffix);
-        }
-
-        for (int i = currPos; i < size - 1; i++)
-        {
-            if (buff[i] == '\0')
-            {
-                buff[i] = padSymbol;
-            }
-        }
-        buff[size - 1] = '\0';
-    }
     // Measure the length of the given string "arg" using a while loop
     constexpr int str_len(const char* arg)
     {
@@ -67,6 +36,20 @@ namespace cxstructs
             len++;
         }
         return len;
+    }
+    // Returns true if either string is a common prefix of the other - or the shorter string is a prefix of the longer
+    inline bool str_cmp_prefix(const char* s1, const char* s2)
+    {
+        while (*s1 && *s2)
+        {
+            if (*s1 != *s2)
+            {
+                return false;
+            }
+            ++s1;
+            ++s2;
+        }
+        return true;
     }
     // Returns an allocated copy of the given string "arg" (with new[]);
     [[nodiscard("Allocates new string")]] inline char* str_dup(const char* arg)

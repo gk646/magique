@@ -1,6 +1,7 @@
 #include <magique/gamedev/CommandLine.h>
 
 #include "internal/globals/CommandLineData.h"
+#include "internal/utils/STLUtil.h"
 
 namespace magique
 {
@@ -22,15 +23,9 @@ namespace magique
 
     void UnRegisterCommand(const std::string& name)
     {
-        auto& cmds = global::COMMAND_LINE.commands;
-        for (auto it = cmds.begin(); it != cmds.end();)
-        {
-            if (strcmp(it->name.c_str(), name.c_str()) == 0)
-            {
-                cmds.erase_unordered(it);
-                return;
-            }
-        }
+        const auto predicate = [](const CommandInfo& cmdInfo, const std::string& s)
+        { return strcmp(cmdInfo.name.c_str(), s.c_str()) == 0; };
+        UnorderedDelete(global::COMMAND_LINE.commands, name, predicate);
     }
 
     void SetCommandLineKey(const int key) { global::COMMAND_LINE.openKey = key; }

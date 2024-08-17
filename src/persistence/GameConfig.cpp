@@ -3,7 +3,7 @@
 #include <magique/util/Logging.h>
 #include <magique/persistence/container/GameConfig.h>
 
-#include "internal/headers/Security.h"
+#include "internal/utils/EncryptionUtil.h"
 
 inline constexpr auto FILE_HEADER = "CONFIG";
 
@@ -116,7 +116,7 @@ namespace magique
             std::memcpy(&storageID, &data[i], sizeof(int));
             i += 4;
 
-            GameConfigStorageCell cell{static_cast<ConfigID>(storageID)};
+            internal::GameConfigStorageCell cell{static_cast<ConfigID>(storageID)};
 
             if (type == static_cast<uint8_t>(StorageType::STRING))
             {
@@ -138,7 +138,7 @@ namespace magique
         return config;
     }
 
-    GameConfigStorageCell* GameConfig::getCell(const ConfigID id)
+    internal::GameConfigStorageCell* GameConfig::getCell(const ConfigID id)
     {
         for (auto& cell : storage)
         {
@@ -155,7 +155,7 @@ namespace magique
         auto* cell = getCell(id);
         if (cell == nullptr)
         {
-            GameConfigStorageCell newCell{id};
+            internal::GameConfigStorageCell newCell{id};
             newCell.assign(nullptr, 0, StorageType::KEY_BIND, keybind);
             storage.push_back(newCell);
         }
@@ -170,7 +170,7 @@ namespace magique
         auto* cell = getCell(id);
         if (cell == nullptr)
         {
-            GameConfigStorageCell newCell{id};
+            internal::GameConfigStorageCell newCell{id};
             newCell.assign(string.data(), static_cast<int>(string.size()), StorageType::STRING);
             storage.push_back(newCell);
         }

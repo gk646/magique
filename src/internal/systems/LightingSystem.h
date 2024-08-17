@@ -2,7 +2,7 @@
 #define LIGHTINGSYSTEM_H
 
 #include <raylib/raymath.h>
-#include "internal/headers/OpenGLUtil.h"
+#include "internal/utils/OpenGLUtil.h"
 
 namespace magique
 {

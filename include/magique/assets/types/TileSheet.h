@@ -22,7 +22,13 @@ namespace magique
         // Returns the region for the given tileNum
         [[nodiscard]] TextureRegion getRegion(uint16_t tileNum) const;
 
+        // Returns the offset from the top left of the atlas for the texture this tileNum corresponds to
         [[nodiscard]] Vector2 getOffset(uint16_t tileNum) const;
+
+        // Returns the size of each texture
+        [[nodiscard]] float getTextureSize() const;
+
+        [[nodiscard]] unsigned int getTextureID() const;
 
     private:
         explicit TileSheet(const Asset& asset, int size, float scale);
@@ -30,7 +36,8 @@ namespace magique
 
         int16_t texSize;        // Size of each texture
         uint16_t texPerRow = 0; // Textures per row
-        uint16_t textureID = 0; // id of the underlying texture
+        uint16_t textureID = 0; // id of the underlying texture#
+        friend handle RegisterTileSheet(const Asset&, int, float);
     };
 } // namespace magique
 
