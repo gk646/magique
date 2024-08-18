@@ -53,32 +53,32 @@ struct Asteroids final : magique::Game
 
 struct PlayerScript final : magique::EntityScript
 {
-    void onKeyEvent(entt::registry& registry, entt::entity self) override;
-    void onTick(entt::registry& registry, entt::entity self) override;
+    void onKeyEvent(entt::entity self) override;
+    void onTick(entt::entity self) override;
 };
 
 struct BulletScript final : magique::EntityScript
 {
-    void onTick(entt::registry& registry, entt::entity self) override;
-    void onStaticCollision(entt::registry& registry, entt::entity self) override;
+    void onTick(entt::entity self) override;
+    void onStaticCollision(entt::entity self) override;
 };
 
 struct RockScript final : magique::EntityScript
 {
-    void onTick(entt::registry& registry, entt::entity self) override;
-    void onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other) override;
+    void onTick(entt::entity self) override;
+    void onDynamicCollision(entt::entity self, entt::entity other) override;
 };
 
 struct PlayerBarUI final : magique::UIObject
 {
-    PlayerBarUI() : UIObject(50,50,200,50){}
-    void draw(const Rectangle &bounds) override;
+    PlayerBarUI() : UIObject(50, 50, 200, 50) {}
+    void draw(const Rectangle& bounds) override;
 };
 
 struct GameOverUI final : magique::Button
 {
-    GameOverUI() : Button( 960, 520, 150, 50) {}
-    void onClick(const Rectangle &bounds) override;
+    GameOverUI() : Button(960, 520, 150, 50) {}
+    void onClick(const Rectangle& bounds) override;
 };
 
 #endif // ASTEROIDS_H

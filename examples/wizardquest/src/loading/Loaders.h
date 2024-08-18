@@ -25,4 +25,23 @@ struct TextureLoader final : ITask<AssetContainer>
     }
 };
 
+struct EntityLoader final : ITask<AssetContainer>
+{
+    void execute(AssetContainer &res) override
+    {
+        SetScript(PLAYER, new PlayerScript());
+
+        RegisterEntity(PLAYER,
+                       [](entt::entity e)
+                       {
+                           GiveActor(e);
+                           GiveCamera(e);
+                           GiveCollisionRect(e, 20, 30);
+                           GiveComponent<EntityStatsC>(e);
+                           GiveScript(e);
+                           GiveComponent<MovementC>(e);
+                       });
+    }
+};
+
 #endif // LOADERS_H

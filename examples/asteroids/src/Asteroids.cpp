@@ -205,7 +205,7 @@ void GameOverUI::onClick(const Rectangle& bounds)
 
 // Scripting
 
-void PlayerScript::onKeyEvent(entt::registry& registry, entt::entity self)
+void PlayerScript::onKeyEvent(entt::entity self)
 {
     auto& pos = magique::GetComponent<magique::PositionC>(self);
     if (IsKeyDown(KEY_W))
@@ -230,7 +230,7 @@ void PlayerScript::onKeyEvent(entt::registry& registry, entt::entity self)
     }
 }
 
-void PlayerScript::onTick(entt::registry& registry, entt::entity self)
+void PlayerScript::onTick(entt::entity self)
 {
     auto& stats = magique::GetComponent<PlayerStatsC>(self);
     if (stats.shootCounter > 0)
@@ -246,15 +246,15 @@ void PlayerScript::onTick(entt::registry& registry, entt::entity self)
     }
 }
 
-void BulletScript::onTick(entt::registry& registry, entt::entity self)
+void BulletScript::onTick(entt::entity self)
 {
     auto& pos = magique::GetComponent<magique::PositionC>(self);
     pos.y -= 8; // Bullets only fly straight up
 }
 
-void BulletScript::onStaticCollision(entt::registry& registry, entt::entity self) { magique::DestroyEntity(self); }
+void BulletScript::onStaticCollision(entt::entity self) { magique::DestroyEntity(self); }
 
-void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self, entt::entity other)
+void RockScript::onDynamicCollision(entt::entity self, entt::entity other)
 {
     if (!magique::EntityExists(self)) // If multiple collisions happen and rock was already destroyed
         return;
@@ -281,7 +281,7 @@ void RockScript::onDynamicCollision(entt::registry& registry, entt::entity self,
     magique::DestroyEntity(self);
 }
 
-void RockScript::onTick(entt::registry& registry, entt::entity self)
+void RockScript::onTick(entt::entity self)
 {
     auto& pos = magique::GetComponent<magique::PositionC>(self);
     // pos.rotation++;

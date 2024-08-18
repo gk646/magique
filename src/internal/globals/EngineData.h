@@ -1,5 +1,5 @@
-#ifndef LOGICTICKDATA_H
-#define LOGICTICKDATA_H
+#ifndef MAGIQUE_ENGINE_DATA_H
+#define MAGIQUE_ENGINE_DATA_H
 
 #include <entt/entity/entity.hpp>
 
@@ -30,13 +30,13 @@ namespace magique
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCache = HashMap<entt::entity, uint16_t>;
-    using HashGrid = SingleResolutionHashGrid<entt::entity, 32>;
+    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 32>;
 
     struct EngineData final
     {
         CollPairCollector collisionPairs{};                  // Collision pair collectors
         EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
-        HashGrid hashGrid{200};                              // Global hashGrid for all entities
+        EntityHashGrid hashGrid{200};                              // Global hashGrid for all entities
         EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
         HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
@@ -76,4 +76,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //LOGICTICKDATA_H
+#endif //MAGIQUE_ENGINE_DATA_H

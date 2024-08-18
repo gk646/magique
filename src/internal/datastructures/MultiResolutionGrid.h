@@ -212,7 +212,7 @@ private:
     }
 
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
-    static_assert(sizeof(V) <= 8, "You should only use small id types");
+    static_assert(sizeof(V) <= 4, "You should only use small id types");
 };
 
 

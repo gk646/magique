@@ -16,7 +16,7 @@ namespace magique
 {
     using GameLoadFunc = std::function<void(GameSave&)>; // For simple tasks not requiring variables
 
-    struct GameLoader final : TaskExecutor<GameSave>
+    struct GameLoader final : internal::TaskExecutor<GameSave>
     {
 
         // Registers a new task
