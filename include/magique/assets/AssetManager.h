@@ -85,7 +85,7 @@ namespace magique
     // This is useful if you have split images instead of a single tilesheet - Use with iterateDirectory()
     handle RegisterTileSheet(std::vector<const Asset*>& assets, int tileSize, float scale = 1);
 
-    //----------------- Get -----------------//
+    //----------------- GET -----------------//
 
     // Returns the texture identified by this handle
     TextureRegion GetTexture(handle handle);
@@ -108,6 +108,13 @@ namespace magique
     Music& GetMusic(handle handle);
 
     Playlist& GetPlaylist(handle handle);
+
+    //----------------- FAST GET -----------------//
+    //Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
+    // They call GetHandle() internally thus skipping the manual call
+
+    TileMap& GetTileMap(HandleID id);
+    TileMap& GetTileMap(uint32_t hash);
 
 } // namespace magique
 

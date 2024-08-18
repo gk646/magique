@@ -17,21 +17,19 @@ Most notable features:
     - Internally uses many **custom datastructures and algorithms** to provide maximum performance
     - Favours **runtime speed over memory usage** (as there's plenty of that)
     - Explicitly **optimized for compile time** internally and externally!
-    - Uses data-driven design principles where applicable
+    - Uses **SIMD instructions and data-driven design** principles where applicable
 - **Large feature set with `pay for what you use` mentality**
-    - Asset-Packing and Loading with compression and encryption support
+    - Asset-Packing and Loading with **compression and encryption support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
-    - Procedural particle system inspired by Godot4
+    - **Procedural particle system** inspired by Godot4
     - Persistence API for gamesaves, gameconfigs and database emulator
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
     - Out of the box support for working with **[Tiled](https://www.mapeditor.org/) exports** (.tmx, .tsx)
-    - Object-oriented UI framework handling layering with built-in controls
+    - Object-oriented UI framework handling layering with extendable built-in controls
     - **Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**
 - **Multiplayer support**
-    - Send and receive messages using the same interface for global and local multiplayer
-      through [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets))
-    - Even without steam provides local networking support with
+    - Seamless transition between local and global networking with a custom unified API
 - **Steam integration**
     - Provided a Steam SDK, allows access to **steam features** like matchmaking and chat
 

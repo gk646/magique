@@ -1,13 +1,12 @@
 #ifndef LOADERS_H
 #define LOADERS_H
 
-#include <magique/fwd.hpp>
 
 namespace magique
 {
     namespace global
     {
-        inline IExecutor* LOADER = nullptr;
+        inline internal::IExecutor* LOADER = nullptr;
     }
 } // namespace magique
 

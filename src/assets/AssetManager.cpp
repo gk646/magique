@@ -5,12 +5,14 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 #include <magique/assets/types/Playlist.h>
+#include <magique/assets/HandleRegistry.h>
 #include <magique/internal/Macros.h>
 #include <magique/core/Types.h>
 
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AssetManager.h"
 #include "assets/headers/LoadWrappers.h"
+
 
 namespace magique
 {
@@ -219,10 +221,11 @@ namespace magique
 
     SpriteSheet GetSpriteSheet(const handle handle) { return global::ASSET_MANAGER.getResource<SpriteSheet>(handle); }
 
-    TileMap& GetTileMap(const handle handle)
-    {
-        return global::ASSET_MANAGER.getResource<TileMap>(handle);
-    }
+    TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
+
+    TileMap& GetTileMap(const HandleID id) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(id)); }
+
+    TileMap& GetTileMap(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(hash)); }
 
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
 

@@ -1,5 +1,5 @@
-#ifndef INTERNALTYPES_H
-#define INTERNALTYPES_H
+#ifndef MAGIQUE_INTERNALTYPES_H
+#define MAGIQUE_INTERNALTYPES_H
 
 #include <magique/core/Types.h>
 #include <magique/util/Defines.h>
@@ -81,7 +81,6 @@ namespace magique::internal
         uint8_t r = 255, g = 0, b = 0, a = 1; // Color
     };
 
-
 } // namespace magique
 
-#endif //INTERNALTYPES_H
+#endif //MAGIQUE_INTERNALTYPES_H

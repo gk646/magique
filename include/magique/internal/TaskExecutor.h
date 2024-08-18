@@ -9,9 +9,9 @@
 #include <magique/core/Types.h>
 #include <magique/util/Jobs.h>
 
-namespace magique
+namespace magique::internal
 {
-     template <typename T>
+    template <typename T>
     struct LambdaTask final : ITask<T>
     {
         std::function<void(T&)> func;
@@ -180,5 +180,5 @@ namespace magique
         }
         friend struct ITask<T>;
     };
-} // namespace magique
+} // namespace magique::internal
 #endif //MAGIQUE_TASKEXECUTOR_H_

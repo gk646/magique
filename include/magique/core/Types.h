@@ -131,9 +131,8 @@ namespace magique
 
     struct StaticCollider final
     {
-        float x, y;           // Position
-        float p1, p2, p3, p4; // Extra values
-        Shape shape;
+        float x, y;     // Position
+        int16_t p1, p2; // Extra values - if p2 == 0 -> circle
     };
 
     // Feel free to rename those!
@@ -338,7 +337,7 @@ namespace magique
     private:
         bool isLoaded = false;
         int impact = 0;
-        friend struct TaskExecutor<T>;
+        friend struct internal::TaskExecutor<T>;
     };
 
     //----------------- MISC -----------------//
@@ -347,7 +346,6 @@ namespace magique
     {
         float x;
         float y;
-
     };
 
     // Pointer will always be allocated with new []

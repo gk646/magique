@@ -24,7 +24,7 @@ namespace magique
 {
     using AssetLoadFunc = std::function<void(AssetContainer& assets)>; // For simple tasks not requiring variables
 
-    struct AssetLoader final : TaskExecutor<AssetContainer>
+    struct AssetLoader final : internal::TaskExecutor<AssetContainer>
     {
         // Registers a new task - this is for more complex task requiring its own class -> subclass magique::ITask{};
         // task     - a new instance of a subclass of ITask, takes owner ship
