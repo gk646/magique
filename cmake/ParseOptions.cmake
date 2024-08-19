@@ -1,7 +1,7 @@
 # In development mode - add a test directory
 if (MAGIQUE_IS_MAIN)
-    message(STATUS "Using magique in development mode - adding a test directory")
-    add_subdirectory(test)
+    message(STATUS "Using magique in development mode - adding a tests directory")
+    add_subdirectory(tests)
 endif ()
 
 # No steam sdk path given

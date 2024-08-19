@@ -6,7 +6,6 @@
 
 #include "internal/globals/EngineConfig.h"
 
-
 namespace magique
 {
     LogCallbackFunc CALL_BACK = nullptr;
@@ -66,7 +65,7 @@ namespace magique
 
         if (level >= LEVEL_ERROR) [[unlikely]]
         {
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG
 #if defined(_MSC_VER)
             __debugbreak();
 #elif defined(__GNUC__)
@@ -81,6 +80,5 @@ namespace magique
     }
 
     void SetLogCallback(const LogCallbackFunc func) { CALL_BACK = func; }
-
 
 } // namespace magique

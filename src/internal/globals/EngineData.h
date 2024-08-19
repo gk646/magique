@@ -14,9 +14,10 @@ namespace magique
 {
     struct PairInfo final // Saves entity id and type
     {
+        CollisionInfo info;
         entt::entity e1;
-        EntityID id1;
         entt::entity e2;
+        EntityID id1;
         EntityID id2;
     };
 
@@ -30,18 +31,18 @@ namespace magique
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCache = HashMap<entt::entity, uint16_t>;
-    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 32>;
+    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 15>;
 
     struct EngineData final
     {
-        CollPairCollector collisionPairs{};                  // Collision pair collectors
-        EntityCollector collectors{};                        // Collects entities - 2 for the 2 worker threads
-        EntityHashGrid hashGrid{200};                              // Global hashGrid for all entities
-        EntityCache entityUpdateCache{1000};                 // Caches entites not in update range anymore
-        HashSet<uint64_t> pairSet;                           // Filters unique collision pairs
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
-        std::vector<entt::entity> entityUpdateVec;           // vector containing the entites to update for this tick
-        std::vector<entt::entity> drawVec;                   // vector containing all entites to be drawn this tick
+        CollPairCollector collisionPairs{};                   // Collision pair collectors
+        EntityCollector collectors{};                         // Collects entities - 1 for each thread
+        EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all entities
+        EntityCache entityUpdateCache{1000};                  // Caches entites not in update range anymore
+        HashSet<uint64_t> pairSet;                            // Filters unique collision pairs
+        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{};  // Currently loaded zones
+        std::vector<entt::entity> entityUpdateVec;            // vector containing the entites to update for this tick
+        std::vector<entt::entity> drawVec;                    // vector containing all entites to be drawn this tick
         std::function<void(GameState, GameState)> stateCallback{}; // Callback funtion for gamstate changes
         GameConfig gameConfig{};                                   // Global game config instance
         vector<entt::entity> collisionVec;      // vector containing the entites to check for collision

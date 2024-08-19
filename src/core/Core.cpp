@@ -138,8 +138,10 @@ namespace magique
 
     void ResetBenchmarkTimes()
     {
+#if MAGIQUE_PROFILING == 1
         global::PERF_DATA.drawTimes.clear();
         global::PERF_DATA.logicTimes.clear();
+#endif
     }
 
 

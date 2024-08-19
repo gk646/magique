@@ -140,9 +140,10 @@ namespace magique
 
     inline void InternalUpdatePost(const entt::registry& registry) // After user space update
     {
-        CollisionSystem(registry);     // After cause user systems can modify entity state
-        global::UI_DATA.update();      // After gametick so ui reflects current state
-        global::AUDIO_PLAYER.update(); // After game tick cause position updates
+        StaticCollisionSystem(registry);  // Static before cause can cause change in position
+        DynamicCollisionSystem(registry); // After cause user systems can modify entity state
+        global::UI_DATA.update();         // After gametick so ui reflects current state
+        global::AUDIO_PLAYER.update();    // After game tick cause position updates
     }
 
 

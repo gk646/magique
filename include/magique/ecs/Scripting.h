@@ -58,10 +58,11 @@ namespace magique
         virtual void onDestroy(entt::entity self) {}
 
         // Called when this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(entt::entity self, entt::entity other) {}
+        // CollisionInfo: CollisionPoint    -
+        virtual void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) {}
 
         // Called when this entity collides with a static collision object - walls...
-        virtual void onStaticCollision(entt::entity self) {}
+        virtual void onStaticCollision(entt::entity self, const CollisionInfo& info, ColliderInfo collider) {}
 
         // Called at the beginning of each tick - only called on entities in update range
         virtual void onTick(entt::entity self) {}

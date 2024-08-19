@@ -13,6 +13,12 @@
 
 namespace magique
 {
+    struct Point final
+    {
+        float x;
+        float y;
+    };
+
     //----------------- CORE -----------------//
 
     enum class LightingMode
@@ -97,7 +103,14 @@ namespace magique
         friend TileObject ParseObject(const char*);
     };
 
-    //----------------- ENTITY COMPONENT SYSTEM -----------------//
+    struct TileInfo final
+    {
+        uint16_t tileID = UINT16_MAX; // ID of the tile
+        int clazz = 0;                // class attribute
+        float probability = 1.0F;     // probability attribute
+    };
+
+    //----------------- ECS -----------------//
 
     // Default action states - Feel free to rename or create your own
     enum class ActionState : uint8_t
@@ -129,12 +142,6 @@ namespace magique
         TRIANGLE, // Triangle
     };
 
-    struct StaticCollider final
-    {
-        float x, y;     // Position
-        int16_t p1, p2; // Extra values - if p2 == 0 -> circle
-    };
-
     // Feel free to rename those!
     enum CollisionLayer : uint8_t
     {
@@ -146,6 +153,42 @@ namespace magique
         LAYER_5 = 1 << 5,
         LAYER_6 = 1 << 6,
         LAYER_7 = 1 << 7,
+    };
+
+    enum class ColliderType : uint8_t
+    {
+        WORLD_BOUNDS,
+        TILEMAP_OBJECT,
+        SOLID_TILE,
+        MANUAL_COLLIDER,
+    };
+
+    struct ColliderInfo final
+    {
+
+    private:
+        int data;
+        ColliderType type;
+    };
+
+    struct StaticCollider final
+    {
+        float x, y;   // Position
+        float p1, p2; // Extra values - if p2 == 0 -> circle
+    };
+
+    struct CollisionInfo final
+    {
+        static constexpr float NO_COLLISION = -420.691337F;
+        Point normalVector{};   // The direction  vector in which the object needs to be mover to resolve the collision
+        Point collisionPoint{}; // The point of contact (or often the closest point on the shapes between the centers)
+        float depth = 0;        // The amount by which the shapes overlap - minimal distance to move along the normal
+
+        // Note: Used internally - generates a info object that shows no collision occured
+        static CollisionInfo NoCollision();
+
+        // Returns true
+        [[nodiscard]] bool isColliding() const;
     };
 
     //----------------- GAMEDEV -----------------//
@@ -341,12 +384,6 @@ namespace magique
     };
 
     //----------------- MISC -----------------//
-
-    struct Point final
-    {
-        float x;
-        float y;
-    };
 
     // Pointer will always be allocated with new []
     template <typename T>

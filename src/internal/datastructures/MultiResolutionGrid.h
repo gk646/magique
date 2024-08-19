@@ -38,14 +38,16 @@ struct DataBlock final
     template <typename Container>
     void append(Container& elems) const
     {
-        for (int i = 0; i < count; ++i)
+        const auto start = data;
+        const auto end = data + count;
+        for (auto it = start; it != end; ++it)
         {
-            elems.push_back(data[i]);
+            elems.push_back(*it);
         }
     }
 };
 
-template <typename V, int blockSize = 16>
+template <typename V, int blockSize = 15> // assuming 4 bytes as value size its 15 * 4 + 2 + 2 = 64 / one cache line
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int> cellMap{};

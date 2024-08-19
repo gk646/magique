@@ -128,7 +128,7 @@ namespace magique
         return StringSimilarity(s1.c_str(), s2.c_str(), caseSensitive);
     }
 
-    float StringDistancePhysical(const char* s1, const char* s2, KeyLayout layout)
+    float StringDistancePhysical(const char* s1, const char* s2, const KeyLayout layout)
     {
         float distance = 0.0F;
         int i = 0;
@@ -287,7 +287,7 @@ namespace magique
 
     uint32_t HashString(char const* s) noexcept
     {
-        uint32_t hash = 2166136261U ;
+        uint32_t hash = 2166136261U;
         while (*s != 0)
         {
             hash ^= static_cast<uint32_t>(*s++);

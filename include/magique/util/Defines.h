@@ -13,13 +13,15 @@
 //----------------- CORE -----------------//
 
 #define MAGIQUE_VERSION "0.0.7"  // Version number
-#define MAGIQUE_DEBUG 1          // 1 to enable debug - 0 to disable
+#define MAGIQUE_DEBUG            // Disabled in release builds
+#define MAGIQUE_PROFILING 0      // 0 to disable
 #define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
 #define MAGIQUE_WORKER_THREADS 3 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores
+#define MAGIQUE_COLLISION_CELL_SIZE 150 // How big each collision cell is - No object can be bigger than 2 * size!
 
 //----------------- STEAM -----------------//
 
-#define MAGIQUE_STEAM 0 // Turn on steam integration in CMake
+#define MAGIQUE_USE_STEAM 0 // Turn on steam integration in CMake
 
 //----------------- MULTIPLAYER -----------------//
 
@@ -31,8 +33,8 @@
 #define MAGIQUE_TEXTURE_ATLAS_WIDTH 8192  // Height of each texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192 // Width of each texture atlas
 #define MAGIQUE_DIRECT_HANDLES 15000      // Allows to store 15k direct handles
-#define MAGIQUE_MAX_TILE_LAYERS 4      // Maximum amount of layers for tilemaps
-#define MAGIQUE_MAX_OBJECT_LAYERS 2     // Maximum amount of layers for tilemaps
+#define MAGIQUE_MAX_TILE_LAYERS 3         // Maximum amount of layers for tilemaps
+#define MAGIQUE_MAX_OBJECT_LAYERS 2       // Maximum amount of layers for tilemaps
 #define MAGIQUE_MAX_EXPECTED_MAPS 32      // Maximum amount of expected maps
 
 //----------------- UI -----------------//
@@ -56,26 +58,18 @@
 
 //----------------- CONDITIONALS -----------------//
 
-#if MAGIQUE_DEBUG == 1
-//#define MAGIQUE_DEBUG_COLLISIONS  // Uses O(n**2) collision checking for double checking
-#define MAGIQUE_DEBUG_PROFILE
-#endif
 
-#if defined(_DEBUG) || !defined(NDEBUG)
-#define MAGIQUE_DEBUG 1
-#else
+#if !defined(_DEBUG) || defined(NDEBUG)
 #undef MAGIQUE_DEBUG
-#define MAGIQUE_DEBUG 0
 #endif
 
-#if MAGIQUE_USE_STEAM
-#undef MAGIQUE_STEAM
+#ifdef MAGIQUE_USE_STEAM
 #define MAGIQUE_STEAM 1
 #else
 #define STEAMNETWORKINGSOCKETS_STANDALONELIB
 #endif
 
-#if MAGIQUE_NO_SIMD // Remove simd usage
+#ifdef MAGIQUE_NO_SIMD // Remove simd usage
 #undef MAGIQUE_USE_SIMD
 #endif
 

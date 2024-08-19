@@ -47,14 +47,17 @@ target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE})
 
 # Compile definitions
 if(MAGIQUE_STEAM_INTEGRATION)
-    target_compile_definitions(magique PRIVATE MAGIQUE_USE_STEAM)
+    target_compile_definitions(magique PUBLIC -DMAGIQUE_USE_STEAM)
 endif ()
 
 if(NOT MAGIQUE_USE_SIMD)
-    target_compile_definitions(magique PRIVATE MAGIQUE_NO_SIMD)
+    target_compile_definitions(magique PUBLIC -DMAGIQUE_NO_SIMD)
 endif ()
 
-target_compile_options(magique PUBLIC  /Zc:preprocessor)
+# Needed for proper macro expansion
+if(WIN32)
+    target_compile_options(magique PUBLIC /Zc:preprocessor)
+endif ()
 
 # Link against the GameNetworkingSockets or the Steam SDK (and platform specific libs)
 include(LinkBinaries)

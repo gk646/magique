@@ -7,7 +7,7 @@ namespace magique
 {
     bool InitLocalMultiplayer()
     {
-#if MAGIQUE_STEAM == 0
+#if MAGIQUE_USE_STEAM == 0
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg))

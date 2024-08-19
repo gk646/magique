@@ -29,14 +29,14 @@ namespace magique
         int updateDelayTicks = 15;
         PerformanceBlock blocks[6]; // 5 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
 
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
         vector<uint32_t> logicTimes;
         vector<uint32_t> drawTimes;
 #endif
 
         PerformanceData()
         {
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
             // Reserve much upfront to not impede benchmarks
             logicTimes.reserve(10000);
             drawTimes.reserve(10000);
@@ -132,21 +132,21 @@ namespace magique
             if (t == UPDATE)
             {
                 logicTickTime = time;
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
                 logicTimes.push_back(time);
 #endif
             }
             else if (t == DRAW)
             {
                 drawTickTime = time;
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
                 drawTimes.push_back(time);
 #endif
             }
         }
 
         // Dont even let it be there
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
         [[nodiscard]] float getAverageTime(const TickType t)
         {
             vector<uint32_t>* times;

@@ -2,7 +2,9 @@
 
 STILL IN BETA STATE - NOT PUBLICLY RELEASED
 
-`magique` is a beginner-friendly 2D game engine for programmers (or those yet to be!). It's meant to answer all game
+`magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) built
+around `raylib`. It's designed to
+answer all game
 development
 needs in a simple but definitive way both in performance and usability. `magique` achieves this by providing core
 functionalities around a stack of proven libraries to create a productive 2D engine in C++ 20.
@@ -10,15 +12,15 @@ functionalities around a stack of proven libraries to create a productive 2D eng
 Most notable features:
 
 - **Easy to learn and use**
+    - All raylib methods are fully functional allowing for an easy transition
     - **Fully documented headers** and GitHub wiki
     - Multiple example games included (see examples/)
     - Beginner-friendly public API optimized for usability
 - **Fast and modern**
-    - Internally uses many **custom datastructures and algorithms** to provide maximum performance
-    - Favours **runtime speed over memory usage** (as there's plenty of that)
+    - Internally uses **custom datastructures and algorithms** to provide maximum performance
     - Explicitly **optimized for compile time** internally and externally!
-    - Uses **SIMD instructions and data-driven design** principles where applicable
-- **Large feature set with `pay for what you use` mentality**
+    - Takes advantage of **SIMD instructions, data-driven design and cache locality** where possible
+- **Large feature set with `pay for what you use` policy**
     - Asset-Packing and Loading with **compression and encryption support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
@@ -104,7 +106,6 @@ If you're a newcomer to gamedev or C++ you should start with the Getting Started
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
 ### 3. Paradigms and design philosophy of `magique`:
-
 
 - 1 Main Thread + Job System
     - Main thread handles calling render and update functions correctly

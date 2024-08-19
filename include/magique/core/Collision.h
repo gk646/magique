@@ -34,27 +34,26 @@ namespace magique
     //----------------- TILESET -----------------//
 
     // Sets the global tileset and allows to specify which class number means a solid tile
-    // Note: In Tiled click on the tileset file -> select any tiles the should be solid and set a class property (e.g. 1)
-    void SetGlobalTileSet(TileSet& tileSet, int collisionClass);
+    // Note: In Tiled click on the tileset file -> select any tiles the should be solid and set the class property (e.g. 1)
+    void SetGlobalTileSet(const TileSet& tileSet, int collisionClass);
 
-    // When using collision over tile indices this needs to be called every time any actor enters a map
-    // Once set all calls with the same map are quickly skipped - once a map has no actors it will be unloaded automatically
+    // Loads map data so positions can be looked up
+    // Load all maps at the start or load the new map when a actor enters it - duplicate calls dont matter
     // layers   - specifies which layers are collision
     void LoadTileMap(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
 
-    // Returns true ONLY if: a map was loaded with the given id, the tilenumber at [x,y] in any specified layer is flagged as solid
-    bool IsSolidTile(MapID, int x, int y);
+    // Returns true if the given map was loaded and the tile at (x,y) in any specified layer is marked as solid in the global tileset
+    // Note: For this to work both SetGlobalTilset() AND LoadTileMap() have to be setup correctly
+    bool IsSolidTile(MapID map, int tileX, int tileY);
 
     //----------------- MANUAL -----------------//
 
     // Manually adds a static collider to the given group
     // Note: manual colliders can only be managed on a per group basis - not individual elements
-    void AddStaticColliderRect(int group, float x, float y, float width, float height);
-    void AddStaticColliderCircle(int group, float x, float y, float radius);
+    void AddColliderGroupRect(int group, float x, float y, float width, float height);
 
     // Removes all colliders that are part of the given group
     void RemoveColliderGroup(int group);
-
 
 } // namespace magique
 

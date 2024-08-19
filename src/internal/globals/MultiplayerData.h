@@ -8,7 +8,7 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Defines.h>
 
-#if MAGIQUE_STEAM == 0
+#if MAGIQUE_USE_STEAM == 0
 #include "external/networkingsockets/steamnetworkingsockets.h"
 #include "external/networkingsockets/isteamnetworkingutils.h"
 #else

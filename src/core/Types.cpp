@@ -24,6 +24,12 @@ namespace magique
 
     Rectangle TileObject::getRect() const { return {x, y, width, height}; }
 
+    //----------------- COLLISION INFO -----------------//
+
+    CollisionInfo CollisionInfo::NoCollision() { return {{}, {}, NO_COLLISION}; }
+
+    bool CollisionInfo::isColliding() const { return depth != NO_COLLISION; }
+
     //----------------- KEYBIND -----------------//
 
     Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)
