@@ -93,7 +93,7 @@ namespace magique
     {
         const auto view = registry.view<const CameraC, const PositionC>();
         auto& tickData = global::ENGINE_DATA;
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
         const auto sWidth = static_cast<float>(CORE.Window.screen.width);
@@ -126,20 +126,20 @@ namespace magique
                     break;
                 }
             }
-            tickData.camera.target.x = std::floor( tickData.camera.target.x);
-            tickData.camera.target.y = std::floor( tickData.camera.target.y);
+            tickData.camera.target.x = std::floor(tickData.camera.target.x);
+            tickData.camera.target.y = std::floor(tickData.camera.target.y);
 
             const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
                 tickData.camera.offset = manualOff;
             }
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG
             count++;
 #endif
         }
         // Center the camera
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG
         ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
     }

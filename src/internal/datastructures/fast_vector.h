@@ -43,7 +43,7 @@ struct fast_vector
     fast_vector(const fast_vector& other) noexcept;
     explicit fast_vector(size_type reserve) noexcept;
     fast_vector(fast_vector&& other) noexcept;
-    fast_vector& operator=(const fast_vector& other);
+    fast_vector& operator=(const fast_vector& other) noexcept;
     fast_vector& operator=(fast_vector&& other) noexcept;
     ~fast_vector() noexcept;
 
@@ -81,12 +81,11 @@ struct fast_vector
 
     void clear() noexcept;
 
-    void push_back(const T& value);
-    void push_back(T&& value);
+    void push_back(const T& value) noexcept;
+    void push_back(T&& value) noexcept;
 
     template <class... Args>
-    void emplace_back(Args&&... args);
-
+    void emplace_back(Args&&... args) noexcept;
 
     void insert(T* pos, T&& object);
     void insert(T* pos, const T& object);
@@ -96,10 +95,10 @@ struct fast_vector
     T* erase(T* pos);
     T* erase(T* start, T* end);
 
-    void pop_back();
+    void pop_back() noexcept;
 
-    void resize(size_type count);
-    void resize(size_type count, const T& val);
+    void resize(size_type count) noexcept;
+    void resize(size_type count, const T& val) noexcept;
 
     static constexpr size_type grow_factor = 2;
 
@@ -143,7 +142,7 @@ fast_vector<T>::fast_vector(fast_vector&& other) noexcept :
 }
 
 template <class T>
-fast_vector<T>& fast_vector<T>::operator=(const fast_vector& other)
+fast_vector<T>& fast_vector<T>::operator=(const fast_vector& other) noexcept
 {
     if (this != &other)
     {
@@ -376,7 +375,7 @@ void fast_vector<T>::clear() noexcept
 }
 
 template <class T>
-void fast_vector<T>::push_back(const T& value)
+void fast_vector<T>::push_back(const T& value) noexcept
 {
     if (m_size == m_capacity)
     {
@@ -396,7 +395,7 @@ void fast_vector<T>::push_back(const T& value)
 }
 
 template <class T>
-void fast_vector<T>::push_back(T&& value)
+void fast_vector<T>::push_back(T&& value) noexcept
 {
     if (m_size == m_capacity)
     {
@@ -417,7 +416,7 @@ void fast_vector<T>::push_back(T&& value)
 
 template <class T>
 template <class... Args>
-void fast_vector<T>::emplace_back(Args&&... args)
+void fast_vector<T>::emplace_back(Args&&... args) noexcept
 {
     //    static_assert(!std::is_trivial_v<T>, "Use push_back() instead of emplace_back() with trivial types");
 
@@ -577,7 +576,7 @@ auto fast_vector<T>::erase(T* start, T* end) -> T*
 }
 
 template <class T>
-void fast_vector<T>::pop_back()
+void fast_vector<T>::pop_back() noexcept
 {
     assert(m_size > 0 && "Container is empty");
 
@@ -590,7 +589,7 @@ void fast_vector<T>::pop_back()
 }
 
 template <class T>
-void fast_vector<T>::resize(const size_type count)
+void fast_vector<T>::resize(const size_type count) noexcept
 {
     if (count > m_capacity)
     {
@@ -618,7 +617,7 @@ void fast_vector<T>::resize(const size_type count)
 }
 
 template <class T>
-void fast_vector<T>::resize(const size_type count, const T& val)
+void fast_vector<T>::resize(const size_type count, const T& val) noexcept
 {
     if (count > m_capacity)
     {

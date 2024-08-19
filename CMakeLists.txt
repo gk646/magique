@@ -4,7 +4,7 @@ project(magique CXX C)
 set(CMAKE_CXX_STANDARD 20)
 
 # Set project properties
-set(MAGIQUE_VERSION "0.0.7")
+set(MAGIQUE_VERSION "0.0.8")
 
 # Set cmake files directory
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -17,7 +17,7 @@ else ()
     set(MAGIQUE_IS_MAIN FALSE)
 endif ()
 
-# Options
+# Options - NEEDS A CACHE RESET IF USING CMAKE CACHE!
 option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration (Must set STEAM_SDK_PATH)" OFF)
 option(MAGIQUE_NETWORKING "Set to enable local networking" ON)
 option(MAGIQUE_BUILD_SHARED "Set to enable building magique as shared library" OFF)

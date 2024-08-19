@@ -4,7 +4,6 @@
 #include <magique/util/Logging.h>
 
 #define SINFL_IMPLEMENTATION
-#define SINFL_NO_SIMD
 #include "external/raylib/src/external/sinfl.h"
 #define SDEFL_IMPLEMENTATION
 #include "external/raylib/src/external/sdefl.h"

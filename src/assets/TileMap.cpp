@@ -11,7 +11,7 @@ namespace magique
     {
         cxstructs::str_skip_char(data, '\n', 1);
         ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
-#if MAGIQUE_DEBUG == 1
+#ifdef MAGIQUE_DEBUG
         const auto val = XMLGetValueInLine<const char*>(data, "encoding", "nope");
         ASSERT(cxstructs::str_cmp_prefix(val, "csv"), "Tilemap has invalid encoding! Only supports csv");
 #endif

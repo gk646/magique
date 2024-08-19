@@ -2,11 +2,12 @@
 #define LIGHTINGSYSTEM_H
 
 #include <raylib/raymath.h>
+
 #include "internal/utils/OpenGLUtil.h"
 
 namespace magique
 {
-    inline void RenderHardShadows(entt::registry& registry)
+    inline void RenderHardShadows(const entt::registry& registry)
     {
         auto& shaders = global::SHADERS;
         auto& shadowShader = shaders.shadow;
@@ -114,7 +115,7 @@ namespace magique
         EndBlendMode();
     }
 
-    inline void RenderRayTracing(entt::registry& registry)
+    inline void RenderRayTracing(const entt::registry& registry)
     {
         // Lights
         Vector2 lightPositions[MAGIQUE_MAX_RAYTRACING_ENTITIES];
@@ -146,7 +147,7 @@ namespace magique
         }
     }
 
-    inline void RenderLighting(entt::registry& registry)
+    inline void RenderLighting(const entt::registry& registry)
     {
         const auto model = global::ENGINE_CONFIG.lighting;
         if (model == LightingMode::STATIC_SHADOWS)

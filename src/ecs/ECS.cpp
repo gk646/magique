@@ -7,6 +7,7 @@
 #include <magique/util/Logging.h>
 
 #include "internal/globals/ECSData.h"
+#include "internal/globals/EngineData.h"
 #include "internal/globals/ScriptData.h"
 #include "internal/utils/STLUtil.h"
 

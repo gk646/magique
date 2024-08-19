@@ -31,7 +31,8 @@
 
 #include "internal/headers/CollisionPrimitives.h"
 
-#include "internal/systems/CollisionSystem.h"
+#include "internal/systems/StaticCollisionSystem.h"
+#include "internal/systems/DynamicCollisionSystem.h"
 #include "internal/systems/InputSystem.h"
 #include "internal/systems/LogicSystem.h"
 #include "internal/systems/LightingSystem.h"
@@ -111,7 +112,7 @@ namespace magique
 
         GameConfig::SaveToFile(config, configPath, encryptionKey);
 
-#ifdef MAGIQUE_DEBUG_PROFILE
+#if MAGIQUE_PROFILING == 1
         LOG_INFO("Average DrawTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(DRAW) / 1'000);
         LOG_INFO("Average LogicTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(UPDATE) / 1'000);
 #endif
