@@ -55,110 +55,91 @@ namespace magique
 #endif
     }
 
+    //----------------- BOUNDING BOX -----------------//
+
+    // returns the bounding box of a triangle given by the 3 points
+    inline Rectangle GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
+                                   const float y3)
+    {
+        float minX = x;
+        if (x2 < minX)
+            minX = x2;
+        if (x3 < minX)
+            minX = x3;
+
+        float minY = y;
+        if (y2 < minY)
+            minY = y2;
+        if (y3 < minY)
+            minY = y3;
+
+        float maxX = x;
+        if (x2 > maxX)
+            maxX = x2;
+        if (x3 > maxX)
+            maxX = x3;
+
+        float maxY = y;
+        if (y2 > maxY)
+            maxY = y2;
+        if (y3 > maxY)
+            maxY = y3;
+
+        const float width = maxX - minX;
+        const float height = maxY - minY;
+
+        return {minX, minY, width, height};
+    }
+
+    // Given the 4x and 4y coordinates of a shape returns the bounding rectangle
+    inline Rectangle GetBBQuadrilateral(const float (&pxs)[4], const float (&pys)[4])
+    {
+        float minX = pxs[0];
+        if (pxs[1] < minX)
+            minX = pxs[1];
+        if (pxs[2] < minX)
+            minX = pxs[2];
+        if (pxs[3] < minX)
+            minX = pxs[3];
+
+        float minY = pys[0];
+        if (pys[1] < minY)
+            minY = pys[1];
+        if (pys[2] < minY)
+            minY = pys[2];
+        if (pys[3] < minY)
+            minY = pys[3];
+
+        float maxX = pxs[0];
+        if (pxs[1] > maxX)
+            maxX = pxs[1];
+        if (pxs[2] > maxX)
+            maxX = pxs[2];
+        if (pxs[3] > maxX)
+            maxX = pxs[3];
+
+        float maxY = pys[0];
+        if (pys[1] > maxY)
+            maxY = pys[1];
+        if (pys[2] > maxY)
+            maxY = pys[2];
+        if (pys[3] > maxY)
+            maxY = pys[3];
+
+        const float width = maxX - minX;
+        const float height = maxY - minY;
+
+        return {minX, minY, width, height};
+    }
+
     //----------------- SAT -----------------//
 
     // checks 4 points against another 4 points
-    inline bool SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4])
-    {
-#ifdef MAGIQUE_USE_SIMD
-        const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
-                                      const float(&p1ys)[4], const float axisX, const float axisY)
-        {
-            const auto project = [](const float(&pxs)[4], const float(&pys)[4], const float axisX, const float axisY,
-                                    float& min, float& max)
-            {
-                const __m128 axisX_vec = _mm_set1_ps(axisX);
-                const __m128 axisY_vec = _mm_set1_ps(axisY);
-
-                const __m128 pxs_vec = _mm_loadu_ps(pxs);
-                const __m128 pys_vec = _mm_loadu_ps(pys);
-
-                const __m128 proj_vec = _mm_add_ps(_mm_mul_ps(pxs_vec, axisX_vec), _mm_mul_ps(pys_vec, axisY_vec));
-
-                float projections[4];
-                _mm_storeu_ps(projections, proj_vec);
-
-                __m128 proj_min = proj_vec;
-                __m128 proj_max = proj_vec;
-
-                proj_min = _mm_min_ps(proj_min, _mm_shuffle_ps(proj_min, proj_min, _MM_SHUFFLE(2, 3, 0, 1)));
-                proj_min = _mm_min_ps(proj_min, _mm_shuffle_ps(proj_min, proj_min, _MM_SHUFFLE(1, 0, 3, 2)));
-
-                proj_max = _mm_max_ps(proj_max, _mm_shuffle_ps(proj_max, proj_max, _MM_SHUFFLE(2, 3, 0, 1)));
-                proj_max = _mm_max_ps(proj_max, _mm_shuffle_ps(proj_max, proj_max, _MM_SHUFFLE(1, 0, 3, 2)));
-
-                min = _mm_cvtss_f32(proj_min);
-                max = _mm_cvtss_f32(proj_max);
-            };
-
-            float minA, maxA, minB, maxB;
-            project(pxs, pys, axisX, axisY, minA, maxA);
-            project(p1xs, p1ys, axisX, axisY, minB, maxB);
-            return maxA >= minB && maxB >= minA;
-        };
-#else
-        const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
-                                      const float(&p1ys)[4], float axisX, float axisY)
-        {
-            const auto project =
-                [](const float(&pxs)[4], const float(&pys)[4], float axisX, float axisY, float& min, float& max)
-            {
-                min = max = (pxs[0] * axisX + pys[0] * axisY);
-                for (int i = 1; i < 4; ++i)
-                {
-                    const float projection = (pxs[i] * axisX + pys[i] * axisY);
-                    if (projection < min)
-                        min = projection;
-                    if (projection > max)
-                        max = projection;
-                }
-            };
-
-
-            float minA, maxA, minB, maxB;
-            project(pxs, pys, axisX, axisY, minA, maxA);
-            project(p1xs, p1ys, axisX, axisY, minB, maxB);
-            return maxA >= minB && maxB >= minA;
-        };
-
-#endif
-        for (int i = 0; i < 4; ++i)
-        {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-            const float edgeX = pxs[next] - pxs[i];
-            const float edgeY = pys[next] - pys[i];
-
-            const float axisX = -edgeY;
-            const float axisY = edgeX;
-
-            if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY))
-                return false;
-        }
-
-        for (int i = 0; i < 4; ++i)
-        {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-            const float edgeX = p1xs[next] - p1xs[i];
-            const float edgeY = p1ys[next] - p1ys[i];
-            const float axisX = -edgeY;
-            const float axisY = edgeX;
-
-            if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY))
-                return false;
-        }
-        return true;
-    }
-
     inline void SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4],
                     CollisionInfo& info)
     {
         float minPenetration = FLT_MAX;
         Point bestAxis;
-
 #ifdef MAGIQUE_USE_SIMD
         const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
                                       const float(&p1ys)[4], const float axisX, const float axisY, float& penetration)
@@ -202,13 +183,13 @@ namespace magique
             return false;
         };
 #else
-        const auto OverlapOnAxis = [&](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
-                                       const float(&p1ys)[4], float axisX, float axisY, float& penetration)
+        const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
+                                      const float(&p1ys)[4], const float axisX, const float axisY, float& penetration)
         {
-            const auto project =
-                [](const float(&pxs)[4], const float(&pys)[4], float axisX, float axisY, float& min, float& max)
+            const auto project = [](const float(&pxs)[4], const float(&pys)[4], const float axisX, const float axisY,
+                                    float& min, float& max)
             {
-                min = max = (pxs[0] * axisX + pys[0] * axisY);
+                min = max = pxs[0] * axisX + pys[0] * axisY;
                 for (int i = 1; i < 4; ++i)
                 {
                     const float projection = (pxs[i] * axisX + pys[i] * axisY);
@@ -225,56 +206,39 @@ namespace magique
 
             if (maxA >= minB && maxB >= minA)
             {
-                float axisPenetration = std::min(maxA - minB, maxB - minA);
-                penetration = axisPenetration;
+                penetration = std::min(maxA - minB, maxB - minA);
                 return true;
             }
             return false;
         };
 #endif
-
-        for (int i = 0; i < 4; ++i)
+        const auto processEdge = [&](const float x1, const float y1, const float x2, const float y2)
         {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-            const float edgeX = pxs[next] - pxs[i];
-            const float edgeY = pys[next] - pys[i];
+            const float edgeX = x2 - x1;
+            const float edgeY = y2 - y1;
             const float axisX = -edgeY;
             const float axisY = edgeX;
 
             float penetration;
             if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY, penetration))
-                return;
+                return false;
 
             if (penetration < minPenetration)
             {
                 minPenetration = penetration;
                 bestAxis = {axisX, axisY};
             }
-        }
+            return true;
+        };
 
-        for (int i = 0; i < 4; ++i)
+        // manually unrolled loops
+        if (!processEdge(pxs[0], pys[0], pxs[1], pys[1]) || !processEdge(pxs[1], pys[1], pxs[2], pys[2]) ||
+            !processEdge(pxs[2], pys[2], pxs[3], pys[3]) || !processEdge(pxs[3], pys[3], pxs[0], pys[0]) ||
+            !processEdge(p1xs[0], p1ys[0], p1xs[1], p1ys[1]) || !processEdge(p1xs[1], p1ys[1], p1xs[2], p1ys[2]) ||
+            !processEdge(p1xs[2], p1ys[2], p1xs[3], p1ys[3]) || !processEdge(p1xs[3], p1ys[3], p1xs[0], p1ys[0]))
         {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-            const float edgeX = p1xs[next] - p1xs[i];
-            const float edgeY = p1ys[next] - p1ys[i];
-            const float axisX = -edgeY;
-            const float axisY = edgeX;
-
-            float penetration;
-            if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY, penetration))
-                return;
-
-            if (penetration < minPenetration)
-            {
-                minPenetration = penetration;
-                bestAxis = {axisX, axisY};
-            }
+            return; // No collision detected
         }
-
         float axisLength = bestAxis.x * bestAxis.x + bestAxis.y * bestAxis.y;
         SquareRoot(axisLength);
         info.normalVector = {bestAxis.x / axisLength, bestAxis.y / axisLength};
@@ -364,11 +328,10 @@ namespace magique
         }
         float distance = distance_squared;
         SquareRoot(distance);
-
         if (distance != 0.0f)
         {
-            info.normalVector.x = dx / distance;
-            info.normalVector.y = dy / distance;
+            info.normalVector.x = -dx / distance;
+            info.normalVector.y = -dy / distance;
         }
         else
         {
@@ -376,7 +339,6 @@ namespace magique
             info.normalVector.y = 0.0f;
         }
         info.depth = cr - distance;
-
         info.collisionPoint.x = closestX;
         info.collisionPoint.y = closestY;
     }
@@ -391,50 +353,15 @@ namespace magique
             return;
         }
 
-        const float rx2 = x1 + w1;
-        const float ry2 = y1 + h1;
-
-        const float cx1 = x2 + radius;
-        const float cy1 = y2 + radius;
-        const float cx2 = x2 + radius;
-        const float cy2 = y2 + height - radius;
-        const auto sqRadius = radius * radius;
-
-        auto setCollisionInfo =
-            [](const float px, const float py, const float cx, const float cy, const float radius, CollisionInfo& info)
-        {
-            info.normalVector = {cx - px, cy - py};
-            info.depth = info.normalVector.x * info.normalVector.x + info.normalVector.y * info.normalVector.y;
-            SquareRoot(info.depth);
-            info.depth -= radius;
-            info.collisionPoint = {px, py};
-            float length = info.normalVector.x * info.normalVector.x + info.normalVector.y * info.normalVector.y;
-            SquareRoot(length);
-            info.normalVector = {info.normalVector.x / length, info.normalVector.y / length};
-        };
-
-        RectToRect(x1, y1, w1, h1, x2, cy1, radius * 2, height - radius, info);
+        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + radius, radius, info);
         if (info.isColliding())
             return;
 
-        // Check if any corner of the rectangle is inside the capsule's end circles
-        if (PointInCircle(x1, y1, cx1, cy1, sqRadius))
-            return setCollisionInfo(x1, y1, cx1, cy1, radius, info);
-        if (PointInCircle(rx2, y1, cx1, cy1, sqRadius))
-            return setCollisionInfo(rx2, y1, cx1, cy1, radius, info);
-        if (PointInCircle(x1, ry2, cx1, cy1, sqRadius))
-            return setCollisionInfo(x1, ry2, cx1, cy1, radius, info);
-        if (PointInCircle(rx2, ry2, cx1, cy1, sqRadius))
-            return setCollisionInfo(rx2, ry2, cx1, cy1, radius, info);
+        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + height - radius, radius, info);
+        if (info.isColliding())
+            return;
 
-        if (PointInCircle(x1, y1, cx2, cy2, sqRadius))
-            return setCollisionInfo(x1, y1, cx2, cy2, radius, info);
-        if (PointInCircle(rx2, y1, cx2, cy2, sqRadius))
-            return setCollisionInfo(rx2, y1, cx2, cy2, radius, info);
-        if (PointInCircle(x1, ry2, cx2, cy2, sqRadius))
-            return setCollisionInfo(x1, ry2, cx2, cy2, radius, info);
-        if (PointInCircle(rx2, ry2, cx2, cy2, sqRadius))
-            return setCollisionInfo(rx2, ry2, cx2, cy2, radius, info);
+        RectToRect(x1, y1, w1, h1, x2, y2 + radius, radius * 2, height - radius, info);
     }
 
     //----------------- CIRCLE -----------------//
@@ -458,7 +385,7 @@ namespace magique
         const __m128 radii_sq_vec = _mm_set1_ps(radii_sq_sum);
 
         const __m128 cmp = _mm_cmple_ps(dist_sq_sum, radii_sq_vec);
-        if ((_mm_movemask_ps(cmp) & 0x1) == 0)
+        if ((_mm_movemask_ps(cmp) & 0x1) == 0) [[likely]] // more likely no collision
         {
             return;
         }
@@ -487,6 +414,11 @@ namespace magique
     inline void CircleToQuadrilateral(const float cx, const float cy, const float cr, const float (&pxs)[4],
                                       const float (&pys)[4], CollisionInfo& info)
     {
+        const auto bb = GetBBQuadrilateral(pxs, pys);
+        if (!RectToRect(cx - cr, cy - cr, cr * 2.0F, cr * 2.0F, bb.x, bb.y, bb.width, bb.height)) [[likely]]
+        {
+            return; // quick bound check
+        }
 #ifdef MAGIQUE_USE_SIMD
         const __m128 cx_vec = _mm_set1_ps(cx);
         const __m128 cy_vec = _mm_set1_ps(cy);
@@ -622,6 +554,10 @@ namespace magique
     inline void CircleToCapsule(const float cx, const float cy, const float cr, const float x2, const float y2,
                                 const float radius, const float height, CollisionInfo& info)
     {
+        if (!RectToRect(cx - cr, cy - cr, cr * 2.0F, cr * 2.0F, x2, y2, radius * 2.0F, height)) [[likely]]
+        {
+            return; // quick bound check
+        }
         CircleToCircle(cx, cy, cr, x2 + radius, y2 + radius, radius, info);
         if (info.isColliding())
             return;
@@ -679,20 +615,10 @@ namespace magique
     inline void CapsuleToQuadrilateral(const float x, const float y, const float r, const float h, const float (&pxs)[4],
                                        const float (&pys)[4], CollisionInfo& info)
     {
-        const float crxs[4] = {x, x + r * 2.0F, x + r * 2.0F, x};
-        const float crys[4] = {y, y, y + h, y + h};
-
-        if (!SAT(crxs, crys, pxs, pys)) [[likely]] // bounding box check
+        const auto bb = GetBBQuadrilateral(pxs, pys);
+        if (!RectToRect(x, y, r * 2.0F, h, bb.x, bb.y, bb.width, bb.height)) [[likely]]
         {
-            return;
-        }
-
-        const float cr2xs[4] = {x, x + r * 2.0F, x + r * 2.0F, x};
-        const float cr2ys[4] = {y + r, y + r, y + h - r, y + h - r};
-        SAT(cr2xs, cr2ys, pxs, pys, info);
-        if (info.isColliding())
-        {
-            return;
+            return; // quick bound check
         }
 
         CircleToQuadrilateral(x + r, y + r, r, pxs, pys, info);
@@ -701,6 +627,14 @@ namespace magique
             return;
         }
         CircleToQuadrilateral(x + r, y + (h - r), r, pxs, pys, info);
+        if (info.isColliding())
+        {
+            return;
+        }
+
+        const float cr2xs[4] = {x, x + r * 2.0F, x + r * 2.0F, x};
+        const float cr2ys[4] = {y + r, y + r, y + h - r, y + h - r};
+        SAT(cr2xs, cr2ys, pxs, pys, info);
     }
 
     //----------------- ROTATION -----------------//
@@ -714,17 +648,17 @@ namespace magique
         const float cosTheta = cosf(rotation * DEG2RAD);
         const float sinTheta = sinf(rotation * DEG2RAD);
 
-        __m128 cosVec = _mm_set1_ps(cosTheta);
-        __m128 sinVec = _mm_set1_ps(sinTheta);
+        const __m128 cosVec = _mm_set1_ps(cosTheta);
+        const __m128 sinVec = _mm_set1_ps(sinTheta);
 
-        __m128 anchorXVec = _mm_set1_ps(anchorX);
-        __m128 anchorYVec = _mm_set1_ps(anchorY);
+        const __m128 anchorXVec = _mm_set1_ps(anchorX);
+        const __m128 anchorYVec = _mm_set1_ps(anchorY);
 
-        __m128 px = _mm_set_ps(pxs[3], pxs[2], pxs[1], pxs[0]);
-        __m128 py = _mm_set_ps(pys[3], pys[2], pys[1], pys[0]);
+        const __m128 px = _mm_set_ps(pxs[3], pxs[2], pxs[1], pxs[0]);
+        const __m128 py = _mm_set_ps(pys[3], pys[2], pys[1], pys[0]);
 
-        __m128 tx = _mm_sub_ps(px, anchorXVec);
-        __m128 ty = _mm_sub_ps(py, anchorYVec);
+        const __m128 tx = _mm_sub_ps(px, anchorXVec);
+        const __m128 ty = _mm_sub_ps(py, anchorYVec);
 
         __m128 rotatedX = _mm_sub_ps(_mm_mul_ps(tx, cosVec), _mm_mul_ps(ty, sinVec));
         __m128 rotatedY = _mm_add_ps(_mm_mul_ps(tx, sinVec), _mm_mul_ps(ty, cosVec));
@@ -736,7 +670,6 @@ namespace magique
 
         _mm_store_ps(pxs, rotatedX);
         _mm_store_ps(pys, rotatedY);
-
 #else
         const float cosTheta = cosf(rotation * DEG2RAD);
         const float sinTheta = sinf(rotation * DEG2RAD);
@@ -757,82 +690,7 @@ namespace magique
 #endif
     }
 
-    //----------------- BOUNDING BOX -----------------//
 
-    // returns the bounding box of a triangle given by the 3 points
-    inline Rectangle GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
-                                   const float y3)
-    {
-        float minX = x;
-        if (x2 < minX)
-            minX = x2;
-        if (x3 < minX)
-            minX = x3;
-
-        float minY = y;
-        if (y2 < minY)
-            minY = y2;
-        if (y3 < minY)
-            minY = y3;
-
-        float maxX = x;
-        if (x2 > maxX)
-            maxX = x2;
-        if (x3 > maxX)
-            maxX = x3;
-
-        float maxY = y;
-        if (y2 > maxY)
-            maxY = y2;
-        if (y3 > maxY)
-            maxY = y3;
-
-        const float width = maxX - minX;
-        const float height = maxY - minY;
-
-        return {minX, minY, width, height};
-    }
-
-    // Given the 4x and 4y coordinates of a shape returns the bounding rectangle
-    inline Rectangle GetBBQuadrilateral(const float (&pxs)[4], const float (&pys)[4])
-    {
-        float minX = pxs[0];
-        if (pxs[1] < minX)
-            minX = pxs[1];
-        if (pxs[2] < minX)
-            minX = pxs[2];
-        if (pxs[3] < minX)
-            minX = pxs[3];
-
-        float minY = pys[0];
-        if (pys[1] < minY)
-            minY = pys[1];
-        if (pys[2] < minY)
-            minY = pys[2];
-        if (pys[3] < minY)
-            minY = pys[3];
-
-        float maxX = pxs[0];
-        if (pxs[1] > maxX)
-            maxX = pxs[1];
-        if (pxs[2] > maxX)
-            maxX = pxs[2];
-        if (pxs[3] > maxX)
-            maxX = pxs[3];
-
-        float maxY = pys[0];
-        if (pys[1] > maxY)
-            maxY = pys[1];
-        if (pys[2] > maxY)
-            maxY = pys[2];
-        if (pys[3] > maxY)
-            maxY = pys[3];
-
-        const float width = maxX - minX;
-        const float height = maxY - minY;
-
-        return {minX, minY, width, height};
-    }
 } // namespace magique
 
 #endif //MAGIQUE_COLLISIONDETECTION_H

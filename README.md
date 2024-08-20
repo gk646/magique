@@ -13,27 +13,27 @@ Most notable features:
 
 - **Easy to learn and use**
     - All raylib methods are fully functional allowing for an easy transition
-    - **Fully documented headers** and GitHub wiki
+    - _**_Fully documented headers_**_ and GitHub wiki
     - Multiple example games included (see examples/)
     - Beginner-friendly public API optimized for usability
 - **Fast and modern**
-    - Internally uses **custom datastructures and algorithms** to provide maximum performance
-    - Explicitly **optimized for compile time** internally and externally!
-    - Takes advantage of **SIMD instructions, data-driven design and cache locality** where possible
+    - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
+    - Explicitly _**optimized for compile time**_ internally and externally!
+    - Takes advantage of _**SIMD instructions, data-driven design and cache locality**_ where possible
 - **Large feature set with `pay for what you use` policy**
     - Asset-Packing and Loading with **compression and encryption support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
-    - **Procedural particle system** inspired by Godot4
+    - _**Procedural particle system**_ inspired by Godot4
     - Persistence API for gamesaves, gameconfigs and database emulator
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
-    - Out of the box support for working with **[Tiled](https://www.mapeditor.org/) exports** (.tmx, .tsx)
+    - Out of the box support for working with _**[Tiled](https://www.mapeditor.org/) exports**_ (.tmx, .tsx)
     - Object-oriented UI framework handling layering with extendable built-in controls
-    - **Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**
+    - _**Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**_
 - **Multiplayer support**
     - Seamless transition between local and global networking with a custom unified API
 - **Steam integration**
-    - Provided a Steam SDK, allows access to **steam features** like matchmaking and chat
+    - Provided a Steam SDK, allows access to _**steam features**_ like matchmaking and chat
 
 `magique` is using the following popular libraries:
 
