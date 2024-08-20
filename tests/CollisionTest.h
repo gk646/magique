@@ -9,6 +9,8 @@
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
 
+
+
 using namespace magique;
 
 enum EntityID : uint16_t
@@ -86,7 +88,24 @@ struct Test final : Game
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            GiveCollisionRect(e, 100, 25);
+            const auto val = GetRandomValue(0,100);
+            if (val < 25)
+            {
+                GiveCollisionRect(e, 25, 25);
+            }
+            else if (val < 50)
+            {
+                GiveCollisionTri(e, {-15, 15}, {15, 15});
+            }
+            else if (val < 75)
+            {
+                GiveCollisionCircle(e, 25);
+            }
+            else
+            {
+                GiveCollisionCapsule(e, 33, 15);
+            }
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 360);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
@@ -95,7 +114,10 @@ struct Test final : Game
         SetScript(OBJECT, new ObjectScript());
 
         CreateEntity(PLAYER, 0, 0, MapID(0));
-        CreateEntity(OBJECT, 50, 50, MapID(0));
+        for (int i = 0; i < 100; ++i)
+        {
+            CreateEntity(OBJECT, GetRandomValue(1,1000), GetRandomValue(1,1000), MapID(0));
+        }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
@@ -129,7 +151,7 @@ struct Test final : Game
     {
         for(const auto e : GetUpdateEntities())
         {
-
+            auto& pos = GetComponent<PositionC>(e);
         }
     }
 };

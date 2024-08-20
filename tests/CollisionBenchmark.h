@@ -9,6 +9,16 @@
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
 
+//-----------------------------------------------
+// Collision Benchmark
+//-----------------------------------------------
+// .....................................................................
+// Just some anecdotal values when running for around 5s
+// Time: 18.9ms | Start
+// Time: 17.5ms | Added early return to CircleToQuadrilateral()
+// Time: 17.1ms | Added early return to CircleToCapsule()
+// .....................................................................
+
 using namespace magique;
 
 enum EntityID : uint16_t
@@ -41,7 +51,7 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other) override
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -55,7 +65,7 @@ struct ObjectScript final : EntityScript
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other) override
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -64,7 +74,7 @@ struct ObjectScript final : EntityScript
 
 struct Test final : Game
 {
-    CollisionBenchmark() : Game("magique - CollisionBenchmark") {}
+    Test() : Game("magique - CollisionBenchmark") {}
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
         SetShowHitboxes(true);
@@ -80,7 +90,7 @@ struct Test final : Game
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            const auto val = GetRandomValue(0,100);
+            const auto val = GetRandomValue(0, 100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -97,16 +107,16 @@ struct Test final : Game
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 360);
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
-        CreateEntity(PLAYER, 0, 0, MapID(0));
+        CreateEntity(PLAYER, 2500, 2500, MapID(0));
         SetScript(PLAYER, new PlayerScript());
         SetScript(OBJECT, new ObjectScript());
-        for (int i = 0; i < 5'000; ++i)
+        for (int i = 0; i < 50'000; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(0, 1500), GetRandomValue(0, 1500), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
         }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
@@ -142,7 +152,7 @@ struct Test final : Game
         for (const auto e : GetUpdateEntities())
         {
             auto& pos = GetComponent<PositionC>(e);
-           ++pos.rotation;
+            // ++pos.rotation;
         }
     }
 };

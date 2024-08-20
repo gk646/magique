@@ -14,7 +14,7 @@
 
 #define MAGIQUE_VERSION "0.0.7"  // Version number
 #define MAGIQUE_DEBUG            // Disabled in release builds
-#define MAGIQUE_PROFILING 0      // 0 to disable
+#define MAGIQUE_PROFILING 1      // 0 to disable
 #define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
 #define MAGIQUE_WORKER_THREADS 3 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores
 #define MAGIQUE_COLLISION_CELL_SIZE 150 // How big each collision cell is - No object can be bigger than 2 * size!
