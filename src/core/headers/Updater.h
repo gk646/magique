@@ -9,7 +9,7 @@ namespace magique::updater
         return tickTime;
     }
 
-    inline double Tick(const double startTime, const entt::registry& reg, Game& game)
+    inline double Tick(const double startTime, entt::registry& reg, Game& game)
     {
         StartTick();
         {

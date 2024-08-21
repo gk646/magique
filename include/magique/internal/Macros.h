@@ -8,6 +8,8 @@
 // Dont look here
 // ................................................................................
 
+//----------------- SCRIPTING -----------------//
+
 #define PARENS ()
 #define EXPAND(...) EXPAND4(EXPAND4(EXPAND4(EXPAND4(__VA_ARGS__))))
 #define EXPAND4(...) EXPAND3(EXPAND3(EXPAND3(EXPAND3(__VA_ARGS__))))
@@ -29,6 +31,8 @@
         FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                            \
     }
 
+//----------------- UTIL -----------------//
+
 #if !defined(_DEBUG) || defined(NDEBUG)
 #define ASSERT(expr, message) ((void)0)
 #else
@@ -39,6 +43,26 @@ namespace magique::internal
 {
     void AssertHandler(const char* expr, const char* file, int line, const char* message);
 } // namespace magique::internal
+
+#ifdef __MSVCRT__
+#define IGNORE_WARNING(num) \
+__pragma(warning(push)) \
+__pragma(warning(disable : num))
+
+#define UNIGNORE_WARNING() \
+__pragma(warning(pop))
+#else
+#define IGNORE_WARNING(num)
+#define UNIGNORE_WARNING()
+#endif
+
+//----------------- BUILDING -----------------//
+
+#ifdef __APPLE__
+#define INC_ALGO() #include<algorithm>
+#else
+#define INC_ALGO()
+#endif
 
 
 #endif //MAGIQUE_MACROS_H

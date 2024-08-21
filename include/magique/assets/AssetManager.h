@@ -62,14 +62,18 @@ namespace magique
     // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
     handle RegisterPlaylist(const std::vector<const Asset*>& assets);
 
-    //----------------- TileMaps -----------------//
+    //----------------- Tile Exports -----------------//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
-    // Note: magique only supports setting 1 TileSheet at a time -  Use SetTileSet() in the Core module
     // Note: A Tilsheet has its own atlas - you can access it manually aswell and get a TextureRegion back
 
-    // Registers a "Tiled" (the level editor) map export from a ".tsx" file!
+    // Registerss a tilemap from a export file - Supported: ".tsx" (Tiled),
     // Supports loading multiple layers - all layers must have same dimensions!
     handle RegisterTileMap(const Asset& asset);
+
+    // Registers a tilemap from the given layerdata - layerData = layers { rows { columns {} } }
+    // Allows to register generated maps - use gamedev/Procedural.h or custom methods (make sure you use correct tileindices)
+    // Note: layers have to have the same dimensions
+    handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData);
 
     // Registers a tileset - defines the details of all tiles in a project
     handle RegisterTileSet(const Asset& asset);

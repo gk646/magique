@@ -127,23 +127,25 @@ namespace magique
         Vector2 occDimensions[MAGIQUE_MAX_RAYTRACING_ENTITIES];
         Vector2 occShape[MAGIQUE_MAX_RAYTRACING_ENTITIES];
 
-        const auto lights = registry.view<const PositionC, const EmitterC>();
         int count = 0;
-        for (const auto e : lights)
         {
-            const auto& pos = registry.get<const PositionC>(e);
-            const auto& emit = registry.get<const EmitterC>(e);
-            lightPositions[count] = {pos.x, pos.y};
-            lightColors[count] = Vector3{(float)emit.r, (float)emit.g, (float)emit.b};
-            count++;
+            const auto view = registry.view<const PositionC, const EmitterC>();
+            for (const auto e : view)
+            {
+                const auto& pos = view.get<const PositionC>(e);
+                const auto& emit = view.get<const EmitterC>(e);
+                lightPositions[count] = {pos.x, pos.y};
+                lightColors[count] = Vector3{(float)emit.r, (float)emit.g, (float)emit.b};
+                count++;
+            }
         }
 
-        const auto occluders = registry.view<const PositionC, const OccluderC>();
+        const auto view = registry.view<const PositionC, const OccluderC>();
         count = 0;
-        for (const auto e : occluders)
+        for (const auto e : view)
         {
-            const auto& pos = registry.get<const PositionC>(e);
-            const auto& emit = registry.get<const EmitterC>(e);
+            const auto& pos = view.get<const PositionC>(e);
+            const auto& emit = view.get<const OccluderC>(e);
         }
     }
 

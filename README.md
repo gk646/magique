@@ -19,7 +19,7 @@ Most notable features:
 - **Fast and modern**
     - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
     - Explicitly _**optimized for compile time**_ internally and externally!
-    - Takes advantage of _**SIMD instructions, data-driven design and cache locality**_ where possible
+    - Takes advantage of _**multithreading, SIMD, data-driven design and cache locality**_ where possible
 - **Large feature set with `pay for what you use` policy**
     - Asset-Packing and Loading with **compression and encryption support**
     - Automatic texture stitching into configurable atlases
@@ -27,7 +27,7 @@ Most notable features:
     - _**Procedural particle system**_ inspired by Godot4
     - Persistence API for gamesaves, gameconfigs and database emulator
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
-    - Out of the box support for working with _**[Tiled](https://www.mapeditor.org/) exports**_ (.tmx, .tsx)
+    - Out of the box support for _**[Tiled](https://www.mapeditor.org/) exports**_ (.tmx, .tsx)
     - Object-oriented UI framework handling layering with extendable built-in controls
     - _**Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**_
 - **Multiplayer support**

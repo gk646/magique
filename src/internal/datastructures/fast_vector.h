@@ -29,6 +29,11 @@ SOFTWARE.
 #ifndef FAST_VECTOR_H
 #define FAST_VECTOR_H
 
+#ifdef __MINGW32__
+    #include <utility>
+#endif
+
+
 #include <type_traits>
 #include <cassert>
 #include <cstdlib>
@@ -37,7 +42,7 @@ SOFTWARE.
 template <class T>
 struct fast_vector
 {
-    using size_type = int32_t;
+    using size_type = int;
 
     fast_vector() = default;
     fast_vector(const fast_vector& other) noexcept;

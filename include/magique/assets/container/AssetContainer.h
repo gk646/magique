@@ -2,6 +2,7 @@
 #define MAGIQUE_ASSETCONTAINER_H
 
 #include <vector>
+#include <magique/fwd.hpp>
 #include <magique/assets/types/Asset.h>
 
 //-----------------------------------------------

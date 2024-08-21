@@ -366,7 +366,13 @@ namespace cxstructs
                 unsigned int left = d[i][j - 1] + 1;
                 unsigned int diag = d[i - 1][j - 1] + cost;
 
-                d[i][j] = std::min({above, left, diag});
+                if (above <= left && above <= diag) {
+                    d[i][j] = above;
+                } else if (left <= above && left <= diag) {
+                    d[i][j] = left;
+                } else {
+                    d[i][j] = diag;
+                }
             }
         }
 

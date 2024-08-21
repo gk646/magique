@@ -113,9 +113,9 @@ namespace magique
     {
         inline entt::registry REGISTRY; // The used registry
     }
-    inline entt::registry& magique::GetRegistry() { return internal::REGISTRY; }
+    inline entt::registry& GetRegistry() { return internal::REGISTRY; }
     template <typename T>
-    T& magique::GetComponent(const entt::entity entity)
+    T& GetComponent(const entt::entity entity)
     {
         return internal::REGISTRY.get<T>(entity);
     }

@@ -23,17 +23,17 @@ namespace magique
     {
     };
 
-    template <typename CustomData = int>
+    template <typename CustomData>
     struct TreeBuilder final
     {
         // Function that operates on component data and returns either true (success) or false (failure)
         using ConditionFunc = bool (*)(entt::registry&, entt::entity self, CustomData& cd);
 
-        template<class ... Funcs>
+        template <class... Funcs>
         class Condition final
         {
             int n = 0;
-//            Funcs functions[sizeof...(Funcs)]{};
+            //            Funcs functions[sizeof...(Funcs)]{};
         };
 
         struct Branch final
@@ -56,15 +56,14 @@ namespace magique
         //----------------- CONDITIONS -----------------//
 
         // Adds a if-branch to the tree
-        template<typename T>
+        template <typename T>
         Condition<T> If(ConditionFunc func);
 
         // Adds a anyOf-branch (true if any of the conditions are true) to this tree
         // Checks them in the given order and early returns when possible (same as && operator)
-       // Condition< AnyOf(ConditionFunc... functions);
+        // Condition< AnyOf(ConditionFunc... functions);
 
-       // Condition NOf(int n, ConditionFunc... functions);
-
+        // Condition NOf(int n, ConditionFunc... functions);
 
 
         //----------------- BUILD -----------------//

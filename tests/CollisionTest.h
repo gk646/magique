@@ -9,8 +9,6 @@
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
 
-
-
 using namespace magique;
 
 enum EntityID : uint16_t
@@ -22,6 +20,7 @@ enum EntityID : uint16_t
 struct TestCompC final
 {
     int counter = 0;
+    bool isColliding = false;
 };
 
 struct PlayerScript final : EntityScript
@@ -51,6 +50,8 @@ struct ObjectScript final : EntityScript // Moving platform
 {
     void onTick(entt::entity self) override
     {
+        auto& myComp = GetComponent<TestCompC>(self);
+        myComp.isColliding = false;
         auto& test = GetComponent<TestCompC>(self);
         auto& pos = GetComponent<PositionC>(self);
         if (test.counter > 100)
@@ -68,6 +69,12 @@ struct ObjectScript final : EntityScript // Moving platform
 
         test.counter++;
     }
+
+        void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
+        {
+            auto& myComp = GetComponent<TestCompC>(self);
+            myComp.isColliding = true;
+        }
 };
 
 struct Test final : Game
@@ -127,14 +134,15 @@ struct Test final : Game
         {
             const auto& pos = GetComponent<const PositionC>(e);
             const auto& col = GetComponent<const CollisionC>(e);
-            const auto color = BLUE;
+            const auto& test = GetComponent<const TestCompC>(e);
+            const auto color = test.isColliding ? PURPLE : BLUE;
             switch (col.shape)
             {
-            [[likely]] case Shape::RECT: // Missing rotation anchor
-                DrawRectanglePro({pos.x, pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
+                [[likely]] case Shape::RECT: // Missing rotation anchor
+                    DrawRectanglePro({pos.x, pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
                 break;
             case Shape::CIRCLE:
-                DrawCircleV({pos.x + col.p1 / 2.0F, pos.y + col.p1 / 2.0F}, col.p1, color);
+                DrawCircleV({pos.x + col.p1 , pos.y + col.p1 }, col.p1, color);
                 break;
             case Shape::CAPSULE:
                 DrawCapsule2D(pos.x, pos.y, col.p1, col.p2, color);
@@ -145,6 +153,7 @@ struct Test final : Game
                 break;
             }
         }
+        DrawHashGridDebug();
         EndMode2D();
     }
     void updateGame(GameState gameState) override

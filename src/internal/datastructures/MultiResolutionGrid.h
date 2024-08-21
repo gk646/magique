@@ -12,10 +12,10 @@
 // This simplifies memory and thus cache friendlyness even more
 // With this setup you have 0 (zero) allocations in game ticks which involves completely clearing and refilling grid
 
-using CellID = uint64_t;
+using CellID = int64_t;
 // This creates a unique value - both values are unqiue themselves so their concatenated version is aswell
 // We still use a hash function on it to get more byte range (all bits flipped)
-inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<uint64_t>(cellX) << 32 | cellY; }
+inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<int64_t>(cellX) << 32 | cellY; }
 
 template <typename T, int size>
 struct DataBlock final
@@ -51,7 +51,7 @@ template <typename V, int blockSize = 15> // assuming 4 bytes as value size its 
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int> cellMap{};
-    magique::vector<DataBlock<V, blockSize>> dataBlocks{};
+    std::vector<DataBlock<V, blockSize>> dataBlocks{};
     int cellSize;
 
     explicit SingleResolutionHashGrid(const int cellSize) : cellSize(cellSize) {}
@@ -157,6 +157,8 @@ struct SingleResolutionHashGrid final
         cellMap.reserve(cells);
         dataBlocks.reserve(expectedTotalEntites / blockSize);
     }
+
+    [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
 
 private:
     void insertElement(const CellID id, V val)

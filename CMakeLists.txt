@@ -21,7 +21,7 @@ endif ()
 option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration (Must set STEAM_SDK_PATH)" OFF)
 option(MAGIQUE_NETWORKING "Set to enable local networking" ON)
 option(MAGIQUE_BUILD_SHARED "Set to enable building magique as shared library" OFF)
-option(MAGIQUE_USE_SIMD "Set to enable usage of SIMD (faster)" ON)
+option(MAGIQUE_USE_SIMD "Set to enable usage of SIMD (faster)" OFF)
 option(MAGIQUE_ENABLE_SANITIZER "Set to compile with address sanitizer" OFF)
 
 # Parse the options and set parameters

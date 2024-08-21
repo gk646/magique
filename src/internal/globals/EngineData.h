@@ -31,12 +31,11 @@ namespace magique
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCache = HashMap<entt::entity, uint16_t>;
-    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 15>;
+    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31>;
 
     struct EngineData final
     {
         CollPairCollector collisionPairs{};                   // Collision pair collectors
-        EntityCollector collectors{};                         // Collects entities - 1 for each thread
         EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all entities
         EntityCache entityUpdateCache{1000};                  // Caches entites not in update range anymore
         HashSet<uint64_t> pairSet;                            // Filters unique collision pairs

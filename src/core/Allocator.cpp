@@ -12,37 +12,33 @@
 void* operator new(const size_t size)
 {
     LOG_ALLOC("Allocating %d bytes", static_cast<int>(size));
-    void* ptr = malloc(size);
-    if (ptr)
-        return ptr;
-
-    return nullptr;
+    return malloc(size);
 }
 
 // Override the global delete operator
- void operator delete(void* ptr) noexcept
+void operator delete(void* ptr) noexcept
 {
     LOG_ALLOC("Deallocating");
     free(ptr);
 }
 
- void* operator new[](size_t size)
+void* operator new[](size_t size)
 {
     return ::operator new(size); // Redirect to single-object new
 }
 
- void operator delete[](void* ptr) noexcept
+void operator delete[](void* ptr) noexcept
 {
     ::operator delete(ptr); // Redirect to single-object delete
 }
 
- void operator delete(void* ptr, size_t size) noexcept
+void operator delete(void* ptr, size_t size) noexcept
 {
     LOG_ALLOC("Deallocating %d bytes", static_cast<int>(size));
     free(ptr);
 }
 
- void operator delete[](void* ptr, size_t size) noexcept
+void operator delete[](void* ptr, size_t size) noexcept
 {
     ::operator delete(ptr, size); // Redirect to single-object delete with size
 }

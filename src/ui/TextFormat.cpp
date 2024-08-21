@@ -260,8 +260,9 @@ namespace magique
 
     void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
+
     template <typename T>
-    auto& GetFormatValue(const char* placeholder)
+    T& GetFormatValue(const char* placeholder)
     {
         const auto it = VALUES.find(placeholder);
         if (it == VALUES.end())

@@ -10,10 +10,10 @@
 //    -> uses custom cache friendly hashgrid (with third-party hashmap)
 //    -> first checks if inside camera bounds otherwise if close to any actor
 // 2. Multithreaded broad phase (scalable to any amount)
-//    -> vector collects all entities in overlapping cells
+//    -> iterate all hash grid cells
 //    -> Collision is checked with SIMD enabled primitive functions
 //    -> if colliding collision pair is stored
-//    -> uses separate pair and cell collectors to prevent false sharing
+//    -> uses separate pair collectors to prevent false sharing
 // 3. Single threaded pass over all pairs invoking event methods
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
 // .....................................................................
@@ -23,38 +23,65 @@ static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
 
 namespace magique
 {
+    const auto POSITION_GROUP = internal::REGISTRY.group<const PositionC, const CollisionC>();
+
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& info);
     void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
-    void QueryHashGrid(vector<entt::entity>& coll, const EntityHashGrid&, const PositionC& pos, const CollisionC& col);
+    void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, int startIdx, int endIdx);
 
     // System
-    inline void DynamicCollisionSystem(const entt::registry& registry)
+    inline void DynamicCollisionSystem()
     {
         auto& data = global::ENGINE_DATA;
         auto& grid = data.hashGrid;
-        const auto& collisionVec = data.collisionVec;
-        auto& collectors = data.collectors;
         auto& colPairs = data.collisionPairs;
-        auto& pairSet = data.pairSet;
-        const auto collisionCheck = [&](const int j, const int startIdx, const int endIdx)
+
+        const int size = static_cast<int>(grid.cellMap.size()); // Multithread over certain amount
+        if (size > 150)
         {
-            const auto start = collisionVec.begin() + startIdx;
-            const auto end = collisionVec.begin() + endIdx;
-            auto& collector = collectors[j].vec;
-            auto& pairs = colPairs[j].vec;
-            for (auto it = start; it != end; ++it)
+            std::array<jobHandle, WORK_PARTS> handles{};
+            int end = 0;
+            const int partSize = static_cast<int>((float)size * 0.81F) / WORK_PARTS; // Give main thread more work
+            for (int j = 0; j < WORK_PARTS - 1; ++j)
             {
-                const auto first = *it;
-                const auto [posA, colA] = registry.get<const PositionC, const CollisionC>(first);
-                QueryHashGrid(collector, grid, posA, colA);
-                for (const auto second : collector)
+                const int start = end;
+                end = start + partSize;
+                handles[j] =
+                    AddJob(CreateExplicitJob(CheckHashGridCells, std::ref(grid), std::ref(colPairs[j].vec), start, end));
+            }
+            CheckHashGridCells(grid, colPairs[WORK_PARTS - 1].vec, end, size);
+            AwaitJobs(handles);
+        }
+        else
+        {
+            CheckHashGridCells(grid, colPairs[0].vec, 0, size);
+        }
+        HandleCollisionPairs(colPairs, data.pairSet);
+    }
+
+    inline void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, const int startIdx,
+                                   const int endIdx)
+
+    {
+        const auto start = grid.cellMap.begin() + startIdx;
+        const auto end = grid.cellMap.begin() + endIdx;
+        for (auto it = start; it != end; ++it)
+        {
+            const auto& block = grid.dataBlocks[it->second];
+            const auto dStart = block.data;
+            const auto dEnd = block.data + block.count;
+            for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
+            {
+                const auto first = *dIt1;
+                const auto [posA, colA] = POSITION_GROUP.get<const PositionC, const CollisionC>(first);
+                for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                 {
+                    const auto second = *dIt2;
                     if (first >= second)
                         continue;
-                    const auto [posB, colB] = registry.get<const PositionC, const CollisionC>(second);
-                    if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0) [[unlikely]]
+                    const auto [posB, colB] = POSITION_GROUP.get<const PositionC, const CollisionC>(second);
+                    if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
                         continue; // Not on the same map or not on the same collision layer
-
                     CollisionInfo info = CollisionInfo::NoCollision();
                     CheckCollision(posA, colA, posB, colB, info);
                     if (info.isColliding()) [[unlikely]]
@@ -62,86 +89,6 @@ namespace magique
                         pairs.push_back({info, first, second, posA.type, posB.type});
                     }
                 }
-                collector.clear();
-            }
-        };
-
-        const int size = collisionVec.size(); // Multithread over certain amount
-        if (size > 1000)
-        {
-            std::array<jobHandle, WORK_PARTS> handles{};
-            int end = 0;
-            const int partSize = size / WORK_PARTS;
-            for (int j = 0; j < WORK_PARTS - 1; ++j)
-            {
-                const int start = end;
-                end = start + partSize;
-                handles[j] = AddJob(CreateExplicitJob(collisionCheck, j, start, end));
-            }
-            collisionCheck(WORK_PARTS - 1, end, size);
-            AwaitJobs(handles);
-        }
-        else
-        {
-            collisionCheck(0, 0, size);
-        }
-#ifdef MAGIQUE_DEBUG_COLLISIONS
-        int correct = 0;
-        for (const auto first : collisionVec)
-        {
-            for (const auto second : collisionVec)
-            {
-                if (first >= second) [[unlikely]]
-                    continue;
-                auto [posA, colA] = registry.get<PositionC, const CollisionC>(first);
-                auto [posB, colB] = registry.get<PositionC, const CollisionC>(second);
-                CollisionInfo info = CollisionInfo::NoCollision();
-                if (CheckCollision(posA, colA, posB, colB, info)) [[unlikely]]
-                {
-                    correct++;
-                }
-            }
-        }
-        printf("Collisions: %d\n", correct);
-#endif
-        grid.clear();
-        HandleCollisionPairs(colPairs, pairSet);
-    }
-
-    inline void QueryHashGrid(vector<entt::entity>& collector, const EntityHashGrid& grid, const PositionC& pos,
-                              const CollisionC& col)
-    {
-        switch (col.shape)
-        {
-        [[likely]] case Shape::RECT:
-            {
-                if (pos.rotation == 0) [[likely]]
-                {
-                    return grid.query(collector, pos.x, pos.y, col.p1, col.p2);
-                }
-                float pxs[4] = {0, col.p1, col.p1, 0};
-                float pys[4] = {0, 0, col.p2, col.p2};
-                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBQuadrilateral(pxs, pys);
-                return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
-            }
-        case Shape::CIRCLE:
-            return grid.query(collector, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
-        case Shape::CAPSULE:
-            // Top left and height as height / diameter as w
-            return grid.query(collector, pos.x, pos.y, col.p1 * 2.0F, col.p2);
-        case Shape::TRIANGLE:
-            {
-                if (pos.rotation == 0)
-                {
-                    const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
-                    return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
-                }
-                float txs[4] = {0, col.p1, col.p3, 0};
-                float tys[4] = {0, col.p2, col.p4, 0};
-                RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
-                return grid.query(collector, bb.x, bb.y, bb.width, bb.height);
             }
         }
     }
@@ -167,7 +114,6 @@ namespace magique
         }
         pairSet.clear();
     }
-
 
     inline void CheckCollision(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                const CollisionC& colB, CollisionInfo& info)
@@ -213,14 +159,13 @@ namespace magique
                 {
                     if (posA.rotation == 0)
                     {
-                        return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1 / 2.0F,
-                                            posB.y + colB.p1 / 2.0F, colB.p1, info);
+                        return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1, posB.y + colB.p1,
+                                            colB.p1, info);
                     }
                     float pxs[4] = {0, colA.p1, colA.p1, 0}; // rect a
                     float pys[4] = {0, 0, colA.p2, colA.p2}; // rect a
                     RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, pxs, pys,
-                                                 info);
+                    return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, pxs, pys, info);
                 }
             case Shape::CAPSULE:
                 {
@@ -276,35 +221,32 @@ namespace magique
                 {
                     if (posB.rotation == 0)
                     {
-                        return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1 / 2.0F,
-                                            posA.y + colA.p1 / 2.0F, colA.p1, info);
+                        return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1, posA.y + colA.p1,
+                                            colA.p1, info);
                     }
                     float pxs[4] = {0, colB.p1, colB.p1, 0}; // rect b
                     float pys[4] = {0, 0, colB.p2, colB.p2}; // rect b
                     RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, pxs, pys,
-                                                 info);
+                    return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, pxs, pys, info);
                 }
             case Shape::CIRCLE:
                 // We can skip the translation to the middle point as both are in the same system
                 return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p1, info);
             case Shape::CAPSULE:
-                return CircleToCapsule(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, posB.x, posB.y,
-                                       colB.p1, colB.p2, info);
+                return CircleToCapsule(posA.x + colA.p1, posA.y + colA.p1, colA.p1, posB.x, posB.y, colB.p1, colB.p2,
+                                       info);
             case Shape::TRIANGLE:
                 {
                     if (posB.rotation == 0)
                     {
                         const float txs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
                         const float tys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                        return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, txs, tys,
-                                                     info);
+                        return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, txs, tys, info);
                     }
                     float txs[4] = {0, colB.p1, colB.p3, 0};
                     float tys[4] = {0, colB.p2, colB.p4, 0};
                     RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return CircleToQuadrilateral(posA.x + colA.p1 / 2.0F, posA.y + colA.p1 / 2.0F, colA.p1, txs, tys,
-                                                 info);
+                    return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, txs, tys, info);
                 }
             }
         case Shape::CAPSULE:
@@ -322,8 +264,8 @@ namespace magique
                     return CapsuleToQuadrilateral(posA.x, posA.y, colA.p1, colA.p2, pxs, pys, info);
                 }
             case Shape::CIRCLE:
-                return CircleToCapsule(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, posA.x, posA.y,
-                                       colA.p1, colA.p2, info);
+                return CircleToCapsule(posB.x + colB.p1, posB.y + colB.p1, colB.p1, posA.x, posA.y, colA.p1, colA.p2,
+                                       info);
             case Shape::CAPSULE:
                 return CapsuleToCapsule(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2, info);
             case Shape::TRIANGLE:
@@ -384,14 +326,12 @@ namespace magique
                     {
                         const float txs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
                         const float tys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, txs, tys,
-                                                     info);
+                        return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, txs, tys, info);
                     }
                     float txs[4] = {0, colA.p1, colA.p3, 0};
                     float tys[4] = {0, colA.p2, colA.p4, 0};
                     RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CircleToQuadrilateral(posB.x + colB.p1 / 2.0F, posB.y + colB.p1 / 2.0F, colB.p1, txs, tys,
-                                                 info);
+                    return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, txs, tys, info);
                 }
             case Shape::CAPSULE:
                 {

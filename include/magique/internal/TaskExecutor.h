@@ -7,7 +7,7 @@
 
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
-#include <magique/util/Jobs.h>
+#include <magique/util/JobSystem.h>
 
 namespace magique::internal
 {

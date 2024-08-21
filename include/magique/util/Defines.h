@@ -17,7 +17,7 @@
 #define MAGIQUE_PROFILING 1      // 0 to disable
 #define MAGIQUE_LOGIC_TICKS 60   // Logic ticks per second
 #define MAGIQUE_WORKER_THREADS 3 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores
-#define MAGIQUE_COLLISION_CELL_SIZE 150 // How big each collision cell is - No object can be bigger than 2 * size!
+#define MAGIQUE_COLLISION_CELL_SIZE 50 // How big each collision cell is - No object can be bigger than 2 * size!
 
 //----------------- STEAM -----------------//
 
@@ -57,7 +57,6 @@
 #define MAGIQUE_USE_SIMD // up to AVX2 -> supported by 93% of steam users (Intel since 2013, AMD since 2015)
 
 //----------------- CONDITIONALS -----------------//
-
 
 #if !defined(_DEBUG) || defined(NDEBUG)
 #undef MAGIQUE_DEBUG
