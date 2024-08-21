@@ -10,7 +10,7 @@
 #include <magique/ecs/Scripting.h>
 #include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
-#include <magique/util/Jobs.h>
+#include <magique/util/JobSystem.h>
 #include <magique/persistence/container/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 

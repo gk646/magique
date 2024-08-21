@@ -1,7 +1,7 @@
 #include <array>
 #include <vector>
 
-#include <magique/util/Jobs.h>
+#include <magique/util/JobSystem.h>
 #include <magique/util/Logging.h>
 #include <magique/util/Defines.h>
 

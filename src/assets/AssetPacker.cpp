@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <filesystem>
+#include <cmath>
 #include <raylib/raylib.h>
 
 #include <magique/assets/AssetPacker.h>
@@ -171,7 +172,7 @@ namespace magique
             assets.sort();
             if (res)
             {
-                const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
+                const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F));
                 if (original == imageSize)
                 {
                     auto* logText =

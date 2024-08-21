@@ -1,6 +1,7 @@
-#ifndef COLLISION_BENCHMARK_H
-#define COLLISION_BENCHMARK_H
+#ifndef HASHGRIDTEST_H
+#define HASHGRIDTEST_H
 
+#include <string>
 #include <raylib/raylib.h>
 
 #include <magique/core/Game.h>
@@ -8,26 +9,6 @@
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
 #include <magique/core/Draw.h>
-#include <magique/util/Logging.h>
-
-//-----------------------------------------------
-// Collision Benchmark
-//-----------------------------------------------
-// .....................................................................
-// Just some anecdotal values when running for around 5s
-// Time: 18.9ms | Start
-// Time: 17.5ms | Added early return bounding-box check to CircleToQuadrilateral()
-// Time: 17.1ms | Added early return bounding-box check to CircleToCapsule()
-// Time: 16.1ms | Used view.get<> intead of registry.get<>
-// Time: 14.3ms | Added early return bounding-box check to SAT()
-// Time: 9.3 ms | Using a single hashgrid with 50 width
-// Time: 9.1 ms | Fixing circle calculations / removing uneeded division (top left + radius not radius/2 lol)
-// Time: 7.6 ms | Changed access pattern to hashgrid from queries to direct cell by cell iteration -> more cache local
-// Time: 6.9 ms | Changed ratio of work for main thread (get more) 39.5% main vs 60.5 distributed among workers (with 4)
-// Time: 6.7 ms | Optimized ECS access further using groups
-// Fixed update area being wrong -> more objects are loaded now
-// Time: 9.1 ms | New Baseline
-// .....................................................................
 
 using namespace magique;
 
@@ -39,16 +20,11 @@ enum EntityID : uint16_t
 
 struct TestCompC final
 {
-    bool isColliding = false;
+    int counter = 0;
 };
 
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self) override
-    {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = false;
-    }
     void onKeyEvent(entt::entity self) override
     {
         auto& pos = GetComponent<PositionC>(self);
@@ -61,10 +37,12 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
+
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = true;
+        auto& pos = GetComponent<PositionC>(self);
+        pos.x += info.normalVector.x * info.depth;
+        pos.y += info.normalVector.y * info.depth;
     }
 };
 
@@ -72,36 +50,31 @@ struct ObjectScript final : EntityScript
 {
     void onTick(entt::entity self) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = false;
-    }
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
-    {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = true;
+        auto& test = GetComponent<TestCompC>(self);
+        auto& pos = GetComponent<PositionC>(self);
+
     }
 };
 
 struct Test final : Game
 {
-    Test() : Game("magique - CollisionBenchmark") {}
+    Test() : Game("magique - HashGridTest") {}
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
-        //SetLogLevel(LEVEL_ALLOCATION);
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e)
         {
             GiveActor(e);
             GiveScript(e);
             GiveCamera(e);
-            GiveCollisionRect(e, 15, 25);
+            GiveCollisionCircle(e, 25);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            const auto val = GetRandomValue(0, 100);
+            const auto val = GetRandomValue(0,100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -112,33 +85,35 @@ struct Test final : Game
             }
             else if (val < 75)
             {
-                GiveCollisionCircle(e, 24);
+                GiveCollisionCircle(e, 25);
             }
             else
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 360);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
+
         SetScript(PLAYER, new PlayerScript());
         SetScript(OBJECT, new ObjectScript());
-        CreateEntity(PLAYER, 2500, 2500, MapID(0));
-        for (int i = 0; i < 50'000; ++i)
+
+        CreateEntity(PLAYER, 0, 0, MapID(0));
+        for (int i = 0; i < 5; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(1,555), GetRandomValue(1,555), MapID(0));
         }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
+        DrawRectangle(250, 250, 50, 50, RED);
         for (const auto e : GetDrawEntities())
         {
             const auto& pos = GetComponent<const PositionC>(e);
             const auto& col = GetComponent<const CollisionC>(e);
-            const auto& test = GetComponent<const TestCompC>(e);
-            const auto color = test.isColliding ? PURPLE : BLUE;
+            const auto color = BLUE;
             switch (col.shape)
             {
             [[likely]] case Shape::RECT: // Missing rotation anchor
@@ -156,12 +131,17 @@ struct Test final : Game
                 break;
             }
         }
+        DrawHashGridDebug();
         EndMode2D();
+
     }
     void updateGame(GameState gameState) override
     {
-       // printf("Loaded Objects: %d\n",GetUpdateEntities().size());
+        for(const auto e : GetUpdateEntities())
+        {
+            auto& pos = GetComponent<PositionC>(e);
+        }
     }
 };
 
-#endif //COLLISION_BENCHMARK_H
+#endif //HASHGRIDTEST_H

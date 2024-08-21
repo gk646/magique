@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_DATATABLE_H
 #define MAGIQUE_DATATABLE_H
 
+#include <cstring>
 #include <vector>
 #include <initializer_list>
 #include <magique/internal/InternalTypes.h>
@@ -126,7 +127,7 @@ namespace magique
                 continue;
             }
             int len = static_cast<int>(strlen(arg));
-            std::memcpy(names[i], arg, std::min(MAGIQUE_MAX_TABLE_NAME_SIZE, len));
+            memcpy(names[i], arg, std::min(MAGIQUE_MAX_TABLE_NAME_SIZE, len));
             i++;
         }
     }

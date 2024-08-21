@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_JOBS_H
-#define MAGIQUE_JOBS_H
+#ifndef MAGIQUE_JOBSYSTEM_H
+#define MAGIQUE_JOBSYSTEM_H
 
 #include <tuple>
 #include <magique/fwd.hpp>
@@ -137,4 +137,4 @@ magique::IJob* magique::CreateExplicitJob(Callable callable, Args... args)
     return new ExplicitJob(callable, args...);
 }
 
-#endif //MAGIQUE_JOBS_H
+#endif //MAGIQUE_JOBSYSTEM_H

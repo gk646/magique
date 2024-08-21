@@ -1,4 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
+#include <cstring>
 
 #include <magique/util/Logging.h>
 #include <magique/persistence/container/GameConfig.h>
@@ -33,20 +34,20 @@ namespace magique
         for (const auto& cell : config.storage)
         {
             auto type = static_cast<uint8_t>(cell.type); // only 5 types - but type int cause its in user space
-            std::memcpy(&data[idx], &type, sizeof(uint8_t));
+            memcpy(&data[idx], &type, sizeof(uint8_t));
             ++idx;
-            std::memcpy(&data[idx], &cell.id, sizeof(int));
+           memcpy(&data[idx], &cell.id, sizeof(int));
             idx += 4;
 
             if (cell.type == StorageType::STRING)
             {
                 const auto len = strlen(cell.string); // String
-                std::memcpy(&data[idx], cell.string, len);
+                memcpy(&data[idx], cell.string, len);
                 idx += static_cast<int>(len);
             }
             else
             {
-                std::memcpy(&data[idx], cell.buffer, 8);
+                memcpy(&data[idx], cell.buffer, 8);
                 idx += 8;
             }
         }

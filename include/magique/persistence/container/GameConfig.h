@@ -103,7 +103,7 @@ namespace magique
             return defaultValue;
         }
         T val;
-        std::memcpy(&val, cell->buffer, sizeof(T));
+        memcpy(&val, cell->buffer, sizeof(T));
         return val;
     }
 } // namespace magique

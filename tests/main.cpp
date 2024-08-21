@@ -7,6 +7,7 @@
 
 #include "CollisionBenchmark.h"
 //#include "CollisionTest.h"
+//#include "HashGridTest.h"
 
 int main()
 {

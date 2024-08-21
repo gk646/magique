@@ -51,11 +51,11 @@ if(MAGIQUE_STEAM_INTEGRATION)
 endif ()
 
 if(NOT MAGIQUE_USE_SIMD)
-    target_compile_definitions(magique PUBLIC -DMAGIQUE_NO_SIMD)
+    target_compile_definitions(magique PUBLIC MAGIQUE_NO_SIMD)
 endif ()
 
 # Needed for proper macro expansion
-if(WIN32)
+if(MSVC)
     target_compile_options(magique PUBLIC /Zc:preprocessor)
 endif ()
 

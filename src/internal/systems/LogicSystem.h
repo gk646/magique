@@ -3,9 +3,9 @@
 
 namespace magique
 {
-    inline Vector3 GetUpdateCircle(const float x, const float y)
+    inline Vector2 GetUpdateCircle(const float x, const float y)
     {
-        return {x, y, global::ENGINE_CONFIG.entityUpdateDistance};
+        return {x - global::ENGINE_CONFIG.entityUpdateDistance, y - global::ENGINE_CONFIG.entityUpdateDistance};
     }
 
     // Insert numbers into flattened array
@@ -26,7 +26,7 @@ namespace magique
     // This is a bit complicated as we dont know how many total maps there are
     // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
-                           Vector3 (&actorCircles)[4],
+                           Vector2 (&actorCircles)[4],
                            cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
                            cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                            int& actorCount)
@@ -147,6 +147,7 @@ namespace magique
     inline void LogicSystem(const entt::registry& registry)
     {
         auto& tickData = global::ENGINE_DATA;
+        const auto& config = global::ENGINE_CONFIG;
         auto& hashGrid = tickData.hashGrid;
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;
@@ -157,8 +158,9 @@ namespace magique
         AssignCameraData(registry);
 
         // Cache
+        const auto updateDist = config.entityUpdateDistance * 2.0F;
         const auto cameraMap = tickData.cameraMap;
-        const uint16_t cacheDuration = global::ENGINE_CONFIG.entityCacheDuration;
+        const uint16_t cacheDuration = config.entityCacheDuration;
         const auto camBound = GetCameraBounds();
         int actorCount = 0;
 
@@ -166,7 +168,7 @@ namespace magique
         // Dist is just a flattened array: int [Count Maps][Count Players]
         cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
         cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
-        Vector3 actorCircles[MAGIQUE_MAX_PLAYERS];
+        Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);
         {
@@ -174,11 +176,11 @@ namespace magique
             hashGrid.clear();
             updateVec.clear();
             collisionVec.clear();
+            hashGrid.clear();
 
-            const auto view = registry.view<const PositionC>();
-            for (const auto e : view)
+            for (const auto e : POSITION_GROUP)
             {
-                const auto& pos = view.get<const PositionC>(e);
+                const auto& pos = POSITION_GROUP.get<const PositionC>(e);
                 const auto map = pos.map;
                 if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
                 {
@@ -188,9 +190,9 @@ namespace magique
                     {
                         drawVec.push_back(e); // Should be drawn
                         cache[e] = cacheDuration;
-                        const auto collision = registry.try_get<CollisionC>(e);
-                        if (collision != nullptr) [[likely]]
-                            HandleCollisionEntity(e, pos, *collision, hashGrid, collisionVec);
+                        if (registry.all_of<CollisionC>(e))
+                            HandleCollisionEntity(e, pos, POSITION_GROUP.get<const CollisionC>(e), hashGrid,
+                                                  collisionVec);
                     }
                     else
                     {
@@ -199,14 +201,14 @@ namespace magique
                             const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
                             if (actorNum == -1)
                                 break;
-                            const auto [x, y, z] = actorCircles[actorNum];
+                            const auto [x, y] = actorCircles[actorNum];
                             // Check if insdie any update circle
-                            if (PointInRect(pos.x, pos.y, x, y, z, z))
+                            if (PointInRect(pos.x, pos.y, x, y, updateDist, updateDist))
                             {
                                 cache[e] = cacheDuration;
-                                const auto collision = registry.try_get<CollisionC>(e);
-                                if (collision != nullptr) [[likely]]
-                                    HandleCollisionEntity(e, pos, *collision, hashGrid, collisionVec);
+                                if (registry.all_of<CollisionC>(e))
+                                    HandleCollisionEntity(e, pos, POSITION_GROUP.get<const CollisionC>(e), hashGrid,
+                                                          collisionVec);
                                 break;
                             }
                         }

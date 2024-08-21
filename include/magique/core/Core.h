@@ -29,12 +29,12 @@ namespace magique
 
     //----------------- CORE BEHAVIOR -----------------//
 
-    // Sets the update radius distance around actors
+    // Sets the size of the update square centered on the actors in each direction
     // Entities in range will be collision checked and added to the update vector
     // Default: 1000
     void SetUpdateDistance(int distance);
 
-    // Adds aditional padding to the sides of the normal camera rectangle - automatically scales with zoom
+    // Adds aditional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
     // Useful for when you have large effects or entities
     // Default: 250
     void SetCameraViewPadding(int distance);
@@ -119,6 +119,8 @@ namespace magique
 
     // Clears the collected benchmark times
     void ResetBenchmarkTimes();
+
+    void DrawHashGridDebug();
 
 } // namespace magique
 #endif //MAGIQUE_CORE_H

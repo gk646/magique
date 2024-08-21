@@ -4,7 +4,7 @@ namespace magique
 {
     void fun()
     {
-        TreeBuilder b;
+       // TreeBuilder b;
 
     }
 } // namespace magique

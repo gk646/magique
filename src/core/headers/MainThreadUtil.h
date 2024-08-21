@@ -92,7 +92,7 @@ namespace magique
                 DrawRectangleLinesRot({pos.x, pos.y, col.p1, col.p2}, pos.rotation, col.anchorX, col.anchorY, RED);
                 break;
             case Shape::CIRCLE:
-                DrawCircleLinesV({pos.x + col.p1 / 2.0F, pos.y + col.p1 / 2.0F}, col.p1, RED);
+                DrawCircleLinesV({pos.x + col.p1 , pos.y + col.p1 }, col.p1, RED);
                 break;
             case Shape::CAPSULE:
                 DrawCapsule2DLines(pos.x, pos.y, col.p1, col.p2, RED);
@@ -141,7 +141,7 @@ namespace magique
     inline void InternalUpdatePost(const entt::registry& registry) // After user space update
     {
         StaticCollisionSystem(registry);  // Static before cause can cause change in position
-        DynamicCollisionSystem(registry); // After cause user systems can modify entity state
+        DynamicCollisionSystem(); // After cause user systems can modify entity state
         global::UI_DATA.update();         // After gametick so ui reflects current state
         global::AUDIO_PLAYER.update();    // After game tick cause position updates
     }

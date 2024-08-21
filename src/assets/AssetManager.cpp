@@ -13,7 +13,6 @@
 #include "internal/globals/AssetManager.h"
 #include "assets/headers/LoadWrappers.h"
 
-
 namespace magique
 {
     bool ImageCheck(Image& img, const Asset& asset, const AtlasID at)
@@ -196,6 +195,8 @@ namespace magique
         auto tileMap = TileMap(asset);
         return global::ASSET_MANAGER.addResource(std::move(tileMap));
     }
+
+    handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
 
     handle RegisterTileSet(const Asset& asset) { return handle::null; }
 

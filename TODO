@@ -7,3 +7,11 @@ implement localization
 implement game dev API's
 
 implement game loading interface / make save loading easy and quick / support multiple saves / quicksaves...
+
+finish lighting
+
+fix collision info for SAT
+
+possibly implemented optional substeps
+
+implement quest api + with visual scripting (raynodes)

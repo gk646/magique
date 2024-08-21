@@ -176,8 +176,7 @@ namespace magique
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
-        ASSERT(height > 2 * radius,
-                 "Given capsule is not well defined! Total height has to be greater than 2 * radius");
+        ASSERT(height > 2 * radius, "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
     }
@@ -219,11 +218,19 @@ namespace magique
         bool found = false;
         for (const auto cam : view)
         {
+            if (cam == e)
+            {
+                LOG_WARNING("Target entity is already the camera holder!");
+                return;
+            }
             reg.erase<CameraC>(cam);
             found = true;
         }
         if (found)
+        {
+            ASSERT(!reg.any_of<CameraC>(e), "Target entity cannot have camera component already!");
             reg.emplace<CameraC>(e);
+        }
         else
             LOG_ERROR("No existing entity with a camera component found!");
     }

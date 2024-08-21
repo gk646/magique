@@ -1,23 +1,30 @@
 #ifndef MAGIQUE_COLLISIONDETECTION_H
 #define MAGIQUE_COLLISIONDETECTION_H
 
+#undef MAGIQUE_USE_SIMD
+#ifdef MAGIQUE_USE_SIMD
 #include <immintrin.h>
 #include <emmintrin.h>
+#endif
+
+#ifdef __MINGW32__
+#include <cmath>
+#endif
 
 //-----------------------------------------------
-// Math Primitives with up to AVX2 intrinsics
+// Collision Primitives with up to AVX2 intrinsics
 //-----------------------------------------------
 // .....................................................................
 // In pure benchmark scenarios they are equal, but in game stress tests simd is much faster
-// Some individual methods may be slower, can be optimized probably
-// Uses out params for collision info to guarantee optimized handling (and its likely always bit faster)
+// The SIMD should be quite primitive and can probably be optimized!
+// Uses out params for CollisionInfo to guarantee optimized handling (and its likely always bit faster)
 // .....................................................................
 
 namespace magique
 {
     inline void SquareRoot(float& pIn)
     {
-#ifdef MAGIQUE_USE_SIMD
+#ifdef MAGIQUE_USE_SIMD // rsqrt is quite a bit faster
         __m128 in = _mm_load_ss(&pIn);
         in = _mm_mul_ss(in, _mm_rsqrt_ss(in));
         _mm_store_ss(&pIn, in);
@@ -28,14 +35,6 @@ namespace magique
 
     //----------------- POINT -----------------//
 
-    inline bool PointInCircle(const float px, const float py, const float cx, const float cy, const float sqRadius)
-    {
-        // Simd is much slower
-        const float dx = px - cx;
-        const float dy = py - cy;
-        return dx * dx + dy * dy <= sqRadius;
-    }
-
     inline bool PointInRect(const float px, const float py, const float rx, const float ry, const float rw,
                             const float rh)
     {
@@ -43,12 +42,9 @@ namespace magique
         const __m256 point = _mm256_set_ps(py, py, py, py, px, px, px, px);
         const __m256 rect_min = _mm256_set_ps(ry, ry, ry, ry, rx, rx, rx, rx);
         const __m256 rect_max = _mm256_set_ps(ry + rh, ry + rh, ry + rh, ry + rh, rx + rw, rx + rw, rx + rw, rx + rw);
-
         const __m256 cmp_min = _mm256_cmp_ps(point, rect_min, _CMP_GE_OQ);
         const __m256 cmp_max = _mm256_cmp_ps(point, rect_max, _CMP_LE_OQ);
-
         const __m256 result = _mm256_and_ps(cmp_min, cmp_max);
-
         return (_mm256_movemask_ps(result) & 0x33) == 0x33;
 #else
         return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
@@ -87,7 +83,6 @@ namespace magique
 
         const float width = maxX - minX;
         const float height = maxY - minY;
-
         return {minX, minY, width, height};
     }
 
@@ -128,8 +123,121 @@ namespace magique
 
         const float width = maxX - minX;
         const float height = maxY - minY;
-
         return {minX, minY, width, height};
+    }
+
+    //----------------- RECT -----------------//
+
+    // rect: x,y,width,height / rect: x,y,width,height
+    inline bool RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
+                           const float y2, const float w2, const float h2)
+    {
+        // This looks a bit faster in under mass load
+#ifdef MAGIQUE_USE_SIMD
+        const __m256 rect1 = _mm256_set_ps(y1 + h1, y1, x1 + w1, x1, y1 + h1, y1, x1 + w1, x1);
+        const __m256 rect2 = _mm256_set_ps(y2, y2 + h2, x2, x2 + w2, y2, y2 + h2, x2, x2 + w2);
+        const __m256 cmp_lt = _mm256_cmp_ps(rect1, rect2, _CMP_LT_OQ);
+        const __m256 cmp_gt = _mm256_cmp_ps(rect1, rect2, _CMP_GT_OQ);
+        const __m256 x_intersect = _mm256_and_ps(_mm256_permute_ps(cmp_gt, 0x50), _mm256_permute_ps(cmp_lt, 0xA0));
+        const __m256 y_intersect = _mm256_and_ps(_mm256_permute_ps(cmp_gt, 0xFA), _mm256_permute_ps(cmp_lt, 0x0F));
+        const __m256 result = _mm256_and_ps(x_intersect, y_intersect);
+        return (_mm256_movemask_ps(result) & 0x88) == 0x88;
+#else
+        return !(x1 >= x2 + w2 || x1 + w1 <= x2 || y1 >= y2 + h2 || y1 + h1 <= y2);
+#endif
+    }
+
+    inline void RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
+                           const float y2, const float w2, const float h2, CollisionInfo& info)
+    {
+        if (!RectToRect(x1, y1, w1, h1, x2, y2, w2, h2))
+        {
+            return;
+        }
+        const float overlapX = std::min(x1 + w1, x2 + w2) - std::max(x1, x2);
+        const float overlapY = std::min(y1 + h1, y2 + h2) - std::max(y1, y2);
+
+        if (overlapX < overlapY)
+        {
+            info.normalVector.x = (x1 + w1 / 2 < x2 + w2 / 2) ? -1.0f : 1.0f;
+            info.normalVector.y = 0.0f;
+            info.depth = overlapX;
+        }
+        else
+        {
+            info.normalVector.x = 0.0f;
+            info.normalVector.y = (y1 + h1 / 2 < y2 + h2 / 2) ? -1.0f : 1.0f;
+            info.depth = overlapY;
+        }
+        info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
+        info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
+    }
+
+    inline void RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx,
+                             const float cy, const float cr, CollisionInfo& info)
+    {
+        float closestX, closestY, dx, dy, distance_squared;
+        const float radius_squared = cr * cr;
+#ifdef MAGIQUE_USE_SIMD
+        const __m128 circle_center = _mm_set_ps(0.0f, 0.0f, cy, cx);
+        const __m128 rect_min = _mm_set_ps(0.0f, 0.0f, ry, rx);
+        const __m128 rect_max = _mm_set_ps(0.0f, 0.0f, ry + rh, rx + rw);
+        const __m128 clamped = _mm_min_ps(_mm_max_ps(circle_center, rect_min), rect_max);
+        const __m128 diff = _mm_sub_ps(circle_center, clamped);
+        const __m128 diff_squared = _mm_mul_ps(diff, diff);
+        const __m128 sum = _mm_add_ps(diff_squared, _mm_shuffle_ps(diff_squared, diff_squared, _MM_SHUFFLE(2, 3, 0, 1)));
+        distance_squared = _mm_cvtss_f32(sum);
+        _mm_store_ss(&closestX, _mm_shuffle_ps(clamped, clamped, _MM_SHUFFLE(0, 0, 0, 0)));
+        _mm_store_ss(&closestY, _mm_shuffle_ps(clamped, clamped, _MM_SHUFFLE(1, 1, 1, 1)));
+        dx = cx - closestX;
+        dy = cy - closestY;
+#else
+        closestX = cx < rx ? rx : cx > rx + rw ? rx + rw : cx;
+        closestY = cy < ry ? ry : cy > ry + rh ? ry + rh : cy;
+        dx = cx - closestX;
+        dy = cy - closestY;
+        distance_squared = dx * dx + dy * dy;
+#endif
+        if (distance_squared > radius_squared) [[likely]]
+        {
+            return;
+        }
+        float distance = distance_squared;
+        SquareRoot(distance);
+        if (distance != 0.0f)
+        {
+            info.normalVector.x = -dx / distance;
+            info.normalVector.y = -dy / distance;
+        }
+        else
+        {
+            info.normalVector.x = 0.0f;
+            info.normalVector.y = 0.0f;
+        }
+        info.depth = cr - distance;
+        info.collisionPoint.x = closestX;
+        info.collisionPoint.y = closestY;
+    }
+
+    // Top left of the capsule and its height and radius
+    inline void RectToCapsule(const float x1, const float y1, const float w1, const float h1, const float x2,
+                              const float y2, const float radius, const float height, CollisionInfo& info)
+    {
+        // Fast bounding box check using RectToRect
+        if (!RectToRect(x1, y1, w1, h1, x2, y2, 2.0F * radius, height)) [[likely]]
+        {
+            return;
+        }
+
+        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + radius, radius, info);
+        if (info.isColliding())
+            return;
+
+        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + height - radius, radius, info);
+        if (info.isColliding())
+            return;
+
+        RectToRect(x1, y1, w1, h1, x2, y2 + radius, radius * 2, height - radius, info);
     }
 
     //----------------- SAT -----------------//
@@ -138,7 +246,13 @@ namespace magique
     inline void SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4],
                     CollisionInfo& info)
     {
-        float minPenetration = FLT_MAX;
+        const auto [x, y, w, h] = GetBBQuadrilateral(pxs, pys);
+        const auto [x1, y1, w1, h1] = GetBBQuadrilateral(p1xs, p1ys);
+        if (!RectToRect(x, y, w, h, x1, y1, w1, h1)) [[likely]]
+        {
+            return; // Early bound check
+        }
+        float minPenetration = 222222222.0F;
         Point bestAxis;
 #ifdef MAGIQUE_USE_SIMD
         const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
@@ -246,124 +360,6 @@ namespace magique
         info.collisionPoint = {(pxs[0] + pxs[1] + pxs[2] + pxs[3]) / 4.0f, (pys[0] + pys[1] + pys[2] + pys[3]) / 4.0f};
     }
 
-    //----------------- RECT -----------------//
-
-    // rect: x,y,width,height / rect: x,y,width,height
-    inline bool RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
-                           const float y2, const float w2, const float h2)
-    {
-        // This looks a bit faster in under mass load
-#ifdef MAGIQUE_USE_SIMD
-        const __m256 rect1 = _mm256_set_ps(y1 + h1, y1, x1 + w1, x1, y1 + h1, y1, x1 + w1, x1);
-        const __m256 rect2 = _mm256_set_ps(y2, y2 + h2, x2, x2 + w2, y2, y2 + h2, x2, x2 + w2);
-
-        const __m256 cmp_lt = _mm256_cmp_ps(rect1, rect2, _CMP_LT_OQ);
-        const __m256 cmp_gt = _mm256_cmp_ps(rect1, rect2, _CMP_GT_OQ);
-
-        const __m256 x_intersect = _mm256_and_ps(_mm256_permute_ps(cmp_gt, 0x50), _mm256_permute_ps(cmp_lt, 0xA0));
-        const __m256 y_intersect = _mm256_and_ps(_mm256_permute_ps(cmp_gt, 0xFA), _mm256_permute_ps(cmp_lt, 0x0F));
-
-        const __m256 result = _mm256_and_ps(x_intersect, y_intersect);
-
-        return (_mm256_movemask_ps(result) & 0x88) == 0x88;
-#else
-        return !(x1 >= x2 + w2 || x1 + w1 <= x2 || y1 >= y2 + h2 || y1 + h1 <= y2);
-#endif
-    }
-
-    inline void RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
-                           const float y2, const float w2, const float h2, CollisionInfo& info)
-    {
-        if (!RectToRect(x1, y1, w1, h1, x2, y2, w2, h2))
-        {
-            return;
-        }
-        const float overlapX = std::min(x1 + w1, x2 + w2) - std::max(x1, x2);
-        const float overlapY = std::min(y1 + h1, y2 + h2) - std::max(y1, y2);
-
-        if (overlapX < overlapY)
-        {
-            info.normalVector.x = (x1 + w1 / 2 < x2 + w2 / 2) ? -1.0f : 1.0f;
-            info.normalVector.y = 0.0f;
-            info.depth = overlapX;
-        }
-        else
-        {
-            info.normalVector.x = 0.0f;
-            info.normalVector.y = (y1 + h1 / 2 < y2 + h2 / 2) ? -1.0f : 1.0f;
-            info.depth = overlapY;
-        }
-        info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
-        info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
-    }
-
-    inline void RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx,
-                             const float cy, const float cr, CollisionInfo& info)
-    {
-        float closestX, closestY, dx, dy, distance_squared;
-        const float radius_squared = cr * cr;
-#ifdef MAGIQUE_USE_SIMD
-        const __m128 circle_center = _mm_set_ps(0.0f, 0.0f, cy, cx);
-        const __m128 rect_min = _mm_set_ps(0.0f, 0.0f, ry, rx);
-        const __m128 rect_max = _mm_set_ps(0.0f, 0.0f, ry + rh, rx + rw);
-        const __m128 clamped = _mm_min_ps(_mm_max_ps(circle_center, rect_min), rect_max);
-        const __m128 diff = _mm_sub_ps(circle_center, clamped);
-        const __m128 diff_squared = _mm_mul_ps(diff, diff);
-        const __m128 sum = _mm_add_ps(diff_squared, _mm_shuffle_ps(diff_squared, diff_squared, _MM_SHUFFLE(2, 3, 0, 1)));
-        distance_squared = _mm_cvtss_f32(sum);
-        _mm_store_ss(&closestX, _mm_shuffle_ps(clamped, clamped, _MM_SHUFFLE(0, 0, 0, 0)));
-        _mm_store_ss(&closestY, _mm_shuffle_ps(clamped, clamped, _MM_SHUFFLE(1, 1, 1, 1)));
-        dx = cx - closestX;
-        dy = cy - closestY;
-#else
-        closestX = (cx < rx) ? rx : (cx > rx + rw) ? rx + rw : cx;
-        closestY = (cy < ry) ? ry : (cy > ry + rh) ? ry + rh : cy;
-        dx = cx - closestX;
-        dy = cy - closestY;
-        distance_squared = (dx * dx + dy * dy);
-#endif
-        if (distance_squared > radius_squared)
-        {
-            return;
-        }
-        float distance = distance_squared;
-        SquareRoot(distance);
-        if (distance != 0.0f)
-        {
-            info.normalVector.x = -dx / distance;
-            info.normalVector.y = -dy / distance;
-        }
-        else
-        {
-            info.normalVector.x = 0.0f;
-            info.normalVector.y = 0.0f;
-        }
-        info.depth = cr - distance;
-        info.collisionPoint.x = closestX;
-        info.collisionPoint.y = closestY;
-    }
-
-    // Top left of the capsule and its height and radius
-    inline void RectToCapsule(const float x1, const float y1, const float w1, const float h1, const float x2,
-                              const float y2, const float radius, const float height, CollisionInfo& info)
-    {
-        // Fast bounding box check using RectToRect
-        if (!RectToRect(x1, y1, w1, h1, x2, y2, 2.0F * radius, height)) [[likely]]
-        {
-            return;
-        }
-
-        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + height - radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        RectToRect(x1, y1, w1, h1, x2, y2 + radius, radius * 2, height - radius, info);
-    }
-
     //----------------- CIRCLE -----------------//
 
     // circle: x,y, radius / circle: x,y, radius
@@ -414,8 +410,8 @@ namespace magique
     inline void CircleToQuadrilateral(const float cx, const float cy, const float cr, const float (&pxs)[4],
                                       const float (&pys)[4], CollisionInfo& info)
     {
-        const auto bb = GetBBQuadrilateral(pxs, pys);
-        if (!RectToRect(cx - cr, cy - cr, cr * 2.0F, cr * 2.0F, bb.x, bb.y, bb.width, bb.height)) [[likely]]
+        const auto [x, y, width, height] = GetBBQuadrilateral(pxs, pys);
+        if (!RectToRect(cx - cr, cy - cr, cr * 2.0F, cr * 2.0F, x, y, width, height)) [[likely]]
         {
             return; // quick bound check
         }
@@ -689,7 +685,6 @@ namespace magique
         }
 #endif
     }
-
 
 } // namespace magique
 
