@@ -70,11 +70,11 @@ struct ObjectScript final : EntityScript // Moving platform
         test.counter++;
     }
 
-        void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
-        {
-            auto& myComp = GetComponent<TestCompC>(self);
-            myComp.isColliding = true;
-        }
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
+    {
+        auto& myComp = GetComponent<TestCompC>(self);
+        myComp.isColliding = true;
+    }
 };
 
 struct Test final : Game
@@ -88,21 +88,21 @@ struct Test final : Game
             GiveActor(e);
             GiveScript(e);
             GiveCamera(e);
-            GiveCollisionRect(e, 15, 25);
+            GiveCollisionCircle(e, 15);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            const auto val = GetRandomValue(0,100);
+            const auto val = GetRandomValue(45,45);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
             }
             else if (val < 50)
             {
-                GiveCollisionTri(e, {-15, 15}, {15, 15});
+                GiveCollisionTri(e, {-33, 33}, {33, 33});
             }
             else if (val < 75)
             {
@@ -121,9 +121,9 @@ struct Test final : Game
         SetScript(OBJECT, new ObjectScript());
 
         CreateEntity(PLAYER, 0, 0, MapID(0));
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < 5; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(1,1000), GetRandomValue(1,1000), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(1, 112), GetRandomValue(1, 112), MapID(0));
         }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
@@ -138,11 +138,11 @@ struct Test final : Game
             const auto color = test.isColliding ? PURPLE : BLUE;
             switch (col.shape)
             {
-                [[likely]] case Shape::RECT: // Missing rotation anchor
-                    DrawRectanglePro({pos.x, pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
+            [[likely]] case Shape::RECT: // Missing rotation anchor
+                DrawRectanglePro({pos.x, pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
                 break;
             case Shape::CIRCLE:
-                DrawCircleV({pos.x + col.p1 , pos.y + col.p1 }, col.p1, color);
+                DrawCircleV({pos.x + col.p1, pos.y + col.p1}, col.p1, color);
                 break;
             case Shape::CAPSULE:
                 DrawCapsule2D(pos.x, pos.y, col.p1, col.p2, color);
@@ -158,7 +158,7 @@ struct Test final : Game
     }
     void updateGame(GameState gameState) override
     {
-        for(const auto e : GetUpdateEntities())
+        for (const auto e : GetUpdateEntities())
         {
             auto& pos = GetComponent<PositionC>(e);
         }
