@@ -231,7 +231,8 @@ namespace magique
                 }
             case Shape::CIRCLE:
                 // We can skip the translation to the middle point as both are in the same system
-                return CircleToCircle(posA.x, posA.y, colA.p1, posB.x, posB.y, colB.p1, info);
+                return CircleToCircle(posA.x + colA.p1, posA.y + colA.p1, colA.p1, posB.x + colB.p1, posB.y + colB.p1,
+                                      colB.p1, info);
             case Shape::CAPSULE:
                 return CircleToCapsule(posA.x + colA.p1, posA.y + colA.p1, colA.p1, posB.x, posB.y, colB.p1, colB.p2,
                                        info);
