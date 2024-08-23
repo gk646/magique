@@ -38,7 +38,7 @@ namespace magique
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
         {
-            ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
+            MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
             actorDist.resize(static_cast<int>(pos.map), -1);    // initializes new values to -1
             actorMaps.resize(static_cast<int>(pos.map), false); // initializes new values to false
@@ -140,7 +140,7 @@ namespace magique
         }
         // Center the camera
 #ifdef MAGIQUE_DEBUG
-        ASSERT(count < 2, "You have multiple cameras? O.O");
+        MAGIQUE_ASSERT(count < 2, "You have multiple cameras? O.O");
 #endif
     }
 
@@ -171,46 +171,51 @@ namespace magique
         Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);
-        {
-            drawVec.clear();
-            hashGrid.clear();
-            updateVec.clear();
-            collisionVec.clear();
-            hashGrid.clear();
 
-            for (const auto e : POSITION_GROUP)
+        drawVec.clear();
+        hashGrid.clear();
+        updateVec.clear();
+        collisionVec.clear();
+        hashGrid.clear();
+
+        // Iterate all entities and insert them into hashgrid and drawVec/collisionVec
+        const auto view = registry.view<PositionC>();
+        for (const auto e : view)
+        {
+            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(e);
+            const auto map = pos.map;
+            if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
-                const auto& pos = POSITION_GROUP.get<const PositionC>(e);
-                const auto map = pos.map;
-                if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
+                // Check if inside the camera bounds already
+                if (map == cameraMap &&
+                    PointInRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
                 {
-                    // Check if inside the camera bounds already
-                    if (map == cameraMap &&
-                        PointInRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
+                    drawVec.push_back(e); // Should be drawn
+                    cache[e] = cacheDuration;
+                    if (registry.all_of<CollisionC>(e))
                     {
-                        drawVec.push_back(e); // Should be drawn
-                        cache[e] = cacheDuration;
-                        if (registry.all_of<CollisionC>(e))
-                            HandleCollisionEntity(e, pos, POSITION_GROUP.get<const CollisionC>(e), hashGrid,
-                                                  collisionVec);
+                        const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
+                        HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                     }
-                    else
+                }
+                else
+                {
+                    for (int i = 0; i < actorCount; ++i)
                     {
-                        for (int i = 0; i < actorCount; ++i)
+                        const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
+                        if (actorNum == -1)
+                            break;
+                        const auto [x, y] = actorCircles[actorNum];
+                        // Check if insdie any update circle
+                        if (PointInRect(pos.x, pos.y, x, y, updateDist, updateDist))
                         {
-                            const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
-                            if (actorNum == -1)
-                                break;
-                            const auto [x, y] = actorCircles[actorNum];
-                            // Check if insdie any update circle
-                            if (PointInRect(pos.x, pos.y, x, y, updateDist, updateDist))
+                            cache[e] = cacheDuration;
+                            if (registry.all_of<CollisionC>(e))
                             {
-                                cache[e] = cacheDuration;
-                                if (registry.all_of<CollisionC>(e))
-                                    HandleCollisionEntity(e, pos, POSITION_GROUP.get<const CollisionC>(e), hashGrid,
-                                                          collisionVec);
-                                break;
+                                const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
+                                HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                             }
+                            break;
                         }
                     }
                 }

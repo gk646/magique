@@ -3,19 +3,16 @@
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSet.h>
 #include <magique/internal/Macros.h>
-#include <magique/core/Collision.h>
+#include <magique/core/StaticCollision.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/StaticCollisionData.h"
 
 namespace magique
 {
-    void SetStaticWorldBounds(const Rectangle& rectangle)
-    {
-        global::ENGINE_CONFIG.worldBounds = rectangle;
-    }
+    void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
 
-    void LoadCollisionObjects(const MapID map, const std::vector<TileObject>& collisionObjects)
+    void LoadMapColliders(const MapID map, const std::vector<TileObject>& collisionObjects)
     {
         auto& data = global::STATIC_COLL_DATA;
         const auto it = data.mapObjects.find(map);
@@ -23,16 +20,17 @@ namespace magique
         {
             for (const auto& obj : collisionObjects)
             {
-                auto& tree = data.aabbTree;
-                tree.insert(obj.x, obj.y, obj.width, obj.height);
+                const auto num = data.objectHolder.insert(obj.x, obj.y, obj.width, obj.height);
+                data.objectGrid.insert(num, obj.x, obj.y, obj.width, obj.height);
             }
-            it->second = &collisionObjects;
+            data.mapObjects.insert({map,&collisionObjects});
         }
     }
 
-    void SetGlobalTileSet(const TileSet& tileSet, const int collisionClass)
+    void SetGlobalTileSet(const TileSet& tileSet, const int collisionClass, const float tileSize)
     {
         auto& data = global::STATIC_COLL_DATA;
+        data.tileSize = tileSize;
         if (&tileSet != data.tileSet)
         {
             data.tileSet = &tileSet;
@@ -74,13 +72,14 @@ namespace magique
         const auto mapIdx = static_cast<int>(map);
         if (mapIdx > data.mapDataVec.size()) [[unlikely]]
         {
-            ASSERT(false, "No map with the given MapID has been loaded! Call LoadTileMap() or wrong MapID used");
+            MAGIQUE_ASSERT(false, "No map with the given MapID has been loaded! Call LoadTileMap() or wrong MapID used");
             return false;
         }
         const auto& mapData = data.mapDataVec[mapIdx];
-        ASSERT(mapData.width + mapData.height != 0, "No map with the given MapID has been loaded! Call LoadTileMap()");
-        ASSERT(tileX < mapData.width && tileY < mapData.height, "Out of bounds! Given tile position is invalid");
-        ASSERT(tileX >= 0 && tileY >= 0, "Tile position cant be negative!");
+        MAGIQUE_ASSERT(mapData.width + mapData.height != 0,
+                       "No map with the given MapID has been loaded! Call LoadTileMap()");
+        MAGIQUE_ASSERT(tileX < mapData.width && tileY < mapData.height, "Out of bounds! Given tile position is invalid");
+        MAGIQUE_ASSERT(tileX >= 0 && tileY >= 0, "Tile position cant be negative!");
         const auto flatIdx = tileX + tileY * mapData.width;
         for (const auto* ptr : mapData.layerData)
         {
@@ -95,7 +94,7 @@ namespace magique
         return false;
     }
 
-    void AddStaticColliderRect(int group, float x, float y, float width, float height)
+    void AddStaticColliderRect(const int group, float x, float y, float width, float height)
     {
         auto& data = global::STATIC_COLL_DATA;
         data.manualColliderMap[group].push_back({x, y, width, height});

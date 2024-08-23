@@ -1,11 +1,18 @@
+# Clion files
 .idea
+
+# Build files
 cmake-*
+
+# Tiled files
 *.tiled-project
 *.tiled-session
+
+# Resource directories
 /res
 /test
 /tiled
 
+# Index file
+*.magique
 examples/**/*.clang-format
-
-*.zip

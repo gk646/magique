@@ -24,7 +24,7 @@ namespace magique
     bool CreateLocalSocket(const int port)
     {
         auto& data = global::MP_DATA;
-        ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
 
         SteamNetworkingConfigValue_t opt{}; // Register callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
@@ -62,7 +62,7 @@ namespace magique
     Connection ConnectToLocalSocket(const int ip, const int port)
     {
         auto& data = global::MP_DATA;
-        ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
 
         SteamNetworkingIPAddr addr{};
         addr.SetIPv4(ip, static_cast<uint16>(port));

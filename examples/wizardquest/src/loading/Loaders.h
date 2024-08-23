@@ -11,6 +11,7 @@ struct TileLoader final : ITask<AssetContainer>
 {
     void execute(AssetContainer& res) override
     {
+
         auto handle = RegisterTileMap(res.getAsset("Level1.tmx"));
         RegisterHandle(handle, HandleID::LEVEL_1);
     }

@@ -133,10 +133,10 @@ namespace magique
     template <typename T>
     void SetFormatValueImpl(const char* key, const auto& val)
     {
-        ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
+        MAGIQUE_ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
         if constexpr (std::is_same_v<T, const char*>)
         {
-            ASSERT(strlen(val) < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
+            MAGIQUE_ASSERT(strlen(val) < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
         }
         const auto it = VALUES.find(key);
         auto& valueVec = VALUE_STORAGE.getValueVec<T>(); // where to insert new value

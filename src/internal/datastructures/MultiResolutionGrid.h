@@ -9,7 +9,7 @@
 // Now its still not perfect but definitely very fast
 // Also the problem of multiple insertions is efficiently solved by accumulating with a hashmap
 // Its almost mandatory to use a memory consistent map like a dense map thats a vector internally aswell
-// This simplifies memory and thus cache friendlyness even more
+// This simplifies memory and thus cache friendliness even more
 // With this setup you have 0 (zero) allocations in game ticks which involves completely clearing and refilling grid
 
 using CellID = int64_t;
@@ -43,6 +43,25 @@ struct DataBlock final
         for (auto it = start; it != end; ++it)
         {
             elems.push_back(*it);
+        }
+    }
+
+    void remove(T val)
+    {
+        if (count == 1 && data[0] == val)
+        {
+            count = 0;
+            return;
+        }
+
+        for (int i = 0; i < count; ++i)
+        {
+            if (data[i] == val)
+            {
+                data[i] = data[count - 1];
+                --count;
+                --i;
+            }
         }
     }
 };
@@ -129,26 +148,28 @@ struct SingleResolutionHashGrid final
         dataBlocks.clear();
     }
 
-    // This is expensive and only valid when no elements are inserted anymore until the next clear - Leaves holes
-    void remove(V val)
+    // This is only efficient when no elements are inserted anymore until the next clear - Leaves holes
+    void removeWithHoles(V val)
     {
-        for (auto& block : dataBlocks)
+        for (const auto& pair : cellMap)
         {
-            if (block.count == 0)
-                continue;
-            for (int i = 0; i < blockSize; ++i)
+            auto& block = dataBlocks[pair.second];
+            DataBlock<V, blockSize>* start = &block;
+            do
             {
-                if (block.data[i] == val)
-                {
-                    if (block.count == 1)
-                    {
-                        block.count = 0;
-                        break;
-                    }
-                    --block.count;
-                    block.data[i] = block.data[block.count];
-                }
+                start->remove(val);
+                start = &dataBlocks[start->next];
             }
+            while (start->hasNext());
+        }
+    }
+
+    // Patches the blocks removing any holes
+    void patchHoles()
+    {
+        for (const auto& pair : cellMap)
+        {
+            patchBlockChain(dataBlocks[pair.second]);
         }
     }
 
@@ -161,6 +182,37 @@ struct SingleResolutionHashGrid final
     [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
 
 private:
+    void patchBlockChain(DataBlock<V, blockSize>& startBlock)
+    {
+        DataBlock<V, blockSize>* start = &startBlock;
+        DataBlock<V, blockSize>* next = nullptr;
+        while (start->hasNext())
+        {
+            next = &dataBlocks[start->next];
+            auto count = start->count;
+            V i = 0;
+            for (; i + count < blockSize && i < next->count; ++i) // Copy elements from next to current
+            {
+                start->data[i + count] = next->data[i];
+            }
+            start->count = count + i;
+            next->count -= i;
+            memcpy(next->data, next->data + i, sizeof(V) * next->count); // Shift elements to the front
+
+            if (start->count < blockSize)
+            {
+                assert(next->count == 0 && "if current is not filled next has to be empty");
+                start->next = DataBlock<V, blockSize>::NO_NEXT_BLOCK;
+                break;
+            }
+            start = next;
+        }
+        if (start->count < blockSize)
+        {
+            start->next = DataBlock<V, blockSize>::NO_NEXT_BLOCK;
+        }
+    }
+
     void insertElement(const CellID id, V val)
     {
         const auto it = cellMap.find(id);

@@ -1,0 +1,6 @@
+#ifndef MAGIQUE_CONFIG_H
+#define MAGIQUE_CONFIG_H
+
+
+
+#endif //MAGIQUE_CONFIG_H

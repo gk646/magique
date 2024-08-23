@@ -32,7 +32,7 @@ namespace magique
         if (!ImageCheck(image, asset, at))
             return handle::null;
 
-        ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        MAGIQUE_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
 
         const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
         const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
@@ -59,8 +59,8 @@ namespace magique
         if (!ImageCheck(image, asset, at))
             return handle::null;
 
-        ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
-        ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
+        MAGIQUE_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        MAGIQUE_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
 
         const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
         const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
@@ -224,14 +224,21 @@ namespace magique
 
     TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
 
-    TileMap& GetTileMap(const HandleID id) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(id)); }
-
-    TileMap& GetTileMap(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(hash)); }
-
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
 
     Music& GetMusic(const handle handle) { return global::ASSET_MANAGER.getResource<Music>(handle); }
 
     Playlist& GetPlaylist(const handle handle) { return global::ASSET_MANAGER.getResource<Playlist>(handle); }
+
+    //----------------- DIRECT GET -----------------//
+
+    TileMap& GetTileMap(const HandleID id) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(id)); }
+    TileMap& GetTileMap(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(hash)); }
+
+    TileSheet& GetTileSheet(const HandleID id) { return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(id)); }
+    TileSheet& GetTileSheet(const uint32_t hash)
+    {
+        return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(hash));
+    }
 
 } // namespace magique

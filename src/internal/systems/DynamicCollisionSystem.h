@@ -18,13 +18,8 @@
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
 // .....................................................................
 
-// Give each thread a piece and the main thread aswell - so it doesnt wait while doing nothing
-static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
-
 namespace magique
 {
-    const auto POSITION_GROUP = internal::REGISTRY.group<const PositionC, const CollisionC>();
-
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& info);
     void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
     void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, int startIdx, int endIdx);
@@ -73,13 +68,13 @@ namespace magique
             for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
             {
                 const auto first = *dIt1;
-                const auto [posA, colA] = POSITION_GROUP.get<const PositionC, const CollisionC>(first);
+                const auto [posA, colA] = internal::POSITION_GROUP.get<const PositionC, const CollisionC>(first);
                 for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                 {
                     const auto second = *dIt2;
                     if (first >= second)
                         continue;
-                    const auto [posB, colB] = POSITION_GROUP.get<const PositionC, const CollisionC>(second);
+                    const auto [posB, colB] = internal::POSITION_GROUP.get<const PositionC, const CollisionC>(second);
                     if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
                         continue; // Not on the same map or not on the same collision layer
                     CollisionInfo info = CollisionInfo::NoCollision();

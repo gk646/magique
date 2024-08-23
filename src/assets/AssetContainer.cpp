@@ -125,7 +125,7 @@ namespace magique
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
     {
-        ASSERT(name != nullptr, "Passing nullptr!");
+        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
 
         const int size = static_cast<int>(strlen(name));
         int pos = FindDirectoryPos(assets, name, size);
@@ -151,8 +151,8 @@ namespace magique
 
     const Asset& AssetContainer::getAssetByPath(const char* name) const
     {
-        ASSERT(name != nullptr, "Passing nullptr!");
-        ASSERT(!assets.empty(), "No assets loaded!");
+        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
+        MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
 
         const int pos = FindAssetPos(assets, name);
 
@@ -167,8 +167,8 @@ namespace magique
 
     const Asset& AssetContainer::getAsset(const char* name) const
     {
-        ASSERT(name != nullptr, "Passing nullptr!");
-        ASSERT(!assets.empty(), "No assets loaded!");
+        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
+        MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
 
         for (const auto& a : assets)
         {

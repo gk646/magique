@@ -90,7 +90,7 @@ namespace magique
                     const auto job = scheduler->jobQueue.front();
                     scheduler->jobQueue.pop_front();
                     scheduler->queueLock.unlock();
-                    ASSERT(job->handle != jobHandle::null, "Null handle");
+                    MAGIQUE_ASSERT(job->handle != jobHandle::null, "Null handle");
                     job->run();
                     scheduler->removeWorkedJob(job);
                 }

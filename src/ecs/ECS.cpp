@@ -15,7 +15,7 @@ namespace magique
 {
     bool RegisterEntity(const EntityID type, const CreateFunc& createFunc)
     {
-        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityID>(UINT16_MAX) || map.contains(type))
         {
@@ -34,7 +34,7 @@ namespace magique
 
     bool UnRegisterEntity(const EntityID type)
     {
-        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityID>(UINT16_MAX) || !map.contains(type))
         {
@@ -48,7 +48,7 @@ namespace magique
 
     entt::entity CreateEntity(const EntityID type, const float x, const float y, const MapID map)
     {
-        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
@@ -69,7 +69,7 @@ namespace magique
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityID type, const float x, const float y, MapID map)
     {
-        ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
@@ -103,7 +103,7 @@ namespace magique
             }
             internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
-            tickData.hashGrid.remove(entity);
+            tickData.hashGrid.removeWithHoles(entity);
             UnorderedDelete(tickData.drawVec, entity);
             UnorderedDelete(tickData.entityUpdateVec, entity);
             return true;
@@ -153,7 +153,7 @@ namespace magique
                         tickData.entityUpdateCache.erase(e);
                         UnorderedDelete(tickData.drawVec, e);
                         UnorderedDelete(tickData.entityUpdateVec, e);
-                        tickData.hashGrid.remove(e);
+                        tickData.hashGrid.removeWithHoles(e);
                         break;
                     }
                 }
@@ -176,7 +176,7 @@ namespace magique
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
-        ASSERT(height > 2 * radius, "Given capsule is not well defined! Total height has to be greater than 2 * radius");
+        MAGIQUE_ASSERT(height > 2 * radius, "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
     }
@@ -228,7 +228,7 @@ namespace magique
         }
         if (found)
         {
-            ASSERT(!reg.any_of<CameraC>(e), "Target entity cannot have camera component already!");
+            MAGIQUE_ASSERT(!reg.any_of<CameraC>(e), "Target entity cannot have camera component already!");
             reg.emplace<CameraC>(e);
         }
         else

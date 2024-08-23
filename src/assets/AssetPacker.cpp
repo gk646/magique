@@ -4,12 +4,10 @@
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
 
-#include <magique/persistence/container/GameConfig.h>
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/AssetPacker.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
-#include <magique/core/Core.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/EncryptionUtil.h"
@@ -177,7 +175,6 @@ namespace magique
 
             const int original = imageSize;
             const bool res = ParseImage(imageData, imageSize, assets.assets, encryptionKey);
-            GetGameConfig().saveValue(ConfigID(INT32_MAX), imageSize);
             assets.nativeData = imageData;
             assets.sort();
             if (res)

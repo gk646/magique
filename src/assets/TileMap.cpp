@@ -10,16 +10,16 @@ namespace magique
     void ParseTileLayer(TileMap& tileMap, char*& data)
     {
         cxstructs::str_skip_char(data, '\n', 1);
-        ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
+        MAGIQUE_ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
 #ifdef MAGIQUE_DEBUG
         const auto val = XMLGetValueInLine<const char*>(data, "encoding", "nope");
-        ASSERT(cxstructs::str_cmp_prefix(val, "csv"), "Tilemap has invalid encoding! Only supports csv");
+        MAGIQUE_ASSERT(cxstructs::str_cmp_prefix(val, "csv"), "Tilemap has invalid encoding! Only supports csv");
 #endif
         cxstructs::str_skip_char(data, '\n', 1);
 
         const auto addLayer = [](TileMap& map)
         {
-            ASSERT(map.width != 0 && map.height != 0, "Internal Error: Dimensions not set!");
+            MAGIQUE_ASSERT(map.width != 0 && map.height != 0, "Internal Error: Dimensions not set!");
 
             const int tilePerLayer = map.width * map.height;
             const int newLayerSize = tilePerLayer * (map.layers + 1);
@@ -118,13 +118,13 @@ namespace magique
         {
             if (XMLLineContainsTag(data, "layer"))
             {
-                ASSERT(XMLGetValueInLine<int>(data, "width", -1) == mapWidth, "Layers have different dimensions!");
-                ASSERT(XMLGetValueInLine<int>(data, "height", -1) == mapHeight, "Layers have different dimensions!");
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "width", -1) == mapWidth, "Layers have different dimensions!");
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "height", -1) == mapHeight, "Layers have different dimensions!");
                 ParseTileLayer(*this, data);
             }
             else if (XMLLineContainsTag(data, "objectgroup"))
             {
-                ASSERT(objectLayers < MAGIQUE_MAX_OBJECT_LAYERS, "More object layers than configured!");
+                MAGIQUE_ASSERT(objectLayers < MAGIQUE_MAX_OBJECT_LAYERS, "More object layers than configured!");
                 cxstructs::str_skip_char(data, '\n', 1);
                 while (!XMLLineContainsTag(data, "/objectgroup"))
                 {

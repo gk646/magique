@@ -13,15 +13,15 @@ namespace magique::internal
 
     inline Image LoadImage(const Asset& asset)
     {
-        ASSERT(AssetBaseCheck(asset), "Failed asset check");
+        MAGIQUE_ASSERT(AssetBaseCheck(asset), "Failed asset check");
 
         const auto* ext = GetFileExtension(asset.path);
 
-        ASSERT(ext != nullptr, "No valid extension");
+        MAGIQUE_ASSERT(ext != nullptr, "No valid extension");
 
         auto img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
 
-        ASSERT(img.data != nullptr, "No image data loaded");
+        MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
 
         return img;
     }

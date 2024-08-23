@@ -3,6 +3,8 @@
 
 namespace  magique
 {
-
-
-}
+    const std::vector<TileInfo>& TileSet::getTileInfo() const
+    {
+        return {};
+    }
+} // namespace magique

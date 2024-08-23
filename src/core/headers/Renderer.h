@@ -13,51 +13,53 @@ namespace magique::renderer
 
     inline void StartTick(const entt::registry& registry)
     {
+        auto& rlglState = RLGL.State;
         BeginDrawing();
-        RLGL.State.prevDrawCalls = RLGL.State.drawCalls;
-        RLGL.State.drawCalls = 0;
-        const auto view = registry.view<const CameraC, const PositionC>();
-        for (const auto e : view)
-        {
-            const auto pos = view.get<PositionC>(e);
-            global::ENGINE_DATA.camera.target = {pos.x, pos.y};
-        }
+        rlglState.prevDrawCalls = rlglState.drawCalls;
+        rlglState.drawCalls = 0;
+        AssignCameraPosition(registry);
     }
 
     inline double EndTick(const double starTime)
     {
-        if (global::ENGINE_CONFIG.showPerformanceOverlay)
+        const auto& config = global::ENGINE_CONFIG;
+        auto& perfData = global::PERF_DATA;
+        if (config.showPerformanceOverlay)
         {
-            global::PERF_DATA.draw();
+            perfData.draw();
         }
         EndDrawing();
         const double frameTime = GetTime() - starTime;
-        global::PERF_DATA.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
+        perfData.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
         return frameTime;
     }
 
     inline double Tick(const double startTime, Game& game, const entt::registry& registry)
     {
-        auto& camera = global::ENGINE_DATA.camera;
+        const auto& config = global::ENGINE_CONFIG;
+        auto& data = global::ENGINE_DATA;
+        auto& uiData = global::UI_DATA;
+        auto& cmdData = global::CMD_DATA;
+
+        auto& camera = data.camera;
         const auto gameState = GetGameState();
         StartTick(registry);
         {
             ClearBackground(RAYWHITE); // Thanks ray
             if (game.getIsLoading()) [[unlikely]]
             {
-                HandleLoadingScreen(game);
+                HandleLoadingScreen(game); // Loading screen
                 return EndTick(startTime);
             }
             game.drawGame(gameState, camera); // Draw game
-            if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
-                RenderHitboxes(registry);
+            if (config.showHitboxes) [[unlikely]]
+                RenderHitboxes();
             RenderLighting(registry);
 
-            global::UI_DATA.clearRenderObjects();
+            uiData.clearRenderObjects();
             game.drawUI(gameState);
-            global::UI_DATA.draw();
-
-            global::COMMAND_LINE.draw();
+            uiData.draw();
+            cmdData.draw();
         }
         return EndTick(startTime);
     }

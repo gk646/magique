@@ -29,20 +29,23 @@ namespace magique
         explicit Game(const char* name = "MyGame");
         virtual ~Game();
 
+        // Stops the game
+        void shutDown();
+
         //-----------------LIFE CYCLE-----------------//
 
         // Called once on startup - register your loaders here
         virtual void onStartup(AssetLoader& loader, GameConfig& config) {}
 
-        // Called once when the game closes
-        virtual void onShutDown() {}
+        // Called once on startup when all registered task have been loaded
+        virtual void onLoadingFinished(){}
 
         // Called when the window close button is pressed
         // IMPORTANT: When overridden, shutDown() has to be called manually to stop the game!
         virtual void onCloseEvent() { shutDown(); }
 
-        // Stops the game
-        void shutDown();
+        // Called once when the game closes
+        virtual void onShutDown() {}
 
         //----------------- CORE -----------------//
 

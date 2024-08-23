@@ -197,7 +197,7 @@ namespace magique
 
     namespace global
     {
-        inline CommandLineData COMMAND_LINE{};
+        inline CommandLineData CMD_DATA{};
     }
 } // namespace magique
 

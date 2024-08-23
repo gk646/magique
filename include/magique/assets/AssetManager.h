@@ -113,12 +113,15 @@ namespace magique
 
     Playlist& GetPlaylist(handle handle);
 
-    //----------------- FAST GET -----------------//
+    //----------------- DIRECT GET -----------------//
     //Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
     // They call GetHandle() internally thus skipping the manual call
 
     TileMap& GetTileMap(HandleID id);
     TileMap& GetTileMap(uint32_t hash);
+
+    TileSheet& GetTileSheet(HandleID handle);
+    TileSheet& GetTileSheet(uint32_t hash);
 
 } // namespace magique
 

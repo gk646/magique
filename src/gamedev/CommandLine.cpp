@@ -7,7 +7,7 @@ namespace magique
 {
     void RegisterCommand(const std::string& name, const std::string& description, const std::function<void()>& func)
     {
-        auto& cmd = global::COMMAND_LINE;
+        auto& cmd = global::CMD_DATA;
         for (auto& info : cmd.commands)
         {
             if (strcmp(info.name.c_str(), name.c_str()) == 0)
@@ -25,11 +25,11 @@ namespace magique
     {
         const auto predicate = [](const CommandInfo& cmdInfo, const std::string& s)
         { return strcmp(cmdInfo.name.c_str(), s.c_str()) == 0; };
-        UnorderedDelete(global::COMMAND_LINE.commands, name, predicate);
+        UnorderedDelete(global::CMD_DATA.commands, name, predicate);
     }
 
-    void SetCommandLineKey(const int key) { global::COMMAND_LINE.openKey = key; }
+    void SetCommandLineKey(const int key) { global::CMD_DATA.openKey = key; }
 
-    void SetMaxCommandHistory(const int len) { global::COMMAND_LINE.maxHistoryLen = len; }
+    void SetMaxCommandHistory(const int len) { global::CMD_DATA.maxHistoryLen = len; }
 
 } // namespace magique

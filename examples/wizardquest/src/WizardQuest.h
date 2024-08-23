@@ -46,6 +46,7 @@ enum class HandleID
 struct WizardQuest final : Game
 {
     void onStartup(AssetLoader& loader, GameConfig& config) override;
+    void onLoadingFinished() override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;
     void drawUI(GameState gameState) override;
