@@ -10,7 +10,7 @@ namespace magique
 {
     bool Asset::hasExtension(const char* extension) const
     {
-        ASSERT(extension != nullptr, "Passing nullptr");
+        MAGIQUE_ASSERT(extension != nullptr, "Passing nullptr");
         const auto* ext = strrchr(path,'.');
         if (ext == nullptr || ext == path)
             return false;
@@ -19,7 +19,7 @@ namespace magique
 
     bool Asset::startsWith(const char* prefix) const
     {
-        ASSERT(prefix != nullptr, "Passing nullptr");
+        MAGIQUE_ASSERT(prefix != nullptr, "Passing nullptr");
         const auto len = strlen(prefix);
         return strncmp(path, prefix, len) == 0;
     }

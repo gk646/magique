@@ -6,6 +6,7 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/ecs/ECS.h>
+
 #include <magique/ecs/Components.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/ui/UI.h>
@@ -28,14 +29,21 @@
 #include "internal/globals/UIData.h"
 #include "internal/globals/CommandLineData.h"
 #include "internal/globals/ParticleData.h"
+#include "internal/globals/StaticCollisionData.h"
 
 #include "internal/headers/CollisionPrimitives.h"
 #include "internal/headers/IncludeWindows.h"
 #include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
-#include "internal/systems/StaticCollisionSystem.h"
+// Has to be in a translation unit - and systems needs access to it
+namespace magique::internal
+{
+    const auto POSITION_GROUP = REGISTRY.group<const PositionC, const CollisionC>(); // Pos + Collision group
+}
+
 #include "internal/systems/DynamicCollisionSystem.h"
+#include "internal/systems/StaticCollisionSystem.h"
 #include "internal/systems/InputSystem.h"
 #include "internal/systems/LogicSystem.h"
 #include "internal/systems/LightingSystem.h"
@@ -56,7 +64,7 @@ namespace magique
     Game::Game(const char* name) : isRunning(true), gameName(name)
     {
         static bool madeGame = false;
-        ASSERT(madeGame == false, "There can only be 1 game class per program!");
+        MAGIQUE_ASSERT(madeGame == false, "There can only be 1 game class per program!");
         madeGame = true;
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT);

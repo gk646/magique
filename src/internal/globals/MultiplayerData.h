@@ -56,7 +56,7 @@ namespace magique
 
         void goOffline()
         {
-            ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
+            MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
             std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_PLAYERS);
             isHost = false;
             inSession = false;

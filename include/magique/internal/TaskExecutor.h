@@ -24,6 +24,7 @@ namespace magique::internal
         virtual ~IExecutor() = default;
         virtual bool step() = 0;
         [[nodiscard]] virtual float getProgressPercent() const = 0;
+        [[nodiscard]] virtual bool isStartup() const = 0;
     };
 
     template <typename T>
@@ -44,6 +45,7 @@ namespace magique::internal
             }
         }
         float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
+        bool isStartup() const final { return std::is_same_v<T, AssetContainer>; }
 
     protected:
         void printStats() const

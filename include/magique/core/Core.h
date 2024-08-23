@@ -78,6 +78,7 @@ namespace magique
     Camera2D& GetCamera();
 
     // Returns the map of the camera - you should probably draw this map
+    // Failure: returns UINT8_MAX if there no camera
     MapID GetCameraMap();
 
     // Returns the current position (target) of the camera

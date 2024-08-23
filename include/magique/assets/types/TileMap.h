@@ -27,6 +27,7 @@ namespace magique
         [[nodiscard]] uint16_t getTileIndex(int x, int y, int layer) const;
 
         // Returns the pointer to the start of the layer
+        // layer is from top to bottom (in the editor) but counting only tile layers
         [[nodiscard]] const uint16_t* getLayerData(int layer) const;
 
         // Returns the width of each layer
@@ -41,6 +42,7 @@ namespace magique
         //----------------- OBJECTS -----------------//
 
         // Returns a modifiable reference to the objects in the given layer
+        // layer is from top to bottom (in the editor) but counting only object layers
         std::vector<TileObject>& getObjects(int layer);
 
     private:

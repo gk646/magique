@@ -10,7 +10,7 @@ namespace magique
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
-        ASSERT(conn == Connection::INVALID_CONNECTION || payload.data == nullptr || payload.size == 0 ||
+        MAGIQUE_ASSERT(conn == Connection::INVALID_CONNECTION || payload.data == nullptr || payload.size == 0 ||
                    (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE),
                "Passed invalid input parameters");
 
@@ -40,8 +40,8 @@ namespace magique
 
     bool SendMessage(Connection conn, const void* message, const int size, SendFlag flag)
     {
-        ASSERT((int)conn != k_HSteamNetConnection_Invalid, "Invalid connection");
-        ASSERT(flag == SendFlag::RELIABLE || flag == SendFlag::UN_RELIABLE, "Invalid flag");
+        MAGIQUE_ASSERT((int)conn != k_HSteamNetConnection_Invalid, "Invalid connection");
+        MAGIQUE_ASSERT(flag == SendFlag::RELIABLE || flag == SendFlag::UN_RELIABLE, "Invalid flag");
         if (message == nullptr || size == 0) [[unlikely]]
             return false;
         const auto res = SteamNetworkingSockets()->SendMessageToConnection((int)conn, message, size, (int)flag, nullptr);

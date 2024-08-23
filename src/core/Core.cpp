@@ -1,6 +1,7 @@
 #include <magique/core/Core.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/util/JobSystem.h>
+#include <magique/internal/Macros.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/TextureAtlas.h"
@@ -96,7 +97,11 @@ namespace magique
 
     const std::vector<entt::entity>& GetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
-    MapID GetCameraMap() { return global::ENGINE_DATA.cameraMap; }
+    MapID GetCameraMap()
+    {
+        MAGIQUE_ASSERT(global::ENGINE_DATA.cameraMap != MapID(UINT8_MAX), "No camera exists!");
+        return global::ENGINE_DATA.cameraMap;
+    }
 
     Vector2 GetCameraPosition() { return global::ENGINE_DATA.camera.target; }
 
@@ -147,7 +152,7 @@ namespace magique
     void DrawHashGridDebug()
     {
         auto& grid = global::ENGINE_DATA.hashGrid;
-        int half = MAGIQUE_COLLISION_CELL_SIZE/2;
+        int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
         for (int i = 0; i < 50; ++i)
         {
             for (int j = 0; j < 50; ++j)
@@ -156,13 +161,13 @@ namespace magique
                 int y = j * MAGIQUE_COLLISION_CELL_SIZE;
 
                 DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, LIGHTGRAY);
-                auto id = GetCellID(x/grid.cellSize, y/grid.cellSize);
+                auto id = GetCellID(x / grid.cellSize, y / grid.cellSize);
                 const auto it = grid.cellMap.find(id);
                 if (it != grid.cellMap.end())
                 {
                     const auto count = static_cast<int>(grid.dataBlocks[grid.cellMap[id]].count);
-                    const auto color = count > grid.getBlockSize() ? RED: GREEN;
-                    DrawText(std::to_string(count).c_str(), x+half, y+half, 20, color);
+                    const auto color = count > grid.getBlockSize() ? RED : GREEN;
+                    DrawText(std::to_string(count).c_str(), x + half, y + half, 20, color);
                 }
             }
         }

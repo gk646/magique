@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_COLLISION_H
-#define MAGIQUE_COLLISION_H
+#ifndef MAGIQUE_STATIC_COLLISION_H
+#define MAGIQUE_STATIC_COLLISION_H
 
 #include <vector>
 #include <magique/core/Types.h>
@@ -29,13 +29,13 @@ namespace magique
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
     // This needs to be called whenever any actor enters a map - once set further calls for the same map are skipped
     // Will be unloaded automatically when no actors are left in the map
-    void LoadCollisionObjects(MapID map, const std::vector<TileObject>& collisionObjects);
+    void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects);
 
     //----------------- TILESET -----------------//
 
-    // Sets the global tileset and allows to specify which class number means a solid tile
+    // Sets the global tileset and allows to specify which class number means a solid tile - also the global tilesize
     // Note: In Tiled click on the tileset file -> select any tiles the should be solid and set the class property (e.g. 1)
-    void SetGlobalTileSet(const TileSet& tileSet, int collisionClass);
+    void SetGlobalTileSet(const TileSet& tileSet, int collisionClass, float tileSize);
 
     // Loads map data so positions can be looked up
     // Load all maps at the start or load the new map when a actor enters it - duplicate calls dont matter
@@ -58,4 +58,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_COLLISION_H
+#endif //MAGIQUE_STATIC_COLLISION_H

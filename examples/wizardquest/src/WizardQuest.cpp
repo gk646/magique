@@ -7,33 +7,44 @@
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
 #include "ecs/Systems.h"
-
 #include "ui/UiScenes.h"
-
 #include "loading/Loaders.h"
+
+#include <magique/assets/types/TileMap.h>
+#include <magique/core/StaticCollision.h>
 
 PlayerHUD hudd{};
 
 void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 {
-    SetTargetFPS(110);
+    // Configure raylib
+    SetTargetFPS(100);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
+
+    // Configure magique
+    SetShowHitboxes(true);
     InitLocalMultiplayer();
 
+    // Register loaders
     loader.registerTask(new EntityLoader(), BACKGROUND_THREAD, MEDIUM, 1);
     loader.registerTask(new TileLoader(), BACKGROUND_THREAD, MEDIUM, 3);
     loader.registerTask(new TextureLoader(), MAIN_THREAD, MEDIUM, 5);
+}
 
+void WizardQuest::onLoadingFinished()
+{
+    LoadMapColliders(MapID::LEVEL_1, GetTileMap(HandleID::LEVEL_1).getObjects(0));
+    LoadTileMap(MapID::LEVEL_1, GetTileMap(HandleID::LEVEL_1), {0, 1});
     CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
-
     SetGameState(GameState::GAME);
 }
+
 
 void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
 {
     BeginMode2D(camera);
     auto map = GetCameraMap();
-    auto& tileMap = GetTileMap(GetHandle(HandleID((int)HandleID::MAPS + (int)map)));
+    const auto& tileMap = GetTileMap(GetHandle(HandleID((int)HandleID::MAPS + (int)map)));
     DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 0);
     DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 1);
     EndMode2D();

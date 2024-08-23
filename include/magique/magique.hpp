@@ -12,7 +12,7 @@
 #include "assets/container/AssetContainer.h"
 
 // Core
-#include "core/Collision.h"
+#include "core/StaticCollision.h"
 #include "core/Core.h"
 #include "core/Draw.h"
 #include "core/Game.h"
@@ -53,7 +53,7 @@
 // Util
 #include "util/Logging.h"
 #include "util/Strings.h"
-#include "util/Jobs.h"
+#include "util/JobSystem.h"
 #include "util/Compression.h"
 
 #endif // MAGIQUE_H

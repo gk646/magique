@@ -61,13 +61,19 @@ namespace magique
         if (loader != nullptr) [[likely]]
         {
             auto& lScreen = *global::ENGINE_CONFIG.loadingScreen;
-            const auto drawRes = lScreen.draw(false, loader->getProgressPercent());
+            const bool isStartup = loader->isStartup();
+            const auto drawRes = lScreen.draw(isStartup, loader->getProgressPercent());
             const auto res = loader->step();
             if (res && drawRes)
             {
                 delete loader;
                 loader = nullptr;
                 game.isLoading = false;
+                if (isStartup)
+                {
+                    game.onLoadingFinished();
+                    ResetBenchmarkTimes();
+                }
             }
         }
         else
@@ -76,23 +82,23 @@ namespace magique
         }
     }
 
-    inline void RenderHitboxes(const entt::registry& reg)
+    inline void RenderHitboxes()
     {
         BeginMode2D(GetCamera());
-        const auto view = reg.view<const PositionC, const CollisionC>();
+        // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
-            if (!view.contains(e))
+            if (!internal::POSITION_GROUP.contains(e))
                 continue;
-            const auto& pos = reg.get<const PositionC>(e);
-            const auto& col = reg.get<const CollisionC>(e);
+            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(e);
+            const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
                 DrawRectangleLinesRot({pos.x, pos.y, col.p1, col.p2}, pos.rotation, col.anchorX, col.anchorY, RED);
                 break;
             case Shape::CIRCLE:
-                DrawCircleLinesV({pos.x + col.p1 , pos.y + col.p1 }, col.p1, RED);
+                DrawCircleLinesV({pos.x + col.p1, pos.y + col.p1}, col.p1, RED);
                 break;
             case Shape::CAPSULE:
                 DrawCapsule2DLines(pos.x, pos.y, col.p1, col.p2, RED);
@@ -103,14 +109,40 @@ namespace magique
                 break;
             }
         }
+        // Static tile map objects
+        for (const auto& [x, y, p1, p2] : global::STATIC_COLL_DATA.objectHolder.colliders)
+        {
+            if (p1 == 0)
+                continue;
+            if (p2 != 0)
+            {
+                DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+            }
+            else
+            {
+                DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+            }
+        }
         EndMode2D();
+    }
+
+    inline void AssignCameraPosition(const entt::registry& registry)
+    {
+        auto& data = global::ENGINE_DATA;
+        const auto view = registry.view<const CameraC, const PositionC>();
+        for (const auto e : view)
+        {
+            const auto pos = view.get<PositionC>(e);
+            data.camera.target.x = std::floor(pos.x);
+            data.camera.target.y = std::floor(pos.y);
+        }
     }
 
     //----------------- UPDATER -----------------//
 
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
-        global::COMMAND_LINE.update();  // First incase needs to block input
+        global::CMD_DATA.update();      // First incase needs to block input
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
@@ -140,10 +172,10 @@ namespace magique
 
     inline void InternalUpdatePost(const entt::registry& registry) // After user space update
     {
-        StaticCollisionSystem(registry);  // Static before cause can cause change in position
-        DynamicCollisionSystem(); // After cause user systems can modify entity state
-        global::UI_DATA.update();         // After gametick so ui reflects current state
-        global::AUDIO_PLAYER.update();    // After game tick cause position updates
+        StaticCollisionSystem(); // Static before cause can cause change in position
+        DynamicCollisionSystem();        // After cause user systems can modify entity state
+        global::UI_DATA.update();        // After gametick so ui reflects current state
+        global::AUDIO_PLAYER.update();   // After game tick cause position updates
     }
 
 

@@ -12,6 +12,8 @@
 
 namespace magique
 {
+    static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
+
     struct PairInfo final // Saves entity id and type
     {
         CollisionInfo info;
@@ -28,8 +30,7 @@ namespace magique
         alignas(64) vector<T> vec;
     };
 
-    using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
+    using CollPairCollector = AlignedVec<PairInfo>[WORK_PARTS];
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31>;
 
@@ -48,7 +49,7 @@ namespace magique
         Camera2D camera{};                      // current camera
         entt::entity cameraEntity = entt::null; // entity id of the camera
         GameState gameState;                    // global gamestate
-        MapID cameraMap;                        // Map the camera is in
+        MapID cameraMap = MapID(UINT8_MAX);     // Map the camera is in
 
         EngineData()
         {
