@@ -1,10 +1,9 @@
 #ifndef MAGIQUE_GAME_H
 #define MAGIQUE_GAME_H
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // unreferenced formal parameter
-
 #include <magique/fwd.hpp>
+#include <magique/internal/Macros.h>
+IGNORE_WARNING(4100) // unreferenced formal parameter
 
 //-----------------------------------------------
 // Game module
@@ -79,6 +78,5 @@ namespace magique
 
 } // namespace magique
 
-#pragma warning(pop)
-
+UNIGNORE_WARNING()
 #endif // MAGIQUE_GAME_H

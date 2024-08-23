@@ -89,6 +89,7 @@ namespace magique
     {
         auto& scd = global::SCHEDULER;
         scd.isHibernate = false;
+
     }
 
     void HibernateJobs(const double target, const double sleepTime)
@@ -97,6 +98,11 @@ namespace magique
         scd.targetTime = target;
         scd.sleepTime = sleepTime;
         scd.isHibernate = true;
+    }
+
+    void* internal::GetJobMemory(size_t size)
+    {
+        return global::SCHEDULER.jobAllocator.allocate(size);
     }
 
 } // namespace magique

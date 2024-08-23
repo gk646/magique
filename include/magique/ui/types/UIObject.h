@@ -1,10 +1,9 @@
 #ifndef MAGIQUE_UIOBJECT_H
 #define MAGIQUE_UIOBJECT_H
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // unreferenced formal parameter
-
 #include <magique/core/Types.h>
+#include <magique/internal/Macros.h>
+IGNORE_WARNING(4100) // unreferenced formal parameter
 
 //-----------------------------------------------
 // UIObject
@@ -88,6 +87,6 @@ namespace magique
 
 } // namespace magique
 
-#pragma warning(pop)
+UNIGNORE_WARNING()
 
 #endif //MAGIQUE_UIOBJECT_H

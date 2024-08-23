@@ -27,6 +27,7 @@
 // Time: 6.7 ms | Optimized ECS access further using groups
 // Fixed update area being wrong -> more objects are loaded now
 // Time: 9.1 ms | New Baseline
+// Time: 8.9 ms | Removed EnTT asserts in release builds
 // .....................................................................
 
 using namespace magique;
@@ -87,7 +88,7 @@ struct Test final : Game
     Test() : Game("magique - CollisionBenchmark") {}
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
-        //SetLogLevel(LEVEL_ALLOCATION);
+        SetRandomSeed(100);
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e)
         {

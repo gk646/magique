@@ -9,6 +9,7 @@
 // GameConfig
 //-----------------------------------------------
 // .....................................................................
+// Use the global accessor: core/Core.h::GetGameConfig()
 // The GameConfig is a container for information thats consistent across saves like:
 //   - Settings (Video, Gameplay, Accessability...)
 //   - Keybinds (if they are not save specific)
@@ -82,12 +83,12 @@ namespace magique
         if (cell == nullptr)
         {
             internal::GameConfigStorageCell newCell{id};
-            newCell.assign(static_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
+            newCell.assign(reinterpret_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
             storage.push_back(newCell);
         }
         else
         {
-            cell->assign(static_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
+            cell->assign(reinterpret_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
         }
     }
     template <typename T>

@@ -30,16 +30,15 @@
 #include "internal/globals/ParticleData.h"
 
 #include "internal/headers/CollisionPrimitives.h"
+#include "internal/headers/IncludeWindows.h"
+#include "internal/utils/OSUtil.h"
+#include "internal/globals/JobScheduler.h"
 
 #include "internal/systems/StaticCollisionSystem.h"
 #include "internal/systems/DynamicCollisionSystem.h"
 #include "internal/systems/InputSystem.h"
 #include "internal/systems/LogicSystem.h"
 #include "internal/systems/LightingSystem.h"
-
-#include "internal/headers/IncludeWindows.h"
-#include "internal/utils/OSUtil.h"
-#include "internal/globals/JobScheduler.h"
 
 #include "core/headers/MainThreadUtil.h"
 #include "core/headers/Updater.h"

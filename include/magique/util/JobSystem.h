@@ -107,34 +107,45 @@ namespace magique
 
 //----------------- IMPLEMENTATION -----------------//
 
-template <typename Callable>
-magique::Job<Callable>::Job(Callable func) : func_(std::move(func))
+namespace magique
 {
-}
-template <typename Callable>
-void magique::Job<Callable>::run()
-{
-    func_();
-}
-template <typename Func, typename... Args>
-magique::ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
-    func(std::move(func)), args(std::make_tuple(args...))
-{
-}
-template <typename Func, typename... Args>
-void magique::ExplicitJob<Func, Args...>::run()
-{
-    std::apply(func, args);
-}
-template <typename Callable>
-magique::IJob* magique::CreateJob(Callable callable)
-{
-    return new Job(callable);
-}
-template <typename Callable, typename... Args>
-magique::IJob* magique::CreateExplicitJob(Callable callable, Args... args)
-{
-    return new ExplicitJob(callable, args...);
-}
+    namespace internal
+    {
+        void* GetJobMemory(size_t bytes);
+    } // namespace internal
+    template <typename Callable>
+    Job<Callable>::Job(Callable func) : func_(std::move(func))
+    {
+    }
+    template <typename Callable>
+    void Job<Callable>::run()
+    {
+        func_();
+    }
+    template <typename Func, typename... Args>
+    ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
+        func(std::move(func)), args(std::make_tuple(args...))
+    {
+    }
+    template <typename Func, typename... Args>
+    void ExplicitJob<Func, Args...>::run()
+    {
+        std::apply(func, args);
+    }
+    template <typename Callable>
+   IJob* CreateJob(Callable callable)
+    {
+        constexpr auto size = sizeof(Job<Callable>);
+        void* ptr = internal::GetJobMemory(size);
+        return new (ptr) Job<Callable>(callable);
+    }
 
+    template <typename Callable, typename... Args>
+    IJob* CreateExplicitJob(Callable callable, Args... args)
+    {
+        constexpr auto size = sizeof(ExplicitJob<Callable, Args...>);
+        void* ptr = internal::GetJobMemory(size);
+        return new (ptr) ExplicitJob<Callable, Args...>(callable, args...);
+    }
+} // namespace magique
 #endif //MAGIQUE_JOBSYSTEM_H
