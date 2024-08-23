@@ -390,11 +390,7 @@ namespace magique
     struct DataPointer final
     {
         DataPointer(T* pointer, const int size) : pointer(pointer), size(size) {}
-        ~DataPointer() noexcept
-        {
-            delete[] pointer;
-            pointer = nullptr;
-        }
+        ~DataPointer() noexcept { free(); }
 
         // Returns size in bytes
         [[nodiscard]] int getSize() const { return size; }
@@ -402,11 +398,16 @@ namespace magique
         // Returns the underlying data pointer
         T* getData() const { return pointer; }
 
-        void free() const noexcept { delete[] pointer; }
+        void free() noexcept
+        {
+            delete[] pointer;
+            pointer = nullptr;
+        }
 
     private:
         T* pointer; // The data pointer
         int size;   // The size of the data pointer in bytes
+        friend void UnCompressImage(char*&, int&);
     };
 
     // Array Iterator template

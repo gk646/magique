@@ -2,16 +2,20 @@
 #include <filesystem>
 #include <cmath>
 #include <raylib/raylib.h>
+#include <cxutil/cxstring.h>
 
-#include <magique/assets/AssetPacker.h>
+#include <magique/persistence/container/GameConfig.h>
 #include <magique/assets/container/AssetContainer.h>
+#include <magique/assets/AssetPacker.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
+#include <magique/core/Core.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/EncryptionUtil.h"
 
 namespace fs = std::filesystem;
+using namespace std::chrono;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
@@ -57,14 +61,19 @@ bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
     return false;
 }
 
-void UnCompressImage(char*& imageData, int& imageSize)
+namespace magique
 {
-    const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
-    const auto data = magique::DeCompress(start, imageSize);
-    delete[] imageData;
-    imageSize = data.getSize();
-    imageData = (char*)data.getData();
-}
+    // Dangerous method - but just switches out pointers - outside memory manage is sound
+    void UnCompressImage(char*& imageData, int& imageSize)
+    {
+        const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
+        auto data = magique::DeCompress(start, imageSize);
+        delete[] imageData;
+        imageSize = data.getSize();
+        imageData = (char*)data.getData();
+        data.pointer = nullptr; // we switch out pointer
+    }
+} // namespace magique
 
 namespace magique
 {
@@ -168,6 +177,7 @@ namespace magique
 
             const int original = imageSize;
             const bool res = ParseImage(imageData, imageSize, assets.assets, encryptionKey);
+            GetGameConfig().saveValue(ConfigID(INT32_MAX), imageSize);
             assets.nativeData = imageData;
             assets.sort();
             if (res)
@@ -194,10 +204,89 @@ namespace magique
         return false;
     }
 
+    bool IsImageOutdated(const char* directory)
+    {
+        const auto path = fs::path(directory);
+        if (fs::exists(path) && fs::is_directory(path)) // needs to exist and be a directory
+        {
+            const auto filePath = path / "index.magique";
+            if (fs::exists(filePath))
+            {
+                FILE* file = fopen(filePath.generic_string().c_str(), "rb");
+                if (!file)
+                {
+                    LOG_WARNING("Failed to read asset image index file");
+                    return true;
+                }
+                char buff[64]{0};
+                fread(buff, 64, 1, file);
+                fclose(file);
+
+                if (strncmp(buff, "MAGIQUE_INDEX_FILE", 18) != 0)
+                {
+                    LOG_WARNING("Failed to read asset image index file");
+                    return true;
+                }
+                char* ptr = &buff[20];
+                cxstructs::str_skip_char(ptr, ':', 1);
+                const int assets = cxstructs::str_parse_int(ptr);
+                cxstructs::str_skip_char(ptr, ':', 1);
+                const int size = cxstructs::str_parse_int(ptr);
+                if (assets == 0 || size == 0) // parse error
+                {
+                    LOG_WARNING("Failed to read asset image index file");
+
+                    return true;
+                }
+                if (assets == -1) // empty
+                    return true;
+                vector<fs::path> pathList;
+                CreatePathList(path.string().c_str(), pathList);
+                if (pathList.size() != assets)
+                    return true;
+
+                int totalSize = 0;
+                for (const auto& assetPath : pathList)
+                {
+                    totalSize += static_cast<int>(fs::file_size(assetPath));
+                }
+                return totalSize != size;
+            }
+        }
+        return true;
+    }
+
+    void CreateIndexFile(const char* directory, int asset, int totalSize)
+    {
+        char filePath[512] = {0};
+        snprintf(filePath, sizeof(filePath), "%s/index.magique", directory);
+
+        FILE* file = fopen(filePath, "wb");
+        if (!file)
+        {
+            LOG_WARNING("Failed to create index file: %s", filePath);
+            return;
+        }
+
+        if (asset == 0)
+            asset = -1; // empty
+
+        char buffer[128] = {0}; // Buffer to hold the content
+        snprintf(buffer, sizeof(buffer), "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\n", asset, totalSize);
+
+        size_t bytesWritten = fwrite(buffer, sizeof(char), strlen(buffer), file);
+        if (bytesWritten != strlen(buffer))
+        {
+            LOG_WARNING("Failed to write to index file: %s", filePath);
+        }
+        fclose(file);
+    }
+
     void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
                     const fs::path& rootPath, FILE* imageFile, vector<char> data)
     {
         std::string relativePathStr;
+        int totalFileSize = 0; // Only raw file size
         for (const auto& entry : pathList)
         {
             // Open the input file for reading
@@ -212,6 +301,7 @@ namespace magique
             // Read the file size
             fseek(file, 0, SEEK_END);
             const int fileSize = ftell(file);
+            totalFileSize += fileSize;
             if (fileSize > data.size())
                 data.resize(fileSize, 0);
             fseek(file, 0, SEEK_SET);
@@ -247,11 +337,14 @@ namespace magique
             // Close the input file
             fclose(file);
         }
+        CreateIndexFile(rootPath.string().c_str(), pathList.size(), totalFileSize);
     }
 
     bool CompileImage(const char* directory, const char* fileName, const uint64_t encryptionKey, const bool compress)
     {
-        const auto startTime = GetTime();
+        if (!IsImageOutdated(directory))
+            return true;
+        const auto startTime = high_resolution_clock::now();
         vector<fs::path> pathList;
         pathList.reserve(100);
 
@@ -310,7 +403,7 @@ namespace magique
             fclose(imageFile);
 
             // Compress the data
-            const auto comp = Compress(reinterpret_cast<const unsigned char*>(data.data()), writtenSize);
+            auto comp = Compress(reinterpret_cast<const unsigned char*>(data.data()), writtenSize);
 
             // Open the file again to write the compressed data
             FILE* compFile = fopen(fileName, "wb");
@@ -327,7 +420,7 @@ namespace magique
             fclose(compFile);
             auto* logText = "Successfully compiled %s into %s | Took %lld millis | Compressed: %.2f mb -> %.2f mb "
                             "(%.0f%%) | Assets: %d";
-            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
+            const auto time = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
                      static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
         }
@@ -335,9 +428,10 @@ namespace magique
         {
             fclose(imageFile);
             auto* logText = "Successfully compiled %s into %s | Took %lld millis | Total Size: %.2f mb | Assets: %d";
-            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F));
+            const auto time = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
         return true;
     }
+
 } // namespace magique

@@ -9,7 +9,7 @@
 // Asset Container
 //-----------------------------------------------
 // ................................................................................
-// This class stores all the assets and allows access to them during loading
+// This class stores assets and allows structured access to them
 // ................................................................................
 
 namespace magique
@@ -29,11 +29,11 @@ namespace magique
         void iterateDirectory(const char* directory, const std::function<void(const Asset&)>& func) const;
 
         // Retrieves the first asset that matches the given path
-        // This is a fast operation
+        // This is a fast operation  - O (log n)
         const Asset& getAssetByPath(const char* path) const;
 
         // Retrieves the first asset that matches the given name
-        // This is slower than ByPath
+        // This is slower than ByPath - O (n)
         const Asset& getAsset(const char* name) const;
 
         // Returns the total amount of assets
@@ -49,6 +49,7 @@ namespace magique
         friend struct AssetLoader;
         friend bool LoadAssetImage(const char*, AssetContainer&, uint64_t);
     };
+
 } // namespace magique
 
 #endif //MAGIQUE_ASSETCONTAINER_H

@@ -44,7 +44,7 @@ namespace magique::internal
     void AssertHandler(const char* expr, const char* file, int line, const char* message);
 } // namespace magique::internal
 
-#ifdef __MSVCRT__
+#ifdef _MSC_VER
 #define IGNORE_WARNING(num) \
 __pragma(warning(push)) \
 __pragma(warning(disable : num))

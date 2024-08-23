@@ -3,6 +3,10 @@
 
 #include "version.h"
 
+#if !defined(_DEBUG) || defined(NDEBUG)
+#define ENTT_DISABLE_ASSERT
+#endif
+
 #define ENTT_NOEXCEPTION
 
 #if defined(__cpp_exceptions) && !defined(ENTT_NOEXCEPTION)
@@ -32,13 +36,12 @@
 #endif
 
 #ifndef ENTT_SPARSE_PAGE
-#    define ENTT_SPARSE_PAGE 4096
+#    define ENTT_SPARSE_PAGE 8192
 #endif
 
 #ifndef ENTT_PACKED_PAGE
-#    define ENTT_PACKED_PAGE 1024
+#    define ENTT_PACKED_PAGE 2048
 #endif
-
 
 #ifdef ENTT_DISABLE_ASSERT
 #    undef ENTT_ASSERT
