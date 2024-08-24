@@ -94,6 +94,7 @@
 #ifndef CGLTF_H_INCLUDED__
 #define CGLTF_H_INCLUDED__
 
+#include <stddef.h>
 #include <stdint.h> /* For uint8_t, uint32_t */
 
 #ifdef __cplusplus

@@ -4,7 +4,6 @@
 #include <steam/steam_api.h>
 #include <cxstructs/SmallVector.h>
 
-#include <magique/util/Defines.h>
 
 namespace magique
 {

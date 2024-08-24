@@ -51,7 +51,7 @@ inline void SetupProcessPriority()
     return;
     // Generally dont wanna thread pin (at least not like this?)
     // Performance is generally a bit less on average but no lags or hitches in high intensive workload
-    DWORD_PTR processAffinityMask = 0x3F;
+    DWORD_PTR processAffinityMask = 0xF;
     if (!SetProcessAffinityMask(hProcess, processAffinityMask))
     {
         LOG_ERROR("Failed to setup process priority");

@@ -1,10 +1,8 @@
 #ifndef MAGIQUE_INTERNAL_SCRIPTING_H
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 
-#pragma warning(push)
-#pragma warning(disable : 4100) // unreferenced formal parameter
-
 #include <magique/ecs/ECS.h>
+IGNORE_WARNING(4100)
 
 //-----------------------------------------------
 // Internal Scripting Module
@@ -76,8 +74,6 @@ namespace magique
         //----------------- USER -----------------// // These events have to be called by the user
         // Examples:
 
-        // virtual void onMove(entt::entity self, float newX, float newY) {}
-
         // virtual void onDeath(entt::entity self, entt::entity killedBy) {}
 
         // virtual void onInteract(entt::entity self, entt::entity target) {}
@@ -87,6 +83,12 @@ namespace magique
         // virtual void onLevelUp(entt::entity self) {}
 
         // ... feel free to add more global methods or create subclasses with special methods!
+
+        //----------------- UTIL -----------------//
+
+        // Resolves the collision so that the shape doesnt collide
+        // Moves the along the normal vector for 'penDepth' many units
+        static void ResolveCollision(PositionC& position, const CollisionInfo& collisionInfo);
     };
 
     // Sets a c++ script for this entity type
@@ -113,7 +115,7 @@ namespace magique
 
 } // namespace magique
 
-#pragma warning(pop)
+UNIGNORE_WARNING()
 
 
 //----------------- IMPLEMENTATION -----------------//

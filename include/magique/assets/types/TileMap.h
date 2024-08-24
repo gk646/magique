@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <magique/core/Types.h>
-#include <magique/util/Defines.h>
 
 //-----------------------------------------------
 // TileMap

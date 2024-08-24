@@ -1,34 +1,96 @@
+# ----------------------------------------------------------------------
+# CMake Configuration for Magique Project
+# ----------------------------------------------------------------------
+
 cmake_minimum_required(VERSION 3.21)
-project(magique CXX C)
+project(magique LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
+set(MAGIQUE_VERSION "0.0.9")
 
-# Set project properties
-set(MAGIQUE_VERSION "0.0.8")
+# Set CMake modules directory - path searched when using include()
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# Set cmake files directory
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-# MAGIQUE_IS_MAIN determines whether the project is being used from root
-# or if it is added as a dependency (through add_subdirectory for example).
-if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
-    set(MAGIQUE_IS_MAIN TRUE)
-else ()
-    set(MAGIQUE_IS_MAIN FALSE)
-endif ()
+# ----------------------------------------------------------------------
+# Configuration Options
+# ----------------------------------------------------------------------
 
 # Options - NEEDS A CACHE RESET IF USING CMAKE CACHE!
-option(MAGIQUE_STEAM_INTEGRATION "Set to enable steam integration (Must set STEAM_SDK_PATH)" OFF)
-option(MAGIQUE_NETWORKING "Set to enable local networking" ON)
-option(MAGIQUE_BUILD_SHARED "Set to enable building magique as shared library" OFF)
-option(MAGIQUE_USE_SIMD "Set to enable usage of SIMD (faster)" ON)
-option(MAGIQUE_ENABLE_SANITIZER "Set to compile with address sanitizer" OFF)
+option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_SDK_PATH)" OFF)
+option(MAGIQUE_LAN "Enable local networking" OFF)
+option(MAGIQUE_SHARED "Build Magique as a shared library" OFF)
+option(MAGIQUE_SANITIZER "Compile with address sanitizer" OFF)
 
-# Parse the options and set parameters
-include(ParseOptions)
+# ----------------------------------------------------------------------
+# Include Configuration
+# ----------------------------------------------------------------------
 
-# Setup compiler options
-include(CompilerOptions)
+include(ParseOptions)      # Parses options and sets parameters
 
-# Add the source targets
-add_subdirectory(src)
+# ----------------------------------------------------------------------
+# Source Targets
+# ----------------------------------------------------------------------
+
+# Add source directories
+add_subdirectory(src/assets)
+add_subdirectory(src/core)
+add_subdirectory(src/ecs)
+add_subdirectory(src/external)   # External dependencies (e.g., raylib)
+add_subdirectory(src/gamedev)
+add_subdirectory(src/internal)
+add_subdirectory(src/multiplayer)
+add_subdirectory(src/persistence)
+add_subdirectory(src/ui)
+add_subdirectory(src/util)
+
+# Enable Steam module if Steam integration is enabled
+if (MAGIQUE_STEAM)
+    add_subdirectory(src/steam)
+endif ()
+
+# ----------------------------------------------------------------------
+# Collect and Organize Object Files
+# ----------------------------------------------------------------------
+
+# Gather object files from all submodules
+set(MAGIQUE_OBJECTS
+        $<TARGET_OBJECTS:magique-core>
+        $<TARGET_OBJECTS:magique-assets>
+        $<TARGET_OBJECTS:magique-ecs>
+        $<TARGET_OBJECTS:magique-util>
+        $<TARGET_OBJECTS:magique-ui>
+        $<TARGET_OBJECTS:magique-internal>
+        $<TARGET_OBJECTS:magique-multiplayer>
+        $<TARGET_OBJECTS:magique-gamedev>
+        $<TARGET_OBJECTS:magique-persistence>
+)
+
+# Conditionally include Steam object library if Steam integration is enabled
+if (MAGIQUE_STEAM)
+    list(APPEND MAGIQUE_OBJECTS $<TARGET_OBJECTS:magique-steam>)
+endif ()
+
+# ----------------------------------------------------------------------
+# Build the Main Magique Library
+# ----------------------------------------------------------------------
+
+# Choose between building a shared or static library
+if (MAGIQUE_SHARED)
+    add_library(magique SHARED ${MAGIQUE_OBJECTS})
+else ()
+    add_library(magique STATIC ${MAGIQUE_OBJECTS})
+endif ()
+
+# Set include directories for the main library
+target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE})
+
+# ----------------------------------------------------------------------
+# Linking Binaries and External Dependencies
+# ----------------------------------------------------------------------
+
+# Link against the GameNetworkingSockets or the Steam SDK and platform-specific libraries
+include(LinkBinaries)
+
+# ----------------------------------------------------------------------
+# End of CMake Configuration
+# ----------------------------------------------------------------------

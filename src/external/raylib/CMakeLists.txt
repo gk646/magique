@@ -20,7 +20,7 @@ cmake_policy(SET CMP0063 NEW)
 
 # Directory for easier includes
 # Anywhere you see include(...) you can check <root>/cmake for that file
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # RAYLIB_IS_MAIN determines whether the project is being used from root
 # or if it is added as a dependency (through add_subdirectory for example).
@@ -33,8 +33,6 @@ endif()
 # Sets compiler flags and language standard
 include(CompilerFlags)
 
-# Registers build options that are exposed to cmake
-include(CMakeOptions.txt)
 
 # Enforces a few environment and compiler configurations
 include(BuildOptions)

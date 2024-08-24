@@ -50,7 +50,7 @@
 
 #if defined(SUPPORT_MODULE_RSHAPES)
 
-#include <raylib/rlgl.h>
+#include <raylib/rlgl.h>       // OpenGL abstraction layer to OpenGL 1.1, 2.1, 3.3+ or ES2
 
 #include <math.h>       // Required for: sinf(), asinf(), cosf(), acosf(), sqrtf(), fabsf()
 #include <float.h>      // Required for: FLT_EPSILON
@@ -280,8 +280,10 @@ void DrawCircleV(Vector2 center, float radius, Color color)
 }
 
 // Draw a piece of a circle
-void DrawCircleSector(Vector2 center, const float radius, float startAngle, float endAngle, int segments, Color color)
+void DrawCircleSector(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color)
 {
+    if (radius <= 0.0f) radius = 0.1f;  // Avoid div by zero
+
     // Function expects (endAngle > startAngle)
     if (endAngle < startAngle)
     {
@@ -291,12 +293,12 @@ void DrawCircleSector(Vector2 center, const float radius, float startAngle, floa
         endAngle = tmp;
     }
 
-    const int minSegments = (int)ceilf((endAngle - startAngle)/90);
+    int minSegments = (int)ceilf((endAngle - startAngle)/90);
 
     if (segments < minSegments)
     {
         // Calculate the maximum angle between segments based on the error rate (usually 0.5f)
-        const float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
+        float th = acosf(2*powf(1 - SMOOTH_CIRCLE_ERROR_RATE/radius, 2) - 1);
         segments = (int)((endAngle - startAngle)*ceilf(2*PI/th)/360);
 
         if (segments <= 0) segments = minSegments;
@@ -369,8 +371,10 @@ void DrawCircleSector(Vector2 center, const float radius, float startAngle, floa
 }
 
 // Draw a piece of a circle outlines
-void DrawCircleSectorLines(Vector2 center, const float radius, float startAngle, float endAngle, int segments, Color color)
+void DrawCircleSectorLines(Vector2 center, float radius, float startAngle, float endAngle, int segments, Color color)
 {
+    if (radius <= 0.0f) radius = 0.1f;  // Avoid div by zero issue
+
     // Function expects (endAngle > startAngle)
     if (endAngle < startAngle)
     {
@@ -423,17 +427,16 @@ void DrawCircleSectorLines(Vector2 center, const float radius, float startAngle,
 }
 
 // Draw a gradient-filled circle
-// NOTE: Gradient goes from center (color1) to border (color2)
-void DrawCircleGradient(int centerX, int centerY, float radius, Color color1, Color color2)
+void DrawCircleGradient(int centerX, int centerY, float radius, Color inner, Color outer)
 {
     rlBegin(RL_TRIANGLES);
         for (int i = 0; i < 360; i += 10)
         {
-            rlColor4ub(color1.r, color1.g, color1.b, color1.a);
+            rlColor4ub(inner.r, inner.g, inner.b, inner.a);
             rlVertex2f((float)centerX, (float)centerY);
-            rlColor4ub(color2.r, color2.g, color2.b, color2.a);
+            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
             rlVertex2f((float)centerX + cosf(DEG2RAD*(i + 10))*radius, (float)centerY + sinf(DEG2RAD*(i + 10))*radius);
-            rlColor4ub(color2.r, color2.g, color2.b, color2.a);
+            rlColor4ub(outer.r, outer.g, outer.b, outer.a);
             rlVertex2f((float)centerX + cosf(DEG2RAD*i)*radius, (float)centerY + sinf(DEG2RAD*i)*radius);
         }
     rlEnd();
@@ -754,22 +757,19 @@ void DrawRectanglePro(Rectangle rec, Vector2 origin, float rotation, Color color
 }
 
 // Draw a vertical-gradient-filled rectangle
-// NOTE: Gradient goes from bottom (color1) to top (color2)
-void DrawRectangleGradientV(int posX, int posY, int width, int height, Color color1, Color color2)
+void DrawRectangleGradientV(int posX, int posY, int width, int height, Color top, Color bottom)
 {
-    DrawRectangleGradientEx((Rectangle){ (float)posX, (float)posY, (float)width, (float)height }, color1, color2, color2, color1);
+    DrawRectangleGradientEx((Rectangle){ (float)posX, (float)posY, (float)width, (float)height }, top, bottom, bottom, top);
 }
 
 // Draw a horizontal-gradient-filled rectangle
-// NOTE: Gradient goes from bottom (color1) to top (color2)
-void DrawRectangleGradientH(int posX, int posY, int width, int height, Color color1, Color color2)
+void DrawRectangleGradientH(int posX, int posY, int width, int height, Color left, Color right)
 {
-    DrawRectangleGradientEx((Rectangle){ (float)posX, (float)posY, (float)width, (float)height }, color1, color1, color2, color2);
+    DrawRectangleGradientEx((Rectangle){ (float)posX, (float)posY, (float)width, (float)height }, left, left, right, right);
 }
 
 // Draw a gradient-filled rectangle
-// NOTE: Colors refer to corners, starting at top-lef corner and counter-clockwise
-void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, Color col4)
+void DrawRectangleGradientEx(Rectangle rec, Color topLeft, Color bottomLeft, Color topRight, Color bottomRight)
 {
     rlSetTexture(GetShapesTexture().id);
     Rectangle shapeRect = GetShapesTextureRectangle();
@@ -778,19 +778,19 @@ void DrawRectangleGradientEx(Rectangle rec, Color col1, Color col2, Color col3, 
         rlNormal3f(0.0f, 0.0f, 1.0f);
 
         // NOTE: Default raylib font character 95 is a white square
-        rlColor4ub(col1.r, col1.g, col1.b, col1.a);
+        rlColor4ub(topLeft.r, topLeft.g, topLeft.b, topLeft.a);
         rlTexCoord2f(shapeRect.x/texShapes.width, shapeRect.y/texShapes.height);
         rlVertex2f(rec.x, rec.y);
 
-        rlColor4ub(col2.r, col2.g, col2.b, col2.a);
+        rlColor4ub(bottomLeft.r, bottomLeft.g, bottomLeft.b, bottomLeft.a);
         rlTexCoord2f(shapeRect.x/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         rlVertex2f(rec.x, rec.y + rec.height);
 
-        rlColor4ub(col3.r, col3.g, col3.b, col3.a);
+        rlColor4ub(topRight.r, topRight.g, topRight.b, topRight.a);
         rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, (shapeRect.y + shapeRect.height)/texShapes.height);
         rlVertex2f(rec.x + rec.width, rec.y + rec.height);
 
-        rlColor4ub(col4.r, col4.g, col4.b, col4.a);
+        rlColor4ub(bottomRight.r, bottomRight.g, bottomRight.b, bottomRight.a);
         rlTexCoord2f((shapeRect.x + shapeRect.width)/texShapes.width, shapeRect.y/texShapes.height);
         rlVertex2f(rec.x + rec.width, rec.y);
     rlEnd();

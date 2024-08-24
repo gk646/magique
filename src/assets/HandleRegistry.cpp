@@ -7,11 +7,12 @@
 
 namespace magique
 {
-    void RegisterDirectHandle(handle handle, const int id)
+    void RegisterDirectHandle(const handle handle, const int id)
     {
-        static_assert(MAGIQUE_DIRECT_HANDLES < UINT16_MAX && "Has to fit into 16 bit");
-        MAGIQUE_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
-        global::HANDLE_REGISTRY.directHandles[id] = static_cast<uint16_t>(handle);
+        auto& data = global::HANDLE_REGISTRY;
+        if (id > data.directHandles.size())
+            data.directHandles.resize(id + 1, handle::null);
+        data.directHandles[id] = handle;
     }
 
     void RegisterHandle(const handle handle, const HandleID id)
@@ -37,9 +38,10 @@ namespace magique
     void RegisterHandle(handle handle, const char* name)
     {
         auto hash = internal::HashString(name, HASH_SALT);
-        MAGIQUE_ASSERT(!global::HANDLE_REGISTRY.handleMap.contains(hash),
-                 "Collision! You either registered a handle twice (with the same name) or suffered an unlucky hash "
-                 "collision. Change the HASH_SALT parameter until no collisions occur!");
+        MAGIQUE_ASSERT(
+            !global::HANDLE_REGISTRY.handleMap.contains(hash),
+            "Collision! You either registered a handle twice (with the same name) or suffered an unlucky hash "
+            "collision. Change the HASH_SALT parameter until no collisions occur!");
         global::HANDLE_REGISTRY.handleMap.insert({hash, handle});
     }
 
@@ -57,9 +59,8 @@ namespace magique
 
     handle GetDirectHandle(const int id)
     {
-        MAGIQUE_ASSERT(id < MAGIQUE_DIRECT_HANDLES, "Out of bounds! Use util/Defines.h to adjust the size");
-        MAGIQUE_ASSERT(global::HANDLE_REGISTRY.directHandles[id] != UINT16_MAX, "Null handle");
-        return static_cast<handle>(global::HANDLE_REGISTRY.directHandles[id]);
+        MAGIQUE_ASSERT(global::HANDLE_REGISTRY.directHandles.size() > id, "Handle is not stored!");
+        return global::HANDLE_REGISTRY.directHandles[id];
     }
 
 } // namespace magique

@@ -16,5 +16,9 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             mov.baseVelocX += stats.moveSpeed;
     }
+    void onStaticCollision(entt::entity self, const CollisionInfo &info, ColliderInfo collider) override
+    {
+        ResolveCollision(GetComponent<PositionC>(self),info);
+    }
 };
 #endif //SCRIPTS_H

@@ -12,7 +12,7 @@ namespace magique
 {
     void SetStaticWorldBounds(const Rectangle& rectangle) { global::ENGINE_CONFIG.worldBounds = rectangle; }
 
-    void LoadMapColliders(const MapID map, const std::vector<TileObject>& collisionObjects)
+    void LoadMapColliders(const MapID map, const std::vector<TileObject>& collisionObjects, const float scale)
     {
         auto& data = global::STATIC_COLL_DATA;
         const auto it = data.mapObjects.find(map);
@@ -20,8 +20,12 @@ namespace magique
         {
             for (const auto& obj : collisionObjects)
             {
-                const auto num = data.objectHolder.insert(obj.x, obj.y, obj.width, obj.height);
-                data.objectGrid.insert(num, obj.x, obj.y, obj.width, obj.height);
+                const float scaledX = obj.x * scale;
+                const float scaledY = obj.y * scale;
+                const float scaledWidth = obj.width * scale;
+                const float scaledHeight = obj.height * scale;
+                const auto num = data.objectHolder.insert(scaledX, scaledY, scaledWidth, scaledHeight);
+                data.objectGrid.insert(num, scaledX, scaledY, scaledWidth, scaledHeight);
             }
             data.mapObjects.insert({map,&collisionObjects});
         }

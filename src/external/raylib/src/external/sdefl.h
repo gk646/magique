@@ -115,11 +115,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 extern "C" {
 #endif
 
-#define SDEFL_MAX_OFF   (1 << 14)
+#define SDEFL_MAX_OFF   (1 << 15)
 #define SDEFL_WIN_SIZ   SDEFL_MAX_OFF
 #define SDEFL_WIN_MSK   (SDEFL_WIN_SIZ-1)
 
-#define SDEFL_HASH_BITS 1
+#define SDEFL_HASH_BITS 15
 #define SDEFL_HASH_SIZ  (1 << SDEFL_HASH_BITS)
 #define SDEFL_HASH_MSK  (SDEFL_HASH_SIZ-1)
 
@@ -177,6 +177,8 @@ extern int zsdeflate(struct sdefl *s, void *o, const void *i, int n, int lvl);
 #ifdef SDEFL_IMPLEMENTATION
 
 #include <assert.h> /* assert */
+#include <string.h> /* memcpy */
+#include <limits.h> /* CHAR_BIT */
 
 #define SDEFL_NIL               (-1)
 #define SDEFL_MAX_MATCH         258

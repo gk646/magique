@@ -3,7 +3,6 @@
 
 #include <entt/entity/entity.hpp>
 
-#include <magique/util/Defines.h>
 #include <magique/persistence/container/GameConfig.h>
 
 #include "internal/datastructures/VectorType.h"

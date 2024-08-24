@@ -4,7 +4,7 @@
 #include <vector>
 #include <entt/entity/fwd.hpp>
 #include <magique/fwd.hpp>
-#include <magique/util/Defines.h>
+
 
 //-----------------------------------------------
 // Core Module

@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_COLLISIONDETECTION_H
 #define MAGIQUE_COLLISIONDETECTION_H
 
-#ifdef MAGIQUE_USE_SIMD
+#if MAGIQUE_SIMD == 1
 #include <immintrin.h>
 #include <emmintrin.h>
 #endif
@@ -23,7 +23,7 @@ namespace magique
 {
     inline void SquareRoot(float& pIn)
     {
-#ifdef MAGIQUE_USE_SIMD // rsqrt is quite a bit faster
+#if MAGIQUE_SIMD == 1 // rsqrt is quite a bit faster
         __m128 in = _mm_load_ss(&pIn);
         in = _mm_mul_ss(in, _mm_rsqrt_ss(in));
         _mm_store_ss(&pIn, in);
@@ -37,7 +37,7 @@ namespace magique
     inline bool PointInRect(const float px, const float py, const float rx, const float ry, const float rw,
                             const float rh)
     {
-#ifdef MAGIQUE_USE_SIMD
+#if MAGIQUE_SIMD == 1
         const __m256 point = _mm256_set_ps(py, py, py, py, px, px, px, px);
         const __m256 rect_min = _mm256_set_ps(ry, ry, ry, ry, rx, rx, rx, rx);
         const __m256 rect_max = _mm256_set_ps(ry + rh, ry + rh, ry + rh, ry + rh, rx + rw, rx + rw, rx + rw, rx + rw);
@@ -132,7 +132,7 @@ namespace magique
                            const float y2, const float w2, const float h2)
     {
         // This looks a bit faster in under mass load
-#ifdef MAGIQUE_USE_SIMD
+#if MAGIQUE_SIMD == 1
         const __m256 rect1 = _mm256_set_ps(y1 + h1, y1, x1 + w1, x1, y1 + h1, y1, x1 + w1, x1);
         const __m256 rect2 = _mm256_set_ps(y2, y2 + h2, x2, x2 + w2, y2, y2 + h2, x2, x2 + w2);
         const __m256 cmp_lt = _mm256_cmp_ps(rect1, rect2, _CMP_LT_OQ);
@@ -160,13 +160,13 @@ namespace magique
         {
             info.normalVector.x = (x1 + w1 / 2 < x2 + w2 / 2) ? -1.0f : 1.0f;
             info.normalVector.y = 0.0f;
-            info.depth = overlapX;
+            info.penDepth = overlapX;
         }
         else
         {
             info.normalVector.x = 0.0f;
             info.normalVector.y = (y1 + h1 / 2 < y2 + h2 / 2) ? -1.0f : 1.0f;
-            info.depth = overlapY;
+            info.penDepth = overlapY;
         }
         info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
         info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
@@ -177,7 +177,7 @@ namespace magique
     {
         float closestX, closestY, dx, dy, distance_squared;
         const float radius_squared = cr * cr;
-#ifdef MAGIQUE_USE_SIMD
+#if MAGIQUE_SIMD == 1
         const __m128 circle_center = _mm_set_ps(0.0f, 0.0f, cy, cx);
         const __m128 rect_min = _mm_set_ps(0.0f, 0.0f, ry, rx);
         const __m128 rect_max = _mm_set_ps(0.0f, 0.0f, ry + rh, rx + rw);
@@ -213,7 +213,7 @@ namespace magique
             info.normalVector.x = 0.0f;
             info.normalVector.y = 0.0f;
         }
-        info.depth = cr - distance;
+        info.penDepth = cr - distance;
         info.collisionPoint.x = closestX;
         info.collisionPoint.y = closestY;
     }
@@ -253,7 +253,7 @@ namespace magique
         }
         float minPenetration = 222222222.0F;
         Point bestAxis;
-#ifdef MAGIQUE_USE_SIMD // TODO can be optimized a lot by using AVX2
+#if MAGIQUE_SIMD == 1 // TODO can be optimized a lot by using AVX2
         const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
                                       const float(&p1ys)[4], float& axisX, float& axisY, float& penetration)
         {
@@ -378,7 +378,7 @@ namespace magique
             return; // No collision detected
         }
         info.normalVector = bestAxis; // already normalized
-        info.depth = minPenetration;
+        info.penDepth = minPenetration;
         info.collisionPoint = {(pxs[0] + pxs[1] + pxs[2] + pxs[3]) / 4.0f, (pys[0] + pys[1] + pys[2] + pys[3]) / 4.0f};
     }
 
@@ -388,15 +388,15 @@ namespace magique
     inline void CircleToCircle(const float x1, const float y1, const float r1, const float x2, const float y2,
                                const float r2, CollisionInfo& info)
     {
-#ifdef MAGIQUE_USE_SIMD
+        const float radiiSum = r1 + r2;
+#if MAGIQUE_SIMD == 1
         const __m128 center1 = _mm_set_ps(0, 0, y1, x1);
         const __m128 center2 = _mm_set_ps(0, 0, y2, x2);
         const __m128 diff = _mm_sub_ps(center1, center2);
         const __m128 diff_sq = _mm_mul_ps(diff, diff);
         const __m128 dist_sq = _mm_hadd_ps(diff_sq, diff_sq);
         const __m128 dist_sq_sum = _mm_hadd_ps(dist_sq, dist_sq);
-        const float radii_sum = r1 + r2;
-        const float radii_sq_sum = radii_sum * radii_sum;
+        const float radii_sq_sum = radiiSum * radiiSum;
         const __m128 radii_sq_vec = _mm_set1_ps(radii_sq_sum);
         const __m128 cmp = _mm_cmple_ps(dist_sq_sum, radii_sq_vec);
         if ((_mm_movemask_ps(cmp) & 0x1) == 0) [[likely]] // more likely no collision
@@ -408,15 +408,14 @@ namespace magique
         const float dx = x2 - x1;
         const float dy = y2 - y1;
         float distance_squared = dx * dx + dy * dy;
-        const float radius_sum = r1 + r2;
-        if (distance_squared > radius_sum * radius_sum)
+        if (distance_squared > radiiSum * radiiSum)
         {
             return;
         }
 #endif
         float distance = distance_squared;
         SquareRoot(distance);
-        info.depth = radii_sum - distance;
+        info.penDepth = radiiSum - distance;
         info.normalVector = {(x1 - x2) / distance, (y1 - y2) / distance};
         info.collisionPoint = {x1 + info.normalVector.x * r1, y1 + info.normalVector.y * r1};
     }
@@ -429,100 +428,99 @@ namespace magique
         {
             return; // quick bound check
         }
-#ifdef MAGIQUE_USE_SIMD
-    const __m128 cx_vec = _mm_set1_ps(cx);
-    const __m128 cy_vec = _mm_set1_ps(cy);
-    const __m128 cr_sq_vec = _mm_set1_ps(cr * cr);
-    for (int i = 0; i < 4; ++i)
-    {
-        int next = i + 1;
-        if (next == 4)
-            next = 0;
-        const __m128 px_vec = _mm_set_ps(pxs[i], pxs[i], pxs[next], pxs[next]);
-        const __m128 py_vec = _mm_set_ps(pys[i], pys[i], pys[next], pys[next]);
-        const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
-        const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
-        const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
-        const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
-        const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
-        const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
-        __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
-        t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
-        const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
-        const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
-        const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
-        const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
-        const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
-        if (_mm_movemask_ps(_mm_cmple_ps(dist_sq_vec, cr_sq_vec)))
+#if MAGIQUE_SIMD == 1
+        const __m128 cx_vec = _mm_set1_ps(cx);
+        const __m128 cy_vec = _mm_set1_ps(cy);
+        const __m128 cr_sq_vec = _mm_set1_ps(cr * cr);
+        for (int i = 0; i < 4; ++i)
         {
-            float closestX, closestY, dist_sq;
-            _mm_store_ss(&closestX, closestX_vec);
-            _mm_store_ss(&closestY, closestY_vec);
-            _mm_store_ss(&dist_sq, dist_sq_vec);
-            float distance = std::sqrt(dist_sq);
-            info.depth = cr - distance;
+            int next = i + 1;
+            if (next == 4)
+                next = 0;
+            const __m128 px_vec = _mm_set_ps(pxs[i], pxs[i], pxs[next], pxs[next]);
+            const __m128 py_vec = _mm_set_ps(pys[i], pys[i], pys[next], pys[next]);
+            const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
+            const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
+            const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
+            const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
+            const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
+            const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
+            __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
+            t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
+            const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
+            const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
+            const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
+            const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
+            const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
+            if (_mm_movemask_ps(_mm_cmple_ps(dist_sq_vec, cr_sq_vec)))
+            {
+                float closestX, closestY, dist_sq;
+                _mm_store_ss(&closestX, closestX_vec);
+                _mm_store_ss(&closestY, closestY_vec);
+                _mm_store_ss(&dist_sq, dist_sq_vec);
+                float distance = dist_sq;
+                SquareRoot(distance);
+                info.penDepth = cr - distance;
+                info.normalVector.x = (cx - closestX) / distance;
+                info.normalVector.y = (cy - closestY) / distance;
+                info.collisionPoint.x = closestX;
+                info.collisionPoint.y = closestY;
+                return;
+            }
+        }
+        int windingNumber = 0;
+        for (int i = 0; i < 4; ++i)
+        {
+            int next = i + 1;
+            if (next == 4)
+                next = 0;
+
+            if (pys[i] <= cy)
+            {
+                if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
+                    ++windingNumber;
+            }
+            else
+            {
+                if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
+                    --windingNumber;
+            }
+        }
+        if (windingNumber != 0) // Circle center is inside the quadrilateral
+        {
+            float minDist = std::numeric_limits<float>::max();
+            float closestX = 0.0f, closestY = 0.0f;
+
+            for (int i = 0; i < 4; ++i)
+            {
+                int next = (i + 1) % 4;
+
+                const float dx = pxs[next] - pxs[i];
+                const float dy = pys[next] - pys[i];
+                float edgeLength = dx * dx + dy * dy;
+                SquareRoot(edgeLength);
+
+                float t = ((cx - pxs[i]) * dx + (cy - pys[i]) * dy) / (edgeLength * edgeLength);
+                t = std::max(0.0f, std::min(1.0f, t));
+
+                const float closestPx = pxs[i] + t * dx;
+                const float closestPy = pys[i] + t * dy;
+                const float distSquared = (closestPx - cx) * (closestPx - cx) + (closestPy - cy) * (closestPy - cy);
+                if (distSquared < minDist)
+                {
+                    minDist = distSquared;
+                    closestX = closestPx;
+                    closestY = closestPy;
+                }
+            }
+            float distance = minDist;
+            SquareRoot(distance);
+            info.penDepth = cr - distance;
             info.normalVector.x = (cx - closestX) / distance;
             info.normalVector.y = (cy - closestY) / distance;
             info.collisionPoint.x = closestX;
             info.collisionPoint.y = closestY;
-            return;
         }
-    }
-    int windingNumber = 0;
-    for (int i = 0; i < 4; ++i)
-    {
-        int next = i + 1;
-        if (next == 4)
-            next = 0;
-
-        if (pys[i] <= cy)
-        {
-            if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
-                ++windingNumber;
-        }
-        else
-        {
-            if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
-                --windingNumber;
-        }
-    }
-
-    if (windingNumber != 0) // Circle center is inside the quadrilateral
-    {
-        // Calculate the closest edge or vertex to resolve the collision
-        float minDist = std::numeric_limits<float>::max();
-        float closestX = 0.0f, closestY = 0.0f;
-
-        for (int i = 0; i < 4; ++i)
-        {
-            int next = (i + 1) % 4;
-
-            float dx = pxs[next] - pxs[i];
-            float dy = pys[next] - pys[i];
-            float edgeLength = std::sqrt(dx * dx + dy * dy);
-
-            float t = ((cx - pxs[i]) * dx + (cy - pys[i]) * dy) / (edgeLength * edgeLength);
-            t = std::max(0.0f, std::min(1.0f, t));
-
-            float closestPointX = pxs[i] + t * dx;
-            float closestPointY = pys[i] + t * dy;
-
-            float distSquared = (closestPointX - cx) * (closestPointX - cx) + (closestPointY - cy) * (closestPointY - cy);
-            if (distSquared < minDist)
-            {
-                minDist = distSquared;
-                closestX = closestPointX;
-                closestY = closestPointY;
-            }
-        }
-
-        float distance = std::sqrt(minDist);
-        info.depth = cr - distance;
-        info.normalVector.x = (cx - closestX) / distance;
-        info.normalVector.y = (cy - closestY) / distance;
-        info.collisionPoint.x = closestX;
-        info.collisionPoint.y = closestY;
-    }
 #else
         int windingNumber = 0;
         for (int i = 0; i < 4; ++i)
@@ -683,7 +681,7 @@ namespace magique
     inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], const float rotation,
                               const float anchorX, const float anchorY)
     {
-#ifdef MAGIQUE_USE_SIMD
+#if MAGIQUE_SIMD == 1
         const float cosTheta = cosf(rotation * DEG2RAD);
         const float sinTheta = sinf(rotation * DEG2RAD);
 

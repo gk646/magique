@@ -1,8 +1,6 @@
 #ifndef STATICCOLLISIONDATA_H
 #define STATICCOLLISIONDATA_H
 
-#include <magique/util/Defines.h>
-
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
 #include "internal/datastructures/MultiResolutionGrid.h"

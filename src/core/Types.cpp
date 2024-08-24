@@ -28,7 +28,7 @@ namespace magique
 
     CollisionInfo CollisionInfo::NoCollision() { return {{}, {}, NO_COLLISION}; }
 
-    bool CollisionInfo::isColliding() const { return depth != NO_COLLISION; }
+    bool CollisionInfo::isColliding() const { return penDepth != NO_COLLISION; }
 
     //----------------- KEYBIND -----------------//
 

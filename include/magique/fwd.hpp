@@ -2,6 +2,7 @@
 #define MAGIQUE_FWD_HPP
 
 #include <cstdint> // My favourite header
+#include <magique/config.h>
 
 //----------------- USER DEFINED -----------------//
 
@@ -106,15 +107,6 @@ struct Texture;
 struct Sound;
 struct Music;
 struct Rectangle;
-
-//----------------- STD -----------------//
-
-// Feel free to comment this out and #include <functional> - worked fine for me
-namespace std
-{
-    template <class>
-    class function;
-} // namespace std
 
 
 #endif

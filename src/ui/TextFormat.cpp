@@ -4,7 +4,7 @@
 #include <magique/ui/TextFormat.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-#include <magique/util/Defines.h>
+#include <magique/config.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/StringHashMap.h"

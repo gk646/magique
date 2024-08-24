@@ -43,6 +43,8 @@ namespace magique
             }
             loadingScreen = new LoadingScreen();
         }
+
+        [[nodiscard]] bool getIsWorldBound() const { return worldBounds.width != 0.0F; }
     };
 
     namespace global

@@ -100,6 +100,10 @@ namespace magique
             return SAT(rectX, rectY, triX, triY, info);
         }
     }
+    inline void CallEventFunc(const EntityID id, const entt::entity e, const CollisionInfo& i, const ColliderInfo cI)
+    {
+        InvokeEventDirect<onStaticCollision>(GetScript(id), e, i, cI);
+    }
 
     inline void StaticCollisionSystem()
     {
@@ -115,12 +119,11 @@ namespace magique
         auto& collector = stCollData.colliderCollector;
 
         // Left Side - Upper side - Right side - Lower side
-        const Rectangle r1 = {wBounds.x - depth, wBounds.y, depth, wBounds.height};
+        const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
         const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
-        const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y, depth, wBounds.height};
+        const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
         const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
 
-        const auto map = GetCameraMap();
         const auto checkWorld = config.worldBounds.width != 0.0F;
         for (const auto e : collisionVec)
         {
@@ -128,28 +131,31 @@ namespace magique
             const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
 
             CollisionInfo info = CollisionInfo::NoCollision();
-            ColliderInfo colliderInfo{};
 
             if (checkWorld) // Check if worldbounds active
             {
                 CheckAgainstRect(pos, col, r1, info);
                 if (info.isColliding())
                 {
+                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
                     continue;
                 }
                 CheckAgainstRect(pos, col, r2, info);
                 if (info.isColliding())
                 {
+                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
                     continue;
                 }
                 CheckAgainstRect(pos, col, r3, info);
                 if (info.isColliding())
                 {
+                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
                     continue;
                 }
                 CheckAgainstRect(pos, col, r4, info);
                 if (info.isColliding())
                 {
+                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
                     continue;
                 }
             }
@@ -162,6 +168,7 @@ namespace magique
                 CheckAgainstRect(pos, col, rect, info);
                 if (info.isColliding())
                 {
+                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::TILEMAP_OBJECT});
                     break;
                 }
             }

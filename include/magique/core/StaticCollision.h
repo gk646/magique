@@ -29,7 +29,8 @@ namespace magique
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
     // This needs to be called whenever any actor enters a map - once set further calls for the same map are skipped
     // Will be unloaded automatically when no actors are left in the map
-    void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects);
+    // Note: If you applied scaling to the texture needs to be applied here aswell
+    void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1.0F);
 
     //----------------- TILESET -----------------//
 

@@ -3,7 +3,6 @@
 
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
-#include <magique/util/Defines.h>
 
 #include "internal/datastructures/VectorType.h"
 
