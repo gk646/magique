@@ -10,7 +10,7 @@ namespace magique
 
     // Insert numbers into flattened array
     inline void
-    InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+    InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                       const int map, const int num)
     {
         for (int i = 0; i < 4; i++)
@@ -27,13 +27,13 @@ namespace magique
     // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
                            Vector2 (&actorCircles)[4],
-                           cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS>& actorMaps,
-                           cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+                           cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS>& actorMaps,
+                           cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                            int& actorCount)
     {
         std::memset(loadedMaps.data(), UINT8_MAX, MAGIQUE_MAX_PLAYERS);
-        actorDist.resize(MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, -1);
-        actorMaps.resize(MAGIQUE_MAX_EXPECTED_MAPS, false);
+        actorDist.resize(MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, -1);
+        actorMaps.resize(MAGIQUE_EXPECTED_MAPS, false);
 
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
@@ -166,8 +166,8 @@ namespace magique
 
         // Lookup tables
         // Dist is just a flattened array: int [Count Maps][Count Players]
-        cxstructs::SmallVector<int8_t, MAGIQUE_MAX_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
-        cxstructs::SmallVector<bool, MAGIQUE_MAX_EXPECTED_MAPS> actorMaps{};
+        cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
+        cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS> actorMaps{};
         Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
 
         BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);

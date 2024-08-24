@@ -38,7 +38,7 @@ int GetFPS()
     {
         count++;
     }
-    const int ret = static_cast<int>(std::round(static_cast<float>(sumFPS) / count));
+    const int ret = static_cast<int>(std::ceil(static_cast<float>(sumFPS) / count));
 
     lastTime = currentTime;
     config.frameCounter = 0;
@@ -85,13 +85,15 @@ namespace magique
     inline void RenderHitboxes()
     {
         BeginMode2D(GetCamera());
+        auto& group = internal::POSITION_GROUP;
+        const auto& config = global::ENGINE_CONFIG;
         // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
-            if (!internal::POSITION_GROUP.contains(e))
+            if (!group.contains(e))
                 continue;
-            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(e);
-            const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
+            const auto& pos = group.get<const PositionC>(e);
+            const auto& col = group.get<const CollisionC>(e);
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
@@ -122,6 +124,20 @@ namespace magique
             {
                 DrawCircleLinesV({x + p1, y + p1}, p1, RED);
             }
+        }
+
+        if (config.getIsWorldBound()) // enabled
+        {
+            constexpr float depth = 250.0F;
+            const auto wBounds = config.worldBounds;
+            const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
+            const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
+            const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
+            const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
+            DrawRectangleLinesEx(r1,2,RED);
+            DrawRectangleLinesEx(r2,2,RED);
+            DrawRectangleLinesEx(r3,2,RED);
+            DrawRectangleLinesEx(r4,2,RED);
         }
         EndMode2D();
     }
@@ -172,10 +188,10 @@ namespace magique
 
     inline void InternalUpdatePost(const entt::registry& registry) // After user space update
     {
-        StaticCollisionSystem(); // Static before cause can cause change in position
-        DynamicCollisionSystem();        // After cause user systems can modify entity state
-        global::UI_DATA.update();        // After gametick so ui reflects current state
-        global::AUDIO_PLAYER.update();   // After game tick cause position updates
+        StaticCollisionSystem();       // Static before cause can cause change in position
+        DynamicCollisionSystem();      // After cause user systems can modify entity state
+        global::UI_DATA.update();      // After gametick so ui reflects current state
+        global::AUDIO_PLAYER.update(); // After game tick cause position updates
     }
 
 

@@ -4,6 +4,12 @@
 
 namespace magique
 {
+    void EntityScript::ResolveCollision(PositionC& position, const CollisionInfo& collisionInfo)
+    {
+        position.x += collisionInfo.normalVector.x * collisionInfo.penDepth;
+        position.y += collisionInfo.normalVector.y * collisionInfo.penDepth;
+    }
+
     void SetScript(const EntityID entity, EntityScript* script)
     {
         if (global::SCRIPT_DATA.scripts.size() < entity + 1)

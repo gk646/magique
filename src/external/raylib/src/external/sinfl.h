@@ -139,6 +139,10 @@ extern int zsinflate(void *out, int cap, const void *in, int size);
 #endif /* SINFL_H_INCLUDED */
 
 #ifdef SINFL_IMPLEMENTATION
+
+#include <string.h> /* memcpy, memset */
+#include <assert.h> /* assert */
+
 #if defined(__GNUC__) || defined(__clang__)
 #define sinfl_likely(x)       __builtin_expect((x),1)
 #define sinfl_unlikely(x)     __builtin_expect((x),0)

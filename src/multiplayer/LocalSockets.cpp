@@ -1,4 +1,3 @@
-#include <magique/util/Defines.h>
 #include <magique/multiplayer/LocalSockets.h>
 
 #include "internal/globals/MultiplayerData.h"

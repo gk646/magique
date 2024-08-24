@@ -118,14 +118,14 @@ namespace magique
     inline void RenderRayTracing(const entt::registry& registry)
     {
         // Lights
-        Vector2 lightPositions[MAGIQUE_MAX_RAYTRACING_ENTITIES];
-        Vector3 lightColors[MAGIQUE_MAX_RAYTRACING_ENTITIES];
-        int lightStyle[MAGIQUE_MAX_RAYTRACING_ENTITIES];
+        Vector2 lightPositions[MAGIQUE_RAYTRACING_ENTITIES];
+        Vector3 lightColors[MAGIQUE_RAYTRACING_ENTITIES];
+        int lightStyle[MAGIQUE_RAYTRACING_ENTITIES];
 
         // Occluders
-        Vector2 occPositions[MAGIQUE_MAX_RAYTRACING_ENTITIES];
-        Vector2 occDimensions[MAGIQUE_MAX_RAYTRACING_ENTITIES];
-        Vector2 occShape[MAGIQUE_MAX_RAYTRACING_ENTITIES];
+        Vector2 occPositions[MAGIQUE_RAYTRACING_ENTITIES];
+        Vector2 occDimensions[MAGIQUE_RAYTRACING_ENTITIES];
+        Vector2 occShape[MAGIQUE_RAYTRACING_ENTITIES];
 
         int count = 0;
         {

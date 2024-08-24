@@ -3,7 +3,6 @@
 
 #include <magique/util/JobSystem.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Defines.h>
 
 #include "internal/headers/IncludeWindows.h"
 #include "internal/globals/JobScheduler.h"

@@ -6,7 +6,6 @@
 #include <initializer_list>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
-#include <magique/util/Defines.h>
 #include <magique/util/Logging.h>
 
 //-----------------------------------------------
@@ -103,7 +102,7 @@ namespace magique
         T& getTupleColumn(int column, std::tuple<Types...>& t);
 
         OffsetArray offsets;                                         // Accumulative offset for the columns
-        char names[sizeof...(Types)][MAGIQUE_MAX_TABLE_NAME_SIZE]{}; // Column names
+        char names[sizeof...(Types)][MAGIQUE_TABLE_NAME_LEN]{}; // Column names
         std::vector<ColumnsTuple> data;                              // Data storage row-wise
         int columns = sizeof...(Types);                              // Amount of columns
     };
@@ -127,7 +126,7 @@ namespace magique
                 continue;
             }
             int len = static_cast<int>(strlen(arg));
-            memcpy(names[i], arg, std::min(MAGIQUE_MAX_TABLE_NAME_SIZE, len));
+            memcpy(names[i], arg, std::min(MAGIQUE_TABLE_NAME_LEN, len));
             i++;
         }
     }

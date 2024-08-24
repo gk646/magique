@@ -94,7 +94,6 @@ typedef struct {
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-extern CoreData CORE;                   // Global CORE state context
 
 static PlatformData platform = { 0 };   // Platform specific data
 
@@ -133,13 +132,28 @@ static void JoystickCallback(int jid, int event);                               
 // Module Functions Definition: Window and Graphics Device
 //----------------------------------------------------------------------------------
 
+
+void SetCursorImageFromMemory(const unsigned char* p, int s,int x, int y){
+  Image img = LoadImageFromMemory(".png",p,s);
+  unsigned char *pixels = img.data;
+
+  // 3. Create a GLFW cursor
+  GLFWimage glfwImage;
+  glfwImage.width = img.width;
+  glfwImage.height = img.height;
+  glfwImage.pixels = pixels;
+
+  GLFWcursor* cursor = glfwCreateCursor(&glfwImage, x, y);
+  glfwSetCursor(platform.handle, cursor);
+  UnloadImage(img);
+}
+
 // Check if application should close
 // NOTE: By default, if KEY_ESCAPE pressed or window close icon clicked
 bool WindowShouldClose(void)
 {
-    if (CORE.Window.ready)
-        return CORE.Window.shouldClose;
-    return true;
+    if (CORE.Window.ready) return CORE.Window.shouldClose;
+    else return true;
 }
 
 // Toggle fullscreen mode
@@ -171,6 +185,8 @@ void ToggleFullscreen(void)
             CORE.Window.fullscreen = true;
             CORE.Window.flags |= FLAG_FULLSCREEN_MODE;
 
+            CORE.Window.screen.width = GetMonitorWidth(monitorIndex);
+            CORE.Window.screen.height = GetMonitorHeight(monitorIndex);
             glfwSetWindowMonitor(platform.handle, monitor, 0, 0, CORE.Window.screen.width, CORE.Window.screen.height, GLFW_DONT_CARE);
         }
 
@@ -270,7 +286,10 @@ void MaximizeWindow(void)
     {
         glfwMaximizeWindow(platform.handle);
         CORE.Window.flags |= FLAG_WINDOW_MAXIMIZED;
+    }else {
+      glfwMaximizeWindow(platform.handle);
     }
+
 }
 
 // Set window state: minimized
@@ -707,6 +726,10 @@ void *GetWindowHandle(void)
     return NULL;
 }
 
+void* GetGLFWHandle(void) {
+    return platform.handle;
+}
+
 // Get number of monitors
 int GetMonitorCount(void)
 {
@@ -1073,12 +1096,6 @@ void SetMouseCursor(int cursor)
     }
 }
 
-// Get physical key name.
-const char *GetKeyName(int key)
-{
-    return glfwGetKeyName(key, glfwGetKeyScancode(key));
-}
-
 // Register all input events
 void PollInputEvents(void)
 {
@@ -1087,6 +1104,46 @@ void PollInputEvents(void)
     // because ProcessGestureEvent() is just called on an event, not every frame
     UpdateGestures();
 #endif
+
+    // Reset keys/chars pressed registered
+    CORE.Input.Keyboard.keyPressedQueueCount = 0;
+    CORE.Input.Keyboard.charPressedQueueCount = 0;
+
+    // Reset last gamepad button/axis registered state
+    CORE.Input.Gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
+    //CORE.Input.Gamepad.axisCount = 0;
+
+    // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
+
+    // Register previous keys states
+    for (int i = 0; i < MAX_KEYBOARD_KEYS; i++)
+    {
+        CORE.Input.Keyboard.previousKeyState[i] = CORE.Input.Keyboard.currentKeyState[i];
+        CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
+    }
+
+    // Register previous mouse states
+    for (int i = 0; i < MAX_MOUSE_BUTTONS; i++) CORE.Input.Mouse.previousButtonState[i] = CORE.Input.Mouse.currentButtonState[i];
+
+    // Register previous mouse wheel state
+    CORE.Input.Mouse.previousWheelMove = CORE.Input.Mouse.currentWheelMove;
+    CORE.Input.Mouse.currentWheelMove = (Vector2){ 0.0f, 0.0f };
+
+    // Register previous mouse position
+    CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
+
+    // Register previous touch states
+    for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.previousTouchState[i] = CORE.Input.Touch.currentTouchState[i];
+
+    // Reset touch positions
+    //for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.position[i] = (Vector2){ 0, 0 };
+
+    // Map touch position to mouse position for convenience
+    // WARNING: If the target desktop device supports touch screen, this behaviour should be reviewed!
+    // TODO: GLFW does not support multi-touch input just yet
+    // https://www.codeproject.com/Articles/668404/Programming-for-Multi-Touch
+    // https://docs.microsoft.com/en-us/windows/win32/wintouch/getting-started-with-multi-touch-messages
+    CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;
 
     // Check if gamepads are ready
     // NOTE: We do it here in case of disconnection
@@ -1111,7 +1168,7 @@ void PollInputEvents(void)
 
             const unsigned char *buttons = state.buttons;
 
-            for (int k = 0; (buttons != NULL) && (k < MAX_GAMEPAD_BUTTONS); k++)
+            for (int k = 0; (buttons != NULL) && (k < GLFW_GAMEPAD_BUTTON_DPAD_LEFT + 1) && (k < MAX_GAMEPAD_BUTTONS); k++)
             {
                 int button = -1;        // GamepadButton enum values assigned
 
@@ -1153,7 +1210,7 @@ void PollInputEvents(void)
             // Get current axis state
             const float *axes = state.axes;
 
-            for (int k = 0; (axes != NULL) && (k < GLFW_GAMEPAD_AXIS_LAST + 1); k++)
+            for (int k = 0; (axes != NULL) && (k < GLFW_GAMEPAD_AXIS_LAST + 1) && (k < MAX_GAMEPAD_AXIS); k++)
             {
                 CORE.Input.Gamepad.axisState[i][k] = axes[k];
             }
@@ -1165,71 +1222,25 @@ void PollInputEvents(void)
             CORE.Input.Gamepad.axisCount[i] = GLFW_GAMEPAD_AXIS_LAST + 1;
         }
     }
+
     CORE.Window.resizedLastFrame = false;
 
-    glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
+    if (CORE.Window.eventWaiting) glfwWaitEvents();     // Wait for in input events before continue (drawing is paused)
+    else glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
+
+    // While window minimized, stop loop execution
+    while (IsWindowState(FLAG_WINDOW_MINIMIZED) && !IsWindowState(FLAG_WINDOW_ALWAYS_RUN)) glfwWaitEvents();
+
+    CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
+
+    // Reset close status for next frame
+    glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
 
-// Ticks input events once - allows to pick a arbitrary update tickrate
-void TickInputEvents(void)
-{
-    // Reset keys/chars pressed registered
-    CORE.Input.Keyboard.keyPressedQueueCount = 0;
-    CORE.Input.Keyboard.charPressedQueueCount = 0;
-
-    // Reset last gamepad button/axis registered state
-    CORE.Input.Gamepad.lastButtonPressed = 0;       // GAMEPAD_BUTTON_UNKNOWN
-    //CORE.Input.Gamepad.axisCount = 0;
-
-    // Keyboard/Mouse input polling (automatically managed by GLFW3 through callback)
-
-    // Register previous keys states
-    for (int i = 0; i < MAX_KEYBOARD_KEYS; i++)
-    {
-        CORE.Input.Keyboard.previousKeyState[i] = CORE.Input.Keyboard.currentKeyState[i];
-        CORE.Input.Keyboard.keyRepeatInFrame[i] = 0;
-    }
-
-    // Register previous mouse states
-    for (int i = 0; i < MAX_MOUSE_BUTTONS; i++) CORE.Input.Mouse.previousButtonState[i] = CORE.Input.Mouse.currentButtonState[i];
-
-    // Register previous mouse wheel state
-    CORE.Input.Mouse.previousWheelMove = CORE.Input.Mouse.currentWheelMove;
-    CORE.Input.Mouse.currentWheelMove = (Vector2){ 0.0f, 0.0f };
-
-    // Register previous mouse position
-    CORE.Input.Mouse.previousPosition = CORE.Input.Mouse.currentPosition;
-
-    // Register previous touch states
-    for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.previousTouchState[i] = CORE.Input.Touch.currentTouchState[i];
-
-    // Reset touch positions
-    //for (int i = 0; i < MAX_TOUCH_POINTS; i++) CORE.Input.Touch.position[i] = (Vector2){ 0, 0 };
-
-    // Map touch position to mouse position for convenience
-    // WARNING: If the target desktop device supports touch screen, this behaviour should be reviewed!
-    // TODO: GLFW does not support multi-touch input just yet
-    // https://www.codeproject.com/Articles/668404/Programming-for-Multi-Touch
-    // https://docs.microsoft.com/en-us/windows/win32/wintouch/getting-started-with-multi-touch-messages
-    CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;
-}
 
 //----------------------------------------------------------------------------------
 // Module Internal Functions Definition
 //----------------------------------------------------------------------------------
-
-static void SetDimensionsFromMonitor(GLFWmonitor *monitor)
-{
-  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
-
-  // Default display resolution to that of the current mode
-  CORE.Window.display.width = mode->width;
-  CORE.Window.display.height = mode->height;
-
-  // Set screen width/height to the display width/height if they are 0
-  if (CORE.Window.screen.width == 0) CORE.Window.screen.width = CORE.Window.display.width;
-  if (CORE.Window.screen.height == 0) CORE.Window.screen.height = CORE.Window.display.height;
-}
 
 // Initialize platform: graphics, inputs and more
 int InitPlatform(void)
@@ -1371,22 +1382,26 @@ int InitPlatform(void)
     // REF: https://github.com/raysan5/raylib/issues/1554
     glfwSetJoystickCallback(NULL);
 
-    GLFWmonitor *monitor = NULL;
+    // Find monitor resolution
+    GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+    if (!monitor)
+    {
+        TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
+        return -1;
+    }
+
+    const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+    CORE.Window.display.width = mode->width;
+    CORE.Window.display.height = mode->height;
+
+    // Set screen width/height to the display width/height if they are 0
+    if (CORE.Window.screen.width == 0) CORE.Window.screen.width = CORE.Window.display.width;
+    if (CORE.Window.screen.height == 0) CORE.Window.screen.height = CORE.Window.display.height;
+
     if (CORE.Window.fullscreen)
     {
-        // According to glfwCreateWindow(), if the user does not have a choice, fullscreen applications
-        // should default to the primary monitor.
-
-        monitor = glfwGetPrimaryMonitor();
-        if (!monitor)
-        {
-          TRACELOG(LOG_WARNING, "GLFW: Failed to get primary monitor");
-          return -1;
-        }
-
-        SetDimensionsFromMonitor(monitor);
-
-        // Remember center for switching from fullscreen to window
+        // remember center for switchinging from fullscreen to window
         if ((CORE.Window.screen.height == CORE.Window.display.height) && (CORE.Window.screen.width == CORE.Window.display.width))
         {
             // If screen width/height equal to the display, we can't calculate the window pos for toggling full-screened/windowed.
@@ -1405,7 +1420,7 @@ int InitPlatform(void)
 
         // Obtain recommended CORE.Window.display.width/CORE.Window.display.height from a valid videomode for the monitor
         int count = 0;
-        const GLFWvidmode *modes = glfwGetVideoModes(monitor, &count);
+        const GLFWvidmode *modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &count);
 
         // Get closest video mode to desired CORE.Window.screen.width/CORE.Window.screen.height
         for (int i = 0; i < count; i++)
@@ -1435,48 +1450,21 @@ int InitPlatform(void)
         // HighDPI monitors are properly considered in a following similar function: SetupViewport()
         SetupFramebuffer(CORE.Window.display.width, CORE.Window.display.height);
 
-        platform.handle = glfwCreateWindow(CORE.Window.display.width, CORE.Window.display.height, (CORE.Window.title != 0)? CORE.Window.title : " ", monitor, NULL);
+        platform.handle = glfwCreateWindow(CORE.Window.display.width, CORE.Window.display.height, (CORE.Window.title != 0)? CORE.Window.title : " ", glfwGetPrimaryMonitor(), NULL);
 
         // NOTE: Full-screen change, not working properly...
         //glfwSetWindowMonitor(platform.handle, glfwGetPrimaryMonitor(), 0, 0, CORE.Window.screen.width, CORE.Window.screen.height, GLFW_DONT_CARE);
     }
     else
     {
+        // If we are windowed fullscreen, ensures that window does not minimize when focus is lost
+        if ((CORE.Window.screen.height == CORE.Window.display.height) && (CORE.Window.screen.width == CORE.Window.display.width))
+        {
+            glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
+        }
+
         // No-fullscreen window creation
-        bool requestWindowedFullscreen = (CORE.Window.screen.height == 0) && (CORE.Window.screen.width == 0);
-
-        // If we are windowed fullscreen, ensures that window does not minimize when focus is lost.
-        // This hinting code will not work if the user already specified the correct monitor dimensions;
-        // at this point we don't know the monitor's dimensions. (Though, how did the user then?)
-        if (requestWindowedFullscreen) glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
-
-        // Default to at least one pixel in size, as creation with a zero dimension is not allowed.
-        int creationWidth = CORE.Window.screen.width != 0 ? CORE.Window.screen.width : 1;
-        int creationHeight = CORE.Window.screen.height != 0 ? CORE.Window.screen.height : 1;
-
-        platform.handle = glfwCreateWindow(creationWidth, creationHeight, (CORE.Window.title != 0)? CORE.Window.title : " ", NULL, NULL);
-
-        // After the window was created, determine the monitor that the window manager assigned.
-        // Derive display sizes, and, if possible, window size in case it was zero at beginning.
-
-        int monitorCount = 0;
-        int monitorIndex = GetCurrentMonitor();
-        GLFWmonitor **monitors = glfwGetMonitors(&monitorCount);
-
-        if (monitorIndex < monitorCount)
-        {
-            monitor = monitors[monitorIndex];
-            SetDimensionsFromMonitor(monitor);
-
-            if (requestWindowedFullscreen) glfwSetWindowSize(platform.handle, CORE.Window.screen.width, CORE.Window.screen.height);
-        }
-        else
-        {
-            // The monitor for the window-manager-created window can not be determined, so it can not be centered.
-            glfwTerminate();
-            TRACELOG(LOG_WARNING, "GLFW: Failed to determine Monitor to center Window");
-            return -1;
-        }
+        platform.handle = glfwCreateWindow(CORE.Window.screen.width, CORE.Window.screen.height, (CORE.Window.title != 0)? CORE.Window.title : " ", NULL, NULL);
 
         if (platform.handle)
         {
@@ -1551,21 +1539,18 @@ int InitPlatform(void)
 
     // If graphic device is no properly initialized, we end program
     if (!CORE.Window.ready) { TRACELOG(LOG_FATAL, "PLATFORM: Failed to initialize graphic device"); return -1; }
-    else
+    
+     else 
     {
         // Try to center window on screen but avoiding window-bar outside of screen
-        int monitorX = 0;
-        int monitorY = 0;
-        int monitorWidth = 0;
-        int monitorHeight = 0;
-        glfwGetMonitorWorkarea(monitor, &monitorX, &monitorY, &monitorWidth, &monitorHeight);
-
-        int posX = monitorX + (monitorWidth - (int)CORE.Window.screen.width)/2;
-        int posY = monitorY + (monitorHeight - (int)CORE.Window.screen.height)/2;
-        if (posX < monitorX) posX = monitorX;
-        if (posY < monitorY) posY = monitorY;
+        int posX = GetMonitorWidth(GetCurrentMonitor())/2 - CORE.Window.screen.width/2;
+        int posY = GetMonitorHeight(GetCurrentMonitor())/2 - CORE.Window.screen.height/2;
+        if (posX < 0) posX = 0;
+        if (posY < 0) posY = 0;
         SetWindowPosition(posX, posY);
     }
+
+
 
     // Load OpenGL extensions
     // NOTE: GL procedures address loader is required to load extensions
@@ -1614,11 +1599,7 @@ int InitPlatform(void)
     CORE.Storage.basePath = GetWorkingDirectory();
     //----------------------------------------------------------------------------
 
-#if defined(__NetBSD__)
-    // Workaround for NetBSD
-    char *glfwPlatform = "X11";
-#else
-    char *glfwPlatform = "";
+    char* glfwPlatform = "";
     switch (glfwGetPlatform())
     {
         case GLFW_PLATFORM_WIN32:   glfwPlatform = "Win32";   break;
@@ -1627,7 +1608,6 @@ int InitPlatform(void)
         case GLFW_PLATFORM_X11:     glfwPlatform = "X11";     break;
         case GLFW_PLATFORM_NULL:    glfwPlatform = "Null";    break;
     }
-#endif
 
     TRACELOG(LOG_INFO, "GLFW platform: %s", glfwPlatform);
     TRACELOG(LOG_INFO, "PLATFORM: DESKTOP (GLFW): Initialized successfully");
@@ -1666,9 +1646,23 @@ static void WindowSizeCallback(GLFWwindow *window, int width, int height)
     if (IsWindowFullscreen()) return;
 
     // Set current screen size
-
+#if defined(__APPLE__)
     CORE.Window.screen.width = width;
     CORE.Window.screen.height = height;
+#else
+    if ((CORE.Window.flags & FLAG_WINDOW_HIGHDPI) > 0)
+    {
+        Vector2 windowScaleDPI = GetWindowScaleDPI();
+
+        CORE.Window.screen.width = (unsigned int)(width/windowScaleDPI.x);
+        CORE.Window.screen.height = (unsigned int)(height/windowScaleDPI.y);
+    }
+    else
+    {
+        CORE.Window.screen.width = width;
+        CORE.Window.screen.height = height;
+    }
+#endif
 
     // NOTE: Postprocessing texture is not scaled to new size
 }
@@ -1734,8 +1728,14 @@ static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
     // WARNING: GLFW could return GLFW_REPEAT, we need to consider it as 1
     // to work properly with our implementation (IsKeyDown/IsKeyUp checks)
-    if (action == GLFW_RELEASE) CORE.Input.Keyboard.currentKeyState[key] = 0;
-    else if(action == GLFW_PRESS) CORE.Input.Keyboard.currentKeyState[key] = 1;
+    if (action == GLFW_RELEASE) {
+        CORE.Input.Keyboard.currentKeyState[key] = 0;
+        CORE.Input.Keyboard.currentKeyStateUpdate[key] = 0;
+    }
+    else if(action == GLFW_PRESS) {
+        CORE.Input.Keyboard.currentKeyState[key] = 1;
+        CORE.Input.Keyboard.currentKeyStateUpdate[key] = 1;
+    }
     else if(action == GLFW_REPEAT) CORE.Input.Keyboard.keyRepeatInFrame[key] = 1;
 
     // WARNING: Check if CAPS/NUM key modifiers are enabled and force down state for those keys

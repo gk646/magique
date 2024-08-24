@@ -102,7 +102,7 @@ struct Test final : Game
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            const auto val =1;
+            const auto val = GetRandomValue(0, 100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -119,7 +119,7 @@ struct Test final : Game
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-           // GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
@@ -161,7 +161,7 @@ struct Test final : Game
     }
     void updateGame(GameState gameState) override
     {
-       // printf("Loaded Objects: %d\n",GetUpdateEntities().size());
+        // printf("Loaded Objects: %d\n",GetUpdateEntities().size());
     }
 };
 

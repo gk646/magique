@@ -2,7 +2,6 @@
 #define MAGIQUE_INTERNALTYPES_H
 
 #include <magique/core/Types.h>
-#include <magique/util/Defines.h>
 
 //-----------------------------------------------
 // Public Internal Module

@@ -100,7 +100,7 @@
 // Show OpenGL extensions and capabilities detailed logs on init
 //#define RLGL_SHOW_GL_DETAILS_INFO              1
 
-#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS   8192      // Default internal render batch elements limits
+#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    8192      // Default internal render batch elements limits
 #define RL_DEFAULT_BATCH_BUFFERS               1      // Default number of batch buffers (multi-buffering)
 #define RL_DEFAULT_BATCH_DRAWCALLS           256      // Default number of batch draw calls (by state changes: mode, texture)
 #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS     4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())

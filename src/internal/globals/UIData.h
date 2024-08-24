@@ -3,7 +3,6 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/util/Defines.h>
 #include <magique/ui/types/UIObject.h>
 
 #include "internal/datastructures/VectorType.h"

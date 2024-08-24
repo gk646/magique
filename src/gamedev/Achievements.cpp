@@ -70,7 +70,7 @@ namespace magique
     {
         if (ACHIEVEMENTS.empty())
         {
-            LOG_WARNING("No achievements exist!");
+            LOG_WARNING("Failed to generate achievements data. No achievements exist!");
             return {nullptr, 0};
         }
 

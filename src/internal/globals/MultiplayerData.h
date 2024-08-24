@@ -6,7 +6,6 @@
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-#include <magique/util/Defines.h>
 
 #if MAGIQUE_USE_STEAM == 0
 #include "external/networkingsockets/steamnetworkingsockets.h"
@@ -43,9 +42,9 @@ namespace magique
 
         MultiplayerData()
         {
-            batchedMsgs.reserve(MAGIQUE_MESSAGES_ESTIMATE);
-            msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_MESSAGES_ESTIMATE];
-            buffCap = MAGIQUE_MESSAGES_ESTIMATE;
+            batchedMsgs.reserve(MAGIQUE_ESTIMATED_MESSAGES);
+            msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_ESTIMATED_MESSAGES];
+            buffCap = MAGIQUE_ESTIMATED_MESSAGES;
         }
 
         void goOnline(const bool asHost)

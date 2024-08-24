@@ -7,30 +7,30 @@ include(GNUInstallDirs)
 include(JoinPaths)
 
 # Sets build type if not set by now
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    if (RAYLIB_IS_MAIN)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    if(RAYLIB_IS_MAIN)
         set(default_build_type Debug)
-    else ()
+    else()
         message(WARNING "Default build type is not set (CMAKE_BUILD_TYPE)")
-    endif ()
+    endif()
 
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
 
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif ()
+endif()
 
 
 # Sources to be compiled
 set(raylib_sources
-        raudio.c
-        rcore.c
-        rmodels.c
-        rshapes.c
-        rtext.c
-        rtextures.c
-        utils.c
-)
+    raudio.c
+    rcore.c
+    rmodels.c
+    rshapes.c
+    rtext.c
+    rtextures.c
+    utils.c
+    )
 
 # <root>/cmake/GlfwImport.cmake handles the details around the inclusion of glfw
 if (NOT ${PLATFORM} MATCHES "Web")
@@ -53,26 +53,27 @@ add_library(raylib ${raylib_sources} ${raylib_public_headers})
 if (NOT BUILD_SHARED_LIBS)
     MESSAGE(STATUS "Building raylib static library")
     add_library(raylib_static ALIAS raylib)
-else ()
+else()
     MESSAGE(STATUS "Building raylib shared library")
     target_compile_definitions(raylib
-            PRIVATE $<BUILD_INTERFACE:BUILD_LIBTYPE_SHARED>
-            INTERFACE $<INSTALL_INTERFACE:USE_LIBTYPE_SHARED>
-    )
-endif ()
+                               PRIVATE $<BUILD_INTERFACE:BUILD_LIBTYPE_SHARED>
+                               INTERFACE $<INSTALL_INTERFACE:USE_LIBTYPE_SHARED>
+                               )
+endif()
 
 if (${PLATFORM} MATCHES "Web")
     target_link_options(raylib PUBLIC "-sUSE_GLFW=3")
-    if (${GRAPHICS} MATCHES "GRAPHICS_API_OPENGL_ES3")
-        target_link_options(raylib PUBLIC "-sFULL_ES3")
-    endif ()
-endif ()
+    if(${GRAPHICS} MATCHES "GRAPHICS_API_OPENGL_ES3")
+        target_link_options(raylib PUBLIC "-sMIN_WEBGL_VERSION=2")
+        target_link_options(raylib PUBLIC "-sMAX_WEBGL_VERSION=2")
+    endif()
+endif()
 
 set_target_properties(raylib PROPERTIES
-        PUBLIC_HEADER "${raylib_public_headers}"
-        VERSION ${PROJECT_VERSION}
-        SOVERSION ${API_VERSION}
-)
+                      PUBLIC_HEADER "${raylib_public_headers}"
+                      VERSION ${PROJECT_VERSION}
+                      SOVERSION ${API_VERSION}
+                      )
 
 if (WITH_PIC OR BUILD_SHARED_LIBS)
     set_property(TARGET raylib PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -113,6 +114,3 @@ endif ()
 message(STATUS "Compiling with the flags:")
 message(STATUS "  PLATFORM=" ${PLATFORM_CPP})
 message(STATUS "  GRAPHICS=" ${GRAPHICS})
-
-
-enable_testing()

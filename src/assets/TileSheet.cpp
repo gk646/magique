@@ -4,7 +4,7 @@
 #include <magique/assets/types/TileSheet.h>
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Defines.h>
+
 
 #include "assets/headers/LoadWrappers.h"
 

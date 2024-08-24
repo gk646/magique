@@ -137,9 +137,8 @@ static void JoystickCallback(int jid, int event);                               
 // NOTE: By default, if KEY_ESCAPE pressed or window close icon clicked
 bool WindowShouldClose(void)
 {
-    if (CORE.Window.ready)
-        return CORE.Window.shouldClose;
-    return true;
+    if (CORE.Window.ready) return CORE.Window.shouldClose;
+    else return true;
 }
 
 // Toggle fullscreen mode
@@ -1065,7 +1064,7 @@ void SetMousePosition(int x, int y)
 }
 
 // Set mouse cursor
-void SetMouseCursor(const int cursor)
+void SetMouseCursor(int cursor)
 {
     CORE.Input.Mouse.cursor = cursor;
     if (cursor == MOUSE_CURSOR_DEFAULT) glfwSetCursor(platform.handle, NULL);
@@ -1131,9 +1130,90 @@ void PollInputEvents(void)
     // https://docs.microsoft.com/en-us/windows/win32/wintouch/getting-started-with-multi-touch-messages
     CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;
 
+    // Check if gamepads are ready
+    // NOTE: We do it here in case of disconnection
+    for (int i = 0; i < MAX_GAMEPADS; i++)
+    {
+        if (glfwJoystickPresent(i)) CORE.Input.Gamepad.ready[i] = true;
+        else CORE.Input.Gamepad.ready[i] = false;
+    }
+
+    // Register gamepads buttons events
+    for (int i = 0; i < MAX_GAMEPADS; i++)
+    {
+        if (CORE.Input.Gamepad.ready[i])     // Check if gamepad is available
+        {
+            // Register previous gamepad states
+            for (int k = 0; k < MAX_GAMEPAD_BUTTONS; k++) CORE.Input.Gamepad.previousButtonState[i][k] = CORE.Input.Gamepad.currentButtonState[i][k];
+
+            // Get current gamepad state
+            // NOTE: There is no callback available, so we get it manually
+            GLFWgamepadstate state = { 0 };
+            glfwGetGamepadState(i, &state); // This remapps all gamepads so they have their buttons mapped like an xbox controller
+
+            const unsigned char *buttons = state.buttons;
+
+            for (int k = 0; (buttons != NULL) && (k < MAX_GAMEPAD_BUTTONS); k++)
+            {
+                int button = -1;        // GamepadButton enum values assigned
+
+                switch (k)
+                {
+                    case GLFW_GAMEPAD_BUTTON_Y: button = GAMEPAD_BUTTON_RIGHT_FACE_UP; break;
+                    case GLFW_GAMEPAD_BUTTON_B: button = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT; break;
+                    case GLFW_GAMEPAD_BUTTON_A: button = GAMEPAD_BUTTON_RIGHT_FACE_DOWN; break;
+                    case GLFW_GAMEPAD_BUTTON_X: button = GAMEPAD_BUTTON_RIGHT_FACE_LEFT; break;
+
+                    case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER: button = GAMEPAD_BUTTON_LEFT_TRIGGER_1; break;
+                    case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER: button = GAMEPAD_BUTTON_RIGHT_TRIGGER_1; break;
+
+                    case GLFW_GAMEPAD_BUTTON_BACK: button = GAMEPAD_BUTTON_MIDDLE_LEFT; break;
+                    case GLFW_GAMEPAD_BUTTON_GUIDE: button = GAMEPAD_BUTTON_MIDDLE; break;
+                    case GLFW_GAMEPAD_BUTTON_START: button = GAMEPAD_BUTTON_MIDDLE_RIGHT; break;
+
+                    case GLFW_GAMEPAD_BUTTON_DPAD_UP: button = GAMEPAD_BUTTON_LEFT_FACE_UP; break;
+                    case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT: button = GAMEPAD_BUTTON_LEFT_FACE_RIGHT; break;
+                    case GLFW_GAMEPAD_BUTTON_DPAD_DOWN: button = GAMEPAD_BUTTON_LEFT_FACE_DOWN; break;
+                    case GLFW_GAMEPAD_BUTTON_DPAD_LEFT: button = GAMEPAD_BUTTON_LEFT_FACE_LEFT; break;
+
+                    case GLFW_GAMEPAD_BUTTON_LEFT_THUMB: button = GAMEPAD_BUTTON_LEFT_THUMB; break;
+                    case GLFW_GAMEPAD_BUTTON_RIGHT_THUMB: button = GAMEPAD_BUTTON_RIGHT_THUMB; break;
+                    default: break;
+                }
+
+                if (button != -1)   // Check for valid button
+                {
+                    if (buttons[k] == GLFW_PRESS)
+                    {
+                        CORE.Input.Gamepad.currentButtonState[i][button] = 1;
+                        CORE.Input.Gamepad.lastButtonPressed = button;
+                    }
+                    else CORE.Input.Gamepad.currentButtonState[i][button] = 0;
+                }
+            }
+
+            // Get current axis state
+            const float *axes = state.axes;
+
+            for (int k = 0; (axes != NULL) && (k < GLFW_GAMEPAD_AXIS_LAST + 1); k++)
+            {
+                CORE.Input.Gamepad.axisState[i][k] = axes[k];
+            }
+
+            // Register buttons for 2nd triggers (because GLFW doesn't count these as buttons but rather axis)
+            CORE.Input.Gamepad.currentButtonState[i][GAMEPAD_BUTTON_LEFT_TRIGGER_2] = (char)(CORE.Input.Gamepad.axisState[i][GAMEPAD_AXIS_LEFT_TRIGGER] > 0.1f);
+            CORE.Input.Gamepad.currentButtonState[i][GAMEPAD_BUTTON_RIGHT_TRIGGER_2] = (char)(CORE.Input.Gamepad.axisState[i][GAMEPAD_AXIS_RIGHT_TRIGGER] > 0.1f);
+
+            CORE.Input.Gamepad.axisCount[i] = GLFW_GAMEPAD_AXIS_LAST + 1;
+        }
+    }
+
     CORE.Window.resizedLastFrame = false;
+
     glfwPollEvents();      // Poll input events: keyboard/mouse/window events (callbacks) -> Update keys state
+
     CORE.Window.shouldClose = glfwWindowShouldClose(platform.handle);
+
     // Reset close status for next frame
     glfwSetWindowShouldClose(platform.handle, GLFW_FALSE);
 }
@@ -1194,7 +1274,7 @@ int InitPlatform(void)
     // Disable GlFW auto iconify behaviour
     // Auto Iconify automatically minimizes (iconifies) the window if the window loses focus
     // additionally auto iconify restores the hardware resolution of the monitor if the window that loses focus is a fullscreen window
-    glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
+    glfwWindowHint(GLFW_AUTO_ICONIFY, 0); 
 
     // Check window creation flags
     if ((CORE.Window.flags & FLAG_FULLSCREEN_MODE) > 0) CORE.Window.fullscreen = true;
@@ -1674,6 +1754,9 @@ static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, i
         CORE.Input.Keyboard.keyPressedQueue[CORE.Input.Keyboard.keyPressedQueueCount] = key;
         CORE.Input.Keyboard.keyPressedQueueCount++;
     }
+
+    // Check the exit key to set close window
+    if ((key == CORE.Input.Keyboard.exitKey) && (action == GLFW_PRESS)) glfwSetWindowShouldClose(platform.handle, GLFW_TRUE);
 }
 
 // GLFW3 Char Callback, get unicode codepoint value
@@ -1734,6 +1817,7 @@ static void MouseButtonCallback(GLFWwindow *window, int button, int action, int 
 // GLFW3 Cursor Position Callback, runs on mouse move
 static void MouseCursorPosCallback(GLFWwindow *window, double x, double y)
 {
+    return;
     CORE.Input.Mouse.currentPosition.x = (float)x;
     CORE.Input.Mouse.currentPosition.y = (float)y;
     CORE.Input.Touch.position[0] = CORE.Input.Mouse.currentPosition;

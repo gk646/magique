@@ -1,3 +1,11 @@
+
+# Determine if the project is being built as the main project or as a dependency
+if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(MAGIQUE_IS_MAIN TRUE)
+else()
+    set(MAGIQUE_IS_MAIN FALSE)
+endif()
+
 # In development mode - add a test directory
 if (MAGIQUE_IS_MAIN)
     message(STATUS "Using magique in development mode - adding a tests directory")
@@ -5,7 +13,7 @@ if (MAGIQUE_IS_MAIN)
 endif ()
 
 # No steam sdk path given
-if (MAGIQUE_STEAM_INTEGRATION AND NOT STEAM_SDK_PATH)
+if (MAGIQUE_STEAM AND NOT STEAM_SDK_PATH)
     message(FATAL_ERROR "Trying to use Steam integration without specifying the steam sdk path!
                          Use set(STEAM_SDK_PATH \"path/to/steam/sdk\") BEFORE adding magique"
     )
@@ -13,13 +21,15 @@ endif ()
 
 # If a path is given turn it on (if not already)
 if (EXISTS STEAM_SDK_PATH)
-    set(MAGIQUE_STEAM_INTEGRATION ON)
+    set(MAGIQUE_STEAM ON)
+    message("Detected a Steam SDK path: Enabling Steam suppport!")
 endif ()
 
-if (MAGIQUE_STEAM_INTEGRATION)
+if (MAGIQUE_STEAM)
     set(MAGIQUE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin/steam")
     message(STATUS "Using magique WITH steam integration")
-elseif (MAGIQUE_NETWORKING)
+    add_compile_definitions(MAGIQUE_USE_STEAM)
+elseif (MAGIQUE_LAN)
     set(MAGIQUE_BINARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bin/gamenetworkingsockets")
     message(STATUS "Using magique WITH local networking only")
 else ()
@@ -27,11 +37,7 @@ else ()
     message(STATUS "Using magique WITHOUT local networking only")
 endif ()
 
-if(MAGIQUE_USE_SIMD)
-    message(STATUS "Using magique WITH SIMD")
-else ()
-    message(STATUS "Using magique WITHOUT SIMD")
-endif ()
+add_compile_definitions(MAGIQUE_VERSION="${MAGIQUE_VERSION}")
 
 # Set parameters
 set(MAGIQUE_PUBLIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)

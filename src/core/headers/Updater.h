@@ -1,6 +1,9 @@
 namespace magique::updater
 {
-    inline void StartTick() { PollInputEvents(); }
+    inline void StartTick()
+    {
+        PollInputEvents();
+    }
 
     inline double EndTick(const double startTime)
     {

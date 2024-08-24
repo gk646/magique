@@ -1,7 +1,6 @@
 #ifndef PERFDATA_H
 #define PERFDATA_H
 
-#include <magique/util/Defines.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "external/raylib/src/coredata.h"
