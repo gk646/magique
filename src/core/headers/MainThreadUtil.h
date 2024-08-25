@@ -126,7 +126,7 @@ namespace magique
             }
         }
 
-        if (config.getIsWorldBound()) // enabled
+        if (config.getIsWorldBoundSet()) // enabled
         {
             constexpr float depth = 250.0F;
             const auto wBounds = config.worldBounds;

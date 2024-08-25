@@ -9,9 +9,8 @@ namespace magique
     }
 
     // Insert numbers into flattened array
-    inline void
-    InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
-                      const int map, const int num)
+    inline void InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
+                                  const int map, const int num)
     {
         for (int i = 0; i < 4; i++)
         {
@@ -26,8 +25,7 @@ namespace magique
     // This is a bit complicated as we dont know how many total maps there are
     // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
-                           Vector2 (&actorCircles)[4],
-                           cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS>& actorMaps,
+                           Vector2 (&actorCircles)[4], cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS>& actorMaps,
                            cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
                            int& actorCount)
     {
@@ -146,8 +144,9 @@ namespace magique
 
     inline void LogicSystem(const entt::registry& registry)
     {
-        auto& tickData = global::ENGINE_DATA;
         const auto& config = global::ENGINE_CONFIG;
+        const auto& group = internal::POSITION_GROUP;
+        auto& tickData = global::ENGINE_DATA;
         auto& hashGrid = tickData.hashGrid;
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;
@@ -182,7 +181,7 @@ namespace magique
         const auto view = registry.view<PositionC>();
         for (const auto e : view)
         {
-            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(e);
+            const auto& pos = group.get<const PositionC>(e);
             const auto map = pos.map;
             if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
@@ -194,7 +193,7 @@ namespace magique
                     cache[e] = cacheDuration;
                     if (registry.all_of<CollisionC>(e))
                     {
-                        const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
+                        const auto& col = group.get<const CollisionC>(e);
                         HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                     }
                 }
@@ -202,17 +201,18 @@ namespace magique
                 {
                     for (int i = 0; i < actorCount; ++i)
                     {
+                        // Flat array lookup
                         const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
                         if (actorNum == -1)
                             break;
                         const auto [x, y] = actorCircles[actorNum];
-                        // Check if insdie any update circle
+                        // Check if inside any update circle
                         if (PointInRect(pos.x, pos.y, x, y, updateDist, updateDist))
                         {
                             cache[e] = cacheDuration;
                             if (registry.all_of<CollisionC>(e))
                             {
-                                const auto& col = internal::POSITION_GROUP.get<const CollisionC>(e);
+                                const auto& col = group.get<const CollisionC>(e);
                                 HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                             }
                             break;
@@ -237,7 +237,7 @@ namespace magique
             }
         }
 
-        for (const auto e : updateVec)
+        for (const auto e : updateVec) // Needs to be called later to allow removing entities!
         {
             if (registry.all_of<ScriptC>(e))
             {

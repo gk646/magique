@@ -27,6 +27,7 @@ namespace magique
     // System
     inline void DynamicCollisionSystem()
     {
+        return;
         auto& data = global::ENGINE_DATA;
         auto& grid = data.hashGrid;
         auto& colPairs = data.collisionPairs;
@@ -56,30 +57,30 @@ namespace magique
 
     inline void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, const int startIdx,
                                    const int endIdx)
-
     {
-        const auto start = grid.cellMap.begin() + startIdx;
-        const auto end = grid.cellMap.begin() + endIdx;
+        const auto start = grid.dataBlocks.begin() + startIdx;
+        const auto end = grid.dataBlocks.begin() + endIdx;
+        const auto& group = internal::POSITION_GROUP;
         for (auto it = start; it != end; ++it)
         {
-            const auto& block = grid.dataBlocks[it->second];
+            const auto& block = *it;
             const auto dStart = block.data;
             const auto dEnd = block.data + block.count;
             for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
             {
                 const auto first = *dIt1;
-                const auto [posA, colA] = internal::POSITION_GROUP.get<const PositionC, const CollisionC>(first);
+                const auto [posA, colA] = group.get<const PositionC, const CollisionC>(first);
                 for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                 {
                     const auto second = *dIt2;
                     if (first >= second)
                         continue;
-                    const auto [posB, colB] = internal::POSITION_GROUP.get<const PositionC, const CollisionC>(second);
+                    const auto [posB, colB] = group.get<const PositionC, const CollisionC>(second);
                     if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
                         continue; // Not on the same map or not on the same collision layer
                     CollisionInfo info = CollisionInfo::NoCollision();
                     CheckCollision(posA, colA, posB, colB, info);
-                    if (info.isColliding()) [[unlikely]]
+                    if (info.isColliding())
                     {
                         pairs.push_back({info, first, second, posA.type, posB.type});
                     }
@@ -88,25 +89,32 @@ namespace magique
         }
     }
 
-    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
+    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet, CollisionInfoMap& infoMap)
     {
         for (auto& [vec] : colPairs)
         {
             for (auto [info, e1, e2, id1, id2] : vec)
             {
                 auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
-                if (pairSet.contains(num))
+                const auto it = pairSet.find(num);
+                if (it == pairSet.end())
                     continue;
-                pairSet.insert(num);
-                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_DATA.scripts[id1], e1, e2, info);
+                pairSet.insert(it, num);
+
+                auto& e1Info = infoMap[e1];
+                e1Info.info = info;
+                e1Info.id = id1;
 
                 info.normalVector.x = -info.normalVector.x;
                 info.normalVector.y = -info.normalVector.y;
-                // Invoke out of seconds view
-                InvokeEventDirect<onDynamicCollision>(global::SCRIPT_DATA.scripts[id2], e2, e1, info);
+
+                auto& e2Info = infoMap[e2];
+                e2Info.info = info;
+                e2Info.id = id1;
             }
             vec.clear();
         }
+
         pairSet.clear();
     }
 

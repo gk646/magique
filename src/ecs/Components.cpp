@@ -32,7 +32,7 @@ namespace magique
         }
     }
 
-    bool CollisionC::isLayerEnabled(const CollisionLayer layer) const
+    bool CollisionC::getIsLayerEnabled(const CollisionLayer layer) const
     {
         if (isValidLayer(layer))
         {

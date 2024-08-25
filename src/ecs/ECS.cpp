@@ -8,16 +8,17 @@
 
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
+#include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/ScriptData.h"
 #include "internal/utils/STLUtil.h"
 
 namespace magique
 {
-    bool RegisterEntity(const EntityID type, const CreateFunc& createFunc)
+    bool RegisterEntity(const EntityType type, const CreateFunc& createFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
-        if (type == static_cast<EntityID>(UINT16_MAX) || map.contains(type))
+        if (type == static_cast<EntityType>(UINT16_MAX) || map.contains(type))
         {
             return false; // Invalid ID or already registered
         }
@@ -32,11 +33,11 @@ namespace magique
         return true;
     }
 
-    bool UnRegisterEntity(const EntityID type)
+    bool UnRegisterEntity(const EntityType type)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
-        if (type == static_cast<EntityID>(UINT16_MAX) || !map.contains(type))
+        if (type == static_cast<EntityType>(UINT16_MAX) || !map.contains(type))
         {
             return false; // Invalid ID or not registered
         }
@@ -46,7 +47,7 @@ namespace magique
 
     bool EntityExists(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
-    entt::entity CreateEntity(const EntityID type, const float x, const float y, const MapID map)
+    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
@@ -67,7 +68,7 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntityNetwork(uint32_t id, EntityID type, const float x, const float y, MapID map)
+    entt::entity CreateEntityNetwork(uint32_t id, EntityType type, const float x, const float y, MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
@@ -91,6 +92,7 @@ namespace magique
     bool DestroyEntity(const entt::entity entity)
     {
         auto& tickData = global::ENGINE_DATA;
+        auto& dyCollData = global::DY_COLL_DATA;
         if (internal::REGISTRY.valid(entity)) [[likely]]
         {
             if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
@@ -103,7 +105,7 @@ namespace magique
             }
             internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
-            tickData.hashGrid.removeWithHoles(entity);
+            dyCollData.hashGrid.removeWithHoles(entity);
             UnorderedDelete(tickData.drawVec, entity);
             UnorderedDelete(tickData.entityUpdateVec, entity);
             return true;
@@ -111,57 +113,57 @@ namespace magique
         return false;
     }
 
-    void DestroyAllEntities(const std::initializer_list<EntityID>& ids)
+    void DestroyAllEntities(const std::initializer_list<EntityType>& ids)
     {
         auto& reg = internal::REGISTRY;
         auto& tickData = global::ENGINE_DATA;
-        const auto view = reg.view<PositionC>(); // Get all entities
+        auto& dyCollData = global::DY_COLL_DATA;
 
+        const auto view = reg.view<PositionC>(); // Get all entities
         if (ids.size() == 0)
         {
             for (const auto e : view)
             {
                 if (reg.all_of<ScriptC>(e)) [[likely]]
                 {
-                    InvokeEvent<onDestroy>(e);
+                    InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[view.get<PositionC>(e).type], e);
                 }
             }
             tickData.entityUpdateCache.clear();
             tickData.drawVec.clear();
             tickData.entityUpdateVec.clear();
             tickData.collisionVec.clear();
-            tickData.hashGrid.clear();
+            dyCollData.hashGrid.clear();
+            return;
         }
-        else
+
+        for (const auto e : view)
         {
-            for (const auto e : view)
+            const auto& pos = view.get<PositionC>(e);
+            for (const auto id : ids)
             {
-                const auto& pos = view.get<PositionC>(e);
-                for (const auto id : ids)
+                if (pos.type == id)
                 {
-                    if (pos.type == id)
+                    if (reg.all_of<ScriptC>(e)) [[likely]]
                     {
-                        if (reg.all_of<ScriptC>(e)) [[likely]]
-                        {
-                            InvokeEvent<onDestroy>(e);
-                        }
-                        if (reg.all_of<CollisionC>(e)) [[likely]]
-                        {
-                            UnorderedDelete(tickData.collisionVec, e);
-                        }
-                        internal::REGISTRY.destroy(e);
-                        tickData.entityUpdateCache.erase(e);
-                        UnorderedDelete(tickData.drawVec, e);
-                        UnorderedDelete(tickData.entityUpdateVec, e);
-                        tickData.hashGrid.removeWithHoles(e);
-                        break;
+                        InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                     }
+                    if (reg.all_of<CollisionC>(e)) [[likely]]
+                    {
+                        UnorderedDelete(tickData.collisionVec, e);
+                    }
+                    internal::REGISTRY.destroy(e);
+                    tickData.entityUpdateCache.erase(e);
+                    UnorderedDelete(tickData.drawVec, e);
+                    UnorderedDelete(tickData.entityUpdateVec, e);
+                    dyCollData.hashGrid.removeWithHoles(e);
+                    break;
                 }
             }
         }
     }
 
-    CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
+     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
@@ -176,7 +178,8 @@ namespace magique
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
-        MAGIQUE_ASSERT(height > 2 * radius, "Given capsule is not well defined! Total height has to be greater than 2 * radius");
+        MAGIQUE_ASSERT(height > 2 * radius,
+                       "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
     }

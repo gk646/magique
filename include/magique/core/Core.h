@@ -98,16 +98,19 @@ namespace magique
 
     //----------------- UTILS -----------------//
 
-    // If enabled display performance metrics on the top left
-    // Default: false
-    void SetShowPerformanceOverlay(bool val);
-
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);
 
     // Initializes the engine - does not need to be called when using the game template
     // Needs to be called after InitWindow();
     bool InitMagique();
+
+    //----------------- DEBUG -----------------//
+
+
+    // If enabled display performance metrics on the top left
+    // Default: false
+    void SetShowPerformanceOverlay(bool val);
 
     // If true shows red hitboxes for collidable entities
     // This is the single point of truth - If two hitboxes visually overlap then a collision happened!
@@ -121,6 +124,7 @@ namespace magique
     // Clears the collected benchmark times
     void ResetBenchmarkTimes();
 
+    // Draws the debug grid for the dynamic entity hash grid including entity count
     void DrawHashGridDebug();
 
 } // namespace magique

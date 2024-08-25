@@ -26,6 +26,7 @@ struct DataBlock final
     uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if if its the end
 
     [[nodiscard]] bool isFull() const { return count == size; }
+
     // Can happen that its full but no next one is inserted yet
     [[nodiscard]] bool hasNext() const { return next != NO_NEXT_BLOCK; }
 
@@ -151,23 +152,23 @@ struct SingleResolutionHashGrid final
     // This is only efficient when no elements are inserted anymore until the next clear - Leaves holes
     void removeWithHoles(V val)
     {
-        for (const auto& pair : cellMap)
+        for (const auto& pair : cellMap) // Iterate through map to only work on 'root' blocks
         {
             auto& block = dataBlocks[pair.second];
             DataBlock<V, blockSize>* start = &block;
-            do
+            start->remove(val);
+            while (start->hasNext())
             {
-                start->remove(val);
                 start = &dataBlocks[start->next];
+                start->remove(val);
             }
-            while (start->hasNext());
         }
     }
 
     // Patches the blocks removing any holes
     void patchHoles()
     {
-        for (const auto& pair : cellMap)
+        for (const auto& pair : cellMap) // Iterate through map to only work on 'root' blocks
         {
             patchBlockChain(dataBlocks[pair.second]);
         }

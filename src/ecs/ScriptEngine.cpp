@@ -10,7 +10,7 @@ namespace magique
         position.y += collisionInfo.normalVector.y * collisionInfo.penDepth;
     }
 
-    void SetScript(const EntityID entity, EntityScript* script)
+    void SetScript(const EntityType entity, EntityScript* script)
     {
         if (global::SCRIPT_DATA.scripts.size() < entity + 1)
         {
@@ -24,7 +24,7 @@ namespace magique
         global::SCRIPT_DATA.scripts[entity] = script;
     }
 
-    EntityScript* GetScript(const EntityID entity)
+    EntityScript* GetScript(const EntityType entity)
     {
         MAGIQUE_ASSERT(global::SCRIPT_DATA.scripts.size() > entity, "No script registered for this type! Did you call SetScript()?");
         MAGIQUE_ASSERT(global::SCRIPT_DATA.scripts[entity] != global::SCRIPT_DATA.defaultScript,
