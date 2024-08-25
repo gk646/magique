@@ -20,17 +20,19 @@
 
 namespace magique
 {
-    void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& info);
-    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
+    void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
+    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet, CollisionInfoMap& infoMap);
     void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, int startIdx, int endIdx);
 
     // System
     inline void DynamicCollisionSystem()
     {
-        return;
+        auto& dyCollData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
-        auto& grid = data.hashGrid;
-        auto& colPairs = data.collisionPairs;
+        auto& grid = dyCollData.hashGrid;
+        auto& colPairs = dyCollData.collisionPairs;
+        auto& pairSet = dyCollData.pairSet;
+        auto& infoMap = data.infoMap;
 
         const int size = static_cast<int>(grid.cellMap.size()); // Multithread over certain amount
         if (size > 150)
@@ -52,7 +54,8 @@ namespace magique
         {
             CheckHashGridCells(grid, colPairs[0].vec, 0, size);
         }
-        HandleCollisionPairs(colPairs, data.pairSet);
+
+        HandleCollisionPairs(colPairs, pairSet, infoMap);
     }
 
     inline void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, const int startIdx,
@@ -82,7 +85,7 @@ namespace magique
                     CheckCollision(posA, colA, posB, colB, info);
                     if (info.isColliding())
                     {
-                        pairs.push_back({info, first, second, posA.type, posB.type});
+                        pairs.push_back({info, posA, posB, first, second});
                     }
                 }
             }
@@ -91,299 +94,296 @@ namespace magique
 
     inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet, CollisionInfoMap& infoMap)
     {
+        const auto& scriptVec = global::SCRIPT_DATA.scripts;
         for (auto& [vec] : colPairs)
         {
-            for (auto [info, e1, e2, id1, id2] : vec)
+            for (auto [info, p1, p2, e1, e2] : vec)
             {
                 auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
-                if (it == pairSet.end())
+                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
                     continue;
                 pairSet.insert(it, num);
 
-                auto& e1Info = infoMap[e1];
-                e1Info.info = info;
-                e1Info.id = id1;
-
-                info.normalVector.x = -info.normalVector.x;
-                info.normalVector.y = -info.normalVector.y;
-
-                auto& e2Info = infoMap[e2];
-                e2Info.info = info;
-                e2Info.id = id1;
+                InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
+                InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, info);
             }
             vec.clear();
         }
 
+        for (const auto& [entity, pInfo] : infoMap)
+        {
+            auto& pos = *pInfo.pos;
+            pos.x += pInfo.normalVector.x;
+            pos.y += pInfo.normalVector.y;
+        }
         pairSet.clear();
+        infoMap.clear();
     }
 
-    inline void CheckCollision(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
-                               const CollisionC& colB, CollisionInfo& info)
+    // Should be the most efficient way - allows jump tables and inlining - this is actually very fast!
+    // With 15k entities skipping all switches and returning immediately only saves around 0.1 ms
+    inline void CheckCollision(const PositionC& pA, const CollisionC& cA, const PositionC& pB, const CollisionC& cB,
+                               CollisionInfo& i)
     {
-        switch (colA.shape)
+        switch (cA.shape)
         {
         case Shape::RECT:
-            switch (colB.shape)
+            switch (cB.shape)
             {
             case Shape::RECT:
                 {
-                    if (posA.rotation == 0) [[likely]]
+                    if (pA.rotation == 0) [[likely]]
                     {
-                        if (posB.rotation == 0) [[likely]]
+                        if (pB.rotation == 0) [[likely]]
                         {
-                            return RectToRect(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2, info);
+                            return RectToRect(pA.x, pA.y, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
                         }
-                        float pxs[4] = {0, colB.p1, colB.p1, 0};                                            // rect b
-                        float pys[4] = {0, 0, colB.p2, colB.p2};                                            // rect b
-                        RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY); // rot
-                        const float p1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p1, posA.x};         // Rect a
-                        const float p1ys[4] = {posA.y, posA.y, posA.y + colA.p2, posA.y + colA.p2};         // Rect a
-                        return SAT(pxs, pys, p1xs, p1ys, info);
+                        float pxs[4] = {0, cB.p1, cB.p1, 0};                                      // rect b
+                        float pys[4] = {0, 0, cB.p2, cB.p2};                                      // rect b
+                        RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
+                        const float p1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p1, pA.x};           // Rect a
+                        const float p1ys[4] = {pA.y, pA.y, pA.y + cA.p2, pA.y + cA.p2};           // Rect a
+                        return SAT(pxs, pys, p1xs, p1ys, i);
                     }
-                    if (posB.rotation == 0) [[likely]] // Only a is rotated
+                    if (pB.rotation == 0) [[likely]] // Only a is rotated
                     {
-                        float pxs[4] = {0, colA.p1, colA.p1, 0};                                            // rect a
-                        float pys[4] = {0, 0, colA.p2, colA.p2};                                            // rect a
-                        RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY); // rot
-                        const float p1xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p1, posB.x};         // Rect b
-                        const float p1ys[4] = {posB.y, posB.y, posB.y + colB.p2, posB.y + colB.p2};         // Rect b
-                        return SAT(pxs, pys, p1xs, p1ys, info);
-                    }                                         // Both are rotated
-                    float pxs[4] = {0, colA.p1, colA.p1, 0};  // rect a
-                    float pys[4] = {0, 0, colA.p2, colA.p2};  // rect a
-                    float p1xs[4] = {0, colB.p1, colB.p1, 0}; // Rect b
-                    float p1ys[4] = {0, 0, colB.p2, colB.p2}; // Rect b
-                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
-                    RotatePoints4(posB.x, posB.y, p1xs, p1ys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return SAT(pxs, pys, p1xs, p1ys, info);
+                        float pxs[4] = {0, cA.p1, cA.p1, 0};                                      // rect a
+                        float pys[4] = {0, 0, cA.p2, cA.p2};                                      // rect a
+                        RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY); // rot
+                        const float p1xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p1, pB.x};           // Rect b
+                        const float p1ys[4] = {pB.y, pB.y, pB.y + cB.p2, pB.y + cB.p2};           // Rect b
+                        return SAT(pxs, pys, p1xs, p1ys, i);
+                    }                                     // Both are rotated
+                    float pxs[4] = {0, cA.p1, cA.p1, 0};  // rect a
+                    float pys[4] = {0, 0, cA.p2, cA.p2};  // rect a
+                    float p1xs[4] = {0, cB.p1, cB.p1, 0}; // Rect b
+                    float p1ys[4] = {0, 0, cB.p2, cB.p2}; // Rect b
+                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                    RotatePoints4(pB.x, pB.y, p1xs, p1ys, pB.rotation, cB.anchorX, cB.anchorY);
+                    return SAT(pxs, pys, p1xs, p1ys, i);
                 }
             case Shape::CIRCLE:
                 {
-                    if (posA.rotation == 0)
+                    if (pA.rotation == 0)
                     {
-                        return RectToCircle(posA.x, posA.y, colA.p1, colA.p2, posB.x + colB.p1, posB.y + colB.p1,
-                                            colB.p1, info);
+                        return RectToCircle(pA.x, pA.y, cA.p1, cA.p2, pB.x + cB.p1, pB.y + cB.p1, cB.p1, i);
                     }
-                    float pxs[4] = {0, colA.p1, colA.p1, 0}; // rect a
-                    float pys[4] = {0, 0, colA.p2, colA.p2}; // rect a
-                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, pxs, pys, info);
+                    float pxs[4] = {0, cA.p1, cA.p1, 0}; // rect a
+                    float pys[4] = {0, 0, cA.p2, cA.p2}; // rect a
+                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                    return CircleToQuadrilateral(pB.x + cB.p1, pB.y + cB.p1, cB.p1, pxs, pys, i);
                 }
             case Shape::CAPSULE:
                 {
-                    if (posA.rotation == 0) [[likely]]
+                    if (pA.rotation == 0) [[likely]]
                     {
-                        return RectToCapsule(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2, info);
+                        return RectToCapsule(pA.x, pA.y, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
                     }
-                    float pxs[4] = {0, colA.p1, colA.p1, 0};                                            // rect a
-                    float pys[4] = {0, 0, colA.p2, colA.p2};                                            // rect a
-                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY); // rot
-                    return CapsuleToQuadrilateral(posB.x, posB.y, colB.p1, colB.p2, pxs, pys, info);
+                    float pxs[4] = {0, cA.p1, cA.p1, 0};                                      // rect a
+                    float pys[4] = {0, 0, cA.p2, cA.p2};                                      // rect a
+                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY); // rot
+                    return CapsuleToQuadrilateral(pB.x, pB.y, cB.p1, cB.p2, pxs, pys, i);
                 }
             case Shape::TRIANGLE:
-                if (posA.rotation == 0) [[likely]]
+                if (pA.rotation == 0) [[likely]]
                 {
-                    if (posB.rotation == 0)
+                    if (pB.rotation == 0)
                     {
-                        const float rectX[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p1, posA.x};
-                        const float rectY[4] = {posA.y, posA.y, posA.y + colA.p2, posA.y + colA.p2};
+                        const float rectX[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p1, pA.x};
+                        const float rectY[4] = {pA.y, pA.y, pA.y + cA.p2, pA.y + cA.p2};
 
-                        const float triX[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                        const float triY[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                        return SAT(rectX, rectY, triX, triY, info);
+                        const float triX[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                        const float triY[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                        return SAT(rectX, rectY, triX, triY, i);
                     }
-                    float txs[4] = {0, colB.p1, colB.p3, 0};
-                    float tys[4] = {0, colB.p2, colB.p4, 0};
-                    RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                    const float p1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p1, posA.x}; // Rect a
-                    const float p1ys[4] = {posA.y, posA.y, posA.y + colA.p2, posA.y + colA.p2}; // Rect a
-                    return SAT(txs, tys, p1xs, p1ys, info);
+                    float txs[4] = {0, cB.p1, cB.p3, 0};
+                    float tys[4] = {0, cB.p2, cB.p4, 0};
+                    RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
+                    const float p1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p1, pA.x}; // Rect a
+                    const float p1ys[4] = {pA.y, pA.y, pA.y + cA.p2, pA.y + cA.p2}; // Rect a
+                    return SAT(txs, tys, p1xs, p1ys, i);
                 }
-                if (posB.rotation == 0)
+                if (pB.rotation == 0)
                 {
-                    float pxs[4] = {0, colA.p1, colA.p1, 0};
-                    float pys[4] = {0, 0, colA.p2, colA.p2};
-                    RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
-                    const float txs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                    const float tys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                    return SAT(pxs, pys, txs, tys, info);
+                    float pxs[4] = {0, cA.p1, cA.p1, 0};
+                    float pys[4] = {0, 0, cA.p2, cA.p2};
+                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                    const float txs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                    const float tys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                    return SAT(pxs, pys, txs, tys, i);
                 }
-                float pxs[4] = {0, colA.p1, colA.p1, 0};
-                float pys[4] = {0, 0, colA.p2, colA.p2};
-                RotatePoints4(posA.x, posA.y, pxs, pys, posA.rotation, colA.anchorX, colA.anchorY);
-                float txs[4] = {0, colB.p1, colB.p3, 0};
-                float tys[4] = {0, colB.p2, colB.p4, 0};
-                RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                return SAT(pxs, pys, txs, tys, info);
+                float pxs[4] = {0, cA.p1, cA.p1, 0};
+                float pys[4] = {0, 0, cA.p2, cA.p2};
+                RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                float txs[4] = {0, cB.p1, cB.p3, 0};
+                float tys[4] = {0, cB.p2, cB.p4, 0};
+                RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
+                return SAT(pxs, pys, txs, tys, i);
             }
         case Shape::CIRCLE:
-            switch (colB.shape)
+            switch (cB.shape)
             {
             case Shape::RECT:
                 {
-                    if (posB.rotation == 0)
+                    if (pB.rotation == 0)
                     {
-                        return RectToCircle(posB.x, posB.y, colB.p1, colB.p2, posA.x + colA.p1, posA.y + colA.p1,
-                                            colA.p1, info);
+                        return RectToCircle(pB.x, pB.y, cB.p1, cB.p2, pA.x + cA.p1, pA.y + cA.p1, cA.p1, i);
                     }
-                    float pxs[4] = {0, colB.p1, colB.p1, 0}; // rect b
-                    float pys[4] = {0, 0, colB.p2, colB.p2}; // rect b
-                    RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, pxs, pys, info);
+                    float pxs[4] = {0, cB.p1, cB.p1, 0}; // rect b
+                    float pys[4] = {0, 0, cB.p2, cB.p2}; // rect b
+                    RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY);
+                    return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pxs, pys, i);
                 }
             case Shape::CIRCLE:
                 // We can skip the translation to the middle point as both are in the same system
-                return CircleToCircle(posA.x + colA.p1, posA.y + colA.p1, colA.p1, posB.x + colB.p1, posB.y + colB.p1,
-                                      colB.p1, info);
+                return CircleToCircle(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x + cB.p1, pB.y + cB.p1, cB.p1, i);
             case Shape::CAPSULE:
-                return CircleToCapsule(posA.x + colA.p1, posA.y + colA.p1, colA.p1, posB.x, posB.y, colB.p1, colB.p2,
-                                       info);
+                return CircleToCapsule(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x, pB.y, cB.p1, cB.p2, i);
             case Shape::TRIANGLE:
                 {
-                    if (posB.rotation == 0)
+                    if (pB.rotation == 0)
                     {
-                        const float txs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                        const float tys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                        return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, txs, tys, info);
+                        const float txs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                        const float tys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                        return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
                     }
-                    float txs[4] = {0, colB.p1, colB.p3, 0};
-                    float tys[4] = {0, colB.p2, colB.p4, 0};
-                    RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return CircleToQuadrilateral(posA.x + colA.p1, posA.y + colA.p1, colA.p1, txs, tys, info);
+                    float txs[4] = {0, cB.p1, cB.p3, 0};
+                    float tys[4] = {0, cB.p2, cB.p4, 0};
+                    RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
+                    return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
                 }
             }
         case Shape::CAPSULE:
-            switch (colB.shape)
+            switch (cB.shape)
             {
             case Shape::RECT:
                 {
-                    if (posB.rotation == 0) [[likely]]
+                    if (pB.rotation == 0) [[likely]]
                     {
-                        return RectToCapsule(posB.x, posB.y, colB.p1, colB.p2, posA.x, posA.y, colA.p1, colA.p2, info);
+                        return RectToCapsule(pB.x, pB.y, cB.p1, cB.p2, pA.x, pA.y, cA.p1, cA.p2, i);
                     }
-                    float pxs[4] = {0, colB.p1, colB.p1, 0};                                            // rect b
-                    float pys[4] = {0, 0, colB.p2, colB.p2};                                            // rect b
-                    RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY); // rot
-                    return CapsuleToQuadrilateral(posA.x, posA.y, colA.p1, colA.p2, pxs, pys, info);
+                    float pxs[4] = {0, cB.p1, cB.p1, 0};                                      // rect b
+                    float pys[4] = {0, 0, cB.p2, cB.p2};                                      // rect b
+                    RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
+                    return CapsuleToQuadrilateral(pA.x, pA.y, cA.p1, cA.p2, pxs, pys, i);
                 }
             case Shape::CIRCLE:
-                return CircleToCapsule(posB.x + colB.p1, posB.y + colB.p1, colB.p1, posA.x, posA.y, colA.p1, colA.p2,
-                                       info);
+                return CircleToCapsule(pB.x + cB.p1, pB.y + cB.p1, cB.p1, pA.x, pA.y, cA.p1, cA.p2, i);
             case Shape::CAPSULE:
-                return CapsuleToCapsule(posA.x, posA.y, colA.p1, colA.p2, posB.x, posB.y, colB.p1, colB.p2, info);
+                return CapsuleToCapsule(pA.x, pA.y, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
             case Shape::TRIANGLE:
-                if (posB.rotation == 0)
+                if (pB.rotation == 0)
                 {
-                    const float txs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                    const float tys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                    return CapsuleToQuadrilateral(posA.x, posA.y, colA.p1, colA.p2, txs, tys, info);
+                    const float txs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                    const float tys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                    return CapsuleToQuadrilateral(pA.x, pA.y, cA.p1, cA.p2, txs, tys, i);
                 }
-                float txs[4] = {0, colB.p1, colB.p3, 0};
-                float tys[4] = {0, colB.p2, colB.p4, 0};
-                RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                return CapsuleToQuadrilateral(posA.x, posA.y, colA.p1, colA.p2, txs, tys, info);
+                float txs[4] = {0, cB.p1, cB.p3, 0};
+                float tys[4] = {0, cB.p2, cB.p4, 0};
+                RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
+                return CapsuleToQuadrilateral(pA.x, pA.y, cA.p1, cA.p2, txs, tys, i);
             }
         case Shape::TRIANGLE:
-            switch (colB.shape)
+            switch (cB.shape)
             {
             case Shape::RECT:
                 {
-                    if (posA.rotation == 0) [[likely]]
+                    if (pA.rotation == 0) [[likely]]
                     {
-                        if (posB.rotation == 0) [[likely]]
+                        if (pB.rotation == 0) [[likely]]
                         {
-                            const float rectX[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p1, posB.x};
-                            const float rectY[4] = {posB.y, posB.y, posB.y + colB.p2, posB.y + colB.p2};
+                            const float rectX[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p1, pB.x};
+                            const float rectY[4] = {pB.y, pB.y, pB.y + cB.p2, pB.y + cB.p2};
 
-                            const float triX[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                            const float triY[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                            return SAT(rectX, rectY, triX, triY, info);
+                            const float triX[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                            const float triY[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                            return SAT(rectX, rectY, triX, triY, i);
                         }
-                        float pxs[4] = {0, colB.p1, colB.p1, 0};                                            // rect b
-                        float pys[4] = {0, 0, colB.p2, colB.p2};                                            // rect b
-                        RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY); // rot
-                        const float t1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                        const float t1ys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        return SAT(pxs, pys, t1xs, t1ys, info);
+                        float pxs[4] = {0, cB.p1, cB.p1, 0};                                      // rect b
+                        float pys[4] = {0, 0, cB.p2, cB.p2};                                      // rect b
+                        RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
+                        const float t1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                        const float t1ys[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                        return SAT(pxs, pys, t1xs, t1ys, i);
                     }
-                    if (posB.rotation == 0)
+                    if (pB.rotation == 0)
                     {
-                        float txs[4] = {0, colA.p1, colA.p3, 0};
-                        float tys[4] = {0, colA.p2, colA.p4, 0};
-                        RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                        const float p1xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p1, posB.x}; // Rect b
-                        const float p1ys[4] = {posB.y, posB.y, posB.y + colB.p2, posB.y + colB.p2}; // Rect b
-                        return SAT(txs, tys, p1xs, p1ys, info);
+                        float txs[4] = {0, cA.p1, cA.p3, 0};
+                        float tys[4] = {0, cA.p2, cA.p4, 0};
+                        RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                        const float p1xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p1, pB.x}; // Rect b
+                        const float p1ys[4] = {pB.y, pB.y, pB.y + cB.p2, pB.y + cB.p2}; // Rect b
+                        return SAT(txs, tys, p1xs, p1ys, i);
                     }
-                    float txs[4] = {0, colA.p1, colA.p3, 0}; // Triangle rotated
-                    float tys[4] = {0, colA.p2, colA.p4, 0};
-                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    float pxs[4] = {0, colB.p1, colB.p1, 0}; // Rect rotated
-                    float pys[4] = {0, 0, colB.p2, colB.p2};
-                    RotatePoints4(posB.x, posB.y, pxs, pys, posB.rotation, colB.anchorX, colB.anchorY);
-                    return SAT(pxs, pys, txs, tys, info);
+                    float txs[4] = {0, cA.p1, cA.p3, 0}; // Triangle rotated
+                    float tys[4] = {0, cA.p2, cA.p4, 0};
+                    RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                    float pxs[4] = {0, cB.p1, cB.p1, 0}; // Rect rotated
+                    float pys[4] = {0, 0, cB.p2, cB.p2};
+                    RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY);
+                    return SAT(pxs, pys, txs, tys, i);
                 }
             case Shape::CIRCLE:
                 {
-                    if (posA.rotation == 0)
+                    if (pA.rotation == 0)
                     {
-                        const float txs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                        const float tys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, txs, tys, info);
+                        const float txs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                        const float tys[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                        return CircleToQuadrilateral(pB.x + cB.p1, pB.y + cB.p1, cB.p1, txs, tys, i);
                     }
-                    float txs[4] = {0, colA.p1, colA.p3, 0};
-                    float tys[4] = {0, colA.p2, colA.p4, 0};
-                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CircleToQuadrilateral(posB.x + colB.p1, posB.y + colB.p1, colB.p1, txs, tys, info);
+                    float txs[4] = {0, cA.p1, cA.p3, 0};
+                    float tys[4] = {0, cA.p2, cA.p4, 0};
+                    RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                    return CircleToQuadrilateral(pB.x + cB.p1, pB.y + cB.p1, cB.p1, txs, tys, i);
                 }
             case Shape::CAPSULE:
                 {
-                    if (posA.rotation == 0)
+                    if (pA.rotation == 0)
                     {
-                        const float txs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                        const float tys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        return CapsuleToQuadrilateral(posB.x, posB.y, colB.p1, colB.p2, txs, tys, info);
+                        const float txs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                        const float tys[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                        return CapsuleToQuadrilateral(pB.x, pB.y, cB.p1, cB.p2, txs, tys, i);
                     }
-                    float txs[4] = {0, colA.p1, colA.p3, 0};
-                    float tys[4] = {0, colA.p2, colA.p4, 0};
-                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    return CapsuleToQuadrilateral(posB.x, posB.y, colB.p1, colB.p2, txs, tys, info);
+                    float txs[4] = {0, cA.p1, cA.p3, 0};
+                    float tys[4] = {0, cA.p2, cA.p4, 0};
+                    RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                    return CapsuleToQuadrilateral(pB.x, pB.y, cB.p1, cB.p2, txs, tys, i);
                 }
             case Shape::TRIANGLE:
-                if (posA.rotation == 0) // For triangles we dont assume as they are likely rotated
+                if (pA.rotation == 0) // For triangles we dont assume as they are likely rotated
                 {
-                    if (posB.rotation == 0)
+                    if (pB.rotation == 0)
                     {
-                        const float t1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                        const float t1ys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                        const float t2xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                        const float t2ys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                        return SAT(t1xs, t1ys, t2xs, t2ys, info);
+                        const float t1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                        const float t1ys[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                        const float t2xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                        const float t2ys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                        return SAT(t1xs, t1ys, t2xs, t2ys, i);
                     }
-                    float txs[4] = {0, colB.p1, colB.p3, 0};
-                    float tys[4] = {0, colB.p2, colB.p4, 0};
-                    RotatePoints4(posB.x, posB.y, txs, tys, posB.rotation, colB.anchorX, colB.anchorY);
-                    const float t1xs[4] = {posA.x, posA.x + colA.p1, posA.x + colA.p3, posA.x};
-                    const float t1ys[4] = {posA.y, posA.y + colA.p2, posA.y + colA.p4, posA.y};
-                    return SAT(txs, tys, t1xs, t1ys, info);
+                    float txs[4] = {0, cB.p1, cB.p3, 0};
+                    float tys[4] = {0, cB.p2, cB.p4, 0};
+                    RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
+                    const float t1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p3, pA.x};
+                    const float t1ys[4] = {pA.y, pA.y + cA.p2, pA.y + cA.p4, pA.y};
+                    return SAT(txs, tys, t1xs, t1ys, i);
                 }
-                if (posB.rotation == 0)
+                if (pB.rotation == 0)
                 {
-                    float txs[4] = {0, colA.p1, colA.p3, 0};
-                    float tys[4] = {0, colA.p2, colA.p4, 0};
-                    RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                    const float t1xs[4] = {posB.x, posB.x + colB.p1, posB.x + colB.p3, posB.x};
-                    const float t1ys[4] = {posB.y, posB.y + colB.p2, posB.y + colB.p4, posB.y};
-                    return SAT(txs, tys, t1xs, t1ys, info);
+                    float txs[4] = {0, cA.p1, cA.p3, 0};
+                    float tys[4] = {0, cA.p2, cA.p4, 0};
+                    RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                    const float t1xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
+                    const float t1ys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
+                    return SAT(txs, tys, t1xs, t1ys, i);
                 }
-                float txs[4] = {0, colA.p1, colA.p3, 0};
-                float tys[4] = {0, colA.p2, colA.p4, 0};
-                float t1xs[4] = {0, colB.p1, colB.p3, 0};
-                float t1ys[4] = {0, colB.p2, colB.p4, 0};
-                RotatePoints4(posA.x, posA.y, txs, tys, posA.rotation, colA.anchorX, colA.anchorY);
-                RotatePoints4(posB.x, posB.y, t1xs, t1ys, posB.rotation, colB.anchorX, colB.anchorY);
-                return SAT(txs, tys, t1xs, t1ys, info);
+                float txs[4] = {0, cA.p1, cA.p3, 0};
+                float tys[4] = {0, cA.p2, cA.p4, 0};
+                float t1xs[4] = {0, cB.p1, cB.p3, 0};
+                float t1ys[4] = {0, cB.p2, cB.p4, 0};
+                RotatePoints4(pA.x, pA.y, txs, tys, pA.rotation, cA.anchorX, cA.anchorY);
+                RotatePoints4(pB.x, pB.y, t1xs, t1ys, pB.rotation, cB.anchorX, cB.anchorY);
+                return SAT(txs, tys, t1xs, t1ys, i);
             }
         }
     }

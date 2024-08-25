@@ -37,12 +37,6 @@
 #include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
-// Has to be in a translation unit - and systems needs access to it
-namespace magique::internal
-{
-    const auto POSITION_GROUP = REGISTRY.group<const PositionC, const CollisionC>(); // Pos + Collision group
-}
-
 #include "internal/systems/DynamicCollisionSystem.h"
 #include "internal/systems/StaticCollisionSystem.h"
 #include "internal/systems/InputSystem.h"

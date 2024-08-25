@@ -3,6 +3,7 @@
 
 #include <raylib/raylib.h>
 #include <magique/ui/types/UIObject.h>
+IGNORE_WARNING(4100)
 
 //-----------------------------------------------
 // Button
@@ -56,5 +57,7 @@ namespace magique
         bool wasHovered = false;
     };
 } // namespace magique
+
+UNIGNORE_WARNING()
 
 #endif //MAGIQUE_BUTTON_H

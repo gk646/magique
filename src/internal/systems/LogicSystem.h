@@ -145,9 +145,11 @@ namespace magique
     inline void LogicSystem(const entt::registry& registry)
     {
         const auto& config = global::ENGINE_CONFIG;
-        const auto& group = internal::POSITION_GROUP;
         auto& tickData = global::ENGINE_DATA;
-        auto& hashGrid = tickData.hashGrid;
+        auto& dyCollData = global::DY_COLL_DATA;
+
+        const auto& group = internal::POSITION_GROUP;
+        auto& hashGrid = dyCollData.hashGrid;
         auto& drawVec = tickData.drawVec;
         auto& cache = tickData.entityUpdateCache;
         auto& updateVec = tickData.entityUpdateVec;
@@ -175,7 +177,6 @@ namespace magique
         hashGrid.clear();
         updateVec.clear();
         collisionVec.clear();
-        hashGrid.clear();
 
         // Iterate all entities and insert them into hashgrid and drawVec/collisionVec
         const auto view = registry.view<PositionC>();

@@ -50,7 +50,6 @@ namespace magique
             LOG_ERROR("Passed invalid entity: %d", static_cast<int>(entity));
             return;
         }
-
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
         ::PlaySound(alias);

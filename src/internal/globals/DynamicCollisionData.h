@@ -10,10 +10,10 @@ namespace magique
     struct PairInfo final // Saves entity id and type
     {
         CollisionInfo info;
+        PositionC& pos1;
+        PositionC& pos2;
         entt::entity e1;
         entt::entity e2;
-        EntityType id1;
-        EntityType id2;
     };
 
     template <typename T>
@@ -31,7 +31,8 @@ namespace magique
     {
         HashSet<uint64_t> pairSet;                            // Filters unique collision pairs
         CollPairCollector collisionPairs{};                   // Collision pair collectors
-        EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all entities
+        EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all dynamic entities
+        HashSet<entt::entity> bhvSet{};
 
         DynamicCollisiondata()
         {

@@ -17,7 +17,7 @@ enum class MessageType : uint8_t
     STRING,
 };
 
-enum EntityID : uint16_t
+enum EntityType : uint16_t
 {
     PLAYER,
     E_ARCHER,

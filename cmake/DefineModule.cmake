@@ -30,8 +30,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif ()
 elseif (MSVC)
     # Clear flags
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Zi /Zc:preprocessor")
-    set(CMAKE_CXX_FLAGS_RELEASE " /O2 /W4 /Zc:preprocessor")
+    set(CMAKE_CXX_FLAGS_DEBUG "/W4 /Od /Zi /Zc:preprocessor")
+    set(CMAKE_CXX_FLAGS_RELEASE "/W4 /O2 /Zi /Zc:preprocessor")
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE
            /Ob2 /EHc /favor:INTEL64 /GA /fp:fast /arch:AVX2 /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi

@@ -53,8 +53,11 @@ float GetFrameTime()
     return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
 }
 
+
 namespace magique
 {
+    //----------------- RENDERER -----------------//
+
     inline void HandleLoadingScreen(Game& game)
     {
         auto& loader = global::LOADER;
@@ -186,14 +189,13 @@ namespace magique
         ++achieveCounter;
     }
 
-    inline void InternalUpdatePost(const entt::registry& registry) // After user space update
+    inline void InternalUpdatePost() // After user space update
     {
         StaticCollisionSystem();       // Static before cause can cause change in position
         DynamicCollisionSystem();      // After cause user systems can modify entity state
         global::UI_DATA.update();      // After gametick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
     }
-
 
 } // namespace magique
 

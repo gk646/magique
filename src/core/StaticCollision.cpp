@@ -104,8 +104,6 @@ namespace magique
         data.manualColliderMap[group].push_back({x, y, width, height});
     }
 
-    void AddStaticColliderCircle(int group, float x, float y, float radius) {}
-
     void RemoveColliderGroup(int group) {}
 
 
