@@ -177,13 +177,9 @@ namespace magique
 
     struct CollisionInfo final
     {
-        static constexpr float NO_COLLISION = -420.691337F;
         Point normalVector{};   // The direction  vector in which the object needs to be mover to resolve the collision
         Point collisionPoint{}; // The point of contact (or often the closest point on the shapes between the centers)
         float penDepth = 0;     // The amount by which the shapes overlap - minimal distance to move along the normal
-
-        // Note: Used internally - generates a info object that shows no collision occured
-        static CollisionInfo NoCollision();
 
         // Returns true
         [[nodiscard]] bool isColliding() const;

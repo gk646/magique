@@ -293,6 +293,7 @@ namespace cxstructs
 
         return negative ? -result : result;
     }
+    // Returns the counted characters until the given 'stop' char is encountered or 'maxCount' amount of characters are read
     inline int str_count_chars_until(const char* data, char stop, int maxCount)
     {
         int count = 0;
@@ -306,6 +307,7 @@ namespace cxstructs
         }
         return count;
     }
+    // Reads (copies) all chars from the given data into the given 'buffer' until its either full or the stop char is read
     inline void str_read_into_until(const char* data, char* buffer, size_t buffer_size, char stop)
     {
         size_t count = 0;
@@ -366,11 +368,16 @@ namespace cxstructs
                 unsigned int left = d[i][j - 1] + 1;
                 unsigned int diag = d[i - 1][j - 1] + cost;
 
-                if (above <= left && above <= diag) {
+                if (above <= left && above <= diag)
+                {
                     d[i][j] = above;
-                } else if (left <= above && left <= diag) {
+                }
+                else if (left <= above && left <= diag)
+                {
                     d[i][j] = left;
-                } else {
+                }
+                else
+                {
                     d[i][j] = diag;
                 }
             }

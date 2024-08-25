@@ -67,80 +67,22 @@ struct DataBlock final
     }
 };
 
-template <typename V, int blockSize = 15> // assuming 4 bytes as value size its 15 * 4 + 2 + 2 = 64 / one cache line
+// assuming 4 bytes as value size its 15 * 4 + 2 + 2 = 64 / one cache line
+template <typename V, int blockSize = 15, int cellSize = 64 /*power of two is optimized*/>
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int> cellMap{};
     std::vector<DataBlock<V, blockSize>> dataBlocks{};
-    int cellSize;
-
-    explicit SingleResolutionHashGrid(const int cellSize) : cellSize(cellSize) {}
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
-        const int x1 = static_cast<int>(x) / cellSize;
-        const int y1 = static_cast<int>(y) / cellSize;
-        const int x2 = static_cast<int>(x + w) / cellSize;
-        const int y2 = static_cast<int>(y + h) / cellSize;
-
-        CellID cellID = GetCellID(x1, y1);
-        insertElement(cellID, val);
-
-        if (x1 != x2) [[unlikely]]
-        {
-            cellID = GetCellID(x2, y1);
-            insertElement(cellID, val);
-
-            if (y1 != y2) [[unlikely]]
-            {
-                cellID = GetCellID(x1, y2);
-                insertElement(cellID, val);
-
-                cellID = GetCellID(x2, y2);
-                insertElement(cellID, val);
-                return;
-            }
-        }
-
-        if (y1 != y2) [[unlikely]]
-        {
-            cellID = GetCellID(x1, y2);
-            insertElement(cellID, val);
-        }
+        processCells([this, val](const CellID cellID) { insertElement(cellID, val); }, x, y, w, h);
     }
 
     template <typename Container>
     void query(Container& elems, const float x, const float y, const float w, const float h) const
     {
-        const int x1 = static_cast<int>(x) / cellSize;
-        const int y1 = static_cast<int>(y) / cellSize;
-        const int x2 = static_cast<int>(x + w) / cellSize;
-        const int y2 = static_cast<int>(y + h) / cellSize;
-
-        CellID cellID = GetCellID(x1, y1);
-        queryElements(cellID, elems);
-
-        if (x1 != x2) [[unlikely]]
-        {
-            cellID = GetCellID(x2, y1);
-            queryElements(cellID, elems);
-
-            if (y1 != y2) [[unlikely]]
-            {
-                cellID = GetCellID(x1, y2);
-                queryElements(cellID, elems);
-
-                cellID = GetCellID(x2, y2);
-                queryElements(cellID, elems);
-                return;
-            }
-        }
-
-        if (y1 != y2) [[unlikely]]
-        {
-            cellID = GetCellID(x1, y2);
-            queryElements(cellID, elems);
-        }
+        processCells([this, &elems](const CellID cellID) { queryElements(cellID, elems); }, x, y, w, h);
     }
 
     void clear()
@@ -181,8 +123,93 @@ struct SingleResolutionHashGrid final
     }
 
     [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
+    [[nodiscard]] constexpr int getCellSize() const { return cellSize; }
+
 
 private:
+    template <typename Func>
+    void processCells(Func&& func, const float x, const float y, const float w, const float h) const
+    {
+        if (w > cellSize || h > cellSize) [[unlikely]] // Its bigger than a single cell
+        {
+            printf("slow");
+            if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
+            {
+                const int startX = static_cast<int>(x) / cellSize;
+                const int startY = static_cast<int>(y) / cellSize;
+                const int endX = static_cast<int>(x + w) / cellSize;
+                const int endY = static_cast<int>(y + h) / cellSize;
+                for (int i = startY; i <= endY; ++i)
+                {
+                    for (int j = startX; j <= endX; ++j)
+                    {
+                        func(GetCellID(j, i));
+                    }
+                }
+                return;
+            }
+            // 4 corners, the 4 middle pointes of the edges and the middle pointer -> 9 potential cells
+            const int x1 = static_cast<int>(x) / cellSize;
+            const int y1 = static_cast<int>(y) / cellSize;
+            const int x2 = static_cast<int>(x + w) / cellSize;
+            const int y2 = static_cast<int>(y + h) / cellSize;
+
+            const int xhalf = static_cast<int>(x + w / 2.0F) / cellSize;
+            const int yhalf = static_cast<int>(y + h / 2.0F) / cellSize;
+            // Process the corners
+            func(GetCellID(x1, y1)); // Top-left
+            if (x1 != x2)
+                func(GetCellID(x2, y1)); // Top-right
+            if (y1 != y2)
+                func(GetCellID(x1, y2)); // Bottom-left
+            if (x1 != x2 && y1 != y2)
+                func(GetCellID(x2, y2)); // Bottom-right
+
+            // edge midpoints
+            if (xhalf != x1 && xhalf != x2)
+            {
+                func(GetCellID(xhalf, y1)); // Top-edge midpoint
+                if (y1 != y2)
+                    func(GetCellID(xhalf, y2)); // Bottom-edge midpoint
+            }
+            if (yhalf != y1 && yhalf != y2)
+            {
+                func(GetCellID(x1, yhalf)); // Left-edge midpoint
+                if (x1 != x2)
+                    func(GetCellID(x2, yhalf)); // Right-edge midpoint
+            }
+
+            // Process the center point
+            if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
+                func(GetCellID(xhalf, yhalf));
+            return;
+        }
+        // Its smaller than a cell -> maxium of 4 cells
+        const int x1 = static_cast<int>(x) / cellSize;
+        const int y1 = static_cast<int>(y) / cellSize;
+        const int x2 = static_cast<int>(x + w) / cellSize;
+        const int y2 = static_cast<int>(y + h) / cellSize;
+
+        func(GetCellID(x1, y1));
+
+        if (x1 != x2)
+        {
+            func(GetCellID(x2, y1));
+
+            if (y1 != y2)
+            {
+                func(GetCellID(x1, y2));
+                func(GetCellID(x2, y2));
+                return;
+            }
+        }
+
+        if (y1 != y2)
+        {
+            func(GetCellID(x1, y2));
+        }
+    }
+
     void patchBlockChain(DataBlock<V, blockSize>& startBlock)
     {
         DataBlock<V, blockSize>* start = &startBlock;

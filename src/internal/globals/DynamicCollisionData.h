@@ -25,13 +25,13 @@ namespace magique
 
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31>;
+    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31, MAGIQUE_COLLISION_CELL_SIZE>;
 
     struct DynamicCollisiondata final
     {
-        HashSet<uint64_t> pairSet;                            // Filters unique collision pairs
-        CollPairCollector collisionPairs{};                   // Collision pair collectors
-        EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all dynamic entities
+        HashSet<uint64_t> pairSet;          // Filters unique collision pairs
+        CollPairCollector collisionPairs{}; // Collision pair collectors
+        EntityHashGrid hashGrid;            // Global hashGrid for all dynamic entities
         HashSet<entt::entity> bhvSet{};
 
         DynamicCollisiondata()
