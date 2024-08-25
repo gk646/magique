@@ -12,8 +12,15 @@ namespace magique
 
     void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
-    void LogInternal(LogLevel level, const char* file, const int line, const char* msg, va_list args)
+    void LogInternal(const LogLevel level, const char* file, const int line, const char* msg, va_list args)
     {
+#  ifndef MAGIQUE_LOGGING
+        if (level < LEVEL_ERROR)
+        {
+            return;
+        }
+#endif
+
         if (level < global::ENGINE_CONFIG.logLevel)
         {
             return;

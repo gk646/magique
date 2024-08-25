@@ -75,7 +75,7 @@ namespace magique
             {
                 if (pos.rotation == 0)
                 {
-                    const auto bb = GetBBTriangle(pos.x, pos.y, col.p1, col.p2, col.p3, col.p4);
+                    const auto bb = GetBBTriangle(pos.x, pos.y, pos.x+col.p1, pos.y+col.p2, pos.x+col.p3, pos.y+col.p4);
                     return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                 }
                 float txs[4] = {0, col.p1, col.p3, 0};

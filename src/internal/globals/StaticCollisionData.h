@@ -5,9 +5,20 @@
 #include "internal/datastructures/HashTypes.h"
 #include "internal/datastructures/MultiResolutionGrid.h"
 
+//-----------------------------------------------
+// Static Collision Data
+//-----------------------------------------------
+// .....................................................................
+// Holds all data relevant to only static collision detection. Static collision consists of 4 major parts:
+// 1. World Bounds: Set through the core/Core.h interface - defines static world bounds
+// 2. TileMapObjects: Defined in the tile editor and imported
+// 3. TileSet: Defined in the tile editor - tile of a tileset are marked with a number and imported
+// 4. Custom Groups: Defined at runtime manually - identified by a group handle can be loaded and unloaded
+// .....................................................................
+
 namespace magique
 {
-    using ColliderHashGrid = SingleResolutionHashGrid<uint16_t, 15>;
+    using ColliderHashGrid = SingleResolutionHashGrid<uint16_t, 15, 256>;
     struct MapData final
     {
         const uint16_t* layerData[MAGIQUE_MAX_TILE_LAYERS]{};
@@ -59,7 +70,7 @@ namespace magique
     {
         //----------------- COLLISION OBJECTS -----------------//
 
-        ColliderHashGrid objectGrid{150};                          // Stores all objects and tiles
+        ColliderHashGrid objectGrid;                               // Stores all objects and tiles
         HashMap<MapID, const std::vector<TileObject>*> mapObjects; // Saves pointer to object vector to unload later
         ObjectHolder objectHolder;            // Saves collider ids - uses a free list to preserve indices
         vector<uint16_t> colliderCollector{}; // Collects collider ids

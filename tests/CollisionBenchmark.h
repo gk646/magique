@@ -28,6 +28,10 @@
 // Fixed update area being wrong -> more objects are loaded now
 // Time: 9.1 ms | New Baseline
 // Time: 8.9 ms | Removed EnTT asserts in release builds
+// Time: 8.5 ms | Removed immediate collision resolving - its accumulated per user call
+// Time: 9.3 ms | Added static collisions
+// Time: 8.6 ms | Added power of two optimization
+// Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangeles -> more shapes -> bit slower
 // .....................................................................
 
 using namespace magique;
@@ -62,7 +66,7 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other,const CollisionInfo info) override
+    void onDynamicCollision(entt::entity self, entt::entity other,const CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -76,7 +80,7 @@ struct ObjectScript final : EntityScript
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo info) override
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;

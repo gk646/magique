@@ -67,33 +67,4 @@ class Constraint {
 
 }  // namespace cxstructs
 
-#  ifdef CX_INCLUDE_TESTS
-#    include <type_traits>
-#    include <string>
-
-namespace cxtests {
-using namespace cxstructs;
-
-static void TEST_CONSTRAINT() {
-  Constraint<true> c;
-
-  c + std::is_same_v<float, float>;
-  c + (std::isalpha('B') != 0);
-
-  CX_ASSERT(c.holds(), "Constraint holds");
-
-  c + false;
-
-  CX_ASSERT(c.holds() == false, "Constraint fails");
-
-  Constraint<false> cF;
-
-  cF += false;
-  cF += std::is_same_v<int, uint16_t>;
-  cF += std::islower('c') && std::islower('B');
-
-  CX_ASSERT(cF.holds() == true, "Constraint holds");
-}
-}  // namespace cxtests
-#  endif
 #endif  //CXSTRUCTS_SRC_CXSTRUCTS_CONSTRAINT_H_

@@ -25,8 +25,9 @@
 // Estimated number of unique maps
 #define MAGIQUE_EXPECTED_MAPS 32
 
-// The size of a grid cell - sho
-#define MAGIQUE_COLLISION_CELL_SIZE 50
+// The size of a grid cell - NEEDS to be a power of two (32,64,128,256 -> shouldnt be bigger than that)
+// Should be as small as possible BUT no object can be bigger (bounding box) than 2*size
+#define MAGIQUE_COLLISION_CELL_SIZE 64
 
 // Maximum amount of entities allowed per cell (less is better)
 #define MAGIQUE_MAX_ENTITIES_CELL 31
@@ -82,6 +83,9 @@
 
 //----------------- UTIL -----------------//
 
+// Enables logging - error and fatal messages are always enabled
+#define MAGIQUE_LOGGING 1
+
 // Enables profiling - generates average times for update and render ticks
 #define MAGIQUE_PROFILING 1
 
@@ -105,8 +109,8 @@ namespace std
 } // namespace std
 #endif
 
-#if !defined(_DEBUG) || defined(NDEBUG)
-#undef MAGIQUE_DEBUG
+#if !defined(NDEBUG)
+#define MAGIQUE_DEBUG
 #endif
 
 #ifdef MAGIQUE_USE_STEAM

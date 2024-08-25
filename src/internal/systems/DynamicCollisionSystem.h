@@ -16,6 +16,10 @@
 //    -> uses separate pair collectors to prevent false sharing
 // 3. Single threaded pass over all pairs invoking event methods
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
+//
+// Note: Can still be optimized -> Using a AABB tree (or bounding volumne hierarchy) avoids the hashset and will probably
+//       have faster lookups times BUT MUCH more complex to manage and move objects efficiently
+// -> But doesnt change anything for user
 // .....................................................................
 
 namespace magique
@@ -81,7 +85,7 @@ namespace magique
                     const auto [posB, colB] = group.get<const PositionC, const CollisionC>(second);
                     if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
                         continue; // Not on the same map or not on the same collision layer
-                    CollisionInfo info = CollisionInfo::NoCollision();
+                    CollisionInfo info{};
                     CheckCollision(posA, colA, posB, colB, info);
                     if (info.isColliding())
                     {
@@ -104,7 +108,6 @@ namespace magique
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
                     continue;
                 pairSet.insert(it, num);
-
                 InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
                 InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, info);
             }

@@ -1,6 +1,10 @@
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/YAsvnxAmX7)
+<img src="logos/magique_banner.png" width="1280" height="310" title="banner"/>
 
-STILL IN BETA STATE - NOT PUBLICLY RELEASED
+[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/YAsvnxAmX7)
+![Version Badge](https://img.shields.io/badge/Version:-0.1.0-blue)
+
+
+> Still in BETA state - not publicly released
 
 `magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) built
 around `raylib`. It's designed to
@@ -61,7 +65,7 @@ int main(){
 
 ### 1. Installation
 
-`magique` is using CMake as its build system, and wh it's recommended for consuming project aswell but not mandatory.
+`magique` is using CMake as its build system, and wh it's recommended for consuming project as well but not mandatory.
 
 #### CMake (recommended)
 

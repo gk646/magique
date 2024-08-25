@@ -162,7 +162,7 @@ namespace magique
                 int y = j * MAGIQUE_COLLISION_CELL_SIZE;
 
                 DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, LIGHTGRAY);
-                auto id = GetCellID(x / grid.cellSize, y / grid.cellSize);
+                auto id = GetCellID(x / grid.getCellSize(), y / grid.getCellSize());
                 const auto it = grid.cellMap.find(id);
                 if (it != grid.cellMap.end())
                 {
