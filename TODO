@@ -15,3 +15,5 @@ fix collision info for SAT
 possibly implemented optional substeps
 
 implement quest api + with visual scripting (raynodes)
+
+fix rare camera vibrating when running against solid wall -> rounding errors -> smooth camera

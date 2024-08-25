@@ -11,7 +11,7 @@ add_subdirectory(raylib)
 
 target_compile_options(raylib PRIVATE
         $<$<CONFIG:Debug>:/Od /Zi>
-        $<$<CONFIG:Release>:/O2 /Ob3 /GL /GS- /GF /GR- /fp:fast /arch:AVX2 /Gw /Zc:inline /favor:INTEL64>
+        $<$<CONFIG:Release>:/O2 /Ob3 /GL /GS- /GF /GR- /fp:fast /arch:AVX2 /Gw /Zc:inline>
 )
 
 target_link_options(raylib PRIVATE

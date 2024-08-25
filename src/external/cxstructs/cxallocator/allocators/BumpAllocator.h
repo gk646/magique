@@ -28,8 +28,8 @@ namespace cxstructs
     struct DynamicBumpAllocator final : IAllocator
     {
         unsigned char* memory = nullptr;
-        uint32_t size = 0;
-        uint32_t capacity = 0;
+        size_t size = 0;
+        size_t capacity = 0;
 
         explicit DynamicBumpAllocator(const int reserve = 1) : capacity(reserve)
         {

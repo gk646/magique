@@ -192,7 +192,7 @@ sinfl_copy64(unsigned char **dst, unsigned char **src) {
   memcpy(*dst, *src, 8);    // @raysan5
   *dst += 8, *src += 8;
 }
-static unsigned char*
+inline unsigned char*
 sinfl_write64(unsigned char *dst, unsigned long long w) {
   memcpy(dst, &w, 8);
   return dst + 8;

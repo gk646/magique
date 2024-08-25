@@ -16,7 +16,7 @@ namespace magique
 {
     bool RegisterEntity(const EntityType type, const CreateFunc& createFunc)
     {
-        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityType>(UINT16_MAX) || map.contains(type))
         {
@@ -35,7 +35,7 @@ namespace magique
 
     bool UnRegisterEntity(const EntityType type)
     {
-        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (type == static_cast<EntityType>(UINT16_MAX) || !map.contains(type))
         {
@@ -49,12 +49,12 @@ namespace magique
 
     entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map)
     {
-        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
-            return entt::null; // EntityID not registered
+            return entt::null; // EntityType not registered
         }
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(ecs.entityID++));
         {
@@ -64,18 +64,17 @@ namespace magique
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
-        }
-        return entity;
+        }return entity;
     }
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityType type, const float x, const float y, MapID map)
     {
-        MAGIQUE_ASSERT(type < static_cast<EntityID>(UINT16_MAX), "Max value is reserved!");
+        MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
-            return entt::null; // EntityID not registered
+            return entt::null; // EntityType not registered
         }
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(id));
         {

@@ -6,6 +6,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/EngineData.h"
+#include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/ShaderData.h"
 #include "internal/globals/PerformanceData.h"
 
@@ -151,7 +152,7 @@ namespace magique
 
     void DrawHashGridDebug()
     {
-        auto& grid = global::ENGINE_DATA.hashGrid;
+        auto& grid = global::DY_COLL_DATA.hashGrid;
         int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
         for (int i = 0; i < 50; ++i)
         {

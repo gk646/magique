@@ -11,7 +11,7 @@
 
 using namespace magique;
 
-enum EntityID : uint16_t
+enum EntityType : uint16_t
 {
     PLAYER,
     OBJECT,
@@ -40,9 +40,7 @@ struct PlayerScript final : EntityScript
 
     void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
     {
-        auto& pos = GetComponent<PositionC>(self);
-        pos.x += info.normalVector.x * info.depth;
-        pos.y += info.normalVector.y * info.depth;
+       AccumulateCollision(self,info);
     }
 };
 

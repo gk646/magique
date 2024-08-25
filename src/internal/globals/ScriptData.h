@@ -12,7 +12,7 @@ namespace magique
         inline static auto* defaultScript = new EntityScript();
         vector<EntityScript*> scripts;
 
-        void padUpToEntity(const EntityID entity)
+        void padUpToEntity(const EntityType entity)
         {
             if (scripts.size() < entity + 1)
             {

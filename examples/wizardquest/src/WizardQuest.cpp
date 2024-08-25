@@ -48,6 +48,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
     const auto& tileMap = GetTileMap(GetHandle(HandleID((int)HandleID::MAPS + (int)map)));
     DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 0);
     DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 1);
+    DrawHashGridDebug();
     EndMode2D();
 }
 
@@ -95,6 +96,7 @@ void WizardQuest::updateGame(GameState gameState)
         {
         }
     }
+
 }
 
 void WizardQuest::onShutDown()

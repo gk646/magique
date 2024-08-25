@@ -16,7 +16,7 @@
 
 #include "internal/datastructures/VectorType.h"
 
-static void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
+inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
     LOG_INFO(pszMsg);
     if (eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
@@ -194,7 +194,7 @@ namespace magique
         inline MultiplayerData MP_DATA{};
     }
 
-    static void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
+    inline void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
     {
         global::MP_DATA.onConnectionStatusChange(pParam);
     }

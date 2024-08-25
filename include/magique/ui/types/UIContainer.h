@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <magique/ui/types/UIObject.h>
+IGNORE_WARNING(4100)
 
 //-----------------------------------------------
 // UI Container - Base UI Class
@@ -49,5 +50,6 @@ namespace magique
     };
 } // namespace magique
 
+UNIGNORE_WARNING()
 
 #endif //MAGIQUE_UICONTAINER_H

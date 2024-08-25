@@ -27,9 +27,9 @@ namespace magique
     {
         onCreate,
         onDestroy,
+        onTick,
         onDynamicCollision,
         onStaticCollision,
-        onTick,
         onKeyEvent,
         onMouseEvent,
     };
@@ -44,7 +44,7 @@ namespace magique
     // Step 3: Done! You can now invoke your event!
 
     // Add ALL events here
-    REGISTER_EVENTS(onCreate, onDestroy, onDynamicCollision, onStaticCollision, onTick, onKeyEvent, onMouseEvent);
+    REGISTER_EVENTS(onCreate, onDestroy, onTick, onDynamicCollision, onStaticCollision, onKeyEvent, onMouseEvent);
 
     struct EntityScript
     {
@@ -56,19 +56,19 @@ namespace magique
         // Called once before the entity is destroyed
         virtual void onDestroy(entt::entity self) {}
 
-        // Called at the beginning of each tick - only called on entities in update range
+        // Called once at the beginning of each tick - only called on updated entities (in update range or cache)
         virtual void onTick(entt::entity self) {}
 
-        // Called when this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(entt::entity self, entt::entity other) {}
-
-        // Called when this entity collides with a static collision object - walls...
-        virtual void onStaticCollision(entt::entity self, ColliderInfo collider) {}
-
-        // Called once AFTER both static and dynamic collisions have been resolved
-        virtual void onPhysicsTick(entt::entity self, const CollisionInfo& info)
+        // Called each time this entity collides with another entity - called for both entities
+        virtual void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info)
         {
-            ResolveCollision(GetComponent<PositionC>(self), info);
+            AccumulateCollision(self, info); // Treats the other shape as solid per default
+        }
+
+        // Called each time when this entity collides with a static collision object
+        virtual void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info)
+        {
+            AccumulateCollision(self, info); /// Treats the other shape as solid per default
         }
 
         // Called once at the beginning of each tick IF keystate changed - press or release
@@ -80,24 +80,20 @@ namespace magique
         //----------------- USER -----------------// // These events have to be called by the user
         // Examples:
 
-        // virtual void onDeath(entt::entity self, entt::entity killedBy) {}
-
         // virtual void onInteract(entt::entity self, entt::entity target) {}
 
         // virtual void onItemPickup(entt::entity self, Item& item) {}
-
-        // virtual void onLevelUp(entt::entity self) {}
 
         // ... feel free to add more global methods or create subclasses with special methods!
 
         //----------------- UTIL -----------------//
 
-        // Resolves the collision so that the shape doesnt collide
-        // Moves the along the accumulated normals of all collision for 'penDepth' many units
-        static void ResolveCollision(PositionC& position, const CollisionInfo& collisionInfo);
+        // Adds the given info on top the existing info for this entity - will be applied after all collisiona are resolved
+        // Note: This essentially makes the other shape 'solid' preventing you from entering it!
+        static void AccumulateCollision(entt::entity self, const CollisionInfo& collisionInfo);
     };
 
-    // Sets a c++ script for this entity type
+    // Sets a C++ script for this entity type
     // Subclass the EntityScript class and pass a new Instance()
     // Note: Entities still need a ScriptC component to react to scripts! Use "GiveScript" when creating
     void SetScript(EntityType entity, EntityScript* script);

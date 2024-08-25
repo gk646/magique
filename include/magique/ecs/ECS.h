@@ -111,13 +111,26 @@ namespace magique
 {
     namespace internal
     {
-        inline entt::registry REGISTRY; // The used registry
+        inline entt::registry REGISTRY;                                       // The used registry
+        inline auto POSITION_GROUP = REGISTRY.group<PositionC, CollisionC>(); // Pos + Collision group
+
     } // namespace internal
     inline entt::registry& GetRegistry() { return internal::REGISTRY; }
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
-        return internal::REGISTRY.get<T>(entity);
+        if constexpr (std::is_same_v<T, PositionC>)
+        {
+            return internal::POSITION_GROUP.get<T>(entity);
+        }
+        else if constexpr (std::is_same_v<T, CollisionC>)
+        {
+            return internal::POSITION_GROUP.get<T>(entity);
+        }
+        else
+        {
+            return internal::REGISTRY.get<T>(entity);
+        }
     }
     template <class Component, typename... Args>
     void GiveComponent(entt::entity entity, Args... args)

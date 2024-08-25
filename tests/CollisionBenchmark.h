@@ -62,7 +62,7 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other) override
+    void onDynamicCollision(entt::entity self, entt::entity other,const CollisionInfo info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -76,7 +76,7 @@ struct ObjectScript final : EntityScript
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other) override
+    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
