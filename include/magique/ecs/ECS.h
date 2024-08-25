@@ -1,8 +1,8 @@
 #ifndef MAGIQUE_ECS_H
 #define MAGIQUE_ECS_H
 
-#include <magique/ecs/Components.h>
 #include <entt/entity/registry.hpp>
+#include <magique/ecs/Components.h>
 
 //-------------------------------
 // ECS Module
@@ -11,7 +11,7 @@
 // Note: All entities have the PositionC auto assigned per default!
 // ................................................................................
 
-enum EntityID : uint16_t; // A unique type identifier handled by the user to disinguish different types of game objects
+enum EntityType : uint16_t; // A unique type identifier handled by the user to disinguish different types of game objects
 
 namespace magique
 {
@@ -23,11 +23,11 @@ namespace magique
     using CreateFunc = std::function<void(entt::entity)>;
     // Registers an entity with a corresponding create function - replaces the existing function if present
     // Failure: Returns false
-    bool RegisterEntity(EntityID type, const CreateFunc& createFunc);
+    bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
 
     // Unregisters an entity
     // Failure: Returns false
-    bool UnRegisterEntity(EntityID type);
+    bool UnRegisterEntity(EntityType type);
 
     //----------------- INTERACTION -----------------//
 
@@ -53,18 +53,18 @@ namespace magique
     // Creates a new entity by calling the registered function for that type
     // Note: All entities have the PositionC auto assigned per default!
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityID type, float x, float y, MapID map);
+    entt::entity CreateEntity(EntityType type, float x, float y, MapID map);
 
     // Creates a new entity with the given id
     // Note: Should only be called in a networking context with a valid id
-    entt::entity CreateEntityNetwork(uint32_t id, EntityID type, float x, float y, MapID map);
+    entt::entity CreateEntityNetwork(uint32_t id, EntityType type, float x, float y, MapID map);
 
     // Immediately tries destroys the entity
     // Failure: Returns false if entity is invalid or doesnt exist
     bool DestroyEntity(entt::entity entity);
 
     // Immediately destroys all entities that have the given type - pass a empty list to destroy all types
-    void DestroyAllEntities(const std::initializer_list<EntityID>& ids);
+    void DestroyAllEntities(const std::initializer_list<EntityType>& ids);
 
     //--------------Creating--------------//
 
@@ -111,7 +111,7 @@ namespace magique
 {
     namespace internal
     {
-        inline entt::registry REGISTRY;                                                  // The used registry
+        inline entt::registry REGISTRY; // The used registry
     } // namespace internal
     inline entt::registry& GetRegistry() { return internal::REGISTRY; }
     template <typename T>

@@ -100,13 +100,14 @@ namespace magique
             return SAT(rectX, rectY, triX, triY, info);
         }
     }
-    inline void CallEventFunc(const EntityID id, const entt::entity e, const CollisionInfo& i, const ColliderInfo cI)
+    inline void CallEventFunc(const EntityType id, const entt::entity e, const CollisionInfo& i, const ColliderInfo cI)
     {
-        InvokeEventDirect<onStaticCollision>(GetScript(id), e, i, cI);
+        InvokeEventDirect<onStaticCollision>(GetScript(id), e,  cI);
     }
 
     inline void StaticCollisionSystem()
     {
+        return;
         constexpr float depth = 250.0F;
 
         const auto& data = global::ENGINE_DATA;
@@ -124,7 +125,7 @@ namespace magique
         const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
         const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
 
-        const auto checkWorld = config.worldBounds.width != 0.0F;
+        const auto checkWorld = config.getIsWorldBoundSet();
         for (const auto e : collisionVec)
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(e);

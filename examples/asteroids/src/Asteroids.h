@@ -60,13 +60,13 @@ struct PlayerScript final : magique::EntityScript
 struct BulletScript final : magique::EntityScript
 {
     void onTick(entt::entity self) override;
-    void onStaticCollision(entt::entity self) override;
+    void onStaticCollision(entt::entity self, const magique::CollisionInfo& info, magique::ColliderInfo cInfo) override;
 };
 
 struct RockScript final : magique::EntityScript
 {
     void onTick(entt::entity self) override;
-    void onDynamicCollision(entt::entity self, entt::entity other) override;
+    void onDynamicCollision(entt::entity self, entt::entity other, const magique::CollisionInfo& info) override;
 };
 
 struct PlayerBarUI final : magique::UIObject

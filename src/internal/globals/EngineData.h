@@ -1,77 +1,60 @@
 #ifndef MAGIQUE_ENGINE_DATA_H
 #define MAGIQUE_ENGINE_DATA_H
 
-#include <entt/entity/entity.hpp>
-
 #include <magique/persistence/container/GameConfig.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
-#include "internal/datastructures/MultiResolutionGrid.h"
+
+//-----------------------------------------------
+// Engine Data
+//-----------------------------------------------
+// .....................................................................
+// Saves shared state for both dynamic and static collision, camera and more (loaded maps, camera entity, camera map...)
+// .....................................................................
 
 namespace magique
 {
-    static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1;
+    static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1; // Amount of parts to split work into
 
-    struct PairInfo final // Saves entity id and type
+    struct EntityInfo final
     {
         CollisionInfo info;
-        entt::entity e1;
-        entt::entity e2;
-        EntityID id1;
-        EntityID id2;
+        EntityType id;
     };
 
-    template <typename T>
-    struct AlignedVec final
-    {
-        // To prevent false sharing
-        alignas(64) vector<T> vec;
-    };
-
-    using CollPairCollector = AlignedVec<PairInfo>[WORK_PARTS];
     using EntityCache = HashMap<entt::entity, uint16_t>;
-    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31>;
+    using StateCallback = std::function<void(GameState, GameState)>;
+    using CollisionInfoMap = HashMap<entt::entity, EntityInfo>;
 
     struct EngineData final
     {
-        CollPairCollector collisionPairs{};                   // Collision pair collectors
-        EntityHashGrid hashGrid{MAGIQUE_COLLISION_CELL_SIZE}; // Global hashGrid for all entities
-        EntityCache entityUpdateCache{1000};                  // Caches entites not in update range anymore
-        HashSet<uint64_t> pairSet;                            // Filters unique collision pairs
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{};  // Currently loaded zones
-        std::vector<entt::entity> entityUpdateVec;            // vector containing the entites to update for this tick
-        std::vector<entt::entity> drawVec;                    // vector containing all entites to be drawn this tick
-        std::function<void(GameState, GameState)> stateCallback{}; // Callback funtion for gamstate changes
-        GameConfig gameConfig{};                                   // Global game config instance
-        vector<entt::entity> collisionVec;      // vector containing the entites to check for collision
-        Camera2D camera{};                      // current camera
-        entt::entity cameraEntity = entt::null; // entity id of the camera
-        GameState gameState;                    // global gamestate
-        MapID cameraMap = MapID(UINT8_MAX);     // Map the camera is in
+        StateCallback stateCallback{};                       // Callback funtion for gamstate changes
+        EntityCache entityUpdateCache;                       // Caches entites not in update range anymore
+        CollisionInfoMap infoMap;                            // Stores the accumulated collision info for this tick
+        std::vector<entt::entity> entityUpdateVec;           // Vector containing the entites to update for this tick
+        std::vector<entt::entity> drawVec;                   // Vector containing all entites to be drawn this tick
+        vector<entt::entity> collisionVec;                   // Vector containing the entites to check for collision
+        GameConfig gameConfig{};                             // Global game config instance
+        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
+        Camera2D camera{};                                   // Current camera
+        entt::entity cameraEntity = entt::null;              // Entity id of the camera
+        GameState gameState{};                               // Global gamestate
+        MapID cameraMap = MapID(UINT8_MAX);                  // Map the camera is in
 
         EngineData()
         {
-            hashGrid.reserve(150, 1000);
+            entityUpdateCache.reserve(1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             collisionVec.reserve(500);
-            pairSet.reserve(1000);
-        }
-
-        void clear()
-        {
-            // changedSet.clear();
-            entityUpdateCache.clear();
-            entityUpdateVec.clear();
-            drawVec.clear();
-            hashGrid.clear();
+            infoMap.reserve(1000);
         }
     };
 
     namespace global
     {
-        inline EngineData ENGINE_DATA;
+        inline EngineData ENGINE_DATA{};
     }
 
 } // namespace magique

@@ -12,14 +12,14 @@ namespace magique
 
     void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
-    void LogEx(const LogLevel level, const char* file, const int line, const char* msg, ...)
+    void LogInternal(LogLevel level, const char* file, const int line, const char* msg, va_list args)
     {
         if (level < global::ENGINE_CONFIG.logLevel)
         {
             return;
         }
 
-        auto level_str = "";
+        const auto* level_str = "";
         switch (level)
         {
         case LEVEL_INFO:
@@ -39,12 +39,10 @@ namespace magique
             break;
         }
 
-        // Log to stdout or stderr based on log level
         FILE* out = level == LEVEL_ERROR || level == LEVEL_FATAL ? stderr : stdout;
 
         if (level >= LEVEL_ERROR)
         {
-            // Only show level and message for warnings
             fprintf(out, "[%s]: %s:%d ", level_str, file, line);
         }
         else
@@ -53,14 +51,11 @@ namespace magique
         }
 
         if (CALL_BACK)
+        {
             CALL_BACK(level, msg);
+        }
 
-        // Handle the variable arguments
-        va_list args;
-        va_start(args, msg);
         vfprintf(out, msg, args);
-        va_end(args);
-
         fputc('\n', out);
 
         if (level >= LEVEL_ERROR) [[unlikely]]
@@ -75,8 +70,26 @@ namespace magique
 #endif
 #endif
             if (level == LEVEL_FATAL) [[unlikely]]
+            {
                 std::exit(EXIT_FAILURE);
+            }
         }
+    }
+
+    void Log(LogLevel level, const char* msg, ...)
+    {
+        va_list args;
+        va_start(args, msg);
+        LogInternal(level, nullptr, -1, msg, args);
+        va_end(args);
+    }
+
+    void LogEx(LogLevel level, const char* file, const int line, const char* msg, ...)
+    {
+        va_list args;
+        va_start(args, msg);
+        LogInternal(level, file, line, msg, args);
+        va_end(args);
     }
 
     void SetLogCallback(const LogCallbackFunc func) { CALL_BACK = func; }

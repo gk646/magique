@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+#ifndef MAGIQUE_ENGINE_CONFIGU_H
+#define MAGIQUE_ENGINE_CONFIGU_H
 
 #include <raylib/raylib.h>
 
@@ -44,7 +44,7 @@ namespace magique
             loadingScreen = new LoadingScreen();
         }
 
-        [[nodiscard]] bool getIsWorldBound() const { return worldBounds.width != 0.0F; }
+        [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0.0F; }
     };
 
     namespace global
@@ -53,4 +53,4 @@ namespace magique
     }
 
 } // namespace magique
-#endif //CONFIGURATION_H
+#endif //MAGIQUE_ENGINE_CONFIGU_H

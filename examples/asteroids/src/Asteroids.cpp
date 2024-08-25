@@ -8,6 +8,7 @@
 #include <magique/core/Draw.h>
 #include <magique/core/Particles.h>
 #include <magique/core/Sound.h>
+#include <magique/core/StaticCollision.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ui/UI.h>
 
@@ -16,9 +17,10 @@ inline entt::entity PLAYER_ID = entt::null;
 
 void Asteroids::onStartup(magique::AssetLoader& loader, magique::GameConfig& config)
 {
+    magique::SetShowHitboxes(true);
     SetWindowSize(1280, 960); // Setup screen bounds
 
-    //magique::SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to setup world bounds
+    magique::SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to setup world bounds
 
     SetTargetFPS(120); // Set FPS to 120 - all raylib functions work as usual and are integrated
 
@@ -126,7 +128,7 @@ void Asteroids::updateGame(GameState gameState)
     ROCK_COUNTER--;
     if (ROCK_COUNTER == 0)
     {
-        magique::CreateEntity(ROCK, GetRandomValue(0, GetScreenWidth()), 0, MapID::LEVEL_1);
+        magique::CreateEntity(ROCK, GetRandomValue(600, 700), 0, MapID::LEVEL_1);
         ROCK_COUNTER = 80;
     }
 }
@@ -168,6 +170,7 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
             break; // Invisible camera
         }
     }
+    magique::DrawHashGridDebug();
     EndMode2D();
 }
 
@@ -252,9 +255,12 @@ void BulletScript::onTick(entt::entity self)
     pos.y -= 8; // Bullets only fly straight up
 }
 
-void BulletScript::onStaticCollision(entt::entity self) { magique::DestroyEntity(self); }
+void BulletScript::onStaticCollision(entt::entity self, const magique::CollisionInfo& info, magique::ColliderInfo cInfo)
+{
+    magique::DestroyEntity(self);
+}
 
-void RockScript::onDynamicCollision(entt::entity self, entt::entity other)
+void RockScript::onDynamicCollision(entt::entity self, entt::entity other, const magique::CollisionInfo& info)
 {
     if (!magique::EntityExists(self)) // If multiple collisions happen and rock was already destroyed
         return;

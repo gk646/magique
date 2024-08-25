@@ -2,6 +2,7 @@
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 
 #include <magique/ecs/ECS.h>
+#include <magique/internal/Macros.h>
 IGNORE_WARNING(4100)
 
 //-----------------------------------------------
@@ -55,15 +56,20 @@ namespace magique
         // Called once before the entity is destroyed
         virtual void onDestroy(entt::entity self) {}
 
-        // Called when this entity collides with another entity - called for both entities
-        // CollisionInfo: CollisionPoint    -
-        virtual void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) {}
-
-        // Called when this entity collides with a static collision object - walls...
-        virtual void onStaticCollision(entt::entity self, const CollisionInfo& info, ColliderInfo collider) {}
-
         // Called at the beginning of each tick - only called on entities in update range
         virtual void onTick(entt::entity self) {}
+
+        // Called when this entity collides with another entity - called for both entities
+        virtual void onDynamicCollision(entt::entity self, entt::entity other) {}
+
+        // Called when this entity collides with a static collision object - walls...
+        virtual void onStaticCollision(entt::entity self, ColliderInfo collider) {}
+
+        // Called once AFTER both static and dynamic collisions have been resolved
+        virtual void onPhysicsTick(entt::entity self, const CollisionInfo& info)
+        {
+            ResolveCollision(GetComponent<PositionC>(self), info);
+        }
 
         // Called once at the beginning of each tick IF keystate changed - press or release
         virtual void onKeyEvent(entt::entity self) {}
@@ -87,18 +93,18 @@ namespace magique
         //----------------- UTIL -----------------//
 
         // Resolves the collision so that the shape doesnt collide
-        // Moves the along the normal vector for 'penDepth' many units
+        // Moves the along the accumulated normals of all collision for 'penDepth' many units
         static void ResolveCollision(PositionC& position, const CollisionInfo& collisionInfo);
     };
 
     // Sets a c++ script for this entity type
     // Subclass the EntityScript class and pass a new Instance()
     // Note: Entities still need a ScriptC component to react to scripts! Use "GiveScript" when creating
-    void SetScript(EntityID entity, EntityScript* script);
+    void SetScript(EntityType entity, EntityScript* script);
 
     // Retrieves the script for the entity type
     // Failure: returns nullptr
-    EntityScript* GetScript(EntityID entity);
+    EntityScript* GetScript(EntityType entity);
 
     // Calls the given event function on the given entity
     // Note: If you want to access non inherited methods you HAVE to pass your subclass type
@@ -117,22 +123,24 @@ namespace magique
 
 UNIGNORE_WARNING()
 
-
 //----------------- IMPLEMENTATION -----------------//
-template <magique::EventType event, class Script, class... Args>
-void magique::InvokeEvent(entt::entity entity, Args... arguments)
-{
-    const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
-    auto* script = static_cast<Script*>(GetScript(pos.type));
-    MAGIQUE_ASSERT(script != nullptr, "No Script for this type!");
-    Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
-}
-template <magique::EventType event, class Script, class... Args>
-void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
-{
 
-    MAGIQUE_ASSERT(script != nullptr, "Passing a null script");
-    Call<event, Script, entt::entity, Args...>(static_cast<Script*>(script), entity, std::forward<Args>(arguments)...);
-}
-
+namespace magique
+{
+    template <EventType event, class Script, class... Args>
+    void magique::InvokeEvent(entt::entity entity, Args... arguments)
+    {
+        const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
+        auto* script = static_cast<Script*>(GetScript(pos.type));
+        MAGIQUE_ASSERT(script != nullptr, "No Script for this type!");
+        Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
+    }
+    template <EventType event, class Script, class... Args>
+    void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
+    {
+        MAGIQUE_ASSERT(script != nullptr, "Passing a null script");
+        Call<event, Script, entt::entity, Args...>(static_cast<Script*>(script), entity,
+                                                   std::forward<Args>(arguments)...);
+    }
+} // namespace magique
 #endif //MAGIQUE_INTERNAL_SCRIPTING_H

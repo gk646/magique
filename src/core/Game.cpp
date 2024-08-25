@@ -30,6 +30,7 @@
 #include "internal/globals/CommandLineData.h"
 #include "internal/globals/ParticleData.h"
 #include "internal/globals/StaticCollisionData.h"
+#include "internal/globals/DynamicCollisionData.h"
 
 #include "internal/headers/CollisionPrimitives.h"
 #include "internal/headers/IncludeWindows.h"

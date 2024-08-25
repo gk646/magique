@@ -2,7 +2,6 @@
 #define MAGIQUE_COMPONENTS_H
 
 #include <magique/core/Types.h>
-#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // Components Module
@@ -35,7 +34,7 @@ namespace magique
     {
         float x, y;        // Position of the top left corner!
         MapID map;         // The current map id of the entity
-        EntityID type;     // Type of the entity
+        EntityType type;     // Type of the entity
         uint16_t rotation; // Rotation in degress clockwise starting at 12 o'clock - applied to collision if present
     };
 
@@ -51,7 +50,7 @@ namespace magique
         Shape shape = Shape::RECT;         // Shape
 
         // Returns true if the entity has this layer enabled
-        [[nodiscard]] bool isLayerEnabled(CollisionLayer layer) const;
+        [[nodiscard]] bool getIsLayerEnabled(CollisionLayer layer) const;
 
         // Sets the collision layer to the given value
         void setLayer(CollisionLayer layer, bool enabled);
