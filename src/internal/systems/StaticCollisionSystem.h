@@ -1,5 +1,5 @@
-#ifndef STATICCOLLISIONSYSTEM_H
-#define STATICCOLLISIONSYSTEM_H
+#ifndef MAGIQUE_STATICCOLLISION_SYSTEM_H
+#define MAGIQUE_STATICCOLLISION_SYSTEM_H
 
 //-----------------------------------------------
 // Static Collision System
@@ -11,45 +11,38 @@
 
 namespace magique
 {
-    void QueryHashGrid(vector<uint16_t>& vec, const ColliderHashGrid& grid, const PositionC& pos, const CollisionC& col);
-
-    void CheckAgainstRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info);
-
-    void CallEventFunc(EntityType type, entt::entity entity, const CollisionInfo& info, ColliderInfo cInfo);
-
-    void CheckAgainstWorldBounds(entt::entity e, const PositionC& pos, CollisionC& col, const Rectangle& r);
-
-    void CheckRange(int thread, int start, int end);
+    void CheckStaticCollisionRange(int thread, int start, int end);
+    void HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet);
 
     inline void StaticCollisionSystem()
     {
         const auto& data = global::ENGINE_DATA;
+        auto& staticData = global::STATIC_COLL_DATA;
         const int size = data.collisionVec.size(); // Multithread over certain amount
-        if (size > 100)
+        if (size < 100)
         {
-            std::array<jobHandle, WORK_PARTS> handles{};
-            int end = 0;
-            const int partSize = static_cast<int>((float)size * 0.81F) / WORK_PARTS; // Give main thread more work
-            for (int j = 0; j < WORK_PARTS - 1; ++j)
-            {
-                const int start = end;
-                end = start + partSize;
-                handles[j] = AddJob(CreateExplicitJob(CheckRange, j, start, end));
-            }
-            CheckRange(WORK_PARTS - 1, end, size);
-            AwaitJobs(handles);
+            CheckStaticCollisionRange(0, 0, size);
         }
         else
         {
-            CheckRange(0, 0, size);
+            std::array<jobHandle, WORK_PARTS> handles{};
+            int end = 0;
+            const int partSize = static_cast<int>(static_cast<float>(size) * 0.81F) / WORK_PARTS;
+            for (int j = 0; j < WORK_PARTS - 1; ++j) // Gives more work to main thread cause its faster
+            {
+                const int start = end;
+                end = start + partSize;
+                handles[j] = AddJob(CreateExplicitJob(CheckStaticCollisionRange, j, start, end));
+            }
+            CheckStaticCollisionRange(WORK_PARTS - 1, end, size);
+            AwaitJobs(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
+        // Handle unique pairs
+        HandleCollisionPairs(staticData.pairCollector, staticData.pairSet);
     }
 
-    //----------------- IMPLEMENTATION -----------------//
-
-    inline void QueryHashGrid(vector<uint16_t>& vec, const ColliderHashGrid& grid, const PositionC& pos,
-                              const CollisionC& col)
-
+    template <class TypeHashGrid>
+    void QueryHashGrid(vector<StaticID>& vec, const TypeHashGrid& grid, const PositionC& pos, const CollisionC& col)
     {
         switch (col.shape)
         {
@@ -131,76 +124,121 @@ namespace magique
         }
     }
 
-    inline void CallEventFunc(const EntityType type, const entt::entity entity, const CollisionInfo& info,
-                              const ColliderInfo cInfo)
-
-    {
-        InvokeEventDirect<onStaticCollision>(GetScript(type), entity, cInfo, info);
-    }
-
     inline void CheckAgainstWorldBounds(vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
-                                        CollisionC& col, const Rectangle& r)
+                                        CollisionC& col, const Rectangle& r, const uint32_t num)
     {
         CollisionInfo info{};
         CheckAgainstRect(pos, col, r, info);
         if (info.isColliding())
         {
-            collector.push_back({info, &col, e, 0, ColliderType::WORLD_BOUNDS});
+            // subtract 0-3 depending on the world bound
+            // We just need to have a unqiue object num so if a collision is found in multiple cells
+            // due to duplicate insertion its not processed
+            // UINT32_MAX will never be reached and subtracting will be never be negative
+            collector.push_back({info, &col, e, UINT32_MAX - num, 0, ColliderType::WORLD_BOUNDS, pos.type});
         }
     }
 
-    inline void CheckRange(const int thread, const int start, const int end)
+    template <class TypeHashGrid>
+    void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, vector<StaticID>& collector,
+                       vector<StaticPair>& pairCollector, const ColliderType type,
+                       const vector<StaticCollider>& colliders, const PositionC& pos, CollisionC& col)
+    {
+        QueryHashGrid(collector, grid, pos, col); // Tilemap objects
+        for (const auto num : collector)
+        {
+            const auto objectNum = StaticIDHelper::GetObjectNum(num);
+            const auto [x, y, p1, p2] = colliders[(int)objectNum]; // O(1) direct lookup
+            CollisionInfo info{};
+            CheckAgainstRect(pos, col, {x, y, p1, p2}, info);
+            if (info.isColliding())
+            {
+                pairCollector.push_back({info, &col, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
+            }
+        }
+        collector.clear();
+    }
+
+    inline void magique::CheckStaticCollisionRange(const int thread, const int start,
+                                                   const int end) // Runs on each thread
     {
         const auto& data = global::ENGINE_DATA;
-        const auto& config = global::ENGINE_CONFIG;
-        auto& group = internal::POSITION_GROUP;
-        auto& stCollData = global::STATIC_COLL_DATA;
+        const auto& group = internal::POSITION_GROUP;
+        auto& staticData = global::STATIC_COLL_DATA; // non const - modifying the collectors
 
         const auto& collisionVec = data.collisionVec;
-        const auto& grid = stCollData.objectGrid;
-        auto& collCollector = stCollData.colliderCollector[thread].vec; // non const
-        auto& pairCollector = stCollData.pairCollector[thread].vec;     // non const
+        const auto& objectGrid = staticData.objectGrid;
+        const auto& tileGrid = staticData.tileGrid;
+        const auto& groupGrid = staticData.groupGrid;
+        const auto& colliderStorage = staticData.objectStorage.colliders;
 
-        const auto startIt = collisionVec.begin() + start;
-        const auto endIt = collisionVec.begin() + end;
+        // Collectors
+        auto& idCollector = staticData.colliderCollector[thread].vec; // non const
+        auto& pairCollector = staticData.pairCollector[thread].vec;   // non const
 
         // Cache
         constexpr float depth = 250.0F;
-        const auto wBounds = config.worldBounds;
+        const auto wBounds = staticData.worldBounds;
         const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
         const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
         const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
         const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
-        const auto checkWorld = config.getIsWorldBoundSet();
+        const auto checkWorld = staticData.getIsWorldBoundSet();
 
+        const auto startIt = collisionVec.begin() + start;
+        const auto endIt = collisionVec.begin() + end;
         for (auto it = startIt; it != endIt; ++it)
         {
             const auto e = *it;
             const auto& pos = group.get<const PositionC>(e);
-            auto& col = group.get<CollisionC>(e); // Non cost for saving reference
+            auto& col = group.get<CollisionC>(e); // Non cost for saving modifiable pointer
 
             if (checkWorld) // Check if worldbounds active
             {
-                CheckAgainstWorldBounds(pairCollector, e, pos, col, r1);
-                CheckAgainstWorldBounds(pairCollector, e, pos, col, r2);
-                CheckAgainstWorldBounds(pairCollector, e, pos, col, r3);
-                CheckAgainstWorldBounds(pairCollector, e, pos, col, r4);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r1, 0);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r2, 1);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r3, 2);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r4, 3);
             }
 
-            QueryHashGrid(collCollector, grid, pos, col); // Tilemap objects
-            for (const auto num : collCollector)
-            {
-                const auto collider = stCollData.getCollider(num); // O(1) direct lookup
-                CollisionInfo info{};
-                CheckAgainstRect(pos, col, {collider.x, collider.y, collider.p1, collider.p2}, info);
-                if (info.isColliding())
-                {
-                    pairCollector.push_back({info, &col, e, 0, ColliderType::WORLD_BOUNDS});
-                }
-            }
-            collCollector.clear();
+            // Query object grid
+            constexpr auto objectType = ColliderType::TILEMAP_OBJECT;
+            CheckHashGrid(e, objectGrid, idCollector, pairCollector, objectType, colliderStorage, pos, col);
+
+            // Query tile grid
+            constexpr auto tileType = ColliderType::SOLID_TILE;
+            CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
+
+            // Query group grid
+            constexpr auto groupType = ColliderType::MANUAL_COLLIDER;
+            CheckHashGrid(e, groupGrid, idCollector, pairCollector, groupType, colliderStorage, pos, col);
         }
+    }
+
+    inline void magique::HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet)
+    {
+        const auto& scripts = global::SCRIPT_DATA.scripts;
+        for (auto& [vec] : pairColl)
+        {
+            for (const auto& data : vec)
+            {
+                const auto uniqueNum = static_cast<uint64_t>(data.entity) << 32 | data.objectNum;
+                const auto it = pairSet.find(uniqueNum);
+                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
+                    continue;
+                pairSet.insert(it, uniqueNum);
+
+                // Process the collision
+                InvokeEventDirect<onStaticCollision>(scripts[data.entityType], data.entity,
+                                                     ColliderInfo{data.data, data.type}, data.info);
+                //TODO if info is marked as accumulated use collision component to accumulate
+            }
+            vec.clear();
+        }
+
+        pairSet.clear();
     }
 } // namespace magique
 
-#endif //STATICCOLLISIONSYSTEM_H
+
+#endif //MAGIQUE_STATICCOLLISION_SYSTEM_H

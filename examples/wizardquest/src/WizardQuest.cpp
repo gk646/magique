@@ -35,10 +35,9 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 void WizardQuest::onLoadingFinished()
 {
     LoadMapColliders(MapID::LEVEL_1, GetTileMap(HandleID::LEVEL_1).getObjects(0),3);
-    LoadTileMap(MapID::LEVEL_1, GetTileMap(HandleID::LEVEL_1), {0, 1});
+
     CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
     SetGameState(GameState::GAME);
-
 }
 
 void WizardQuest::drawGame(GameState gameState, Camera2D& camera)

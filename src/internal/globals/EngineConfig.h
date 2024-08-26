@@ -20,7 +20,6 @@ namespace magique
     struct Configuration final
     {
         Font font{};                                // Font
-        Rectangle worldBounds{};                    // World bounds
         Timing timing;                              // Thread timing information
         Vector2 manualCamOff{0, 0};                 // Manual camera offset
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
@@ -43,8 +42,6 @@ namespace magique
             }
             loadingScreen = new LoadingScreen();
         }
-
-        [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0.0F; }
     };
 
     namespace global

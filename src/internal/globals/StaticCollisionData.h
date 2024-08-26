@@ -1,6 +1,9 @@
 #ifndef STATICCOLLISIONDATA_H
 #define STATICCOLLISIONDATA_H
 
+#include <entt/entity/fwd.hpp>
+#include <magique/internal/Macros.h>
+
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
 #include "internal/datastructures/MultiResolutionGrid.h"
@@ -18,35 +21,37 @@
 
 namespace magique
 {
-    struct StaticPair final
+    using StaticID = uint64_t; // 32 bits the object num - rest is data (collider class, tilenum, group num)
+
+    struct StaticPair final // Caches information when the collision occurs to reuse later on
     {
-        CollisionInfo info;
-        CollisionC* col;     // the entities collision
-        entt::entity entity; // the entity
-        uint16_t data;       // collider data
-        ColliderType type;   // collider type
+        CollisionInfo info;    // Collision info
+        CollisionC* col;       // the entities collision component
+        entt::entity entity;   // the entity
+        uint32_t objectNum;    // objectnum (static collider number)
+        int data;              // Collider data
+        ColliderType type;     // collider type
+        EntityType entityType; // entity type - for the script
     };
 
-    struct MapData final
-    {
-        const uint16_t* layerData[MAGIQUE_MAX_TILE_LAYERS]{};
-        uint16_t width = 0;
-        uint16_t height = 0;
-        uint8_t layers = 0;
-    };
+    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, 7, 128>; // power of two
+    using TileHashGrid = SingleResolutionHashGrid<StaticID, 7, 32>;      // power of two
+    using GroupHashGrid = SingleResolutionHashGrid<StaticID, 7, 64>;     // power of two
 
-    struct ObjectHolder final
+    using StaticPairCollector = AlignedVec<StaticPair>[MAGIQUE_WORKER_THREADS + 1];
+    using ColliderCollector = AlignedVec<StaticID>[MAGIQUE_WORKER_THREADS + 1];
+
+    struct ColliderStorage final
     {
         vector<StaticCollider> colliders;
-        vector<uint16_t> freeList;
+        vector<uint32_t> freeList;
 
-        uint16_t insert(const float x, const float y, const float width, const float height)
+        uint32_t insert(const float x, const float y, const float width, const float height)
         {
             if (freeList.empty())
             {
-                const auto currIdx = static_cast<uint16_t>(colliders.size());
+                const auto currIdx = colliders.size();
                 colliders.push_back({x, y, width, height});
-                MAGIQUE_ASSERT(currIdx < UINT16_MAX, "Too many static colliders");
                 return currIdx;
             }
             const auto nextIdx = freeList.back();
@@ -54,93 +59,96 @@ namespace magique
             colliders[nextIdx] = {x, y, width, height};
             return nextIdx;
         }
-        uint16_t remove(const float x, const float y, const float width, const float height)
+        void remove(const uint32_t objectNum)
         {
-            uint16_t i = 0;
-            for (auto& col : colliders)
-            {
-                if (col.x == x && col.y == y && col.p1 == width && col.p2 == height)
-                {
-                    col.p1 = 0;
-                    col.p2 = 0;
-                    freeList.push_back(i);
-                    return i;
-                }
-                ++i;
-                MAGIQUE_ASSERT(i < UINT16_MAX, "Too many static colliders");
-            }
-            return UINT16_MAX;
+            MAGIQUE_ASSERT((int)objectNum < colliders.size(), "Given num is out of bounds");
+            auto& collider = colliders[objectNum];
+            MAGIQUE_ASSERT(collider.p1 != 0.0F || collider.p2 != 0.0F, "Attempting to delete a deleted collider");
+            collider.p1 = 0;
+            collider.p2 = 0;
+            freeList.push_back(objectNum);
         }
     };
 
-    using StaticID = uint64_t; // 16 bits objectid (maps number to dims), 16 bits data (tilenum, groupnum),  rest is type
-
-    struct StaticIDHelper final
+    struct StaticIDHelper final // Helps getting individual parts from the static ids
     {
-        // Extract the ColliderType from the upper 32 bits
-        static ColliderType GetType(const StaticID id) { return static_cast<ColliderType>(id >> 32); }
-
-        // Extract the data from the middle 16 bits
-        static uint16_t GetData(const StaticID id) { return static_cast<uint16_t>(id >> 16 & 0xFFFF); }
-
-        // Extract the object number from the lower 16 bits
-        static uint16_t GetObjectNum(const StaticID id) { return static_cast<uint16_t>(id & 0xFFFF); }
-
-        static StaticID CreateID(const uint16_t objectNum, const uint16_t data, const ColliderType type)
+        static uint32_t GetObjectNum(const StaticID id)
         {
-            return static_cast<StaticID>(type) << 32 | static_cast<StaticID>(data) << 16 |
-                static_cast<StaticID>(objectNum);
+            return static_cast<uint32_t>(id >> 32);
+        }
+
+        static int GetData(const StaticID id)
+        {
+            return static_cast<int32_t>(id & 0xFFFFFFFF);
+        }
+
+        static StaticID CreateID(const uint32_t objectNum, const int data)
+        {
+            const auto ret = (static_cast<StaticID>(objectNum) << 32) | static_cast<uint32_t>(data);
+            MAGIQUE_ASSERT(GetData(ret) == data, "Wrong conversion");
+            MAGIQUE_ASSERT(GetObjectNum(ret) == objectNum, "Wrong conversion");
+            return ret;
         }
     };
 
-    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, 14, 128>; // power of two
-    using StaticPairCollector = AlignedVec<StaticPair>[WORK_PARTS];
-    using ColliderCollector = AlignedVec<uint16_t>[WORK_PARTS];
+    struct ObjectReferenceHolder final
+    {
+        HashMap<MapID, vector<uint32_t>> tileObjectMap;
+        HashMap<MapID, std::array<const std::vector<TileObject>*, MAGIQUE_MAX_OBJECT_LAYERS>> objectVectors;
+        HashMap<MapID, vector<uint32_t>> solidTilesMap;
+        HashMap<int, vector<uint32_t>> groupMap; // Holds manual collider groups
+    };
 
     struct StaticCollisionData final
     {
+        Rectangle worldBounds{}; // World bounds
+
+        //----------------- COLLECTORS -----------------//
         StaticPairCollector pairCollector; // Collects all pairs for all types entity + (world, object, tiles, custom)
-        HashSet<uint64_t> pairSet;         // Makes sure there are only unique collision paris
-
-        //----------------- COLLISION OBJECTS -----------------//
-
-        ColliderHashGrid objectGrid;                               // Stores all objects and tiles
-        HashMap<MapID, const std::vector<TileObject>*> mapObjects; // Saves pointer to object vector to unload later
-        ObjectHolder objectHolder;             // Saves collider ids - uses a free list to preserve indices
         ColliderCollector colliderCollector{}; // Collects collider ids
 
-        //----------------- TILESET -----------------//
+        //----------------- STORAGE-----------------//
 
-        // hashset vs vec vs custom bitset
-        vector<bool> tileCollisionVec;    // Holds information if the tile-index is solid
-        vector<MapData> mapDataVec;       // Holds the begin pointers to each map
-        const TileSet* tileSet = nullptr; // Only used for equality checks - global tileset
-        float tileSize = 16.0F;
+        ColliderStorage objectStorage;          // Holds all objects - uses a free list to preserve indices
+        HashSet<uint64_t> pairSet;              // Makes sure there are only unique collision paris (entity + object_id)
+        ObjectReferenceHolder objectReferences; // Saves data so that inserted objects can automatically be unloaded
 
-        //----------------- MANUAL COLLIDERS -----------------//
+        //----------------- HASHGRIDS -----------------//
 
-        HashMap<int, vector<StaticCollider>> manualColliderMap; // HashMap, as group can be any number
-
-        [[nodiscard]] bool isSolid(const uint16_t tileNum) const
-        {
-            return tileNum < tileCollisionVec.size() && tileCollisionVec[tileNum];
-        }
+        ColliderHashGrid objectGrid; // Stores all tilemap objects
+        TileHashGrid tileGrid;       // Stores all collidable tiles
+        GroupHashGrid groupGrid;     // Stores all objects from manual collider groups
 
         void unloadMap(const MapID map)
         {
-            const auto it = mapObjects.find(map);
-            if (it == mapObjects.end())
-                return;
-
-            for (const auto& obj : *it->second)
+            const auto clearGridAndVec = [&](auto& vec, auto& grid)
             {
-                const auto num = objectHolder.remove(obj.x, obj.y, obj.width, obj.height);
-                objectGrid.removeWithHoles(num);
+                for (const auto num : vec)
+                {
+                    objectStorage.remove(num);
+                    // We store the object num + the data in the hash grid
+                    // But we dont want to store 8 byte in the objectReferences - and the object num is still unique
+                    // So we compare the internal static id and see if the object num part matches
+                    grid.removeIfWithHoles(num, [](const uint32_t num, const StaticID id)
+                                           { return num == StaticIDHelper::GetObjectNum(id); });
+                }
+                grid.patchHoles(); // Patch as we cant rebuild it
+                vec.clear();
+            };
+
+            if (objectReferences.tileObjectMap.contains(map))
+            {
+                clearGridAndVec(objectReferences.tileObjectMap[map], objectGrid);
+                objectReferences.objectVectors.erase(map);
             }
-            objectGrid.patchHoles(); // patch any holes - for static collision we dont rebuild the grid
+
+            if (objectReferences.solidTilesMap.contains(map))
+            {
+                clearGridAndVec(objectReferences.solidTilesMap[map], tileGrid);
+            }
         }
 
-        [[nodiscard]] const StaticCollider& getCollider(const uint16_t id) const { return objectHolder.colliders[id]; }
+        [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0 && worldBounds.height != 0; }
     };
 
     namespace global

@@ -216,14 +216,14 @@ fast_vector<T>::~fast_vector() noexcept
 template <class T>
 T& fast_vector<T>::operator[](size_type pos)
 {
-    assert(pos < m_size && "Position is out of range");
+    assert(pos < m_size && pos >= 0 && "Position is out of range");
     return m_data[pos];
 }
 
 template <class T>
 const T& fast_vector<T>::operator[](size_type pos) const
 {
-    assert(pos < m_size && "Position is out of range");
+    assert(pos < m_size && pos >= 0 && "Position is out of range");
     return m_data[pos];
 }
 

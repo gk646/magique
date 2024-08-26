@@ -65,6 +65,26 @@ struct DataBlock final
             }
         }
     }
+
+    template <typename NewType, typename Pred>
+    void removeIf(NewType val, Pred pred)
+    {
+        if (count == 1 && pred(val, data[0]))
+        {
+            count = 0;
+            return;
+        }
+
+        for (int i = 0; i < count; ++i)
+        {
+            if (pred(val, data[i]))
+            {
+                data[i] = data[count - 1];
+                --count;
+                --i;
+            }
+        }
+    }
 };
 
 // assuming 4 bytes as value size its 15 * 4 + 2 + 2 = 64 / one cache line
@@ -107,6 +127,22 @@ struct SingleResolutionHashGrid final
         }
     }
 
+    template <typename T, typename Pred>
+    void removeIfWithHoles(T val, Pred pred)
+    {
+        for (const auto& pair : cellMap) // Iterate through map to only work on 'root' blocks
+        {
+            auto& block = dataBlocks[pair.second];
+            DataBlock<V, blockSize>* start = &block;
+            start->removeIf(val, pred);
+            while (start->hasNext())
+            {
+                start = &dataBlocks[start->next];
+                start->removeIf(val, pred);
+            }
+        }
+    }
+
     // Patches the blocks removing any holes
     void patchHoles()
     {
@@ -124,7 +160,6 @@ struct SingleResolutionHashGrid final
 
     [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
     [[nodiscard]] constexpr int getCellSize() const { return cellSize; }
-
 
 private:
     template <typename Func>
@@ -217,7 +252,7 @@ private:
         {
             next = &dataBlocks[start->next];
             auto count = start->count;
-            V i = 0;
+            uint16_t i = 0;
             for (; i + count < blockSize && i < next->count; ++i) // Copy elements from next to current
             {
                 start->data[i + count] = next->data[i];
@@ -295,7 +330,7 @@ private:
     }
 
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
-    static_assert(sizeof(V) <= 4, "You should only use small id types");
+    static_assert(sizeof(V) <= 8, "You should only use small id types");
 };
 
 #endif //MULTIRESOLUTIONGRID_H

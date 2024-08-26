@@ -49,7 +49,8 @@ namespace magique
     enum EventType : uint8_t;
     enum CollisionLayer : uint8_t;
     enum class Shape : uint8_t;
-    struct PositionC; // Implicity position component
+    struct PositionC;  // Implicit position component
+    struct CollisionC; // Built in collision component
 
     //----------------- ASSETS -----------------//
     struct Asset;                 // Memory container for any asset

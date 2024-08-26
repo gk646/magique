@@ -89,7 +89,7 @@ namespace magique
     {
         BeginMode2D(GetCamera());
         auto& group = internal::POSITION_GROUP;
-        const auto& config = global::ENGINE_CONFIG;
+        const auto& staticData = global::STATIC_COLL_DATA;
         // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
@@ -115,7 +115,7 @@ namespace magique
             }
         }
         // Static tile map objects
-        for (const auto& [x, y, p1, p2] : global::STATIC_COLL_DATA.objectHolder.colliders)
+        for (const auto& [x, y, p1, p2] : staticData.objectStorage.colliders)
         {
             if (p1 == 0)
                 continue;
@@ -129,18 +129,18 @@ namespace magique
             }
         }
 
-        if (config.getIsWorldBoundSet()) // enabled
+        if (staticData.getIsWorldBoundSet()) // enabled
         {
             constexpr float depth = 250.0F;
-            const auto wBounds = config.worldBounds;
+            const auto wBounds = staticData.worldBounds;
             const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
             const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
             const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
             const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
-            DrawRectangleLinesEx(r1,2,RED);
-            DrawRectangleLinesEx(r2,2,RED);
-            DrawRectangleLinesEx(r3,2,RED);
-            DrawRectangleLinesEx(r4,2,RED);
+            DrawRectangleLinesEx(r1, 2, RED);
+            DrawRectangleLinesEx(r2, 2, RED);
+            DrawRectangleLinesEx(r3, 2, RED);
+            DrawRectangleLinesEx(r4, 2, RED);
         }
         EndMode2D();
     }

@@ -70,6 +70,7 @@ struct PlayerScript final : EntityScript
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
+        AccumulateCollision(self,info);
     }
 };
 
@@ -84,6 +85,7 @@ struct ObjectScript final : EntityScript
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
+        AccumulateCollision(self,info);
     }
 };
 
