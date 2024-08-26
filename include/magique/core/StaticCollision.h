@@ -14,7 +14,7 @@
 //      - TileMaps: Manually place colliders in the tile editor - they are imported automatically and can be loaded in
 //      - TileSet: Allows to define certain tile-indices as solid making them (you then also need to load the maps)
 //      - Manual: Manually add and manage collider groups
-// Note: The methods can be used in any combination, they all work together
+// Note: The methods can be used in any combination, they all work together and do not incur a cost when ignored
 // ................................................................................
 
 namespace magique
@@ -27,8 +27,9 @@ namespace magique
     //----------------- TILEMAP -----------------//
 
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
-    // This needs to be called whenever any actor enters a map - once set further calls for the same map are skipped
-    // Will be unloaded automatically when no actors are left in the map
+    // Needs to be called whenever any actor enters a map - once set further calls with the same vector are skipped!
+    // All objects Will be unloaded automatically when no actors are left in the map
+    // Note: You can load up to MAGIQUE_MAX_OBJECT_LAYERS many vectors for each map - only visible object are loaded!
     // Note: If you applied scaling to the texture needs to be applied here aswell
     void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1.0F);
 
@@ -42,10 +43,6 @@ namespace magique
     // Load all maps at the start or load the new map when a actor enters it - duplicate calls dont matter
     // layers   - specifies which layers are collision
     void LoadTileMap(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
-
-    // Returns true if the given map was loaded and the tile at (x,y) in any specified layer is marked as solid in the global tileset
-    // Note: For this to work both SetGlobalTilset() AND LoadTileMap() have to be setup correctly
-    bool IsSolidTile(MapID map, int tileX, int tileY);
 
     //----------------- MANUAL -----------------//
 

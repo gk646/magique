@@ -32,7 +32,7 @@
 #define MAGIQUE_COLLISION_CELL_SIZE 64
 
 // Maximum amount of entities allowed per cell (less is better)
-#define MAGIQUE_MAX_ENTITIES_CELL 15
+#define MAGIQUE_MAX_ENTITIES_CELL 31
 
 
 //----------------- ASSETS -----------------//

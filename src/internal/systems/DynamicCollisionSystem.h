@@ -101,7 +101,7 @@ namespace magique
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
         for (auto& [vec] : colPairs)
         {
-            for (auto [info, p1, p2, e1, e2] : vec)
+            for (auto& [info, p1, p2, e1, e2] : vec)
             {
                 auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
@@ -109,6 +109,10 @@ namespace magique
                     continue;
                 pairSet.insert(it, num);
                 InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
+
+                info.normalVector.x = -info.normalVector.x;
+                info.normalVector.y = -info.normalVector.y;
+
                 InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, info);
             }
             vec.clear();

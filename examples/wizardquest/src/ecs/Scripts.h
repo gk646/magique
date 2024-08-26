@@ -1,6 +1,8 @@
 #ifndef SCRIPTS_H
 #define SCRIPTS_H
 
+#include "ScriptUtil.h"
+
 struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override
@@ -17,9 +19,11 @@ struct PlayerScript final : EntityScript
             mov.baseVelocX += stats.moveSpeed;
     }
 
-    void onStaticCollision(entt::entity self,  ColliderInfo collider,const CollisionInfo &info) override
+    void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
     {
-        AccumulateCollision(self,info);
+        if (collider.type == ColliderType::TILEMAP_OBJECT)
+            printf("Class: %d\n", collider.data);
+        AccumulateCollision(self, info);
     }
 };
 #endif //SCRIPTS_H

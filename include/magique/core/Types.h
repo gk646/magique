@@ -85,7 +85,7 @@ namespace magique
         [[nodiscard]] int getCurrentTexture(uint16_t spriteCount) const;
     };
 
-    // Objects saved with the tilemap
+    // Objects defined insdie the tile editor
     struct TileObject final
     {
         [[nodiscard]] const char* getName() const; // Can be null
@@ -165,7 +165,7 @@ namespace magique
 
     struct ColliderInfo final
     {
-        uint16_t data;
+        int data;
         ColliderType type;
     };
 
