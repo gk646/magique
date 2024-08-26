@@ -17,75 +17,31 @@ namespace magique
 
     void CallEventFunc(EntityType type, entt::entity entity, const CollisionInfo& info, ColliderInfo cInfo);
 
+    void CheckAgainstWorldBounds(entt::entity e, const PositionC& pos, CollisionC& col, const Rectangle& r);
+
+    void CheckRange(int thread, int start, int end);
+
     inline void StaticCollisionSystem()
     {
-        constexpr float depth = 250.0F;
-
         const auto& data = global::ENGINE_DATA;
-        const auto& config = global::ENGINE_CONFIG;
-        const auto& group = internal::POSITION_GROUP;
-        auto& stCollData = global::STATIC_COLL_DATA;
-
-        const auto& collisionVec = data.collisionVec;
-        const auto& grid = stCollData.objectGrid;
-        const auto wBounds = config.worldBounds;
-        auto& collector = stCollData.colliderCollector;
-
-        // Left Side - Upper side - Right side - Lower side
-        const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
-        const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
-        const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
-        const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
-
-        const auto checkWorld = config.getIsWorldBoundSet();
-        for (const auto e : collisionVec)
+        const int size = data.collisionVec.size(); // Multithread over certain amount
+        if (size > 100)
         {
-            const auto& pos = group.get<const PositionC>(e);
-            const auto& col = group.get<const CollisionC>(e);
-
-            if (checkWorld) // Check if worldbounds active
+            std::array<jobHandle, WORK_PARTS> handles{};
+            int end = 0;
+            const int partSize = static_cast<int>((float)size * 0.81F) / WORK_PARTS; // Give main thread more work
+            for (int j = 0; j < WORK_PARTS - 1; ++j)
             {
-                CollisionInfo info1{};
-                CheckAgainstRect(pos, col, r1, info1);
-                if (info1.isColliding())
-                {
-                    CallEventFunc(pos.type, e, info1, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
-                }
-
-                CollisionInfo info2{};
-                CheckAgainstRect(pos, col, r2, info2);
-                if (info2.isColliding())
-                {
-                    CallEventFunc(pos.type, e, info2, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
-                }
-
-                CollisionInfo info3{};
-                CheckAgainstRect(pos, col, r3, info3);
-                if (info3.isColliding())
-                {
-                    CallEventFunc(pos.type, e, info3, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
-                }
-
-                CollisionInfo info4{};
-                CheckAgainstRect(pos, col, r4, info4);
-                if (info4.isColliding())
-                {
-                    CallEventFunc(pos.type, e, info4, ColliderInfo{0, ColliderType::WORLD_BOUNDS});
-                }
+                const int start = end;
+                end = start + partSize;
+                handles[j] = AddJob(CreateExplicitJob(CheckRange, j, start, end));
             }
-
-            QueryHashGrid(collector, grid, pos, col); // Tilemap objects
-            for (const auto num : collector)
-            {
-                const auto collider = stCollData.getCollider(num); // O(1) direct lookup
-                CollisionInfo info{};
-                CheckAgainstRect(pos, col, {collider.x, collider.y, collider.p1, collider.p2}, info);
-                if (info.isColliding())
-                {
-                    CallEventFunc(pos.type, e, info, ColliderInfo{0, ColliderType::TILEMAP_OBJECT});
-                }
-            }
-            collector.clear();
+            CheckRange(WORK_PARTS - 1, end, size);
+            AwaitJobs(handles);
+        }
+        else
+        {
+            CheckRange(0, 0, size);
         }
     }
 
@@ -182,6 +138,69 @@ namespace magique
         InvokeEventDirect<onStaticCollision>(GetScript(type), entity, cInfo, info);
     }
 
+    inline void CheckAgainstWorldBounds(vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
+                                        CollisionC& col, const Rectangle& r)
+    {
+        CollisionInfo info{};
+        CheckAgainstRect(pos, col, r, info);
+        if (info.isColliding())
+        {
+            collector.push_back({info, &col, e, 0, ColliderType::WORLD_BOUNDS});
+        }
+    }
+
+    inline void CheckRange(const int thread, const int start, const int end)
+    {
+        const auto& data = global::ENGINE_DATA;
+        const auto& config = global::ENGINE_CONFIG;
+        auto& group = internal::POSITION_GROUP;
+        auto& stCollData = global::STATIC_COLL_DATA;
+
+        const auto& collisionVec = data.collisionVec;
+        const auto& grid = stCollData.objectGrid;
+        auto& collCollector = stCollData.colliderCollector[thread].vec; // non const
+        auto& pairCollector = stCollData.pairCollector[thread].vec;     // non const
+
+        const auto startIt = collisionVec.begin() + start;
+        const auto endIt = collisionVec.begin() + end;
+
+        // Cache
+        constexpr float depth = 250.0F;
+        const auto wBounds = config.worldBounds;
+        const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
+        const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
+        const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
+        const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
+        const auto checkWorld = config.getIsWorldBoundSet();
+
+        for (auto it = startIt; it != endIt; ++it)
+        {
+            const auto e = *it;
+            const auto& pos = group.get<const PositionC>(e);
+            auto& col = group.get<CollisionC>(e); // Non cost for saving reference
+
+            if (checkWorld) // Check if worldbounds active
+            {
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r1);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r2);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r3);
+                CheckAgainstWorldBounds(pairCollector, e, pos, col, r4);
+            }
+
+            QueryHashGrid(collCollector, grid, pos, col); // Tilemap objects
+            for (const auto num : collCollector)
+            {
+                const auto collider = stCollData.getCollider(num); // O(1) direct lookup
+                CollisionInfo info{};
+                CheckAgainstRect(pos, col, {collider.x, collider.y, collider.p1, collider.p2}, info);
+                if (info.isColliding())
+                {
+                    pairCollector.push_back({info, &col, e, 0, ColliderType::WORLD_BOUNDS});
+                }
+            }
+            collCollector.clear();
+        }
+    }
 } // namespace magique
 
 #endif //STATICCOLLISIONSYSTEM_H

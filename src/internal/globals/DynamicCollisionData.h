@@ -16,23 +16,15 @@ namespace magique
         entt::entity e2;
     };
 
-    template <typename T>
-    struct AlignedVec final
-    {
-        // To prevent false sharing
-        alignas(64) vector<T> vec;
-    };
-
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
     using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, 31, MAGIQUE_COLLISION_CELL_SIZE>;
+    using EntityHashGrid = SingleResolutionHashGrid<entt::entity, MAGIQUE_MAX_ENTITIES_CELL, MAGIQUE_COLLISION_CELL_SIZE>;
 
     struct DynamicCollisiondata final
     {
         HashSet<uint64_t> pairSet;          // Filters unique collision pairs
-        CollPairCollector collisionPairs{}; // Collision pair collectors
         EntityHashGrid hashGrid;            // Global hashGrid for all dynamic entities
-        HashSet<entt::entity> bhvSet{};
+        CollPairCollector collisionPairs{}; // Collision pair collectors
 
         DynamicCollisiondata()
         {

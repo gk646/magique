@@ -18,7 +18,15 @@
 
 namespace magique
 {
-    using ColliderHashGrid = SingleResolutionHashGrid<uint16_t, 15, 256>;
+    struct StaticPair final
+    {
+        CollisionInfo info;
+        CollisionC* col;     // the entities collision
+        entt::entity entity; // the entity
+        uint16_t data;       // collider data
+        ColliderType type;   // collider type
+    };
+
     struct MapData final
     {
         const uint16_t* layerData[MAGIQUE_MAX_TILE_LAYERS]{};
@@ -46,7 +54,6 @@ namespace magique
             colliders[nextIdx] = {x, y, width, height};
             return nextIdx;
         }
-
         uint16_t remove(const float x, const float y, const float width, const float height)
         {
             uint16_t i = 0;
@@ -66,14 +73,41 @@ namespace magique
         }
     };
 
+    using StaticID = uint64_t; // 16 bits objectid (maps number to dims), 16 bits data (tilenum, groupnum),  rest is type
+
+    struct StaticIDHelper final
+    {
+        // Extract the ColliderType from the upper 32 bits
+        static ColliderType GetType(const StaticID id) { return static_cast<ColliderType>(id >> 32); }
+
+        // Extract the data from the middle 16 bits
+        static uint16_t GetData(const StaticID id) { return static_cast<uint16_t>(id >> 16 & 0xFFFF); }
+
+        // Extract the object number from the lower 16 bits
+        static uint16_t GetObjectNum(const StaticID id) { return static_cast<uint16_t>(id & 0xFFFF); }
+
+        static StaticID CreateID(const uint16_t objectNum, const uint16_t data, const ColliderType type)
+        {
+            return static_cast<StaticID>(type) << 32 | static_cast<StaticID>(data) << 16 |
+                static_cast<StaticID>(objectNum);
+        }
+    };
+
+    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, 14, 128>; // power of two
+    using StaticPairCollector = AlignedVec<StaticPair>[WORK_PARTS];
+    using ColliderCollector = AlignedVec<uint16_t>[WORK_PARTS];
+
     struct StaticCollisionData final
     {
+        StaticPairCollector pairCollector; // Collects all pairs for all types entity + (world, object, tiles, custom)
+        HashSet<uint64_t> pairSet;         // Makes sure there are only unique collision paris
+
         //----------------- COLLISION OBJECTS -----------------//
 
         ColliderHashGrid objectGrid;                               // Stores all objects and tiles
         HashMap<MapID, const std::vector<TileObject>*> mapObjects; // Saves pointer to object vector to unload later
-        ObjectHolder objectHolder;            // Saves collider ids - uses a free list to preserve indices
-        vector<uint16_t> colliderCollector{}; // Collects collider ids
+        ObjectHolder objectHolder;             // Saves collider ids - uses a free list to preserve indices
+        ColliderCollector colliderCollector{}; // Collects collider ids
 
         //----------------- TILESET -----------------//
 

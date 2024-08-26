@@ -17,3 +17,5 @@ possibly implemented optional substeps
 implement quest api + with visual scripting (raynodes)
 
 fix rare camera vibrating when running against solid wall -> rounding errors -> smooth camera
+
+remove physics info hashmap - can be accumulated in the collisionC component privately (in both systems)
