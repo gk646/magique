@@ -1,4 +1,4 @@
-<img src="logos/magique_banner.png" width="1280" height="310" title="banner"/>
+<img src="logos/magique_banner.png" title="banner"/>
 
 [![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/YAsvnxAmX7)
 ![Version Badge](https://img.shields.io/badge/Version:-0.1.0-blue)
