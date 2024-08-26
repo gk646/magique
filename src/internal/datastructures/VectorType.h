@@ -13,5 +13,11 @@ namespace magique
 
 }
 
+template <typename T>
+struct AlignedVec final
+{
+    // To prevent false sharing
+    alignas(64) magique::vector<T> vec;
+};
 
 #endif //MAGIQUE_VECTORTYPE_H

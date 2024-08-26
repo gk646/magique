@@ -37,10 +37,10 @@ using D_func = float (*)(float, float, float, float);
 
 //activation functions
 inline auto sig(float x) noexcept -> float {
-  return 1.0F / (1.0F + std::exp(-x));
+  return 1.0F / (1.0F + exp(-x));
 }
 inline auto tanh(float x) noexcept -> float {
-  return std::tanh(x);
+  return tanh(x);
 }
 inline auto relu(float x) noexcept -> float {
   return x > 0 ? x : 0;
@@ -57,8 +57,12 @@ inline auto d_tanh(float x) noexcept -> float {
   return 1 - t * t;
 }
 
+inline constexpr  bool m_is_power_of2(unsigned int x){
+        return x != 0 && (x & (x - 1)) == 0;
+}
+
 // Finds the closest power of two to the right of the given number
-inline auto next_power_of_2(uint32_t n) noexcept -> uint32_t {
+inline auto m_next_power_of2(uint32_t n) noexcept -> uint32_t {
   n--;
   n |= n >> 1;
   n |= n >> 2;
@@ -68,8 +72,9 @@ inline auto next_power_of_2(uint32_t n) noexcept -> uint32_t {
   n++;
   return n;
 }
+
 // Fast inverse square root from quake (inversed)
-inline auto fast_sqrt(float n) noexcept -> float {
+inline float fast_sqrt(float n) noexcept  {
   long i;
   float x2, y;
   constexpr float threehalfs = 1.5F;
@@ -82,6 +87,7 @@ inline auto fast_sqrt(float n) noexcept -> float {
   y = y * (threehalfs - (x2 * y * y));
   return 1.0F / y;
 }
+
 // Clamps the given value between the ]range - low[ if val is smaller than low, val if val is between low and high, and high if val is bigger than high
 template <typename T>
 constexpr auto clamp(const T& val, const T& low, const T& high) -> T
@@ -121,6 +127,7 @@ bool in_range(T val, T min, T max) {
 }
 
 //-----------DISTANCE-----------//
+
 inline auto euclidean(float p1x, float p1y, float p2x, float p2y) noexcept -> float {
   return fast_sqrt((p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y));
 }

@@ -5,8 +5,9 @@
 // Config
 //-----------------------------------------------
 // .....................................................................
-// 1 to enable
-// 0 to disable
+// This allows to configure magique at compile time
+// 1: to enable an option
+// 0: to disable an option
 // .....................................................................
 
 //----------------- CORE -----------------//
@@ -25,12 +26,13 @@
 // Estimated number of unique maps
 #define MAGIQUE_EXPECTED_MAPS 32
 
-// The size of a grid cell - NEEDS to be a power of two (32,64,128,256 -> shouldnt be bigger than that)
-// Should be as small as possible BUT no object can be bigger (bounding box) than 2*size
+// The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldnt be bigger than that)
+// Should be chosen as SMALL as possible, 75% of objects should fit within the given size
+// If the size of the bounding box of the object is bigger than 2*cellSize it gets slow
 #define MAGIQUE_COLLISION_CELL_SIZE 64
 
 // Maximum amount of entities allowed per cell (less is better)
-#define MAGIQUE_MAX_ENTITIES_CELL 31
+#define MAGIQUE_MAX_ENTITIES_CELL 15
 
 
 //----------------- ASSETS -----------------//
@@ -119,4 +121,9 @@ namespace std
 #define STEAMNETWORKINGSOCKETS_STANDALONELIB
 #endif
 
+#define IS_POWER_OF_TWO(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
+#if IS_POWER_OF_TWO(MAGIQUE_COLLISION_CELL_SIZE)
+#else
+#error "Cell size is not a power of 2. Choose either 32,64 or 128"
+#endif
 #endif //MAGIQUE_CONFIG_H

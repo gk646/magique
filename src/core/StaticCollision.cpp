@@ -25,9 +25,10 @@ namespace magique
                 const float scaledWidth = obj.width * scale;
                 const float scaledHeight = obj.height * scale;
                 const auto num = data.objectHolder.insert(scaledX, scaledY, scaledWidth, scaledHeight);
-                data.objectGrid.insert(num, scaledX, scaledY, scaledWidth, scaledHeight);
+                const auto staticID = StaticIDHelper::CreateID(num, 0, ColliderType::TILEMAP_OBJECT);
+                data.objectGrid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
             }
-            data.mapObjects.insert({map,&collisionObjects});
+            data.mapObjects.insert({map, &collisionObjects});
         }
     }
 

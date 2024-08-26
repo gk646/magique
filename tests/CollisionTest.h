@@ -86,14 +86,14 @@ struct Test final : Game
             GiveActor(e);
             GiveScript(e);
             GiveCamera(e);
-            GiveCollisionCircle(e, 15);
+            GiveCollisionCircle(e, 75);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e)
         {
             GiveScript(e);
-            const auto val = GetRandomValue(45,45);
+            const auto val = GetRandomValue(0,100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -119,9 +119,9 @@ struct Test final : Game
         SetScript(OBJECT, new ObjectScript());
 
         CreateEntity(PLAYER, 0, 0, MapID(0));
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(1, 112), GetRandomValue(1, 112), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override

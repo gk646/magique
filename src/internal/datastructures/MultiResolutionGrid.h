@@ -132,7 +132,6 @@ private:
     {
         if (w > cellSize || h > cellSize) [[unlikely]] // Its bigger than a single cell
         {
-            printf("slow");
             if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
             {
                 const int startX = static_cast<int>(x) / cellSize;
@@ -298,6 +297,5 @@ private:
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
     static_assert(sizeof(V) <= 4, "You should only use small id types");
 };
-
 
 #endif //MULTIRESOLUTIONGRID_H

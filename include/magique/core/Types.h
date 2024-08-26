@@ -165,7 +165,7 @@ namespace magique
 
     struct ColliderInfo final
     {
-        int data;
+        uint16_t data;
         ColliderType type;
     };
 
