@@ -29,15 +29,16 @@ namespace magique
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
     // Needs to be called whenever any actor enters a map - once set further calls with the same vector are skipped!
     // All objects Will be unloaded automatically when no actors are left in the map
-    // Note: You can load up to MAGIQUE_MAX_OBJECT_LAYERS many vectors for each map - only visible object are loaded!
+    // Note: You can load up to MAGIQUE_MAX_OBJECT_LAYERS many vectors for each map - only visible objects are loaded!
     // Note: If you applied scaling to the texture needs to be applied here aswell
     void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1.0F);
 
     //----------------- TILESET -----------------//
 
-    // Sets the global tileset and allows to specify which class number means a solid tile - also the global tilesize
+    // Sets the global tileset and allows to specify which class numbers mark a collidable tile - also the global tilesize
     // Note: In Tiled click on the tileset file -> select any tiles the should be solid and set the class property (e.g. 1)
-    void SetGlobalTileSet(const TileSet& tileSet, int collisionClass, float tileSize);
+    // Note: Can also be use for non-solid tiles to define special areas (water, slime...)
+    void LoadGlobalTileset(const TileSet& tileSet, const std::vector<int>& markedClasses, float tileSize);
 
     // Loads map data so positions can be looked up
     // Load all maps at the start or load the new map when a actor enters it - duplicate calls dont matter

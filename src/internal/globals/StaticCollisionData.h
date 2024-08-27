@@ -72,15 +72,9 @@ namespace magique
 
     struct StaticIDHelper final // Helps getting individual parts from the static ids
     {
-        static uint32_t GetObjectNum(const StaticID id)
-        {
-            return static_cast<uint32_t>(id >> 32);
-        }
+        static uint32_t GetObjectNum(const StaticID id) { return static_cast<uint32_t>(id >> 32); }
 
-        static int GetData(const StaticID id)
-        {
-            return static_cast<int32_t>(id & 0xFFFFFFFF);
-        }
+        static int GetData(const StaticID id) { return static_cast<int32_t>(id & 0xFFFFFFFF); }
 
         static StaticID CreateID(const uint32_t objectNum, const int data)
         {
@@ -95,7 +89,7 @@ namespace magique
     {
         HashMap<MapID, vector<uint32_t>> tileObjectMap;
         HashMap<MapID, std::array<const std::vector<TileObject>*, MAGIQUE_MAX_OBJECT_LAYERS>> objectVectors;
-        HashMap<MapID, vector<uint32_t>> solidTilesMap;
+        HashMap<MapID, vector<uint32_t>> markedTilesMap;
         HashMap<int, vector<uint32_t>> groupMap; // Holds manual collider groups
     };
 
@@ -118,6 +112,11 @@ namespace magique
         ColliderHashGrid objectGrid; // Stores all tilemap objects
         TileHashGrid tileGrid;       // Stores all collidable tiles
         GroupHashGrid groupGrid;     // Stores all objects from manual collider groups
+
+        //----------------- TILESET -----------------//
+        const TileSet* tileSet = nullptr; // Only use for equality checks
+        float tileSize = 16.0F;           // tilesize
+        HashSet<uint16_t> markedTilesMap;     // holds information on which tiles are marked for collisions
 
         void unloadMap(const MapID map)
         {
@@ -142,9 +141,9 @@ namespace magique
                 objectReferences.objectVectors.erase(map);
             }
 
-            if (objectReferences.solidTilesMap.contains(map))
+            if (objectReferences.markedTilesMap.contains(map))
             {
-                clearGridAndVec(objectReferences.solidTilesMap[map], tileGrid);
+                clearGridAndVec(objectReferences.markedTilesMap[map], tileGrid);
             }
         }
 

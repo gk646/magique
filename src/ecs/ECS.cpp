@@ -51,6 +51,7 @@ namespace magique
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
+        auto& data = global::ENGINE_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
@@ -64,7 +65,13 @@ namespace magique
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
-        }return entity;
+        }
+        if (internal::REGISTRY.all_of<CameraC>(entity)) [[unlikely]]
+        {
+            data.cameraEntity = entity;
+            data.cameraMap = map;
+        }
+        return entity;
     }
 
     entt::entity CreateEntityNetwork(uint32_t id, EntityType type, const float x, const float y, MapID map)
@@ -162,7 +169,7 @@ namespace magique
         }
     }
 
-     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
+    CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),

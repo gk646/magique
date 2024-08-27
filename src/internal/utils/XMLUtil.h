@@ -43,7 +43,11 @@ inline bool XMLLineContainsTag(const char* line, const char* tag)
     {
         if (line[i] == '<' && strncmp(&line[i + 1], tag, tagLen) == 0)
         {
-            return true;
+            const auto endSymbol = line[i + tagLen + 1];
+            if (endSymbol == ' ' || endSymbol == '>' || endSymbol == '\n' || endSymbol == '\r')
+            {
+                return true;
+            }
         }
         ++i;
     }

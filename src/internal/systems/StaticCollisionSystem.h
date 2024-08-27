@@ -206,7 +206,7 @@ namespace magique
             CheckHashGrid(e, objectGrid, idCollector, pairCollector, objectType, colliderStorage, pos, col);
 
             // Query tile grid
-            constexpr auto tileType = ColliderType::SOLID_TILE;
+            constexpr auto tileType = ColliderType::TILESET_TILE;
             CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
 
             // Query group grid

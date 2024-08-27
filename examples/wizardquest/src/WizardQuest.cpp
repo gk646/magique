@@ -24,7 +24,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
     // Configure magique
     SetShowHitboxes(true);
     InitLocalMultiplayer();
-    SetStaticWorldBounds({0,0,1280,1000});
+    // SetStaticWorldBounds({0,0,1280,1000});
 
     // Register loaders
     loader.registerTask(new EntityLoader(), BACKGROUND_THREAD, MEDIUM, 1);
@@ -34,9 +34,11 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    LoadMapColliders(MapID::LEVEL_1, GetTileMap(HandleID::LEVEL_1).getObjects(0),3);
-
-    CreateEntity(PLAYER, 0, 0, MapID::LEVEL_1);
+    CreateEntity(PLAYER, 55, 55, MapID::LEVEL_3);
+    auto map = GetCameraMap();
+    LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
+    LoadGlobalTileset(GetTileSet(HandleID::TILE_SET),{1},48.0F);
+    LoadTileMap(map,GetTileMap(HandleID(map)),{0,1});
     SetGameState(GameState::GAME);
 }
 

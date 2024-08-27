@@ -22,7 +22,15 @@ struct PlayerScript final : EntityScript
     void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
     {
         if (collider.type == ColliderType::TILEMAP_OBJECT)
-            printf("Class: %d\n", collider.data);
+        {
+            printf("Class: %d\n", collider.getColliderClass());
+            if (collider.getColliderClass() == 1)
+            {
+                return;
+            }
+        }
+        if(collider.type == ColliderType::TILESET_TILE)return;
+
         AccumulateCollision(self, info);
     }
 };

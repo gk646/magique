@@ -340,8 +340,14 @@ namespace cxstructs
         size_t len2 = strlen(s2);
 
         // Soft cap: Adjust lengths to be no more than MAX_LEN
-        len1 = std::min(len1, static_cast<size_t>(MAX_LEN));
-        len2 = std::min(len2, static_cast<size_t>(MAX_LEN));
+        if (static_cast<size_t>(MAX_LEN) < len1)
+        {
+            len1 = MAX_LEN;
+        }
+        if (static_cast<size_t>(MAX_LEN) < len2)
+        {
+            len2 = MAX_LEN;
+        }
 
         unsigned int d[MAX_LEN + 1][MAX_LEN + 1];
 

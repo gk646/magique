@@ -64,9 +64,66 @@ namespace magique
         }
     }
 
-    void SetGlobalTileSet(const TileSet& tileSet, const int collisionClass, const float tileSize) {}
+    void LoadGlobalTileset(const TileSet& tileSet, const std::vector<int>& markedClasses, const float tileSize)
+    {
+        auto& data = global::STATIC_COLL_DATA;
+        if (data.tileSet != nullptr)
+        {
+            return;
+        }
+        data.tileSet = &tileSet;
+        data.tileSize = tileSize;
+        HashSet<int> markedClassMap; // Local hashmap to guarantee speed - tilemaps can be big up to 65k tiles
+        for (const auto num : markedClasses)
+        {
+            markedClassMap.insert(num);
+        }
+        for (const auto& tileInfo : tileSet.getTileInfo())
+        {
+            if (markedClassMap.contains(tileInfo.getClass()))
+            {
+                data.markedTilesMap.insert(tileInfo.tileID+1);
+            }
+        }
 
-    void LoadTileMap(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers) {}
+    }
+
+    void LoadTileMap(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
+    {
+        auto& data = global::STATIC_COLL_DATA;
+        auto& hashMap = data.objectReferences.markedTilesMap;
+        const auto it = hashMap.find(map);
+        if (it == hashMap.end())
+        {
+            const auto& markedMap = data.markedTilesMap;
+            const auto tileSize = data.tileSize;
+            auto& tileGrid = data.tileGrid;
+            auto& storage = data.objectStorage;
+            auto& tileVec = hashMap[map];
+            const auto width = tileMap.getWidth();
+            const auto height = tileMap.getHeight();
+            for (const auto layer : layers)
+            {
+                const auto start = tileMap.getLayerData(layer);
+                for (int i = 0; i < height; ++i)
+                {
+                    const auto yOff = i * width;
+                    for (int j = 0; j < width; ++j)
+                    {
+                        const auto tileNum = start[yOff + j]; // Might be bugged
+                        if (markedMap.contains(tileNum))
+                        {
+                            const float x = static_cast<float>(j) * tileSize;
+                            const float y = static_cast<float>(i) * tileSize;
+                            const auto objectNum = storage.insert(x, y, tileSize, tileSize);
+                            tileVec.push_back(objectNum);
+                            tileGrid.insert(StaticIDHelper::CreateID(objectNum, tileNum), x, y, tileSize, tileSize);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     void AddStaticColliderRect(const int group, float x, float y, float width, float height)
     {

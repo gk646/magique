@@ -27,7 +27,8 @@ enum EntityType : uint16_t
 enum class MapID : uint8_t
 {
     LEVEL_1 = 1,
-    LEVEL_2
+    LEVEL_2,
+    LEVEL_3
 };
 
 enum class StorageID
@@ -39,8 +40,11 @@ enum class HandleID
 {
     MAPS = 0,
     LEVEL_1,
+    LEVEL_2,
+    LEVEL_3,
     MAPS_END = 10,
     TILESHEET,
+    TILE_SET,
 };
 
 struct WizardQuest final : Game
