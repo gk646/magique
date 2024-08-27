@@ -11,7 +11,7 @@
 // All Register__ methods load and store the resource internally
 // The returned handle is used by Get__ methods to retrieve the resource again
 // Per default all methods are made to load from memory to work with the asset image
-// Textures are automatically stitched into the default atlas or a specified one
+// Textures are automatically stitched into the default atlas or the specified one
 // Try to group all textures that are drawn together into the same atlas
 // Uses a handle system, which means you get a number that identifies this resoure
 // However this handle is only unique for its type, so dont use a handle from a spritesheet for a texture or a sound
@@ -70,11 +70,6 @@ namespace magique
     // Supports loading multiple layers - all layers must have same dimensions!
     handle RegisterTileMap(const Asset& asset);
 
-    // Registers a tilemap from the given layerdata - layerData = layers { rows { columns {} } }
-    // Allows to register generated maps - use gamedev/Procedural.h or custom methods (make sure you use correct tileindices)
-    // Note: layers have to have the same dimensions
-    handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData);
-
     // Registers a tileset - defines the details of all tiles in a project
     handle RegisterTileSet(const Asset& asset);
 
@@ -109,12 +104,14 @@ namespace magique
     // Returns the tilesheet identified by this handle
     TileSheet& GetTileSheet(handle handle);
 
+    // Returns the music identified by this handle
     Music& GetMusic(handle handle);
 
+    // Returns the playlist identified by this handle
     Playlist& GetPlaylist(handle handle);
 
     //----------------- DIRECT GET -----------------//
-    //Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
+    // Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
     // They call GetHandle() internally thus skipping the manual call
 
     TileMap& GetTileMap(HandleID id);
@@ -122,6 +119,9 @@ namespace magique
 
     TileSheet& GetTileSheet(HandleID handle);
     TileSheet& GetTileSheet(uint32_t hash);
+
+    TileSet& GetTileSet(HandleID handle);
+    TileSet& GetTileSet(uint32_t hash);
 
 } // namespace magique
 

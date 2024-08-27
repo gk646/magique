@@ -58,7 +58,7 @@ namespace magique
 
     void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
 
-    //void SetCameraEntity(entt::entity entity) { } // implemented in ECS.cpp cause of includes
+    // void SetCameraEntity(entt::entity entity) { } // implemented in ECS.cpp cause of includes
 
     void SetUpdateDistance(const int distance)
     {

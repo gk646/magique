@@ -112,7 +112,6 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
 
 namespace magique
 {
-
     AssetContainer::~AssetContainer() { delete[] nativeData; }
 
     void AssetContainer::sort()
@@ -169,7 +168,6 @@ namespace magique
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
-
         for (const auto& a : assets)
         {
             if (cxstructs::str_cmp_rev(a.path, name) == 0)

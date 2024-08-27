@@ -1,6 +1,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
+#include <magique/util/Logging.h>
 
 namespace magique
 {
@@ -24,7 +25,44 @@ namespace magique
 
     Rectangle TileObject::getRect() const { return {x, y, width, height}; }
 
+    //----------------- TILE INFO -----------------//
+
+    int TileInfo::getClass() const { return clazz; }
+
+    //----------------- COLLIDER INFO -----------------//
+
+    int ColliderInfo::getColliderClass() const
+    {
+        if (type != ColliderType::TILEMAP_OBJECT) [[unlikely]]
+        {
+            LOG_WARNING("Using the wrong getter. Type has to be TILEMAP_OBJECT");
+            return INT32_MAX;
+        }
+        return data;
+    }
+    int ColliderInfo::getManualGroup() const
+    {
+        if (type != ColliderType::MANUAL_COLLIDER) [[unlikely]]
+        {
+            LOG_WARNING("Using the wrong getter. Type has to be MANUAL_COLLIDER");
+            return INT32_MAX;
+        }
+        return data;
+    }
+    int ColliderInfo::getTileNum() const
+    {
+        if (type != ColliderType::TILESET_TILE) [[unlikely]]
+        {
+            LOG_WARNING("Using the wrong getter. Type has to be TILESET_TILE");
+            return INT32_MAX;
+        }
+        return data;
+    }
+
+    ColliderInfo::ColliderInfo(const int data, const ColliderType type) : type(type), data(data) {}
+
     //----------------- COLLISION INFO -----------------//
+
 
     bool CollisionInfo::isColliding() const { return penDepth != 0.0F; }
 

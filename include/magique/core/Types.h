@@ -98,16 +98,21 @@ namespace magique
 
     private:
         char* name = nullptr;
-        int type = -1; // Class
-        int id = -1;
+        int type = INT32_MAX; // Class
+        int id = INT32_MAX;
         friend TileObject ParseObject(const char*);
     };
 
     struct TileInfo final
     {
         uint16_t tileID = UINT16_MAX; // ID of the tile
-        int clazz = 0;                // class attribute
         float probability = 1.0F;     // probability attribute
+
+        [[nodiscard]] int getClass() const;
+
+    private:
+        int clazz = INT32_MAX; // class attribute
+        friend struct TileSet;
     };
 
     //----------------- ECS -----------------//
@@ -159,14 +164,27 @@ namespace magique
     {
         WORLD_BOUNDS,
         TILEMAP_OBJECT,
-        SOLID_TILE,
+        TILESET_TILE,
         MANUAL_COLLIDER,
     };
 
     struct ColliderInfo final
     {
+        // Note: If you used the wrong getter (for the type) returns INT32_MAX with a warning
+
+        // Returns the collider class ONLY IF the type is TILEMAP_OBJECT
+        [[nodiscard]] int getColliderClass() const;
+
+        // Returns the group number ONLY IF the type is MANUAL_COLLIDER
+        [[nodiscard]] int getManualGroup() const;
+
+        // Returns the tile class ONLY IF the type is
+        [[nodiscard]] int getTileNum() const;
+
+        const ColliderType type; // The type of the collider
+        ColliderInfo(int, ColliderType);
+    private:
         int data;
-        ColliderType type;
     };
 
     struct StaticCollider final

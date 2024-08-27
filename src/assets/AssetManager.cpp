@@ -4,6 +4,7 @@
 #include <magique/assets/AssetManager.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
+#include <magique/assets/types/TileSet.h>
 #include <magique/assets/types/Playlist.h>
 #include <magique/assets/HandleRegistry.h>
 #include <magique/internal/Macros.h>
@@ -198,7 +199,21 @@ namespace magique
 
     handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
 
-    handle RegisterTileSet(const Asset& asset) { return handle::null; }
+    handle RegisterTileSet(const Asset& asset)
+    {
+        if (!internal::AssetBaseCheck(asset))
+            return handle::null;
+
+        const auto ext = asset.getExtension();
+
+        if (strcmp(ext, ".tsx") != 0)
+        {
+            LOG_WARNING("No valid extensions for a tilset: %s | Supported: .tsx", asset.getFileName(true));
+            return handle::null;
+        }
+        auto tileSet = TileSet(asset);
+        return global::ASSET_MANAGER.addResource(std::move(tileSet));
+    }
 
     handle RegisterTileSheet(const Asset& asset, const int size, const float scale)
     {
@@ -239,6 +254,12 @@ namespace magique
     TileSheet& GetTileSheet(const uint32_t hash)
     {
         return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(hash));
+    }
+
+    TileSet& GetTileSet(const HandleID id) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(id)); }
+    TileSet& GetTileSet(const uint32_t hash)
+    {
+        return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(hash));
     }
 
 } // namespace magique

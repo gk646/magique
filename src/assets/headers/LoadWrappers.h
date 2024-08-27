@@ -19,7 +19,7 @@ namespace magique::internal
 
         MAGIQUE_ASSERT(ext != nullptr, "No valid extension");
 
-        auto img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
+        const auto img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
 
         MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
 

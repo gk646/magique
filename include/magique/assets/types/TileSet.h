@@ -18,8 +18,9 @@ namespace magique
         [[nodiscard]] const std::vector<TileInfo>& getTileInfo() const;
 
     private:
-        explicit TileSet(const char* data);
+        explicit TileSet(const Asset& asset);
         std::vector<TileInfo> infoVec;
+        friend handle RegisterTileSet(const Asset&);
     };
 
 } // namespace magique
