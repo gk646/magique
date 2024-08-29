@@ -21,14 +21,14 @@ namespace magique
         infoVec.reserve(tiles + 1);
         while (!XMLLineContainsTag(work, "tile"))
             cxstructs::str_skip_char(work, '\n', 1);
-        while (!XMLLineContainsTag(work, "wangsets"))
+        while (XMLLineContainsTag(work, "tile"))
         {
             TileInfo info;
             info.tileID = static_cast<uint16_t>(XMLGetValueInLine<int>(work, "id", UINT16_MAX));
             info.clazz = XMLGetValueInLine<int>(work, "type", INT32_MAX);
             info.probability = XMLGetValueInLine<float>(work, "probability", 1.0F);
             infoVec.push_back(info);
-            cxstructs::str_skip_char(work,'\n',1);
+            cxstructs::str_skip_char(work, '\n', 1);
         }
         const auto size = static_cast<int>(infoVec.size());
         LOG_INFO("Successfully loaded TileSet: %s | Marked Tiles: %d", asset.getFileName(true), size);

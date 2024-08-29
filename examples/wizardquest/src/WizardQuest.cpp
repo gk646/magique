@@ -34,10 +34,11 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    CreateEntity(PLAYER, 55, 55, MapID::LEVEL_3);
+        CreateEntity(PLAYER, 55, 55, MapID::LEVEL_3);
     auto map = GetCameraMap();
+
     LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
-    LoadGlobalTileset(GetTileSet(HandleID::TILE_SET),{1},48.0F);
+    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET),{1},48.0F);
     LoadTileMap(map,GetTileMap(HandleID(map)),{0,1});
     SetGameState(GameState::GAME);
 }

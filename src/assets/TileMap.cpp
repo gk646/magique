@@ -3,12 +3,16 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
+#include <cstddef>
+
 #include "internal/utils/XMLUtil.h"
 
 namespace magique
 {
     void ParseTileLayer(TileMap& tileMap, char*& data)
     {
+        MAGIQUE_ASSERT(tileMap.width != 0 && tileMap.height != 0, "Internal Error: Dimensions not set!");
+
         cxstructs::str_skip_char(data, '\n', 1);
         MAGIQUE_ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
 #ifdef MAGIQUE_DEBUG
@@ -17,24 +21,18 @@ namespace magique
 #endif
         cxstructs::str_skip_char(data, '\n', 1);
 
-        const auto addLayer = [](TileMap& map)
+        const auto tilesPerLayer = static_cast<const size_t>(tileMap.width * tileMap.height);
+        const auto startIdx = tileMap.layers * tilesPerLayer;
+
+        const size_t newDataSize = startIdx + tilesPerLayer;
+        auto* newData = new uint16_t[newDataSize];
+        if (tileMap.tileData != nullptr)
         {
-            MAGIQUE_ASSERT(map.width != 0 && map.height != 0, "Internal Error: Dimensions not set!");
-
-            const int tilePerLayer = map.width * map.height;
-            const int newLayerSize = tilePerLayer * (map.layers + 1);
-
-            auto* newData = new uint16_t[newLayerSize];
-            if (map.tileData != nullptr)
-            {
-                std::memcpy(newData, map.tileData, tilePerLayer * map.layers * sizeof(uint16_t));
-                delete[] map.tileData;
-            }
-            ++map.layers;
-            map.tileData = newData;
-        };
-        const auto startIdx = tileMap.layers * (tileMap.width * tileMap.height);
-        addLayer(tileMap);
+            std::memcpy(newData, tileMap.tileData, startIdx * sizeof(uint16_t));
+            delete[] tileMap.tileData;
+        }
+        ++tileMap.layers;
+        tileMap.tileData = newData;
 
         auto* layerData = &tileMap.tileData[startIdx];
         const auto layerSize = tileMap.width * tileMap.height - 1;
@@ -48,13 +46,12 @@ namespace magique
                 ++data;
             }
             ++data;
-            if (*data == '\n')
+            if (*data == '\n' || *data == '\r')
             {
-                ++data;
-            }
-            else if (*data == '\r')
-            {
-                ++data;
+                if (*data == '\r')
+                {
+                    ++data;
+                }
                 ++data;
             }
         }
@@ -91,13 +88,12 @@ namespace magique
     TileMap::TileMap(const Asset& asset)
     {
         auto* data = const_cast<char*>(asset.data); // keep user api const
+        cxstructs::str_skip_char(data, '\n', 1);    // Skip xml tag
 
-        cxstructs::str_skip_char(data, '\n', 1); // Skip xml tag
+        width = XMLGetValueInLine<int>(data, "width", UINT16_MAX);
+        height = XMLGetValueInLine<int>(data, "height", UINT16_MAX);
 
-        const auto mapWidth = XMLGetValueInLine<int>(data, "width", -1);
-        const auto mapHeight = XMLGetValueInLine<int>(data, "height", -1);
-
-        if (mapWidth == -1 || mapHeight == -1)
+        if (width == -1 || height == -1)
         {
             LOG_ERROR("Could not load tilemap layer dimensions: %s", asset.path);
             return;
@@ -111,25 +107,30 @@ namespace magique
         }
         cxstructs::str_skip_char(data, '\n', 2); // Next line
 
-        width = static_cast<uint16_t>(mapWidth);
-        height = static_cast<uint16_t>(mapHeight);
-
         for (int i = 0; i < MAGIQUE_MAX_TILE_LAYERS + MAGIQUE_MAX_OBJECT_LAYERS; ++i)
         {
             if (XMLLineContainsTag(data, "layer"))
             {
-                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "width", -1) == mapWidth, "Layers have different dimensions!");
-                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "height", -1) == mapHeight, "Layers have different dimensions!");
+                const auto* msg = "Layers have different dimensions!";
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "width", UINT16_MAX) == width, msg);
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "height", UINT16_MAX) == height, msg);
                 ParseTileLayer(*this, data);
             }
             else if (XMLLineContainsTag(data, "objectgroup"))
             {
                 MAGIQUE_ASSERT(objectLayers < MAGIQUE_MAX_OBJECT_LAYERS, "More object layers than configured!");
-                cxstructs::str_skip_char(data, '\n', 1);
-                while (!XMLLineContainsTag(data, "/objectgroup"))
+                if (!XMLLineContainsCloseTag(data)) // Detect empty layer
                 {
-                    objectData[objectLayers].push_back(ParseObject(data));
                     cxstructs::str_skip_char(data, '\n', 1);
+                    while (!XMLLineContainsTag(data, "/objectgroup"))
+                    {
+                        objectData[objectLayers].push_back(ParseObject(data));
+                        cxstructs::str_skip_char(data, '\n', 1);
+                    }
+                }
+                else // Empty object layer
+                {
+                    LOG_WARNING("Empty object layer detected. This is likely a oversight: %s", asset.path);
                 }
                 ++objectLayers;
                 cxstructs::str_skip_char(data, '\n', 1);
@@ -139,9 +140,8 @@ namespace magique
                 break;
             }
         }
-
-        LOG_INFO("Successfully loaded TileMap: %s | Layers: %d | Width/Height: %d / %d ", asset.path, layers, mapWidth,
-                 mapHeight);
+        const auto* msg = "Successfully loaded TileMap: %s | Layers: %d | Width/Height: %d / %d ";
+        LOG_INFO(msg, asset.path, layers, width, height);
     }
 
     uint16_t& TileMap::getTileIndex(const int x, const int y, const int layer)
@@ -154,12 +154,20 @@ namespace magique
         return getLayerData(layer)[x + y * width];
     }
 
-    const uint16_t* TileMap::getLayerData(const int layer) const { return &tileData[width * height * layer]; }
+    const uint16_t* TileMap::getLayerData(const int layer) const
+    {
+        MAGIQUE_ASSERT(layer < layers, "TileMap does not have that many tile layers");
+        return &tileData[width * height * layer];
+    }
 
     int TileMap::getWidth() const { return width; }
     int TileMap::getHeight() const { return height; }
     int TileMap::getLayerCount() const { return layers; }
 
-    std::vector<TileObject>& TileMap::getObjects(const int layer) { return objectData[layer]; }
+    std::vector<TileObject>& TileMap::getObjects(const int layer)
+    {
+        MAGIQUE_ASSERT(layer < objectLayers, "TileMap does not have that many object layers");
+        return objectData[layer];
+    }
 
 } // namespace magique

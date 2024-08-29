@@ -38,7 +38,7 @@ namespace magique
     // Sets the global tileset and allows to specify which class numbers mark a collidable tile - also the global tilesize
     // Note: In Tiled click on the tileset file -> select any tiles the should be solid and set the class property (e.g. 1)
     // Note: Can also be use for non-solid tiles to define special areas (water, slime...)
-    void LoadGlobalTileset(const TileSet& tileSet, const std::vector<int>& markedClasses, float tileSize);
+    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, float tileSize);
 
     // Loads map data so positions can be looked up
     // Load all maps at the start or load the new map when a actor enters it - duplicate calls dont matter

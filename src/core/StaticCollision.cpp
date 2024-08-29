@@ -64,7 +64,7 @@ namespace magique
         }
     }
 
-    void LoadGlobalTileset(const TileSet& tileSet, const std::vector<int>& markedClasses, const float tileSize)
+    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float tileSize)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (data.tileSet != nullptr)

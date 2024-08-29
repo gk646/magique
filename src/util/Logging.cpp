@@ -14,7 +14,7 @@ namespace magique
 
     void LogInternal(const LogLevel level, const char* file, const int line, const char* msg, va_list args)
     {
-#  ifndef MAGIQUE_LOGGING
+#ifndef MAGIQUE_LOGGING
         if (level < LEVEL_ERROR)
         {
             return;
@@ -83,7 +83,7 @@ namespace magique
         }
     }
 
-    void Log(LogLevel level, const char* msg, ...)
+    void Log(const LogLevel level, const char* msg, ...)
     {
         va_list args;
         va_start(args, msg);
@@ -91,7 +91,7 @@ namespace magique
         va_end(args);
     }
 
-    void LogEx(LogLevel level, const char* file, const int line, const char* msg, ...)
+    void LogEx(const LogLevel level, const char* file, const int line, const char* msg, ...)
     {
         va_list args;
         va_start(args, msg);
