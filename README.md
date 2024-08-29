@@ -20,6 +20,7 @@ Most notable features:
     - _**_Fully documented headers_**_ and GitHub wiki
     - Multiple example games included (see examples/)
     - Beginner-friendly public API optimized for usability
+    - Robust logging and error handling with debugger support
 - **Fast and modern**
     - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
     - Explicitly _**optimized for compile time**_ internally and externally!

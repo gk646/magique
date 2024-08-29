@@ -28,7 +28,8 @@ enum class MapID : uint8_t
 {
     LEVEL_1 = 1,
     LEVEL_2,
-    LEVEL_3
+    LEVEL_3,
+    LEVEL_4
 };
 
 enum class StorageID
@@ -42,6 +43,7 @@ enum class HandleID
     LEVEL_1,
     LEVEL_2,
     LEVEL_3,
+    LEVEL_4,
     MAPS_END = 10,
     TILESHEET,
     TILE_SET,

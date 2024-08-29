@@ -215,30 +215,56 @@ namespace magique
                     LOG_WARNING("Failed to read asset image index file");
                     return true;
                 }
-                char buff[64]{0};
+
+                // Read file
+                char buff[64]{};
                 fread(buff, 64, 1, file);
                 fclose(file);
 
+                // Detect format
                 if (strncmp(buff, "MAGIQUE_INDEX_FILE", 18) != 0)
                 {
                     LOG_WARNING("Failed to read asset image index file");
                     return true;
                 }
-                char* ptr = &buff[20];
+
+                char* ptr = &buff[20]; // Skip format
+
+                // Check assets
                 cxstructs::str_skip_char(ptr, ':', 1);
                 const int assets = cxstructs::str_parse_int(ptr);
+                if (assets == -1) // empty
+                    return true;
+
+                // Check Size
                 cxstructs::str_skip_char(ptr, ':', 1);
                 const int size = cxstructs::str_parse_int(ptr);
                 if (assets == 0 || size == 0) // parse error
                 {
                     LOG_WARNING("Failed to read asset image index file");
-
                     return true;
                 }
-                if (assets == -1) // empty
+
+                // Check mode (only same mode allowed)
+                cxstructs::str_skip_char(ptr, ':', 1);
+                const int mode = cxstructs::str_parse_int(ptr);
+#ifdef NDEBUG
+                if (mode == 0) // Debug mode
+                {
                     return true;
+                }
+#else
+                if (mode == 1) // Release mode
+                {
+                    return true;
+                }
+#endif
+
+                // Actually check size of all assets
                 vector<fs::path> pathList;
                 CreatePathList(path.string().c_str(), pathList);
+
+                // Count mismatch
                 if (pathList.size() != assets)
                     return true;
 
@@ -247,13 +273,14 @@ namespace magique
                 {
                     totalSize += static_cast<int>(fs::file_size(assetPath));
                 }
+                // Now only if the size is equal we dont regenerate it!
                 return totalSize != size;
             }
         }
         return true;
     }
 
-    void CreateIndexFile(const char* directory, int asset, int totalSize)
+    void CreateIndexFile(const char* directory, int asset, const int totalSize)
     {
         char filePath[512] = {0};
         snprintf(filePath, sizeof(filePath), "%s/index.magique", directory);
@@ -264,14 +291,17 @@ namespace magique
             LOG_WARNING("Failed to create index file: %s", filePath);
             return;
         }
-
         if (asset == 0)
             asset = -1; // empty
 
         char buffer[128] = {0}; // Buffer to hold the content
-        snprintf(buffer, sizeof(buffer), "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\n", asset, totalSize);
-
-        size_t bytesWritten = fwrite(buffer, sizeof(char), strlen(buffer), file);
+        const auto* fmt = "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\nRelease:%d\n";
+#ifdef NDEBUG // Release mode
+        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 1);
+#else
+        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 0);
+#endif
+        const size_t bytesWritten = fwrite(buffer, sizeof(char), strlen(buffer), file);
         if (bytesWritten != strlen(buffer))
         {
             LOG_WARNING("Failed to write to index file: %s", filePath);

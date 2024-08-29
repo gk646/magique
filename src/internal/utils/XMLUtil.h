@@ -54,4 +54,17 @@ inline bool XMLLineContainsTag(const char* line, const char* tag)
     return false;
 }
 
+inline bool XMLLineContainsCloseTag(const char* line)
+{
+    int i = 0;
+    while (line[i] != '\n' && line[i] != '\0')
+    {
+        if (strncmp(&line[i], "/>", 2) == 0)
+        {
+            return true;
+        }
+        i += 2;
+    }
+    return false;
+}
 #endif //MAGIQUE_XMLUTIL_H

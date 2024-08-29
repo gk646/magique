@@ -9,7 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // A tilemap defines the actual map data by storing numbers that correspond to textures.
-// Thus to draw a tilemap a tilesheet is needed that converts those numbers into visuals.
+// Thus, to draw a tilemap a tilesheet is needed that converts those numbers into visuals.
 // The numbering is top to bottom with both tile and objects layers having own counters
 // .....................................................................
 
@@ -19,14 +19,14 @@ namespace magique
     {
         //----------------- TILES -----------------//
 
-        // Returns a modifiable reference to the tileindex at the given position
+        // Returns a modifiable reference to the tile index at the given position
         uint16_t& getTileIndex(int x, int y, int layer);
 
-        // Returns a the tileindex at the given position
+        // Returns the tile index at the given position
         [[nodiscard]] uint16_t getTileIndex(int x, int y, int layer) const;
 
         // Returns the pointer to the start of the layer
-        // layer is from top to bottom (in the editor) but counting only tile layers
+        // layers are counted from top to bottom (in the editor), only counting tile layers
         [[nodiscard]] const uint16_t* getLayerData(int layer) const;
 
         // Returns the width of each layer
@@ -41,13 +41,13 @@ namespace magique
         //----------------- OBJECTS -----------------//
 
         // Returns a modifiable reference to the objects in the given layer
-        // layer is from top to bottom (in the editor) but counting only object layers
+        // layers are counted from top to bottom (in the editor), only counting object layers!
         std::vector<TileObject>& getObjects(int layer);
 
     private:
         explicit TileMap(const Asset& asset);
         std::vector<TileObject> objectData[MAGIQUE_MAX_OBJECT_LAYERS];
-        uint16_t* tileData = nullptr;
+        uint16_t* tileData = nullptr; // Contiguous array for map data
         uint16_t width = 0;
         uint16_t height = 0;
         uint8_t objectLayers = 0;

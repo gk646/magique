@@ -17,6 +17,10 @@ struct TileLoader final : ITask<AssetContainer>
         RegisterHandle(handle, HandleID::LEVEL_2);
         handle = RegisterTileMap(res.getAsset("Level3.tmx"));
         RegisterHandle(handle, HandleID::LEVEL_3);
+        handle = RegisterTileMap(res.getAsset("Level4.tmx"));
+        RegisterHandle(handle, HandleID::LEVEL_4);
+
+        // Load TileSet
         handle = RegisterTileSet(res.getAsset("Dungeon.tsx"));
         RegisterHandle(handle, HandleID::TILE_SET);
     }
