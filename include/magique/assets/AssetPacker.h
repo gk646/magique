@@ -12,7 +12,7 @@
 // Just add it before you start the game but remove it for release builds!
 // Note: You do NOT need to call the 'LoadAssetImage' function if you use the game template
 // Note: To force a recompile just delete the index.magique in the root of the resource directory
-//        -> this is necessary e.g. when your changes do not change the filesize of any file
+//        -> this is necessary e.g. when your changes do not change the file size of any file
 // .....................................................................
 
 namespace magique

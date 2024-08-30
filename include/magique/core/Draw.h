@@ -47,7 +47,7 @@ namespace magique
 
     // Draws the given text aligned so that it ends on the given x positions
     // Drop in replacement for DrawTextEx()
-    void DrawRighBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
+    void DrawRightBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
     //----------------- SHAPES -----------------//
 

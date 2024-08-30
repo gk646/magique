@@ -4,34 +4,36 @@
 #include <initializer_list>
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
+#include <magique/internal/Macros.h>
+INC_ALGO()
 
 //-----------------------------------------------
 // Particle Module
 //-----------------------------------------------
 // .....................................................................
 // This module is for creating particle effects. The interface is inspired by Godot4's CPUParticle2D node.
-// You create a emitter first (either Entity or Screen) and then create the particle effect by calling
+// You create an emitter first (either Entity or Screen) and then create the particle effect by calling
 // the global Create() function with that emitter. An emitter can (and should) be reused as often as you like.
-// Note: Changing the emitter doesnt change already spawned particles (except the tick functions)
+// Note: Changing the emitter doesn't change already spawned particles (except the tick functions)
 // Uses the builder pattern for syntactic sugar.
-// To begin create a ScreenEmitter emitter; and cusotmize it: emitter.setEmissionPosition(150,150).set...
+// To begin create a ScreenEmitter emitter; and customize it: emitter.setEmissionPosition(150,150).set...
 // Can currently handle well up to 250'000 screen particles at the same time on modern systems
 // .....................................................................
 
 namespace magique
 {
     // Renders all active particles
-    // Note: Needs to be called manually - so you can control at which layer particles are renderd
+    // Note: Needs to be called manually - so you can control at which layer particles are rendered
     void DrawParticles();
 
     //----------------- CREATE -----------------//
 
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
-    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (dont pass stack values)
+    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     void CreateScreenParticle(const ScreenEmitter& emitter, int amount = 1);
 
-    // Adds a entity particle to the ECS
-    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (dont pass stack values)
+    // Adds an entity particle to the ECS
+    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     entt::entity CreateEntityParticle(const EntityEmitter& emitter, int amount = 1);
 
     //----------------- EMITTERS -----------------//
@@ -54,11 +56,11 @@ namespace magique
         using TickFunction = std::function<void(ScreenParticle& p, float t)>;
 
         //----------------- EMISSION SHAPE -----------------//
-        // Note: Emmision shape determines where particles can spawn
-        //       Particles can spawn anywhere insdide the emission shape randomly!
+        // Note: Emission shape determines where particles can spawn
+        //       Particles can spawn anywhere inside the emission shape randomly!
 
         // Sets the position of the emission shape
-        // Topleft for rect, middle point for circle, first point for triangle
+        // Top left for rect, middle point for circle, first point for triangle
         // Default: (0,0)
         EmitterBase& setEmissionPosition(float x, float y);
 
@@ -80,7 +82,7 @@ namespace magique
         EmitterBase& setParticleShapeCircle(float radius);
 
         // Makes the entity collidable with others
-        // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
+        // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
         EmitterBase& setParticleShapeTri(Point p2, Point p3);
 
         // Sets the color of emitted particles
@@ -144,13 +146,13 @@ namespace magique
         // Default: nullptr
         EmitterBase& setScaleFunction(ScaleFunction func);
 
-        // Sets a arbitrary tick function that is also called every tick for the particles lifetime
+        // Sets an arbitrary tick function that is also called every tick for the particles lifetime
         // Default: nullptr
         EmitterBase& setTickFunction(const TickFunction& func);
 
         //----------------- HELPERS -----------------//
 
-        // Returns a smoothstep scale function
+        // Returns a smooth step scale function
         static ScaleFunction GetSmoothStep();
 
     private:
@@ -160,7 +162,7 @@ namespace magique
     };
 
 
-    // A simple and faster particle that doesnt interact with anything
+    // A simple and faster particle that doesn't interact with anything
     struct ScreenEmitter final : EmitterBase
     {
     };

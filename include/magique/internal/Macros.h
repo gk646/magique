@@ -8,6 +8,13 @@
 // Dont look here
 // ................................................................................
 
+//----------------- ASSERTS -----------------//
+
+namespace magique::internal
+{
+    void AssertHandler(const char* expr, const char* file, int line, const char* message);
+} // namespace magique::internal
+
 //----------------- SCRIPTING -----------------//
 
 #define PARENS ()
@@ -36,25 +43,26 @@
 #if !defined(_DEBUG) || defined(NDEBUG)
 #define MAGIQUE_ASSERT(expr, message) ((void)0)
 #else
-#define MAGIQUE_ASSERT(expr, message) ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
+#define MAGIQUE_ASSERT(expr, message)                                                                                   \
+    ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
 #endif
 
-namespace magique::internal
-{
-    void AssertHandler(const char* expr, const char* file, int line, const char* message);
-} // namespace magique::internal
+//----------------- ASSET LOADING -----------------//
 
-#ifdef _MSC_VER
-#define IGNORE_WARNING(num) \
-__pragma(warning(push)) \
-__pragma(warning(disable : num))
+#define ASSET_CHECK(asset)                                                                                              \
+    if (!AssetBaseCheck(asset))                                                                                         \
+        return handle::null;
+#define ASSET_IS_SUPPORTED_IMAGE_TYPE(asset)                                                                            \
+    if (!IsSupportedImageFormat(asset.getExtension()))                                                                  \
+        return handle::null;
 
-#define UNIGNORE_WARNING() \
-__pragma(warning(pop))
-#else
-#define IGNORE_WARNING(num)
-#define UNIGNORE_WARNING()
-#endif
+#define ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(width)                                                                     \
+    if (width > MAGIQUE_TEXTURE_ATLAS_SIZE)                                                                             \
+    {                                                                                                                   \
+        LOG_WARNING("SpriteSheet width would exceed texture atlas width! Skipping: %s", asset.getFileName(true));       \
+        UnloadImage(image);                                                                                             \
+        return handle::null;                                                                                            \
+    }
 
 //----------------- BUILDING -----------------//
 
@@ -64,5 +72,13 @@ __pragma(warning(pop))
 #define INC_ALGO()
 #endif
 
+#ifdef _MSC_VER
+#define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
+
+#define UNIGNORE_WARNING() __pragma(warning(pop))
+#else
+#define IGNORE_WARNING(num)
+#define UNIGNORE_WARNING()
+#endif
 
 #endif //MAGIQUE_MACROS_H

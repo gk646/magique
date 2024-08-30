@@ -8,7 +8,7 @@
 // TileSet
 //-----------------------------------------------
 // .....................................................................
-// The tileset stores meta data about tiles and allows to retrieve it
+// The tileset stores metadata about tiles and allows to retrieve it
 // .....................................................................
 
 namespace magique

@@ -10,8 +10,8 @@
 
 #include "internal/headers/CollisionPrimitives.h"
 
-constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
+constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 
 namespace magique
 {
@@ -196,8 +196,8 @@ namespace magique
             sheet.width *= -1;
         }
 
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
+        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 
         const float texCoordLeft = offsetX / atlasWidth;
         const float texCoordRight = (offsetX + texWidth) / atlasWidth;
@@ -262,8 +262,8 @@ namespace magique
         rlColor4ub(255, 255, 255, 255);
         rlNormal3f(0.0f, 0.0f, 1.0f);
 
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT);
+        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
         for (int i = 0; i < diffY; ++i)
         {
             float screenX = startX;
@@ -303,7 +303,7 @@ namespace magique
         DrawTextEx(f, txt, {pos.x - width / 2.0F, pos.y}, fs, spc, c);
     }
 
-    void DrawRighBoundText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+    void DrawRightBoundText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
                            const Color c)
     {
         const auto width = MeasureTextEx(f, txt, fs, spc).x;

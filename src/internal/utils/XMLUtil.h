@@ -1,5 +1,5 @@
 #ifndef MAGIQUE_XMLUTIL_H
-#define XMLUTIL_H
+#define MAGIQUE_XMLUTIL_H
 
 #include <cxutil/cxstring.h>
 
@@ -16,13 +16,13 @@ T XMLGetValueInLine(const char* line, const char* name, T orElse)
             if (line[i] == '=' && line[i + 1] == '"')
             {
                 i += +2; // Skip name + ="
-                if constexpr (std::is_same_v<T, int>)
+                if constexpr (std::is_integral_v<T>)
                 {
-                    return cxstructs::str_parse_int(&line[i]);
+                    return static_cast<T>(cxstructs::str_parse_int(&line[i]));
                 }
-                else if constexpr (std::is_same_v<T, float>)
+                else if constexpr (std::is_floating_point_v<T>)
                 {
-                    return cxstructs::str_parse_float(&line[i]);
+                    return static_cast<T>(cxstructs::str_parse_float(&line[i]));
                 }
                 else if constexpr (std::is_same_v<T, const char*>)
                 {

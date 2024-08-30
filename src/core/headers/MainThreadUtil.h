@@ -1,7 +1,7 @@
 #ifndef RENDERUTIL_H
 #define RENDERUTIL_H
 
-void SetTargetFPS(const int fps) // raylib function implemented here
+inline void SetTargetFPS(const int fps) // raylib function implemented here
 {
     auto& config = magique::global::ENGINE_CONFIG.timing;
     if (fps < 1)
@@ -15,7 +15,7 @@ void SetTargetFPS(const int fps) // raylib function implemented here
     }
 }
 
-int GetFPS()
+inline int GetFPS()
 {
     auto& config = magique::global::ENGINE_CONFIG.timing;
 #define FPS_BUFF_SIZE 15
@@ -27,7 +27,7 @@ int GetFPS()
 
     const double currentTime = GetTime();
 
-    const int currFPS = static_cast<int>(std::ceil(static_cast<double>(config.frameCounter) / (currentTime - lastTime)));
+    const int currFPS = static_cast<int>(std::round(static_cast<double>(config.frameCounter) / (currentTime - lastTime)));
 
     sumFPS -= fpsBuffer[index];
     fpsBuffer[index] = currFPS;
@@ -38,7 +38,7 @@ int GetFPS()
     {
         count++;
     }
-    const int ret = static_cast<int>(std::ceil(static_cast<float>(sumFPS) / count));
+    const int ret = static_cast<int>(std::round(static_cast<float>(sumFPS) / count));
 
     lastTime = currentTime;
     config.frameCounter = 0;
@@ -47,12 +47,11 @@ int GetFPS()
 }
 
 // Get time in seconds for last frame drawn (delta time)
-float GetFrameTime()
+inline float GetFrameTime()
 {
     const auto& perf = magique::global::PERF_DATA;
     return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
 }
-
 
 namespace magique
 {

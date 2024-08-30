@@ -38,10 +38,7 @@
 //----------------- ASSETS -----------------//
 
 // Maximum width of any texture atlas
-#define MAGIQUE_TEXTURE_ATLAS_WIDTH 8192
-
-// Maximum height of any texture atlas
-#define MAGIQUE_TEXTURE_ATLAS_HEIGHT 8192
+#define MAGIQUE_TEXTURE_ATLAS_SIZE 8192
 
 // Maximum amount of tile layers in tilemaps
 #define MAGIQUE_MAX_TILE_LAYERS 3

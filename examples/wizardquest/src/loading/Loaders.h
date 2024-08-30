@@ -39,10 +39,10 @@ struct EntityLoader final : ITask<AssetContainer>
 {
     void execute(AssetContainer &res) override
     {
-        SetScript(PLAYER, new PlayerScript());
+        SetEntityScript(PLAYER, new PlayerScript());
 
         RegisterEntity(PLAYER,
-                       [](entt::entity e)
+                       [](entt::entity e, EntityType type)
                        {
                            GiveActor(e);
                            GiveCamera(e);

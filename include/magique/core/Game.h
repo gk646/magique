@@ -12,7 +12,7 @@ IGNORE_WARNING(4100) // unreferenced formal parameter
 // Core game class you should subclass. You then override and implement the methods which are called automatically.
 // All raylib timing and input functions work just as normal and have the same effect (e.g. SetTargetFPS(),...)
 // Note: The asset image and game config are loaded with their default names if not specified.
-//       To get a asset image you have to call assets/AssetPacker.h::CompileAssetImage()! (see module for more info)
+//       To get an asset image you have to call assets/AssetPacker.h::CompileAssetImage()! (see module for more info)
 //
 // You should create your game and call run in the main function:
 //      MyGameClass game{};
@@ -54,7 +54,7 @@ namespace magique
         virtual void updateGame(GameState gameState) {}
 
         // Called each render tick - passed the current gamestate and camera
-        // Default: called 90 times per second (changable: SetTargetFPS())
+        // Default: called 90 times per second - changed by SetTargetFPS()
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
 
         // Called each render tick after drawGame()

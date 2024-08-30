@@ -9,7 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // A tilemap defines the actual map data by storing numbers that correspond to textures.
-// Thus, to draw a tilemap a tilesheet is needed that converts those numbers into visuals.
+// Thus, to draw a tilemap a TileSheet is needed that converts those numbers into visuals.
 // The numbering is top to bottom with both tile and objects layers having own counters
 // .....................................................................
 

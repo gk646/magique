@@ -7,9 +7,10 @@
 // Components Module
 //-----------------------------------------------
 // ................................................................................
-// These are the built in ECS components
-// Note that EntityID and MapID are both user defined types. They are used to identify different maps (levels, zones...)
-// and entity types (classes...).
+// These are the built-in ECS components
+// Note that EntityID and MapID are both user defined types. They are used to identify different maps (levels, zones,...)
+// and entity types (classes, groups, ...).
+// Note: the 'C' stands for Component
 // ................................................................................
 
 namespace magique
@@ -34,14 +35,14 @@ namespace magique
     {
         float x, y;        // Position of the top left corner!
         MapID map;         // The current map id of the entity
-        EntityType type;     // Type of the entity
-        uint16_t rotation; // Rotation in degress clockwise starting at 12 o'clock - applied to collision if present
+        EntityType type;   // Type of the entity
+        uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
     };
 
     struct CollisionC final
     {
         float p1 = 0.0F;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        float p2 = 0.0F;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
         float p3 = 0.0F;                   //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F;                   //                                                   / TRIANGLE: offsetY2
         int16_t anchorX = 0;               // Rotation anchor point for the hitbox
@@ -49,37 +50,14 @@ namespace magique
         uint8_t layerMask = DEFAULT_LAYER; // Entities only collide if they share any layer
         Shape shape = Shape::RECT;         // Shape
 
-        // Returns true if the entity has this layer enabled
-        [[nodiscard]] bool getIsLayerEnabled(CollisionLayer layer) const;
+        // Returns true if the entity has this layer is set
+        [[nodiscard]] bool getIsLayerSet(CollisionLayer layer) const;
 
         // Sets the collision layer to the given value
         void setLayer(CollisionLayer layer, bool enabled);
 
         // Removes ALL collisions layers
         void unsetAll();
-    };
-
-    template <typename ActionStateEnum = ActionState> // Supply your own action state enum if needed
-    struct AnimationC final
-    {
-        Animation animations[ActionStateEnum::STATES_END]{}; // Custom enums need that end value
-        uint16_t currentSpriteCount = 0;
-        ActionStateEnum lastActionState;
-
-        // Sets the animation for this action state
-        void addAnimation(ActionStateEnum state, SpriteSheet sheet, uint16_t frameDuration);
-
-        // Removes the animation for this state
-        void removeAnimation(ActionStateEnum state);
-
-        // Draws the current sprite
-        void draw();
-
-        // Progresses the sprite - should be called from the update method to be frame rate independant
-        void update();
-
-        // Sets a new action state
-        void setActionState(ActionStateEnum actionState);
     };
 
     // If added entity will emit light
@@ -99,46 +77,24 @@ namespace magique
         Shape shape;
     };
 
+    // Animation component references an animation and saves its current state
+    struct AnimationC final
+    {
+        // Returns the current region to draw
+        [[nodiscard]] TextureRegion getCurrentFrame() const;
+
+        // Progresses the animations - has to be called from the update method to be frame rate independent
+        void update();
+
+        // Sets a new action state - automatically reset the spritecount to 0 when a state change happens
+        void setAnimationState(AnimationState state);
+
+        const EntityAnimation* entityAnimation = nullptr; // Always valid
+        uint16_t spriteCount = 0;
+        AnimationState lastState{};
+        AnimationState currentState{};
+    };
+
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
-
-namespace magique
-{
-    template <typename ActionStateEnum>
-    void AnimationC<ActionStateEnum>::addAnimation(ActionStateEnum state, SpriteSheet sheet, uint16_t frameDuration)
-    {
-        ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
-        auto& anim = animations[(int)state];
-        anim.duration = frameDuration;
-        anim.sheet = sheet;
-    }
-    template <typename ActionStateEnum>
-    void AnimationC<ActionStateEnum>::removeAnimation(ActionStateEnum state)
-    {
-        ASSERT(state < ActionStateEnum::STATES_END, "Given enum is bigger than the max value!");
-        auto& anim = animations[(int)state];
-        anim.duration = UINT16_MAX;
-        anim.sheet = SpriteSheet{};
-    }
-    template <typename ActionStateEnum>
-    void AnimationC<ActionStateEnum>::draw()
-    {
-        auto frame = animations[3].getCurrentTexture(currentSpriteCount);
-    }
-    template <typename ActionStateEnum>
-    void AnimationC<ActionStateEnum>::update()
-    {
-        currentSpriteCount++;
-    }
-    template <typename ActionStateEnum>
-    void AnimationC<ActionStateEnum>::setActionState(ActionStateEnum actionState)
-    {
-        if (lastActionState != actionState)
-        {
-            lastActionState = actionState;
-            currentSpriteCount = 0;
-        }
-    }
-} // namespace magique
 #endif // MAGIQUE_COMPONENTS_H

@@ -23,7 +23,7 @@ namespace magique
     int StringDistance(const std::string& s1, const std::string& s2, bool caseSensitive = false);
 
     // Returns the similarity (0.0 - 1.0) of the two strings based on their distance on the keyboard
-    // This is useful for user input as it handles common mistakes better - not case sensitive per design
+    // This is useful for user input as it handles common mistakes better - not case-sensitive per design
     // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
     float StringDistancePhysical(const char* s1, const char* s2, KeyLayout layout = KeyLayout::QWERTY);
     float StringDistancePhysical(const std::string& s1, const std::string& s2, KeyLayout layout = KeyLayout::QWERTY);
@@ -41,10 +41,10 @@ namespace magique
     int ReplaceInBuffer(char* buffer, int bufferSize, const char* keyword, const char* replacement);
 
     // Inserts newlines so that each line is drawn within the specified width in-place
-    // Returns the number of linbreaks inserted
+    // Returns the number of linebreak inserted
     int InsertNewlines(char* buffer, int bufferSize, float width, const Font& font, float fontSize);
 
-    // Returns a vector of strings from splitting the string around all occurences of delim
+    // Returns a vector of string containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
     std::vector<std::string> SplitString(const char* s, char delim);
     std::vector<std::string> SplitString(const std::string& s, char delim);
@@ -61,9 +61,27 @@ namespace magique
 
     //----------------- HASHING -----------------//
 
-    // Uses fnav32 to hash the string
-    uint32_t HashString(char const* s) noexcept;
+    // Uses fnav32a1 to hash the string
+    constexpr uint32_t HashString(char const* s) noexcept;
 
+} // namespace magique
+
+
+//----------------- IMPLEMENTATION -----------------//
+
+
+namespace magique
+{
+    constexpr uint32_t HashString(char const* s) noexcept
+    {
+        uint32_t hash = 2166136261U;
+        while (*s != 0)
+        {
+            hash ^= static_cast<uint32_t>(*s++);
+            hash *= 16777619U;
+        }
+        return hash;
+    }
 
 } // namespace magique
 

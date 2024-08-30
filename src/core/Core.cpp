@@ -1,7 +1,6 @@
 #include <magique/core/Core.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/util/JobSystem.h>
-#include <magique/internal/Macros.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/TextureAtlas.h"
@@ -21,12 +20,6 @@ namespace magique
             return true;
         }
         initCalled = true;
-
-        for (int i = 0; i < ENTITIES_2 + 1; ++i)
-        {
-            global::TEXTURE_ATLASES.emplace_back();
-        }
-
         global::ENGINE_CONFIG.init();
         global::SHADERS.init(); // Loads the shaders and
         global::ENGINE_DATA.camera.zoom = 1.0F;
@@ -100,7 +93,12 @@ namespace magique
 
     MapID GetCameraMap()
     {
-        MAGIQUE_ASSERT(global::ENGINE_DATA.cameraMap != MapID(UINT8_MAX), "No camera exists!");
+#ifdef MAGIQUE_DEBUG
+        if (global::ENGINE_DATA.cameraMap == MapID(UINT8_MAX))
+        {
+            LOG_WARNING("No camera exists!");
+        }
+#endif
         return global::ENGINE_DATA.cameraMap;
     }
 

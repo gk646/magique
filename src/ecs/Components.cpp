@@ -1,8 +1,21 @@
+#include <magique/core/Animations.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
 
 namespace magique
 {
+    //----------------- ANIMATION -----------------//
+
+    TextureRegion AnimationC::getCurrentFrame() const
+    {
+        const auto animation = entityAnimation->getCurrentAnimation(currentState);
+        return animation.getCurrentFrame(spriteCount);
+    }
+
+    void AnimationC::update() { ++spriteCount; }
+
+    //----------------- COLLISION -----------------//
+
     bool isValidLayer(const CollisionLayer layer)
     {
         const auto layerNum = static_cast<uint8_t>(layer);
@@ -12,6 +25,16 @@ namespace magique
     }
 
     void CollisionC::unsetAll() { layerMask = 0; }
+
+    void AnimationC::setAnimationState(const AnimationState state)
+    {
+        if (state != currentState)
+        {
+            lastState = currentState;
+            currentState = state;
+            spriteCount = 0;
+        }
+    }
 
     void CollisionC::setLayer(const CollisionLayer layer, const bool enabled)
     {
@@ -32,7 +55,7 @@ namespace magique
         }
     }
 
-    bool CollisionC::getIsLayerEnabled(const CollisionLayer layer) const
+    bool CollisionC::getIsLayerSet(const CollisionLayer layer) const
     {
         if (isValidLayer(layer))
         {

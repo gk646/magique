@@ -85,13 +85,15 @@ namespace magique
         return object;
     }
 
+    //-------------- TILEMAP --------------
+
     TileMap::TileMap(const Asset& asset)
     {
         auto* data = const_cast<char*>(asset.data); // keep user api const
         cxstructs::str_skip_char(data, '\n', 1);    // Skip xml tag
 
-        width = XMLGetValueInLine<int>(data, "width", UINT16_MAX);
-        height = XMLGetValueInLine<int>(data, "height", UINT16_MAX);
+        width = XMLGetValueInLine<uint16_t>(data, "width", UINT16_MAX);
+        height = XMLGetValueInLine<uint16_t>(data, "height", UINT16_MAX);
 
         if (width == -1 || height == -1)
         {

@@ -5,7 +5,6 @@
 #include <entt/entity/fwd.hpp>
 #include <magique/fwd.hpp>
 
-
 //-----------------------------------------------
 // Core Module
 //-----------------------------------------------
@@ -34,7 +33,7 @@ namespace magique
     // Default: 1000
     void SetUpdateDistance(int distance);
 
-    // Adds aditional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
+    // Adds additional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
     // Useful for when you have large effects or entities
     // Default: 250
     void SetCameraViewPadding(int distance);
@@ -78,7 +77,7 @@ namespace magique
     Camera2D& GetCamera();
 
     // Returns the map of the camera - you should probably draw this map
-    // Failure: returns UINT8_MAX if there no camera
+    // Failure: returns UINT8_MAX if there is no camera
     MapID GetCameraMap();
 
     // Returns the current position (target) of the camera

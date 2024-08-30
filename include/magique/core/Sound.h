@@ -10,8 +10,8 @@
 // .....................................................................
 // Supported Sound and Music formats: mp3, wav, flac, ogg (all raylib formats)
 // Sound:       Smaller sound effects up to 10 seconds (recommended)
-// Sound2D:     Spatial sound with volume regulation based on camera
-// Music:       Longer sound tracks - streamed from compressed memory (should be .mp3)
+// Sound2D:     Spatial sound with volume regulation based on distance to the camera
+// Music:       Longer soundtracks - streamed from compressed memory (should be .mp3)
 // Playlist:    Aggregation of music elements
 
 // Note: The volume for each track is relative to the global volume
@@ -49,7 +49,7 @@ namespace magique
     void PlaySound2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
 
     // Plays the given sound attached to the given coordinates
-    // IMPORTANT: Given references MUST remain valid for the full duration of the sound
+    // IMPORTANT: Given references MUST outlive the duration of the sound!
     void PlaySound2D(const Sound& sound, float& x, float& y, float volume = 1.0F);
 
     // Stops playing the first instance of this sound
@@ -72,8 +72,8 @@ namespace magique
     //----------------- PLAYLIST -----------------//
 
     // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
-    // Only pass a playlist with permament storage (either use RegisterPlaylist() or allocate it)
-    // A playlist cannot be played multiple times simultanously - plays (loops) until stopped
+    // Only pass a playlist with permanent storage (either use RegisterPlaylist() or allocate it)
+    // A playlist cannot be played multiple times simultaneously - plays (loops) until stopped
     void PlayPlaylist(Playlist* playlist, float volume = 1.0F);
 
     // Stops playing the playlist

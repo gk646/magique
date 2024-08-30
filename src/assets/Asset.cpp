@@ -24,7 +24,11 @@ namespace magique
         return strncmp(path, prefix, len) == 0;
     }
 
-    bool Asset::endsWith(const char* suffix) const { return false; }
+    bool Asset::endsWith(const char* suffix) const
+    {
+        MAGIQUE_ASSERT(suffix != nullptr, "Passing nullptr");
+        return false;
+    }
 
     bool Asset::contains(const char* str) const { return false; }
 

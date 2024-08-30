@@ -5,8 +5,9 @@
 // Asset
 //-----------------------------------------------
 // ................................................................................
-// Every resources thats loaded into the game is an asset first.
-// By using the AssetLoad
+// Every loaded resources into the game is treated as asset.
+// At startup the asset image specified in Game::run() is loaded
+// Single assets become accessible by adding loading tasks that operate on the asset container
 // ................................................................................
 
 namespace magique
@@ -33,12 +34,12 @@ namespace magique
         //----------------- GETTERS -----------------//
         // IMPORTANT: The string returned by these methods is only correct until any of these methods are called again
 
-        // Returns a the direct file name without the asset - This means all characters after the last separator ("/")
+        // Returns the direct file name without the asset - This means all characters after the last separator ("/")
         // Failure: returns nullptr if the asset's path is empty or no filename can be found
         //      extension - include file extension or not (".png",".wav", ...)
         [[nodiscard]] const char* getFileName(bool extension = true) const;
 
-        // Returns the file extension of the asset - This means all characters after the last dot (".")
+        // Returns the file extension of the asset - This means all characters from the end to the last dot e.g. '.png'
         // Failure: returns nullptr if the asset's path is empty or has no extension
         [[nodiscard]] const char* getExtension() const;
 
