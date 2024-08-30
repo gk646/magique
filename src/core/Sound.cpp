@@ -1,6 +1,7 @@
 #include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
 #include <magique/util/Logging.h>
+#include <magique/internal/Macros.h>
 
 #include "internal/globals/AudioPlayer.h"
 
@@ -8,15 +9,16 @@ namespace magique
 {
     void SetSoundMasterVolume(const float volume)
     {
+        MAGIQUE_ASSERT(volume >= 0.0F && volume <= 1.0F, "Volume must be between 0.0 and 1.0");
         auto& ap = global::AUDIO_PLAYER;
         ap.soundVolume = volume;
         for (auto& s : ap.sounds)
         {
-            ::SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
+            SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
         }
         for (auto& s : ap.sounds2D)
         {
-            ::SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
+            SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
         }
     }
 
@@ -24,11 +26,12 @@ namespace magique
 
     void SetMusicMasterVolume(const float volume)
     {
+        MAGIQUE_ASSERT(volume >= 0.0F && volume <= 1.0F, "Volume must be between 0.0 and 1.0");
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
         for (auto& t : ap.tracks)
         {
-            ::SetMusicVolume(t.music, ap.getMusicVolume(t.playBackVolume));
+            SetMusicVolume(t.music, ap.getMusicVolume(t.playBackVolume));
         }
     }
 
@@ -38,7 +41,7 @@ namespace magique
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
+        PlaySoundRaylib(alias);
         global::AUDIO_PLAYER.sounds.emplace_back(alias, volume);
     }
 
@@ -52,7 +55,7 @@ namespace magique
         }
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
+        PlaySoundRaylib(alias);
         auto& pos = GetRegistry().get<PositionC>(entity);
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
     }
@@ -61,7 +64,7 @@ namespace magique
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
+        PlaySoundRaylib(alias);
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &x, &y, x, y, true);
     }
 
@@ -131,8 +134,7 @@ namespace magique
         global::AUDIO_PLAYER.startPlaylist(*playlist);
     }
 
-    void StopPlaylist(Playlist& playlist) {
-global::AUDIO_PLAYER.stopPlaylist(playlist); }
+    void StopPlaylist(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }
 
     void ForwardPlaylist(Playlist& playlist)
     {

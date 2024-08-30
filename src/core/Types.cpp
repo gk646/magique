@@ -5,9 +5,21 @@
 
 namespace magique
 {
-    int Animation::getCurrentTexture(const uint16_t spriteCount) const
+    TextureRegion SpriteSheet::getRegion(const int frame) const
     {
-        return spriteCount % sheet.frames * duration / duration;
+        TextureRegion region;
+        region.height = height;
+        region.width = width;
+        region.id = id;
+        region.offX = offX + frame * width;
+        region.offY = offY; // Same as only continuous pictures are supported
+        return region;
+    }
+
+    TextureRegion SpriteAnimation::getCurrentFrame(const uint16_t spriteCount) const
+    {
+        const int frame = spriteCount % sheet.frames * duration / duration;
+        return sheet.getRegion(frame);
     }
 
     //----------------- TILE OBJECT -----------------//
@@ -62,7 +74,6 @@ namespace magique
     ColliderInfo::ColliderInfo(const int data, const ColliderType type) : type(type), data(data) {}
 
     //----------------- COLLISION INFO -----------------//
-
 
     bool CollisionInfo::isColliding() const { return penDepth != 0.0F; }
 

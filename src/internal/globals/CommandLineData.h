@@ -62,7 +62,7 @@ namespace magique
                         const char* txt = suggestions[i]->name.c_str();
                         DrawTextEx(font, txt, {tx, sy}, fsize, 1.0F, DARKGRAY);
                         txt = suggestions[i]->description.c_str();
-                        DrawRighBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
+                        DrawRightBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
                     }
                 }
                 if (showCursor)

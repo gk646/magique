@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_ASSETCONTAINER_H
-#define MAGIQUE_ASSETCONTAINER_H
+#ifndef MAGIQUE_ASSET_CONTAINER_H
+#define MAGIQUE_ASSET_CONTAINER_H
 
 #include <vector>
 #include <magique/fwd.hpp>
@@ -25,7 +25,7 @@ namespace magique
         // Iterates the given directory and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
-        // Relative to the compiled image root e.g res/player/idle - compile("./res") - iterate("player/idle");
+        // Relative to the compiled image root e.g. res/player/idle - compile("./res") - iterate("player/idle");
         void iterateDirectory(const char* directory, const std::function<void(const Asset&)>& func) const;
 
         // Retrieves the first asset that matches the given path
@@ -52,4 +52,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_ASSETCONTAINER_H
+#endif //MAGIQUE_ASSET_CONTAINER_H

@@ -5,6 +5,7 @@
 #include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
+#include <magique/core/Animations.h>
 
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
@@ -18,17 +19,15 @@ namespace magique
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
-        if (type == static_cast<EntityType>(UINT16_MAX) || map.contains(type))
-        {
-            return false; // Invalid ID or already registered
-        }
+        if (map.contains(type))
+            LOG_WARNING("Overriding existing create function for entity: %d (enum value)", (int)type);
+        map[type] = createFunc;
 
-        map.insert({type, createFunc});
-        global::SCRIPT_DATA.padUpToEntity(type); // This assures its always valid to index with type
+        global::SCRIPT_DATA.padUpToEntity(type); // This assures it's always valid to index with type
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
-            b = 5;                                     // Suppress C4126
+            b = 5;                                     // Suppress unused variable
         }
         return true;
     }
@@ -60,7 +59,7 @@ namespace magique
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(ecs.entityID++));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(entity);
+            it->second(entity, type);
         }
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
@@ -86,7 +85,7 @@ namespace magique
         const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(id));
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(entity);
+            it->second(entity, type);
         }
         if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
@@ -119,7 +118,7 @@ namespace magique
         return false;
     }
 
-    void DestroyAllEntities(const std::initializer_list<EntityType>& ids)
+    void DestroyEntities(const std::initializer_list<EntityType>& ids)
     {
         auto& reg = internal::REGISTRY;
         auto& tickData = global::ENGINE_DATA;
@@ -195,6 +194,13 @@ namespace magique
     {
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, static_cast<int16_t>(anchorX),
                                                       static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::TRIANGLE);
+    }
+
+    AnimationC& GiveAnimation(const entt::entity entity, const EntityType type, const AnimationState startState)
+    {
+        const auto& animation = GetEntityAnimation(type);
+        auto comp = AnimationC{&animation, 0, startState, startState};
+        return internal::REGISTRY.emplace<AnimationC>(entity, comp);
     }
 
     void GiveCamera(const entt::entity entity) { internal::REGISTRY.emplace<CameraC>(entity); }

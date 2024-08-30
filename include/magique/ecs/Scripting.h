@@ -88,7 +88,7 @@ namespace magique
 
         //----------------- UTIL -----------------//
 
-        // Adds the given info on top the existing info for this entity - will be applied after all collisiona are resolved
+        // Adds the given info on top the existing info for this entity - will be applied after all collisions are resolved
         // Note: This essentially makes the other shape 'solid' preventing you from entering it!
         static void AccumulateCollision(entt::entity self, const CollisionInfo& collisionInfo);
     };
@@ -96,11 +96,11 @@ namespace magique
     // Sets a C++ script for this entity type
     // Subclass the EntityScript class and pass a new Instance()
     // Note: Entities still need a ScriptC component to react to scripts! Use "GiveScript" when creating
-    void SetScript(EntityType entity, EntityScript* script);
+    void SetEntityScript(EntityType entity, EntityScript* script);
 
     // Retrieves the script for the entity type
     // Failure: returns nullptr
-    EntityScript* GetScript(EntityType entity);
+    EntityScript* GetEntityScript(EntityType entity);
 
     // Calls the given event function on the given entity
     // Note: If you want to access non inherited methods you HAVE to pass your subclass type
@@ -127,7 +127,7 @@ namespace magique
     void magique::InvokeEvent(entt::entity entity, Args... arguments)
     {
         const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
-        auto* script = static_cast<Script*>(GetScript(pos.type));
+        auto* script = static_cast<Script*>(GetEntityScript(pos.type));
         MAGIQUE_ASSERT(script != nullptr, "No Script for this type!");
         Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
     }

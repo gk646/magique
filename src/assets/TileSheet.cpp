@@ -5,15 +5,14 @@
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 
-
 #include "assets/headers/LoadWrappers.h"
 
 namespace magique
 {
     TileSheet::TileSheet(const Asset& asset, const int textureSize, const float scale)
     {
-        const auto img = internal::LoadImage(asset);
-        auto texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_WIDTH, MAGIQUE_TEXTURE_ATLAS_HEIGHT, BLANK);
+        const auto img = LoadImage(asset);
+        auto texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_SIZE, MAGIQUE_TEXTURE_ATLAS_SIZE, BLANK);
 
         Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};
         Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
@@ -47,7 +46,7 @@ namespace magique
         const auto tex = LoadTextureFromImage(texImage);
         if (tex.id == 0)
         {
-            LOG_ERROR("Failed to load tilesheet to GPU: %s", asset.path);
+            LOG_ERROR("Failed to load TileSheet to GPU: %s", asset.path);
         }
         textureID = static_cast<uint16_t>(tex.id);
 
@@ -61,8 +60,8 @@ namespace magique
     {
         if (tileNum == 0) [[unlikely]]
         {
-            return {static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
-                    static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize), texSize, texSize, textureID};
+            return {static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
+                    static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize), texSize, texSize, textureID};
         }
 
         const int row = (tileNum - 1) / texPerRow;
@@ -75,8 +74,8 @@ namespace magique
     {
         if (tileNum == 0) [[unlikely]]
         {
-            return {static_cast<float>(MAGIQUE_TEXTURE_ATLAS_WIDTH - texSize),
-                    static_cast<float>(MAGIQUE_TEXTURE_ATLAS_HEIGHT - texSize)};
+            return {static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
+                    static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize)};
         }
         const int row = (tileNum - 1) / texPerRow;
         const int colum = tileNum - 1 - row * texPerRow;

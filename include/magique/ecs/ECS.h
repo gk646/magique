@@ -8,10 +8,10 @@
 // ECS Module
 //-------------------------------
 // ................................................................................
-// Note: All entities have the PositionC auto assigned per default!
+// All entities have the PositionC auto assigned per default!
 // ................................................................................
 
-enum EntityType : uint16_t; // A unique type identifier handled by the user to disinguish different types of game objects
+enum EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
 
 namespace magique
 {
@@ -20,8 +20,8 @@ namespace magique
 
     //-------------- REGISTER --------------//
 
-    using CreateFunc = std::function<void(entt::entity)>;
-    // Registers an entity with a corresponding create function - replaces the existing function if present
+    using CreateFunc = std::function<void(entt::entity entity, EntityType type)>;
+    // Registers an entity with the given create function - replaces the existing function if present
     // Failure: Returns false
     bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
 
@@ -44,7 +44,7 @@ namespace magique
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
 
-    // Returns true if the given entity has ALL of the specified component types
+    // Returns true if the given entity has ALL the specified component types
     template <typename... Args>
     bool EntityHasComponents(entt::entity entity);
 
@@ -60,11 +60,12 @@ namespace magique
     entt::entity CreateEntityNetwork(uint32_t id, EntityType type, float x, float y, MapID map);
 
     // Immediately tries destroys the entity
-    // Failure: Returns false if entity is invalid or doesnt exist
+    // Note: it's up to the user to make sure invalid entities are not accessed (destroying in event functions...)
+    // Failure: Returns false if entity is invalid or doesn't exist
     bool DestroyEntity(entt::entity entity);
 
-    // Immediately destroys all entities that have the given type - pass a empty list to destroy all types
-    void DestroyAllEntities(const std::initializer_list<EntityType>& ids);
+    // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
+    void DestroyEntities(const std::initializer_list<EntityType>& ids);
 
     //--------------Creating--------------//
 
@@ -82,17 +83,21 @@ namespace magique
     CollisionC& GiveCollisionCapsule(entt::entity entity, float height, float radius);
 
     // Makes the entity collidable with others - Shape: TRIANGLE
-    // Pass the offsets for the two remaining points in counter clockwise order - first one is (pos.x, pos.y)
+    // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
     CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
 
-    // Makes the entitiy emit light according to the current lighting model
+    // Gives the entity access to shared animation data for that entity type
+    // Note: Use the core/Animations.h module to create an EntityAnimation
+    // Failure: fails fatally if there is no animation registered for that type
+    AnimationC& GiveAnimation(entt::entity entity, EntityType type, AnimationState startState = {});
+
+    // Makes the entity emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
 
-    // Makes the entitiy occlude light and throw shadows according to the current lighting model
+    // Makes the entity occlude light and throw shadows according to the current lighting model
     OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape = Shape::RECT);
 
     // Adds the camera component
-    // Camera will automatically reflect the entity state (update)
     void GiveCamera(entt::entity entity);
 
     // Adds components such that the given entity is an actor
@@ -119,11 +124,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
-        if constexpr (std::is_same_v<T, PositionC>)
-        {
-            return internal::POSITION_GROUP.get<T>(entity);
-        }
-        else if constexpr (std::is_same_v<T, CollisionC>)
+        if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {
             return internal::POSITION_GROUP.get<T>(entity);
         }

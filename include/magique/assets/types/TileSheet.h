@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_TILESHEET_H
-#define MAGIQUE_TILESHEET_H
+#ifndef MAGIQUE_TILE_SHEET_H
+#define MAGIQUE_TILE_SHEET_H
 
 #include <vector>
 #include <magique/fwd.hpp>
@@ -28,6 +28,7 @@ namespace magique
         // Returns the size of each texture
         [[nodiscard]] float getTextureSize() const;
 
+        // Returns the id of the texture the TileSheet is stored on
         [[nodiscard]] unsigned int getTextureID() const;
 
     private:
@@ -38,7 +39,8 @@ namespace magique
         uint16_t texPerRow = 0; // Textures per row
         uint16_t textureID = 0; // id of the underlying texture#
         friend handle RegisterTileSheet(const Asset&, int, float);
+        friend handle RegisterTileSheet(const std::vector<const Asset*>&, int, float);
     };
 } // namespace magique
 
-#endif //MAGIQUE_TILESHEET_H
+#endif //MAGIQUE_TILE_SHEET_H

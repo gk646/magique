@@ -15,7 +15,7 @@ namespace magique
             pos = &internal::POSITION_GROUP.get<PositionC>(entity);
     }
 
-    void SetScript(const EntityType entity, EntityScript* script)
+    void SetEntityScript(const EntityType entity, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
         if (scData.scripts.size() < entity + 1)
@@ -29,7 +29,7 @@ namespace magique
         scData.scripts[entity] = script;
     }
 
-    EntityScript* GetScript(const EntityType entity)
+    EntityScript* GetEntityScript(const EntityType entity)
     {
         auto& scData = global::SCRIPT_DATA;
         MAGIQUE_ASSERT(scData.scripts.size() > entity, "No script registered for this type! Did you call SetScript()?");

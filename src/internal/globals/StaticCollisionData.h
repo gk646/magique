@@ -116,7 +116,7 @@ namespace magique
         //----------------- TILESET -----------------//
         const TileSet* tileSet = nullptr; // Only use for equality checks
         float tileSize = 16.0F;           // tilesize
-        HashSet<uint16_t> markedTilesMap;     // holds information on which tiles are marked for collisions
+        HashSet<uint16_t> markedTilesMap; // holds information on which tiles are marked for collisions
 
         void unloadMap(const MapID map)
         {

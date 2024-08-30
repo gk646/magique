@@ -7,16 +7,15 @@
 // Handle Registry
 //-----------------------------------------------
 // ................................................................................
-// This module helps organizing, storing and retrieving handles
-// Your free to manage and store handles on your own aswell!
+// This module helps to organize, storing and retrieving handles
+// Your free to manage and store handles on your own as well!
 // ................................................................................
 
 enum class HandleID : int; // User implementable to store handles by enum
 
 namespace magique
 {
-    // Customizable parameter to handle collisions
-    // https://en.wikipedia.org/wiki/Salt_(cryptography)
+    // Customizable parameter to handle collisions - https://en.wikipedia.org/wiki/Salt_(cryptography)
     inline constexpr int HASH_SALT = 0;
 
     //----------------- REGISTER -----------------//
@@ -36,26 +35,28 @@ namespace magique
     handle GetHandle(HandleID type);
 
     // Retrieves a handle based on string hashing
-    // IMPORTANT: You have to use this macro to get compile time hashing - sadly you can pass constexpr strings
-#define H(msg) magique::internal::HashStringEval(msg, magique::HASH_SALT)
-    // Example: GetHandle(H("player"));
+    // Note: Must use the GetHash() function for hash
     handle GetHandle(uint32_t hash);
 
-    // Retrieves a direct handle - useful for tilemaps
+    // Retrieves a direct handle
     handle GetDirectHandle(int id);
+
+    //----------------- UTIL -----------------//
+
+    // Use this to get the hash
+    consteval uint32_t GetHash(char const* s) noexcept;
 
 } // namespace magique
 
-
 //----------------- IMPLEMENTATION -----------------//
 
-namespace magique::internal
+namespace magique
 {
     // Compile time string hashing function
     // Takes an optional salt parameter (arbitrary defined value) to make it customizable in terms of collision handling
-    consteval uint32_t HashStringEval(char const* s, const int salt) noexcept
+    consteval uint32_t GetHash(char const* s) noexcept
     {
-        uint32_t hash = 2166136261U + salt;
+        uint32_t hash = 2166136261U + HASH_SALT;
         while (*s != 0)
         {
             hash ^= static_cast<uint32_t>(*s++);
@@ -64,16 +65,19 @@ namespace magique::internal
         return hash;
     }
 
-    constexpr uint32_t HashString(char const* s, const int salt) noexcept
+    namespace internal
     {
-        uint32_t hash = 2166136261U + salt;
-        while (*s != 0)
+        constexpr uint32_t HashString(char const* s, const int salt) noexcept
         {
-            hash ^= static_cast<uint32_t>(*s++);
-            hash *= 16777619U;
+            uint32_t hash = 2166136261U + salt;
+            while (*s != 0)
+            {
+                hash ^= static_cast<uint32_t>(*s++);
+                hash *= 16777619U;
+            }
+            return hash;
         }
-        return hash;
-    }
-} // namespace magique::interal
+    } // namespace internal
+} // namespace magique
 
 #endif //MAGIQUE_HANDLE_REGISTRY_H

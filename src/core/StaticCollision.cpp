@@ -82,10 +82,9 @@ namespace magique
         {
             if (markedClassMap.contains(tileInfo.getClass()))
             {
-                data.markedTilesMap.insert(tileInfo.tileID+1);
+                data.markedTilesMap.insert(static_cast<uint16_t>(tileInfo.tileID + 1));
             }
         }
-
     }
 
     void LoadTileMap(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
@@ -132,6 +131,5 @@ namespace magique
     }
 
     void RemoveColliderGroup(int group) {}
-
 
 } // namespace magique

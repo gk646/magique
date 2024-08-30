@@ -8,7 +8,7 @@
 //-----------------------------------------------
 // ................................................................................
 // These are the simple and public types/enums used and exposed by magique
-// Note: Some enum use a explicit type to save memory when used in the ECS or networking
+// Note: Some enum use an explicit type to save memory when used in the ECS or networking
 // ................................................................................
 
 namespace magique
@@ -29,17 +29,6 @@ namespace magique
     };
 
     //----------------- ASSETS  -----------------//
-
-    enum AtlasID : uint8_t // Can add new ones or rename them
-    {
-        DEFAULT, // Default atlas
-        CHARACTER,
-        USER_INTERFACE, // All UI related textures
-        ENTITIES_1,
-        ENTITIES_2,
-        ENTITIES_3,
-        ATLAS_END // Always needs to be last
-    };
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
@@ -75,17 +64,19 @@ namespace magique
         int16_t height;  // Height of a frame
         uint16_t id;     // The texture id
         uint16_t frames; // Total number of frames
+
+        [[nodiscard]] TextureRegion getRegion(int frame) const;
     };
 
-    struct Animation final
+    struct SpriteAnimation final
     {
         SpriteSheet sheet{};
         uint16_t duration = UINT16_MAX;
 
-        [[nodiscard]] int getCurrentTexture(uint16_t spriteCount) const;
+        [[nodiscard]] TextureRegion getCurrentFrame(uint16_t spriteCount) const;
     };
 
-    // Objects defined insdie the tile editor
+    // Objects defined inside the tile editor
     struct TileObject final
     {
         [[nodiscard]] const char* getName() const; // Can be null
@@ -134,7 +125,7 @@ namespace magique
     // Which lighting style the emitter has
     enum LightStyle : uint8_t
     {
-        POINT_LIGHT_SOFT,         // Point ligtht
+        POINT_LIGHT_SOFT,         // Point light
         DIRECTIONAL_LIGHT_STRONG, // Sunlight
     };
 
@@ -183,6 +174,7 @@ namespace magique
 
         const ColliderType type; // The type of the collider
         ColliderInfo(int, ColliderType);
+
     private:
         int data;
     };
@@ -236,8 +228,8 @@ namespace magique
     enum class MultiplayerEvent : uint8_t
     {
         //----------------- HOST -----------------//
-        HOST_NEW_CONNECTION,           // Posted when when we accept a new client connection
-        HOST_CLIENT_CLOSED_CONNECTION, // Posted when when the client closed the connection
+        HOST_NEW_CONNECTION,           // Posted when we accept a new client connection
+        HOST_CLIENT_CLOSED_CONNECTION, // Posted when the client closed the connection
         //----------------- CLIENT -----------------//
         CLIENT_CONNECTION_ACCEPTED, // Posted when the host accepted our connection
         CLIENT_CONNECTION_CLOSED,   // Posted when the host closed our connection
@@ -266,7 +258,7 @@ namespace magique
         VECTOR,     // Stores (typed) vector data
         DATA_TABLE, // Saves data for a magique::DataTable
         KEY_BIND,   // Stores a key bind (used only by GameConfig)
-        VALUE,      // Stores a 8 bytes value (used only by GameConfig)
+        VALUE,      // Stores an 8 bytes value (used only by GameConfig)
         EMPTY,      // Storage is empty
     };
 
@@ -294,7 +286,6 @@ namespace magique
     {
         QWERTY,
         QWERTZ,
-        AUTOMATIC,
     };
 
     enum Size
@@ -312,25 +303,8 @@ namespace magique
         LOW,
         MEDIUM,
         HIGH,
-        ONTOP,
+        ON_TOP,
         ROOT,
-    };
-
-    struct KeyEvent final
-    {
-        bool isShift() const { return shift; }
-
-        int getKey() const { return key; }
-
-    private:
-        int key = 0;
-        bool shift = false;
-        bool alt = false;
-        bool control = false;
-    };
-
-    struct MouseEvent final
-    {
     };
 
     //----------------- HELPER TYPES -----------------//
@@ -364,9 +338,9 @@ namespace magique
     {
         float x, y;                   // Position
         int16_t p1;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        int16_t p2;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        int16_t p3;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
-        int16_t p4;                   // RECT: height                   / CAPSULE: heigth  / TRIANGLE: offsetY
+        int16_t p2;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
+        int16_t p3;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
+        int16_t p4;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
         float vx, vy;                 // Velocity
         float scale;                  // Current scale
         uint16_t age;                 // Current age
@@ -379,7 +353,7 @@ namespace magique
         void setColor(const Color& color);
     };
 
-    // Loading task - has to be subclassed with the correct type for T (e.g AssetContainer or GameSave...)
+    // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSave...)
     template <typename T>
     struct ITask
     {

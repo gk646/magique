@@ -9,10 +9,10 @@
 //-----------------------------------------------
 // ................................................................................
 // The main loader to get from startup to the initialized game (MainMenu)
-// Theres 2 guarantees when using the loader:
+// There are 2 guarantees when using the loader:
 //  - The task is guaranteed be executed on the main thread if specified
 //  - All task of a higher priority are finished before any task with a lower priority
-//  - However theres no order guarantuee for tasks of the same priority
+//  - However there's no guarantee about the order for tasks of the same priority
 //
 // For ANY kind of gpu access (texture loading) you HAVE to specify MAIN_THREAD.
 // For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
@@ -27,7 +27,7 @@ namespace magique
     struct AssetLoader final : internal::TaskExecutor<AssetContainer>
     {
         // Registers a new task - this is for more complex task requiring its own class -> subclass magique::ITask{};
-        // task     - a new instance of a subclass of ITask, takes owner ship
+        // task     - a new instance of a subclass of ITask, takes ownership
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task

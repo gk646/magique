@@ -1173,7 +1173,7 @@ bool ExportWaveAsCode(Wave wave, const char *fileName)
 }
 
 // Play a sound
-void PlaySound(Sound sound)
+void PlaySoundRaylib(Sound sound)
 {
     PlayAudioBuffer(sound.stream.buffer);
 }
@@ -1191,7 +1191,7 @@ void ResumeSound(Sound sound)
 }
 
 // Stop reproducing a sound
-void StopSound(Sound sound)
+void StopSoundRaylib(Sound sound)
 {
     StopAudioBuffer(sound.stream.buffer);
 }

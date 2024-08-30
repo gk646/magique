@@ -16,87 +16,65 @@
 
 namespace magique
 {
-    bool ImageCheck(Image& img, const Asset& asset, const AtlasID at)
+    handle RegisterTexture(const Asset& asset, const AtlasID at, const float scale)
     {
-        if (at > ENTITIES_2)
-        {
-            LOG_ERROR("Trying to load texture into invalid atlas");
-            return false;
-        }
-        img = internal::LoadImage(asset);
-        return true;
+        ASSET_CHECK(asset);
+        const Image image = LoadImage(asset);
+        const int tarWidth = static_cast<int>(static_cast<float>(image.width) * scale);
+        const int tarHeight = static_cast<int>(static_cast<float>(image.height) * scale);
+        auto& atlas = global::ATLAS_DATA.getAtlas(at);
+        const auto region = atlas.addTexture(image, tarWidth, tarHeight);
+        return global::ASSET_MANAGER.addResource(region);
     }
 
-    handle RegisterSpritesheet(const Asset& asset, const int width, const int height, const AtlasID at, float scale)
+    handle RegisterSpriteSheet(const Asset& asset, const int w, const int h, const AtlasID at, const float scale)
     {
-        Image image;
-        if (!ImageCheck(image, asset, at))
-            return handle::null;
+        ASSET_CHECK(asset);
+        const Image image = LoadImage(asset);
+        MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
 
-        MAGIQUE_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
+        const int tarHeight = static_cast<int>(static_cast<float>(h) * scale);
+        const int frames = image.width / w * (image.height / h);
 
-        const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
-        const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
-
-        const int frames = image.width / width * (image.height / height);
         // All images will be layout out horizontally for fast direct access without calculations
-        if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
-        {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.path);
-            UnloadImage(image);
-            return handle::null;
-        }
-
-        auto& atlas = global::TEXTURE_ATLASES[at];
-        const SpriteSheet sheet = atlas.addSpritesheet(image, frames, tarWidth, tarHeight, 0, 0);
-
+        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
+        auto& atlas = global::ATLAS_DATA.getAtlas(at);
+        const SpriteSheet sheet = atlas.addSpriteSheet(image, frames, tarWidth, tarHeight, 0, 0);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetEx(const Asset& asset, const int width, const int height, const int frames, const int offX,
+    handle RegisterSpriteSheetEx(const Asset& asset, const int w, const int h, const int frames, const int offX,
                                  const int offY, const AtlasID at, const float scale)
     {
-        Image image;
-        if (!ImageCheck(image, asset, at))
-            return handle::null;
-
-        MAGIQUE_ASSERT(image.width >= width && image.height >= height, "Image is smaller than a single frame");
+        ASSET_CHECK(asset);
+        const Image image = LoadImage(asset);
+        MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
         MAGIQUE_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
+        const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
+        const int tarHeight = static_cast<int>(static_cast<float>(h) * scale);
 
-        const int tarWidth = static_cast<int>(static_cast<float>(width) * scale);
-        const int tarHeight = static_cast<int>(static_cast<float>(height) * scale);
-
-        if (frames * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
-        {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", asset.path);
-            UnloadImage(image);
-            return handle::null;
-        }
-
-        auto& atlas = global::TEXTURE_ATLASES[at];
-        const auto sheet = atlas.addSpritesheet(image, frames, tarWidth, tarHeight, offX, offY);
-
+        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
+        auto& atlas = global::ATLAS_DATA.getAtlas(at);
+        const auto sheet = atlas.addSpriteSheet(image, frames, tarWidth, tarHeight, offX, offY);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpritesheetVec(const std::vector<const Asset*>& assets, const AtlasID at, const float scale)
+    handle RegisterSpriteSheetVec(const std::vector<const Asset*>& assets, const AtlasID at, const float scale)
     {
-        Image image;
-        if (!ImageCheck(image, *assets[0], at))
-            return handle::null;
-
+        for (const auto asset : assets)
+        {
+            ASSET_CHECK(*asset);
+            ASSET_IS_SUPPORTED_IMAGE_TYPE((*asset));
+        }
+        const Image image = LoadImage(*assets[0]);
         const int width = image.width;
         const int height = image.height;
-
         const auto tarWidth = static_cast<int>(static_cast<float>(width) * scale);
         const auto tarHeight = static_cast<int>(static_cast<float>(height) * scale);
 
-        if (assets.size() * tarWidth > MAGIQUE_TEXTURE_ATLAS_WIDTH)
-        {
-            LOG_WARNING("Spritesheet width would exceed texture atlas width! Skipping: %s", assets[0]->path);
-            UnloadImage(image);
-            return handle::null;
-        }
+        const auto& asset = *assets[0]; // For the macro
+        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(assets.size() * tarWidth);
 
         const Rectangle source = {0, 0, static_cast<float>(width), static_cast<float>(height)};
         Image singleImage = GenImageColor(static_cast<int>(assets.size()) * width, height, BLANK);
@@ -106,13 +84,7 @@ namespace magique
         for (int i = 1; i < assets.size(); ++i)
         {
             const auto& a = *assets[i];
-            Image newImg;
-            if (!ImageCheck(newImg, a, at))
-            {
-                UnloadImage(newImg);
-                UnloadImage(singleImage);
-                return handle::null;
-            }
+            const Image newImg = LoadImage(a);
             if (image.width != width || image.height != height)
             {
                 LOG_WARNING("Image is not the same size as others: %s", a.path);
@@ -125,21 +97,21 @@ namespace magique
             UnloadImage(newImg);
         }
 
-        auto& atlas = global::TEXTURE_ATLASES[at];
-        const auto sheet = atlas.addSpritesheet(singleImage, (int)assets.size(), tarWidth, tarHeight, 0, 0);
-
+        auto& atlas = global::ATLAS_DATA.getAtlas(at);
+        const auto sheet = atlas.addSpriteSheet(singleImage, (int)assets.size(), tarWidth, tarHeight, 0, 0);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
     handle RegisterSound(const Asset& asset)
     {
+        ASSET_CHECK(asset);
         const auto ext = asset.getExtension();
         if (ext == nullptr)
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
         }
         const Wave wave = LoadWaveFromMemory(ext, (unsigned char*)asset.data, asset.size);
-        Sound sound = LoadSoundFromWave(wave);
+        const Sound sound = LoadSoundFromWave(wave);
         const auto handle = global::ASSET_MANAGER.addResource<Sound>(sound);
         UnloadWave(wave);
         return handle;
@@ -163,34 +135,12 @@ namespace magique
 
     handle RegisterPlaylist(const std::vector<const Asset*>& assets) { return handle::null; }
 
-    handle RegisterTexture(const Asset& asset, const AtlasID at, const float scale)
-    {
-        Image image;
-        if (!ImageCheck(image, asset, at))
-            return handle::null;
-
-        auto& atlas = global::TEXTURE_ATLASES[at];
-
-        const auto region = atlas.addTexture(image, (int)(scale * image.width), (int)(scale * image.height));
-
-        return global::ASSET_MANAGER.addResource(region);
-    }
-
     handle RegisterTileMap(const Asset& asset)
     {
-        if (!internal::AssetBaseCheck(asset))
-            return handle::null;
-        const auto* ext = GetFileExtension(asset.path);
-
-        if (ext == nullptr)
+        ASSET_CHECK(asset);
+        if (strcmp(asset.getExtension(), ".tmx") != 0)
         {
-            LOG_WARNING("No valid extension: %s", asset.path);
-            return handle::null;
-        }
-
-        if (strcmp(ext, ".tmx") != 0)
-        {
-            LOG_WARNING("Not a valid tilemap extension: %s", asset.path);
+            LOG_WARNING("Invalid extensions for a TileMap: %s | Supported: .tmx", asset.getFileName(true));
             return handle::null;
         }
         auto tileMap = TileMap(asset);
@@ -201,33 +151,50 @@ namespace magique
 
     handle RegisterTileSet(const Asset& asset)
     {
-        if (!internal::AssetBaseCheck(asset))
-            return handle::null;
-
-        const auto ext = asset.getExtension();
-
-        if (strcmp(ext, ".tsx") != 0)
+        ASSET_CHECK(asset);
+        if (strcmp(asset.getExtension(), ".tsx") != 0)
         {
-            LOG_WARNING("No valid extensions for a tilset: %s | Supported: .tsx", asset.getFileName(true));
+            LOG_WARNING("Invalid extensions for a TileSet: %s | Supported: .tsx", asset.getFileName(true));
             return handle::null;
         }
         auto tileSet = TileSet(asset);
         return global::ASSET_MANAGER.addResource(std::move(tileSet));
     }
 
-    handle RegisterTileSheet(const Asset& asset, const int size, const float scale)
+    handle RegisterTileSheet(const Asset& asset, const int tileSize, const float scale)
     {
-        const auto sheet = TileSheet(asset, size, scale);
-
+        ASSET_CHECK(asset);
+        const auto sheet = TileSheet(asset, tileSize, scale);
+        if (strcmp(asset.getExtension(), ".png") != 0)
+        {
+            LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset.getFileName(true));
+            return handle::null;
+        }
         if (sheet.textureID == 0)
         {
             return handle::null;
         }
-
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTileSheet(std::vector<const Asset*>& assets, int size, float scale) { return handle::null; }
+    handle RegisterTileSheet(const std::vector<const Asset*>& assets, const int tileSize, const float scale)
+    {
+        for (const auto asset : assets)
+        {
+            ASSET_CHECK(*asset);
+            if (strcmp(asset->getExtension(), ".png") != 0)
+            {
+                LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset->getFileName(true));
+                return handle::null;
+            }
+        }
+        const auto sheet = TileSheet(assets, tileSize, scale);
+        if (sheet.textureID == 0)
+        {
+            return handle::null;
+        }
+        return global::ASSET_MANAGER.addResource(sheet);
+    }
 
     //----------------- GET -----------------//
 
@@ -250,16 +217,16 @@ namespace magique
     TileMap& GetTileMap(const HandleID id) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(id)); }
     TileMap& GetTileMap(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(hash)); }
 
-    TileSheet& GetTileSheet(const HandleID id) { return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(id)); }
+    TileSheet& GetTileSheet(const HandleID handle)
+    {
+        return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(handle));
+    }
     TileSheet& GetTileSheet(const uint32_t hash)
     {
         return global::ASSET_MANAGER.getResource<TileSheet>(GetHandle(hash));
     }
 
-    TileSet& GetTileSet(const HandleID id) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(id)); }
-    TileSet& GetTileSet(const uint32_t hash)
-    {
-        return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(hash));
-    }
+    TileSet& GetTileSet(const HandleID handle) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(handle)); }
+    TileSet& GetTileSet(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(hash)); }
 
 } // namespace magique
