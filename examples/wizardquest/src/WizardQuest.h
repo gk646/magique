@@ -49,6 +49,19 @@ enum class HandleID
     TILE_SET,
 };
 
+enum class AnimationState : uint8_t
+{
+    IDLE,
+    RUN,
+    JUMP,
+};
+
+enum class AtlasID : int
+{
+    DEFAULT, // 0 is used as default
+    ENTITIES,
+};
+
 struct WizardQuest final : Game
 {
     void onStartup(AssetLoader& loader, GameConfig& config) override;

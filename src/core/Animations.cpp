@@ -21,6 +21,7 @@ namespace magique
 
         [[nodiscard]] const EntityAnimation& get(const EntityType type) const
         {
+            MAGIQUE_ASSERT(animations.size() > type, "No animation registered for that type!");
             const auto& animation = animations[type];
             MAGIQUE_ASSERT(
                 animation.isSet,
@@ -31,7 +32,6 @@ namespace magique
 
 } // namespace magique
 
-
 namespace magique
 {
     AnimationData ANIMATION_DATA{};
@@ -39,7 +39,7 @@ namespace magique
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration)
     {
         const int stateNum = static_cast<int>(state);
-        if (stateNum > static_cast<int>(animations.size()))
+        if (stateNum >= static_cast<int>(animations.size()))
             animations.resize(stateNum + 1);
         animations[stateNum].duration = static_cast<uint16_t>(frameDuration);
         animations[stateNum].sheet = sheet;

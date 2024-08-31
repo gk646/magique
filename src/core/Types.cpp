@@ -2,6 +2,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
+#include <magique/internal/Macros.h>
 
 namespace magique
 {
@@ -18,7 +19,8 @@ namespace magique
 
     TextureRegion SpriteAnimation::getCurrentFrame(const uint16_t spriteCount) const
     {
-        const int frame = spriteCount % sheet.frames * duration / duration;
+        MAGIQUE_ASSERT(duration != UINT16_MAX, "Invalid sprite animation");
+        const int frame = (spriteCount / duration) % sheet.frames;
         return sheet.getRegion(frame);
     }
 
@@ -40,6 +42,16 @@ namespace magique
     //----------------- TILE INFO -----------------//
 
     int TileInfo::getClass() const { return clazz; }
+
+    Rectangle TileInfo::getCollisionRect(const float scale) const
+    {
+        return {
+            static_cast<float>(hitBoxX) * scale,
+            static_cast<float>(hitBoxY) * scale,
+            static_cast<float>(hitBoxW) * scale,
+            static_cast<float>(hitBoxH) * scale
+        };
+    }
 
     //----------------- COLLIDER INFO -----------------//
 

@@ -34,35 +34,35 @@ namespace magique
 
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
-    handle RegisterTexture(const Asset& asset, AtlasID atlas = {}, float scale = 1);
+    handle RegisterTexture(Asset asset, AtlasID atlas = {}, float scale = 1);
 
     // Tries to load a .png file as sprite sheet
     // Starts at (0,0) top left and then tries to split the image into frames row by row with the given dimensions
     // 'scale' allows to scale the resulting texture (rounded down)
     // Note: Combined width of all frames must not exceed MAGIQUE_TEXTURE_ATLAS_SIZE!
-    handle RegisterSpriteSheet(const Asset& asset, int width, int height, AtlasID atlas = {}, float scale = 1);
+    handle RegisterSpriteSheet(Asset asset, int width, int height, AtlasID atlas = {}, float scale = 1);
 
     // Sames as RegisterSpriteSheet but allows to specify an offset from the top left and the amount of frames to load
     // Useful for loading part of a bigger sprite sheet - supports line breaks
-    handle RegisterSpriteSheetEx(const Asset& asset, int width, int height, int frames, int offX, int offY,
-                                 AtlasID atlas = {}, float scale = 1);
+    handle RegisterSpriteSheetEx(Asset asset, int width, int height, int frames, int offX, int offY, AtlasID atlas = {},
+                                 float scale = 1);
 
-    // Register a sprite sheet out of single images
+    // Register a sprite sheet out of single images - must all have the same dimensions
     // Useful if you have textures as separate images instead of a single SpriteSheet
     // Use with iterateDirectory()
-    handle RegisterSpriteSheetVec(const std::vector<const Asset*>& assets, AtlasID atlas = {}, float scale = 1);
+    handle RegisterSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas = {}, float scale = 1);
 
     //----------------- Audio -----------------//
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
-    handle RegisterSound(const Asset& asset);
+    handle RegisterSound(Asset asset);
 
     // Register a music file (streamed audio) - can be any raylib supported type (.mp3)
     // Everything above 10s should be loaded as music (and compressed with .mp3) instead of sound!
-    handle RegisterMusic(const Asset& asset);
+    handle RegisterMusic(Asset asset);
 
     // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
-    handle RegisterPlaylist(const std::vector<const Asset*>& assets);
+    handle RegisterPlaylist(const std::vector<Asset>& assets);
 
     //----------------- Tile Exports -----------------//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
@@ -70,21 +70,21 @@ namespace magique
 
     // Registers a tilemap from an export file - Supported: ".tsx" (Tiled),
     // Supports loading multiple layers - all layers must have same dimensions!
-    handle RegisterTileMap(const Asset& asset);
+    handle RegisterTileMap(Asset asset);
 
     // Registers a tileset - defines the details of all tiles in a project
-    handle RegisterTileSet(const Asset& asset);
+    handle RegisterTileSet(Asset asset);
 
     // Registers a tile sheet from a single ".png" file
     // IMPORTANT: Make sure the TileSheet has exact dimensions and no padding!
     // 'textureSize'    - specify the width and height of each source tile
     // 'scale'          - allows to scale the resulting texture (rounded down)
-    handle RegisterTileSheet(const Asset& asset, int tileSize, float scale = 1);
+    handle RegisterTileSheet(Asset asset, int tileSize, float scale = 1);
 
     // Same as 'RegisterTileSheet()' but takes a list of pictures
     // All assets provided must have the same dimensions and be pictures
     // This is useful if you have split images instead of a single TileSheet - Use with iterateDirectory()
-    handle RegisterTileSheet(const std::vector<const Asset*>& assets, int tileSize, float scale = 1);
+    handle RegisterTileSheet(const std::vector<Asset>& assets, int tileSize, float scale = 1);
 
     //----------------- GET -----------------//
 

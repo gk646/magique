@@ -52,7 +52,7 @@ namespace magique
         uint16_t height = 0;
         uint8_t objectLayers = 0;
         uint8_t layers = 0;
-        friend handle RegisterTileMap(const Asset&);
+        friend handle RegisterTileMap(Asset);
         friend void ParseTileLayer(TileMap&, char*&);
     };
 

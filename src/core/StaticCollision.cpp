@@ -64,7 +64,7 @@ namespace magique
         }
     }
 
-    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float tileSize)
+    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float scale)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (data.tileSet != nullptr)
@@ -72,8 +72,8 @@ namespace magique
             return;
         }
         data.tileSet = &tileSet;
-        data.tileSize = tileSize;
-        HashSet<int> markedClassMap; // Local hashmap to guarantee speed - tilemaps can be big up to 65k tiles
+        data.tileSetScale = scale;
+        HashSet<int> markedClassMap; // Local hashmap to guarantee speed - TileMaps can be big up to 65k tiles
         for (const auto num : markedClasses)
         {
             markedClassMap.insert(num);
@@ -82,25 +82,30 @@ namespace magique
         {
             if (markedClassMap.contains(tileInfo.getClass()))
             {
-                data.markedTilesMap.insert(static_cast<uint16_t>(tileInfo.tileID + 1));
+                data.markedTilesMap[tileInfo.tileID] = tileInfo;
             }
         }
     }
 
-    void LoadTileMap(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
+    void LoadTileMapCollisions(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
     {
         auto& data = global::STATIC_COLL_DATA;
-        auto& hashMap = data.objectReferences.markedTilesMap;
+        if (data.tileSet == nullptr)
+        {
+            LOG_WARNING("Cannot load tile collision data without tile set. Use LoadGlobalTileSet()");
+            return;
+        }
+        auto& hashMap = data.objectReferences.markedTilesDataMap;
         const auto it = hashMap.find(map);
         if (it == hashMap.end())
         {
+            const auto tileSize = data.tileSetScale * static_cast<float>(data.tileSet->getTileSize());
+            const auto width = tileMap.getWidth();
+            const auto height = tileMap.getHeight();
             const auto& markedMap = data.markedTilesMap;
-            const auto tileSize = data.tileSize;
             auto& tileGrid = data.tileGrid;
             auto& storage = data.objectStorage;
             auto& tileVec = hashMap[map];
-            const auto width = tileMap.getWidth();
-            const auto height = tileMap.getHeight();
             for (const auto layer : layers)
             {
                 const auto start = tileMap.getLayerData(layer);
@@ -109,14 +114,24 @@ namespace magique
                     const auto yOff = i * width;
                     for (int j = 0; j < width; ++j)
                     {
-                        const auto tileNum = start[yOff + j]; // Might be bugged
-                        if (markedMap.contains(tileNum))
+                        const auto tileNum = start[yOff + j] - 1; // tile data is 1 more to mark empty as 0
+                        if (tileNum == UINT16_MAX)                // uint overflows to maximum value (0-1 = MAX)
+                            continue;
+                        const auto infoIt = markedMap.find(tileNum);
+                        if (infoIt != markedMap.end())
                         {
-                            const float x = static_cast<float>(j) * tileSize;
-                            const float y = static_cast<float>(i) * tileSize;
-                            const auto objectNum = storage.insert(x, y, tileSize, tileSize);
+                            auto [x, y, width, height] = infoIt->second.getCollisionRect(data.tileSetScale);
+                            x += static_cast<float>(j) * tileSize;
+                            y += static_cast<float>(i) * tileSize;
+                            if (width == 0) // rect is 0 if not assigned - so adding to x and y is always valid
+                            {
+                                width = tileSize;
+                                height = tileSize;
+                            }
+                            const auto objectNum = storage.insert(x, y, width, height);
                             tileVec.push_back(objectNum);
-                            tileGrid.insert(StaticIDHelper::CreateID(objectNum, tileNum), x, y, tileSize, tileSize);
+                            const auto tileClass = infoIt->second.getClass();
+                            tileGrid.insert(StaticIDHelper::CreateID(objectNum, tileClass), x, y, width, height);
                         }
                     }
                 }

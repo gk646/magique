@@ -24,6 +24,7 @@ namespace magique
     struct EntityAnimation final
     {
         // Sets the animation for this action state
+        //      - frameDuration: the duration in ticks of each frame of the SpriteSheet
         void addAnimation(AnimationState state, SpriteSheet sheet, int frameDuration);
 
         // Removes the animation for this state

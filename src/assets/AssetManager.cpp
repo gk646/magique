@@ -16,7 +16,7 @@
 
 namespace magique
 {
-    handle RegisterTexture(const Asset& asset, const AtlasID at, const float scale)
+    handle RegisterTexture(Asset asset, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
         const Image image = LoadImage(asset);
@@ -27,82 +27,95 @@ namespace magique
         return global::ASSET_MANAGER.addResource(region);
     }
 
-    handle RegisterSpriteSheet(const Asset& asset, const int w, const int h, const AtlasID at, const float scale)
+    handle RegisterSpriteSheet(Asset asset, const int w, const int h, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
-        const Image image = LoadImage(asset);
+        ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
+        Image image = LoadImage(asset);
+
+        // Checks
         MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
+        ASSET_CHECK_IMAGE_DIVISIBILITY(image, w, h);
 
         const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
-        const int tarHeight = static_cast<int>(static_cast<float>(h) * scale);
         const int frames = image.width / w * (image.height / h);
+        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth); // Check if sprite fits within one row
 
-        // All images will be layout out horizontally for fast direct access without calculations
-        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
         auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const SpriteSheet sheet = atlas.addSpriteSheet(image, frames, tarWidth, tarHeight, 0, 0);
+        const SpriteSheet sheet = atlas.addSpriteSheet(image, w, h, scale);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpriteSheetEx(const Asset& asset, const int w, const int h, const int frames, const int offX,
-                                 const int offY, const AtlasID at, const float scale)
+    handle RegisterSpriteSheetEx(Asset asset, const int w, const int h, const int frames, const int offX, const int offY,
+                                 const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
-        const Image image = LoadImage(asset);
+        ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
+        Image image = LoadImage(asset);
+
+        // Checks
         MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
         MAGIQUE_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
         const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
-        const int tarHeight = static_cast<int>(static_cast<float>(h) * scale);
-
         ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
+
         auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const auto sheet = atlas.addSpriteSheet(image, frames, tarWidth, tarHeight, offX, offY);
+        const auto sheet = atlas.addSpriteSheetEx(image, w, h, scale, frames, offX, offY);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSpriteSheetVec(const std::vector<const Asset*>& assets, const AtlasID at, const float scale)
+    handle RegisterSpriteSheetVec(const std::vector<Asset>& assets, const AtlasID at, const float scale)
     {
-        for (const auto asset : assets)
+        if (assets.empty()) // Check empty
         {
-            ASSET_CHECK(*asset);
-            ASSET_IS_SUPPORTED_IMAGE_TYPE((*asset));
+            LOG_WARNING("Passed empty asset vector to RegisterSpriteSheetVec()");
+            return handle::null;
         }
-        const Image image = LoadImage(*assets[0]);
+        for (const auto& asset : assets) // Check valid and supported image type
+        {
+            ASSET_CHECK(asset);
+            ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
+        }
+
+        // Load first image to check
+        Image image = LoadImage(assets[0]);
         const int width = image.width;
         const int height = image.height;
-        const auto tarWidth = static_cast<int>(static_cast<float>(width) * scale);
-        const auto tarHeight = static_cast<int>(static_cast<float>(height) * scale);
 
-        const auto& asset = *assets[0]; // For the macro
-        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(assets.size() * tarWidth);
+        // Check if fits within one atlas row
+        const auto tarW = static_cast<float>(width) * scale;
+        const auto& asset = assets[0]; // For the macro
+        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(assets.size() * tarW);
 
+        // Make a single image out of the vector - always use the full source image
         const Rectangle source = {0, 0, static_cast<float>(width), static_cast<float>(height)};
+        Rectangle dest = {0, 0, source.width, source.height}; // copy 1:1 they are scaled later
         Image singleImage = GenImageColor(static_cast<int>(assets.size()) * width, height, BLANK);
-        ImageDraw(&singleImage, image, source, {0, 0, static_cast<float>(width), static_cast<float>(height)}, WHITE);
 
-        auto offX = static_cast<float>(width);
         for (int i = 1; i < assets.size(); ++i)
         {
-            const auto& a = *assets[i];
-            const Image newImg = LoadImage(a);
+            ImageDraw(&singleImage, image, source, dest, WHITE);
+            dest.x += static_cast<float>(width);
+            UnloadImage(image);
+
+            image = LoadImage(assets[i]);
             if (image.width != width || image.height != height)
             {
-                LOG_WARNING("Image is not the same size as others: %s", a.path);
-                UnloadImage(newImg);
+                LOG_WARNING("Image is not the same size as others: %s", asset.getFileName(true));
+                UnloadImage(image);
                 UnloadImage(singleImage);
                 return handle::null;
             }
-            ImageDraw(&singleImage, newImg, source, {offX, 0, (float)width, (float)height}, WHITE);
-            offX += static_cast<float>(width);
-            UnloadImage(newImg);
         }
+        ImageDraw(&singleImage, image, source, dest, WHITE); // Draw the last picture
+        UnloadImage(image);
 
         auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const auto sheet = atlas.addSpriteSheet(singleImage, (int)assets.size(), tarWidth, tarHeight, 0, 0);
+        const auto sheet = atlas.addSpriteSheet(singleImage, width, height, scale);
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterSound(const Asset& asset)
+    handle RegisterSound(Asset asset)
     {
         ASSET_CHECK(asset);
         const auto ext = asset.getExtension();
@@ -117,7 +130,7 @@ namespace magique
         return handle;
     }
 
-    handle RegisterMusic(const Asset& asset)
+    handle RegisterMusic(Asset asset)
     {
         const auto ext = asset.getExtension();
         if (ext == nullptr)
@@ -133,9 +146,9 @@ namespace magique
         return handle;
     }
 
-    handle RegisterPlaylist(const std::vector<const Asset*>& assets) { return handle::null; }
+    handle RegisterPlaylist(const std::vector<Asset>& assets) { return handle::null; }
 
-    handle RegisterTileMap(const Asset& asset)
+    handle RegisterTileMap(Asset asset)
     {
         ASSET_CHECK(asset);
         if (strcmp(asset.getExtension(), ".tmx") != 0)
@@ -149,7 +162,7 @@ namespace magique
 
     handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
 
-    handle RegisterTileSet(const Asset& asset)
+    handle RegisterTileSet(Asset asset)
     {
         ASSET_CHECK(asset);
         if (strcmp(asset.getExtension(), ".tsx") != 0)
@@ -161,7 +174,7 @@ namespace magique
         return global::ASSET_MANAGER.addResource(std::move(tileSet));
     }
 
-    handle RegisterTileSheet(const Asset& asset, const int tileSize, const float scale)
+    handle RegisterTileSheet(Asset asset, const int tileSize, const float scale)
     {
         ASSET_CHECK(asset);
         const auto sheet = TileSheet(asset, tileSize, scale);
@@ -170,21 +183,21 @@ namespace magique
             LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset.getFileName(true));
             return handle::null;
         }
-        if (sheet.textureID == 0)
+        if (sheet.getTextureID() == 0)
         {
             return handle::null;
         }
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTileSheet(const std::vector<const Asset*>& assets, const int tileSize, const float scale)
+    handle RegisterTileSheet(const std::vector<Asset>& assets, const int tileSize, const float scale)
     {
         for (const auto asset : assets)
         {
-            ASSET_CHECK(*asset);
-            if (strcmp(asset->getExtension(), ".png") != 0)
+            ASSET_CHECK(asset);
+            if (strcmp(asset.getExtension(), ".png") != 0)
             {
-                LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset->getFileName(true));
+                LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset.getFileName(true));
                 return handle::null;
             }
         }

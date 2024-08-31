@@ -1,6 +1,7 @@
-#ifndef MAGIQUE_XMLUTIL_H
-#define MAGIQUE_XMLUTIL_H
+#ifndef MAGIQUE_XML_UTIL_H
+#define MAGIQUE_XML_UTIL_H
 
+#include <cassert>
 #include <cxutil/cxstring.h>
 
 template <typename T>
@@ -18,15 +19,25 @@ T XMLGetValueInLine(const char* line, const char* name, T orElse)
                 i += +2; // Skip name + ="
                 if constexpr (std::is_integral_v<T>)
                 {
-                    return static_cast<T>(cxstructs::str_parse_int(&line[i]));
+                    auto parsedValue = cxstructs::str_parse_int(&line[i]);
+                    assert(parsedValue <= std::numeric_limits<T>::max() &&
+                           "Parsed value exceeds the maximum value of the target type");
+                    return static_cast<T>(parsedValue);
                 }
                 else if constexpr (std::is_floating_point_v<T>)
                 {
-                    return static_cast<T>(cxstructs::str_parse_float(&line[i]));
+                    auto parsedValue = cxstructs::str_parse_float(&line[i]);
+                    assert(parsedValue <= std::numeric_limits<T>::max() &&
+                           "Parsed value exceeds the maximum value of the target type");
+                    return static_cast<T>(parsedValue);
                 }
                 else if constexpr (std::is_same_v<T, const char*>)
                 {
                     return &line[i];
+                }
+                else
+                {
+                    static_assert(std::is_same_v<T, float>, "Unsupported type");
                 }
             }
         }
@@ -63,8 +74,10 @@ inline bool XMLLineContainsCloseTag(const char* line)
         {
             return true;
         }
-        i += 2;
+        i++;
     }
     return false;
 }
-#endif //MAGIQUE_XMLUTIL_H
+
+
+#endif //MAGIQUE_XML_UTIL_H

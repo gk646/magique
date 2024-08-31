@@ -64,6 +64,14 @@ namespace magique::internal
         return handle::null;                                                                                            \
     }
 
+#define ASSET_CHECK_IMAGE_DIVISIBILITY(image, checkW, checkH)                                                           \
+    if ((image.width % checkW != 0) || (image.height % checkH != 0))                                                    \
+    {                                                                                                                   \
+        LOG_WARNING("Image dimensions (%d x %d) are not a multiple of the specified frame size (%d x %d). "             \
+                    "Only full frames will be used.",                                                                   \
+                    image.width, image.height, checkW, checkH);                                                         \
+    }
+
 //----------------- BUILDING -----------------//
 
 #ifdef __APPLE__

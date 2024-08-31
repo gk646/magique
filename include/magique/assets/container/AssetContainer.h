@@ -26,7 +26,7 @@ namespace magique
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
         // Relative to the compiled image root e.g. res/player/idle - compile("./res") - iterate("player/idle");
-        void iterateDirectory(const char* directory, const std::function<void(const Asset&)>& func) const;
+        void iterateDirectory(const char* directory, const std::function<void(Asset asset)>& func) const;
 
         // Retrieves the first asset that matches the given path
         // This is a fast operation  - O (log n)

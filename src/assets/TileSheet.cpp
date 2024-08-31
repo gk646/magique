@@ -54,7 +54,7 @@ namespace magique
         UnloadImage(img);
     }
 
-    TileSheet::TileSheet(const std::vector<const Asset*>& assets, const int textureSize, const float scale) {}
+    TileSheet::TileSheet(const std::vector<Asset>& assets, const int textureSize, const float scale) {}
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {

@@ -15,6 +15,8 @@
 //      - TileSet: Allows to define certain tile-indices as solid making them (you then also need to load the maps)
 //      - Manual: Manually add and manage collider groups
 // Note: The methods can be used in any combination, they all work together and do not incur a cost when ignored
+// Note: Collidable means that a collision is detected and the event method called. Simulating something as solid is done
+//       through calling AccumulateCollision() in the EntityScript
 // ................................................................................
 
 namespace magique
@@ -27,23 +29,25 @@ namespace magique
     //----------------- TILEMAP -----------------//
 
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
-    // Needs to be called whenever any actor enters a map - once set further calls with the same vector are skipped!
+    // Needs to be called whenever any actor enters a map - if the vector is already loaded its skipped!
     // All objects Will be unloaded automatically when no actors are left in the map
     // Note: You can load up to MAGIQUE_MAX_OBJECT_LAYERS many vectors for each map - only visible objects are loaded!
     // Note: If you applied scaling to the texture needs to be applied here as well
-    void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1.0F);
+    void LoadMapColliders(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1);
 
     //----------------- TILESET -----------------//
 
-    // Sets the global tileset and allows to specify which class numbers mark a collidable tile - also the global tile size
+    // Sets the global tileset and allows to specify which class numbers mark a collidable tile
     // Note: In Tiled click on the tileset file -> select any tiles that should be solid and set the class property (e.g. 1)
-    // Note: Can also be use for non-solid tiles to define special areas (water, slime...)
-    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, float tileSize);
+    // Note: Can also be use for non-solid tiles to define special areas (water, slime, poison, ...)
+    // Note: Supports the Tile Collision Editor (only Rectangles!) - allows to define a custom collision area per tile
+    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, float scale = 1);
 
-    // Loads map data so positions can be looked up
-    // Load all maps at the start or load the new map when an actor enters it - duplicate calls don't matter
-    // layers   - specifies which layers are collision
-    void LoadTileMap(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
+    // Parses the tile data of the given map and inserts correct static colliders
+    // Note: You need to call LoadGlobalTileSet() first if you wanna use that as the tileset is used to lookup data
+    // Needs to be called whenever any actor enters a map - if the map is already loaded its skipped!
+    //       - layers: specifies which layers to parse (e.g. what layers contain collidable tiles: background, ...)
+    void LoadTileMapCollisions(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
 
     //----------------- MANUAL -----------------//
 

@@ -16,3 +16,6 @@ cmake-*
 # Index file
 *.magique
 examples/**/*.clang-format
+
+# Private files
+TODO

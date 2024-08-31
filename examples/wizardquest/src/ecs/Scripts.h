@@ -5,6 +5,13 @@
 
 struct PlayerScript final : EntityScript
 {
+    void onTick(entt::entity self) override
+    {
+        auto& anim = GetComponent<AnimationC>(self);
+        if (anim.currentState == AnimationState::JUMP && anim.getHasAnimationPlayed())
+            anim.setAnimationState(AnimationState::IDLE);
+    }
+
     void onKeyEvent(entt::entity self) override
     {
         auto& mov = GetComponent<MovementC>(self);
@@ -17,6 +24,26 @@ struct PlayerScript final : EntityScript
             mov.baseVelocX -= stats.moveSpeed;
         if (IsKeyDown(KEY_D))
             mov.baseVelocX += stats.moveSpeed;
+
+        auto& anim = GetComponent<AnimationC>(self);
+
+        if (IsKeyPressed(KEY_SPACE))
+        {
+            anim.setAnimationState(AnimationState::JUMP);
+            return;
+        }
+
+        if (anim.currentState == AnimationState::JUMP)
+            return;
+
+        if (mov.baseVelocX != 0.0f || mov.baseVelocY != 0.0f)
+        {
+            anim.setAnimationState(AnimationState::RUN);
+        }
+        else
+        {
+            anim.setAnimationState(AnimationState::IDLE);
+        }
     }
 
     void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
@@ -29,8 +56,8 @@ struct PlayerScript final : EntityScript
                 return;
             }
         }
-        if(collider.type == ColliderType::TILESET_TILE)return;
-
+        if (collider.type == ColliderType::TILESET_TILE)
+            return;
         AccumulateCollision(self, info);
     }
 };

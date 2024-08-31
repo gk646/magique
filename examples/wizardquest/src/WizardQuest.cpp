@@ -34,12 +34,11 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-        CreateEntity(PLAYER, 55, 55, MapID::LEVEL_3);
+    CreateEntity(PLAYER, 55, 55, MapID::LEVEL_1);
     auto map = GetCameraMap();
-
-    LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
-    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET),{1},48.0F);
-    LoadTileMap(map,GetTileMap(HandleID(map)),{0,1});
+    // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
+    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET),{1},3);
+     LoadTileMapCollisions(map,GetTileMap(HandleID(map)),{0,1});
     SetGameState(GameState::GAME);
 }
 
@@ -47,10 +46,19 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
 {
     BeginMode2D(camera);
     auto map = GetCameraMap();
-    const auto& tileMap = GetTileMap(GetHandle(HandleID((int)HandleID::MAPS + (int)map)));
-    DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 0);
-    DrawTileMap(tileMap, GetTileSheet(GetHandle(HandleID::TILESHEET)), 1);
-    DrawHashGridDebug();
+    const auto& tileMap = GetTileMap(HandleID::LEVEL_1);
+    DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 0);
+    DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 1);
+
+    for (const auto entity : GetDrawEntities())
+    {
+        if (EntityHasComponents<AnimationC>(entity))
+        {
+            const auto& pos = GetComponent<PositionC>(entity);
+            const auto& anim = GetComponent<AnimationC>(entity);
+            DrawRegion(anim.getCurrentFrame(), pos.x, pos.y);
+        }
+    }
     EndMode2D();
 }
 
@@ -76,6 +84,7 @@ void WizardQuest::updateGame(GameState gameState)
         break;
     case GameState::GAME:
         MovementSystem::update();
+        AnimationSystem::update();
         break;
     case GameState::GAME_OVER:
         break;
@@ -98,7 +107,6 @@ void WizardQuest::updateGame(GameState gameState)
         {
         }
     }
-
 }
 
 void WizardQuest::onShutDown()
