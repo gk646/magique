@@ -96,7 +96,7 @@ struct Test final : Game
     {
         SetRandomSeed(100);
         SetShowHitboxes(true);
-        const auto playerFunc = [](entt::entity e)
+        const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
             GiveScript(e);
@@ -105,7 +105,7 @@ struct Test final : Game
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
-        const auto objFunc = [](entt::entity e)
+        const auto objFunc = [](entt::entity e, EntityType type)
         {
             GiveScript(e);
             const auto val = GetRandomValue(0, 100);
@@ -129,8 +129,8 @@ struct Test final : Game
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
-        SetScript(PLAYER, new PlayerScript());
-        SetScript(OBJECT, new ObjectScript());
+        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(OBJECT, new ObjectScript());
         CreateEntity(PLAYER, 2500, 2500, MapID(0));
         for (int i = 0; i < 50'000; ++i)
         {

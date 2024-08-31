@@ -1,5 +1,4 @@
 #include <functional>
-#include <cxutil/cxstring.h>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
@@ -14,7 +13,11 @@ struct Sorter
         auto [baseA, baseALength, numA] = SplitPathAndNumber(a);
         auto [baseB, baseBLength, numB] = SplitPathAndNumber(b);
 
-        int basePathComparison = std::strncmp(baseA, baseB, std::min(baseALength, baseBLength));
+        int basePathComparison = strncmp(baseA, baseB, std::min(baseALength, baseBLength));
+        if (basePathComparison == 0 && baseALength != baseBLength)
+        {
+            basePathComparison = baseALength < baseBLength ? -1 : 1;
+        }
         if (basePathComparison != 0)
         {
             return basePathComparison < 0;
@@ -25,9 +28,9 @@ struct Sorter
             return numA < numB;
         }
 
-        return *a > *b;
+        return strcmp(a, b) < 0;
     }
-    static bool Directory(const char* a, const char* b, int bSize) { return strncmp(a, b, bSize) < 0; }
+    static bool Directory(const char* a, const char* b, const int bSize) { return strncmp(a, b, bSize) < 0; }
 
 private:
     static bool isDigit(const char c) { return c >= '0' && c <= '9'; }
@@ -122,13 +125,12 @@ namespace magique
         QuickSort(assets.data(), static_cast<int>(assets.size()), comparator);
     }
 
-    void AssetContainer::iterateDirectory(const char* name, const std::function<void(const Asset&)>& func) const
+    void AssetContainer::iterateDirectory(const char* name, const std::function<void(Asset)>& func) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
-
         const int size = static_cast<int>(strlen(name));
-        int pos = FindDirectoryPos(assets, name, size);
 
+        int pos = FindDirectoryPos(assets, name, size);
         if (pos == -1) [[unlikely]]
         {
             LOG_WARNING("No directory with name %s found!", name);
@@ -168,12 +170,11 @@ namespace magique
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
-        for (const auto& a : assets)
+        for (const auto& asset : assets)
         {
-            if (cxstructs::str_cmp_rev(a.path, name) == 0)
-                return a;
+            if (asset.endsWith(name))
+                return asset;
         }
-
         LOG_ERROR("No asset with name %s found! Returning empty asset", name);
         return Asset();
     }

@@ -10,15 +10,15 @@ IGNORE_WARNING(4100)
 //-----------------------------------------------
 // ................................................................................
 // I thought quite a bit about how to do scripting. The main problem is that by
-// allowing users to create their own components and functions its very hard
-// to create a good scripting interface. This problem doesnt occur in other engines
-// as they know all their components upfront and dont expose a lot of internal workings.
-// This approach allows for vast, type safe! customization inside C++, while keeping
-// the configuration manageable. Also this is still universal enough that supporting
+// allowing users to create their own components and functions it's very hard
+// to create a good scripting interface. This problem doesn't occur in other engines
+// as they know all their components upfront and don't expose a lot of internal workings.
+// This approach allows for vast, type safe! Customization inside C++, while keeping
+// the configuration manageable. Also, this is still universal enough that supporting
 // external scripting is still possible without changing the model.
 // A script here is actually global for all entities of that type and only exists once!
 // All players have the same logic, all skeletons have the same base logic.
-// Of course their component state can be different and they will behave differently...
+// Of course their component state can be different, and they will behave differently...
 // ................................................................................
 
 namespace magique
@@ -71,7 +71,7 @@ namespace magique
             AccumulateCollision(self, info); /// Treats the other shape as solid per default
         }
 
-        // Called once at the beginning of each tick IF keystate changed - press or release
+        // Called once at the beginning of each tick IF key state changed - press or release
         virtual void onKeyEvent(entt::entity self) {}
 
         // Called once at the beginning of each tick IF mouse state changed - includes mouse movement
@@ -103,7 +103,7 @@ namespace magique
     EntityScript* GetEntityScript(EntityType entity);
 
     // Calls the given event function on the given entity
-    // Note: If you want to access non inherited methods you HAVE to pass your subclass type
+    // Note: If you want to access non-inherited methods you HAVE to pass your subclass type
     // IMPORTANT: 'arguments' are only parameters after the self id - its passed implicitly
     // Examples:   InvokeEvent<onKeyEvent>(self);
     //             InvokeEvent<onItemPickup, MyPlayerScript>(self, item);

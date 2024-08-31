@@ -199,7 +199,8 @@ namespace magique
     AnimationC& GiveAnimation(const entt::entity entity, const EntityType type, const AnimationState startState)
     {
         const auto& animation = GetEntityAnimation(type);
-        auto comp = AnimationC{&animation, 0, startState, startState};
+        auto comp = AnimationC{animation};
+        comp.setAnimationState(startState);
         return internal::REGISTRY.emplace<AnimationC>(entity, comp);
     }
 

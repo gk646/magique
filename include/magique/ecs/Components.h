@@ -80,8 +80,16 @@ namespace magique
     // Animation component references an animation and saves its current state
     struct AnimationC final
     {
+        explicit AnimationC(const EntityAnimation& animation);
+
         // Returns the current region to draw
         [[nodiscard]] TextureRegion getCurrentFrame() const;
+
+        // Returns true if the current animation played at least once
+        // Useful for when you want to stop certain animations after they played once
+        [[nodiscard]] bool getHasAnimationPlayed() const;
+
+        [[nodiscard]] AnimationState getCurrentState() const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
@@ -89,10 +97,13 @@ namespace magique
         // Sets a new action state - automatically reset the spritecount to 0 when a state change happens
         void setAnimationState(AnimationState state);
 
-        const EntityAnimation* entityAnimation = nullptr; // Always valid
-        uint16_t spriteCount = 0;
-        AnimationState lastState{};
-        AnimationState currentState{};
+    private:
+        SpriteAnimation currentAnimation;
+        const EntityAnimation* entityAnimation; // Always valid
+        uint16_t spriteCount;
+        uint16_t animationStart;
+        AnimationState lastState;
+        AnimationState currentState;
     };
 
 } // namespace magique

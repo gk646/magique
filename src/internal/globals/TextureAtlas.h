@@ -23,7 +23,7 @@ namespace magique
 
         TextureRegion addTexture(const Image& image, const int tarW, const int tarH)
         {
-            initialize();
+            lazyInit();
             TextureRegion region = {};
             if (!isFullAndSkipToNextRowIfNeeded(tarW, tarH))
                 return region;
@@ -45,57 +45,80 @@ namespace magique
             return region;
         }
 
-        SpriteSheet addSpriteSheet(const Image& img, const int frames, const int tarW, const int tarH, int offX,
-                                   int offY)
+        SpriteSheet addSpriteSheet(Image& img, const int srcW, const int srcH, const float scale)
         {
-            initialize();
-            SpriteSheet sheet = {};
+            lazyInit(); // Only load a texture if atlas is actually used
+            // Cache
+            const int tarW = static_cast<int>(static_cast<float>(srcW) * scale);
+            const int tarH = static_cast<int>(static_cast<float>(srcH) * scale);
+            const int frames = img.width / srcW * (img.height / srcH);
             const int totalWidth = frames * tarW;
+
+            SpriteSheet sheet = {};
             if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
                 return sheet;
 
-            sheet.width = static_cast<int16_t>(tarW);
-            sheet.height = static_cast<int16_t>(tarH);
-            sheet.offX = static_cast<uint16_t>(posX);
-            sheet.offY = static_cast<uint16_t>(posY);
-            sheet.id = id;
-            sheet.frames = static_cast<uint16_t>(frames);
-            Image atlasImage = getImg();
+            // Assign sheet
+            assignSheet(sheet, tarW, tarH, frames);
 
-            if (offX == 0) // Load whole image
+            Image atlasImage = getImg(); // The current image of the atlas in the RAM
+            Rectangle src = {0, 0, static_cast<float>(srcW), static_cast<float>(srcH)};
+            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), (float)tarW, (float)tarH};
+
+            while (true)
             {
-                while (true)
+                ImageDraw(&atlasImage, img, src, dest, WHITE);
+                src.x += static_cast<float>(srcW);
+                dest.x += static_cast<float>(tarW);
+                if (src.x >= static_cast<float>(img.width))
                 {
-                    const Rectangle src = {(float)offX, (float)offY, (float)tarW, (float)tarH};
-                    const Rectangle dest = {(float)posX, (float)posY, (float)tarW, (float)tarH};
-                    ImageDraw(&atlasImage, img, src, dest, WHITE);
-                    offX += tarW;
-                    posX += tarW;
-                    if (offX >= img.width)
-                    {
-                        offX = 0;
-                        offY += tarH;
-                        if (offY >= img.height)
-                            break;
-                    }
+                    src.x = 0.0F;
+                    src.y += static_cast<float>(tarH);
+                    if (src.y >= static_cast<float>(img.height))
+                        break; // We reached the end by going row by row
                 }
             }
-            else // Load part of image
+            posX = static_cast<int>(dest.x);
+            UnloadImage(img);
+            return sheet;
+        }
+
+        SpriteSheet addSpriteSheetEx(Image& img, const int srcW, const int srcH, const float scale, const int frames,
+                                     const float offX, const float offY)
+        {
+            lazyInit(); // Only load a texture if atlas is actually used
+
+            // Cache
+            const int tarW = static_cast<int>(static_cast<float>(srcW) * scale);
+            const int tarH = static_cast<int>(static_cast<float>(srcH) * scale);
+            const int totalWidth = frames * tarW;
+
+            SpriteSheet sheet = {};
+            if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
+                return sheet;
+
+            // Assign sheet
+            assignSheet(sheet, tarW, tarH, frames);
+
+            Image atlasImage = getImg(); // The current image of the atlas in the RAM
+            Rectangle src = {offX, offY, static_cast<float>(srcW), static_cast<float>(srcH)};
+            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), (float)tarW, (float)tarH};
+
+            for (int i = 0; i < frames; ++i)
             {
-                for (int i = 0; i < frames; ++i)
+                ImageDraw(&atlasImage, img, src, dest, WHITE);
+                src.x += static_cast<float>(srcW);
+                dest.x += static_cast<float>(tarW);
+                if (src.x >= static_cast<float>(img.width))
                 {
-                    const Rectangle src = {(float)offX, (float)offY, (float)tarW, (float)tarH};
-                    const Rectangle dest = {(float)posX, (float)posY, (float)tarW, (float)tarH};
-                    ImageDraw(&atlasImage, img, src, dest, WHITE);
-                    posX += tarW; // We check atlas line upfront - only support sheet in continuous line
-                    offX += tarW;
-                    if (offX > img.width)
-                    {
-                        offX = 0;
-                        offY += tarH;
-                    }
+                    src.x = 0.0F;
+                    src.y += static_cast<float>(tarH);
+                    if (src.y >= static_cast<float>(img.height))
+                        break; // We reached the end by going row by row
                 }
             }
+
+            posX = static_cast<int>(dest.x);
             UnloadImage(img);
             return sheet;
         }
@@ -110,7 +133,17 @@ namespace magique
         }
 
     private:
-        void initialize()
+        void assignSheet(SpriteSheet& sheet, const int tarW, const int tarH, const int frames) const
+        {
+            sheet.width = static_cast<int16_t>(tarW);
+            sheet.height = static_cast<int16_t>(tarH);
+            sheet.offX = static_cast<uint16_t>(posX);
+            sheet.offY = static_cast<uint16_t>(posY);
+            sheet.id = id;
+            sheet.frames = static_cast<uint16_t>(frames);
+        }
+
+        void lazyInit()
         {
             if (initialized)
                 return;

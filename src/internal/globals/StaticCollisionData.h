@@ -1,5 +1,5 @@
-#ifndef STATICCOLLISIONDATA_H
-#define STATICCOLLISIONDATA_H
+#ifndef STATIC_COLLISION_DATA_H
+#define STATIC_COLLISION_DATA_H
 
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/Macros.h>
@@ -70,7 +70,7 @@ namespace magique
         }
     };
 
-    struct StaticIDHelper final // Helps getting individual parts from the static ids
+    struct StaticIDHelper final // Helps to get individual parts from the static ids
     {
         static uint32_t GetObjectNum(const StaticID id) { return static_cast<uint32_t>(id >> 32); }
 
@@ -87,9 +87,12 @@ namespace magique
 
     struct ObjectReferenceHolder final
     {
+        // Maps + which vectors where loaded
         HashMap<MapID, vector<uint32_t>> tileObjectMap;
         HashMap<MapID, std::array<const std::vector<TileObject>*, MAGIQUE_MAX_OBJECT_LAYERS>> objectVectors;
-        HashMap<MapID, vector<uint32_t>> markedTilesMap;
+        // Tiles + which maps where loaded
+        HashMap<MapID, vector<uint32_t>> markedTilesDataMap;
+        // Groups
         HashMap<int, vector<uint32_t>> groupMap; // Holds manual collider groups
     };
 
@@ -115,8 +118,8 @@ namespace magique
 
         //----------------- TILESET -----------------//
         const TileSet* tileSet = nullptr; // Only use for equality checks
-        float tileSize = 16.0F;           // tilesize
-        HashSet<uint16_t> markedTilesMap; // holds information on which tiles are marked for collisions
+        float tileSetScale = 1.0f;
+        HashMap<uint16_t, TileInfo> markedTilesMap; // which tiles are marked and their tile info
 
         void unloadMap(const MapID map)
         {
@@ -141,9 +144,9 @@ namespace magique
                 objectReferences.objectVectors.erase(map);
             }
 
-            if (objectReferences.markedTilesMap.contains(map))
+            if (objectReferences.markedTilesDataMap.contains(map))
             {
-                clearGridAndVec(objectReferences.markedTilesMap[map], tileGrid);
+                clearGridAndVec(objectReferences.markedTilesDataMap[map], tileGrid);
             }
         }
 
@@ -158,4 +161,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //STATICCOLLISIONDATA_H
+#endif //STATIC_COLLISION_DATA_H

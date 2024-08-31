@@ -11,6 +11,8 @@ namespace magique
     bool Asset::hasExtension(const char* extension) const
     {
         MAGIQUE_ASSERT(extension != nullptr, "Passing nullptr");
+        if (extension == nullptr)
+            return false;
         const auto* ext = strrchr(path, '.');
         if (ext == nullptr || ext == path)
             return false;
@@ -20,6 +22,8 @@ namespace magique
     bool Asset::startsWith(const char* prefix) const
     {
         MAGIQUE_ASSERT(prefix != nullptr, "Passing nullptr");
+        if (prefix == nullptr)
+            return false;
         const auto len = strlen(prefix);
         return strncmp(path, prefix, len) == 0;
     }
@@ -27,10 +31,24 @@ namespace magique
     bool Asset::endsWith(const char* suffix) const
     {
         MAGIQUE_ASSERT(suffix != nullptr, "Passing nullptr");
-        return false;
+        if (suffix == nullptr)
+            return false;
+        const size_t pathLen = strlen(path);
+        const size_t suffixLen = strlen(suffix);
+
+        if (suffixLen > pathLen)
+            return false;
+
+        return strcmp(path + pathLen - suffixLen, suffix) == 0;
     }
 
-    bool Asset::contains(const char* str) const { return false; }
+    bool Asset::contains(const char* str) const
+    {
+        if (str == nullptr)
+            return false;
+        const char* found = strstr(path, str);
+        return found != nullptr;
+    }
 
     const char* Asset::getFileName(const bool extension) const
     {

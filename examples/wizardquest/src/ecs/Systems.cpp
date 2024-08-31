@@ -19,3 +19,16 @@ void MovementSystem::update()
         pos.y += y;
     }
 }
+
+void AnimationSystem::update()
+{
+
+    for (const auto e : GetUpdateEntities())
+    {
+        if (EntityHasComponents<AnimationC>(e))
+        {
+            auto& anim = GetComponent<AnimationC>(e);
+            anim.update();
+        }
+    }
+}

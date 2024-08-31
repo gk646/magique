@@ -1,4 +1,5 @@
 #include <magique/core/Animations.h>
+#include <magique/core/Animations.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
 
@@ -6,11 +7,33 @@ namespace magique
 {
     //----------------- ANIMATION -----------------//
 
-    TextureRegion AnimationC::getCurrentFrame() const
+    void AnimationC::setAnimationState(const AnimationState state)
     {
-        const auto animation = entityAnimation->getCurrentAnimation(currentState);
-        return animation.getCurrentFrame(spriteCount);
+        if (state != currentState)
+        {
+            lastState = currentState;
+            currentState = state;
+            spriteCount = 0;
+            currentAnimation = entityAnimation->getCurrentAnimation(state);
+            animationStart = spriteCount;
+        }
     }
+
+    AnimationC::AnimationC(const EntityAnimation& animation) :
+        currentAnimation({}), entityAnimation(&animation), spriteCount(0), animationStart(0),
+        lastState(AnimationState{}), currentState(AnimationState{})
+    {
+    }
+
+    TextureRegion AnimationC::getCurrentFrame() const { return currentAnimation.getCurrentFrame(spriteCount); }
+
+    bool AnimationC::getHasAnimationPlayed() const
+    {
+
+        return spriteCount > (animationStart + currentAnimation.duration * currentAnimation.sheet.frames);
+    }
+
+    AnimationState AnimationC::getCurrentState() const { return currentState; }
 
     void AnimationC::update() { ++spriteCount; }
 
@@ -25,16 +48,6 @@ namespace magique
     }
 
     void CollisionC::unsetAll() { layerMask = 0; }
-
-    void AnimationC::setAnimationState(const AnimationState state)
-    {
-        if (state != currentState)
-        {
-            lastState = currentState;
-            currentState = state;
-            spriteCount = 0;
-        }
-    }
 
     void CollisionC::setLayer(const CollisionLayer layer, const bool enabled)
     {

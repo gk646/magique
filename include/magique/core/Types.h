@@ -96,10 +96,16 @@ namespace magique
 
     struct TileInfo final
     {
+        uint8_t hitBoxX = 0;
+        uint8_t hitBoxY = 0;
+        uint8_t hitBoxW = 0;
+        uint8_t hitBoxH = 0;
+
         uint16_t tileID = UINT16_MAX; // ID of the tile
-        float probability = 1.0F;     // probability attribute
 
         [[nodiscard]] int getClass() const;
+
+        [[nodiscard]] Rectangle getCollisionRect(float scale = 1.0F) const;
 
     private:
         int clazz = INT32_MAX; // class attribute
