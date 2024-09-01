@@ -1,5 +1,5 @@
-#ifndef RENDERUTIL_H
-#define RENDERUTIL_H
+#ifndef MAGIQUE_MAIN_THREAD_UTIL_H
+#define MAGIQUE_MAIN_THREAD_UTIL_H
 
 inline void SetTargetFPS(const int fps) // raylib function implemented here
 {
@@ -27,7 +27,8 @@ inline int GetFPS()
 
     const double currentTime = GetTime();
 
-    const int currFPS = static_cast<int>(std::round(static_cast<double>(config.frameCounter) / (currentTime - lastTime)));
+    const int currFPS =
+        static_cast<int>(std::round(static_cast<double>(config.frameCounter) / (currentTime - lastTime)));
 
     sumFPS -= fpsBuffer[index];
     fpsBuffer[index] = currFPS;
@@ -147,12 +148,37 @@ namespace magique
     inline void AssignCameraPosition(const entt::registry& registry)
     {
         auto& data = global::ENGINE_DATA;
+        auto& config = global::ENGINE_CONFIG;
         const auto view = registry.view<const CameraC, const PositionC>();
+        const auto smoothing = 1.0F - config.cameraSmoothing; // The higher the value the smoother
         for (const auto e : view)
         {
-            const auto pos = view.get<PositionC>(e);
-            data.camera.target.x = std::floor(pos.x);
-            data.camera.target.y = std::floor(pos.y);
+            const auto& pos = view.get<PositionC>(e);
+            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
+
+            Point targetPosition{pos.x, pos.y};
+            if (coll) [[likely]]
+            {
+                switch (coll->shape)
+                {
+                case Shape::RECT:
+                    targetPosition.x += coll->p1 / 2.0F;
+                    targetPosition.y += coll->p2 / 2.0F;
+                    break;
+                case Shape::CIRCLE:
+                    targetPosition.x += coll->p1;
+                    targetPosition.y += coll->p1;
+                    break;
+                case Shape::CAPSULE:
+                    targetPosition.x += coll->p1;
+                    targetPosition.y += coll->p2 / 2.0F;
+                    break;
+                case Shape::TRIANGLE:
+                    break;
+                }
+            }
+            data.camera.target.x = std::floor(data.camera.target.x + (targetPosition.x - data.camera.target.x) * smoothing);
+            data.camera.target.y = std::floor(data.camera.target.y + (targetPosition.y - data.camera.target.y) * smoothing);
         }
     }
 
@@ -160,7 +186,7 @@ namespace magique
 
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
-        global::CMD_DATA.update();      // First incase needs to block input
+        global::CMD_DATA.update();      // First in case needs to block input
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
@@ -198,4 +224,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //RENDERUTIL_H
+#endif //MAGIQUE_MAIN_THREAD_UTIL_H

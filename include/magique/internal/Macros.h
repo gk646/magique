@@ -75,9 +75,9 @@ namespace magique::internal
 //----------------- BUILDING -----------------//
 
 #ifdef __APPLE__
-#define INC_ALGO() #include<algorithm>
+#define INCLUDE_FUNCTIONAL() #include<functional>
 #else
-#define INC_ALGO()
+#define INCLUDE_FUNCTIONAL()
 #endif
 
 #ifdef _MSC_VER

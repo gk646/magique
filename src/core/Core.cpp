@@ -65,6 +65,11 @@ namespace magique
 
     void SetManualCameraOffset(const float x, const float y) { global::ENGINE_CONFIG.manualCamOff = {x, y}; }
 
+    void SetCameraSmoothing(float smoothing)
+    {
+
+    }
+
     void SetEntityCacheDuration(const int ticks)
     {
         global::ENGINE_CONFIG.entityCacheDuration = static_cast<uint16_t>(ticks);

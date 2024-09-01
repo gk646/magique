@@ -1,5 +1,5 @@
-#ifndef ANIMATIONS_H
-#define ANIMATIONS_H
+#ifndef MAGIQUE_ANIMATIONS_H
+#define MAGIQUE_ANIMATIONS_H
 
 #include <vector>
 #include <magique/core/Types.h>
@@ -23,9 +23,17 @@ namespace magique
 {
     struct EntityAnimation final
     {
+        // Sets the scaling for the offset and anchor points
+        explicit EntityAnimation(float scale = 1);
+
         // Sets the animation for this action state
         //      - frameDuration: the duration in ticks of each frame of the SpriteSheet
         void addAnimation(AnimationState state, SpriteSheet sheet, int frameDuration);
+
+        // Same as addAnimation but with extended parameters
+        // Allows to set a custom offset per state (e.g. to align the animation with the hitbox correctly)
+        //      - frameDuration: the duration in ticks of each frame of the SpriteSheet
+        void addAnimation(AnimationState state, SpriteSheet sheet, int frameDuration, Point offset, Point anchor = {});
 
         // Removes the animation for this state
         void removeAnimation(AnimationState state);
@@ -35,7 +43,8 @@ namespace magique
 
     private:
         std::vector<SpriteAnimation> animations;
-        bool isSet = false;
+        float scale;
+        bool isSet;
         friend struct AnimationData;
     };
 
@@ -50,4 +59,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //ANIMATIONS_H
+#endif //MAGIQUE_ANIMATIONS_H

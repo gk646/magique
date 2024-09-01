@@ -14,7 +14,7 @@ namespace magique
         {
             const int typeNum = type;
             if (typeNum >= animations.size())
-                animations.resize(typeNum + 1, {});
+                animations.resize(typeNum + 1, EntityAnimation{1});
             animations[typeNum] = animation;
             animations[typeNum].isSet = true;
         }
@@ -36,13 +36,33 @@ namespace magique
 {
     AnimationData ANIMATION_DATA{};
 
+    //----------------- ENTITY ANIMATION -----------------//
+
+    EntityAnimation::EntityAnimation(const float scale) : scale(scale), isSet(false) {}
+
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration)
     {
         const int stateNum = static_cast<int>(state);
         if (stateNum >= static_cast<int>(animations.size()))
             animations.resize(stateNum + 1);
-        animations[stateNum].duration = static_cast<uint16_t>(frameDuration);
-        animations[stateNum].sheet = sheet;
+        auto& animation = animations[stateNum];
+        animation.duration = static_cast<uint16_t>(frameDuration);
+        animation.sheet = sheet;
+    }
+
+    void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration,
+                                         const Point offset, const Point anchor)
+    {
+        const int stateNum = static_cast<int>(state);
+        if (stateNum >= static_cast<int>(animations.size()))
+            animations.resize(stateNum + 1);
+        auto& animation = animations[stateNum];
+        animation.duration = static_cast<uint16_t>(frameDuration);
+        animation.sheet = sheet;
+        animation.offX = static_cast<int16_t>(offset.x * scale);
+        animation.offY = static_cast<int16_t>(offset.y * scale);
+        animation.rotX = static_cast<int16_t>(anchor.x * scale);
+        animation.rotY = static_cast<int16_t>(anchor.y * scale);
     }
 
     void EntityAnimation::removeAnimation(AnimationState state)
@@ -50,8 +70,11 @@ namespace magique
         const int stateNum = static_cast<int>(state);
         if (stateNum > static_cast<int>(animations.size()))
             animations.resize(stateNum + 1);
-        animations[stateNum].duration = UINT16_MAX; // Mark as invalid
-        animations[stateNum].sheet = {};
+        auto& animation = animations[stateNum];
+        animation.duration = UINT16_MAX; // Mark as invalid
+        animation.sheet = {};
+        animation.offX = static_cast<int16_t>(0);
+        animation.offY = static_cast<int16_t>(0);
     }
 
     SpriteAnimation EntityAnimation::getCurrentAnimation(AnimationState state) const
@@ -60,7 +83,7 @@ namespace magique
         return animations[static_cast<int>(state)];
     }
 
-    //----------------- $EXPR$ -----------------//
+    //----------------- GLOBAL INTERFACE -----------------//
 
     void RegisterEntityAnimation(const EntityType type, const EntityAnimation& animation)
     {

@@ -4,6 +4,8 @@
 #include <vector>
 #include <entt/entity/fwd.hpp>
 #include <magique/fwd.hpp>
+#include <magique/internal/Macros.h>
+INCLUDE_FUNCTIONAL()
 
 //-----------------------------------------------
 // Core Module
@@ -33,21 +35,9 @@ namespace magique
     // Default: 1000
     void SetUpdateDistance(int distance);
 
-    // Adds additional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
-    // Useful for when you have large effects or entities
-    // Default: 250
-    void SetCameraViewPadding(int distance);
-
-    // Manually sets the camera offset from the top left of the screen
-    // Automatically set to half the screen dimensions and centered on the collision shape of the camera entity (if any)
-    // If any offset other than (0,0) is set there are no automatic adjustments
-    void SetManualCameraOffset(float x, float y);
-
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
     void SetLightingMode(LightingMode model);
-
-    //----------------- ENTITIES -----------------//
 
     // Sets the new camera holder - removes the component from the current and adds it to the new holder
     void SetCameraEntity(entt::entity entity);
@@ -73,6 +63,26 @@ namespace magique
     // Returns the currently loaded maps - fills up unused slots with UINT8_MAX
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
+    // Returns the game configuration
+    GameConfig& GetGameConfig();
+
+    //----------------- CAMERA -----------------//
+
+    // Adds additional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
+    // Useful for when you have large effects or entities
+    // Default: 250
+    void SetCameraViewPadding(int distance);
+
+    // Manually sets the camera offset from the top left of the screen
+    // Automatically set to half the screen dimensions and centered on the collision shape of the camera entity (if any)
+    // If any offset other than (0,0) is set there are no automatic adjustments
+    void SetManualCameraOffset(float x, float y);
+
+    // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the slowest
+    // Controls how fast the camera position catches up to the position of the camera holder
+    // Default: 0.9
+    void SetCameraSmoothing(float smoothing);
+
     // Returns the global camera
     Camera2D& GetCamera();
 
@@ -92,9 +102,6 @@ namespace magique
     // Returns the current camera holder
     entt::entity GetCameraEntity();
 
-    // Returns the game configuration
-    GameConfig& GetGameConfig();
-
     //----------------- UTILS -----------------//
 
     // Sets the engine font for performance-overlay and console
@@ -106,12 +113,11 @@ namespace magique
 
     //----------------- DEBUG -----------------//
 
-
     // If enabled display performance metrics on the top left
     // Default: false
     void SetShowPerformanceOverlay(bool val);
 
-    // If true shows red hitboxes for collidable entities
+    // If true shows red hitboxes for collidable entities - can get very expensive
     // This is the single point of truth - If two hitboxes visually overlap then a collision happened!
     void SetShowHitboxes(bool val);
 

@@ -17,16 +17,13 @@ namespace magique
 {
     //----------------- TEXTURES -----------------//
 
-    // Draws a given texture region
+    // Draws a given texture region - rotation happens around the middle point
     void DrawRegion(TextureRegion region, float x, float y, bool flipX = false, Color tint = WHITE);
 
-    // Draws a given texture region
-    // Rotation happens around the middle point
-    void DrawRegionEx(TextureRegion region, float x, float y, float rotation, bool flipX = false, Color tint = WHITE);
-
     // Draws the given texture region and scales it according to the destination rect
-    // Pass -width to flip the texture horizontally - rotation happens around the pivot point (rotX, rotY)
-    void DrawRegionPro(TextureRegion region, Rectangle dest, float rotation, float rotX, float rotY, Color tint = WHITE);
+    // Note: Pass a negative width/height to mirror the texture horizontally/vertically
+    // Rotation happens around the anchor (relative to the position)
+    void DrawRegionPro(TextureRegion region, Rectangle dest, float rotation = 0, Point anchor = {}, Color tint = WHITE);
 
     // Draws the given frame from the sprite sheet
     void DrawSprite(SpriteSheet sheet, float x, float y, int frame, bool flipX = false, Color tint = WHITE);

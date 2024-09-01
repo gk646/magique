@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_ENGINE_CONFIGU_H
-#define MAGIQUE_ENGINE_CONFIGU_H
+#ifndef MAGIQUE_ENGINE_CONFIG_H
+#define MAGIQUE_ENGINE_CONFIG_H
 
 #include <raylib/raylib.h>
 
@@ -25,6 +25,7 @@ namespace magique
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
         float entityUpdateDistance = 1000;          // Update distance
         float cameraViewPadding = 250;              // Padding around the cameras native bounds
+        float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
         LogLevel logLevel = LEVEL_INFO;             // All above info are visible
@@ -50,4 +51,4 @@ namespace magique
     }
 
 } // namespace magique
-#endif //MAGIQUE_ENGINE_CONFIGU_H
+#endif //MAGIQUE_ENGINE_CONFIG_H

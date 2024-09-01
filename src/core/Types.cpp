@@ -24,6 +24,8 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
+    Point SpriteAnimation::getAnchor() const { return {static_cast<float>(rotX), static_cast<float>(rotY)}; }
+
     //----------------- TILE OBJECT -----------------//
 
     const char* TileObject::getName() const
@@ -45,12 +47,8 @@ namespace magique
 
     Rectangle TileInfo::getCollisionRect(const float scale) const
     {
-        return {
-            static_cast<float>(hitBoxX) * scale,
-            static_cast<float>(hitBoxY) * scale,
-            static_cast<float>(hitBoxW) * scale,
-            static_cast<float>(hitBoxH) * scale
-        };
+        return {static_cast<float>(hitBoxX) * scale, static_cast<float>(hitBoxY) * scale,
+                static_cast<float>(hitBoxW) * scale, static_cast<float>(hitBoxH) * scale};
     }
 
     //----------------- COLLIDER INFO -----------------//
@@ -64,6 +62,7 @@ namespace magique
         }
         return data;
     }
+
     int ColliderInfo::getManualGroup() const
     {
         if (type != ColliderType::MANUAL_COLLIDER) [[unlikely]]
@@ -73,6 +72,7 @@ namespace magique
         }
         return data;
     }
+
     int ColliderInfo::getTileNum() const
     {
         if (type != ColliderType::TILESET_TILE) [[unlikely]]
