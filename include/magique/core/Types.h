@@ -72,8 +72,14 @@ namespace magique
     {
         SpriteSheet sheet{};
         uint16_t duration = UINT16_MAX;
+        int16_t offX = 0; // Draw offset
+        int16_t offY = 0;
+        int16_t rotX = 0; // Rotation anchor
+        int16_t rotY = 0;
 
         [[nodiscard]] TextureRegion getCurrentFrame(uint16_t spriteCount) const;
+
+        [[nodiscard]] Point getAnchor() const;
     };
 
     // Objects defined inside the tile editor

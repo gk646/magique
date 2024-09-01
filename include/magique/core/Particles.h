@@ -5,7 +5,7 @@
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
-INC_ALGO()
+INCLUDE_FUNCTIONAL()
 
 //-----------------------------------------------
 // Particle Module

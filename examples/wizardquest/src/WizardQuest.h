@@ -20,8 +20,7 @@ enum class MessageType : uint8_t
 enum EntityType : uint16_t
 {
     PLAYER,
-    E_ARCHER,
-    E_MELEE,
+    TROLL,
 };
 
 enum class MapID : uint8_t
@@ -54,6 +53,8 @@ enum class AnimationState : uint8_t
     IDLE,
     RUN,
     JUMP,
+    ATTACK_1,
+    ATTACK_2,
 };
 
 enum class AtlasID : int

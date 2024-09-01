@@ -22,7 +22,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 
     // Configure magique
-    SetShowHitboxes(true);
+     SetShowHitboxes(true);
     InitLocalMultiplayer();
     // SetStaticWorldBounds({0,0,1280,1000});
 
@@ -37,8 +37,8 @@ void WizardQuest::onLoadingFinished()
     CreateEntity(PLAYER, 55, 55, MapID::LEVEL_1);
     auto map = GetCameraMap();
     // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
-    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET),{1},3);
-     LoadTileMapCollisions(map,GetTileMap(HandleID(map)),{0,1});
+    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
+    LoadTileMapCollisions(map, GetTileMap(HandleID(map)), {0, 1});
     SetGameState(GameState::GAME);
 }
 
@@ -56,7 +56,8 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
         {
             const auto& pos = GetComponent<PositionC>(entity);
             const auto& anim = GetComponent<AnimationC>(entity);
-            DrawRegion(anim.getCurrentFrame(), pos.x, pos.y);
+            const auto& mov = GetComponent<MovementC>(entity);
+            anim.drawCurrentFrame(pos.x, pos.y, 0,mov.movedLeft);
         }
     }
     EndMode2D();

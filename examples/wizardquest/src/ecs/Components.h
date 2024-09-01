@@ -27,6 +27,8 @@ struct MovementC final
     float baseVelocX, baseVelocY; // Movement velocity - reset each frame
     float extVelocX, extVelocY;   // External velocity (forces)  - decays slowly
 
+    bool movedLeft = false;
+
     Point getVelocity()
     {
         const float totalDx = baseVelocX + extVelocX;

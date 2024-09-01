@@ -8,7 +8,7 @@ struct PlayerScript final : EntityScript
     void onTick(entt::entity self) override
     {
         auto& anim = GetComponent<AnimationC>(self);
-        if (anim.currentState == AnimationState::JUMP && anim.getHasAnimationPlayed())
+        if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
     }
 
@@ -25,6 +25,11 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             mov.baseVelocX += stats.moveSpeed;
 
+        if (mov.baseVelocX < 0)
+            mov.movedLeft = true;
+        else if (mov.baseVelocX > 0)
+            mov.movedLeft = false;
+
         auto& anim = GetComponent<AnimationC>(self);
 
         if (IsKeyPressed(KEY_SPACE))
@@ -33,7 +38,7 @@ struct PlayerScript final : EntityScript
             return;
         }
 
-        if (anim.currentState == AnimationState::JUMP)
+        if (anim.getCurrentState() == AnimationState::JUMP)
             return;
 
         if (mov.baseVelocX != 0.0f || mov.baseVelocY != 0.0f)
@@ -48,17 +53,13 @@ struct PlayerScript final : EntityScript
 
     void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
     {
-        if (collider.type == ColliderType::TILEMAP_OBJECT)
-        {
-            printf("Class: %d\n", collider.getColliderClass());
-            if (collider.getColliderClass() == 1)
-            {
-                return;
-            }
-        }
-        if (collider.type == ColliderType::TILESET_TILE)
-            return;
         AccumulateCollision(self, info);
     }
 };
+
+
+struct TrollScript final : EntityScript
+{
+};
+
 #endif //SCRIPTS_H

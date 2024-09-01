@@ -1,5 +1,5 @@
-#ifndef LOGICSYSTEM_H
-#define LOGICSYSTEM_H
+#ifndef MAGIQUE_LOGIC_SYSTEM_H
+#define MAGIQUE_LOGIC_SYSTEM_H
 
 namespace magique
 {
@@ -22,7 +22,7 @@ namespace magique
         }
     }
 
-    // This is a bit complicated as we dont know how many total maps there are
+    // This is a bit complicated as we don't know how many total maps there are
     // So we stay flexible with sbo vectors that expand if needed
     inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
                            Vector2 (&actorCircles)[4], cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS>& actorMaps,
@@ -75,7 +75,8 @@ namespace magique
             {
                 if (pos.rotation == 0)
                 {
-                    const auto bb = GetBBTriangle(pos.x, pos.y, pos.x+col.p1, pos.y+col.p2, pos.x+col.p3, pos.y+col.p4);
+                    const auto bb =
+                        GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
                     return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                 }
                 float txs[4] = {0, col.p1, col.p3, 0};
@@ -101,32 +102,7 @@ namespace magique
             const auto& pos = view.get<PositionC>(e);
             tickData.cameraMap = pos.map;
             tickData.cameraEntity = e;
-            tickData.camera.target = {pos.x, pos.y};
             tickData.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
-            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
-            if (coll) [[likely]]
-            {
-                switch (coll->shape)
-                {
-                case Shape::RECT:
-                    tickData.camera.target.x += coll->p1 / 2.0F;
-                    tickData.camera.target.y += coll->p2 / 2.0F;
-                    break;
-                case Shape::CIRCLE:
-                    tickData.camera.target.x += coll->p1;
-                    tickData.camera.target.y += coll->p1;
-                    break;
-                case Shape::CAPSULE:
-                    tickData.camera.target.x += coll->p1;
-                    tickData.camera.target.y += coll->p2 / 2.0F;
-                    break;
-                case Shape::TRIANGLE:
-                    break;
-                }
-            }
-            tickData.camera.target.x = std::floor(tickData.camera.target.x);
-            tickData.camera.target.y = std::floor(tickData.camera.target.y);
-
             const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
@@ -145,22 +121,22 @@ namespace magique
     inline void LogicSystem(const entt::registry& registry)
     {
         const auto& config = global::ENGINE_CONFIG;
-        auto& tickData = global::ENGINE_DATA;
-        auto& dyCollData = global::DY_COLL_DATA;
+        auto& data = global::ENGINE_DATA;
+        auto& dynamicData = global::DY_COLL_DATA;
 
         const auto& group = internal::POSITION_GROUP;
-        auto& hashGrid = dyCollData.hashGrid;
-        auto& drawVec = tickData.drawVec;
-        auto& cache = tickData.entityUpdateCache;
-        auto& updateVec = tickData.entityUpdateVec;
-        auto& collisionVec = tickData.collisionVec;
-        auto& loadedMaps = tickData.loadedMaps;
+        auto& hashGrid = dynamicData.hashGrid;
+        auto& drawVec = data.drawVec;
+        auto& cache = data.entityUpdateCache;
+        auto& updateVec = data.entityUpdateVec;
+        auto& collisionVec = data.collisionVec;
+        auto& loadedMaps = data.loadedMaps;
 
         AssignCameraData(registry);
 
         // Cache
         const auto updateDist = config.entityUpdateDistance * 2.0F;
-        const auto cameraMap = tickData.cameraMap;
+        const auto cameraMap = data.cameraMap;
         const uint16_t cacheDuration = config.entityCacheDuration;
         const auto camBound = GetCameraBounds();
         int actorCount = 0;
@@ -249,4 +225,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //LOGICSYSTEM_H
+#endif //MAGIQUE_LOGIC_SYSTEM_H

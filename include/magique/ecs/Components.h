@@ -11,6 +11,7 @@
 // Note that EntityID and MapID are both user defined types. They are used to identify different maps (levels, zones,...)
 // and entity types (classes, groups, ...).
 // Note: the 'C' stands for Component
+// Note: Unless you know what your doing these should NOT be changed.
 // ................................................................................
 
 namespace magique
@@ -37,6 +38,8 @@ namespace magique
         MapID map;         // The current map id of the entity
         EntityType type;   // Type of the entity
         uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
+
+        [[nodiscard]] float getRotation() const;
     };
 
     struct CollisionC final
@@ -60,6 +63,46 @@ namespace magique
         void unsetAll();
     };
 
+    // Animation component references an animation and saves its current state
+    struct AnimationC final
+    {
+        explicit AnimationC(const EntityAnimation& animation, AnimationState start);
+
+        // Draws the current frame applying the offset and rotation around the defined anchor
+        // Note: This is a quality of life method and can be done manually with the SpriteAnimation
+        void drawCurrentFrame(float x, float y, float rotation = 0, bool flipX = false, bool flipY = false) const;
+
+        // Progresses the animations - has to be called from the update method to be frame rate independent
+        void update();
+
+        // Sets a new action state - automatically reset the spritecount to 0 when a state change happens
+        void setAnimationState(AnimationState state);
+
+        //----------------- GETTERS -----------------//
+
+        // Returns the current animation
+        [[nodiscard]] SpriteAnimation getCurrentAnimation() const;
+
+        // Returns true if the current animation played at least once
+        // Useful for when you want to stop certain animations after they played once
+        [[nodiscard]] bool getHasAnimationPlayed() const;
+
+        // Returns the current animation state
+        [[nodiscard]] AnimationState getCurrentState() const;
+
+        // Returns the current sprite count
+        [[nodiscard]] uint8_t getSpriteCount() const;
+
+    private:
+        const EntityAnimation* entityAnimation; // Always valid
+        SpriteAnimation currentAnimation;
+        uint16_t spriteCount;
+        uint16_t animationStart;
+        AnimationState lastState;
+        AnimationState currentState;
+    };
+
+
     // If added entity will emit light
     struct EmitterC final
     {
@@ -75,35 +118,6 @@ namespace magique
         int16_t width;
         int16_t height;
         Shape shape;
-    };
-
-    // Animation component references an animation and saves its current state
-    struct AnimationC final
-    {
-        explicit AnimationC(const EntityAnimation& animation);
-
-        // Returns the current region to draw
-        [[nodiscard]] TextureRegion getCurrentFrame() const;
-
-        // Returns true if the current animation played at least once
-        // Useful for when you want to stop certain animations after they played once
-        [[nodiscard]] bool getHasAnimationPlayed() const;
-
-        [[nodiscard]] AnimationState getCurrentState() const;
-
-        // Progresses the animations - has to be called from the update method to be frame rate independent
-        void update();
-
-        // Sets a new action state - automatically reset the spritecount to 0 when a state change happens
-        void setAnimationState(AnimationState state);
-
-    private:
-        SpriteAnimation currentAnimation;
-        const EntityAnimation* entityAnimation; // Always valid
-        uint16_t spriteCount;
-        uint16_t animationStart;
-        AnimationState lastState;
-        AnimationState currentState;
     };
 
 } // namespace magique

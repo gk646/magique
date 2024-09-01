@@ -100,8 +100,8 @@ namespace magique
         if (it == hashMap.end())
         {
             const auto tileSize = data.tileSetScale * static_cast<float>(data.tileSet->getTileSize());
-            const auto width = tileMap.getWidth();
-            const auto height = tileMap.getHeight();
+            const auto mapWidth = tileMap.getWidth();
+            const auto mapHeight = tileMap.getHeight();
             const auto& markedMap = data.markedTilesMap;
             auto& tileGrid = data.tileGrid;
             auto& storage = data.objectStorage;
@@ -109,13 +109,13 @@ namespace magique
             for (const auto layer : layers)
             {
                 const auto start = tileMap.getLayerData(layer);
-                for (int i = 0; i < height; ++i)
+                for (int i = 0; i < mapHeight; ++i)
                 {
-                    const auto yOff = i * width;
-                    for (int j = 0; j < width; ++j)
+                    const auto yOff = i * mapWidth;
+                    for (int j = 0; j < mapWidth; ++j)
                     {
-                        const auto tileNum = start[yOff + j] - 1; // tile data is 1 more to mark empty as 0
-                        if (tileNum == UINT16_MAX)                // uint overflows to maximum value (0-1 = MAX)
+                        const auto tileNum = static_cast<uint16_t>(start[yOff + j] - 1); // tile data is 1 - empty is 0
+                        if (tileNum == UINT16_MAX) // uint overflows to maximum value (0-1 = MAX)
                             continue;
                         const auto infoIt = markedMap.find(tileNum);
                         if (infoIt != markedMap.end())
