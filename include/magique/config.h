@@ -34,6 +34,10 @@
 // Maximum amount of entities allowed per cell (less is better)
 #define MAGIQUE_MAX_ENTITIES_CELL 31
 
+// Sets the coarseness of the pathfinding grid
+// The smaller the more accurate the pathing but the longer it takes to calculate
+#define MAGIQUE_PATHFINDING_CELL_SIZE 16
+
 
 //----------------- ASSETS -----------------//
 
@@ -119,8 +123,15 @@ namespace std
 #endif
 
 #define IS_POWER_OF_TWO(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
+
 #if IS_POWER_OF_TWO(MAGIQUE_COLLISION_CELL_SIZE)
 #else
-#error "Cell size is not a power of 2. Choose either 32,64 or 128"
+#error "Collision Cell size is not a power of 2. Choose from: 32,64, 128"
 #endif
+
+#if IS_POWER_OF_TWO(MAGIQUE_PATHFINDING_CELL_SIZE)
+#else
+#error "PathFinding Cell size is not a power of 2. Choose from: 8,16,32"
+#endif
+
 #endif //MAGIQUE_CONFIG_H

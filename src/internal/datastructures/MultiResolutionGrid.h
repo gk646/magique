@@ -17,6 +17,88 @@ using CellID = int64_t;
 // We still use a hash function on it to get more byte range (all bits flipped)
 inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<int64_t>(cellX) << 32 | cellY; }
 
+template <int cellSize, typename IdFunc, typename Func>
+void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const float w, const float h)
+{
+    if (w > cellSize || h > cellSize) [[unlikely]] // Its bigger than a single cell
+    {
+        if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
+        {
+            const int startX = static_cast<int>(x) / cellSize;
+            const int startY = static_cast<int>(y) / cellSize;
+            const int endX = static_cast<int>(x + w) / cellSize;
+            const int endY = static_cast<int>(y + h) / cellSize;
+            for (int i = startY; i <= endY; ++i)
+            {
+                for (int j = startX; j <= endX; ++j)
+                {
+                    func(IdFunc(j, i));
+                }
+            }
+            return;
+        }
+        // 4 corners, the 4 middle pointes of the edges and the middle pointer -> 9 potential cells
+        const int x1 = static_cast<int>(x) / cellSize;
+        const int y1 = static_cast<int>(y) / cellSize;
+        const int x2 = static_cast<int>(x + w) / cellSize;
+        const int y2 = static_cast<int>(y + h) / cellSize;
+
+        const int xhalf = static_cast<int>(x + w / 2.0F) / cellSize;
+        const int yhalf = static_cast<int>(y + h / 2.0F) / cellSize;
+        // Process the corners
+        func(IdFunc(x1, y1)); // Top-left
+        if (x1 != x2)
+            func(IdFunc(x2, y1)); // Top-right
+        if (y1 != y2)
+            func(IdFunc(x1, y2)); // Bottom-left
+        if (x1 != x2 && y1 != y2)
+            func(IdFunc(x2, y2)); // Bottom-right
+
+        // edge midpoints
+        if (xhalf != x1 && xhalf != x2)
+        {
+            func(IdFunc(xhalf, y1)); // Top-edge midpoint
+            if (y1 != y2)
+                func(IdFunc(xhalf, y2)); // Bottom-edge midpoint
+        }
+        if (yhalf != y1 && yhalf != y2)
+        {
+            func(IdFunc(x1, yhalf)); // Left-edge midpoint
+            if (x1 != x2)
+                func(IdFunc(x2, yhalf)); // Right-edge midpoint
+        }
+
+        // Process the center point
+        if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
+            func(IdFunc(xhalf, yhalf));
+        return;
+    }
+    // Its smaller than a cell -> maximum of 4 cells
+    const int x1 = static_cast<int>(x) / cellSize;
+    const int y1 = static_cast<int>(y) / cellSize;
+    const int x2 = static_cast<int>(x + w) / cellSize;
+    const int y2 = static_cast<int>(y + h) / cellSize;
+
+    func(IdFunc(x1, y1));
+
+    if (x1 != x2)
+    {
+        func(IdFunc(x2, y1));
+
+        if (y1 != y2)
+        {
+            func(IdFunc(x1, y2));
+            func(IdFunc(x2, y2));
+            return;
+        }
+    }
+
+    if (y1 != y2)
+    {
+        func(IdFunc(x1, y2));
+    }
+}
+
 template <typename T, int size>
 struct DataBlock final
 {
@@ -96,13 +178,14 @@ struct SingleResolutionHashGrid final
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
-        processCells([this, val](const CellID cellID) { insertElement(cellID, val); }, x, y, w, h);
+        RasterizeRect<cellSize, GetCellID>([this, val](const CellID cellID) { insertElement(cellID, val); }, x, y, w, h);
     }
 
     template <typename Container>
     void query(Container& elems, const float x, const float y, const float w, const float h) const
     {
-        processCells([this, &elems](const CellID cellID) { queryElements(cellID, elems); }, x, y, w, h);
+        RasterizeRect<cellSize, GetCellID>([this, &elems](const CellID cellID) { queryElements(cellID, elems); }, x, y,
+                                           w, h);
     }
 
     void clear()
@@ -162,88 +245,6 @@ struct SingleResolutionHashGrid final
     [[nodiscard]] constexpr int getCellSize() const { return cellSize; }
 
 private:
-    template <typename Func>
-    void processCells(Func&& func, const float x, const float y, const float w, const float h) const
-    {
-        if (w > cellSize || h > cellSize) [[unlikely]] // Its bigger than a single cell
-        {
-            if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
-            {
-                const int startX = static_cast<int>(x) / cellSize;
-                const int startY = static_cast<int>(y) / cellSize;
-                const int endX = static_cast<int>(x + w) / cellSize;
-                const int endY = static_cast<int>(y + h) / cellSize;
-                for (int i = startY; i <= endY; ++i)
-                {
-                    for (int j = startX; j <= endX; ++j)
-                    {
-                        func(GetCellID(j, i));
-                    }
-                }
-                return;
-            }
-            // 4 corners, the 4 middle pointes of the edges and the middle pointer -> 9 potential cells
-            const int x1 = static_cast<int>(x) / cellSize;
-            const int y1 = static_cast<int>(y) / cellSize;
-            const int x2 = static_cast<int>(x + w) / cellSize;
-            const int y2 = static_cast<int>(y + h) / cellSize;
-
-            const int xhalf = static_cast<int>(x + w / 2.0F) / cellSize;
-            const int yhalf = static_cast<int>(y + h / 2.0F) / cellSize;
-            // Process the corners
-            func(GetCellID(x1, y1)); // Top-left
-            if (x1 != x2)
-                func(GetCellID(x2, y1)); // Top-right
-            if (y1 != y2)
-                func(GetCellID(x1, y2)); // Bottom-left
-            if (x1 != x2 && y1 != y2)
-                func(GetCellID(x2, y2)); // Bottom-right
-
-            // edge midpoints
-            if (xhalf != x1 && xhalf != x2)
-            {
-                func(GetCellID(xhalf, y1)); // Top-edge midpoint
-                if (y1 != y2)
-                    func(GetCellID(xhalf, y2)); // Bottom-edge midpoint
-            }
-            if (yhalf != y1 && yhalf != y2)
-            {
-                func(GetCellID(x1, yhalf)); // Left-edge midpoint
-                if (x1 != x2)
-                    func(GetCellID(x2, yhalf)); // Right-edge midpoint
-            }
-
-            // Process the center point
-            if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
-                func(GetCellID(xhalf, yhalf));
-            return;
-        }
-        // Its smaller than a cell -> maxium of 4 cells
-        const int x1 = static_cast<int>(x) / cellSize;
-        const int y1 = static_cast<int>(y) / cellSize;
-        const int x2 = static_cast<int>(x + w) / cellSize;
-        const int y2 = static_cast<int>(y + h) / cellSize;
-
-        func(GetCellID(x1, y1));
-
-        if (x1 != x2)
-        {
-            func(GetCellID(x2, y1));
-
-            if (y1 != y2)
-            {
-                func(GetCellID(x1, y2));
-                func(GetCellID(x2, y2));
-                return;
-            }
-        }
-
-        if (y1 != y2)
-        {
-            func(GetCellID(x1, y2));
-        }
-    }
-
     void patchBlockChain(DataBlock<V, blockSize>& startBlock)
     {
         DataBlock<V, blockSize>* start = &startBlock;
