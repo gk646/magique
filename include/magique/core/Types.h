@@ -199,12 +199,18 @@ namespace magique
 
     struct CollisionInfo final
     {
-        Point normalVector{};   // The direction  vector in which the object needs to be mover to resolve the collision
+        Point normalVector{};   // The direction vector in which the object needs to be moved to resolve the collision
         Point collisionPoint{}; // The point of contact (or often the closest point on the shapes between the centers)
         float penDepth = 0;     // The amount by which the shapes overlap - minimal distance to move along the normal
 
         // Returns true
         [[nodiscard]] bool isColliding() const;
+
+        [[nodiscard]] bool getIsAccumulated() const;
+
+    private:
+        bool isAccumulated = false; // True if this info should be accumulated for this entity
+        friend void SetIsAccumulated(CollisionInfo& info);
     };
 
     //----------------- GAMEDEV -----------------//

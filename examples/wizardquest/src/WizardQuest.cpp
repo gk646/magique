@@ -22,7 +22,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 
     // Configure magique
-     SetShowHitboxes(true);
+    SetShowHitboxes(true);
     InitLocalMultiplayer();
     // SetStaticWorldBounds({0,0,1280,1000});
 
@@ -57,7 +57,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
             const auto& pos = GetComponent<PositionC>(entity);
             const auto& anim = GetComponent<AnimationC>(entity);
             const auto& mov = GetComponent<MovementC>(entity);
-            anim.drawCurrentFrame(pos.x, pos.y, 0,mov.movedLeft);
+            anim.drawCurrentFrame(pos.x, pos.y, 0, mov.movedLeft);
         }
     }
     EndMode2D();

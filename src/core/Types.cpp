@@ -89,6 +89,8 @@ namespace magique
 
     bool CollisionInfo::isColliding() const { return penDepth != 0.0F; }
 
+    bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
+
     //----------------- KEYBIND -----------------//
 
     Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)

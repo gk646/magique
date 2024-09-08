@@ -172,7 +172,8 @@ namespace magique
                                   const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::RECT);
+                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::RECT, Point{},
+                                                      Point{});
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)

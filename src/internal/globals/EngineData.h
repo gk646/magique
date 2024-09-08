@@ -33,7 +33,6 @@ namespace magique
     {
         StateCallback stateCallback{};                       // Callback funtion for gamstate changes
         EntityCache entityUpdateCache;                       // Caches entites not in update range anymore
-        CollisionInfoMap infoMap;                            // Stores the accumulated collision info for this tick
         std::vector<entt::entity> entityUpdateVec;           // Vector containing the entites to update for this tick
         std::vector<entt::entity> drawVec;                   // Vector containing all entites to be drawn this tick
         vector<entt::entity> collisionVec;                   // Vector containing the entites to check for collision
@@ -50,7 +49,6 @@ namespace magique
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             collisionVec.reserve(500);
-            infoMap.reserve(1000);
         }
     };
 

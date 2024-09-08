@@ -55,7 +55,7 @@ namespace magique
 
     //----------------- COLLISION -----------------//
 
-    bool isValidLayer(const CollisionLayer layer)
+    bool IsValidLayer(const CollisionLayer layer)
     {
         const auto layerNum = static_cast<uint8_t>(layer);
         // Binary: 1000  (-1)-> 0111 (& operator)-> 1000
@@ -65,9 +65,15 @@ namespace magique
 
     void CollisionC::unsetAll() { layerMask = 0; }
 
+    void CollisionC::clearCollisionData()
+    {
+        lastNormal = {0, 0};
+        resolutionVec = {0, 0};
+    }
+
     void CollisionC::setLayer(const CollisionLayer layer, const bool enabled)
     {
-        if (isValidLayer(layer)) [[likely]]
+        if (IsValidLayer(layer)) [[likely]]
         {
             if (enabled)
             {
@@ -86,7 +92,7 @@ namespace magique
 
     bool CollisionC::getIsLayerSet(const CollisionLayer layer) const
     {
-        if (isValidLayer(layer))
+        if (IsValidLayer(layer))
         {
             return (layerMask & static_cast<uint8_t>(layer)) != 0;
         }

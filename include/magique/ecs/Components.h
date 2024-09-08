@@ -61,6 +61,11 @@ namespace magique
 
         // Removes ALL collisions layers
         void unsetAll();
+
+        void clearCollisionData(); // Clears the accumulated collision data for the next tick
+
+        Point resolutionVec{}; // Accumulated normals * depth
+        Point lastNormal{};    // Last normal
     };
 
     // Animation component references an animation and saves its current state
@@ -69,7 +74,7 @@ namespace magique
         explicit AnimationC(const EntityAnimation& animation, AnimationState start);
 
         // Draws the current frame applying the offset and rotation around the defined anchor
-        // Note: This is a quality of life method and can be done manually with the SpriteAnimation
+        // Note: More complex and custom drawing can be done with the SpriteAnimation
         void drawCurrentFrame(float x, float y, float rotation = 0, bool flipX = false, bool flipY = false) const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent

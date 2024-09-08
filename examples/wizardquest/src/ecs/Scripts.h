@@ -53,6 +53,9 @@ struct PlayerScript final : EntityScript
 
     void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
     {
+        const auto& pos = GetComponent<PositionC>(self);
+        printf("Position: %f, %f\n", pos.x, pos.y);
+        printf("Depth: %f\n",info.penDepth);
         AccumulateCollision(self, info);
     }
 };

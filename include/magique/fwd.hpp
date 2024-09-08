@@ -45,7 +45,8 @@ namespace magique
     }
 
     template <typename... Columns>
-    struct DataTable; // Type-safe database-like interface to save game data
+    struct DataTable;         // Type-safe database-like interface to save game data
+    using float16 = uint16_t; // Used to optimize memory usage
 
     //-----------------ECS-----------------//
     struct EntityScript;
@@ -112,5 +113,11 @@ struct Sound;
 struct Music;
 struct Rectangle;
 
+//-----------------RAYLIB-----------------//
+
+namespace entt
+{
+    enum class entity : std::uint32_t;
+}
 
 #endif

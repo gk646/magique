@@ -60,15 +60,15 @@ namespace magique
         virtual void onTick(entt::entity self) {}
 
         // Called each time this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info)
+        virtual void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
         {
-            AccumulateCollision(self, info); // Treats the other shape as solid per default
+            AccumulateCollision(info); // Treats the other shape as solid per default
         }
 
         // Called each time when this entity collides with a static collision object
-        virtual void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info)
+        virtual void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
         {
-            AccumulateCollision(self, info); /// Treats the other shape as solid per default
+            AccumulateCollision(info); /// Treats the other shape as solid per default
         }
 
         // Called once at the beginning of each tick IF key state changed - press or release
@@ -90,7 +90,7 @@ namespace magique
 
         // Adds the given info on top the existing info for this entity - will be applied after all collisions are resolved
         // Note: This essentially makes the other shape 'solid' preventing you from entering it!
-        static void AccumulateCollision(entt::entity self, const CollisionInfo& collisionInfo);
+        static void AccumulateCollision(CollisionInfo& collisionInfo);
     };
 
     // Sets a C++ script for this entity type
@@ -109,11 +109,11 @@ namespace magique
     //             InvokeEvent<onItemPickup, MyPlayerScript>(self, item);
     //             InvokeEvent<onExplosion, MyGrenadeScript>(self, radius, damage);
     template <EventType event, class Script = EntityScript, class... Args>
-    void InvokeEvent(entt::entity entity, Args... arguments);
+    void InvokeEvent(entt::entity entity, Args&&... arguments);
 
     // Same as 'InvokeEvent' but avoids the type lookup - very fast!
     template <EventType event, class Script = EntityScript, class... Args>
-    void InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments);
+    void InvokeEventDirect(EntityScript* script, entt::entity entity, Args&&... arguments);
 
 } // namespace magique
 
@@ -124,7 +124,7 @@ UNIGNORE_WARNING()
 namespace magique
 {
     template <EventType event, class Script, class... Args>
-    void magique::InvokeEvent(entt::entity entity, Args... arguments)
+    void magique::InvokeEvent(entt::entity entity, Args&&... arguments)
     {
         const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
         auto* script = static_cast<Script*>(GetEntityScript(pos.type));
@@ -132,7 +132,7 @@ namespace magique
         Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
     }
     template <EventType event, class Script, class... Args>
-    void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args... arguments)
+    void magique::InvokeEventDirect(EntityScript* script, entt::entity entity, Args&&... arguments)
     {
         MAGIQUE_ASSERT(script != nullptr, "Passing a null script");
         Call<event, Script, entt::entity, Args...>(static_cast<Script*>(script), entity,

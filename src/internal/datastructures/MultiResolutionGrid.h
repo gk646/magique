@@ -1,26 +1,26 @@
-#ifndef MULTIRESOLUTIONGRID_H
-#define MULTIRESOLUTIONGRID_H
+#ifndef MULTI_RESOLUTION_GRID_H
+#define MULTI_RESOLUTION_GRID_H
 
 // This is a cache friendly "top-level" data structure
 // https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
 // Originally inspired by the above post to just move all the data of the structure to the top level
 // This simplifies memory management and layout, it uses just a single vector for data
 // This is achieved by mapping between dimensions, here between a cell and a memory block
-// Now its still not perfect but definitely very fast
+// Now It's still not perfect but definitely very fast
 // Also the problem of multiple insertions is efficiently solved by accumulating with a hashmap
-// Its almost mandatory to use a memory consistent map like a dense map thats a vector internally aswell
+// Its almost mandatory to use a memory consistent map like a dense map that's a vector internally as well
 // This simplifies memory and thus cache friendliness even more
 // With this setup you have 0 (zero) allocations in game ticks which involves completely clearing and refilling grid
 
 using CellID = int64_t;
-// This creates a unique value - both values are unqiue themselves so their concatenated version is aswell
+// This creates a unique value - both values are unique themselves so their concatenated version is as well
 // We still use a hash function on it to get more byte range (all bits flipped)
 inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<int64_t>(cellX) << 32 | cellY; }
 
 template <int cellSize, typename IdFunc, typename Func>
 void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const float w, const float h)
 {
-    if (w > cellSize || h > cellSize) [[unlikely]] // Its bigger than a single cell
+    if (w > cellSize || h > cellSize) [[unlikely]] // It's bigger than a single cell
     {
         if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
         {
@@ -32,12 +32,12 @@ void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const
             {
                 for (int j = startX; j <= endX; ++j)
                 {
-                    func(IdFunc(j, i));
+                    func(idFunc(j, i));
                 }
             }
             return;
         }
-        // 4 corners, the 4 middle pointes of the edges and the middle pointer -> 9 potential cells
+        // 4 corners, the 4 middle points of the edges and the middle pointer -> 9 potential cells
         const int x1 = static_cast<int>(x) / cellSize;
         const int y1 = static_cast<int>(y) / cellSize;
         const int x2 = static_cast<int>(x + w) / cellSize;
@@ -46,31 +46,31 @@ void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const
         const int xhalf = static_cast<int>(x + w / 2.0F) / cellSize;
         const int yhalf = static_cast<int>(y + h / 2.0F) / cellSize;
         // Process the corners
-        func(IdFunc(x1, y1)); // Top-left
+        func(idFunc(x1, y1)); // Top-left
         if (x1 != x2)
-            func(IdFunc(x2, y1)); // Top-right
+            func(idFunc(x2, y1)); // Top-right
         if (y1 != y2)
-            func(IdFunc(x1, y2)); // Bottom-left
+            func(idFunc(x1, y2)); // Bottom-left
         if (x1 != x2 && y1 != y2)
-            func(IdFunc(x2, y2)); // Bottom-right
+            func(idFunc(x2, y2)); // Bottom-right
 
         // edge midpoints
         if (xhalf != x1 && xhalf != x2)
         {
-            func(IdFunc(xhalf, y1)); // Top-edge midpoint
+            func(idFunc(xhalf, y1)); // Top-edge midpoint
             if (y1 != y2)
-                func(IdFunc(xhalf, y2)); // Bottom-edge midpoint
+                func(idFunc(xhalf, y2)); // Bottom-edge midpoint
         }
         if (yhalf != y1 && yhalf != y2)
         {
-            func(IdFunc(x1, yhalf)); // Left-edge midpoint
+            func(idFunc(x1, yhalf)); // Left-edge midpoint
             if (x1 != x2)
-                func(IdFunc(x2, yhalf)); // Right-edge midpoint
+                func(idFunc(x2, yhalf)); // Right-edge midpoint
         }
 
         // Process the center point
         if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
-            func(IdFunc(xhalf, yhalf));
+            func(idFunc(xhalf, yhalf));
         return;
     }
     // Its smaller than a cell -> maximum of 4 cells
@@ -79,23 +79,23 @@ void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const
     const int x2 = static_cast<int>(x + w) / cellSize;
     const int y2 = static_cast<int>(y + h) / cellSize;
 
-    func(IdFunc(x1, y1));
+    func(idFunc(x1, y1));
 
     if (x1 != x2)
     {
-        func(IdFunc(x2, y1));
+        func(idFunc(x2, y1));
 
         if (y1 != y2)
         {
-            func(IdFunc(x1, y2));
-            func(IdFunc(x2, y2));
+            func(idFunc(x1, y2));
+            func(idFunc(x2, y2));
             return;
         }
     }
 
     if (y1 != y2)
     {
-        func(IdFunc(x1, y2));
+        func(idFunc(x1, y2));
     }
 }
 
@@ -178,14 +178,15 @@ struct SingleResolutionHashGrid final
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
-        RasterizeRect<cellSize, GetCellID>([this, val](const CellID cellID) { insertElement(cellID, val); }, x, y, w, h);
+        const auto insertFunction = [this, val](const CellID cellID) { insertElement(cellID, val); };
+        RasterizeRect<cellSize>(insertFunction, GetCellID, x, y, w, h);
     }
 
     template <typename Container>
     void query(Container& elems, const float x, const float y, const float w, const float h) const
     {
-        RasterizeRect<cellSize, GetCellID>([this, &elems](const CellID cellID) { queryElements(cellID, elems); }, x, y,
-                                           w, h);
+        const auto queryFunction = [this, &elems](const CellID cellID) { queryElements(cellID, elems); };
+        RasterizeRect<cellSize>(queryFunction, GetCellID, x, y, w, h);
     }
 
     void clear()
@@ -334,4 +335,4 @@ private:
     static_assert(sizeof(V) <= 8, "You should only use small id types");
 };
 
-#endif //MULTIRESOLUTIONGRID_H
+#endif //MULTI_RESOLUTION_GRID_H

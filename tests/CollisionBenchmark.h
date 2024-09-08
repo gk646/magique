@@ -18,10 +18,10 @@
 // Time: 18.9ms | Start
 // Time: 17.5ms | Added early return bounding-box check to CircleToQuadrilateral()
 // Time: 17.1ms | Added early return bounding-box check to CircleToCapsule()
-// Time: 16.1ms | Used view.get<> intead of registry.get<>
+// Time: 16.1ms | Used view.get<> instead of registry.get<>
 // Time: 14.3ms | Added early return bounding-box check to SAT()
 // Time: 9.3 ms | Using a single hashgrid with 50 width
-// Time: 9.1 ms | Fixing circle calculations / removing uneeded division (top left + radius not radius/2 lol)
+// Time: 9.1 ms | Fixing circle calculations / removing unneeded division (top left + radius not radius/2 lol)
 // Time: 7.6 ms | Changed access pattern to hashgrid from queries to direct cell by cell iteration -> more cache local
 // Time: 6.9 ms | Changed ratio of work for main thread (get more) 39.5% main vs 60.5 distributed among workers (with 4)
 // Time: 6.7 ms | Optimized ECS access further using groups
@@ -31,7 +31,9 @@
 // Time: 8.5 ms | Removed immediate collision resolving - its accumulated per user call
 // Time: 9.3 ms | Added static collisions
 // Time: 8.6 ms | Added power of two optimization
-// Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangeles -> more shapes -> bit slower
+// Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangles -> more shapes -> bit slower
+// Time: 9.8 ms | Added accumulation of collision info using a hashmap
+// Time: 9.2 ms | Removed hashmap in favor of caching data and saving it inside the collision component
 // .....................................................................
 
 using namespace magique;
@@ -66,11 +68,11 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other,const CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
-        AccumulateCollision(self,info);
+        AccumulateCollision(info);
     }
 };
 
@@ -81,11 +83,11 @@ struct ObjectScript final : EntityScript
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
-        AccumulateCollision(self,info);
+        AccumulateCollision(info);
     }
 };
 

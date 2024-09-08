@@ -38,9 +38,9 @@ struct PlayerScript final : EntityScript
             pos.x += 2.5F;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
     {
-       AccumulateCollision(self,info);
+       AccumulateCollision(info);
     }
 };
 
@@ -68,7 +68,7 @@ struct ObjectScript final : EntityScript // Moving platform
         test.counter++;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo&) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo&) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -81,7 +81,7 @@ struct Test final : Game
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
         SetShowHitboxes(true);
-        const auto playerFunc = [](entt::entity e)
+        const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
             GiveScript(e);
@@ -90,7 +90,7 @@ struct Test final : Game
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
-        const auto objFunc = [](entt::entity e)
+        const auto objFunc = [](entt::entity e, EntityType type)
         {
             GiveScript(e);
             const auto val = GetRandomValue(0,100);
@@ -115,8 +115,8 @@ struct Test final : Game
         };
         RegisterEntity(OBJECT, objFunc);
 
-        SetScript(PLAYER, new PlayerScript());
-        SetScript(OBJECT, new ObjectScript());
+        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(OBJECT, new ObjectScript());
 
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
