@@ -1,13 +1,12 @@
 #include <magique/gamedev/Pathfinding.h>
 #include <magique/ecs/ECS.h>
+#include <magique/ecs/Components.h>
 
+#include "internal/globals/EngineData.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
-#include "internal/globals/EngineData.h"
 #include "internal/datastructures/HashTypes.h"
-
-#include <internal/headers/CollisionPrimitives.h>
-#include <magique/ecs/Components.h>
+#include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -22,7 +21,6 @@ namespace magique
         bool isCellCSolid(const int cellX, const int cellY)
         {
             const auto id = GetCellID(cellX, cellY);
-
             const auto staticIt = staticGrid.find(id);
             if (staticIt != staticGrid.end()) [[unlikely]]
             {

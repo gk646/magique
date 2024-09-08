@@ -5,14 +5,13 @@
 
 namespace magique
 {
-    void EntityScript::AccumulateCollision(const entt::entity entity, const CollisionInfo& collisionInfo)
+    void SetIsAccumulated(CollisionInfo& info) // Needed to cleanly define it as friend method
     {
-        auto& data = global::ENGINE_DATA;
-        auto& [pos, normal] = data.infoMap[entity];
-        normal.x += collisionInfo.normalVector.x * collisionInfo.penDepth;
-        normal.y += collisionInfo.normalVector.y * collisionInfo.penDepth;
-        if (pos == nullptr)
-            pos = &internal::POSITION_GROUP.get<PositionC>(entity);
+        info.isAccumulated = true;
+    }
+    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo)
+    {
+        SetIsAccumulated(collisionInfo);
     }
 
     void SetEntityScript(const EntityType entity, EntityScript* script)
@@ -20,7 +19,7 @@ namespace magique
         auto& scData = global::SCRIPT_DATA;
         if (scData.scripts.size() < entity + 1)
         {
-            MAGIQUE_ASSERT(entity < 1000, "Sanity check! If you have more than 1000 entity types kudos!");
+            MAGIQUE_ASSERT(entity < UINT16_MAX, "Sanity check");
             scData.scripts.resize(entity + 1, ScriptData::defaultScript);
         }
         // Dont delete the default script

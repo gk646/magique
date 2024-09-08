@@ -1,5 +1,5 @@
-#ifndef DYNAMIC_COLLISIONSYSTEM_H
-#define DYNAMIC_COLLISIONSYSTEM_H
+#ifndef DYNAMIC_COLLISION_SYSTEM_H
+#define DYNAMIC_COLLISION_SYSTEM_H
 
 //-----------------------------------------------
 // Dynamic Collision System
@@ -17,26 +17,25 @@
 // 3. Single threaded pass over all pairs invoking event methods
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
 //
-// Note: Can still be optimized -> Using a AABB tree (or bounding volumne hierarchy) avoids the hashset and will probably
+// Note: Can still be optimized -> Using a AABB tree (or bounding volume hierarchy) avoids the hashset and will probably
 //       have faster lookups times BUT MUCH more complex to manage and move objects efficiently
-// -> But doesnt change anything for user
+// -> But doesn't change anything for user
 // .....................................................................
 
 namespace magique
 {
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
-    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet, CollisionInfoMap& infoMap);
+    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
     void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, int startIdx, int endIdx);
 
-    // System
+    //----------------- SYSTEM -----------------//
+
     inline void DynamicCollisionSystem()
     {
         auto& dyCollData = global::DY_COLL_DATA;
-        auto& data = global::ENGINE_DATA;
         auto& grid = dyCollData.hashGrid;
         auto& colPairs = dyCollData.collisionPairs;
         auto& pairSet = dyCollData.pairSet;
-        auto& infoMap = data.infoMap;
 
         const int size = static_cast<int>(grid.cellMap.size()); // Multithread over certain amount
         if (size > 150)
@@ -59,8 +58,10 @@ namespace magique
             CheckHashGridCells(grid, colPairs[0].vec, 0, size);
         }
 
-        HandleCollisionPairs(colPairs, pairSet, infoMap);
+        HandleCollisionPairs(colPairs, pairSet);
     }
+
+    //----------------- IMPLEMENTATION -----------------//
 
     inline void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, const int startIdx,
                                    const int endIdx)
@@ -76,56 +77,69 @@ namespace magique
             for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
             {
                 const auto first = *dIt1;
-                const auto [posA, colA] = group.get<const PositionC, const CollisionC>(first);
+                auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
                 for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                 {
                     const auto second = *dIt2;
                     if (first >= second)
                         continue;
-                    const auto [posB, colB] = group.get<const PositionC, const CollisionC>(second);
+                    auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
                     if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
                         continue; // Not on the same map or not on the same collision layer
                     CollisionInfo info{};
                     CheckCollision(posA, colA, posB, colB, info);
                     if (info.isColliding())
                     {
-                        pairs.push_back({info, posA, posB, first, second});
+                        pairs.push_back(PairInfo{info, colA, colB, posA, posB, first, second});
                     }
                 }
             }
         }
     }
 
-    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet, CollisionInfoMap& infoMap)
+    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
     {
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
+        const auto& colVec = global::ENGINE_DATA.collisionVec;
+        const auto group = internal::POSITION_GROUP;
+
         for (auto& [vec] : colPairs)
         {
-            for (auto& [info, p1, p2, e1, e2] : vec)
+            for (auto& [info, col1, col2, p1, p2, e1, e2] : vec)
             {
                 auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
                     continue;
                 pairSet.insert(it, num);
+
+                auto secondInfo = info; // Prepare second info
+                secondInfo.normalVector.x *= -1;
+                secondInfo.normalVector.y *= -1;
+
+                // Call for first entity
                 InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
 
-                info.normalVector.x = -info.normalVector.x;
-                info.normalVector.y = -info.normalVector.y;
+                if (info.getIsAccumulated())
+                    AccumulateInfo(col1, info);
 
-                InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, info);
+                // Call for second entity
+                InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, secondInfo);
+
+                if (secondInfo.getIsAccumulated())
+                    AccumulateInfo(col2, secondInfo);
             }
             vec.clear();
         }
 
-        for (const auto& [entity, pInfo] : infoMap)
+        for (const auto e : colVec)
         {
-            auto& pos = *pInfo.pos;
-            pos.x += pInfo.normalVector.x;
-            pos.y += pInfo.normalVector.y;
+            auto [pos, col] = group.get<PositionC, CollisionC>(e);
+            pos.x += 0;
+            pos.y += 0;
+            col.clearCollisionData();
         }
         pairSet.clear();
-        infoMap.clear();
     }
 
     // Should be the most efficient way - allows jump tables and inlining - this is actually very fast!
@@ -396,4 +410,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //DYNAMIC_COLLISIONSYSTEM_H
+#endif //DYNAMIC_COLLISION_SYSTEM_H

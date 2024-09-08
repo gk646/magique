@@ -1,12 +1,12 @@
-#ifndef MAGIQUE_STATICCOLLISION_SYSTEM_H
-#define MAGIQUE_STATICCOLLISION_SYSTEM_H
+#ifndef MAGIQUE_STATIC_COLLISION_SYSTEM_H
+#define MAGIQUE_STATIC_COLLISION_SYSTEM_H
 
 //-----------------------------------------------
 // Static Collision System
 //-----------------------------------------------
 // .....................................................................
 // World bounds is given as white list area -> check against the outer rectangles
-// Tiles are treated as squares and inserted into the grid
+// Collidable tiles are treated as squares and inserted into the grid
 // .....................................................................
 
 namespace magique
@@ -159,8 +159,7 @@ namespace magique
         collector.clear();
     }
 
-    inline void magique::CheckStaticCollisionRange(const int thread, const int start,
-                                                   const int end) // Runs on each thread
+    inline void CheckStaticCollisionRange(const int thread, const int start, const int end) // Runs on each thread
     {
         const auto& data = global::ENGINE_DATA;
         const auto& group = internal::POSITION_GROUP;
@@ -215,12 +214,22 @@ namespace magique
         }
     }
 
-    inline void magique::HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet)
+    inline void AccumulateInfo(CollisionC& col, const CollisionInfo& info)
+    {
+        if (col.lastNormal.x == info.normalVector.x && col.lastNormal.y == info.normalVector.y) [[unlikely]]
+            return;
+
+        col.lastNormal = info.normalVector;
+        col.resolutionVec.x += info.normalVector.x * info.penDepth;
+        col.resolutionVec.y += info.normalVector.y * info.penDepth;
+    }
+
+    inline void HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet)
     {
         const auto& scripts = global::SCRIPT_DATA.scripts;
         for (auto& [vec] : pairColl)
         {
-            for (const auto& data : vec)
+            for (auto& data : vec)
             {
                 const auto uniqueNum = static_cast<uint64_t>(data.entity) << 32 | data.objectNum;
                 const auto it = pairSet.find(uniqueNum);
@@ -229,16 +238,18 @@ namespace magique
                 pairSet.insert(it, uniqueNum);
 
                 // Process the collision
-                InvokeEventDirect<onStaticCollision>(scripts[data.entityType], data.entity,
-                                                     ColliderInfo{data.data, data.type}, data.info);
-                //TODO if info is marked as accumulated use collision component to accumulate
+                const auto colliderInfo = ColliderInfo{data.data, data.type};
+                InvokeEventDirect<onStaticCollision>(scripts[data.entityType], data.entity, colliderInfo, data.info);
+                if (data.info.getIsAccumulated()) // Accumulate the data if specified
+                {
+                    AccumulateInfo(*data.col, data.info);
+                }
             }
             vec.clear();
         }
-
         pairSet.clear();
     }
 } // namespace magique
 
 
-#endif //MAGIQUE_STATICCOLLISION_SYSTEM_H
+#endif //MAGIQUE_STATIC_COLLISION_SYSTEM_H

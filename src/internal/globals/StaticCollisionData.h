@@ -1,7 +1,6 @@
 #ifndef STATIC_COLLISION_DATA_H
 #define STATIC_COLLISION_DATA_H
 
-#include <entt/entity/fwd.hpp>
 #include <magique/internal/Macros.h>
 
 #include "internal/datastructures/VectorType.h"

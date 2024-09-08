@@ -49,7 +49,7 @@ namespace magique
         }
     }
 
-    void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col, auto& grid, auto& cVec)
+    void HandleCollisionEntity(const entt::entity e, const PositionC pos, CollisionC& col, auto& grid, auto& cVec)
     {
         cVec.push_back(e);
         switch (col.shape) // Same as CollisionSystem::QueryHashGrid()
@@ -170,7 +170,7 @@ namespace magique
                     cache[e] = cacheDuration;
                     if (registry.all_of<CollisionC>(e))
                     {
-                        const auto& col = group.get<const CollisionC>(e);
+                        auto& col = group.get<CollisionC>(e);
                         HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                     }
                 }
@@ -189,7 +189,7 @@ namespace magique
                             cache[e] = cacheDuration;
                             if (registry.all_of<CollisionC>(e))
                             {
-                                const auto& col = group.get<const CollisionC>(e);
+                                auto& col = group.get<CollisionC>(e);
                                 HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                             }
                             break;

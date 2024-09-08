@@ -2,7 +2,6 @@
 #define MAGIQUE_AUDIO_H
 
 #include <magique/fwd.hpp>
-#include <entt/entity/fwd.hpp>
 
 //-----------------------------------------------
 // Sound Module
