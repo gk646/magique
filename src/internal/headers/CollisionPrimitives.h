@@ -33,7 +33,7 @@ namespace magique
 
     //----------------- POINT -----------------//
 
-    inline bool PointInRect(const float px, const float py, const float rx, const float ry, const float rw,
+    inline bool PointToRect(const float px, const float py, const float rx, const float ry, const float rw,
                             const float rh)
     {
 #if MAGIQUE_SIMD == 1

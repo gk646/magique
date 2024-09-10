@@ -48,6 +48,9 @@ namespace magique
     template <typename... Args>
     bool EntityHasComponents(entt::entity entity);
 
+    // Returns true if the given entity is an actor - has the actor component
+    bool EntityIsActor(entt::entity entity);
+
     //-------------- LIFE CYCLE --------------//
 
     // Creates a new entity by calling the registered function for that type

@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <entt/entity/fwd.hpp>
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
 INCLUDE_FUNCTIONAL()
 
@@ -36,7 +36,8 @@ namespace magique
     void SetUpdateDistance(int distance);
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
-    // HardShadows (default,fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
+    // HardShadows (fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
+    // Default: None (others don't work yet)
     void SetLightingMode(LightingMode model);
 
     // Sets the new camera holder - removes the component from the current and adds it to the new holder
@@ -52,6 +53,9 @@ namespace magique
     // Manually clears the entity cache in this tick
     void ClearEntityCache();
 
+    // Returns the game configuration
+    GameConfig& GetGameConfig();
+
     //----------------- DATA ACCESS -----------------//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!
@@ -63,8 +67,15 @@ namespace magique
     // Returns the currently loaded maps - fills up unused slots with UINT8_MAX
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
-    // Returns the game configuration
-    GameConfig& GetGameConfig();
+    // Note: Both nearby entity methods cache the result and can be continuously called with 0 cost given the same origin and radius
+
+    // Returns a vector containing all entities within the specified distance of the given entity
+    // Note: The returned vector is only valid until this method is called again (single instance)
+    const std::vector<entt::entity>& GetNearbyEntities(Point origin, float radius);
+
+    // Returns true if the nearby entities contain the given target entity
+    // Note: This is a hash lookup O(1) (after querying the hashgrid)
+    bool NearbyEntitiesContain(Point origin, float radius, entt::entity target);
 
     //----------------- CAMERA -----------------//
 

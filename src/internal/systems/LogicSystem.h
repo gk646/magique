@@ -164,7 +164,7 @@ namespace magique
             {
                 // Check if inside the camera bounds already
                 if (map == cameraMap &&
-                    PointInRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
+                    PointToRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
                 {
                     drawVec.push_back(e); // Should be drawn
                     cache[e] = cacheDuration;
@@ -184,7 +184,7 @@ namespace magique
                             break;
                         const auto [x, y] = actorCircles[actorNum];
                         // Check if inside any update circle
-                        if (PointInRect(pos.x, pos.y, x, y, updateDist, updateDist))
+                        if (PointToRect(pos.x, pos.y, x, y, updateDist, updateDist))
                         {
                             cache[e] = cacheDuration;
                             if (registry.all_of<CollisionC>(e))

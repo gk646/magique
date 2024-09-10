@@ -40,6 +40,7 @@ namespace magique
         uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
 
         [[nodiscard]] float getRotation() const;
+        [[nodiscard]] Point getPosition() const;
     };
 
     struct CollisionC final

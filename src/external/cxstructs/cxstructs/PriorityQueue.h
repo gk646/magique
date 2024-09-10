@@ -21,6 +21,8 @@
 #ifndef CXSTRUCTS_SRC_CXSTRUCTS_PRIORITYQUEUE_H_
 #define CXSTRUCTS_SRC_CXSTRUCTS_PRIORITYQUEUE_H_
 
+#include <cassert>
+
 namespace cxstructs
 {
     /**

@@ -7,6 +7,8 @@ namespace magique
 {
     float PositionC::getRotation() const { return rotation; }
 
+    Point PositionC::getPosition() const { return {x, y}; }
+
     //----------------- ANIMATION -----------------//
 
     AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) :
