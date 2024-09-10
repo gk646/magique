@@ -17,6 +17,11 @@ namespace magique
     {
         float x;
         float y;
+
+        bool operator==(Point end) const;
+        bool operator!=(Point end) const;
+        [[nodiscard]] float manhattan(Point p) const;
+        [[nodiscard]] float euclidean(Point p) const;
     };
 
     //----------------- CORE -----------------//

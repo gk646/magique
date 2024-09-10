@@ -34,7 +34,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    CreateEntity(PLAYER, 55, 55, MapID::LEVEL_1);
+    CreateEntity(PLAYER, 150, 50, MapID::LEVEL_1);
     auto map = GetCameraMap();
     // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);

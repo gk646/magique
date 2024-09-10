@@ -84,7 +84,7 @@ namespace magique
         }
 
         SpriteSheet addSpriteSheetEx(Image& img, const int srcW, const int srcH, const float scale, const int frames,
-                                     const float offX, const float offY)
+                                     const int offX, const int offY)
         {
             lazyInit(); // Only load a texture if atlas is actually used
 
@@ -101,8 +101,10 @@ namespace magique
             assignSheet(sheet, tarW, tarH, frames);
 
             Image atlasImage = getImg(); // The current image of the atlas in the RAM
-            Rectangle src = {offX, offY, static_cast<float>(srcW), static_cast<float>(srcH)};
-            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), (float)tarW, (float)tarH};
+            Rectangle src = {static_cast<float>(offX), static_cast<float>(offY), static_cast<float>(srcW),
+                             static_cast<float>(srcH)};
+            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), static_cast<float>(tarW),
+                              static_cast<float>(tarH)};
 
             for (int i = 0; i < frames; ++i)
             {

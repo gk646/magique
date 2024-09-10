@@ -15,7 +15,7 @@
 // Logic ticks per second
 #define MAGIQUE_LOGIC_TICKS 60
 
-// Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 pyhsical cores
+// Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 physical cores
 #define MAGIQUE_WORKER_THREADS 3
 
 //----------------- PERFORMANCE -----------------//
@@ -26,7 +26,7 @@
 // Estimated number of unique maps
 #define MAGIQUE_EXPECTED_MAPS 32
 
-// The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldnt be bigger than that)
+// The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldn't be bigger than that)
 // Should be chosen as SMALL as possible, 75% of objects should fit within the given size
 // If the size of the bounding box of the object is bigger than 2*cellSize it gets slow
 #define MAGIQUE_COLLISION_CELL_SIZE 64
@@ -35,19 +35,22 @@
 #define MAGIQUE_MAX_ENTITIES_CELL 31
 
 // Sets the coarseness of the pathfinding grid
-// The smaller the more accurate the pathing but the longer it takes to calculate
+// The smaller, the more accurate the pathing but the longer it takes to calculate
 #define MAGIQUE_PATHFINDING_CELL_SIZE 16
 
+// Controls the maximum amount of tile that can be evaluated in a single search
+// Note: This is the global maximum, a specific maximum can be set on each query
+#define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 1024
 
 //----------------- ASSETS -----------------//
 
 // Maximum width of any texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_SIZE 8192
 
-// Maximum amount of tile layers in tilemaps
+// Maximum amount of tile layers in TileMaps
 #define MAGIQUE_MAX_TILE_LAYERS 3
 
-// Maximum amount of object layers in tilemaps
+// Maximum amount of object layers in TileMaps
 #define MAGIQUE_MAX_OBJECT_LAYERS 2
 
 
@@ -98,7 +101,8 @@
 
 //----------------- COMPILATION -----------------//
 
-// Tries to forward declare std::function - only possible on MSVC
+// Tries to forward declare std::function which improves compiled time about 150ms per TU
+// Only possible on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
 
 

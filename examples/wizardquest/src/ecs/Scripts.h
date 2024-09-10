@@ -10,6 +10,7 @@ struct PlayerScript final : EntityScript
         auto& anim = GetComponent<AnimationC>(self);
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
+
     }
 
     void onKeyEvent(entt::entity self) override
@@ -51,12 +52,11 @@ struct PlayerScript final : EntityScript
         }
     }
 
-    void onStaticCollision(entt::entity self, ColliderInfo collider, const CollisionInfo& info) override
+    void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override
     {
         const auto& pos = GetComponent<PositionC>(self);
-        printf("Position: %f, %f\n", pos.x, pos.y);
-        printf("Depth: %f\n",info.penDepth);
-        AccumulateCollision(self, info);
+
+        AccumulateCollision(info);
     }
 };
 

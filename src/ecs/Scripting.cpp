@@ -9,6 +9,7 @@ namespace magique
     {
         info.isAccumulated = true;
     }
+
     void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo)
     {
         SetIsAccumulated(collisionInfo);

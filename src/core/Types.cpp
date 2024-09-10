@@ -4,15 +4,32 @@
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
+#include "internal/headers/CollisionPrimitives.h"
+
 namespace magique
 {
+    bool Point::operator==(const Point end) const { return x == end.x && y == end.y; }
+
+    bool Point::operator!=(const Point end) const { return x != end.x || y != end.y; }
+
+    float Point::manhattan(const Point p) const { return abs(x - p.x) + abs(y - p.y); }
+
+    float Point::euclidean(const Point p) const
+    {
+        float distSqr = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
+        SquareRoot(distSqr);
+        return distSqr;
+    }
+
+    //----------------- SPRITE SHEET -----------------//
+
     TextureRegion SpriteSheet::getRegion(const int frame) const
     {
         TextureRegion region;
         region.height = height;
         region.width = width;
         region.id = id;
-        region.offX = offX + frame * width;
+        region.offX = static_cast<uint16_t>(offX + frame * width);
         region.offY = offY; // Same as only continuous pictures are supported
         return region;
     }
@@ -93,14 +110,14 @@ namespace magique
 
     //----------------- KEYBIND -----------------//
 
-    Keybind::Keybind(const int key, const bool shift, const bool ctrl, const bool alt)
+    Keybind::Keybind(const int keyCode, const bool shiftDown, const bool CTRLDown, const bool altDown)
     {
-        data = static_cast<uint16_t>(key & 0x1FFF);
-        if (shift)
+        data = static_cast<uint16_t>(keyCode & 0x1FFF);
+        if (shiftDown)
             data |= (1 << 13);
-        if (ctrl)
+        if (CTRLDown)
             data |= (1 << 14);
-        if (alt)
+        if (altDown)
             data |= (1 << 15);
     }
 
