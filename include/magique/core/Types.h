@@ -18,8 +18,13 @@ namespace magique
         float x;
         float y;
 
-        bool operator==(Point end) const;
-        bool operator!=(Point end) const;
+        bool operator==(Point other) const;
+        bool operator!=(Point other) const;
+        Point operator+(Point other) const;
+        Point& operator+=(Point other);
+        Point operator*(Point other) const;
+        [[nodiscard]] Point operator*(float i) const;
+
         [[nodiscard]] float manhattan(Point p) const;
         [[nodiscard]] float euclidean(Point p) const;
     };

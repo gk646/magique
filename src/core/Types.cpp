@@ -8,9 +8,20 @@
 
 namespace magique
 {
-    bool Point::operator==(const Point end) const { return x == end.x && y == end.y; }
+    bool Point::operator==(const Point other) const { return x == other.x && y == other.y; }
 
-    bool Point::operator!=(const Point end) const { return x != end.x || y != end.y; }
+    bool Point::operator!=(const Point other) const { return x != other.x || y != other.y; }
+
+    Point Point::operator+(const Point other) const { return {x + other.x, y + other.y}; }
+
+    Point& Point::operator+=(const Point other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    Point Point::operator*(const Point other) const { return {x * other.x, y * other.y}; }
 
     float Point::manhattan(const Point p) const { return abs(x - p.x) + abs(y - p.y); }
 
@@ -19,6 +30,11 @@ namespace magique
         float distSqr = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
         SquareRoot(distSqr);
         return distSqr;
+    }
+
+    Point Point::operator*(const float i) const
+    {
+        return {x * i, y * i};
     }
 
     //----------------- SPRITE SHEET -----------------//

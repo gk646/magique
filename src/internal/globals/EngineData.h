@@ -19,29 +19,30 @@ namespace magique
 {
     static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1; // Amount of parts to split work into
 
-    struct PhysicsInfo final
-    {
-        PositionC* pos = nullptr;
-        Point normalVector{0, 0}; // The direction  vector in which the object needs to be mover to resolve the collision
-    };
-
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using StateCallback = std::function<void(GameState, GameState)>;
-    using CollisionInfoMap = HashMap<entt::entity, PhysicsInfo>;
+
+    struct NearbyQueryData final
+    {
+        HashSet<entt::entity> cache;
+        float lastRadius = 0;
+        Point lastOrigin{};
+    };
 
     struct EngineData final
     {
-        StateCallback stateCallback{};                       // Callback funtion for gamstate changes
-        EntityCache entityUpdateCache;                       // Caches entites not in update range anymore
-        std::vector<entt::entity> entityUpdateVec;           // Vector containing the entites to update for this tick
-        std::vector<entt::entity> drawVec;                   // Vector containing all entites to be drawn this tick
-        vector<entt::entity> collisionVec;                   // Vector containing the entites to check for collision
+        StateCallback stateCallback{};                       // Callback function for gamestate changes
+        EntityCache entityUpdateCache;                       // Caches entities not in update range anymore
+        std::vector<entt::entity> entityUpdateVec;           // Vector containing the entities to update for this tick
+        std::vector<entt::entity> drawVec;                   // Vector containing all entities to be drawn this tick
+        vector<entt::entity> collisionVec;                   // Vector containing the entities to check for collision
         GameConfig gameConfig{};                             // Global game config instance
         std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
         Camera2D camera{};                                   // Current camera
         entt::entity cameraEntity{};                         // Entity id of the camera
         GameState gameState{};                               // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);                  // Map the camera is in
+        NearbyQueryData nearbyQueryData;
 
         EngineData()
         {
@@ -49,6 +50,7 @@ namespace magique
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             collisionVec.reserve(500);
+            nearbyQueryData.cache.reserve(100);
         }
     };
 

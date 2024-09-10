@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <magique/ecs/ECS.h>
+#include <magique/util/Logging.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/EngineData.h"
@@ -46,23 +47,19 @@ namespace magique
         HashSet<PathCellID> visited{};
         GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
 
-        bool isCellCSolid(const PathCellID id, const MapID map)
+        [[nodiscard]] bool isCellCSolid(const PathCellID id, const MapID map, const bool dynamic) const
         {
             const auto staticIt = staticGrid.find(id);
-            if (staticIt != staticGrid.end()) [[unlikely]]
+            if (staticIt != staticGrid.end() && staticIt->second) [[unlikely]]
             {
-                if (staticIt->second)
-                {
-                    return true;
-                }
+                return true;
             }
 
+            if (!dynamic)
+                return false;
+
             const auto dynamicIt = dynamicGrid.find(id);
-            if (dynamicIt != dynamicGrid.end())
-            {
-                return dynamicIt->second;
-            }
-            return false;
+            return dynamicIt != dynamicGrid.end() && dynamicIt->second;
         }
 
         void updateStaticGrid()
@@ -80,7 +77,6 @@ namespace magique
         {
             const auto& data = global::ENGINE_DATA;
             const auto group = internal::POSITION_GROUP;
-
             dynamicGrid.clear();
             const auto insertFunc = [this](const PathCellID id) { dynamicGrid[id] = true; };
             for (const auto e : data.collisionVec)
@@ -93,7 +89,8 @@ namespace magique
                     {
                         if (pos.rotation == 0) [[likely]]
                         {
-                            return RasterizeRect<cellSize>(insertFunc, GetCellID, pos.x, pos.y, col.p1, col.p2);
+                            RasterizeRect<cellSize>(insertFunc, GetCellID, pos.x, pos.y, col.p1, col.p2);
+                            continue;
                         }
                         float pxs[4] = {0, col.p1, col.p1, 0};
                         float pys[4] = {0, 0, col.p2, col.p2};
@@ -113,7 +110,8 @@ namespace magique
                         {
                             const auto bb = GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3,
                                                           pos.y + col.p4);
-                            return RasterizeRect<cellSize>(insertFunc, GetCellID, bb.x, bb.y, bb.width, bb.height);
+                            RasterizeRect<cellSize>(insertFunc, GetCellID, bb.x, bb.y, bb.width, bb.height);
+                            continue;
                         }
                         float txs[4] = {0, col.p1, col.p3, 0};
                         float tys[4] = {0, col.p2, col.p4, 0};
@@ -125,21 +123,28 @@ namespace magique
             }
         }
 
-
         static [[nodiscard]] PathCellID GetCellID(const int cellX, const int cellY)
         {
             constexpr int shiftAmount = sizeof(PathCellID) * 4;
             return static_cast<PathCellID>(cellX) << shiftAmount | static_cast<PathCellID>(cellY);
         }
 
-        void findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen)
+        void findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen,
+                      const bool dynamic)
         {
             path.clear();
             frontier.clear();
             visited.clear();
 
-            const Point start = {startC.x / cellSize, startC.y / cellSize};
-            const Point end = {endC.x / cellSize, endC.y / cellSize};
+            const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
+            const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
+
+            if (isCellCSolid(GetCellID((int)start.x, (int)start.y), map, dynamic) ||
+                isCellCSolid(GetCellID((int)end.x, (int)end.y), map, dynamic))
+            {
+                LOG_WARNING("Cant search a path from or to a solid tile!");
+                return;
+            }
 
             frontier.emplace(start, static_cast<uint16_t>(0), static_cast<uint16_t>(start.manhattan(end)), UINT16_MAX);
             uint16_t counter = 0;
@@ -158,7 +163,7 @@ namespace magique
                 {
                     Point newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto id = GetCellID(static_cast<int>(newPos.x), static_cast<int>(newPos.y));
-                    if (!visited.contains(id) && !isCellCSolid(id, map))
+                    if (!visited.contains(id) && !isCellCSolid(id, map, dynamic))
                     {
                         const auto hCost = static_cast<uint16_t>(std::round(newPos.manhattan(end)));
                         frontier.push({newPos, static_cast<uint16_t>(current.gCost + 1), hCost, counter});
@@ -169,7 +174,16 @@ namespace magique
         }
 
     private:
-        void constructPath(GridNode current, std::vector<Point>& path) {}
+        void constructPath(const GridNode& current, std::vector<Point>& path) const
+        {
+            const GridNode* curr = &current;
+            while (curr->parent != UINT16_MAX)
+            {
+                path.push_back(
+                    {curr->position.x * cellSize + cellSize / 2.0F, curr->position.y * cellSize + cellSize / 2.0F});
+                curr = &nodePool[curr->parent];
+            }
+        }
     };
 
     namespace global

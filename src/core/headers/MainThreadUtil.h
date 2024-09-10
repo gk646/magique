@@ -90,13 +90,20 @@ namespace magique
         BeginMode2D(GetCamera());
         auto& group = internal::POSITION_GROUP;
         const auto& staticData = global::STATIC_COLL_DATA;
+
+        const auto bounds = GetCameraBounds();
         // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
             if (!group.contains(e))
                 continue;
+
             const auto& pos = group.get<const PositionC>(e);
             const auto& col = group.get<const CollisionC>(e);
+
+            if (!PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
+                continue;
+
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
@@ -114,11 +121,13 @@ namespace magique
                 break;
             }
         }
+
         // Static tile map objects
         for (const auto& [x, y, p1, p2] : staticData.objectStorage.colliders)
         {
-            if (p1 == 0)
+            if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
                 continue;
+
             if (p2 != 0)
             {
                 DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
@@ -177,8 +186,10 @@ namespace magique
                     break;
                 }
             }
-            data.camera.target.x = std::floor(data.camera.target.x + (targetPosition.x - data.camera.target.x) * smoothing);
-            data.camera.target.y = std::floor(data.camera.target.y + (targetPosition.y - data.camera.target.y) * smoothing);
+            data.camera.target.x =
+                std::floor(data.camera.target.x + (targetPosition.x - data.camera.target.x) * smoothing);
+            data.camera.target.y =
+                std::floor(data.camera.target.y + (targetPosition.y - data.camera.target.y) * smoothing);
         }
     }
 
@@ -190,6 +201,7 @@ namespace magique
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
+        global::PATH_DATA.updateDynamicGrid();
 
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
@@ -204,7 +216,7 @@ namespace magique
                 game.shutDown();
         }
 
-        // Before so user can react to changes
+        // Before, so user can react to changes
         static int achieveCounter = 0;
         if (achieveCounter > 30)
         {
@@ -216,7 +228,7 @@ namespace magique
 
     inline void InternalUpdatePost() // After user space update
     {
-        StaticCollisionSystem();       // Static before cause can cause change in position
+        StaticCollisionSystem();       // After cause user systems can modify entity state
         DynamicCollisionSystem();      // After cause user systems can modify entity state
         global::UI_DATA.update();      // After gametick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates

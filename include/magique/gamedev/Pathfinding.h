@@ -19,18 +19,31 @@ namespace magique
 
     // Finds and assigns the (middle points) tiles along the shortest path to the given vector - excluding the start tile
     //      - searchLen: stops searching for a better path after that many iterations
+    //      - dynamic  : if true avoids tiles occupied by other dynamic entities (with CollisionC component)
     // Failure: if no path can be found returns an empty vector
-    void GetShortestPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 64);
+    void FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 64, bool dynamic = false);
 
     // Finds the next position you should move to, in order to reach the end point the fastest
-    // Equal to the middle point of the next tile on the shortest path
-    Point GetNextPosition(Point start, Point end, MapID map, int searchLen = 64);
+    // Same as FindPath() but returns the next point
+    Point GetNextPosition(Point start, Point end, MapID map, int searchLen = 64, bool dynamic = false);
 
     //----------------- UTIL -----------------//
 
-    // Returns true if the ray cast from the start to the end coordinates does hits someting collidable
-    //
+    // Returns true if the ray cast from start to the end hits something a solid tile
     bool GetRayCast(Point start, Point end);
+
+    // Returns a normalized direction vector that points from the current to the target position
+    // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
+    Point GetDirectionVector(Point current, Point target);
+
+    //----------------- DEBUG -----------------//
+
+    // Draws the current state of the pathfinding grid
+    // Transparent (not solid), grey (solid from static source), black (solid from dynamic source)
+    void DrawPathFindingGrid(MapID map);
+
+    // Visually draws the tiles
+    void DrawPath(const std::vector<Point>& path);
 
 } // namespace magique
 

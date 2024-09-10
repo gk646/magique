@@ -6,10 +6,15 @@
 #include <magique/util/Logging.h>
 
 #include "internal/globals/StaticCollisionData.h"
+#include "internal/globals/PathFindingData.h"
 
 namespace magique
 {
-    void SetStaticWorldBounds(const Rectangle& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
+    void SetStaticWorldBounds(const Rectangle& rectangle)
+    {
+        global::STATIC_COLL_DATA.worldBounds = rectangle;
+        global::PATH_DATA.updateStaticGrid();
+    }
 
     void LoadMapColliders(const MapID map, const std::vector<TileObject>& collisionObjects, const float scale)
     {
@@ -18,7 +23,7 @@ namespace magique
         auto& data = global::STATIC_COLL_DATA;
         if (!data.objectReferences.objectVectors.contains(map))
         {
-            data.objectReferences.objectVectors[map] = {}; // Initalize to nullptr
+            data.objectReferences.objectVectors[map] = {}; // Initialize to nullptr
         }
 
         auto& ptrArr = data.objectReferences.objectVectors[map];
@@ -62,6 +67,7 @@ namespace magique
             data.objectGrid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
             referenceVec.push_back(num); // So we can uniquely delete later
         }
+        global::PATH_DATA.updateStaticGrid();
     }
 
     void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float scale)
@@ -136,6 +142,7 @@ namespace magique
                     }
                 }
             }
+            global::PATH_DATA.updateStaticGrid();
         }
     }
 

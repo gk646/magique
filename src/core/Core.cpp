@@ -51,7 +51,9 @@ namespace magique
 
     void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
 
-    // void SetCameraEntity(entt::entity entity) { } // implemented in ECS.cpp cause of includes
+    // implemented in ECS.cpp cause of includes
+    // void SetCameraEntity(entt::entity entity) { }
+    // bool NearbyEntitiesContain(Point origin, float radius, entt::entity target) {}
 
     void SetUpdateDistance(const int distance)
     {
@@ -65,10 +67,7 @@ namespace magique
 
     void SetManualCameraOffset(const float x, const float y) { global::ENGINE_CONFIG.manualCamOff = {x, y}; }
 
-    void SetCameraSmoothing(float smoothing)
-    {
-
-    }
+    void SetCameraSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
     void SetEntityCacheDuration(const int ticks)
     {
@@ -91,6 +90,9 @@ namespace magique
     const std::vector<entt::entity>& GetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
 
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones() { return global::ENGINE_DATA.loadedMaps; }
+
+    // implemented in ECS.cpp cause of includes
+    // const std::vector<entt::entity>& GetNearbyEntities(entt::entity entity, float radius){}
 
     Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
 

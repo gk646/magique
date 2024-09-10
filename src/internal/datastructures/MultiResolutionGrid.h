@@ -125,7 +125,14 @@ struct DataBlock final
         const auto end = data + count;
         for (auto it = start; it != end; ++it)
         {
-            elems.push_back(*it);
+            if constexpr (std::is_same_v<Container, magique::vector<T>> || std::is_same_v<Container, std::vector<T>>)
+            {
+                elems.push_back(*it);
+            }
+            else // Not a vector but a set
+            {
+                elems.insert(*it);
+            }
         }
     }
 

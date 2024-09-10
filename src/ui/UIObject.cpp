@@ -94,7 +94,7 @@ namespace magique
         const auto [mx, my] = ui.getMousePos();
         const auto [rx, ry, rw, rh] = getBounds();
 
-        if (!PointInRect(mx, my, rx, ry, rw, rh))
+        if (!PointToRect(mx, my, rx, ry, rw, rh))
             return false;
 
         // For safety dont use operator[]
@@ -115,7 +115,7 @@ namespace magique
             if ((*iter))
             {
                 const auto [ox, oy, ow, oh] = (*iter)->getBounds();
-                if (PointInRect(mx, my, ox, oy, ow, oh))
+                if (PointToRect(mx, my, ox, oy, ow, oh))
                 {
                     return false;
                 }

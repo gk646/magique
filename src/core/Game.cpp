@@ -22,6 +22,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/LoadingData.h"
 #include "internal/globals/PerformanceData.h"
+#include "internal/globals/PathFindingData.h"
 #include "internal/globals/ShaderData.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AudioPlayer.h"

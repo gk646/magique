@@ -1,6 +1,8 @@
 #ifndef SCRIPTS_H
 #define SCRIPTS_H
 
+#include <magique/ecs/ECS.h>
+
 #include "ScriptUtil.h"
 
 struct PlayerScript final : EntityScript
@@ -10,7 +12,6 @@ struct PlayerScript final : EntityScript
         auto& anim = GetComponent<AnimationC>(self);
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
-
     }
 
     void onKeyEvent(entt::entity self) override
@@ -55,14 +56,32 @@ struct PlayerScript final : EntityScript
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override
     {
         const auto& pos = GetComponent<PositionC>(self);
-
         AccumulateCollision(info);
     }
 };
 
-
 struct TrollScript final : EntityScript
 {
+    void onTick(entt::entity self) override
+    {
+        auto& pos = GetComponent<PositionC>(self);
+        for (const auto e : GetNearbyEntities(pos.getPosition(), 150))
+        {
+            if (EntityIsActor(e))
+            {
+                const auto& tarPos = GetComponent<PositionC>(e);
+                if (tarPos.map != pos.map)
+                    break;
+                std::vector<Point> path;
+                FindPath(path, pos.getPosition(), tarPos.getPosition(), pos.map);
+                if (path.empty())
+                    return;
+                const auto moveVec = GetDirectionVector(pos.getPosition(), path[0]) * 5;
+                pos.x += moveVec.x;
+                pos.y += moveVec.y;
+            }
+        }
+    }
 };
 
 #endif //SCRIPTS_H

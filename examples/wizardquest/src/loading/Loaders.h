@@ -92,7 +92,7 @@ struct TextureLoader final : ITask<AssetContainer>
             };
             assets.iterateDirectory("characters/troll/", func);
 
-            Point offset = {-6, -6};
+            const Point offset = {-6, -6};
             handle = RegisterSpriteSheetVec(idle, AtlasID::ENTITIES, 3);
             trollAnim.addAnimation(AnimationState::IDLE, GetSpriteSheet(handle), 12, offset);
 

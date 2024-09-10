@@ -46,6 +46,8 @@ namespace magique
 
     bool EntityExists(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
+    bool EntityIsActor(const entt::entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
+
     entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
@@ -221,6 +223,8 @@ namespace magique
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
 
+    //----------------- CORE -----------------//
+
     void SetCameraEntity(const entt::entity e)
     {
         auto& reg = internal::REGISTRY;
@@ -248,6 +252,34 @@ namespace magique
         }
         else
             LOG_ERROR("No existing entity with a camera component found!");
+    }
+
+    const std::vector<entt::entity>& GetNearbyEntities(const Point origin, const float radius)
+    {
+        // This works because the hashset uses a vector as underlying storage type (stored without holes)
+        const auto& dynamicData = global::DY_COLL_DATA;
+        auto& data = global::ENGINE_DATA;
+
+        if (data.nearbyQueryData.lastRadius == radius && data.nearbyQueryData.lastOrigin == origin)
+            return data.nearbyQueryData.cache.values();
+
+        data.nearbyQueryData.lastRadius = radius;
+        data.nearbyQueryData.lastOrigin = origin;
+        data.nearbyQueryData.cache.clear();
+
+        const auto queryX = origin.x - radius;
+        const auto queryY = origin.y - radius;
+        dynamicData.hashGrid.query(data.nearbyQueryData.cache, queryX, queryY, radius * 2.0F, radius * 2.0F);
+        return data.nearbyQueryData.cache.values();
+    }
+
+    bool NearbyEntitiesContain(const Point origin, const float radius, const entt::entity target)
+    {
+        auto& data = global::ENGINE_DATA;
+        if (data.nearbyQueryData.lastRadius == radius && data.nearbyQueryData.lastOrigin == origin)
+            return data.nearbyQueryData.cache.contains(target);
+        GetNearbyEntities(origin, radius);
+        return data.nearbyQueryData.cache.contains(target);
     }
 
 } // namespace magique
