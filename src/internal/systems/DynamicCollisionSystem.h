@@ -37,7 +37,7 @@ namespace magique
         auto& colPairs = dyCollData.collisionPairs;
         auto& pairSet = dyCollData.pairSet;
 
-        const int size = static_cast<int>(grid.cellMap.size()); // Multithread over certain amount
+        const int size = static_cast<int>(grid.cellMap.size()); // Multithreading over certain amount
         if (size > 150)
         {
             std::array<jobHandle, WORK_PARTS> handles{};
@@ -135,8 +135,12 @@ namespace magique
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            pos.x += 0;
-            pos.y += 0;
+            if(col.resolutionVec.x != 0.0F && col.resolutionVec.y != 0.0F)
+            {
+                volatile int b = 123;
+            }
+            pos.x += col.resolutionVec.x;
+            pos.y += col.resolutionVec.y;
             col.clearCollisionData();
         }
         pairSet.clear();

@@ -218,7 +218,6 @@ namespace magique
     {
         if (col.lastNormal.x == info.normalVector.x && col.lastNormal.y == info.normalVector.y) [[unlikely]]
             return;
-
         col.lastNormal = info.normalVector;
         col.resolutionVec.x += info.normalVector.x * info.penDepth;
         col.resolutionVec.y += info.normalVector.y * info.penDepth;

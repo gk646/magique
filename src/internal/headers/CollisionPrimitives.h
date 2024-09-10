@@ -6,9 +6,8 @@
 #include <emmintrin.h>
 #endif
 
-#ifdef __MINGW32__
 #include <cmath>
-#endif
+#include <limits>
 
 //-----------------------------------------------
 // Collision Primitives with up to AVX2 intrinsics
@@ -158,14 +157,14 @@ namespace magique
 
         if (overlapX < overlapY)
         {
-            info.normalVector.x = (x1 + w1 / 2 < x2 + w2 / 2) ? -1.0f : 1.0f;
+            info.normalVector.x = x1 + w1 / 2 < x2 + w2 / 2 ? -1.0f : 1.0f;
             info.normalVector.y = 0.0f;
             info.penDepth = overlapX;
         }
         else
         {
             info.normalVector.x = 0.0f;
-            info.normalVector.y = (y1 + h1 / 2 < y2 + h2 / 2) ? -1.0f : 1.0f;
+            info.normalVector.y = y1 + h1 / 2 < y2 + h2 / 2 ? -1.0f : 1.0f;
             info.penDepth = overlapY;
         }
         info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
@@ -516,10 +515,8 @@ namespace magique
             float distance = minDist;
             SquareRoot(distance);
             info.penDepth = cr - distance;
-            info.normalVector.x = (cx - closestX) / distance;
-            info.normalVector.y = (cy - closestY) / distance;
-            info.collisionPoint.x = closestX;
-            info.collisionPoint.y = closestY;
+            info.normalVector = {(cx - closestX) / distance, (cy - closestY) / distance};
+            info.collisionPoint = {closestX, closestY};
         }
 #else
         int windingNumber = 0;

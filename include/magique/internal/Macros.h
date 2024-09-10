@@ -75,7 +75,7 @@ namespace magique::internal
 //----------------- BUILDING -----------------//
 
 #ifdef __APPLE__
-#define INCLUDE_FUNCTIONAL() #include<functional>
+#define INCLUDE_FUNCTIONAL() #include <functional>
 #else
 #define INCLUDE_FUNCTIONAL()
 #endif
