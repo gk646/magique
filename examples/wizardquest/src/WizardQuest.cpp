@@ -1,5 +1,7 @@
 #include "WizardQuest.h"
 
+#include "../../../src/external/cxstructs/cxutil/cxtime.h"
+
 #include <raylib/raylib.h>
 
 #include <magique/magique.hpp>
@@ -60,23 +62,22 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
             anim.drawCurrentFrame(pos.x, pos.y, 0, mov.movedLeft);
         }
     }
+
     auto& pos = GetComponent<PositionC>(entt::entity(1));
-    for (const auto e : GetNearbyEntities(pos.getPosition(), 150))
+    auto& col = GetComponent<CollisionC>(entt::entity(1));
+    for (const auto e : GetNearbyEntities(pos.getPosition(), 1000))
     {
         if (EntityIsActor(e))
         {
             const auto& tarPos = GetComponent<PositionC>(e);
+            const auto& tarCol = GetComponent<CollisionC>(e);
             if (tarPos.map != pos.map)
                 break;
             std::vector<Point> path;
-            FindPath(path, pos.getPosition(), tarPos.getPosition(), pos.map);
-            if (path.empty())
-                return;
-            const auto moveVec = GetDirectionVector(pos.getPosition(), path[0]) * 5;
+            cxstructs::now();
+            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map,999);
+            cxstructs::printTime<std::chrono::nanoseconds>("hey");
             DrawPath(path);
-            return;
-            pos.x += moveVec.x;
-            pos.y += moveVec.y;
         }
     }
     DrawPathFindingGrid(map);

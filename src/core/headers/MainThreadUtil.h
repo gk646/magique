@@ -224,6 +224,10 @@ namespace magique
             achieveCounter = 0;
         }
         ++achieveCounter;
+
+        // Reset nearby query
+        global::ENGINE_DATA.nearbyQueryData.lastRadius = 0;
+
     }
 
     inline void InternalUpdatePost() // After user space update

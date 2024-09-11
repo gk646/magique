@@ -9,6 +9,29 @@ namespace magique
 
     Point PositionC::getPosition() const { return {x, y}; }
 
+    Point PositionC::getMiddle(const CollisionC& collisionC) const
+    {
+        Point targetPosition{x, y};
+        switch (collisionC.shape)
+        {
+        case Shape::RECT:
+            targetPosition.x += collisionC.p1 / 2.0F;
+            targetPosition.y += collisionC.p2 / 2.0F;
+            break;
+        case Shape::CIRCLE:
+            targetPosition.x += collisionC.p1;
+            targetPosition.y += collisionC.p1;
+            break;
+        case Shape::CAPSULE:
+            targetPosition.x += collisionC.p1;
+            targetPosition.y += collisionC.p2 / 2.0F;
+            break;
+        case Shape::TRIANGLE:
+            break;
+        }
+        return targetPosition;
+    }
+
     //----------------- ANIMATION -----------------//
 
     AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) :
