@@ -29,6 +29,10 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
+    // If enabled updates the dynamic grid
+    // Default: On
+    void SetEnableCollidableDynamicEntites(bool value);
+
     // Returns true if the ray cast from start to the end hits something a solid tile
     bool GetRayCast(Point start, Point end);
 

@@ -67,7 +67,8 @@ namespace magique
     // Returns the currently loaded maps - fills up unused slots with UINT8_MAX
     std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
 
-    // Note: Both nearby entity methods cache the result and can be continuously called with 0 cost given the same origin and radius
+    // Note: Both nearby entity methods cache the result
+    // -> No overhead when called with the same origin and radius (only in the same tick)
 
     // Returns a vector containing all entities within the specified distance of the given entity
     // Note: The returned vector is only valid until this method is called again (single instance)

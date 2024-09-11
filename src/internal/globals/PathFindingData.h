@@ -13,6 +13,15 @@
 #include "internal/datastructures/HashTypes.h"
 #include "internal/headers/CollisionPrimitives.h"
 
+//-----------------------------------------------
+// Pathfinding Data
+//-----------------------------------------------
+// .....................................................................
+// Uses a stateless A star implementation with custom hashset and priority queue and manhattan distance heuristic
+// For collision lookups hashmaps are used -> can be optimized a lot
+//
+// .....................................................................
+
 namespace magique
 {
     using PathCellID = int32_t;
@@ -24,7 +33,7 @@ namespace magique
         uint16_t gCost = 0;
         uint16_t parent = 0;
         GridNode() = default;
-        GridNode(const Point position, uint16_t g_cost, uint16_t h_cost, uint16_t parent) :
+        GridNode(const Point position, const uint16_t g_cost, const uint16_t h_cost, const uint16_t parent) :
             position(position), fCost(g_cost + h_cost), gCost(g_cost), parent(parent)
         {
         }
@@ -36,8 +45,12 @@ namespace magique
 
     struct PathFindingData final
     {
+        // Constants
         static constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
         static constexpr Point starMove[8] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+
+        // Config
+        bool enableDynamic = true;
 
         HashMap<PathCellID, bool> staticGrid;
         HashMap<PathCellID, bool> dynamicGrid;
@@ -75,6 +88,8 @@ namespace magique
 
         void updateDynamicGrid()
         {
+            if (!enableDynamic)
+                return;
             const auto& data = global::ENGINE_DATA;
             const auto group = internal::POSITION_GROUP;
             dynamicGrid.clear();
@@ -139,8 +154,8 @@ namespace magique
             const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
             const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
 
-            if (isCellCSolid(GetCellID((int)start.x, (int)start.y), map, dynamic) ||
-                isCellCSolid(GetCellID((int)end.x, (int)end.y), map, dynamic))
+            if (isCellCSolid(GetCellID(static_cast<int>(start.x), static_cast<int>(start.y)), map, dynamic) ||
+                isCellCSolid(GetCellID(static_cast<int>(end.x), static_cast<int>(end.y)), map, dynamic))
             {
                 LOG_WARNING("Cant search a path from or to a solid tile!");
                 return;
@@ -176,11 +191,12 @@ namespace magique
     private:
         void constructPath(const GridNode& current, std::vector<Point>& path) const
         {
+            path.resize(current.gCost);
             const GridNode* curr = &current;
             while (curr->parent != UINT16_MAX)
             {
-                path.push_back(
-                    {curr->position.x * cellSize + cellSize / 2.0F, curr->position.y * cellSize + cellSize / 2.0F});
+                path[curr->gCost - 1] = {curr->position.x * cellSize + cellSize / 2.0F,
+                                         curr->position.y * cellSize + cellSize / 2.0F};
                 curr = &nodePool[curr->parent];
             }
         }
