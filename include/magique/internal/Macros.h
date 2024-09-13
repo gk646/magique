@@ -72,10 +72,20 @@ namespace magique::internal
                     image.width, image.height, checkW, checkH);                                                         \
     }
 
+
+//----------------- HELPERS -----------------//
+
+#define M_SHARECODE_CHECKTYPE(checkType, err)                                                                           \
+    if (p.type != internal::ShareCodeBlockType::GENERIC && p.type != checkType)                                         \
+    {                                                                                                                   \
+        LOG_WARNING(err, p.name);                                                                                       \
+        return;                                                                                                         \
+    }
+
 //----------------- BUILDING -----------------//
 
 #ifdef __APPLE__
-#define INCLUDE_FUNCTIONAL() #include <functional>
+#define INCLUDE_FUNCTIONAL() #include<functional>
 #else
 #define INCLUDE_FUNCTIONAL()
 #endif
@@ -88,5 +98,6 @@ namespace magique::internal
 #define IGNORE_WARNING(num)
 #define UNIGNORE_WARNING()
 #endif
+
 
 #endif //MAGIQUE_MACROS_H
