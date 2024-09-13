@@ -24,6 +24,8 @@ namespace magique
     struct ScreenEmitter;   // Particle emitter for screen (simple) particles
     struct EntityEmitter;   // Particle emitter for entity (complex) particles
     struct EntityAnimation; // Shared animation data for a specific entity
+    enum class LightingMode; // Raytracing, Static Shadows, None
+    struct EmitterData;      // Data for particle emitters
 
     //----------------- LOADING & SAVING -----------------//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
@@ -66,12 +68,6 @@ namespace magique
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
     struct Playlist;              // Stores multiple music objects to easily play and loop them
 
-    //----------------- GRAPHICS -----------------//
-    enum class LightingMode; // Raytracing, Static Shadows, None
-    struct EmitterData;      // Data for particle emitters
-
-    //----------------- Multiplayer -----------------//
-
     //----------------- GAMEDEV -----------------//
     template <typename CustomData = int>
     struct BehaviorTree;
@@ -80,6 +76,10 @@ namespace magique
     struct Quest;
     struct QuestNode;
     struct Achievement;
+    struct ShareCodeFormat;
+
+    //----------------- Multiplayer -----------------//
+
 
     //----------------- UI -----------------//
     struct UIObject;
