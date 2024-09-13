@@ -25,9 +25,6 @@ namespace magique
     // Effective immediately
     void SetSeed(int seed);
 
-
-
-
 } // namespace magique
 
 #endif //MAGIQUE_PROCEDURAL_H

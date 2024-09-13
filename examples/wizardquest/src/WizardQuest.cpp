@@ -36,9 +36,9 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    CreateEntity(PLAYER, 160, 64, MapID::LEVEL_1);
-    CreateEntity(TROLL, 65, 64, MapID::LEVEL_1);
-    auto map = GetCameraMap();
+    auto map = MapID::LEVEL_2;
+    CreateEntity(PLAYER, 23*24 ,3* 24, map);
+    CreateEntity(TROLL, 23*24, 30*24, map);
     // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
     LoadTileMapCollisions(map, GetTileMap(HandleID(map)), {0, 1});
@@ -65,7 +65,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
 
     auto& pos = GetComponent<PositionC>(entt::entity(1));
     auto& col = GetComponent<CollisionC>(entt::entity(1));
-    for (const auto e : GetNearbyEntities(pos.getPosition(), 1000))
+    for (const auto e : GetNearbyEntities(pos.getPosition(), 10000))
     {
         if (EntityIsActor(e))
         {
@@ -75,12 +75,11 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
                 break;
             std::vector<Point> path;
             cxstructs::now();
-            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map,999);
-            cxstructs::printTime<std::chrono::nanoseconds>("hey");
+            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map,0);
+            cxstructs::printTime<std::chrono::nanoseconds>("Time:");
             DrawPath(path);
         }
     }
-    DrawPathFindingGrid(map);
     EndMode2D();
 }
 

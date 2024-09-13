@@ -15,7 +15,7 @@ namespace magique
 {
     using AchievementCallback = void (*)(std::string& name);
 
-    // Defines a new achieveable achievement and adds it to the sysem
+    // Defines a new achievable achievement and adds it to the system
     // Note: If constraint evaluates to true the achievement is done - only evaluated if not finished
     // Failure: returns false if the name already exists
     bool AddAchievement(const std::string& name, const std::function<bool()>& constraint);
@@ -25,15 +25,15 @@ namespace magique
     bool IsAchievementDone(const std::string& name);
 
     // Manually finishes the achievement and triggers the callback - skips evaluating the condition
-    // Failure: returns false if achievement is already done or doesnt exist
+    // Failure: returns false if achievement is already done or doesn't exist
     bool TriggerAchievement(const std::string& name);
 
     // Sets the callback for finished achievements
-    // Called each time a achievement is finished for the first time
+    // Called each time an achievement is finished for the first time
     void SetAchievementCallback(AchievementCallback callback);
 
     // Checks for completion of any achievements
-    // Note: This is called automatically every 30 ticks - but may wanna be invoked manually
+    // Note: This is called automatically every 30 ticks - but may want to be invoked manually
     void CheckAchievements();
 
     //----------------- PERSISTENCE -----------------//

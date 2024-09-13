@@ -265,15 +265,15 @@ namespace magique
         return SplitString(s.c_str(), delim);
     }
 
-    std::string& TrimLeadingWhitespace(std::string& str)
+    std::string& TrimLeadingWhitespace(std::string& s)
     {
-        const char* start = str.c_str();
+        const char* start = s.c_str();
         while (*start && std::isspace(static_cast<unsigned char>(*start)))
         {
             ++start;
         }
-        str.erase(0, start - str.c_str());
-        return str;
+        s.erase(0, start - s.c_str());
+        return s;
     }
 
     const char* GetTimeString(const int totalSeconds)

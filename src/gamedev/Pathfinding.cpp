@@ -10,22 +10,24 @@ namespace magique
                   const bool dynamic)
     {
         auto& path = global::PATH_DATA;
-        path.findPath(pathVec, start, end, map, searchLen, dynamic);
+        constexpr int capacity = MAGIQUE_PATHFINDING_SEARCH_CAPACITY;
+        const int maxLen = std::min(searchLen == 0 ? capacity : searchLen, capacity);
+        path.findPath(pathVec, start, end, map, maxLen, dynamic);
     }
 
-    Point GetNextPosition(const Point start, const Point end, const MapID map, const int searchLen, const bool dynamic)
+    Point GetNextOnPath(const Point start, const Point end, const MapID map, const int searchLen, const bool dynamic)
     {
         auto& path = global::PATH_DATA;
-        path.findPath(path.pathCache, start, end, map, searchLen, dynamic);
+        FindPath(path.pathCache, start, end, map, searchLen, dynamic);
         if (path.pathCache.empty())
             return {0, 0};
-        return path.pathCache[0];
+        return path.pathCache[path.pathCache.size() - 1];
     }
 
     Point GetDirectionVector(const Point current, const Point target)
     {
-        const float diffX =  target.x-current.x;
-        const float diffY =  target.y-current.y;
+        const float diffX = target.x - current.x;
+        const float diffY = target.y - current.y;
         float lenSquared = diffX * diffX + diffY * diffY;
         if (lenSquared != 0.0f)
         {
@@ -52,8 +54,8 @@ namespace magique
             for (int j = 0; j < width; ++j)
             {
                 const int currX = startX + j;
-                const auto id = PathFindingData::GetCellID(currX, currY);
-                const bool isSolid = path.isCellCSolid(id, map, true);
+                const auto id = GetPathCellID(currX, currY);
+                const bool isSolid = path.isCellSolid(id, map, true);
                 const Rectangle rect = {(float)currX * cellSizeF, (float)currY * cellSizeF, cellSizeF, cellSizeF};
                 DrawRectangleLinesEx(rect, 1, ColorAlpha(GRAY, 0.4F));
                 if (!isSolid)
@@ -70,7 +72,7 @@ namespace magique
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
         for (const auto p : path)
         {
-            const Rectangle rect = { p.x - halfSize,  p.y - halfSize, cellSize, cellSize};
+            const Rectangle rect = {p.x - halfSize, p.y - halfSize, cellSize, cellSize};
             DrawRectangleRec(rect, RED);
         }
     }
