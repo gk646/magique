@@ -27,6 +27,8 @@ namespace magique
 
         [[nodiscard]] float manhattan(Point p) const;
         [[nodiscard]] float euclidean(Point p) const;
+        [[nodiscard]] float chebyshev(Point p) const;
+        [[nodiscard]] float octile(Point p) const;
     };
 
     //----------------- CORE -----------------//

@@ -9,7 +9,7 @@
 //-----------------------------------------------
 // .....................................................................
 // Utilities to easily build complex behavior trees
-// The structure of trees is not changed after its built
+// The structure of trees is not changed after it's built
 // Through the template you can specify a custom data class that is passed to each condition
 // The structure is simple:
 // Step 1: Add any branch

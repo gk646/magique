@@ -16,6 +16,9 @@ struct TileLoader final : ITask<AssetContainer>
         auto handle = RegisterTileMap(res.getAsset("Level1.tmx"));
         RegisterHandle(handle, HandleID::LEVEL_1);
 
+        handle = RegisterTileMap(res.getAsset("Level2.tmx"));
+        RegisterHandle(handle, HandleID::LEVEL_2);
+
         // Load TileSet
         handle = RegisterTileSet(res.getAsset("topdown.tsx"));
         RegisterHandle(handle, HandleID::TILE_SET);

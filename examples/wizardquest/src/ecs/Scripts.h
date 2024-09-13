@@ -64,6 +64,7 @@ struct TrollScript final : EntityScript
 {
     void onTick(entt::entity self) override
     {
+        return;
         auto& pos = GetComponent<PositionC>(self);
         auto& col = GetComponent<CollisionC>(self);
         for (const auto e : GetNearbyEntities(pos.getPosition(), 1000))
@@ -75,7 +76,7 @@ struct TrollScript final : EntityScript
                 if (tarPos.map != pos.map)
                     break;
                 std::vector<Point> path;
-                FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map,999);
+                FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map);
                 if (path.empty())
                     return;
                 const auto moveVec = GetDirectionVector(pos.getMiddle(col), path[0]) * 0.5F;

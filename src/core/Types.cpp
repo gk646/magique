@@ -32,10 +32,25 @@ namespace magique
         return distSqr;
     }
 
-    Point Point::operator*(const float i) const
+    float Point::chebyshev(Point p) const
     {
-        return {x * i, y * i};
+        constexpr auto D = 1.0F;
+        constexpr auto D2 = 1.0F;
+        const auto dx = abs(x - p.x);
+        const auto dy = abs(y - p.y);
+        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
+
+    float Point::octile(Point p) const
+    {
+        constexpr auto D = 1.0F;
+        constexpr auto D2 = 1.41421356237F;
+        const auto dx = abs(x - p.x);
+        const auto dy = abs(y - p.y);
+        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
+    }
+
+    Point Point::operator*(const float i) const { return {x * i, y * i}; }
 
     //----------------- SPRITE SHEET -----------------//
 
