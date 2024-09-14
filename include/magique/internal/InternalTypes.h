@@ -82,10 +82,10 @@ namespace magique::internal
 
     enum class ShareCodeBlockType : uint8_t
     {
-        STRING,
         INTEGER,
         FLOATING,
-        GENERIC,
+        STRING,
+
     };
 
     struct ShareCodeProperty final

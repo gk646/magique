@@ -76,7 +76,7 @@ namespace magique::internal
 //----------------- HELPERS -----------------//
 
 #define M_SHARECODE_CHECKTYPE(checkType, err)                                                                           \
-    if (p.type != internal::ShareCodeBlockType::GENERIC && p.type != checkType)                                         \
+    if (p.type != checkType)                                         \
     {                                                                                                                   \
         LOG_WARNING(err, p.name);                                                                                       \
         return;                                                                                                         \
