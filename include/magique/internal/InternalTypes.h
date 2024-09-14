@@ -80,19 +80,18 @@ namespace magique::internal
         uint8_t r = 255, g = 0, b = 0, a = 1; // Color
     };
 
-    enum class ShareCodeBlockType : uint8_t
+    enum class ShareCodePropertyType : uint8_t
     {
         INTEGER,
         FLOATING,
         STRING,
-
     };
 
     struct ShareCodeProperty final
     {
         char* name = nullptr; // Always terminated and allocated string
         int bits = 0;
-        ShareCodeBlockType type = ShareCodeBlockType::INTEGER;
+        ShareCodePropertyType type = ShareCodePropertyType::INTEGER;
     };
 
     struct ShareCodePropertyData final
@@ -101,11 +100,11 @@ namespace magique::internal
         union
         {
             char* string = nullptr;
-            double floating;
-            int64_t integer;
+            float floating;
+            int32_t integer;
         };
         int bits = 0;
-        ShareCodeBlockType type = ShareCodeBlockType::INTEGER;
+        ShareCodePropertyType type = ShareCodePropertyType::INTEGER;
     };
 
 
