@@ -3,6 +3,7 @@
 #include <cxutil/cxstring.h>
 
 #include <magique/util/Strings.h>
+#include <magique/util/Logging.h>
 
 namespace magique
 {
@@ -276,6 +277,146 @@ namespace magique
         return s;
     }
 
+    int GetBase64EncodedLength(const int bytes) { return 4 * ((bytes + 2) / 3); }
+
+    constexpr char BASE64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                    "abcdefghijklmnopqrstuvwxyz"
+                                    "0123456789+/";
+
+    void EncodeBase64(const char* input, const int inputLen, char* output, const int outputLen)
+    {
+        const int base64Len = GetBase64EncodedLength(inputLen);
+        if (outputLen < base64Len + 1)
+        {
+            LOG_WARNING("The output buffer isn't large enough to contain the encoded string");
+            return;
+        }
+
+        int i = inputLen - 1;
+        int o = base64Len - 1;
+
+        output[base64Len] = '\0';
+
+        const int mod = inputLen % 3;
+        if (mod == 1)
+        {
+            const uint32_t value = static_cast<uint8_t>(input[i--]) << 16;
+            output[o--] = '=';
+            output[o--] = '=';
+            output[o--] = BASE64_CHARS[(value >> 12) & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 18) & 0x3F];
+        }
+        else if (mod == 2)
+        {
+            uint32_t value = (static_cast<uint8_t>(input[i - 1]) << 8) | static_cast<uint8_t>(input[i]);
+            value <<= 8;
+            output[o--] = '=';
+            output[o--] = BASE64_CHARS[(value >> 6) & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 12) & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 18) & 0x3F];
+            i -= 2;
+        }
+
+        while (i >= 2)
+        {
+            const uint32_t value = (static_cast<uint8_t>(input[i - 2]) << 16) |
+                (static_cast<uint8_t>(input[i - 1]) << 8) | static_cast<uint8_t>(input[i]);
+
+            output[o--] = BASE64_CHARS[value & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 6) & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 12) & 0x3F];
+            output[o--] = BASE64_CHARS[(value >> 18) & 0x3F];
+
+            i -= 3;
+        }
+    }
+
+    std::string EncodeBase64(std::string input)
+    {
+        const int binarySize = static_cast<int>(input.size());
+        const int base64Len = GetBase64EncodedLength(static_cast<int>(input.size())) + 1;
+        input.resize(base64Len);
+        EncodeBase64(input.c_str(), binarySize, input.data(), base64Len);
+        input.pop_back(); // pop the '\0' terminator
+        return input;
+    }
+
+    int Base64CharToValue(const char c)
+    {
+        if (c >= 'A' && c <= 'Z')
+            return c - 'A';
+        if (c >= 'a' && c <= 'z')
+            return c - 'a' + 26;
+        if (c >= '0' && c <= '9')
+            return c - '0' + 52;
+        if (c == '+')
+            return 62;
+        if (c == '/')
+            return 63;
+        return -1;
+    }
+
+    void DecodeBase64(char* input)
+    {
+        const int inputLen = static_cast<int>(strlen(input));
+        int i = 0;
+        int b = 0;
+        while (b < inputLen)
+        {
+            const auto b1 = Base64CharToValue(input[b]);
+            const auto b2 = Base64CharToValue(input[b + 1]);
+            const auto b3 = Base64CharToValue(input[b + 2]);
+            const auto b4 = Base64CharToValue(input[b + 3]);
+
+            if (b1 == -1 || b2 == -1 || (input[b + 2] != '=' && b3 == -1) || (input[b + 3] != '=' && b4 == -1))
+            {
+                LOG_WARNING("Invalid base64 character detected");
+                return;
+            }
+
+            const uint32_t value = (b1 << 18) | (b2 << 12) | ((b3 & 0x3F) << 6) | (b4 & 0x3F);
+
+            if (input[b + 3] == '=') [[unlikely]] // padding
+            {
+                if (input[b + 2] == '=') // `==` case, 1 byte of data
+                {
+                    input[i++] = static_cast<char>(value >> 16);
+                }
+                else // `=` case, 2 bytes of data
+                {
+                    input[i++] = static_cast<char>(value >> 16);
+                    input[i++] = static_cast<char>(value >> 8);
+                }
+                break;
+            }
+
+            input[i] = static_cast<char>(value >> 16);
+            input[i + 1] = static_cast<char>(value >> 8);
+            input[i + 2] = static_cast<char>(value);
+
+            i += 3;
+            b += 4;
+        }
+        input[i] = '\0';
+    }
+
+    std::string DecodeBase64(std::string input)
+    {
+        DecodeBase64(input.data());
+        int size = static_cast<int>(input.size()) - 1;
+        while (size > 0)
+        {
+            if (input[size] == '\0')
+            {
+                break;
+            }
+            --size;
+        }
+        if (size > 0)
+            input.resize(size);
+        return input;
+    }
+
     const char* GetTimeString(const int totalSeconds)
     {
         const int days = totalSeconds / 86400;
@@ -284,7 +425,6 @@ namespace magique
         const int seconds = totalSeconds % 60;
         return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
     }
-
 
 
 } // namespace magique

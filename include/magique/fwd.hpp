@@ -77,6 +77,9 @@ namespace magique
     struct QuestNode;
     struct Achievement;
     struct ShareCodeFormat;
+    struct ShareCodeData;
+    struct ShareCode;
+    struct ShareCodeProperty;
 
     //----------------- Multiplayer -----------------//
 

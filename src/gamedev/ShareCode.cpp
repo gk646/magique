@@ -1,5 +1,8 @@
 #include <cmath>
+#include <string>
+
 #include <magique/gamedev/ShareCode.h>
+#include <magique/util/Strings.h>
 
 #include "internal/utils/STLUtil.h"
 #include "internal/utils/BitUtil.h"
@@ -14,24 +17,11 @@
 //      - Data          : Variable length
 // ................................................................................
 
-// 1. Clean, easy-to-use software interface
-// 2. Space efficiency
-// 3. Fast
-
 constexpr static uint8_t VERSION = 1;
 constexpr static uint16_t CHECKSUM_TYPE = 0;
 constexpr static char STRING_LIMITER = 65;
 constexpr static int BYTE_TO_BITS = 8;
 constexpr static int CHARACTER_SIZE = 8;
-
-bool IsVersionValid(const uint8_t version)
-{
-    if (version == 1)
-    {
-        return true;
-    }
-    return false;
-}
 
 namespace magique
 {
@@ -43,72 +33,134 @@ namespace magique
 
     uint8_t GetShareCodeGeneratorVersion() { return VERSION; }
 
+    bool IsShareCodeVersionSupported(uint8_t version)
+    {
+        if (version == 1)
+        {
+            return true;
+        }
+        return false;
+    }
+
     //----------------- SHARE CODE -----------------//
 
-    ShareCode ShareCode::FromString(const char* str) // public version
+    ShareCode::ShareCode(const char* str) // public version
     {
         if (str == nullptr)
         {
             LOG_WARNING("Passed null to ShareCode::FromString");
-            return ShareCode{nullptr};
+            return;
         }
 
         const auto len = static_cast<int>(strlen(str));
         if (len < sizeof(CHECKSUM_TYPE) + sizeof(VERSION))
         {
             LOG_WARNING("Passed string is not a ShareCode: %s", str);
-            return ShareCode{nullptr};
+            return;
         }
 
-        ShareCode test{str};
+        // Decode only the header
+        char header[5];
+        std::memcpy(header, str, sizeof(VERSION) + sizeof(CHECKSUM_TYPE));
+        header[3] = '=';
+        header[4] = '\0';
+        DecodeBase64(header);
+
+        ShareCode test{header, nullptr};
         const auto version = test.getVersion();
-        if (!IsVersionValid(version))
+        if (!IsShareCodeVersionSupported(version))
         {
             LOG_WARNING("Passed ShareCode has unsupported version: %d", static_cast<int>(version));
-            return ShareCode{nullptr};
+            return;
         }
 
         // Tests successful - return new sharecode with copied data
-        test.code = nullptr; // Avoid deletion
+        test.binaryCode = nullptr; // Avoid deletion
 
-        const auto data = new char[len + 1];
-        std::memcpy(data, str, len);
-        data[len] = '\0';
+        // Copy base64 input string
+        const auto base64Str = new char[len + 1];
+        std::memcpy(base64Str, str, len);
+        base64Str[len] = '\0';
 
-        return ShareCode{data};
+        // Get binary length and copy it
+        DecodeBase64(base64Str);
+        int binaryLength = 0;
+        for (int i = len - 1; i > -1; --i)
+        {
+            if (base64Str[i] == '\0')
+            {
+                binaryLength = i;
+                break;
+            }
+        }
+
+        // Copy binary part
+        const auto binary = new char[binaryLength + 1];
+        std::memcpy(binary, base64Str, binaryLength);
+        binary[binaryLength] = '\0';
+
+        // Encode base64 back
+        EncodeBase64(base64Str, binaryLength, base64Str, len + 1);
+        base64 = base64Str;
+        binaryCode = binary;
     }
 
     uint8_t ShareCode::getVersion() const
     {
         uint8_t version = 0;
-        std::memcpy(&version, &code[0], sizeof(uint8_t));
+        std::memcpy(&version, &binaryCode[0], sizeof(uint8_t));
         return version;
     }
 
     uint16_t ShareCode::getCheckSum() const
     {
         uint16_t checkSum = 0;
-        std::memcpy(&checkSum, &code[1], sizeof(uint16_t));
+        std::memcpy(&checkSum, &binaryCode[1], sizeof(uint16_t));
         return checkSum;
     }
 
-    std::string ShareCode::getAsString() const { return {code}; }
+    const char* ShareCode::getCode() const { return base64; }
 
-    const char* ShareCode::getCode() const { return code; }
+    bool ShareCode::getIsValid() const { return binaryCode != nullptr && base64 != nullptr; }
 
-    bool ShareCode::getIsValid() const { return code != nullptr; }
+    bool ShareCode::operator==(const ShareCode& o) const
+    {
+        const bool binaryEqual =
+            (binaryCode == o.binaryCode) || (binaryCode && o.binaryCode && std::strcmp(binaryCode, o.binaryCode) == 0);
+        const bool base64Equal = (base64 == o.base64) || (base64 && o.base64 && std::strcmp(base64, o.base64) == 0);
+        return binaryEqual && base64Equal;
+    }
 
-    ShareCode::~ShareCode() { delete[] code; }
+    ShareCode::~ShareCode()
+    {
+        delete[] binaryCode;
+        binaryCode = nullptr;
+        delete[] base64;
+        base64 = nullptr;
+    }
 
-    ShareCode::ShareCode(const char* code) : code(code) {} // Internal version - no copy
+    ShareCode::ShareCode(const char* code, const char* base64) :
+        binaryCode(code), base64(base64) {} // Internal version - no copy
 
     //----------------- PROPERTY DATA -----------------//
 
-    int ShareCodeProperty::getInteger() const { return integer; }
+    int ShareCodeProperty::getInteger() const
+    {
+        MAGIQUE_ASSERT(type == internal::ShareCodePropertyType::INTEGER, "Property is not an integer");
+        return integer;
+    }
 
-    float ShareCodeProperty::getFloat() const { return floating; }
+    float ShareCodeProperty::getFloat() const
+    {
+        MAGIQUE_ASSERT(type == internal::ShareCodePropertyType::FLOATING, "Property is not an float");
+        return floating;
+    }
 
-    const char* ShareCodeProperty::getString() const { return string; }
+    const char* ShareCodeProperty::getString() const
+    {
+        MAGIQUE_ASSERT(type == internal::ShareCodePropertyType::STRING, "Property is not an string");
+        return string;
+    }
 
     bool ShareCodeProperty::isInteger() const { return type == internal::ShareCodePropertyType::INTEGER; }
 
@@ -148,6 +200,29 @@ namespace magique
     }
 
     int ShareCodeData::getSize() const { return static_cast<int>(properties.size()); }
+
+    ShareCodeData& ShareCodeData::operator=(ShareCodeData&& other) noexcept
+    {
+        if (this != &other)
+        {
+            properties = std::move(other.properties);
+        }
+        return *this;
+    }
+
+    ShareCodeData::ShareCodeData(ShareCodeData&& other) noexcept : properties(std::move(other.properties)) {}
+
+    ShareCodeData::~ShareCodeData()
+    {
+        for (auto& p : properties)
+        {
+            if (p.type == internal::ShareCodePropertyType::STRING)
+            {
+                delete[] p.string;
+                p.string = nullptr;
+            }
+        }
+    }
 
     //----------------- FORMAT -----------------//
 
@@ -198,6 +273,7 @@ namespace magique
     ShareCodeData ShareCodeFormat::getFormatData() const
     {
         ShareCodeData data;
+        data.properties.reserve(properties.size() + 1);
         for (const auto& p : properties)
         {
             internal::ShareCodePropertyData pData;
@@ -254,13 +330,18 @@ namespace magique
         totalDataBits += sizeof(VERSION) * BYTE_TO_BITS;       // Version
         totalDataBits += sizeof(CHECKSUM_TYPE) * BYTE_TO_BITS; // Checksum
 
-        const int totalBytes = std::ceil(static_cast<float>(totalDataBits) / BYTE_TO_BITS);
-        auto* strData = new char[totalBytes + 1];
+        // Allocate the base64 length already
+        const int binaryBytes = static_cast<int>(std::ceil(static_cast<float>(totalDataBits) / BYTE_TO_BITS));
+        const int base64Bytes = GetBase64EncodedLength(binaryBytes);
+        auto* binary = new char[binaryBytes + 1];
+        auto* base64 = new char[base64Bytes + 1];
+        binary[binaryBytes] = '\0';
+        base64[base64Bytes] = '\0';
 
-        // Write statics
+        // Write header
         const auto checkSum = getCheckSum();
-        strData[0] = static_cast<char>(VERSION);
-        std::memcpy(&strData[1], &checkSum, sizeof(uint16_t));
+        binary[0] = static_cast<char>(VERSION);
+        std::memcpy(&binary[1], &checkSum, sizeof(uint16_t));
 
         int currentBits = 24;
         for (const auto& p : data.properties)
@@ -286,7 +367,7 @@ namespace magique
                 {
                     const int byteIndex = currentBits / BYTE_TO_BITS;
                     const int bitIndexInByte = currentBits % BYTE_TO_BITS;
-                    auto& currByte = strData[byteIndex];
+                    auto& currByte = binary[byteIndex];
                     const auto written = WriteBits(value, bitsLeftToWrite, currByte, bitIndexInByte);
                     currentBits += written;
                     bitsLeftToWrite -= written;
@@ -305,7 +386,7 @@ namespace magique
                     {
                         const int byteIndex = currentBits / BYTE_TO_BITS;
                         const int bitIndexInByte = currentBits % BYTE_TO_BITS;
-                        auto& currByte = strData[byteIndex];
+                        auto& currByte = binary[byteIndex];
                         const auto written = WriteBits(value, bitsLeftToWrite, currByte, bitIndexInByte);
                         currentBits += written;
                         bitsLeftToWrite -= written;
@@ -314,8 +395,11 @@ namespace magique
                 }
             }
         }
-        strData[totalBytes] = '\0';
-        return ShareCode{strData};
+
+        // Copy binary to base64 and encode
+        std::memcpy(base64, binary, binaryBytes);
+        EncodeBase64(base64, binaryBytes, base64, base64Bytes + 1);
+        return ShareCode{binary, base64};
     }
 
     uint16_t ShareCodeFormat::getCheckSum() const
@@ -349,12 +433,12 @@ namespace magique
         return lower16 ^ upper16;
     }
 
-    ShareCodeData ShareCodeFormat::importFromString(const ShareCode& shareCode) const
+    ShareCodeData ShareCodeFormat::getShareCodeData(const ShareCode& shareCode) const
     {
+        // Checks
         MAGIQUE_ASSERT(shareCode.getIsValid(), "passed nullptr");
-
         const auto version = shareCode.getVersion();
-        if (!IsVersionValid(version))
+        if (!IsShareCodeVersionSupported(version))
         {
             LOG_WARNING("Passed ShareCode has unsupported version: %d", static_cast<int>(version));
             return {};
@@ -368,7 +452,7 @@ namespace magique
             return {};
         }
 
-        const auto strData = shareCode.getCode();
+        const auto strData = shareCode.binaryCode;
         ShareCodeData data = getFormatData();
         int currentBit = 24;
         for (int i = 0; i < properties.size(); ++i)
@@ -409,7 +493,7 @@ namespace magique
                 std::string str;
                 while (true)
                 {
-                    char value = 0;
+                    uint32_t value = 0;
                     int bitsLeftToRead = CHARACTER_SIZE;
                     while (bitsLeftToRead > 0)
                     {
@@ -426,7 +510,7 @@ namespace magique
                     }
                     if (value == STRING_LIMITER)
                         break;
-                    str.push_back(value);
+                    str.push_back(static_cast<char>(value));
                 }
                 const auto stringData = new char[str.size() + 1];
                 std::memcpy(stringData, str.c_str(), str.size());
@@ -434,7 +518,6 @@ namespace magique
                 dp.string = stringData;
             }
         }
-
         return data;
     }
 
