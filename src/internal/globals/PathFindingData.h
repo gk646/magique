@@ -201,7 +201,7 @@ namespace magique
                 return;
             }
 
-            frontier.emplace(start, 0, start.octile(end), UINT16_MAX);
+            frontier.emplace(start, 0.0F, start.octile(end), UINT16_MAX);
             uint16_t counter = 0;
 
             while (!frontier.empty() && counter < maxLen)

@@ -52,6 +52,29 @@ namespace magique
     // Removes any leading whitespace in-place and returns the string
     std::string& TrimLeadingWhitespace(std::string& s);
 
+    //----------------- ENCODING -----------------//
+
+    // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it
+    int GetBase64EncodedLength(int bytes);
+
+    // Returns true if the given string is base64
+    bool IsBase64(const char* s);
+
+    // Encodes the given string 's' into base64 representation
+    //      - inputLen : length of the binary portion
+    //      - outputLen: valid length of the output pointer
+    // Note: Allows inplace modification of the input string (e.g. input and output being the same array)
+    void EncodeBase64(const char* input, int inputLen, char* output, int outputLen);
+
+    // Returns the base64 encoded input as string
+    std::string EncodeBase64(std::string input);
+
+    // Decodes the given base64 input inplace
+    void DecodeBase64(char* input);
+
+    // Returns the decoded base64 input as string - makes a single copy
+    std::string DecodeBase64(std::string input);
+
     //----------------- FORMATTING -----------------//
     // IMPORTANT: All functions (this section) use raylibs TextFormat() and have the same limitations
     // -> only valid until called again
