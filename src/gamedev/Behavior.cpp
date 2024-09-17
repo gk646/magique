@@ -1,4 +1,4 @@
-#include <magique/gamedev/Behavior.h>
+#include <magique/gamedev/BehaviorTree.h>
 
 namespace magique
 {

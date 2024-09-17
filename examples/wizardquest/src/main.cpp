@@ -2,48 +2,63 @@
 
 #include <chrono>
 #include <magique/assets/AssetPacker.h>
+#include <magique/gamedev/AIAgent.h>
 #include <magique/gamedev/ShareCode.h>
 
 int main()
 {
-    ShareCodeFormat format;
-    format.addTextProperty("name");
-    format.addIntegerProperty(255, "age");
-    format.addIntegerProperty(300, "height");
-    format.addFloatProperty("foot width");
-
-    auto exportData = format.getFormatData();
-
-    exportData.setData("name", "gk646");
-    exportData.setData("age", 22);
-    exportData.setData(2, 178);
-    exportData.setData(3, 2.2F);
-
-    auto shareCode = format.getShareCode(exportData);
-
-    printf("Generated Share Code: %s\n", shareCode.getCode());
-
-    auto code2 = ShareCode(shareCode.getCode());
-
-    auto importData = format.getShareCodeData(shareCode);
-    for (int i = 0; i < exportData.getSize(); ++i)
+    enum class TradingState
     {
-        auto exp = exportData.getData(i);
-        auto imp = importData.getData(i);
+        HOLD,
+        SELL,
+        BUY,
+        ENUM_SIZE
+    };
 
-        if (exp.isInteger())
-        {
-            MAGIQUE_ASSERT(exp.getInteger() == imp.getInteger(), "Not matching integer");
-        }
-        else if (exp.isFloat())
-        {
-            MAGIQUE_ASSERT(exp.getFloat() == imp.getFloat(), "Not matching float");
-        }
-        else if (exp.isString())
-        {
-            MAGIQUE_ASSERT(strcmp(exp.getString(), imp.getString()) == 0, "Not matching string");
-        }
-    }
+    enum class TradingEvents
+    {
+        GROUP_1_BUYS,
+        GROUP_1_SELLS,
+        GROUP_2_BUYS,
+        GROUP_2_SELLS,
+        PANIC_EVENT,
+        ENUM_SIZE
+    };
+
+    AIAgent<TradingState, TradingEvents> controller{TradingState::HOLD,100};
+
+    controller.initialize(-1, 1);
+
+    // Pretrain the agent to HOLD during panic and SELL when either group sells
+    controller.setScore(TradingState::HOLD, TradingEvents::PANIC_EVENT, 10);   // Hold during panic
+    controller.setScore(TradingState::SELL, TradingEvents::GROUP_1_SELLS, 10); // Sell if group 1 sells
+    controller.setScore(TradingState::BUY, TradingEvents::GROUP_1_BUYS, 10);   // Sell if group 1 sells
+    controller.setScore(TradingState::SELL, TradingEvents::GROUP_2_SELLS, 10); // Sell if group 2 sells
+
+    // Test simulation with various events
+    printf("Initial State: %d\n", (int)controller.getCurrentState());
+
+    // Handle GROUP_1_BUYS event
+    auto state = controller.handleNewEvent(TradingEvents::GROUP_1_BUYS, 5);
+    printf("After GROUP_1_BUYS Event: %d\n", (int)controller.getCurrentState());
+
+    float score = state == TradingState::BUY ? 10 : 0;
+
+    // Handle GROUP_1_SELLS event
+    state = controller.handleNewEvent(TradingEvents::GROUP_1_SELLS, score);
+    printf("After GROUP_1_SELLS Event: %d\n", (int)state);
+
+    // Handle GROUP_2_BUYS event
+    state = controller.handleNewEvent(TradingEvents::GROUP_2_BUYS, 10);
+    printf("After GROUP_2_BUYS Event: %d\n", (int)state);
+
+    // Handle GROUP_2_SELLS event
+    state = controller.handleNewEvent(TradingEvents::GROUP_2_SELLS, 10);
+    printf("After GROUP_2_SELLS Event: %d\n", (int)state);
+
+    // Handle PANIC_EVENT
+    state = controller.handleNewEvent(TradingEvents::PANIC_EVENT, 10);
+    printf("After PANIC_EVENT: %d\n", (int)state);
 
     return 0;
     magique::CompileImage("../res");

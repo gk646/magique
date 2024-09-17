@@ -16,7 +16,7 @@
 // Now you can generate the sharecode that holds this data
 // The data is packed on a bit level avoiding ANY unnecessary padding
 // Intended Workflow:
-//          - 1. Create a format: Add the properties you want and specify the maximum range
+//          - 1. Create a format: Add the properties you want and specify the maximum range (on integers)
 //          - 2. Set the data   : Use getFormatData() to get the correct data object and set the property values
 //          - 3. Get ShareCode  : Now you can generate the sharecode by passing the data to the format
 //          - 4. Import         : Import the sharecode with the format that produced it to get the contained data
@@ -48,10 +48,10 @@ namespace magique
         // Adds a new property that can store text up to the given maximum length - variable length
         void addTextProperty(const char* name = nullptr);
 
-        // Returns true if the property with the given name was successfully removed
+        // Removes the property with the given name (if exists)
         void removeProperty(const char* name);
 
-        // Returns true if the property with at the given index was successfully removed
+        // Removes the property with at the given index (if exists)
         void removeProperty(int index);
 
         //----------------- EXPORT -----------------//

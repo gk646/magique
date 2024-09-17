@@ -90,7 +90,7 @@ inline float fast_sqrt(float n) noexcept  {
 
 // Clamps the given value between the ]range - low[ if val is smaller than low, val if val is between low and high, and high if val is bigger than high
 template <typename T>
-constexpr auto clamp(const T& val, const T& low, const T& high) -> T
+constexpr T clamp(const T& val, const T& low, const T& high)
   requires(!std::is_integral_v<T>)
 {
   if (val < low) {
@@ -104,7 +104,7 @@ constexpr auto clamp(const T& val, const T& low, const T& high) -> T
 }
 // Clamps the given value between the ]range - low[ if val is smaller than low, val if val is between low and high, and high if val is bigger than high
 template <typename T>
-constexpr auto clamp(T val, T low, T high) -> T
+constexpr T clamp(T val, T low, T high)
   requires std::is_integral_v<T>
 {
   if (val < low) {
@@ -115,11 +115,14 @@ constexpr auto clamp(T val, T low, T high) -> T
   }
   return val;
 }
+
+
 // Linear interpolation - translates the given old value in the old scaling to the corresponding point in the new scale
 template <typename T, typename U>
-T lerp(T valueOld, T minOld, T maxOld, U minNew, U maxNew) {
+U lerp(T valueOld, T minOld, T maxOld, U minNew, U maxNew) {
   return (static_cast<double>(valueOld - minOld) / static_cast<double>(maxOld - minOld)) * (maxNew - minNew) + minNew;
 }
+
 // True if the given "val" is within the specified range
 template <typename T>
 bool in_range(T val, T min, T max) {
