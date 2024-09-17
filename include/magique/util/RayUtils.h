@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_RAYUTILS_H
 #define MAGIQUE_RAYUTILS_H
 
-#include <raylib/raylib.h>
+#include <magique/fwd.hpp>
 
 //-----------------------------------------------
 // raylib Utils
@@ -16,6 +16,8 @@ namespace magique
     // Returns the length of the text up to the specified index
     float MeasureTextUpTo(char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
 
+    // Returns a random float using raylibs GetRandomValue() - min and max included
+    float GetRandomFloat(float min, float max);
 
 } // namespace magique
 

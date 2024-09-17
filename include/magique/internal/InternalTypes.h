@@ -2,12 +2,13 @@
 #define MAGIQUE_INTERNAL_TYPES_H
 
 #include <magique/core/Types.h>
+#include <magique/internal/Macros.h>
 
 //-----------------------------------------------
 // Public Internal Module
 //-----------------------------------------------
 // .....................................................................
-// Internal but public simple types or methods. Dont modify or use them.
+// Internal but public simple types or methods. Don't modify or use them (unless you know what your doing).
 // They have to be public due to templates (or other reasons) and are used internally
 // .....................................................................
 
@@ -107,6 +108,117 @@ namespace magique::internal
         ShareCodePropertyType type = ShareCodePropertyType::INTEGER;
     };
 
+    template <typename Type, int rows, int columns>
+    struct StaticMatrix final
+    {
+        using CellFunctor = Type (*)(Type, int row, int column);
+
+        Type data[rows * columns];
+        Type operator()(const int row, const int column) const
+        {
+            MAGIQUE_ASSERT(row < rows && column < columns, "Out of bounds");
+            return data[row * columns + column];
+        }
+        Type& operator()(const int row, const int column)
+        {
+            MAGIQUE_ASSERT(row < rows && column < columns, "Out of bounds");
+            return data[row * columns + column];
+        }
+        Type sumRow(const int row) const
+        {
+            Type sum{};
+            const auto* start = &data[row * columns];
+            for (int i = 0; i < columns; ++i)
+            {
+                sum += start[i];
+            }
+            return sum;
+        }
+        Type sumColumn(const int column) const
+        {
+            Type sum{};
+            for (int i = 0; i < rows; ++i)
+            {
+                sum += data[i * columns + column];
+            }
+            return sum;
+        }
+        Type getRowMax(const int row)
+        {
+            const auto* start = &data[row * columns];
+            Type max = start[0];
+            for (int i = 0; i < columns; ++i)
+            {
+                if (start[i] > max)
+                    max = start[i];
+            }
+            return max;
+        }
+        Type getColumnMax(const int column)
+        {
+            Type max = data[0 * columns + column];
+            for (int i = 0; i < rows; ++i)
+            {
+                const auto val = data[i * columns + column];
+                if (val > max)
+                    max = val;
+            }
+            return max;
+        }
+        int getRowMaxIndex(const int row)
+        {
+            const auto* start = &data[row * columns];
+            Type max = start[0];
+            int index = 0;
+            for (int i = 0; i < columns; ++i)
+            {
+                if (start[i] > max)
+                {
+                    max = start[i];
+                    index = i;
+                }
+            }
+            return index;
+        }
+        int getColumnMaxIndex(const int column)
+        {
+            Type max = data[0 * columns + column];
+            int index = 0;
+            for (int i = 0; i < rows; ++i)
+            {
+                const auto val = data[i * columns + column];
+                if (val > max)
+                {
+                    max = val;
+                    index = i;
+                }
+            }
+            return index;
+        }
+
+        void forEach(const CellFunctor functor)
+        {
+            for (int i = 0; i < rows; ++i)
+            {
+                for (int j = 0; j < columns; ++j)
+                {
+                    data[i * columns + j] = functor(data[i * columns + j]);
+                }
+            }
+        }
+    };
+
+    template <class StateEnum, class EventEnum>
+    struct AgentMemory final
+    {
+        StateEnum state;
+        EventEnum causingEvent;
+        EventEnum nextEvent;
+        float reward = 0;
+
+        [[nodiscard]] int getNextEvent() const { return static_cast<int>(nextEvent); }
+        [[nodiscard]] int getState() const { return static_cast<int>(state); }
+    };
 
 } // namespace magique::internal
 
