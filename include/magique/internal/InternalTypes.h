@@ -108,25 +108,25 @@ namespace magique::internal
         ShareCodePropertyType type = ShareCodePropertyType::INTEGER;
     };
 
-    template <typename Type, int rows, int columns>
+    template <typename T, int rows, int columns>
     struct StaticMatrix final
     {
-        using CellFunctor = Type (*)(Type, int row, int column);
+        using CellFunctor = T (*)(T, int row, int column);
 
-        Type data[rows * columns];
-        Type operator()(const int row, const int column) const
+        T data[rows * columns];
+        T operator()(const int row, const int column) const
         {
             MAGIQUE_ASSERT(row < rows && column < columns, "Out of bounds");
             return data[row * columns + column];
         }
-        Type& operator()(const int row, const int column)
+        T& operator()(const int row, const int column)
         {
             MAGIQUE_ASSERT(row < rows && column < columns, "Out of bounds");
             return data[row * columns + column];
         }
-        Type sumRow(const int row) const
+        T sumRow(const int row) const
         {
-            Type sum{};
+            T sum{};
             const auto* start = &data[row * columns];
             for (int i = 0; i < columns; ++i)
             {
@@ -134,19 +134,19 @@ namespace magique::internal
             }
             return sum;
         }
-        Type sumColumn(const int column) const
+        T sumColumn(const int column) const
         {
-            Type sum{};
+            T sum{};
             for (int i = 0; i < rows; ++i)
             {
                 sum += data[i * columns + column];
             }
             return sum;
         }
-        Type getRowMax(const int row)
+        T getRowMax(const int row)
         {
             const auto* start = &data[row * columns];
-            Type max = start[0];
+            T max = start[0];
             for (int i = 0; i < columns; ++i)
             {
                 if (start[i] > max)
@@ -154,9 +154,9 @@ namespace magique::internal
             }
             return max;
         }
-        Type getColumnMax(const int column)
+        T getColumnMax(const int column)
         {
-            Type max = data[0 * columns + column];
+            T max = data[0 * columns + column];
             for (int i = 0; i < rows; ++i)
             {
                 const auto val = data[i * columns + column];
@@ -168,7 +168,7 @@ namespace magique::internal
         int getRowMaxIndex(const int row)
         {
             const auto* start = &data[row * columns];
-            Type max = start[0];
+            T max = start[0];
             int index = 0;
             for (int i = 0; i < columns; ++i)
             {
@@ -182,7 +182,7 @@ namespace magique::internal
         }
         int getColumnMaxIndex(const int column)
         {
-            Type max = data[0 * columns + column];
+            T max = data[0 * columns + column];
             int index = 0;
             for (int i = 0; i < rows; ++i)
             {
@@ -217,8 +217,33 @@ namespace magique::internal
         float reward = 0;
 
         [[nodiscard]] int getNextEvent() const { return static_cast<int>(nextEvent); }
+        [[nodiscard]] int getCausingEvent() const { return static_cast<int>(causingEvent); }
         [[nodiscard]] int getState() const { return static_cast<int>(state); }
     };
+
+    // Note: You cannot remove elements
+    template <typename T>
+    struct CircularBuffer final
+    {
+        T* data;
+        int capacity;
+        int size = 0;
+
+        explicit CircularBuffer(const int capacity) : data(new T[capacity]), capacity(capacity) {}
+        ~CircularBuffer() { delete[] data; }
+        void add(const T& value) { data[size++ % capacity] = value; }
+        template <typename Functor>
+        void forLastN(const int n, const Functor& functor)
+        {
+            const int elementsToIterate = std::min(n, size);
+            for (int i = 0; i < elementsToIterate; ++i)
+            {
+                int index = (size - 1 - i + capacity) % capacity;
+                functor(data[index]);
+            }
+        }
+    };
+
 
 } // namespace magique::internal
 
