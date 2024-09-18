@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_DATATABLE_H
 #define MAGIQUE_DATATABLE_H
 
-#include <cstring>
 #include <vector>
 #include <initializer_list>
 #include <magique/internal/InternalTypes.h>
