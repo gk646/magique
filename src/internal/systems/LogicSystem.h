@@ -3,48 +3,51 @@
 
 namespace magique
 {
+    // Flattened array
+    struct ActorMapDistribution final
+    {
+        static constexpr int maxPlayers = MAGIQUE_MAX_PLAYERS;
+        cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * maxPlayers> dataVec;
+
+        ActorMapDistribution() { dataVec.resize(MAGIQUE_EXPECTED_MAPS * maxPlayers, -1); }
+
+        int8_t getActorNum(const MapID map, const int offset)
+        {
+            return dataVec[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS + offset];
+        }
+
+        void insertActorNum(const MapID map, const int num)
+        {
+            dataVec.resize(static_cast<int>(map) * maxPlayers, -1);
+            for (int i = 0; i < maxPlayers; i++)
+            {
+                if (dataVec[maxPlayers * static_cast<int>(map) + i] == -1)
+                {
+                    dataVec[maxPlayers * static_cast<int>(map) + i] = static_cast<int8_t>(num);
+                    return;
+                }
+            }
+        }
+    };
+
     inline Vector2 GetUpdateCircle(const float x, const float y)
     {
         return {x - global::ENGINE_CONFIG.entityUpdateDistance, y - global::ENGINE_CONFIG.entityUpdateDistance};
     }
 
-    // Insert numbers into flattened array
-    inline void InsertToActorDist(cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
-                                  const int map, const int num)
+    // Builds the lookup tables so the main iteration is as fast as possible
+    inline void BuildCache(Vector2 (&actorCircles)[MAGIQUE_MAX_PLAYERS], bool (&actorMaps)[UINT8_MAX],
+                           ActorMapDistribution& actorDist, int& actorCount)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            if (actorDist[MAGIQUE_MAX_PLAYERS * map + i] == -1)
-            {
-                actorDist[MAGIQUE_MAX_PLAYERS * map + i] = static_cast<int8_t>(num);
-                return;
-            }
-        }
-    }
-
-    // This is a bit complicated as we don't know how many total maps there are
-    // So we stay flexible with sbo vectors that expand if needed
-    inline void BuildCache(const entt::registry& registry, std::array<MapID, MAGIQUE_MAX_PLAYERS>& loadedMaps,
-                           Vector2 (&actorCircles)[4], cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS>& actorMaps,
-                           cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS>& actorDist,
-                           int& actorCount)
-    {
-        std::memset(loadedMaps.data(), UINT8_MAX, MAGIQUE_MAX_PLAYERS);
-        actorDist.resize(MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, -1);
-        actorMaps.resize(MAGIQUE_EXPECTED_MAPS, false);
-
+        const auto& registry = internal::REGISTRY;
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
         {
             MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
-            actorDist.resize(static_cast<int>(pos.map), -1);    // initializes new values to -1
-            actorMaps.resize(static_cast<int>(pos.map), false); // initializes new values to false
-
             actorMaps[static_cast<int>(pos.map)] = true;
-            loadedMaps[actorCount] = pos.map;
             actorCircles[actorCount] = GetUpdateCircle(pos.x, pos.y);
-            InsertToActorDist(actorDist, static_cast<int>(pos.map), actorCount);
+            actorDist.insertActorNum(pos.map, actorCount);
             actorCount++;
         }
     }
@@ -125,7 +128,6 @@ namespace magique
         auto& dynamicData = global::DY_COLL_DATA;
 
         const auto& group = internal::POSITION_GROUP;
-        auto& hashGrid = dynamicData.hashGrid;
         auto& drawVec = data.drawVec;
         auto& cache = data.entityUpdateCache;
         auto& updateVec = data.entityUpdateVec;
@@ -143,24 +145,32 @@ namespace magique
 
         // Lookup tables
         // Dist is just a flattened array: int [Count Maps][Count Players]
-        cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> actorDistribution{};
-        cxstructs::SmallVector<bool, MAGIQUE_EXPECTED_MAPS> actorMaps{};
+        ActorMapDistribution actorDist{};
         Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
+        bool loadedMapsTable[UINT8_MAX]{};
+        bool actorMapsTable[UINT8_MAX]{};
 
-        BuildCache(registry, loadedMaps, actorCircles, actorMaps, actorDistribution, actorCount);
+        BuildCache(actorCircles, actorMapsTable, actorDist, actorCount);
 
+        loadedMaps.clear();
         drawVec.clear();
-        hashGrid.clear();
+        dynamicData.mapEntityGrids.clear();
         updateVec.clear();
         collisionVec.clear();
 
-        // Iterate all entities and insert them into hashgrid and drawVec/collisionVec
+        // Iterate all entities and insert them into the hashgrids and drawVec/collisionVec
         const auto view = registry.view<PositionC>();
         for (const auto e : view)
         {
             const auto& pos = group.get<const PositionC>(e);
             const auto map = pos.map;
-            if (actorMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
+
+            loadedMapsTable[static_cast<int>(map)] = true;
+            if (!dynamicData.mapEntityGrids.contains(map))
+                dynamicData.mapEntityGrids.add(map);
+            auto& hashGrid = dynamicData.mapEntityGrids[map];
+
+            if (actorMapsTable[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
                 // Check if inside the camera bounds already
                 if (map == cameraMap &&
@@ -178,8 +188,7 @@ namespace magique
                 {
                     for (int i = 0; i < actorCount; ++i)
                     {
-                        // Flat array lookup
-                        const int8_t actorNum = actorDistribution[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS];
+                        const int8_t actorNum = actorDist.getActorNum(map, i);
                         if (actorNum == -1)
                             break;
                         const auto [x, y] = actorCircles[actorNum];
@@ -197,6 +206,13 @@ namespace magique
                     }
                 }
             }
+        }
+
+        // Generate a dense vector of the loaded maps - map is loaded if it contains at least 1 entity
+        for (int i = 0; i < UINT8_MAX; ++i)
+        {
+            if (loadedMapsTable[i])
+                loadedMaps.push_back(MapID(i));
         }
 
         // Fill the update vec after to avoid adding entities that drop out

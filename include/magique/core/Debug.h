@@ -1,6 +1,8 @@
 #ifndef MAGIQUE_DEBUG_H
 #define MAGIQUE_DEBUG_H
 
+#include <magique/fwd.hpp>
+
 //-----------------------------------------------
 // Debug Module
 //-----------------------------------------------
@@ -27,7 +29,7 @@ namespace magique
     void ResetBenchmarkTimes();
 
     // Draws the debug grid for the dynamic entity hash grid including entity count
-    void DrawHashGridDebug();
+    void DrawHashGridDebug(MapID map);
 
     //----------------- TIME MEASURE -----------------//
 

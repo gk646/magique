@@ -25,23 +25,29 @@ namespace magique
     struct NearbyQueryData final
     {
         HashSet<entt::entity> cache;
-        float lastRadius = 0;
         Point lastOrigin{};
+        float lastRadius = 0;
+        MapID lastMap{};
+
+        [[nodiscard]] bool getIsSimilarParameters(const MapID map, const Point& p, const float radius) const
+        {
+            return lastOrigin == p && lastRadius == radius && lastMap == map;
+        }
     };
 
     struct EngineData final
     {
-        StateCallback stateCallback{};                       // Callback function for gamestate changes
-        EntityCache entityUpdateCache;                       // Caches entities not in update range anymore
-        std::vector<entt::entity> entityUpdateVec;           // Vector containing the entities to update for this tick
-        std::vector<entt::entity> drawVec;                   // Vector containing all entities to be drawn this tick
-        vector<entt::entity> collisionVec;                   // Vector containing the entities to check for collision
-        GameConfig gameConfig{};                             // Global game config instance
-        std::array<MapID, MAGIQUE_MAX_PLAYERS> loadedMaps{}; // Currently loaded zones
-        Camera2D camera{};                                   // Current camera
-        entt::entity cameraEntity{};                         // Entity id of the camera
-        GameState gameState{};                               // Global gamestate
-        MapID cameraMap = MapID(UINT8_MAX);                  // Map the camera is in
+        StateCallback stateCallback{};             // Callback function for gamestate changes
+        EntityCache entityUpdateCache;             // Caches entities not in update range anymore
+        std::vector<entt::entity> entityUpdateVec; // Vector containing the entities to update for this tick
+        std::vector<entt::entity> drawVec;         // Vector containing all entities to be drawn this tick
+        vector<entt::entity> collisionVec;         // Vector containing the entities to check for collision
+        std::vector<MapID> loadedMaps{};           // Currently loaded zones
+        GameConfig gameConfig{};                   // Global game config instance
+        Camera2D camera{};                         // Current camera
+        entt::entity cameraEntity{};               // Entity id of the camera
+        GameState gameState{};                     // Global gamestate
+        MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;
 
         EngineData()

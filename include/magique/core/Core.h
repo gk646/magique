@@ -64,19 +64,20 @@ namespace magique
     // Returns a list of all entities that should be drawn - culled with the current camera
     const std::vector<entt::entity>& GetDrawEntities();
 
-    // Returns the currently loaded maps - fills up unused slots with UINT8_MAX
-    std::array<MapID, MAGIQUE_MAX_PLAYERS> GetLoadedZones();
+    // Returns the currently loaded maps - a map is loaded if it contains at least 1 entity
+    const std::vector<MapID>& GetLoadedMaps();
 
-    // Note: Both nearby entity methods cache call parameters
-    // -> No overhead when called with the same origin and radius (only in the same tick)
+    //----------------- QUERY DYNAMIC ENTITIES -----------------//
+    // Note: These methods cache their call parameters
+    // -> No overhead when called with the same parameters in the same tick (with no other calls in between)
 
     // Returns a vector containing all entities within the specified distance of the given entity
     // Note: The returned vector is only valid until this method is called again (single instance)
-    const std::vector<entt::entity>& GetNearbyEntities(Point origin, float radius);
+    const std::vector<entt::entity>& GetNearbyEntities(MapID map, Point origin, float radius);
 
     // Returns true if the nearby entities contain the given target entity
     // Note: This is a hash lookup O(1) (after querying the hashgrid)
-    bool NearbyEntitiesContain(Point origin, float radius, entt::entity target);
+    bool NearbyEntitiesContain(MapID map, Point origin, float radius, entt::entity target);
 
     //----------------- CAMERA -----------------//
 

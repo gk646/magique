@@ -166,9 +166,6 @@ namespace magique
         auto& staticData = global::STATIC_COLL_DATA; // non const - modifying the collectors
 
         const auto& collisionVec = data.collisionVec;
-        const auto& objectGrid = staticData.objectGrid;
-        const auto& tileGrid = staticData.tileGrid;
-        const auto& groupGrid = staticData.groupGrid;
         const auto& colliderStorage = staticData.objectStorage.colliders;
 
         // Collectors
@@ -199,18 +196,31 @@ namespace magique
                 CheckAgainstWorldBounds(pairCollector, e, pos, col, r3, 2);
                 CheckAgainstWorldBounds(pairCollector, e, pos, col, r4, 3);
             }
+            const auto map = pos.map;
 
-            // Query object grid
-            constexpr auto objectType = ColliderType::TILEMAP_OBJECT;
-            CheckHashGrid(e, objectGrid, idCollector, pairCollector, objectType, colliderStorage, pos, col);
+            // Query object grid if it has any entries
+            if (staticData.mapObjectGrids.contains(map))
+            {
+                const auto& objectGrid = staticData.mapObjectGrids[map];
+                constexpr auto objectType = ColliderType::TILEMAP_OBJECT;
+                CheckHashGrid(e, objectGrid, idCollector, pairCollector, objectType, colliderStorage, pos, col);
+            }
 
             // Query tile grid
-            constexpr auto tileType = ColliderType::TILESET_TILE;
-            CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
+            if (staticData.mapTileGrids.contains(map))
+            {
+                const auto& tileGrid = staticData.mapTileGrids[map];
+                constexpr auto tileType = ColliderType::TILESET_TILE;
+                CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
+            }
 
             // Query group grid
-            constexpr auto groupType = ColliderType::MANUAL_COLLIDER;
-            CheckHashGrid(e, groupGrid, idCollector, pairCollector, groupType, colliderStorage, pos, col);
+            if (staticData.mapGroupGrids.contains(map))
+            {
+                const auto& groupGrid = staticData.mapGroupGrids[map];
+                constexpr auto groupType = ColliderType::MANUAL_COLLIDER;
+                CheckHashGrid(e, groupGrid, idCollector, pairCollector, groupType, colliderStorage, pos, col);
+            }
         }
     }
 

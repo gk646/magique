@@ -19,9 +19,12 @@ namespace magique
 #endif
     }
 
-    void DrawHashGridDebug()
+    void DrawHashGridDebug(const MapID map)
     {
-        auto& grid = global::DY_COLL_DATA.hashGrid;
+        const auto& dynamic = global::DY_COLL_DATA;
+        if (!dynamic.mapEntityGrids.contains(map))
+            return;
+        const auto& grid = dynamic.mapEntityGrids[map];
         int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
         for (int i = 0; i < 50; ++i)
         {
@@ -35,7 +38,7 @@ namespace magique
                 const auto it = grid.cellMap.find(id);
                 if (it != grid.cellMap.end())
                 {
-                    const auto count = static_cast<int>(grid.dataBlocks[grid.cellMap[id]].count);
+                    const auto count = static_cast<int>(grid.dataBlocks[it->second].count);
                     const auto color = count > grid.getBlockSize() ? RED : GREEN;
                     DrawText(std::to_string(count).c_str(), x + half, y + half, 20, color);
                 }

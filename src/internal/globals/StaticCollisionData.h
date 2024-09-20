@@ -45,6 +45,8 @@ namespace magique
         vector<StaticCollider> colliders;
         vector<uint32_t> freeList;
 
+        const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
+
         uint32_t insert(const float x, const float y, const float width, const float height)
         {
             if (freeList.empty())
@@ -58,6 +60,7 @@ namespace magique
             colliders[nextIdx] = {x, y, width, height};
             return nextIdx;
         }
+
         void remove(const uint32_t objectNum)
         {
             MAGIQUE_ASSERT((int)objectNum < colliders.size(), "Given num is out of bounds");
@@ -90,7 +93,7 @@ namespace magique
         HashMap<MapID, vector<uint32_t>> tileObjectMap;
         HashMap<MapID, std::array<const std::vector<TileObject>*, MAGIQUE_MAX_OBJECT_LAYERS>> objectVectors;
         // Tiles + which maps where loaded
-        HashMap<MapID, vector<uint32_t>> markedTilesDataMap;
+        HashMap<MapID, vector<uint32_t>> tilesDataMap;
         // Groups
         HashMap<int, vector<uint32_t>> groupMap; // Holds manual collider groups
     };
@@ -111,42 +114,18 @@ namespace magique
 
         //----------------- HASHGRIDS -----------------//
 
-        ColliderHashGrid objectGrid; // Stores all tilemap objects
-        TileHashGrid tileGrid;       // Stores all collidable tiles
-        GroupHashGrid groupGrid;     // Stores all objects from manual collider groups
+        MapHolder<ColliderHashGrid> mapObjectGrids; // Stores all tilemap objects
+        MapHolder<TileHashGrid> mapTileGrids;       // Stores all collidable tiles
+        MapHolder<GroupHashGrid> mapGroupGrids;     // Stores all objects from manual collider groups
 
         //----------------- TILESET -----------------//
         const TileSet* tileSet = nullptr; // Only use for equality checks
         float tileSetScale = 1.0f;
         HashMap<uint16_t, TileInfo> markedTilesMap; // which tiles are marked and their tile info
 
-        void unloadMap(const MapID map)
+        void unloadGroup(int groupID)
         {
-            const auto clearGridAndVec = [&](auto& vec, auto& grid)
-            {
-                for (const auto num : vec)
-                {
-                    objectStorage.remove(num);
-                    // We store the object num + the data in the hash grid
-                    // But we dont want to store 8 byte in the objectReferences - and the object num is still unique
-                    // So we compare the internal static id and see if the object num part matches
-                    grid.removeIfWithHoles(num, [](const uint32_t num, const StaticID id)
-                                           { return num == StaticIDHelper::GetObjectNum(id); });
-                }
-                grid.patchHoles(); // Patch as we cant rebuild it
-                vec.clear();
-            };
 
-            if (objectReferences.tileObjectMap.contains(map))
-            {
-                clearGridAndVec(objectReferences.tileObjectMap[map], objectGrid);
-                objectReferences.objectVectors.erase(map);
-            }
-
-            if (objectReferences.markedTilesDataMap.contains(map))
-            {
-                clearGridAndVec(objectReferences.markedTilesDataMap[map], tileGrid);
-            }
         }
 
         [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0 && worldBounds.height != 0; }

@@ -343,31 +343,51 @@ private:
 };
 
 
-template <typename V, int blockSize, int cellSize>
-struct HashGridHolder final
+// Structure that holds the given type for each map separately efficiently
+// This is likely the best solution as it does not require annotating the data with the map or checks on each lookup
+// This is as space efficient as it gets and has constant overhead and reasonable cache efficiency
+template <typename T>
+struct MapHolder final
 {
-    uint8_t lookupTable[UINT8_MAX];
-    magique::vector<SingleResolutionHashGrid<V, blockSize, cellSize>> gridVector;
+    uint8_t lookupTable[UINT8_MAX]{};
+    magique::vector<T> elements;
 
-    HashGridHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
+    MapHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
 
-    auto& operator[](const uint8_t type)
+    [[nodiscard]] bool contains(const MapID id) const
     {
-        const auto idx = lookupTable[type];
-        return gridVector[idx];
+        return lookupTable[static_cast<int>(id)] != UINT8_MAX || elements.size() == UINT8_MAX;
     }
 
-    void add(const uint8_t type)
+    T& operator[](const MapID map)
     {
-        if (lookupTable[type] != UINT8_MAX) [[likely]]
+        assert(contains(map) && "Accessing empty index");
+        const auto idx = lookupTable[static_cast<int>(map)];
+        return elements[idx];
+    }
+
+    const T& operator[](const MapID map) const
+    {
+        assert(contains(map) && "Accessing empty index");
+        const auto idx = lookupTable[static_cast<int>(map)];
+        return elements[idx];
+    }
+
+    void add(const MapID map)
+    {
+        assert(!contains(map) && "Trying to add at existing map");
+        const auto size = static_cast<int>(elements.size());
+        assert(size <= UINT8_MAX && "Too many elements");
+        lookupTable[static_cast<int>(map)] = static_cast<uint8_t>(size);
+        elements.push_back({});
+    }
+
+    void clear()
+    {
+        for (auto& e : elements)
         {
-            MAGIQUE_ASSERT(false, "Trying to insert to filled spot");
-            return;
+            e.clear();
         }
-        const auto size = static_cast<int>(gridVector.size());
-        MAGIQUE_ASSERT(size <= UINT8_MAX, "Too many elements");
-        lookupTable[type] = static_cast<uint8_t>(size);
-        gridVector.push_back({});
     }
 };
 
