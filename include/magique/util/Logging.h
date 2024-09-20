@@ -14,8 +14,8 @@ namespace magique
     {
         LEVEL_ALLOCATION, // Logs every allocation and deallocation
         LEVEL_INFO,       // Something happened
-        LEVEL_WARNING,    // Something went wrong but its okay
-        LEVEL_ERROR,      // Something went wrong but its NOT okay
+        LEVEL_WARNING,    // Something went wrong but it's okay
+        LEVEL_ERROR,      // Something went wrong but it's NOT okay
         LEVEL_FATAL       // We have to shut down...
     };
 

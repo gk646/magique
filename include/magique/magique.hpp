@@ -31,6 +31,8 @@
 #include "gamedev/CommandLine.h"
 #include "gamedev/Procedural.h"
 #include "gamedev/Localization.h"
+#include "gamedev/VirtualClock.h"
+#include "gamedev/PathFinding.h"
 
 // Multiplayer
 #include "multiplayer/Multiplayer.h"

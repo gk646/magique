@@ -6,7 +6,7 @@
 
 #include "internal/utils/EncryptionUtil.h"
 
-inline constexpr auto FILE_HEADER = "CONFIG";
+static constexpr auto FILE_HEADER = "CONFIG";
 
 namespace magique
 {
@@ -36,7 +36,7 @@ namespace magique
             auto type = static_cast<uint8_t>(cell.type); // only 5 types - but type int cause its in user space
             memcpy(&data[idx], &type, sizeof(uint8_t));
             ++idx;
-           memcpy(&data[idx], &cell.id, sizeof(int));
+            memcpy(&data[idx], &cell.id, sizeof(int));
             idx += 4;
 
             if (cell.type == StorageType::STRING)

@@ -8,11 +8,12 @@
 // Job System
 //-----------------------------------------------
 // .....................................................................
-// This is for advanced users. This systems is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
-// Between ticks its in hibernation, sleeping until woken up again.
+// Note: This is for advanced module.
+// This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
+// Between ticks, it's in hibernation, sleeping until woken up again.
 // Allows to submit concurrent jobs to distribute compatible work across threads and await their completion.
-// Note: Dont forget to give the main thread work BEFORE waiting for the jobs to return!
 // Per default has 3 worker threads.
+// Note: Don't forget to give the main thread work BEFORE waiting for the jobs to return!
 // .....................................................................
 
 namespace magique
@@ -62,7 +63,7 @@ namespace magique
     void AwaitAllJobs();
 
     //----------------- LIFECYCLE -----------------//
-    // Note: Called automatically when using the game tempalte - ONLY call if your not using the game template!
+    // Note: Called automatically when using the game template - ONLY call if your not using the game template!
 
     // Brings all workers back to speed (out of hibernate)
     void WakeUpJobs();

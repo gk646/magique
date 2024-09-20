@@ -237,6 +237,12 @@ namespace magique
         VALUE,
     };
 
+    enum class QuestNodeType : uint8_t
+    {
+        DIALOGUE,
+
+    };
+
     //----------------- MULTIPLAYER -----------------//
 
     enum class SendFlag : uint8_t

@@ -120,7 +120,8 @@ namespace magique
                     const auto yOff = i * mapWidth;
                     for (int j = 0; j < mapWidth; ++j)
                     {
-                        const auto tileNum = static_cast<uint16_t>(start[yOff + j] - 1); // tile data is 1 - empty is 0
+                        // tile data is 1 more so that empty is 0
+                        const auto tileNum = static_cast<uint16_t>(start[yOff + j] - 1);
                         if (tileNum == UINT16_MAX) // uint overflows to maximum value (0-1 = MAX)
                             continue;
                         const auto infoIt = markedMap.find(tileNum);

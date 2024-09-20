@@ -14,7 +14,7 @@
 //      - TileMaps: Manually place colliders in the tile editor - they are imported automatically and can be loaded in
 //      - TileSet: Allows to define certain tile-indices as solid making them (you then also need to load the maps)
 //      - Manual: Manually add and manage collider groups
-// Note: The methods can be used in any combination, they all work together and do not incur a cost when ignored
+// Note: The methods can be used in any combination, they all work together and do NOT have runtime overhead when ignored
 // Note: Collidable means that a collision is detected and the event method called. Simulating something as solid is done
 //       through calling AccumulateCollision() in the EntityScript
 // ................................................................................

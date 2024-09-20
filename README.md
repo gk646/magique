@@ -1,26 +1,28 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
-[![Discord](https://img.shields.io/badge/Discord-%235865F2.svg?&logo=discord&logoColor=white)](https://discord.gg/YAsvnxAmX7)
+[![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
 ![Version Badge](https://img.shields.io/badge/Version:-0.1.0-blue)
+![License Badge](https://img.shields.io/github/license/gk646/magique)
 
+> _What if raylib was an engine?..._
 
-> Still in BETA state - not publicly released
+`magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) written in **C++ 20**.
+It's carefully designed to be intuitive and easy to learn, at installation through development and up to sharing the
+finished game. By using a small stack of proven libraries and many custom crafted modules it aims to answer all game
+development needs in a simple but definitive way both in performance and usability.
+---
 
-`magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) built
-around `raylib`. It's designed to
-answer all game
-development
-needs in a simple but definitive way both in performance and usability. `magique` achieves this by providing core
-functionalities around a stack of proven libraries to create a productive 2D engine in C++ 20.
+Join the [official discord](https://discord.gg/YAsvnxAmX7) for questions, suggestions and discussions.
 
 Most notable features:
 
 - **Easy to learn and use**
-    - All raylib methods are fully functional allowing for an easy transition
+    - All `raylib` functionalities are fully functional allowing for an easy transition
     - _**_Fully documented headers_**_ and GitHub wiki
     - Multiple example games included (see examples/)
     - Beginner-friendly public API optimized for usability
     - Robust logging and error handling with debugger support
+    - **Batteries included engine** (all dependencies in the source)
 - **Fast and modern**
     - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
     - Explicitly _**optimized for compile time**_ internally and externally!
@@ -34,7 +36,7 @@ Most notable features:
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
     - Out of the box support for _**[Tiled](https://www.mapeditor.org/) exports**_ (.tmx, .tsx)
     - Object-oriented UI framework handling layering with extendable built-in controls
-    - _**Achievements, CommandLine, NoiseGeneration, 2DSound, TextFormatting, and many more!**_
+    - _**Achievements, CommandLine, NoiseGeneration, 2DSound, AIAgent, VirtualClock, and many more!**_
 - **Multiplayer support**
     - Seamless transition between local and global networking with a custom unified API
 - **Steam integration**
@@ -66,7 +68,7 @@ int main(){
 
 ### 1. Installation
 
-`magique` is using CMake as its build system, and wh it's recommended for consuming project as well but not mandatory.
+`magique` is using CMake as its build system and it's recommended for projects using it as well.
 
 #### CMake (recommended)
 
@@ -79,7 +81,7 @@ target_link_libraries(MyGame PRIVATE magique)
 ```
 
 This will automatically build magique with your project and set up the include path. Don't forget to link your project
-against magique! This approach will automatically build for the platform your using.
+against `magique`! This approach will automatically build for the platform your using.
 Check the wiki for optional CMake flags you can set before adding magique.
 
 #### Prebuilt binaries / Custom

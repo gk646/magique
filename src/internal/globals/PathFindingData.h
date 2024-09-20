@@ -14,7 +14,6 @@
 #include "internal/datastructures/HashTypes.h"
 #include "internal/headers/CollisionPrimitives.h"
 
-
 //-----------------------------------------------
 // Pathfinding Data
 //-----------------------------------------------
@@ -48,7 +47,7 @@ namespace magique
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }
     };
 
-    struct VisitedData final
+    struct DenseLookupGrid final
     {
         using VisitedCellID = int32_t;
 
@@ -99,18 +98,18 @@ namespace magique
         // Config
         bool enableDynamic = true;
 
-        HashMap<PathCellID, bool> staticGrid;
-        HashMap<PathCellID, bool> dynamicGrid;
+        DenseLookupGrid staticGrid;
+        DenseLookupGrid dynamicGrid;
         std::vector<Point> pathCache;
 
-        VisitedData visited;
+        DenseLookupGrid visited;
         cxstructs::PriorityQueue<GridNode> frontier{};
         GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
 
-        [[nodiscard]] bool isCellSolid(const PathCellID id, const MapID map, const bool dynamic) const
+        [[nodiscard]] bool isCellSolid(const float x, const float y,  const MapID map, const bool dynamic) const
         {
             const auto staticIt = staticGrid.find(id);
-            if (staticIt != staticGrid.end() && staticIt->second) [[unlikely]]
+            if (staticGrid.isVisited()) [[unlikely]]
             {
                 return true;
             }
@@ -126,10 +125,26 @@ namespace magique
         {
             const auto& staticData = global::STATIC_COLL_DATA;
             staticGrid.clear();
-            const auto insertFunc = [this](const PathCellID id) { staticGrid[id] = true; };
             for (const auto& obj : staticData.objectStorage.colliders)
             {
-                RasterizeRect<cellSize>(insertFunc, GetPathCellID, obj.x, obj.y, obj.p1, obj.p2);
+                const int startX = static_cast<int>(obj.x) / cellSize;
+                const int startY = static_cast<int>(obj.y) / cellSize;
+                const int endX = static_cast<int>(obj.x + obj.p1) / cellSize;
+                const int endY = static_cast<int>(obj.y + obj.p2) / cellSize;
+
+                // Loop through potentially intersecting grid cells
+                for (int i = startY; i <= endY; ++i)
+                {
+                    const auto cellY = static_cast<float>(i) * cellSize;
+                    for (int j = startX; j <= endX; ++j)
+                    {
+                        const auto cellX = static_cast<float>(j) * cellSize;
+                        if (RectToRect(obj.x, obj.y, obj.p1, obj.p2, cellX, cellY, cellSize, cellSize))
+                        {
+                            staticGrid[GetPathCellID(j, i)] = true;
+                        }
+                    }
+                }
             }
         }
 
@@ -217,8 +232,10 @@ namespace magique
                 for (const auto& dir : crossMove)
                 {
                     Point newPos = {current.position.x + dir.x, current.position.y + dir.y};
+                    const auto newPosCoX = newPos.x * cellSize;
+                    const auto newPosCoY = newPos.y * cellSize;
                     const auto id = GetPathCellID(static_cast<int>(newPos.x), static_cast<int>(newPos.y));
-                    if (!visited.isVisited(newPos.x * cellSize, newPos.y * cellSize) && !isCellSolid(id, map, dynamic))
+                    if (!visited.isVisited(newPosCoX, newPosCoY) && !isCellSolid(id, map, dynamic))
                     {
                         const float moveCost = dir.x != 0 && dir.y != 0 ? 1.4142F : 1.0F;
                         const auto hCost = newPos.octile(end) * 1.01F;

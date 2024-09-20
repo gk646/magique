@@ -60,6 +60,7 @@ namespace magique::internal
         }
         else if (newType == StorageType::VALUE)
         {
+            MAGIQUE_ASSERT(size <= 8, "Cannot save value bigger than 8 bytes!");
             std::memcpy(buffer, data, size);
         }
         else
