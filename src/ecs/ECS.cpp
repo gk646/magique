@@ -99,9 +99,10 @@ namespace magique
     bool DestroyEntity(const entt::entity entity)
     {
         auto& tickData = global::ENGINE_DATA;
-        auto& dyCollData = global::DY_COLL_DATA;
+        auto& dynamic = global::DY_COLL_DATA;
         if (internal::REGISTRY.valid(entity)) [[likely]]
         {
+            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
             if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
             {
                 InvokeEvent<onDestroy>(entity);
@@ -112,7 +113,8 @@ namespace magique
             }
             internal::REGISTRY.destroy(entity);
             tickData.entityUpdateCache.erase(entity);
-            dyCollData.hashGrid.removeWithHoles(entity);
+            if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
+                dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
             UnorderedDelete(tickData.drawVec, entity);
             UnorderedDelete(tickData.entityUpdateVec, entity);
             return true;
@@ -125,7 +127,6 @@ namespace magique
         auto& reg = internal::REGISTRY;
         auto& tickData = global::ENGINE_DATA;
         auto& dyCollData = global::DY_COLL_DATA;
-
         const auto view = reg.view<PositionC>(); // Get all entities
         if (ids.size() == 0)
         {
@@ -140,7 +141,7 @@ namespace magique
             tickData.drawVec.clear();
             tickData.entityUpdateVec.clear();
             tickData.collisionVec.clear();
-            dyCollData.hashGrid.clear();
+            dyCollData.mapEntityGrids.clear();
             return;
         }
 
@@ -163,7 +164,10 @@ namespace magique
                     tickData.entityUpdateCache.erase(e);
                     UnorderedDelete(tickData.drawVec, e);
                     UnorderedDelete(tickData.entityUpdateVec, e);
-                    dyCollData.hashGrid.removeWithHoles(e);
+                    if (dyCollData.mapEntityGrids.contains(pos.map)) [[likely]]
+                    {
+                        dyCollData.mapEntityGrids[pos.map].removeWithHoles(e);
+                    }
                     break;
                 }
             }
@@ -254,13 +258,16 @@ namespace magique
             LOG_ERROR("No existing entity with a camera component found!");
     }
 
-    const std::vector<entt::entity>& GetNearbyEntities(const Point origin, const float radius)
+    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float radius)
     {
         // This works because the hashset uses a vector as underlying storage type (stored without holes)
         const auto& dynamicData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
 
-        if (data.nearbyQueryData.lastRadius == radius && data.nearbyQueryData.lastOrigin == origin)
+        if (!dynamicData.mapEntityGrids.contains(map))
+            return {};
+
+        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
             return data.nearbyQueryData.cache.values();
 
         data.nearbyQueryData.lastRadius = radius;
@@ -269,16 +276,16 @@ namespace magique
 
         const auto queryX = origin.x - radius;
         const auto queryY = origin.y - radius;
-        dynamicData.hashGrid.query(data.nearbyQueryData.cache, queryX, queryY, radius * 2.0F, radius * 2.0F);
+        dynamicData.mapEntityGrids[map].query(data.nearbyQueryData.cache, queryX, queryY, radius * 2.0F, radius * 2.0F);
         return data.nearbyQueryData.cache.values();
     }
 
-    bool NearbyEntitiesContain(const Point origin, const float radius, const entt::entity target)
+    bool NearbyEntitiesContain(const MapID map, const Point origin, const float radius, const entt::entity target)
     {
         auto& data = global::ENGINE_DATA;
-        if (data.nearbyQueryData.lastRadius == radius && data.nearbyQueryData.lastOrigin == origin)
+        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
             return data.nearbyQueryData.cache.contains(target);
-        GetNearbyEntities(origin, radius);
+        GetNearbyEntities(map, origin, radius);
         return data.nearbyQueryData.cache.contains(target);
     }
 

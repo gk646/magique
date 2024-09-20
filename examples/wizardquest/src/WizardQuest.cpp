@@ -25,7 +25,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
     // Configure magique
     SetShowHitboxes(true);
     InitLocalMultiplayer();
-    // SetStaticWorldBounds({0,0,1280,1000});
+    SetStaticWorldBounds({0, 0, 1280, 1000});
 
     // Register loaders
     loader.registerTask(new EntityLoader(), BACKGROUND_THREAD, MEDIUM, 1);
@@ -35,10 +35,12 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    auto map = MapID::LEVEL_2;
-    CreateEntity(PLAYER, 23 * 24, 3 * 24, map);
+    auto map = MapID::LEVEL_1;
+    CreateEntity(PLAYER, 11 * 24, 9 * 24, map);
     CreateEntity(TROLL, 23 * 24, 30 * 24, map);
+
     // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
+
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
     LoadTileMapCollisions(map, GetTileMap(HandleID(map)), {0, 1});
     SetGameState(GameState::GAME);
@@ -64,7 +66,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
 
     auto& pos = GetComponent<PositionC>(entt::entity(1));
     auto& col = GetComponent<CollisionC>(entt::entity(1));
-    for (const auto e : GetNearbyEntities(pos.getPosition(), 10000))
+    for (const auto e : GetNearbyEntities(pos.map, pos.getPosition(), 10000))
     {
         if (EntityIsActor(e))
         {
@@ -74,7 +76,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
                 break;
             std::vector<Point> path;
             StartTimer(0);
-            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map, 0);
+            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map, 64);
             printf("Micros: %d\n", StopTimer(0) / 1000);
             DrawPath(path);
         }

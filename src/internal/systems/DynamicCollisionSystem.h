@@ -18,91 +18,100 @@
 //    -> Uses custom Hashset with uint64_t key to mark checked pairs
 //
 // Note: Can still be optimized -> Using a AABB tree (or bounding volume hierarchy) avoids the hashset and will probably
-//       have faster lookups times BUT MUCH more complex to manage and move objects efficiently
+//       have faster lookups times but MUCH more complex to manage and move objects efficiently
 // -> But doesn't change anything for user
 // .....................................................................
 
 namespace magique
 {
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
-    void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet);
-    void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, int startIdx, int endIdx);
+    void HandleCollisionPairs();
+    void CheckHashGridCells(float beginPercent, float endPercent, int thread);
 
     //----------------- SYSTEM -----------------//
 
     inline void DynamicCollisionSystem()
     {
-        auto& dyCollData = global::DY_COLL_DATA;
-        auto& grid = dyCollData.hashGrid;
-        auto& colPairs = dyCollData.collisionPairs;
-        auto& pairSet = dyCollData.pairSet;
-
-        const int size = static_cast<int>(grid.cellMap.size()); // Multithreading over certain amount
+        const int size = global::ENGINE_DATA.collisionVec.size(); // Multithreading over certain amount
         if (size > 150)
         {
             std::array<jobHandle, WORK_PARTS> handles{};
-            int end = 0;
-            const int partSize = static_cast<int>((float)size * 0.81F) / WORK_PARTS; // Give main thread more work
+            constexpr float mainThreadPart = 100.0F / WORK_PARTS * 1.25F; // 25% more work for main thread
+            constexpr float workerPart = (100.0F - mainThreadPart) / (WORK_PARTS - 1);
+            float beginPercent = 0.0F;
             for (int j = 0; j < WORK_PARTS - 1; ++j)
             {
-                const int start = end;
-                end = start + partSize;
-                handles[j] =
-                    AddJob(CreateExplicitJob(CheckHashGridCells, std::ref(grid), std::ref(colPairs[j].vec), start, end));
+                handles[j] = AddJob(CreateExplicitJob(CheckHashGridCells, beginPercent, beginPercent + workerPart, j));
+                beginPercent += workerPart;
             }
-            CheckHashGridCells(grid, colPairs[WORK_PARTS - 1].vec, end, size);
+            CheckHashGridCells(beginPercent, 1.0F, WORK_PARTS - 1);
             AwaitJobs(handles);
         }
         else
         {
-            CheckHashGridCells(grid, colPairs[0].vec, 0, size);
+            CheckHashGridCells(0.0F, 1.0F, WORK_PARTS - 1);
         }
-
-        HandleCollisionPairs(colPairs, pairSet);
+        HandleCollisionPairs();
     }
 
     //----------------- IMPLEMENTATION -----------------//
 
-    inline void CheckHashGridCells(const EntityHashGrid& grid, vector<PairInfo>& pairs, const int startIdx,
-                                   const int endIdx)
+
+    inline void CheckHashGridCells(const float beginP, const float endP, const int thread)
     {
-        const auto start = grid.dataBlocks.begin() + startIdx;
-        const auto end = grid.dataBlocks.begin() + endIdx;
-        const auto& group = internal::POSITION_GROUP;
-        for (auto it = start; it != end; ++it)
+        const auto& data = global::ENGINE_DATA;
+        auto& dynamic = global::DY_COLL_DATA;
+        auto& pairs = dynamic.collisionPairs[thread].vec;
+        for (const auto loadedMap : data.loadedMaps)
         {
-            const auto& block = *it;
-            const auto dStart = block.data;
-            const auto dEnd = block.data + block.count;
-            for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
+            const auto& hashGrid = dynamic.mapEntityGrids[loadedMap];
+            const int size = static_cast<int>(hashGrid.cellMap.size());
+            if (size < WORK_PARTS && thread != WORK_PARTS-1) // If cant be split into parts let main thread do it alone
+                continue;
+
+            const int startIdx = static_cast<int>(beginP * static_cast<float>(size));
+            const int endIdx = static_cast<int>(endP * static_cast<float>(size));
+            const auto start = hashGrid.dataBlocks.begin() + startIdx;
+            const auto end = hashGrid.dataBlocks.begin() + endIdx;
+            const auto& group = internal::POSITION_GROUP;
+            for (auto it = start; it != end; ++it)
             {
-                const auto first = *dIt1;
-                auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
-                for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
+                const auto& block = *it;
+                const auto dStart = block.data;
+                const auto dEnd = block.data + block.count;
+                for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
                 {
-                    const auto second = *dIt2;
-                    if (first >= second)
-                        continue;
-                    auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
-                    if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
-                        continue; // Not on the same map or not on the same collision layer
-                    CollisionInfo info{};
-                    CheckCollision(posA, colA, posB, colB, info);
-                    if (info.isColliding())
+                    const auto first = *dIt1;
+                    auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
+                    for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                     {
-                        pairs.push_back(PairInfo{info, colA, colB, posA, posB, first, second});
+                        const auto second = *dIt2;
+                        if (first >= second)
+                            continue;
+                        auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
+                        if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
+                            continue; // Not on the same map or not on the same collision layer
+                        CollisionInfo info{};
+                        CheckCollision(posA, colA, posB, colB, info);
+                        if (info.isColliding())
+                        {
+                            pairs.push_back(PairInfo{info, colA, colB, posA, posB, first, second});
+                        }
                     }
                 }
             }
         }
     }
 
-    inline void HandleCollisionPairs(CollPairCollector& colPairs, HashSet<uint64_t>& pairSet)
+    inline void HandleCollisionPairs()
     {
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
         const auto& colVec = global::ENGINE_DATA.collisionVec;
-        const auto group = internal::POSITION_GROUP;
+        const auto& group = internal::POSITION_GROUP;
+        auto& dynamic = global::DY_COLL_DATA;
 
+        auto& colPairs = dynamic.collisionPairs;
+        auto& pairSet = dynamic.pairSet;
         for (auto& [vec] : colPairs)
         {
             for (auto& [info, col1, col2, p1, p2, e1, e2] : vec)
@@ -135,7 +144,7 @@ namespace magique
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            if(col.resolutionVec.x != 0.0F && col.resolutionVec.y != 0.0F)
+            if (col.resolutionVec.x != 0.0F && col.resolutionVec.y != 0.0F)
             {
                 volatile int b = 123;
             }

@@ -67,7 +67,7 @@ struct TrollScript final : EntityScript
         return;
         auto& pos = GetComponent<PositionC>(self);
         auto& col = GetComponent<CollisionC>(self);
-        for (const auto e : GetNearbyEntities(pos.getPosition(), 1000))
+        for (const auto e : GetNearbyEntities(pos.map, pos.getPosition(), 1000))
         {
             if (EntityIsActor(e))
             {

@@ -10,11 +10,7 @@
 
 namespace magique
 {
-    void SetStaticWorldBounds(const Rectangle& rectangle)
-    {
-        global::STATIC_COLL_DATA.worldBounds = rectangle;
-        global::PATH_DATA.updateStaticGrid();
-    }
+    void SetStaticWorldBounds(const Rectangle& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
 
     void LoadMapColliders(const MapID map, const std::vector<TileObject>& collisionObjects, const float scale)
     {
@@ -23,6 +19,8 @@ namespace magique
         auto& data = global::STATIC_COLL_DATA;
         if (!data.objectReferences.objectVectors.contains(map))
         {
+            if (!data.mapObjectGrids.contains(map))
+                data.mapObjectGrids.add(map);
             data.objectReferences.objectVectors[map] = {}; // Initialize to nullptr
         }
 
@@ -53,6 +51,7 @@ namespace magique
 
         // Insert
         auto& referenceVec = data.objectReferences.tileObjectMap[map];
+        auto& grid = data.mapObjectGrids[map];
         for (const auto& obj : collisionObjects)
         {
             if (!obj.visible) // Only visible objects
@@ -64,10 +63,10 @@ namespace magique
 
             const auto num = data.objectStorage.insert(scaledX, scaledY, scaledWidth, scaledHeight);
             const auto staticID = StaticIDHelper::CreateID(num, obj.getClass());
-            data.objectGrid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
+            grid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
             referenceVec.push_back(num); // So we can uniquely delete later
         }
-        global::PATH_DATA.updateStaticGrid();
+        global::PATH_DATA.updateStaticGrid(map);
     }
 
     void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float scale)
@@ -101,7 +100,11 @@ namespace magique
             LOG_WARNING("Cannot load tile collision data without tile set. Use LoadGlobalTileSet()");
             return;
         }
-        auto& hashMap = data.objectReferences.markedTilesDataMap;
+        if (!data.mapTileGrids.contains(map))
+            data.mapTileGrids.add(map);
+
+        auto& hashMap = data.objectReferences.tilesDataMap;
+        auto& grid = data.mapTileGrids[map];
         const auto it = hashMap.find(map);
         if (it == hashMap.end())
         {
@@ -109,7 +112,6 @@ namespace magique
             const auto mapWidth = tileMap.getWidth();
             const auto mapHeight = tileMap.getHeight();
             const auto& markedMap = data.markedTilesMap;
-            auto& tileGrid = data.tileGrid;
             auto& storage = data.objectStorage;
             auto& tileVec = hashMap[map];
             for (const auto layer : layers)
@@ -138,12 +140,12 @@ namespace magique
                             const auto objectNum = storage.insert(x, y, width, height);
                             tileVec.push_back(objectNum);
                             const auto tileClass = infoIt->second.getClass();
-                            tileGrid.insert(StaticIDHelper::CreateID(objectNum, tileClass), x, y, width, height);
+                            grid.insert(StaticIDHelper::CreateID(objectNum, tileClass), x, y, width, height);
                         }
                     }
                 }
             }
-            global::PATH_DATA.updateStaticGrid();
+            global::PATH_DATA.updateStaticGrid(map);
         }
     }
 

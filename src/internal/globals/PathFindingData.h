@@ -19,20 +19,11 @@
 //-----------------------------------------------
 // .....................................................................
 // Uses a stateless A star implementation with custom hashset and priority queue and manhattan distance heuristic
-// For collision lookups hashmaps are used -> can be optimized a lot
-//
+// For collision lookups hashmaps are used with bitset to pack bit data
 // .....................................................................
 
 namespace magique
 {
-    using PathCellID = int32_t;
-
-    static [[nodiscard]] PathCellID GetPathCellID(const int cellX, const int cellY)
-    {
-        constexpr auto size = sizeof(PathCellID);
-        return static_cast<PathCellID>(cellX) << size * 4 | static_cast<PathCellID>(cellY);
-    }
-
     struct GridNode final
     {
         Point position;
@@ -47,41 +38,43 @@ namespace magique
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }
     };
 
+    template <int mainGridBaseSize, int subGridSize = 16> // Fits into cache line (key/value pair)
     struct DenseLookupGrid final
     {
-        using VisitedCellID = int32_t;
+        constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
+
+        using VisitedCellID = uint32_t;
 
         static [[nodiscard]] VisitedCellID GetVisitedCell(const int cellX, const int cellY)
         {
-            constexpr auto size = sizeof(VisitedCellID);
-            return static_cast<VisitedCellID>(cellX) << size * 4 | static_cast<VisitedCellID>(cellY);
+            const auto first = static_cast<uint16_t>(cellX);
+            const auto second = static_cast<uint16_t>(cellY);
+            return static_cast<VisitedCellID>(first) << sizeof(VisitedCellID) * 4 | second;
         }
 
-        constexpr static int subGridSize = 16; // Fits into cache line (key/value pair)
-        constexpr static int mainGridSize = MAGIQUE_PATHFINDING_CELL_SIZE * subGridSize;
+        HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
 
-        HashMap<PathCellID, std::bitset<subGridSize * subGridSize>> visited{};
-
-        [[nodiscard]] bool isVisited(const float x, const float y) const
+        [[nodiscard]] bool getIsMarked(const float x, const float y) const
         {
-            const int cellX = static_cast<int>(x) / mainGridSize;
-            const int cellY = static_cast<int>(y) / mainGridSize;
-            const auto it = visited.find(GetPathCellID(cellX, cellY));
+            const int cellX = static_cast<int>(std::floor(x / mainGridSize));
+            const int cellY = static_cast<int>(std::floor(y / mainGridSize));
+            const auto pathCell = GetVisitedCell(cellX, cellY);
+            const auto it = visited.find(pathCell);
             if (it != visited.end())
             {
-                const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / MAGIQUE_PATHFINDING_CELL_SIZE;
-                const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / MAGIQUE_PATHFINDING_CELL_SIZE;
+                const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / subGridSize;
+                const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / subGridSize;
                 return it->second[vCellX + vCellY * subGridSize];
             }
             return false;
         }
 
-        void markVisited(const float x, const float y)
+        void setMarked(const float x, const float y)
         {
-            const int cellX = static_cast<int>(x) / mainGridSize;
-            const int cellY = static_cast<int>(y) / mainGridSize;
-            const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / MAGIQUE_PATHFINDING_CELL_SIZE;
-            const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / MAGIQUE_PATHFINDING_CELL_SIZE;
+            const int cellX = static_cast<int>(std::floor(x / mainGridSize));
+            const int cellY = static_cast<int>(std::floor(y / mainGridSize));
+            const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / subGridSize;
+            const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / subGridSize;
             visited[GetVisitedCell(cellX, cellY)].set(vCellX + vCellY * subGridSize, true);
         }
 
@@ -92,45 +85,56 @@ namespace magique
     {
         // Constants
         static constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
-        static constexpr Point starMove[8] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
         static constexpr Point crossMove[4] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 
         // Config
         bool enableDynamic = true;
 
-        DenseLookupGrid staticGrid;
-        DenseLookupGrid dynamicGrid;
-        std::vector<Point> pathCache;
+        // Grid data for each map - if cell is usable for pathfinding or not
+        MapHolder<DenseLookupGrid<cellSize>> mapsStaticGrids;
+        MapHolder<DenseLookupGrid<cellSize>> mapsDynamicGrids;
 
-        DenseLookupGrid visited;
+        // A star cache
+        std::vector<Point> pathCache;
+        DenseLookupGrid<cellSize> visited;
         cxstructs::PriorityQueue<GridNode> frontier{};
         GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
 
-        [[nodiscard]] bool isCellSolid(const float x, const float y,  const MapID map, const bool dynamic) const
+        //----------------- METHODS -----------------//
+
+        // Checks if the given coordinates are in a solid tile - directly takes the grids to avoid the lookup
+        [[nodiscard]] bool isCellSolid(const float x, const float y, const DenseLookupGrid<cellSize>& staticGrid,
+                                       const DenseLookupGrid<cellSize>& dynamicGrid, const bool dynamic) const
         {
-            const auto staticIt = staticGrid.find(id);
-            if (staticGrid.isVisited()) [[unlikely]]
+            if (staticGrid.getIsMarked(x, y)) [[unlikely]]
             {
                 return true;
             }
 
-            if (!dynamic)
+            if (!dynamic) [[likely]]
                 return false;
 
-            const auto dynamicIt = dynamicGrid.find(id);
-            return dynamicIt != dynamicGrid.end() && dynamicIt->second;
+            return dynamicGrid.getIsMarked(x, y);
         }
 
-        void updateStaticGrid()
+        // Updates the pathfinding grid for the given map
+        void updateStaticGrid(const MapID map)
         {
             const auto& staticData = global::STATIC_COLL_DATA;
+            if (!mapsStaticGrids.contains(map))
+                mapsStaticGrids.add(map);
+            if (!mapsDynamicGrids.contains(map))
+                mapsDynamicGrids.add(map);
+
+            auto& staticGrid = mapsStaticGrids[map];
             staticGrid.clear();
-            for (const auto& obj : staticData.objectStorage.colliders)
+
+            const auto rasterizeRect = [&](const float x, const float y, const float w, const float h)
             {
-                const int startX = static_cast<int>(obj.x) / cellSize;
-                const int startY = static_cast<int>(obj.y) / cellSize;
-                const int endX = static_cast<int>(obj.x + obj.p1) / cellSize;
-                const int endY = static_cast<int>(obj.y + obj.p2) / cellSize;
+                const int startX = static_cast<int>(std::floor(x / cellSize));
+                const int startY = static_cast<int>(std::floor(y / cellSize));
+                const int endX = static_cast<int>(std::floor((x + w) / cellSize));
+                const int endY = static_cast<int>(std::floor((y + h) / cellSize));
 
                 // Loop through potentially intersecting grid cells
                 for (int i = startY; i <= endY; ++i)
@@ -139,15 +143,54 @@ namespace magique
                     for (int j = startX; j <= endX; ++j)
                     {
                         const auto cellX = static_cast<float>(j) * cellSize;
-                        if (RectToRect(obj.x, obj.y, obj.p1, obj.p2, cellX, cellY, cellSize, cellSize))
+                        // Check for intersection and mark the grid cell
+                        if (RectToRect(x, y, w, h, cellX, cellY, cellSize, cellSize))
                         {
-                            staticGrid[GetPathCellID(j, i)] = true;
+                            staticGrid.setMarked(cellX, cellY);
                         }
                     }
+                }
+            };
+
+            // Add world bounds
+            if (staticData.getIsWorldBoundSet())
+            {
+                constexpr float depth = MAGIQUE_WORLD_BOUND_DEPTH;
+                const auto wBounds = staticData.worldBounds;
+                const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
+                const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
+                const Rectangle r3 = {wBounds.x + wBounds.width, wBounds.y - depth, depth, wBounds.height + depth};
+                const Rectangle r4 = {wBounds.x, wBounds.y + wBounds.height, wBounds.width, depth};
+                rasterizeRect(r1.x, r1.y, r1.width, r1.height);
+                rasterizeRect(r2.x, r2.y, r2.width, r2.height);
+                rasterizeRect(r3.x, r3.y, r3.width, r3.height);
+                rasterizeRect(r4.x, r4.y, r4.width, r4.height);
+            }
+
+            // Add tile objects
+            if (staticData.objectReferences.tileObjectMap.contains(map))
+            {
+                auto& objectIndices = staticData.objectReferences.tileObjectMap.at(map);
+                for (const auto idx : objectIndices)
+                {
+                    const auto& [x, y, w, h] = staticData.objectStorage.get(idx);
+                    rasterizeRect(x, y, w, h);
+                }
+            }
+
+            // Add tileset tiles
+            if (staticData.objectReferences.tilesDataMap.contains(map))
+            {
+                auto& objectIndices = staticData.objectReferences.tilesDataMap.at(map);
+                for (const auto idx : objectIndices)
+                {
+                    const auto& [x, y, w, h] = staticData.objectStorage.get(idx);
+                    rasterizeRect(x, y, w, h);
                 }
             }
         }
 
+        /*
         void updateDynamicGrid()
         {
             if (!enableDynamic)
@@ -200,17 +243,26 @@ namespace magique
             }
         }
 
+*/
+
         void findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen,
                       const bool dynamic)
         {
+            if (!mapsStaticGrids.contains(map) || !mapsDynamicGrids.contains(map))
+                return;
+
+            // Setup and get grids
             path.clear();
             frontier.clear();
             visited.clear();
+            auto& staticGrid = mapsStaticGrids[map];
+            auto& dynamicGrid = mapsDynamicGrids[map];
 
             const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
             const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
 
-            if (isCellSolid(GetPathCellID(static_cast<int>(end.x), static_cast<int>(end.y)), map, dynamic))
+            // Viability check
+            if (isCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid, dynamic))
             {
                 LOG_WARNING("Cant search a path to a solid (or non existent) pathfinding cell!");
                 return;
@@ -228,18 +280,21 @@ namespace magique
                     return constructPath(current, path);
                 }
                 frontier.pop();
-                visited.markVisited(current.position.x * cellSize, current.position.y * cellSize);
+                visited.setMarked(current.position.x * cellSize, current.position.y * cellSize);
                 for (const auto& dir : crossMove)
                 {
                     Point newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
-                    const auto id = GetPathCellID(static_cast<int>(newPos.x), static_cast<int>(newPos.y));
-                    if (!visited.isVisited(newPosCoX, newPosCoY) && !isCellSolid(id, map, dynamic))
+                    // Is not visited and not solid
+                    if (!visited.getIsMarked(newPosCoX, newPosCoY) &&
+                        !isCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid, dynamic))
                     {
                         const float moveCost = dir.x != 0 && dir.y != 0 ? 1.4142F : 1.0F;
                         const auto hCost = newPos.octile(end) * 1.01F;
                         frontier.push({newPos, current.gCost + moveCost, hCost, counter});
+
+                        // Debug
                         const Rectangle rect = {newPos.x * cellSize, newPos.y * cellSize, cellSize, cellSize};
                         DrawRectangleRec(rect, PURPLE);
                     }

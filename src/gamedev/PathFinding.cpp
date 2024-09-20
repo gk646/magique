@@ -41,9 +41,14 @@ namespace magique
     void DrawPathFindingGrid(const MapID map)
     {
         const auto& path = global::PATH_DATA;
+
+        if (!path.mapsStaticGrids.contains(map))
+            return;
+
+        const auto& staticGrid = path.mapsStaticGrids[map];
+        const auto& dynamicGrid = path.mapsDynamicGrids[map];
         const auto bounds = GetCameraBounds();
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
-        constexpr float cellSizeF = MAGIQUE_PATHFINDING_CELL_SIZE;
         const int startX = static_cast<int>(bounds.x) / cellSize;
         const int startY = static_cast<int>(bounds.y) / cellSize;
         const int width = static_cast<int>(bounds.width) / cellSize;
@@ -54,13 +59,11 @@ namespace magique
             for (int j = 0; j < width; ++j)
             {
                 const int currX = startX + j;
-                const auto id = GetPathCellID(currX, currY);
-                const bool isSolid = path.isCellSolid(id, map, true);
-                const Rectangle rect = {(float)currX * cellSizeF, (float)currY * cellSizeF, cellSizeF, cellSizeF};
-                DrawRectangleLinesEx(rect, 1, ColorAlpha(GRAY, 0.4F));
-                if (!isSolid)
+                const Rectangle rect = {(float)currX * cellSize, (float)currY * cellSize, cellSize, cellSize};
+                const bool isSolid = path.isCellSolid(rect.x, rect.y, staticGrid, dynamicGrid, false);
+                if (isSolid)
                 {
-                    DrawRectangleRec(rect, ColorAlpha(GREEN, 0.4F));
+                    DrawRectangleRec(rect, ColorAlpha(RED, 0.4F));
                 }
             }
         }

@@ -140,7 +140,7 @@ namespace magique
 
         if (staticData.getIsWorldBoundSet()) // enabled
         {
-            constexpr float depth = 250.0F;
+            constexpr float depth = MAGIQUE_WORLD_BOUND_DEPTH;
             const auto wBounds = staticData.worldBounds;
             const Rectangle r1 = {wBounds.x - depth, wBounds.y - depth, depth, wBounds.height + depth};
             const Rectangle r2 = {wBounds.x, wBounds.y - depth, wBounds.width, depth};
@@ -201,7 +201,7 @@ namespace magique
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
-        global::PATH_DATA.updateDynamicGrid();
+//        global::PATH_DATA.updateDynamicGrid();
 
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;

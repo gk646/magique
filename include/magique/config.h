@@ -146,4 +146,8 @@ namespace std
 #error "PathFinding Cell size is not a power of 2. Choose from: 8,16,32"
 #endif
 
+//----------------- INTERNAL CONFIG -----------------//
+
+#define MAGIQUE_WORLD_BOUND_DEPTH 100
+
 #endif //MAGIQUE_CONFIG_H
