@@ -5,7 +5,7 @@
 #include <entt/entity/fwd.hpp>
 
 //-----------------------------------------------
-// Behavior (NPC/AI)
+// BehaviorTree
 //-----------------------------------------------
 // .....................................................................
 // Utilities to easily build complex behavior trees

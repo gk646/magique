@@ -1,4 +1,4 @@
-#include <magique/gamedev/Pathfinding.h>
+#include <magique/gamedev/PathFinding.h>
 #include <magique/core/Core.h>
 
 #include "internal/globals/PathFindingData.h"

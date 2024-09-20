@@ -143,41 +143,4 @@ namespace magique
 
     GameConfig& GetGameConfig() { return global::ENGINE_DATA.gameConfig; }
 
-    void SetShowHitboxes(const bool val) { global::ENGINE_CONFIG.showHitboxes = val; }
-
-    void SetBenchmarkTicks(const int ticks) { global::ENGINE_CONFIG.benchmarkTicks = ticks; }
-
-    void ResetBenchmarkTimes()
-    {
-#if MAGIQUE_PROFILING == 1
-        global::PERF_DATA.drawTimes.clear();
-        global::PERF_DATA.logicTimes.clear();
-#endif
-    }
-
-    void DrawHashGridDebug()
-    {
-        auto& grid = global::DY_COLL_DATA.hashGrid;
-        int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
-        for (int i = 0; i < 50; ++i)
-        {
-            for (int j = 0; j < 50; ++j)
-            {
-                int x = i * MAGIQUE_COLLISION_CELL_SIZE;
-                int y = j * MAGIQUE_COLLISION_CELL_SIZE;
-
-                DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, LIGHTGRAY);
-                auto id = GetCellID(x / grid.getCellSize(), y / grid.getCellSize());
-                const auto it = grid.cellMap.find(id);
-                if (it != grid.cellMap.end())
-                {
-                    const auto count = static_cast<int>(grid.dataBlocks[grid.cellMap[id]].count);
-                    const auto color = count > grid.getBlockSize() ? RED : GREEN;
-                    DrawText(std::to_string(count).c_str(), x + half, y + half, 20, color);
-                }
-            }
-        }
-    }
-
-
 } // namespace magique

@@ -181,7 +181,7 @@ template <typename V, int blockSize = 15, int cellSize = 64 /*power of two is op
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int> cellMap{};
-    std::vector<DataBlock<V, blockSize>> dataBlocks{};
+    magique::vector<DataBlock<V, blockSize>> dataBlocks{};
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
@@ -243,10 +243,10 @@ struct SingleResolutionHashGrid final
         }
     }
 
-    void reserve(const int cells, const int expectedTotalEntites)
+    void reserve(const int cells, const int expectedTotalEntities)
     {
         cellMap.reserve(cells);
-        dataBlocks.reserve(expectedTotalEntites / blockSize);
+        dataBlocks.reserve(expectedTotalEntities / blockSize);
     }
 
     [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
@@ -340,6 +340,35 @@ private:
 
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
     static_assert(sizeof(V) <= 8, "You should only use small id types");
+};
+
+
+template <typename V, int blockSize, int cellSize>
+struct HashGridHolder final
+{
+    uint8_t lookupTable[UINT8_MAX];
+    magique::vector<SingleResolutionHashGrid<V, blockSize, cellSize>> gridVector;
+
+    HashGridHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
+
+    auto& operator[](const uint8_t type)
+    {
+        const auto idx = lookupTable[type];
+        return gridVector[idx];
+    }
+
+    void add(const uint8_t type)
+    {
+        if (lookupTable[type] != UINT8_MAX) [[likely]]
+        {
+            MAGIQUE_ASSERT(false, "Trying to insert to filled spot");
+            return;
+        }
+        const auto size = static_cast<int>(gridVector.size());
+        MAGIQUE_ASSERT(size <= UINT8_MAX, "Too many elements");
+        lookupTable[type] = static_cast<uint8_t>(size);
+        gridVector.push_back({});
+    }
 };
 
 #endif //MULTI_RESOLUTION_GRID_H

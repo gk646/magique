@@ -36,7 +36,7 @@
 
 // Sets the coarseness of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
-#define MAGIQUE_PATHFINDING_CELL_SIZE 32
+#define MAGIQUE_PATHFINDING_CELL_SIZE 16
 
 // Controls the maximum amount of tile that can be evaluated in a single search
 // Note: This is the global maximum, a specific maximum can be set on each query
@@ -54,13 +54,10 @@
 #define MAGIQUE_MAX_OBJECT_LAYERS 2
 
 
-//----------------- UI -----------------//
+//----------------- GAMEDEV -----------------//
 
-// Logical width the UI system
-#define MAGIQUE_UI_RESOLUTION_X 1920.0F
-
-// Logical height the UI system
-#define MAGIQUE_UI_RESOLUTION_Y 1080.0F
+// Maximum amount of possible decision for any single questnode
+#define MAGIQUE_MAX_QUEST_DECISIONS 4
 
 
 //----------------- MULTIPLAYER -----------------//
@@ -87,6 +84,15 @@
 #define MAGIQUE_TABLE_NAME_LEN 16
 
 
+//----------------- UI -----------------//
+
+// Logical width the UI system
+#define MAGIQUE_UI_RESOLUTION_X 1920.0F
+
+// Logical height the UI system
+#define MAGIQUE_UI_RESOLUTION_Y 1080.0F
+
+
 //----------------- UTIL -----------------//
 
 // Enables logging - error and fatal messages are always enabled
@@ -98,6 +104,8 @@
 // Maximum length of formats and string values (SetFormatValue()))
 #define MAGIQUE_MAX_FORMAT_LEN 64
 
+// Maximum amount of timers supported at the same time
+#define MAGIQUE_MAX_SUPPORTED_TIMERS 4
 
 //----------------- COMPILATION -----------------//
 

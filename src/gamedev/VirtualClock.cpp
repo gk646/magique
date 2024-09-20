@@ -56,7 +56,6 @@ namespace magique
             auto adjustment = static_cast<double>(diff) * realHourSeconds;
             if (ticks + adjustment < 0)
                 adjustment *= -1;
-#
             adjustTicksByRealSeconds(adjustment);
         }
 

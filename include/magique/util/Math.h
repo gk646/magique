@@ -5,7 +5,7 @@
 // Math Module
 //-------------------------------
 // ................................................................................
-// This module contains helpful math functions related to game programming
+// This module contains helpful math functions related to game development
 // ................................................................................
 
 namespace magique

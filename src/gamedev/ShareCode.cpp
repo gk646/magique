@@ -33,7 +33,7 @@ namespace magique
 
     uint8_t GetShareCodeGeneratorVersion() { return VERSION; }
 
-    bool IsShareCodeVersionSupported(uint8_t version)
+    bool IsShareCodeVersionSupported(const uint8_t version)
     {
         if (version == 1)
         {

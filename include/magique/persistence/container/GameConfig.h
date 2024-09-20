@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_GAMECONFIG_H
-#define MAGIQUE_GAMECONFIG_H
+#ifndef MAGIQUE_GAME_CONFIG_H
+#define MAGIQUE_GAME_CONFIG_H
 
 #include <vector>
 #include <string>
@@ -10,9 +10,9 @@
 //-----------------------------------------------
 // .....................................................................
 // Use the global accessor: core/Core.h::GetGameConfig()
-// The GameConfig is a container for information thats consistent across saves like:
-//   - Settings (Video, Gameplay, Accessability...)
-//   - Keybinds (if they are not save specific)
+// The GameConfig is a container for information that's consistent across saves like:
+//   - Settings (Video, Gameplay, Accessibility...)
+//   - Keybinds (if they are not game-save specific)
 //   - Global User Statistics or System
 //   - ...
 // magique automatically loads (or creates) a config based on the given path in Game::run()
@@ -108,4 +108,5 @@ namespace magique
         return val;
     }
 } // namespace magique
-#endif //MAGIQUE_GAMECONFIG_H
+
+#endif //MAGIQUE_GAME_CONFIG_H

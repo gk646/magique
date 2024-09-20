@@ -9,11 +9,16 @@
 // .....................................................................
 // Houses both the quest script and quest handling facilities
 // Quest can be made completely inside C++ with alternatives being writing quest script directly
-// or creatin the quest tree in raynodes
+// or creating the quest tree in raynodes
 // .....................................................................
 
 namespace magique
 {
+
+  struct QuestNode final
+  {
+
+  };
 
 }
 

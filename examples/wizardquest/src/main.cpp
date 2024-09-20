@@ -10,37 +10,9 @@
 
 int main()
 {
-    VirtualClock clock{50}; // A virtual day lasts 50 real minutes
-
-    // Virtual seconds passed for every real second
-    float virtualSecondsPerRealSecond = 1440.0F / 50.0F;
-
-    // Calculate the passed real seconds (0.016 seconds per tick)
-    float passedRealSeconds = static_cast<float>(0) * (1 / 60.0F);
-    printf("Passed Real Seconds: %d\n", static_cast<int>(passedRealSeconds));
-
-    // Calculate how many virtual seconds should have passed given the real seconds
-    float expectedVirtualSeconds = passedRealSeconds * virtualSecondsPerRealSecond;
-    printf("Expected Virtual Seconds: %d\n", static_cast<int>(expectedVirtualSeconds));
-
-    // Get the actual virtual seconds from the clock
-    printf("Passed Virtual Seconds: %d\n", clock.getPassedSeconds());
-
-    // Calculate the difference between expected and actual virtual seconds
-    int diff = static_cast<int>(expectedVirtualSeconds - clock.getPassedSeconds());
-    printf("Diff: %d\n", diff);
-
-    for (int i = 0; i < 100; ++i)
-    {
-        clock.syncTimeOfDay();
-        // Print the current virtual time
-        printf("Day: %d, Hour: %d, Minute: %d, Second: %d\n", clock.getDay(), clock.getHour(), clock.getMinute(),
-               clock.getSecond());
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-
-    return 0;
+    magique::CompileImage("../res");
+    WizardQuest game{};
+    return game.run();
 
     enum class TradingState
     {
@@ -156,7 +128,4 @@ int main()
 
 
     return -10;
-    magique::CompileImage("../res");
-    WizardQuest game{};
-    return game.run();
 }

@@ -1,10 +1,10 @@
 #include "WizardQuest.h"
 
-#include "../../../src/external/cxstructs/cxutil/cxtime.h"
-
 #include <raylib/raylib.h>
 
 #include <magique/magique.hpp>
+#include <magique/assets/types/TileMap.h>
+#include <magique/core/StaticCollision.h>
 
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
@@ -12,8 +12,7 @@
 #include "ui/UiScenes.h"
 #include "loading/Loaders.h"
 
-#include <magique/assets/types/TileMap.h>
-#include <magique/core/StaticCollision.h>
+#include <magique/core/Debug.h>
 
 PlayerHUD hudd{};
 
@@ -37,8 +36,8 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 void WizardQuest::onLoadingFinished()
 {
     auto map = MapID::LEVEL_2;
-    CreateEntity(PLAYER, 23*24 ,3* 24, map);
-    CreateEntity(TROLL, 23*24, 30*24, map);
+    CreateEntity(PLAYER, 23 * 24, 3 * 24, map);
+    CreateEntity(TROLL, 23 * 24, 30 * 24, map);
     // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
     LoadTileMapCollisions(map, GetTileMap(HandleID(map)), {0, 1});
@@ -74,12 +73,13 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
             if (tarPos.map != pos.map)
                 break;
             std::vector<Point> path;
-            cxstructs::now();
-            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map,0);
-            cxstructs::printTime<std::chrono::nanoseconds>("Time:");
+            StartTimer(0);
+            FindPath(path, pos.getMiddle(col), tarPos.getMiddle(tarCol), pos.map, 0);
+            printf("Micros: %d\n", StopTimer(0) / 1000);
             DrawPath(path);
         }
     }
+    DrawPathFindingGrid(map);
     EndMode2D();
 }
 

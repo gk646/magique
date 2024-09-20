@@ -9,8 +9,8 @@
 // Game Save
 //-----------------------------------------------
 // .....................................................................
-// This is a manual interface to manage gamesaves (compared to the automatic game config and assets)
-// It works by saving plain bytes from the given data which has some limitations for cross platform saves
+// This is a manual interface to manage game saves (compared to the automatic game config and assets)
+// It works by saving plain bytes from the given data which has some limitations for cross-platform saves
 // Check the wiki for more infos: https://github.com/gk646/magique/wiki/Persistence
 // POD means Plain Old Data which means that all data is stored directly in the struct.
 // For example if your class contains a pointer to something (e.g a vector) this data is stored outside your class!
@@ -49,7 +49,7 @@ namespace magique
         template <typename T>
         void saveVector(StorageID id, const std::vector<T>& vector);
 
-        // Savest the given data table to the specified slot
+        // Saves the given data table to the specified slot
         template <typename... Types>
         void saveDataTable(StorageID id, const DataTable<Types...>& table);
 
@@ -61,7 +61,7 @@ namespace magique
 
         // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
-        // Failure: returns {nullptr,0} if the storage doesnt exist or type doesnt match
+        // Failure: returns {nullptr,0} if the storage doesn't exist or type doesn't match
         template <typename T = void>
         DataPointer<T> getData(StorageID id);
 
