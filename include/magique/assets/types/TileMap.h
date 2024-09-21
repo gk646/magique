@@ -27,6 +27,7 @@ namespace magique
 
         // Returns the pointer to the start of the layer
         // layers are counted from top to bottom (in the editor), only counting tile layers
+        // Note: the length the of the layer data (for on layer) is: getWidth() * getHeight()
         [[nodiscard]] const uint16_t* getLayerData(int layer) const;
 
         // Returns the width of each layer
@@ -39,6 +40,8 @@ namespace magique
         [[nodiscard]] int getLayerCount() const;
 
         //----------------- OBJECTS -----------------//
+
+        [[nodiscard]] int getObjectLayerCount() const;
 
         // Returns a modifiable reference to the objects in the given layer
         // layers are counted from top to bottom (in the editor), only counting object layers!
