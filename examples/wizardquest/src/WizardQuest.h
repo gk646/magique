@@ -25,10 +25,10 @@ enum EntityType : uint16_t
 
 enum class MapID : uint8_t
 {
-    LEVEL_1 = 1,
+    LOBBY,
+    LEVEL_1,
     LEVEL_2,
-    LEVEL_3,
-    LEVEL_4
+    MAPS_END,
 };
 
 enum class StorageID
@@ -38,15 +38,19 @@ enum class StorageID
 
 enum class HandleID
 {
-    MAPS = 0,
+    MAPS_START = 10,
+    LOBBY,
     LEVEL_1,
     LEVEL_2,
-    LEVEL_3,
-    LEVEL_4,
-    MAPS_END = 10,
     TILESHEET,
     TILE_SET,
 };
+
+inline HandleID GetMapHandle(MapID map)
+{
+    return HandleID((int)HandleID::MAPS_START + (int)map +1);
+}
+
 
 enum class AnimationState : uint8_t
 {

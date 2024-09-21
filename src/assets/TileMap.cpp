@@ -163,8 +163,15 @@ namespace magique
     }
 
     int TileMap::getWidth() const { return width; }
+
     int TileMap::getHeight() const { return height; }
+
     int TileMap::getLayerCount() const { return layers; }
+
+    int TileMap::getObjectLayerCount() const
+    {
+        return objectLayers;
+    }
 
     std::vector<TileObject>& TileMap::getObjects(const int layer)
     {

@@ -55,9 +55,13 @@ struct PlayerScript final : EntityScript
 
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override
     {
-        const auto& pos = GetComponent<PositionC>(self);
         AccumulateCollision(info);
     }
+};
+
+struct NetPlayer final : EntityScript
+{
+
 };
 
 struct TrollScript final : EntityScript

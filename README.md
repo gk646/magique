@@ -4,15 +4,16 @@
 ![Version Badge](https://img.shields.io/badge/Version:-0.1.0-blue)
 ![License Badge](https://img.shields.io/github/license/gk646/magique)
 
-> _What if raylib was an engine?..._
+> _What if raylib was an engine? ..._
 
 `magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) written in **C++ 20**.
-It's carefully designed to be intuitive and easy to learn, at installation through development and up to sharing the
-finished game. By using a small stack of proven libraries and many custom crafted modules it aims to answer all game
-development needs in a simple but definitive way both in performance and usability.
----
+It's carefully designed to be **intuitive and easy to learn**, at installation through development and up to sharing the
+finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all game
+development needs in definitive way both in **performance and usability**.
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for questions, suggestions and discussions.
+
+---
 
 Most notable features:
 
@@ -55,14 +56,16 @@ Most notable features:
 
 ```c++
 using namespace magique;
-struct MyGame : Game{
-     void updateGame(GameState gameState) override;
-     void drawGame(GameState gameState, Camera2D& camera) override;
+struct MyGame final : Game
+{
+    void updateGame(GameState gameState) override { printf("Hello World!\n"); }
+    void drawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
 };
 
-int main(){
-  MyGame game{};
-  return game.run();
+int main()
+{
+    MyGame game{};
+    return game.run();
 }
 ```
 

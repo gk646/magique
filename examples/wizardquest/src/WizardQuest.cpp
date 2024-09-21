@@ -35,14 +35,14 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 
 void WizardQuest::onLoadingFinished()
 {
-    auto map = MapID::LEVEL_1;
-    CreateEntity(PLAYER, 11 * 24, 9 * 24, map);
-    CreateEntity(TROLL, 23 * 24, 30 * 24, map);
+    TeleportSystem::setup();
 
-    // LoadMapColliders(map, GetTileMap(HandleID(map)).getObjects(0),3);
+    auto map = MapID::LOBBY;
+    CreateEntity(PLAYER, 24 * 24, 24 * 24, map);
 
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
-    LoadTileMapCollisions(map, GetTileMap(HandleID(map)), {0, 1});
+    LoadTileMapCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
+    LoadTileMapCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
     SetGameState(GameState::GAME);
 }
 
@@ -50,7 +50,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
 {
     BeginMode2D(camera);
     const auto map = GetCameraMap();
-    const auto& tileMap = GetTileMap(HandleID::LEVEL_1);
+    const auto& tileMap = GetTileMap(GetMapHandle(map));
     DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 0);
     DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 1);
     for (const auto entity : GetDrawEntities())
@@ -64,6 +64,7 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
         }
     }
 
+    return;
     auto& pos = GetComponent<PositionC>(entt::entity(1));
     auto& col = GetComponent<CollisionC>(entt::entity(1));
     for (const auto e : GetNearbyEntities(pos.map, pos.getPosition(), 10000))
@@ -108,6 +109,7 @@ void WizardQuest::updateGame(GameState gameState)
     case GameState::GAME:
         MovementSystem::update();
         AnimationSystem::update();
+        TeleportSystem::update();
         break;
     case GameState::GAME_OVER:
         break;

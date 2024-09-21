@@ -92,6 +92,8 @@ namespace magique
         const auto& staticData = global::STATIC_COLL_DATA;
 
         const auto bounds = GetCameraBounds();
+        const auto map = GetCameraMap();
+
         // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
@@ -122,21 +124,47 @@ namespace magique
             }
         }
 
+        //TODO clean up
         // Static tile map objects
-        for (const auto& [x, y, p1, p2] : staticData.objectStorage.colliders)
+        if (staticData.objectReferences.tileObjectMap.contains(map))
         {
-            if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
-                continue;
+            for (const auto idx : staticData.objectReferences.tileObjectMap.at(map))
+            {
+                const auto& [x, y, p1, p2] = staticData.objectStorage.get(idx);
+                if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
+                    continue;
 
-            if (p2 != 0)
-            {
-                DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
-            }
-            else
-            {
-                DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                if (p2 != 0)
+                {
+                    DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+                }
+                else
+                {
+                    DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                }
             }
         }
+
+        // Static tiles
+        if (staticData.objectReferences.tilesDataMap.contains(map))
+        {
+            for (const auto idx : staticData.objectReferences.tilesDataMap.at(map))
+            {
+                const auto& [x, y, p1, p2] = staticData.objectStorage.get(idx);
+                if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
+                    continue;
+
+                if (p2 != 0)
+                {
+                    DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+                }
+                else
+                {
+                    DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                }
+            }
+        }
+
 
         if (staticData.getIsWorldBoundSet()) // enabled
         {
@@ -201,7 +229,7 @@ namespace magique
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
-//        global::PATH_DATA.updateDynamicGrid();
+                                        //        global::PATH_DATA.updateDynamicGrid();
 
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
@@ -227,7 +255,6 @@ namespace magique
 
         // Reset nearby query
         global::ENGINE_DATA.nearbyQueryData.lastRadius = 0;
-
     }
 
     inline void InternalUpdatePost() // After user space update

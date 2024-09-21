@@ -19,7 +19,6 @@
   </objectgroup>
  </tile>
  <tile id="5" type="1"/>
- <tile id="6" type="1"/>
  <tile id="8" type="1">
   <objectgroup draworder="index" id="2">
    <object id="1" x="4" y="1" width="4" height="7"/>

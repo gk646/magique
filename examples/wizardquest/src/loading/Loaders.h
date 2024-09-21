@@ -9,6 +9,7 @@
 #include <magique/core/Animations.h>
 #include <magique/core/Types.h>
 
+
 struct TileLoader final : ITask<AssetContainer>
 {
     void execute(AssetContainer& res) override
@@ -18,6 +19,9 @@ struct TileLoader final : ITask<AssetContainer>
 
         handle = RegisterTileMap(res.getAsset("Level2.tmx"));
         RegisterHandle(handle, HandleID::LEVEL_2);
+
+        handle = RegisterTileMap(res.getAsset("Lobby.tmx"));
+        RegisterHandle(handle, HandleID::LOBBY);
 
         // Load TileSet
         handle = RegisterTileSet(res.getAsset("topdown.tsx"));
