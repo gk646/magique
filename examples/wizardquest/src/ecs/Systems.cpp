@@ -62,7 +62,6 @@ void TeleportSystem::setup()
     }
 }
 
-
 void TeleportSystem::update()
 {
     for (const auto e : GetUpdateEntities())

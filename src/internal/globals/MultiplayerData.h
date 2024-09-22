@@ -32,7 +32,7 @@ namespace magique
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
         bool inSession = false;                                         // If program is part of multiplayer activity
-        HSteamNetConnection connections[MAGIQUE_MAX_PLAYERS]{};         // All possible outgoing connections as host
+        HSteamNetConnection connections[MAGIQUE_MAX_ACTORS]{};         // All possible outgoing connections as host
         std::function<void(MultiplayerEvent)> callback;                 // Callback
         vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
         std::vector<Message> msgVec{};                                  // Message buffer
@@ -56,7 +56,7 @@ namespace magique
         void goOffline()
         {
             MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
-            std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_PLAYERS);
+            std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_ACTORS);
             isHost = false;
             inSession = false;
             msgVec.clear();
@@ -113,7 +113,7 @@ namespace magique
                             }
                         }
                         if (!accepted)
-                            LOG_WARNING("Trying to accept more connections than configured: %d", MAGIQUE_MAX_PLAYERS);
+                            LOG_WARNING("Trying to accept more connections than configured: %d", MAGIQUE_MAX_ACTORS);
                     }
                     else
                     {

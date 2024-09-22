@@ -126,31 +126,34 @@ namespace magique
 
         //TODO clean up
         // Static tile map objects
-        if (staticData.objectReferences.tileObjectMap.contains(map))
+        if (staticData.colliderReferences.tileObjectMap.contains(map))
         {
-            for (const auto idx : staticData.objectReferences.tileObjectMap.at(map))
+            for (const auto& info : staticData.colliderReferences.tileObjectMap.at(map))
             {
-                const auto& [x, y, p1, p2] = staticData.objectStorage.get(idx);
-                if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
-                    continue;
+                for (const auto idx : info.objectIds)
+                {
+                    const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx);
+                    if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
+                        continue;
 
-                if (p2 != 0)
-                {
-                    DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
-                }
-                else
-                {
-                    DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                    if (p2 != 0)
+                    {
+                        DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+                    }
+                    else
+                    {
+                        DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                    }
                 }
             }
         }
 
         // Static tiles
-        if (staticData.objectReferences.tilesDataMap.contains(map))
+        if (staticData.colliderReferences.tilesCollisionMap.contains(map))
         {
-            for (const auto idx : staticData.objectReferences.tilesDataMap.at(map))
+            for (const auto idx : staticData.colliderReferences.tilesCollisionMap.at(map))
             {
-                const auto& [x, y, p1, p2] = staticData.objectStorage.get(idx);
+                const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx);
                 if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
                     continue;
 

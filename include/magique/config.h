@@ -62,8 +62,8 @@
 
 //----------------- MULTIPLAYER -----------------//
 
-// Maximum amount of actors supported
-#define MAGIQUE_MAX_PLAYERS 4
+// Maximum amount of actors (players) supported
+#define MAGIQUE_MAX_ACTORS 4
 
 // Estimated multiplayer messages being sent each tick
 #define MAGIQUE_ESTIMATED_MESSAGES 150

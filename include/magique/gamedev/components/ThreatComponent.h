@@ -16,14 +16,14 @@ namespace magique
 {
     // Feel free to change that
     // Default: equal to the maximum amount of possible players
-    inline constexpr int THREAT_TABLE_SIZE = MAGIQUE_MAX_PLAYERS;
+    inline constexpr int THREAT_TABLE_SIZE = MAGIQUE_MAX_ACTORS;
 
     struct ThreatC final
     {
         ThreatC(int aggroRange, int chaseRange);
 
         // Adds the given amount of threat to the target - both positive and negative threat
-        // If the target does not exist its added to the table
+        // If the target does not exist it's added to the table
         // If the targets threat goes below 0 it is removed from the table
         void addThreat(entt::entity target, float threat);
 
