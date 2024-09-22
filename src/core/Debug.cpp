@@ -46,8 +46,8 @@ namespace magique
         }
     }
 
-    uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
-    int id[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
+    inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
+    inline static int id[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
 
     void StartTimer(const int num)
     {

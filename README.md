@@ -11,7 +11,7 @@ It's carefully designed to be **intuitive and easy to learn**, at installation t
 finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all game
 development needs in definitive way both in **performance and usability**.
 
-Join the [official discord](https://discord.gg/YAsvnxAmX7) for questions, suggestions and discussions.
+Join the [official discord](https://discord.gg/YAsvnxAmX7) for questions, suggestions and discussion.
 
 ---
 

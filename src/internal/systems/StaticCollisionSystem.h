@@ -166,7 +166,7 @@ namespace magique
         auto& staticData = global::STATIC_COLL_DATA; // non const - modifying the collectors
 
         const auto& collisionVec = data.collisionVec;
-        const auto& colliderStorage = staticData.objectStorage.colliders;
+        const auto& colliderStorage = staticData.colliderStorage.colliders;
 
         // Collectors
         auto& idCollector = staticData.colliderCollector[thread].vec; // non const

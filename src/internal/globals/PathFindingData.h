@@ -118,7 +118,7 @@ namespace magique
         }
 
         // Updates the pathfinding grid for the given map
-        void updateStaticGrid(const MapID map)
+        void updateStaticPathGrid(const MapID map)
         {
             const auto& staticData = global::STATIC_COLL_DATA;
             if (!mapsStaticGrids.contains(map))
@@ -168,23 +168,26 @@ namespace magique
             }
 
             // Add tile objects
-            if (staticData.objectReferences.tileObjectMap.contains(map))
+            if (staticData.colliderReferences.tileObjectMap.contains(map))
             {
-                auto& objectIndices = staticData.objectReferences.tileObjectMap.at(map);
-                for (const auto idx : objectIndices)
+                auto& tileObjectInfo = staticData.colliderReferences.tileObjectMap.at(map);
+                for (const auto& info : tileObjectInfo)
                 {
-                    const auto& [x, y, w, h] = staticData.objectStorage.get(idx);
-                    rasterizeRect(x, y, w, h);
+                    for (const auto idx : info.objectIds)
+                    {
+                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
+                        rasterizeRect(x, y, w, h);
+                    }
                 }
             }
 
             // Add tileset tiles
-            if (staticData.objectReferences.tilesDataMap.contains(map))
+            if (staticData.colliderReferences.tilesCollisionMap.contains(map))
             {
-                auto& objectIndices = staticData.objectReferences.tilesDataMap.at(map);
+                auto& objectIndices = staticData.colliderReferences.tilesCollisionMap.at(map);
                 for (const auto idx : objectIndices)
                 {
-                    const auto& [x, y, w, h] = staticData.objectStorage.get(idx);
+                    const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
                     rasterizeRect(x, y, w, h);
                 }
             }

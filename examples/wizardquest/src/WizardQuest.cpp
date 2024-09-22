@@ -41,8 +41,12 @@ void WizardQuest::onLoadingFinished()
     CreateEntity(PLAYER, 24 * 24, 24 * 24, map);
 
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
-    LoadTileMapCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
-    LoadTileMapCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
+    AddTileCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
+
+    AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
+    RemoveTileCollisions(MapID::LEVEL_1);
+    AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
+
     SetGameState(GameState::GAME);
 }
 

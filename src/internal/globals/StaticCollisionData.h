@@ -45,7 +45,7 @@ namespace magique
         vector<StaticCollider> colliders;
         vector<uint32_t> freeList;
 
-        const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
+        [[nodiscard]] const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
 
         uint32_t insert(const float x, const float y, const float width, const float height)
         {
@@ -89,28 +89,39 @@ namespace magique
 
     struct ObjectReferenceHolder final
     {
-        // Maps + which vectors where loaded
-        HashMap<MapID, vector<uint32_t>> tileObjectMap;
-        HashMap<MapID, std::array<const std::vector<TileObject>*, MAGIQUE_MAX_OBJECT_LAYERS>> objectVectors;
-        // Tiles + which maps where loaded
-        HashMap<MapID, vector<uint32_t>> tilesDataMap;
-        // Groups
-        HashMap<int, vector<uint32_t>> groupMap; // Holds manual collider groups
+        struct TileObjectInfo final // Saves the pointer to the vec and the loaded ids
+        {
+            vector<uint32_t> objectIds;
+            const void* vectorPointer = nullptr;
+        };
+
+        struct ManualGroupInfo final // Saves the id and the loaded ids
+        {
+            vector<uint32_t> objectIds;
+            int groupId = -1;
+        };
+
+        // Maps + which colliders where loaded for each map (can be many for each map)
+        HashMap<MapID, vector<TileObjectInfo>> tileObjectMap;
+        // Tiles + what colliders where loaded per map
+        HashMap<MapID, vector<uint32_t>> tilesCollisionMap;
+        // What groups where loaded for ach map (can be many for each map)
+        HashMap<MapID, vector<ManualGroupInfo>> groupMap;
     };
 
     struct StaticCollisionData final
     {
         Rectangle worldBounds{}; // World bounds
 
-        //----------------- COLLECTORS -----------------//
-        StaticPairCollector pairCollector; // Collects all pairs for all types entity + (world, object, tiles, custom)
+        //----------------- COLLISION SYSTEM  -----------------//
+        StaticPairCollector pairCollector;     // Collects pairs for all types entity + (world, object, tiles, custom)
         ColliderCollector colliderCollector{}; // Collects collider ids
+        HashSet<uint64_t> pairSet;             // Makes sure there are only unique collision paris (entity + object_id)
 
         //----------------- STORAGE-----------------//
 
-        ColliderStorage objectStorage;          // Holds all objects - uses a free list to preserve indices
-        HashSet<uint64_t> pairSet;              // Makes sure there are only unique collision paris (entity + object_id)
-        ObjectReferenceHolder objectReferences; // Saves data so that inserted objects can automatically be unloaded
+        ColliderStorage colliderStorage;          // Holds all objects - uses a free list to preserve indices
+        ObjectReferenceHolder colliderReferences; // Saves data so that inserted objects can automatically be unloaded
 
         //----------------- HASHGRIDS -----------------//
 
@@ -122,11 +133,6 @@ namespace magique
         const TileSet* tileSet = nullptr; // Only use for equality checks
         float tileSetScale = 1.0f;
         HashMap<uint16_t, TileInfo> markedTilesMap; // which tiles are marked and their tile info
-
-        void unloadGroup(int groupID)
-        {
-
-        }
 
         [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0 && worldBounds.height != 0; }
     };
