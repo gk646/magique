@@ -19,11 +19,11 @@ enum class AtlasID : int;            // Identifies different texture atlas
 namespace magique
 {
     //----------------- CORE -----------------//
-    struct Keybind;         // Efficient representation of a keybind
-    struct Game;            // Core Game class
-    struct ScreenEmitter;   // Particle emitter for screen (simple) particles
-    struct EntityEmitter;   // Particle emitter for entity (complex) particles
-    struct EntityAnimation; // Shared animation data for a specific entity
+    struct Keybind;          // Efficient representation of a keybind
+    struct Game;             // Core Game class
+    struct ScreenEmitter;    // Particle emitter for screen (simple) particles
+    struct EntityEmitter;    // Particle emitter for entity (complex) particles
+    struct EntityAnimation;  // Shared animation data for a specific entity
     enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
 
@@ -67,6 +67,7 @@ namespace magique
     struct TileSet;               // Defines the details for all tiles in a project - collision ...
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
     struct Playlist;              // Stores multiple music objects to easily play and loop them
+    struct TileObject;            // TileObject imported from the Tile Editor
 
     //----------------- GAMEDEV -----------------//
     template <typename CustomData = int>

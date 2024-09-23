@@ -53,6 +53,8 @@
 // Maximum amount of object layers in TileMaps
 #define MAGIQUE_MAX_OBJECT_LAYERS 2
 
+// Maximum amount of custom tile properties for each tile object (inside Tiled)
+#define MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2
 
 //----------------- GAMEDEV -----------------//
 

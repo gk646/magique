@@ -584,7 +584,7 @@ namespace magique
 #endif
     }
 
-    // circle x,y,radius / capsule . topleft(x,y), radius of both circles, total height
+    // circle x,y,radius / capsule: top left(x,y), radius of both circles, total height
     inline void CircleToCapsule(const float cx, const float cy, const float cr, const float x2, const float y2,
                                 const float radius, const float height, CollisionInfo& info)
     {

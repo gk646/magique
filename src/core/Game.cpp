@@ -6,6 +6,7 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
+#include <magique/core/CollisionDetection.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Components.h>
 #include <magique/ecs/Scripting.h>

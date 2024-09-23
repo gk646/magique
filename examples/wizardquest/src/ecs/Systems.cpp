@@ -49,13 +49,33 @@ void TeleportSystem::setup()
         for (const auto& tileObject : tileMap.getObjects(0))
         {
             std::string objectName = std::string(tileObject.getName());
-            if (objectName.find("Teleporter") != std::string::npos)
+            if (objectName == "MapTeleporter")
             {
-                TileObject teleporter = tileObject;
-                teleporter.x *= 3;
-                teleporter.y *= 3;
-                teleporter.width *= 3;
-                teleporter.height *= 3;
+                Teleporter teleporter;
+                teleporter.x = 3 * tileObject.x;
+                teleporter.y = 3 * tileObject.y;
+                teleporter.w = 3 * tileObject.width;
+                teleporter.h = 3 * tileObject.height;
+                teleporter.origin = MapID(i);
+                teleporter.destination = MapID(tileObject.getID());
+                if (teleporter.destination == MapID::LEVEL_1) // Statically decide
+                {
+                    teleporter.outX = 11 * 24;
+                    teleporter.outY = 9 * 24;
+                }
+                teleporters.push_back(teleporter);
+            }
+            else if (objectName == "Teleporter")
+            {
+                Teleporter teleporter{};
+                teleporter.origin = MapID(i);
+                teleporter.destination = MapID(i);
+                teleporter.x = 3 * tileObject.x;
+                teleporter.y = 3 * tileObject.y;
+                teleporter.w = 3 * tileObject.width;
+                teleporter.h = 3 * tileObject.height;
+                teleporter.outX = 24 * tileObject.customProperties[0].getInt();
+                teleporter.outY = 24 * tileObject.customProperties[1].getInt();
                 teleporters.push_back(teleporter);
             }
         }
@@ -66,21 +86,30 @@ void TeleportSystem::update()
 {
     for (const auto e : GetUpdateEntities())
     {
-        if (!EntityHasComponents<CollisionC>(e))
+        if (!EntityHasComponents<CollisionC, MovementC>(e))
             continue;
-        auto& pos = GetComponent<PositionC>(e);  // All entities have the Position component
-        auto& col = GetComponent<CollisionC>(e); // All entities have the Position component
+        auto& pos = GetComponent<PositionC>(e); // All entities have the Position component
+        auto& col = GetComponent<CollisionC>(e);
+        auto& mov = GetComponent<MovementC>(e);
 
-        for (const auto& tileObject : teleporters)
+        if (mov.teleportCooldownCounter < MovementC::TELEPORT_COOLDOWN)
+            continue;
+
+        for (const auto& teleporter : teleporters)
         {
-            const Rectangle tileObjectRect = {tileObject.x, tileObject.y, tileObject.width, tileObject.height};
+            if (pos.map != teleporter.origin)
+                continue;
+
+            const Rectangle tileObjectRect = {teleporter.x, teleporter.y, teleporter.w, teleporter.h};
             assert(col.shape == Shape::RECT); // Only works when it's a rectangle
             const Rectangle entityRect = {pos.x, pos.y, col.p1, col.p2};
             if (CheckCollisionRecs(tileObjectRect, entityRect))
             {
-                pos.map = MapID(tileObject.getClass());
-                pos.x = 11 * 24;
-                pos.y = 9 * 24;
+                pos.map = teleporter.destination;
+                pos.x = teleporter.outX;
+                pos.y = teleporter.outY;
+                mov.teleportCooldownCounter = 0;
+                break;
             }
         }
     }
