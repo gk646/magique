@@ -12,6 +12,27 @@ struct PlayerScript final : EntityScript
         auto& anim = GetComponent<AnimationC>(self);
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
+
+        static Connection conn;
+        if (IsKeyPressed(KEY_H))
+        {
+            if (CreateLocalSocket(35000))
+                printf("Opened server\n");
+            return;
+        }
+        if (IsKeyPressed(KEY_J))
+        {
+            conn = ConnectToLocalSocket("192.168.2.41:35000");
+            printf("Trying to connect to local server...\n");
+            return;
+        }
+
+        if(IsClient())
+        {
+            const auto* myString = "Hello World!\0";
+            auto payload = CreatePayload(myString,13,MessageType::STRING);
+            SendMessage(conn,payload);
+        }
     }
 
     void onKeyEvent(entt::entity self) override
@@ -61,7 +82,6 @@ struct PlayerScript final : EntityScript
 
 struct NetPlayer final : EntityScript
 {
-
 };
 
 struct TrollScript final : EntityScript

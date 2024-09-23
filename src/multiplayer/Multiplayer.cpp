@@ -6,20 +6,28 @@
 namespace magique
 {
 
-    Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
+    Payload CreatePayload(const void* data, const int size, const MessageType type)
+    {
+        return {data, size, type};
+    }
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
         MAGIQUE_ASSERT(conn == Connection::INVALID_CONNECTION || payload.data == nullptr || payload.size == 0 ||
-                   (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE),
-               "Passed invalid input parameters");
+                           (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE),
+                       "Passed invalid input parameters");
 
-        if (payload.data == nullptr) [[unlikely]] // This can cause crash
+        if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
+        {
+            LOG_WARNING("Invalid payload data");
             return false;
+        }
 
-        // Allocate with buffer
-        const auto msg = SteamNetworkingUtils()->AllocateMessage(payload.size);
-        std::memcpy(msg->m_pData, payload.data, payload.size);
+        // Allocate with buffer - +1 for the type
+        const auto msg = SteamNetworkingUtils()->AllocateMessage(payload.size + 1);
+        std::memcpy((char*)msg->m_pData + 1, payload.data, payload.size);
+        ((char*)msg->m_pData)[0] = (char)payload.type;
+
         msg->m_nFlags = static_cast<int>(flag);
         msg->m_conn = static_cast<HSteamNetConnection>(conn);
         global::MP_DATA.batchedMsgs.push_back(msg);
@@ -31,20 +39,41 @@ namespace magique
         auto& data = global::MP_DATA;
         if (data.batchedMsgs.empty())
             return false;
-
         const auto size = data.batchedMsgs.size();
         SteamNetworkingSockets()->SendMessages(size, data.batchedMsgs.data(), nullptr);
         data.batchedMsgs.clear();
         return true;
     }
 
-    bool SendMessage(Connection conn, const void* message, const int size, SendFlag flag)
+    static char MESSAGE_BUFFER[1500]{}; // To insert the message type before the actual data
+
+    bool SendMessage(Connection conn, Payload payload, SendFlag flag)
     {
         MAGIQUE_ASSERT((int)conn != k_HSteamNetConnection_Invalid, "Invalid connection");
         MAGIQUE_ASSERT(flag == SendFlag::RELIABLE || flag == SendFlag::UN_RELIABLE, "Invalid flag");
-        if (message == nullptr || size == 0) [[unlikely]]
+
+        if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
+        {
+            LOG_WARNING("Invalid payload data");
             return false;
-        const auto res = SteamNetworkingSockets()->SendMessageToConnection((int)conn, message, size, (int)flag, nullptr);
+        }
+
+        const int totalSize = payload.size + 1;
+        char* buffer = MESSAGE_BUFFER;
+        if (sizeof(MESSAGE_BUFFER) < totalSize)
+        {
+            buffer = new char[totalSize];
+        }
+
+        std::memcpy(buffer + 1, payload.data, payload.size);
+        buffer[0] = (char)payload.type;
+
+        const auto res =
+            SteamNetworkingSockets()->SendMessageToConnection((int)conn, buffer, totalSize, (int)flag, nullptr);
+
+        if (buffer != MESSAGE_BUFFER)
+            delete[] buffer;
+
         return res == k_EResultOK;
     }
 
@@ -62,7 +91,7 @@ namespace magique
             data.msgVec.clear();
         }
 
-        if (!data.inSession) [[unlikely]]
+        if (!data.isInSession) [[unlikely]]
         {
             return data.msgVec;
         }
@@ -123,16 +152,20 @@ namespace magique
             data.buffSize = n;
             processMessages(0, n);
         }
-
         return data.msgVec;
     }
 
     //----------------- UTIL -----------------//
 
-    bool IsInSession() { return global::MP_DATA.inSession; }
+    void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func)
+    {
+        global::MP_DATA.callback = func;
+    }
 
-    bool IsHost() { return global::MP_DATA.inSession && global::MP_DATA.isHost; }
+    bool IsInMultiplayerSession() { return global::MP_DATA.isInSession; }
 
-    bool IsClient() { return global::MP_DATA.inSession && global::MP_DATA.isHost == false; }
+    bool IsHost() { return global::MP_DATA.isInSession && global::MP_DATA.isHost; }
+
+    bool IsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
 } // namespace magique

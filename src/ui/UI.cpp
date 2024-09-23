@@ -47,8 +47,14 @@ namespace magique
 
     Point GetUIScaling() { return global::UI_DATA.getScaling(); }
 
-    bool UIInput::IsKeyPressed(const int key) { return global::UI_DATA.inputConsumed && IsKeyPressed(key); }
-    bool UIInput::IsKeyDown(const int key) { return global::UI_DATA.inputConsumed && IsKeyDown(key); }
-    bool UIInput::IsKeyUp(const int key) { return global::UI_DATA.inputConsumed && IsKeyUp(key); }
+    bool UIInput::IsKeyPressed(const int key) { return global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
+
+    bool UIInput::IsKeyDown(const int key) { return global::UI_DATA.inputConsumed && ::IsKeyDown(key); }
+
+    bool UIInput::IsKeyUp(const int key) { return global::UI_DATA.inputConsumed && ::IsKeyUp(key); }
+
+    void UIInput::Consume() { global::UI_DATA.inputConsumed = true; }
+
+    bool UIInput::IsConsumed() { return global::UI_DATA.inputConsumed; }
 
 } // namespace magique

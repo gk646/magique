@@ -23,15 +23,19 @@ namespace magique
     bool CreateLocalSocket(const int port)
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
 
         SteamNetworkingConfigValue_t opt{}; // Register callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
 
         SteamNetworkingIPAddr ip{};
         ip.SetIPv4(0, static_cast<uint16>(port));
-        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, &opt);
-
+        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 1, &opt);
+        if (data.listenSocket == k_HSteamListenSocket_Invalid)
+        {
+            LOG_WARNING("Failed to create listen socket on port %d", port);
+            return false;
+        }
         data.goOnline(true);
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
@@ -39,7 +43,7 @@ namespace magique
     bool CloseLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        if (!data.isInSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
             return false;
 
         for (const auto conn : data.connections)
@@ -52,25 +56,35 @@ namespace magique
 
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
         data.goOffline();
-
         return res;
     }
 
     //----------------- CLIENT -----------------//
 
-    Connection ConnectToLocalSocket(const int ip, const int port)
+    Connection ConnectToLocalSocket(const char* ip)
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
 
         SteamNetworkingIPAddr addr{};
-        addr.SetIPv4(ip, static_cast<uint16>(port));
-
+        addr.Clear();
+        if (!addr.ParseString(ip))
+        {
+            LOG_WARNING("Given ip is not valid!");
+            return Connection::INVALID_CONNECTION;
+        }
         SteamNetworkingConfigValue_t opt{}; // Set callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
 
-        data.connections[0] = SteamNetworkingSockets()->ConnectByIPAddress(addr, 1, &opt);
-
+        const auto conn = SteamNetworkingSockets()->ConnectByIPAddress(addr, 1, &opt);
+        if (conn == k_HSteamNetConnection_Invalid)
+        {
+            char buffer[128];
+            addr.ToString(buffer, 128, true);
+            LOG_WARNING("Failed to connect to local socket with ip", buffer);
+            return Connection::INVALID_CONNECTION;
+        }
+        data.connections[0] = conn;
         data.goOnline(false);
         return static_cast<Connection>(data.connections[0]);
     }
@@ -78,21 +92,12 @@ namespace magique
     bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.inSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
+        if (!data.isInSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
             return false;
 
         const auto res = SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
         data.goOffline();
         return res;
-    }
-
-    //----------------- UTIL -----------------//
-
-    uint32_t GetIPAdress()
-    {
-        SteamNetworkingIdentity id{};
-        SteamNetworkingSockets()->GetIdentity(&id);
-        return id.GetIPv4();
     }
 
 } // namespace magique

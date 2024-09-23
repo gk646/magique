@@ -1,5 +1,5 @@
-#ifndef MULTIPLAYERDATA_H
-#define MULTIPLAYERDATA_H
+#ifndef MAGIQUE_MULTIPLAYER_DATA_H
+#define MAGIQUE_MULTIPLAYER_DATA_H
 
 #include <functional>
 
@@ -31,8 +31,8 @@ namespace magique
     {
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
-        bool inSession = false;                                         // If program is part of multiplayer activity
-        HSteamNetConnection connections[MAGIQUE_MAX_ACTORS]{};         // All possible outgoing connections as host
+        bool isInSession = false;                                       // If program is part of multiplayer activity
+        HSteamNetConnection connections[MAGIQUE_MAX_ACTORS]{};          // All possible outgoing connections as host
         std::function<void(MultiplayerEvent)> callback;                 // Callback
         vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
         std::vector<Message> msgVec{};                                  // Message buffer
@@ -47,9 +47,18 @@ namespace magique
             buffCap = MAGIQUE_ESTIMATED_MESSAGES;
         }
 
+        ~MultiplayerData()
+        {
+            delete[] msgBuffer;
+#if MAGIQUE_STEAM == 0
+            GameNetworkingSockets_Kill();
+#endif
+            isInSession = false;
+        }
+
         void goOnline(const bool asHost)
         {
-            inSession = true;
+            isInSession = true;
             isHost = asHost;
         }
 
@@ -58,7 +67,7 @@ namespace magique
             MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
             std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_ACTORS);
             isHost = false;
-            inSession = false;
+            isInSession = false;
             msgVec.clear();
             buffSize = 0;
             // Release the batch if exists
@@ -69,18 +78,9 @@ namespace magique
             batchedMsgs.clear();
         }
 
-        void close()
-        {
-            delete[] msgBuffer;
-#if MAGIQUE_STEAM == 0
-            GameNetworkingSockets_Kill();
-#endif
-            inSession = false;
-        }
-
         void update() const
         {
-            if (inSession)
+            if (isInSession)
             {
 #if MAGIQUE_STEAM == 0
                 SteamNetworkingSockets()->RunCallbacks();
@@ -166,24 +166,32 @@ namespace magique
                  pParam->m_eOldState == k_ESteamNetworkingConnectionState_Connected) &&
                 pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
             {
-                LOG_INFO("Local problem with  connection: %s", pParam->m_info.m_szEndDebug);
-
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
-
+                const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
+                    int i = 0;
                     for (auto& conn : connections)
                     {
                         if (conn == pParam->m_hConn)
-                        {
                             conn = k_HSteamNetConnection_Invalid;
-                            break;
-                        }
+                        else if (conn == k_HSteamNetConnection_Invalid)
+                            ++i;
+                    }
+                    if (i == 0) // Go offline if no more clients are connected
+                    {
+                        goOffline();
+                        LOG_INFO("(Host) Local problem with connection. Closed session: %s", errStr);
+                    }
+                    else
+                    {
+                        LOG_INFO("(Host) Local problem with connection. Disconnected client from session: %s", errStr);
                     }
                 }
                 else
                 {
                     goOffline();
+                    LOG_INFO("(Client) Local problem with connection. Closed session: %s", errStr);
                 }
             }
         }
@@ -200,4 +208,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MULTIPLAYERDATA_H
+#endif //MAGIQUE_MULTIPLAYER_DATA_H

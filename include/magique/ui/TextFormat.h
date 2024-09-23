@@ -4,17 +4,18 @@
 #include <raylib/raylib.h>
 
 //-----------------------------------------------
-// Text Format Module
+// Text Formatting Module
 //-----------------------------------------------
 // .....................................................................
-// This module allows rendering text with dynamic placeholders replaced by specified values.
-// To denote a placeholder you have to use the saved placeholder string and the
-// Per default uses CMake syntax: "Hello, ${PLAYER_NAME}!" -> "Hello, Jespar!"
+// This module allows formatting and rendering of text with dynamic placeholders.
+// To denote a placeholder you have to use the saved placeholder string and the prefix + enclosing symbols
 // Note: This is implemented as efficiently as possible -> its quite performant
 // Limitations:
-//              - Maximum of 255 Values for each type -> 885 total (int, float, string)
+//              - Maximum of 255 Values for each type -> 775 total (int, float, string)
 //              - Maximum length of string values is 64
 //              - Maximum length of any placeholder is 64
+//
+// Note: Per default uses CMake syntax: "Hello, ${PLAYER_NAME}!" -> "Hello, Jespar!" to specify placeholders
 // .....................................................................
 
 namespace magique
@@ -38,7 +39,7 @@ namespace magique
 
     // Formats and draws the given text with the current placeholder state
     // Note: Acts as a drop in replacement for DrawTextEx()
-    void DrawTextFmt(const Font& f, const char* t, Vector2 p, float s, float sp, Color c = WHITE);
+    void DrawTextFmt(const Font& font, const char* txt, Vector2 pos, float size, float spacing, Color color = WHITE);
 
     // Formats and returns the given text with the current placeholder state
     // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again

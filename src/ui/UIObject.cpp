@@ -1,6 +1,6 @@
 #include <raylib/raylib.h>
 
-#include <magique/ui/types/UIObject.h>
+#include <magique/ui/UIObject.h>
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
 
@@ -124,7 +124,7 @@ namespace magique
         return true;
     }
 
-    bool UIObject::getIsPressed(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
+    bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
     void UIObject::setLayer(const UILayer newLayer) { layer = newLayer; }
 

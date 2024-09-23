@@ -9,12 +9,10 @@
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
 #include "ecs/Systems.h"
-#include "ui/UiScenes.h"
 #include "loading/Loaders.h"
 
 #include <magique/core/Debug.h>
 
-PlayerHUD hudd{};
 
 void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 {
@@ -36,7 +34,6 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 void WizardQuest::onLoadingFinished()
 {
     TeleportSystem::setup();
-
     auto map = MapID::LOBBY;
     CreateEntity(PLAYER, 24 * 24, 24 * 24, map);
 
@@ -44,10 +41,12 @@ void WizardQuest::onLoadingFinished()
     AddTileCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
 
     AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
-    RemoveTileCollisions(MapID::LEVEL_1);
-    AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
 
     SetGameState(GameState::GAME);
+    SetMultiplayerCallback([](MultiplayerEvent event)
+    {
+        printf("Event: %d\n", (int)event);
+    });
 }
 
 void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
@@ -97,7 +96,7 @@ void WizardQuest::drawUI(GameState gameState)
     case GameState::MAIN_MENU:
         break;
     case GameState::GAME:
-        hudd.render();
+       // hudd.render();
         break;
     case GameState::GAME_OVER:
         break;
@@ -130,12 +129,7 @@ void WizardQuest::updateGame(GameState gameState)
         }
     }
 
-    if (IsKeyPressed(KEY_J))
-    {
-        if (IsHost())
-        {
-        }
-    }
+
 }
 
 void WizardQuest::onShutDown()
