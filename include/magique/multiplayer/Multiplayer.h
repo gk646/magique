@@ -9,6 +9,8 @@
 //-----------------------------------------------
 // .....................................................................
 // These methods are shared for both local and global sockets.
+// Note: Packets should not be bigger than 1200 bytes to avoid fragmentation.
+//       But for optimal performance try to merge smaller packets into a single bigger on that is close to this limit.
 // .....................................................................
 
 namespace magique
@@ -32,7 +34,7 @@ namespace magique
 
     // Directly sends the message - should only be used for single messages else use BatchMessage() and SendBatch()
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
-    bool SendMessage(Connection conn, Payload message, SendFlag flag = SendFlag::RELIABLE);
+    bool SendMessage(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
@@ -46,7 +48,7 @@ namespace magique
     void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func);
 
     // Returns true if currently hosting or connected to a host
-    bool IsInSession();
+    bool IsInMultiplayerSession();
 
     // Returns true if currently in a session as host
     bool IsHost();

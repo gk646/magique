@@ -3,7 +3,7 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/ui/types/UIObject.h>
+#include <magique/ui/UIObject.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/StringHashMap.h"
@@ -21,7 +21,7 @@ namespace magique
 
     struct UIData final
     {
-        StringHashMap<UIScene*> sceneMap;     // Stores by name
+        StringHashMap<UIScene*> sceneMap;   // Stores by name
         HashSet<const UIObject*> renderSet; // Stores existence of rendered objects
         vector<RenderData> renderObjects;
         vector<UIObject*> allObjects;
@@ -118,7 +118,7 @@ namespace magique
 
     namespace global
     {
-        inline UIData UI_DATA{};
+        static inline UIData UI_DATA{};
     }
 } // namespace magique
 

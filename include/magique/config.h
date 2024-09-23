@@ -94,6 +94,8 @@
 // Logical height the UI system
 #define MAGIQUE_UI_RESOLUTION_Y 1080.0F
 
+// Maximum length of UIObject names inside UIContainer's
+#define MAGIQUE_UI_OBJECT_NAME_LEN 16
 
 //----------------- UTIL -----------------//
 

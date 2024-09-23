@@ -61,7 +61,7 @@ namespace magique
         }
 
     private:
-        float pmover = 10.0F;
+        float moverHeightP = 10.0F;
     };
 
 } // namespace magique

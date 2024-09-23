@@ -2,7 +2,7 @@
 #define UICONTROLS_H
 
 #include <magique/ui/types/UIContainer.h>
-#include <magique/ui/types/UIObject.h>
+#include <magique/ui/UIObject.h>
 
 using namespace magique;
 
@@ -13,9 +13,17 @@ struct PlayerHUD final : UIObject
     void update(const Rectangle& bounds, bool isDrawn) override;
 };
 
-struct LobbyBrowser final : UIObject
+struct MiniWindowMenu final : UIObject
 {
-    LobbyBrowser() : UIObject(0, 0, 1920, 1080) {}
+
+};
+
+struct LobbyBrowser final : UIContainer
+{
+
+    LobbyBrowser() : UIContainer(0, 0, 1920, 1080) {}
+    void draw(const Rectangle &bounds) override;
+    void update(const Rectangle &bounds, bool isDrawn) override;
 };
 
 struct LobbyWindow final : UIContainer

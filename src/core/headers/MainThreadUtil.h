@@ -233,7 +233,6 @@ namespace magique
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential
                                         //        global::PATH_DATA.updateDynamicGrid();
-
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
         if (config.showPerformanceOverlay)
@@ -258,6 +257,8 @@ namespace magique
 
         // Reset nearby query
         global::ENGINE_DATA.nearbyQueryData.lastRadius = 0;
+
+        global::MP_DATA.update(); // Before user tick so it gets new information
     }
 
     inline void InternalUpdatePost() // After user space update

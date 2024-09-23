@@ -56,7 +56,7 @@ namespace magique
 
     StringHashMap<ValueInfo> VALUES;       // Placeholder to value mapping - transparent lookup enabled!
     ValueStorage VALUE_STORAGE;            // All values stored by the placeholders
-    char FMT_PREFIX = '$';                 // The format prefix to seach for#
+    char FMT_PREFIX = '$';                 // The format prefix to each for#
     char FMT_ENCAP_START = '{';            // Format encapsulator start
     char FMT_ENCAP_END = '}';              // Format encapsulator end
     std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
@@ -259,7 +259,6 @@ namespace magique
     }
 
     void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
-
 
     template <typename T>
     T& GetFormatValue(const char* placeholder)

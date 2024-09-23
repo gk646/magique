@@ -235,7 +235,7 @@ namespace magique::internal
         template <typename Functor>
         void forLastN(const int n, const Functor& functor)
         {
-            const int elementsToIterate =  n <  size ?  n : size;
+            const int elementsToIterate = n < size ? n : size;
             for (int i = 0; i < elementsToIterate; ++i)
             {
                 int index = (size - 1 - i + capacity) % capacity;
@@ -248,6 +248,12 @@ namespace magique::internal
     {
         entt::entity target;
         float threat;
+    };
+
+    struct UIContainerEntry final
+    {
+        char name[MAGIQUE_UI_OBJECT_NAME_LEN];
+        UIObject* object;
     };
 
 } // namespace magique::internal

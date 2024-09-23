@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_UIOBJECT_H
-#define MAGIQUE_UIOBJECT_H
+#ifndef MAGIQUE_UI_OBJECT_H
+#define MAGIQUE_UI_OBJECT_H
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
@@ -9,8 +9,8 @@ IGNORE_WARNING(4100) // unreferenced formal parameter
 // UIObject
 //-----------------------------------------------
 // .....................................................................
-// The UIObject is the base class of all ui elements. The rendering of objects happens deffered.
-// You should call .render() on all objects that should be drawn this tick. They are collected and sorted to be drawn
+// The UIObject is the base class of all ui elements. The rendering of objects happens deferred.
+// You should call .render() on all objects that should be drawn in a tick. They are collected and sorted to be drawn
 // in the correct order after Game::drawUI() returns.
 //
 // IMPORTANT: Render order is determined first by layer, then by draw call order.
@@ -34,13 +34,13 @@ namespace magique
         void render(float transparency = 1.0F, bool scissor = false);
 
     protected:
-        // Called each update tick automatically BEFORE its drawn
-        // isDrawn      - if the object will be drawn this tick aswell
-        // Note: This allows components that are not rendered to be updated aswell
+        // Called every update tick automatically BEFORE it is drawn
+        //      - isDrawn: if the object will also be drawn this tick
+        // Note: This allows for components to be updated regardless if they are drawn or not (background task,...)
         virtual void update(const Rectangle& bounds, bool isDrawn) {}
 
-        // Called after Game::drawUI() returns to draw the object
-        // Note: Not called if: Object is fully covered by an opaque object / object is not on the screen
+        // Called after Game::drawUI() returns to draw the object if the object has been submitted with render()
+        // Note: The call is skipped if the object is fully covered by an opaque object or is not on the screen
         virtual void draw(const Rectangle& bounds) {}
 
     public:
@@ -60,16 +60,16 @@ namespace magique
         [[nodiscard]] bool getIsHovered() const;
 
         // Returns true if the mouse button is pressed while the object is not obstructed by another object
-        [[nodiscard]] bool getIsPressed(int mouseButton) const;
+        [[nodiscard]] bool getIsClicked(int mouseButton) const;
 
         // Controls the layer explicitly
-        // Note: Per default all elements are in the same layer and thus they appear in the order they are called
-        //       -> If explicit layers are set they will override that behavior!
+        // Note: Per default all elements are in the same layer, and thus they appear in the order they are called
+        //       -> If explicit layers are set they will override this behavior!
         void setLayer(UILayer layer);
         UILayer getLayer() const;
 
         // Controls if the ui object is considered to be opaque (solid, not see through)
-        // All objects fully covered by a opaque one are thus not visible and wont be drawn!
+        // All objects fully covered by an opaque object are considered not visible and won't be drawn!
         // Default : false
         void setOpaque(bool val);
         bool getIsOpaque() const;
@@ -79,7 +79,6 @@ namespace magique
     private:
         float px = 0, py = 0, pw = 0, ph = 0; // Percent values for the dimensions
         uint16_t id = 0;                      // Unique id
-        uint8_t instances = 0;                // How many time it exists across gamestates
         UILayer layer = UILayer::MEDIUM;      // Layer of the object
         bool isOpaque = false;                // If the object is solid and not see-through
         friend struct UIData;
@@ -89,4 +88,4 @@ namespace magique
 
 UNIGNORE_WARNING()
 
-#endif //MAGIQUE_UIOBJECT_H
+#endif //MAGIQUE_UI_OBJECT_H

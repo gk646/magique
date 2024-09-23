@@ -8,9 +8,9 @@
 //-----------------------------------------------
 // .....................................................................
 // This modules allows to draw custom loading screen. Subclass LoadingScreen and implement the loading method
-// Per default this loading screen is assigned
-// Note: Load method has to return true to end the loading screen
-//       -> Allows loading screens longer than the load time (e.g small game, animations, context dependant, ...)
+// If you don't set a custom LoadingScreen an instance of this default one is assigned
+// Note: draw() method has to return true in order to end the loading screen
+//       -> Allows loading screens longer than the load time (e.g. small game, animations, context dependant, ...)
 // .....................................................................
 
 namespace magique
@@ -28,13 +28,13 @@ namespace magique
         virtual ~LoadingScreen() = default;
 
         // Draws the loading screen
-        // isStartup        - true if its the startup screen (e.g. showing logos and credits)
-        // prograssPercent  - number in % how much loading is already done
+        // isStartup        - true if it's the startup loading screen (e.g. showing logos and credits)
+        // progressPercent  - number in % how much loading is already done
         // IMPORTANT: MUST return true in order to end the loading screen
-        virtual bool draw(bool isStartup, float prograssPercent)
+        virtual bool draw(bool isStartup, float progressPercent)
         {
-            DrawDefault(isStartup, prograssPercent);
-            return prograssPercent >= 100.0F;
+            DrawDefault(isStartup, progressPercent);
+            return progressPercent >= 100.0F;
         }
 
     private:
