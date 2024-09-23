@@ -12,9 +12,17 @@ struct AnimationSystem final
     static void update();
 };
 
+
 struct TeleportSystem final
 {
-   inline static std::vector<magique::TileObject> teleporters; // Should be a hashmap but vector is easier
+    struct Teleporter final
+    {
+        float x, y, w, h;
+        float outX, outY;
+        MapID origin;
+        MapID destination;
+    };
+    inline static std::vector<Teleporter> teleporters; // Should be a hashmap but vector is easier
 
     static void setup();
     static void update();

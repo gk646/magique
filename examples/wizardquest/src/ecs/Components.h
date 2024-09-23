@@ -29,6 +29,8 @@ struct MovementC final
 
     bool movedLeft = false;
 
+    int teleportCooldownCounter = 30;
+    static constexpr int TELEPORT_COOLDOWN = 60; // 1 second
     Point getVelocity()
     {
         const float totalDx = baseVelocX + extVelocX;
@@ -48,6 +50,7 @@ struct MovementC final
             extVelocX = 0;
             extVelocY = 0;
         }
+        ++teleportCooldownCounter;
         return {totalDx, totalDy};
     }
 };

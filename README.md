@@ -1,17 +1,17 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.1.0-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.2.0-blue)
 ![License Badge](https://img.shields.io/github/license/gk646/magique)
 
 > _What if raylib was an engine? ..._
 
-`magique` is a beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!) written in **C++ 20**.
+`magique` is a **C++ 20** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
 It's carefully designed to be **intuitive and easy to learn**, at installation through development and up to sharing the
 finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all game
 development needs in definitive way both in **performance and usability**.
 
-Join the [official discord](https://discord.gg/YAsvnxAmX7) for questions, suggestions and discussion.
+Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.
 
 ---
 

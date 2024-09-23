@@ -154,14 +154,14 @@ namespace magique
     struct ShareCodeProperty final
     {
         // Returns true if the property has the given type
-        [[nodiscard]] bool isInteger() const;
+        [[nodiscard]] bool getIsInt() const;
         [[nodiscard]] bool isFloat() const;
         [[nodiscard]] bool isString() const;
 
         // Returns the value
         // IMPORTANT: program will crash when you call the wrong type getter
         //            -> e.g. check if it's an integer first before calling getInteger()
-        [[nodiscard]] int getInteger() const;
+        [[nodiscard]] int getInt() const;
         [[nodiscard]] float getFloat() const;
         [[nodiscard]] const char* getString() const;
 

@@ -144,7 +144,7 @@ namespace magique
 
     //----------------- PROPERTY DATA -----------------//
 
-    int ShareCodeProperty::getInteger() const
+    int ShareCodeProperty::getInt() const
     {
         MAGIQUE_ASSERT(type == internal::ShareCodePropertyType::INTEGER, "Property is not an integer");
         return integer;
@@ -162,7 +162,7 @@ namespace magique
         return string;
     }
 
-    bool ShareCodeProperty::isInteger() const { return type == internal::ShareCodePropertyType::INTEGER; }
+    bool ShareCodeProperty::getIsInt() const { return type == internal::ShareCodePropertyType::INTEGER; }
 
     bool ShareCodeProperty::isFloat() const { return type == internal::ShareCodePropertyType::FLOATING; }
 

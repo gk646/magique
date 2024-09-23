@@ -74,7 +74,46 @@ namespace magique
 
     Point SpriteAnimation::getAnchor() const { return {static_cast<float>(rotX), static_cast<float>(rotY)}; }
 
+    //----------------- TILE OBJECT PROPERTY -----------------//
+
+    //TODO is leaking memory with name and property value / is it bad?
+
+    bool TileObjectCustomProperty::getBool() const
+    {
+        MAGIQUE_ASSERT(type == TileObjectPropertyType::BOOL, "Property does not contain a boolean!");
+        return boolean;
+    }
+
+    int TileObjectCustomProperty::getInt() const
+    {
+        MAGIQUE_ASSERT(type == TileObjectPropertyType::INT, "Property does not contain a integer!");
+        return integer;
+    }
+
+    float TileObjectCustomProperty::getFloat() const
+    {
+        MAGIQUE_ASSERT(type == TileObjectPropertyType::FLOAT, "Property does not contain a float!");
+        return floating;
+    }
+
+    const char* TileObjectCustomProperty::getString() const
+    {
+        MAGIQUE_ASSERT(type == TileObjectPropertyType::STRING, "Property does not contain a string!");
+        return string;
+    }
+
+    Color TileObjectCustomProperty::getColor() const
+    {
+        MAGIQUE_ASSERT(type == TileObjectPropertyType::COLOR, "Property does not contain a color!");
+        return GetColor(integer);
+    }
+
+    TileObjectPropertyType TileObjectCustomProperty::getType() const { return type; }
+
+    const char* TileObjectCustomProperty::getName() const { return name; }
+
     //----------------- TILE OBJECT -----------------//
+    //TODO is leaking memory with name / isnt too bad
 
     const char* TileObject::getName() const
     {

@@ -94,6 +94,46 @@ namespace magique
         [[nodiscard]] Point getAnchor() const;
     };
 
+    // The type of the property
+    enum class TileObjectPropertyType : uint8_t
+    {
+        FLOAT,
+        INT,
+        STRING,
+        BOOL,
+        COLOR,
+    };
+
+    // A custom definable property inside the Tiled Tile Editor
+    // -> go to your tileset -> click on a tile -> right click on custom properties -> choose type, name and value
+    struct TileObjectCustomProperty final
+    {
+        // Returns the value
+        // IMPORTANT: program will crash when you call the wrong type getter
+        //            -> e.g. check if it's an integer first before calling getInt()
+        [[nodiscard]] bool getBool() const;
+        [[nodiscard]] int getInt() const;
+        [[nodiscard]] float getFloat() const;
+        [[nodiscard]] const char* getString() const;
+        [[nodiscard]] Color getColor() const;
+
+        [[nodiscard]] TileObjectPropertyType getType() const;
+
+        [[nodiscard]] const char* getName() const;
+
+    private:
+        char* name = nullptr;
+        TileObjectPropertyType type;
+        union
+        {
+            float floating;
+            int integer{};
+            char* string;
+            bool boolean;
+        };
+        friend TileObject ParseObject(char*&);
+    };
+
     // Objects defined inside the tile editor
     struct TileObject final
     {
@@ -102,14 +142,15 @@ namespace magique
         [[nodiscard]] int getID() const;
         [[nodiscard]] Rectangle getRect() const;
 
-        float x = 0, y = 0, width = 0, height = 0; // Mutable
-        bool visible = false;                      // Mutable
+        float x = 0, y = 0, width = 0, height = 0;                                        // Mutable
+        bool visible = false;                                                             // Mutable
+        TileObjectCustomProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES]; // Mutable
 
     private:
         char* name = nullptr;
         int type = INT32_MAX; // Class
         int id = INT32_MAX;
-        friend TileObject ParseObject(const char*);
+        friend TileObject ParseObject(char*&);
     };
 
     struct TileInfo final
@@ -118,7 +159,6 @@ namespace magique
         uint8_t hitBoxY = 0;
         uint8_t hitBoxW = 0;
         uint8_t hitBoxH = 0;
-
         uint16_t tileID = UINT16_MAX; // ID of the tile
 
         [[nodiscard]] int getClass() const;

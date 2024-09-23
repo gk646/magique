@@ -60,21 +60,25 @@ namespace magique
         cxstructs::str_skip_char(data, '\n', 3);
     }
 
-    TileObject ParseObject(const char* data)
+    TileObject ParseObject(char*& data)
     {
+        const auto copyStringFromXML = [](const char* in)
+        {
+            MAGIQUE_ASSERT(in != nullptr, "Internal Error: passed nullptr");
+            int i = 0;
+            while (in[i] != '"' && in[i] != '\0')
+                ++i;
+            auto* string = new char[i + 1];
+            std::memcpy(string, in, i);
+            string[i] = '\0';
+            return string;
+        };
+
         TileObject object;
         object.id = XMLGetValueInLine<int>(data, "id", -1);
-
         const char* name = XMLGetValueInLine<const char*>(data, "name", nullptr);
-        if (name != nullptr)
-        {
-            int i = 0;
-            while (name[i] != '"' && name[i] != '\0')
-                ++i;
-            object.name = new char[i + 1];
-            std::memcpy(object.name, name, i);
-            object.name[i] = '\0';
-        }
+        if (name != nullptr) // Let name be null if not assigned
+            object.name = copyStringFromXML(name);
 
         object.type = XMLGetValueInLine<int>(data, "type", -1);
         object.x = XMLGetValueInLine<float>(data, "x", 0);
@@ -82,6 +86,59 @@ namespace magique
         object.width = XMLGetValueInLine<float>(data, "width", 0);
         object.height = XMLGetValueInLine<float>(data, "height", 0);
         object.visible = XMLGetValueInLine<int>(data, "visible", 1) == 1;
+
+        if (XMLLineContainsCloseTag(data)) // has no custom properties
+        {
+            return object;
+        }
+        cxstructs::str_skip_char(data, '\n', 2); // Skip the object and properties tag
+        int index = 0;
+        while (!XMLLineContainsTag(data, "/properties"))
+        {
+            MAGIQUE_ASSERT(index < MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES, "Too many custom properties!");
+            auto& prop = object.customProperties[index];
+            const char* propName = XMLGetValueInLine<const char*>(data, "name", nullptr);
+            if (propName != nullptr)
+                prop.name = copyStringFromXML(propName);
+
+            const char* propType = XMLGetValueInLine<const char*>(data, "type", nullptr);
+            if (propType == nullptr)
+            {
+                prop.type = TileObjectPropertyType::STRING;
+                const auto stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
+                if (stringValue != nullptr)
+                    prop.string = copyStringFromXML(stringValue);
+            }
+            else if (strncmp(propType, "float", sizeof("float") - 1) == 0)
+            {
+                prop.type = TileObjectPropertyType::FLOAT;
+                prop.floating = XMLGetValueInLine<float>(data, "value", 0);
+            }
+            else if (strncmp(propType, "bool", sizeof("bool") - 1) == 0)
+            {
+                prop.type = TileObjectPropertyType::BOOL;
+                const auto stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
+                prop.boolean = stringValue != nullptr && strncmp(stringValue, "true", sizeof("true") - 1) == 0;
+            }
+            else if (strncmp(propType, "int", sizeof("int") - 1) == 0)
+            {
+                prop.type = TileObjectPropertyType::INT;
+                prop.integer = XMLGetValueInLine<int>(data, "value", 0);
+            }
+            else if (strncmp(propType, "color", sizeof("color") - 1) == 0)
+            {
+                prop.type = TileObjectPropertyType::COLOR;
+                LOG_FATAL("Not implemented");
+            }
+            else
+            {
+                LOG_ERROR("Unsupported property type");
+                return object;
+            }
+            cxstructs::str_skip_char(data, '\n', 1);
+            ++index;
+        }
+        cxstructs::str_skip_char(data, '\n', 1); // Skip the closing properties tag
         return object;
     }
 
@@ -168,10 +225,7 @@ namespace magique
 
     int TileMap::getLayerCount() const { return layers; }
 
-    int TileMap::getObjectLayerCount() const
-    {
-        return objectLayers;
-    }
+    int TileMap::getObjectLayerCount() const { return objectLayers; }
 
     std::vector<TileObject>& TileMap::getObjects(const int layer)
     {
