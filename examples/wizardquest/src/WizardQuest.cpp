@@ -1,22 +1,16 @@
 #include "WizardQuest.h"
 
-#include <raylib/raylib.h>
-
 #include <magique/magique.hpp>
-#include <magique/assets/types/TileMap.h>
-#include <magique/core/StaticCollision.h>
 
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
 #include "ecs/Systems.h"
 #include "loading/Loaders.h"
 
-#include <magique/core/Debug.h>
-
-
 void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
 {
     // Configure raylib
+    SetWindowSize(1920,1080);
     SetTargetFPS(100);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 
@@ -96,7 +90,8 @@ void WizardQuest::drawUI(GameState gameState)
     case GameState::MAIN_MENU:
         break;
     case GameState::GAME:
-       // hudd.render();
+        gameUI.playerHUD.render();
+        gameUI.playerHotbar.render();
         break;
     case GameState::GAME_OVER:
         break;
@@ -128,8 +123,6 @@ void WizardQuest::updateGame(GameState gameState)
             break;
         }
     }
-
-
 }
 
 void WizardQuest::onShutDown()

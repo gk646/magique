@@ -74,13 +74,21 @@ namespace magique
         void setOpaque(bool val);
         bool getIsOpaque() const;
 
+        // Sets the visibility status of the object
+        // Note: if the object is set to be not visible it will NOT be rendered even when submitted to do so!
+        // Default: true
+        void setVisible(bool val);
+        bool getIsVisible() const;
+
         virtual ~UIObject();
 
     private:
         float px = 0, py = 0, pw = 0, ph = 0; // Percent values for the dimensions
         uint16_t id = 0;                      // Unique id
         UILayer layer = UILayer::MEDIUM;      // Layer of the object
+        AnchorPosition anchor;
         bool isOpaque = false;                // If the object is solid and not see-through
+        bool isVisible = true;
         friend struct UIData;
     };
 

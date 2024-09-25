@@ -36,8 +36,8 @@ namespace magique
 
         void update()
         {
-            scaleX = MAGIQUE_UI_RESOLUTION_X / static_cast<float>(CORE.Window.display.width);
             scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(CORE.Window.display.height);
+            scaleX = scaleY;
             const auto [mx, my] = GetMousePosition();
             mouseX = mx;
             mouseY = my;
@@ -83,7 +83,10 @@ namespace magique
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject& object) { allObjects.push_back(&object); }
+        void registerObject(UIObject& object)
+        {
+            allObjects.push_back(&object);
+        }
 
         // All objects are un-registered in the dtor
         void unregisterObject(const UIObject& object)
@@ -118,7 +121,7 @@ namespace magique
 
     namespace global
     {
-        static inline UIData UI_DATA{};
+        inline UIData UI_DATA{};
     }
 } // namespace magique
 

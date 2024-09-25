@@ -3,6 +3,7 @@
 
 #include <magique/ui/types/UIContainer.h>
 #include <magique/ui/UIObject.h>
+#include <magique/ui/controls/Window.h>
 
 using namespace magique;
 
@@ -13,17 +14,31 @@ struct PlayerHUD final : UIObject
     void update(const Rectangle& bounds, bool isDrawn) override;
 };
 
-struct MiniWindowMenu final : UIObject
+struct HotbarSlot final : UIObject
 {
+    inline static float size = 50;
+    HotbarSlot() : UIObject(0, 0, size, size)
+    {
 
+    }
+    void draw(const Rectangle &bounds) override;
 };
 
-struct LobbyBrowser final : UIContainer
+struct PlayerHotbar final : UIContainer
 {
-
-    LobbyBrowser() : UIContainer(0, 0, 1920, 1080) {}
-    void draw(const Rectangle &bounds) override;
+    int slots = 4;
+    PlayerHotbar();
+    void draw(const Rectangle& bounds) override;
     void update(const Rectangle &bounds, bool isDrawn) override;
+};
+
+struct MiniWindowButtons final : UIObject
+{
+};
+
+struct LobbyBrowser final : Window
+{
+    LobbyBrowser() : Window(0, 0, 1920, 1080) {}
 };
 
 struct LobbyWindow final : UIContainer

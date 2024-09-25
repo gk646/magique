@@ -20,12 +20,19 @@ namespace magique
         Window(float x, float y, float w, float h, float moverHeight = 0.0F);
 
         // Draws the control - called each tick on draw thread
-        void draw(const Rectangle& bounds) override;
+        void draw(const Rectangle& bounds) override
+        {
+            const auto moverHeight = bounds.height * moverHeightP;
+            const Rectangle moverBody = {bounds.x, bounds.y, bounds.width, moverHeight};
+            drawMover(moverBody, getIsHovered());
+            const Rectangle body = {bounds.x, bounds.y + moverHeight, bounds.width, bounds.height - moverHeight};
+            drawBody(body);
+        }
 
         // Updates the control - called each tick on update thread
-        void update(const Rectangle& bounds, bool isDrawn) override;
+        void update(const Rectangle& bounds, bool isDrawn) override {}
 
-        //----------------- DRAW -----------------//
+        //----------------- DRAW DEFAULTS -----------------//
         // Override them to achieve custom visuals
 
         // Draws the moveable bar of the window

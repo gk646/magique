@@ -1,16 +1,12 @@
 #include <magique/ui/controls/Window.h>
 
-
 namespace magique
 {
-    void Window::draw(const Rectangle& bounds)
+
+    Window::Window(const float x, const float y, const float w, const float h, const float moverHeight) :
+        UIContainer(x, y, w, h)
     {
-
-    }
-
-    void Window::update(const Rectangle& bounds, bool isDrawn)
-    {
-
+        moverHeightP = moverHeight / h;
     }
 
 } // namespace magique
