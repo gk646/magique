@@ -252,8 +252,8 @@ namespace magique::internal
 
     struct UIContainerEntry final
     {
-        char name[MAGIQUE_UI_OBJECT_NAME_LEN];
-        UIObject* object;
+        char name[MAGIQUE_UI_OBJECT_NAME_LEN]{};
+        UIObject* object = nullptr;
     };
 
 } // namespace magique::internal

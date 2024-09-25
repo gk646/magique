@@ -78,14 +78,31 @@ namespace magique
     {
         px = x / MAGIQUE_UI_RESOLUTION_X;
         py = y / MAGIQUE_UI_RESOLUTION_Y;
-        pw = w / MAGIQUE_UI_RESOLUTION_X;
-        ph = h / MAGIQUE_UI_RESOLUTION_Y;
+        if (w >= 0)
+            pw = w / MAGIQUE_UI_RESOLUTION_X;
+        if (h >= 0)
+            ph = h / MAGIQUE_UI_RESOLUTION_Y;
     }
 
     Rectangle UIObject::getBounds() const
     {
-        const auto [sx, sy] = magique::UIData::getScreenDims();
-        return {px * sx, py * sy, pw * sx, ph * sy};
+        const auto [sx, sy] = UIData::getScreenDims();
+
+        constexpr float aspectRatioBase = MAGIQUE_UI_RESOLUTION_X / MAGIQUE_UI_RESOLUTION_Y;
+        float currentAspectRatio = static_cast<float>(sx) / sy;
+
+        float x = px * sy * aspectRatioBase;
+        float y = py * sy;
+        float w = pw * sy * aspectRatioBase;
+        float h = ph * sy;
+
+        if (aspectRatioBase > currentAspectRatio)
+        {
+            float npw = w / sx;
+            float npx = px - (npw - pw) / 2.0F;
+            x = npx * sy * currentAspectRatio;
+        }
+        return {std::round(x), std::round(y), std::round(w), std::round(h)};
     }
 
     bool UIObject::getIsHovered() const
@@ -130,9 +147,8 @@ namespace magique
 
     UILayer UIObject::getLayer() const { return layer; }
 
-    void UIObject::setOpaque(bool val) { isOpaque = val; }
+    void UIObject::setOpaque(const bool val) { isOpaque = val; }
 
     bool UIObject::getIsOpaque() const { return isOpaque; }
-
 
 } // namespace magique

@@ -33,3 +33,21 @@ void PlayerHUD::update(const Rectangle& bounds, const bool isDrawn)
     SetFormatValue("P_MANA", (int)stats.mana);
     SetFormatValue("P_MAX_MANA", (int)stats.maxMana);
 }
+
+void HotbarSlot::draw(const Rectangle& bounds)
+{
+    DrawRectangleLinesEx(bounds, 1, DARKGRAY);
+}
+
+PlayerHotbar::PlayerHotbar() : UIContainer(480, 900, 960, 180)
+{
+    for (int i = 0; i < slots; ++i)
+    {
+        addChild(nullptr, new HotbarSlot());
+        getChild(i)->setDimensions(480 + i * HotbarSlot::size, 900);
+    }
+}
+
+void PlayerHotbar::draw(const Rectangle& bounds) { DrawRectangleLinesEx(bounds, 2, DARKGRAY); }
+
+void PlayerHotbar::update(const Rectangle& bounds, bool isDrawn) {}

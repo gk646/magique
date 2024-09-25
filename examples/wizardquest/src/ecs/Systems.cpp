@@ -1,3 +1,4 @@
+#include <cassert>
 #include <raylib/raylib.h>
 
 #include <magique/core/Core.h>

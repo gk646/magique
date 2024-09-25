@@ -2,6 +2,7 @@
 #define WIZARDQUEST_H
 
 #include <magique/core/Game.h>
+#include "ui/UIControls.h"
 
 using namespace magique; // using namespace is recommended and allowed
 
@@ -46,11 +47,7 @@ enum class HandleID
     TILE_SET,
 };
 
-inline HandleID GetMapHandle(MapID map)
-{
-    return HandleID((int)HandleID::MAPS_START + (int)map +1);
-}
-
+inline HandleID GetMapHandle(MapID map) { return HandleID((int)HandleID::MAPS_START + (int)map + 1); }
 
 enum class AnimationState : uint8_t
 {
@@ -67,8 +64,16 @@ enum class AtlasID : int
     ENTITIES,
 };
 
+struct WizardQuestUI final
+{
+    PlayerHUD playerHUD{};
+    LobbyBrowser lobbyBrowser{};
+    PlayerHotbar playerHotbar{};
+};
+
 struct WizardQuest final : Game
 {
+    WizardQuestUI gameUI{};
     void onStartup(AssetLoader& loader, GameConfig& config) override;
     void onLoadingFinished() override;
     void updateGame(GameState gameState) override;

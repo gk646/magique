@@ -19,6 +19,7 @@
 #include "core/Particles.h"
 #include "core/Sound.h"
 #include "core/Types.h"
+#include "core/Debug.h"
 
 // ECS
 #include "ecs/Components.h"
