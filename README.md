@@ -68,10 +68,25 @@ int main()
     return game.run();
 }
 ```
+### 1. Is magique for you?
 
-### 1. Installation
+`magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project and meant to be **extended by user written code**!
+As such it does not have all solutions for any game! Instead, it tries to offer several well implemented general purpose modules that find usage in a multitude of projects. However, there are some **fundamental principles and restrictions** that you have to follow when using magique:
 
-`magique` is using CMake as its build system and it's recommended for projects using it as well.
+- Game template
+    - You have to overwrite the core/Game.h class and implement your game logic in its virtual methods
+- ECS (entity component system)
+    - Every game object is supposed to be an entity with components
+    - The PositionC component is implicit for every object! (look at ecs/Components.h)
+- Scripting (Collisions)
+    - For now the only way to react to engine internal events like static/dynamic collisions is to use the provided C++ scripting system
+    - Collisions are detected internally and the collision point, normal vector and penetration depth can be processed by the user
+
+Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by user code.
+
+### 2. Installation
+
+`magique` is using CMake as its build system hence it's recommended for projects using it as well.
 
 #### CMake (recommended)
 
@@ -96,7 +111,7 @@ modules can easily be
 made into
 standalone units.**
 
-### 2. Documentation
+### 3. Documentation
 
 There are 2 main ways magique is documented:
 
@@ -115,7 +130,7 @@ There are 2 main ways magique is documented:
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
-### 3. Paradigms and design philosophy of `magique`:
+### 4. Paradigms and design philosophy of `magique`:
 
 - 1 Main Thread + Job System
     - Main thread handles calling render and update functions correctly
