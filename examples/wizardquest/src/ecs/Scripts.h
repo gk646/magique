@@ -13,25 +13,28 @@ struct PlayerScript final : EntityScript
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
 
+
+
         static Connection conn;
         if (IsKeyPressed(KEY_H))
         {
+            printf("User: %s\n", GetUserDataLocation());
             if (CreateLocalSocket(35000))
                 printf("Opened server\n");
             return;
         }
         if (IsKeyPressed(KEY_J))
         {
-            conn = ConnectToLocalSocket("192.168.2.41:35000");
+            conn = ConnectToLocalSocket(GetLocalIP(), 35000);
             printf("Trying to connect to local server...\n");
             return;
         }
 
-        if(IsClient())
+        if (IsClient())
         {
             const auto* myString = "Hello World!\0";
-            auto payload = CreatePayload(myString,13,MessageType::STRING);
-            SendMessage(conn,payload);
+            auto payload = CreatePayload(myString, 13, MessageType::STRING);
+            SendMessage(conn, payload);
         }
     }
 

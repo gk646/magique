@@ -126,17 +126,9 @@ namespace magique
 
     int TileObject::getID() const { return id; }
 
-    Rectangle TileObject::getRect() const { return {x, y, width, height}; }
-
     //----------------- TILE INFO -----------------//
 
     int TileInfo::getClass() const { return clazz; }
-
-    Rectangle TileInfo::getCollisionRect(const float scale) const
-    {
-        return {static_cast<float>(hitBoxX) * scale, static_cast<float>(hitBoxY) * scale,
-                static_cast<float>(hitBoxW) * scale, static_cast<float>(hitBoxH) * scale};
-    }
 
     //----------------- COLLIDER INFO -----------------//
 

@@ -90,7 +90,7 @@ namespace magique
                 }
                 hashGrid.patchHoles(); // Patch as we cant rebuild it
                 // Remove the entry in the map specific info vec
-                const auto pred = [](const ObjectReferenceHolder::TileObjectInfo& info,const void* vecPtr)
+                const auto pred = [](const ObjectReferenceHolder::TileObjectInfo& info, const void* vecPtr)
                 { return vecPtr == info.vectorPointer; };
                 UnorderedDelete(mapVec, info.vectorPointer, pred);
                 global::PATH_DATA.updateStaticPathGrid(map);
@@ -170,7 +170,11 @@ namespace magique
                     const auto infoIt = data.markedTilesMap.find(tileNum);
                     if (infoIt != data.markedTilesMap.end())
                     {
-                        auto [x, y, width, height] = infoIt->second.getCollisionRect(data.tileSetScale);
+                        const auto& info = infoIt->second;
+                        auto x = static_cast<float>(info.x) * data.tileSetScale;
+                        auto y = static_cast<float>(info.y) * data.tileSetScale;
+                        auto width = static_cast<float>(info.width) * data.tileSetScale;
+                        auto height = static_cast<float>(info.height) * data.tileSetScale;
                         x += static_cast<float>(j) * tileSize;
                         y += static_cast<float>(i) * tileSize;
                         if (width == 0) // rect is 0 if not assigned - so adding to x and y is always valid
@@ -278,7 +282,7 @@ namespace magique
                 }
                 hashGrid.patchHoles();
                 // Remove the entry in the map specific info vec
-                const auto pred = []( const ObjectReferenceHolder::ManualGroupInfo& info,int groupID)
+                const auto pred = [](const ObjectReferenceHolder::ManualGroupInfo& info, int groupID)
                 { return groupID == info.groupId; };
                 UnorderedDelete(mapGroupInfoVec, info.groupId, pred);
                 global::PATH_DATA.updateStaticPathGrid(map);

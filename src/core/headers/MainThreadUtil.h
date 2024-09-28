@@ -259,6 +259,9 @@ namespace magique
         global::ENGINE_DATA.nearbyQueryData.lastRadius = 0;
 
         global::MP_DATA.update(); // Before user tick so it gets new information
+#if MAGIQUE_USE_STEAM == 1
+        global::STEAM_DATA.update(); // Before user tick so it gets new information
+#endif
     }
 
     inline void InternalUpdatePost() // After user space update

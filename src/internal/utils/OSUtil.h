@@ -59,4 +59,6 @@ inline void SetupProcessPriority()
 #endif
 }
 
+
+
 #endif //MAGIQUE_OSUTIL_H

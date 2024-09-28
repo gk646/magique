@@ -138,9 +138,8 @@ namespace magique
     struct TileObject final
     {
         [[nodiscard]] const char* getName() const; // Can be null
-        [[nodiscard]] int getClass() const;        // Only ints allows as class
+        [[nodiscard]] int getClass() const;        // Only ints allowed as class
         [[nodiscard]] int getID() const;
-        [[nodiscard]] Rectangle getRect() const;
 
         float x = 0, y = 0, width = 0, height = 0;                                        // Mutable
         bool visible = false;                                                             // Mutable
@@ -155,15 +154,10 @@ namespace magique
 
     struct TileInfo final
     {
-        uint8_t hitBoxX = 0;
-        uint8_t hitBoxY = 0;
-        uint8_t hitBoxW = 0;
-        uint8_t hitBoxH = 0;
+        uint8_t x = 0, y = 0, width = 0, height = 0;
         uint16_t tileID = UINT16_MAX; // ID of the tile
 
         [[nodiscard]] int getClass() const;
-
-        [[nodiscard]] Rectangle getCollisionRect(float scale = 1.0F) const;
 
     private:
         int clazz = INT32_MAX; // class attribute

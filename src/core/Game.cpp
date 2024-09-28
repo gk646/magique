@@ -34,7 +34,9 @@
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/MultiplayerData.h"
-
+#if MAGIQUE_USE_STEAM == 1
+#include "internal/globals/SteamData.h"
+#endif
 #include "internal/headers/CollisionPrimitives.h"
 #include "internal/headers/IncludeWindows.h"
 #include "internal/utils/OSUtil.h"
@@ -82,6 +84,10 @@ namespace magique
 
     Game::~Game()
     {
+        global::MP_DATA.close();
+#if MAGIQUE_USE_STEAM == 1
+        global::STEAM_DATA.close();
+#endif
         CloseAudioDevice();
         CloseWindow();
     }
@@ -98,10 +104,7 @@ namespace magique
         onStartup(*static_cast<AssetLoader*>(loader), config);
 
         // Load atlas to gpu - needs to be the last task
-        const auto loadAtlasGPU = [](AssetContainer&)
-        {
-            global::ATLAS_DATA.loadToGPU();
-        };
+        const auto loadAtlasGPU = [](AssetContainer&) { global::ATLAS_DATA.loadToGPU(); };
         static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW, 1);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;

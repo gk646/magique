@@ -43,7 +43,7 @@ PlayerHotbar::PlayerHotbar() : UIContainer(480, 900, 960, 180)
 {
     for (int i = 0; i < slots; ++i)
     {
-        addChild(nullptr, new HotbarSlot());
+        addChild(0,0, new HotbarSlot());
         getChild(i)->setDimensions(480 + i * HotbarSlot::size, 900);
     }
 }

@@ -1,0 +1,4 @@
+#ifndef CLOUDSAVES_H
+#define CLOUDSAVES_H
+
+#endif //CLOUDSAVES_H
