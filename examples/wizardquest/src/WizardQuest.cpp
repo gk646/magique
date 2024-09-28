@@ -17,6 +17,7 @@ void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
     // Configure magique
     SetShowHitboxes(true);
     InitLocalMultiplayer();
+
     SetStaticWorldBounds({0, 0, 1280, 1000});
 
     // Register loaders
@@ -33,7 +34,6 @@ void WizardQuest::onLoadingFinished()
 
     LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
     AddTileCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
-
     AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
 
     SetGameState(GameState::GAME);
@@ -60,7 +60,6 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
             anim.drawCurrentFrame(pos.x, pos.y, 0, mov.movedLeft);
         }
     }
-
     return;
     auto& pos = GetComponent<PositionC>(entt::entity(1));
     auto& col = GetComponent<CollisionC>(entt::entity(1));

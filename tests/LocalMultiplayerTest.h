@@ -1,5 +1,5 @@
-#ifndef COLLISION_BENCHMARK_H
-#define COLLISION_BENCHMARK_H
+#ifndef LOCALMULTIPLAYERTEST_H
+#define LOCALMULTIPLAYERTEST_H
 
 #include <raylib/raylib.h>
 
@@ -7,35 +7,7 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
-#include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
-#include <magique/util/Logging.h>
-
-//-----------------------------------------------
-// Collision Benchmark
-//-----------------------------------------------
-// .....................................................................
-// Just some anecdotal values when running for around 5s
-// Time: 18.9ms | Start
-// Time: 17.5ms | Added early return bounding-box check to CircleToQuadrilateral()
-// Time: 17.1ms | Added early return bounding-box check to CircleToCapsule()
-// Time: 16.1ms | Used view.get<> instead of registry.get<>
-// Time: 14.3ms | Added early return bounding-box check to SAT()
-// Time: 9.3 ms | Using a single hashgrid with 50 width
-// Time: 9.1 ms | Fixing circle calculations / removing unneeded division (top left + radius not radius/2 lol)
-// Time: 7.6 ms | Changed access pattern to hashgrid from queries to direct cell by cell iteration -> more cache local
-// Time: 6.9 ms | Changed ratio of work for main thread (get more) 39.5% main vs 60.5 distributed among workers (with 4)
-// Time: 6.7 ms | Optimized ECS access further using groups
-// Fixed update area being wrong -> more objects are loaded now
-// Time: 9.1 ms | New Baseline
-// Time: 8.9 ms | Removed EnTT asserts in release builds
-// Time: 8.5 ms | Removed immediate collision resolving - its accumulated per user call
-// Time: 9.3 ms | Added static collisions
-// Time: 8.6 ms | Added power of two optimization
-// Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangles -> more shapes -> bit slower
-// Time: 9.8 ms | Added accumulation of collision info using a hashmap
-// Time: 9.2 ms | Removed hashmap in favor of caching data and saving it inside the collision component
-// .....................................................................
 
 using namespace magique;
 
@@ -47,16 +19,12 @@ enum EntityType : uint16_t
 
 struct TestCompC final
 {
+    int counter = 0;
     bool isColliding = false;
 };
 
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self) override
-    {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = false;
-    }
     void onKeyEvent(entt::entity self) override
     {
         auto& pos = GetComponent<PositionC>(self);
@@ -69,80 +37,97 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
+
     void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = true;
-        AccumulateCollision(info);
+       AccumulateCollision(info);
     }
 };
 
-struct ObjectScript final : EntityScript
+struct ObjectScript final : EntityScript // Moving platform
 {
     void onTick(entt::entity self) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
+        auto& test = GetComponent<TestCompC>(self);
+        auto& pos = GetComponent<PositionC>(self);
+        if (test.counter > 100)
+        {
+            pos.x++;
+            if (test.counter >= 200)
+            {
+                test.counter = 0;
+            }
+        }
+        else if (test.counter < 100)
+        {
+            pos.x--;
+        }
+
+        test.counter++;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
+
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo&) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
-        AccumulateCollision(info);
     }
 };
 
 struct Test final : Game
 {
-    Test() : Game("magique - CollisionBenchmark") {}
+    Test() : Game("magique - CollisionTest") {}
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
-        SetRandomSeed(100);
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
             GiveScript(e);
             GiveCamera(e);
-            GiveCollisionRect(e, 15, 25);
+            GiveCollisionCircle(e, 75);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e, EntityType type)
         {
             GiveScript(e);
-            const auto val = GetRandomValue(0, 100);
+            const auto val = GetRandomValue(0,100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
             }
             else if (val < 50)
             {
-                GiveCollisionTri(e, {-15, 15}, {15, 15});
+                GiveCollisionTri(e, {-33, 33}, {33, 33});
             }
             else if (val < 75)
             {
-                GiveCollisionCircle(e, 24);
+                GiveCollisionCircle(e, 25);
             }
             else
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 360);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
+
         SetEntityScript(PLAYER, new PlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
-        CreateEntity(PLAYER, 2500, 2500, MapID(0));
-        for (int i = 0; i < 50'000; ++i)
+
+        CreateEntity(PLAYER, 0, 0, MapID(0));
+        for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
+        DrawRectangle(250, 250, 50, 50, RED);
         for (const auto e : GetDrawEntities())
         {
             const auto& pos = GetComponent<const PositionC>(e);
@@ -166,12 +151,16 @@ struct Test final : Game
                 break;
             }
         }
+        DrawHashGridDebug();
         EndMode2D();
     }
     void updateGame(GameState gameState) override
     {
-        // printf("Loaded Objects: %d\n",GetUpdateEntities().size());
+        for (const auto e : GetUpdateEntities())
+        {
+            auto& pos = GetComponent<PositionC>(e);
+        }
     }
 };
 
-#endif //COLLISION_BENCHMARK_H
+#endif //LOCALMULTIPLAYERTEST_H

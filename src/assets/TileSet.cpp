@@ -42,15 +42,15 @@ namespace magique
             {
                 cxstructs::str_skip_char(work, '\n', 1); // Skip tile tag
                 cxstructs::str_skip_char(work, '\n', 1); // Skip objectgroup tag
-                info.hitBoxX = XMLGetValueInLine<uint8_t>(work, "x", UINT8_MAX);
-                info.hitBoxY = XMLGetValueInLine<uint8_t>(work, "y", UINT8_MAX);
-                info.hitBoxW = XMLGetValueInLine<uint8_t>(work, "width", UINT8_MAX);
-                info.hitBoxH = XMLGetValueInLine<uint8_t>(work, "height", UINT8_MAX);
+                info.x = XMLGetValueInLine<uint8_t>(work, "x", UINT8_MAX);
+                info.y = XMLGetValueInLine<uint8_t>(work, "y", UINT8_MAX);
+                info.width = XMLGetValueInLine<uint8_t>(work, "width", UINT8_MAX);
+                info.height = XMLGetValueInLine<uint8_t>(work, "height", UINT8_MAX);
                 cxstructs::str_skip_char(work, '\n', 1); // Skip objectgroup close tag
                 cxstructs::str_skip_char(work, '\n', 1); // Skip tile close tag
 #ifdef MAGIQUE_DEBUG
-                if (info.hitBoxX == UINT8_MAX || info.hitBoxY == UINT8_MAX || info.hitBoxW == UINT8_MAX ||
-                    info.hitBoxH == UINT8_MAX)
+                if (info.x == UINT8_MAX || info.y == UINT8_MAX || info.width == UINT8_MAX ||
+                    info.height == UINT8_MAX)
                 {
                     LOG_WARNING("Failed to parse tile collision area: %s", asset.getFileName(true));
                 }

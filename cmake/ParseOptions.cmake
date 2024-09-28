@@ -19,10 +19,9 @@ if (MAGIQUE_STEAM AND NOT STEAM_SDK_PATH)
     )
 endif ()
 
-# If a path is given turn it on (if not already)
-if (EXISTS STEAM_SDK_PATH)
-    set(MAGIQUE_STEAM ON)
-    message("Detected a Steam SDK path: Enabling Steam suppport!")
+if(MAGIQUE_STEAM AND MAGIQUE_LAN)
+    message(STATUS "Both Steam and LAN is enabled. Enabling Steam allows access both Local and Global multiplayer")
+    set(MAGIQUE_LAN OFF)
 endif ()
 
 if (MAGIQUE_STEAM)

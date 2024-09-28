@@ -3,7 +3,6 @@
 
 #include <functional>
 
-#include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
@@ -47,13 +46,30 @@ namespace magique
             buffCap = MAGIQUE_ESTIMATED_MESSAGES;
         }
 
-        ~MultiplayerData()
+        void close()
         {
             delete[] msgBuffer;
+            if (!isInSession)
+                return;
 #if MAGIQUE_STEAM == 0
             GameNetworkingSockets_Kill();
+#else
+            for (const auto conn : connections)
+            {
+                if (conn != k_HSteamNetConnection_Invalid)
+                {
+                    const char* msg = nullptr;
+                    if (isHost)
+                        msg = "Host closed application";
+                    else
+                        msg = "Client closed application";
+                    SteamNetworkingSockets()->CloseConnection(conn, 0, msg, false);
+                }
+            }
+            if (listenSocket != k_HSteamListenSocket_Invalid)
+                SteamNetworkingSockets()->CloseListenSocket(listenSocket);
+            SteamNetworkingSockets()->RunCallbacks();
 #endif
-            isInSession = false;
         }
 
         void goOnline(const bool asHost)
@@ -82,9 +98,7 @@ namespace magique
         {
             if (isInSession)
             {
-#if MAGIQUE_STEAM == 0
                 SteamNetworkingSockets()->RunCallbacks();
-#endif
             }
         }
 
@@ -204,6 +218,7 @@ namespace magique
 
     inline void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
     {
+        printf("Hey");
         global::MP_DATA.onConnectionStatusChange(pParam);
     }
 } // namespace magique
