@@ -17,8 +17,8 @@ namespace magique
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
-        MAGIQUE_ASSERT(conn == Connection::INVALID_CONNECTION || payload.data == nullptr || payload.size == 0 ||
-                           (flag != SendFlag::UN_RELIABLE && flag != SendFlag::RELIABLE),
+        MAGIQUE_ASSERT(conn != Connection::INVALID_CONNECTION && payload.size >= 0 &&
+                           (flag == SendFlag::UN_RELIABLE || flag == SendFlag::RELIABLE),
                        "Passed invalid input parameters");
 
         if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
@@ -38,10 +38,18 @@ namespace magique
         return true;
     }
 
+    void BatchMessageToAll(const Payload payload, const SendFlag flag)
+    {
+        for (const auto conn : GetCurrentConnections())
+        {
+            BatchMessage(conn, payload, flag);
+        }
+    }
+
     bool SendBatch()
     {
         auto& data = global::MP_DATA;
-        if (data.batchedMsgs.empty())
+        if (data.batchedMsgs.empty()) [[unlikely]]
             return false;
         const auto size = data.batchedMsgs.size();
         SteamNetworkingSockets()->SendMessages(size, data.batchedMsgs.data(), nullptr);
@@ -81,6 +89,14 @@ namespace magique
         return res == k_EResultOK;
     }
 
+    void SendMessageToAll(const Payload payload, const SendFlag flag)
+    {
+        for (const auto conn : GetCurrentConnections())
+        {
+            SendMessage(conn, payload, flag);
+        }
+    }
+
     const std::vector<Message>& ReceiveIncomingMessages(const int max)
     {
         auto& data = global::MP_DATA;
@@ -105,7 +121,7 @@ namespace magique
             if (newCap > data.buffCap) [[unlikely]]
             {
                 auto* newBuff = new SteamNetworkingMessage_t*[data.buffCap * 2];
-                std::memcpy(newBuff, data.msgBuffer, data.buffSize * sizeof(SteamNetworkingMessage_t*));
+                memcpy(newBuff, data.msgBuffer, data.buffSize * sizeof(SteamNetworkingMessage_t*));
                 delete[] data.msgBuffer;
                 data.msgBuffer = newBuff;
                 data.buffCap = data.buffCap * 2;
@@ -132,23 +148,22 @@ namespace magique
         {
             for (const auto conn : data.connections)
             {
-                if (conn != k_HSteamNetConnection_Invalid)
-                {
-                    ensureCapacity(data.buffSize + max);
-                    const auto n =
-                        SteamNetworkingSockets()->ReceiveMessagesOnConnection(conn, data.msgBuffer + data.buffSize, max);
-                    if (n == -1)
-                        continue;
-                    processMessages(data.buffSize, n);
-                    data.buffSize += n;
-                }
+                ensureCapacity(data.buffSize + max);
+                const auto steamConn = static_cast<HSteamNetConnection>(conn);
+                auto* msgBuffer = data.msgBuffer + data.buffSize;
+                const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(steamConn, msgBuffer, max);
+                if (n == -1) // No more messages
+                    continue;
+                processMessages(data.buffSize, n);
+                data.buffSize += n;
             }
         }
         else // Receiving messages for non-host
         {
             ensureCapacity(max);
             const auto conn = data.connections[0];
-            const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(conn, data.msgBuffer, max);
+            const auto steamConn = static_cast<HSteamNetConnection>(conn);
+            const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(steamConn, data.msgBuffer, max);
             if (n == -1)
             {
                 return data.msgVec;
@@ -158,6 +173,8 @@ namespace magique
         }
         return data.msgVec;
     }
+
+    const std::vector<Connection>& GetCurrentConnections() { return global::MP_DATA.connections; }
 
     //----------------- UTIL -----------------//
 

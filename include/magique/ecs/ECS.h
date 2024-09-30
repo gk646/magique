@@ -60,7 +60,7 @@ namespace magique
 
     // Creates a new entity with the given id
     // Note: Should only be called in a networking context with a valid id
-    entt::entity CreateEntityNetwork(uint32_t id, EntityType type, float x, float y, MapID map);
+    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, float x, float y, MapID map);
 
     // Immediately tries destroys the entity
     // Note: it's up to the user to make sure invalid entities are not accessed (destroying in event functions...)

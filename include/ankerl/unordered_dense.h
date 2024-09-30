@@ -2028,5 +2028,11 @@ auto erase_if(ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, All
 
 } // namespace std
 
+// Added for magique
+template<typename K,typename V>
+using HashMap = ankerl::unordered_dense::map<K,V>;
+template<typename K>
+using HashSet = ankerl::unordered_dense::set<K>;
+
 #endif
 #endif

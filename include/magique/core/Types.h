@@ -281,12 +281,13 @@ namespace magique
 
     enum class SendFlag : uint8_t
     {
-        // Reliable message send. Does fragmentation/re-assembly of messages under the hood, as well as a sliding window
-        // for efficient sends of large chunks of data - The Nagle algorithm is used.
+        // There are TWO guarantees when using reliable message:
+        //      1. They are guaranteed to arrive (if its possible) -> a confirmation is sent back from the client if it was received
+        //      2. Reliable messages retain order, they arrive at the client in the same order they were sent from the host
+        // Use this for vital game updates and messages that MUST arrive or arrive in a certain order
         RELIABLE = 8,
-        // Send the message unreliably. Can be lost.  Messages *can* be larger than a
-        // single MTU (UDP packet), but there is no retransmission, so if any piece
-        // of the message is lost, the entire message will be dropped.
+        // No guarantees - the message is not resent if its dropped or part of it goes missing
+        // This uses less bandwidth than reliable messages - if there's a stable connection it's very similar to reliable
         UN_RELIABLE = 0,
     };
 
@@ -298,12 +299,12 @@ namespace magique
     enum class MultiplayerEvent : uint8_t
     {
         //----------------- HOST -----------------//
-        HOST_NEW_CONNECTION,      // Posted when we accept a new client connection
-        HOST_CLIENT_DISCONNECTED, // Posted when the client closed the connection
+        HOST_NEW_CONNECTION,      // Posted after we accept a new client connection
+        HOST_CLIENT_DISCONNECTED, // Posted after the client closed the connection
 
         //----------------- CLIENT -----------------//
-        CLIENT_CONNECTION_ACCEPTED, // Posted when the host accepted our connection
-        CLIENT_CONNECTION_CLOSED,   // Posted when the host closed our connection
+        CLIENT_CONNECTION_ACCEPTED, // Posted after the host accepted our connection
+        CLIENT_CONNECTION_CLOSED,   // Posted after the host closed our connection
     };
 
     struct Payload final
@@ -311,6 +312,10 @@ namespace magique
         const void* data; // Direct pointer to the given data
         int size;         // Valid size of the data
         MessageType type; // Type of the message (very useful for handling messages on the receiver)
+
+        // Cast the payload data to an object of the given type and returns it - uses static_cast
+        template <typename T>
+        T getDataAs() const;
     };
 
     struct Message final
@@ -468,83 +473,62 @@ namespace magique
     };
 
     // Array Iterator template
-    template <typename U>
+    template <typename T>
     class Iterator
     {
     public:
-        using value_type = U;
+        using value_type = T;
         using difference_type = int64_t;
-        using pointer = U*;
-        using reference = U&;
-
+        using pointer = T*;
         explicit Iterator(pointer ptr) : ptr_(ptr) {}
-
-        reference operator*() const { return *ptr_; }
-
+        T& operator*() { return *ptr_; }
+        const T& operator*() const { return *ptr_; }
         pointer operator->() { return ptr_; }
-
         Iterator& operator++()
         {
             ++ptr_;
             return *this;
         }
-
         Iterator operator++(int)
         {
             Iterator tmp = *this;
             ++ptr_;
             return tmp;
         }
-
         Iterator& operator--()
         {
             --ptr_;
             return *this;
         }
-
         Iterator operator--(int)
         {
             Iterator tmp = *this;
             --ptr_;
             return tmp;
         }
-
-        Iterator& operator+=(difference_type offset)
-        {
-            ptr_ += offset;
-            return *this;
-        }
-
         Iterator operator+(difference_type offset) const { return Iterator(ptr_ + offset); }
-
-        Iterator& operator-=(difference_type offset)
-        {
-            ptr_ -= offset;
-            return *this;
-        }
-
         Iterator operator-(difference_type offset) const { return Iterator(ptr_ - offset); }
-
         difference_type operator-(const Iterator& other) const { return ptr_ - other.ptr_; }
-
-        reference operator[](difference_type index) const { return ptr_[index]; }
-
+        T& operator[](difference_type index) const { return ptr_[index]; }
         bool operator==(const Iterator& other) const { return ptr_ == other.ptr_; }
-
         bool operator!=(const Iterator& other) const { return ptr_ != other.ptr_; }
-
-        bool operator<(const Iterator& other) const { return ptr_ < other.ptr_; }
-
-        bool operator>(const Iterator& other) const { return ptr_ > other.ptr_; }
-
-        bool operator<=(const Iterator& other) const { return ptr_ <= other.ptr_; }
-
-        bool operator>=(const Iterator& other) const { return ptr_ >= other.ptr_; }
 
     private:
         pointer ptr_;
     };
 
+
+} // namespace magique
+
+//----------------- IMPLEMENTATION -----------------//
+
+namespace magique
+{
+    template <typename T>
+    T Payload::getDataAs() const
+    {
+        return *static_cast<const T*>(data);
+    }
 } // namespace magique
 
 

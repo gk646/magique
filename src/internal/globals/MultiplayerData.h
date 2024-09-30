@@ -30,7 +30,7 @@ namespace magique
     struct MultiplayerData final
     {
         std::function<void(MultiplayerEvent)> callback;                 // Callback
-        std::vector<HSteamNetConnection> connections;                   // Holds all current valid connections
+        std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<Message> msgVec;                                    // Message buffer
         vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
         SteamNetworkingMessage_t** msgBuffer = nullptr;                 // Incoming message data buffer
@@ -127,7 +127,7 @@ namespace magique
                         }
                         else
                         {
-                            connections.push_back(pParam->m_hConn);
+                            connections.push_back(static_cast<Connection>(pParam->m_hConn));
                             if (callback)
                                 callback(MultiplayerEvent::HOST_NEW_CONNECTION);
                             LOG_INFO("Host accepted a new client connection");
@@ -160,7 +160,7 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
                 if (isHost)
                 {
-                    UnorderedDelete(connections, pParam->m_hConn);
+                    UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
                     if (callback)
                         callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
@@ -183,7 +183,7 @@ namespace magique
                 const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
-                    UnorderedDelete(connections, pParam->m_hConn);
+                    UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
                     LOG_INFO("(Host) Local problem with connection. Disconnected client from session: %s", errStr);
                 }
                 else

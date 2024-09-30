@@ -28,17 +28,16 @@
 //              - Send position updates, used abilities... to the clients and update their gamestate
 //              - Send the inputs from the client to the host (so the host can simulate the clients character)
 //
-// Note: Packets should not be bigger than 1200 bytes to avoid fragmentation.
+// Note: Packets should not be bigger than 1200 bytes to avoid fragmentation (To still have overhead towards the MTU)
 //       But for optimal performance try to merge smaller packets into a single bigger one that is close to this limit.
 // .....................................................................
 
 namespace magique
 {
-
     // Puts this game into client mode - all game simulation is skipped except rendering
-    // All things that are skipped:
+    // Comprehensive list of things that are skipped in ClientMode:
     //      - Dynamic and Static collisions
-    //      - ALL scripting event methods (
+    //      - ALL scripting event methods
     void EnterClientMode();
     void ExitClientMode();
 
@@ -58,6 +57,10 @@ namespace magique
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
     bool BatchMessage(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
+    // Batches the given payload for each current connection
+    // This is equal to calling BatchMessage() for each connection from GetCurrentConnections()
+    void BatchMessageToAll(Payload payload, SendFlag flag = SendFlag::RELIABLE);
+
     // Sends the current batch if it exists
     // Failure: returns false if BatchMessage() was not called at least once before with valid parameters
     bool SendBatch();
@@ -66,12 +69,19 @@ namespace magique
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
     bool SendMessage(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
+    // Directly sends the given message to all current connections
+    // This is equal to calling SendMessage() for each connection from GetCurrentConnections()
+    void SendMessageToAll(Payload payload, SendFlag flag = SendFlag::RELIABLE);
+
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
     // IMPORTANT: Each call cleans up the previously returned messages
     const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = 100);
 
     //----------------- UTIL -----------------//
+
+    // Returns the vector that contains all current valid connections
+    const std::vector<Connection>& GetCurrentConnections();
 
     // Sets the callback function that is called on various multiplayer events
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered
