@@ -6,14 +6,14 @@ namespace magique
     // Flattened array
     struct ActorMapDistribution final
     {
-        static constexpr int maxPlayers = MAGIQUE_MAX_ACTORS;
+        static constexpr int maxPlayers = MAGIQUE_MAX_PLAYERS;
         cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * maxPlayers> dataVec;
 
         ActorMapDistribution() { dataVec.resize(MAGIQUE_EXPECTED_MAPS * maxPlayers, -1); }
 
         int8_t getActorNum(const MapID map, const int offset)
         {
-            return dataVec[static_cast<int>(map) * MAGIQUE_MAX_ACTORS + offset];
+            return dataVec[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS + offset];
         }
 
         void insertActorNum(const MapID map, const int num)
@@ -36,14 +36,14 @@ namespace magique
     }
 
     // Builds the lookup tables so the main iteration is as fast as possible
-    inline void BuildCache(Vector2 (&actorCircles)[MAGIQUE_MAX_ACTORS], bool (&actorMaps)[UINT8_MAX],
+    inline void BuildCache(Vector2 (&actorCircles)[MAGIQUE_MAX_PLAYERS], bool (&actorMaps)[UINT8_MAX],
                            ActorMapDistribution& actorDist, int& actorCount)
     {
         const auto& registry = internal::REGISTRY;
         const auto view = registry.view<const ActorC, const PositionC>();
         for (const auto actor : view)
         {
-            MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_ACTORS, "More actors than configured!");
+            MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
             actorMaps[static_cast<int>(pos.map)] = true;
             actorCircles[actorCount] = GetUpdateCircle(pos.x, pos.y);
@@ -146,7 +146,7 @@ namespace magique
         // Lookup tables
         // Dist is just a flattened array: int [Count Maps][Count Players]
         ActorMapDistribution actorDist{};
-        Vector2 actorCircles[MAGIQUE_MAX_ACTORS];
+        Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
         bool loadedMapsTable[UINT8_MAX]{};
         bool actorMapsTable[UINT8_MAX]{};
 

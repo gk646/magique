@@ -3,15 +3,15 @@
 
 #include <magique/core/Game.h>
 #include <magique/ecs/Scripting.h>
-#include <magique/ui/types/UIObject.h>
+#include <magique/ui/UIObject.h>
 #include <magique/ui/controls/Button.h>
 
-// NOTE: the namespace magique:: can be avoided by using: "using namespace magique;"
+using namespace magique;
 // Its used explicitly each time to denote magique functions
 // It is advised and safe to use: "using namespace magique;"
 
 // Entity identifiers
-enum EntityID : uint16_t
+enum EntityType : uint16_t
 {
     PLAYER,
     BULLET,
@@ -42,40 +42,40 @@ struct PlayerStatsC final
 };
 
 // The game class
-struct Asteroids final : magique::Game
+struct Asteroids final : Game
 {
     Asteroids() : Game("Asteroids") {}
-    void onStartup(magique::AssetLoader& loader, magique::GameConfig& config) override;
+    void onStartup(AssetLoader& loader, GameConfig& config) override;
     void onCloseEvent() override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;
 };
 
-struct PlayerScript final : magique::EntityScript
+struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override;
     void onTick(entt::entity self) override;
 };
 
-struct BulletScript final : magique::EntityScript
+struct BulletScript final : EntityScript
 {
     void onTick(entt::entity self) override;
-    void onStaticCollision(entt::entity self, const magique::CollisionInfo& info, magique::ColliderInfo cInfo) override;
+    void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
 
-struct RockScript final : magique::EntityScript
+struct RockScript final : EntityScript
 {
     void onTick(entt::entity self) override;
-    void onDynamicCollision(entt::entity self, entt::entity other, const magique::CollisionInfo& info) override;
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
 };
 
-struct PlayerBarUI final : magique::UIObject
+struct PlayerBarUI final : UIObject
 {
     PlayerBarUI() : UIObject(50, 50, 200, 50) {}
     void draw(const Rectangle& bounds) override;
 };
 
-struct GameOverUI final : magique::Button
+struct GameOverUI final : Button
 {
     GameOverUI() : Button(960, 520, 150, 50) {}
     void onClick(const Rectangle& bounds) override;

@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_TEXT_H
 #define MAGIQUE_TEXT_H
 
+#include <string>
 #include <raylib/raylib.h>
 
 //-----------------------------------------------

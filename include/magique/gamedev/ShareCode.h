@@ -2,6 +2,7 @@
 #define MAGIQUE_SHARECODE_H
 
 #include <vector>
+#include <cstring>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>

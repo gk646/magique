@@ -81,8 +81,8 @@ namespace magique
             goto beginning;
         }
 
-        memcpy(stringBuffer, lastSep, min(64, len));
-        stringBuffer[min(64, len)] = '\0';
+        memcpy(stringBuffer, lastSep, minValue(64, len));
+        stringBuffer[minValue(64, len)] = '\0';
         return stringBuffer;
     }
 
@@ -111,8 +111,8 @@ namespace magique
             workPtr++;
         }
 
-        memcpy(stringBuffer, lastDot, min(64, len));
-        stringBuffer[min(64, len)] = '\0';
+        memcpy(stringBuffer, lastDot, minValue(64, len));
+        stringBuffer[minValue(64, len)] = '\0';
         return stringBuffer;
     }
 } // namespace magique

@@ -42,13 +42,10 @@ namespace magique
 
         for (const auto conn : data.connections)
         {
-            if (conn != k_HSteamNetConnection_Invalid)
-            {
                 if (!SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true))
                 {
                     LOG_ERROR("Failed to close existing connections when closing the global socket");
                 }
-            }
         }
 
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
@@ -83,7 +80,7 @@ namespace magique
             LOG_WARNING("Failed to connect to global socket");
             return Connection::INVALID_CONNECTION;
         }
-        data.connections[0] = conn;
+        data.connections.push_back(conn);
         data.goOnline(false);
         return static_cast<Connection>(data.connections[0]);
     }

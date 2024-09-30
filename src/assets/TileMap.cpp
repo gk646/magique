@@ -1,9 +1,10 @@
+#include <cstddef>
+#include <limits>
+
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
-
-#include <cstddef>
 
 #include "internal/utils/XMLUtil.h"
 

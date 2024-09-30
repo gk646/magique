@@ -36,8 +36,8 @@ namespace magique
         if (size > 1)
         {
             std::array<jobHandle, WORK_PARTS> handles{};
-            constexpr float mainThreadPart = 100.0F / WORK_PARTS * 1.25F; // 25% more work for main thread
-            constexpr float workerPart = (100.0F - mainThreadPart) / (WORK_PARTS - 1);
+            constexpr float mainThreadPart = 1.0F / WORK_PARTS * 1.25F; // 25% more work for main thread
+            constexpr float workerPart = (1.0F - mainThreadPart) / (WORK_PARTS - 1);
             float beginPercent = 0.0F;
             for (int j = 0; j < WORK_PARTS - 1; ++j)
             {

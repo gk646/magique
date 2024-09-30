@@ -1,4 +1,5 @@
 #include <functional>
+#include <cstring>
 
 #include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>

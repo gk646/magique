@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <limits>
+#include <internal/utils/STLUtil.h>
 
 //-----------------------------------------------
 // Collision Primitives with up to AVX2 intrinsics
@@ -152,8 +153,8 @@ namespace magique
         {
             return;
         }
-        const float overlapX = std::min(x1 + w1, x2 + w2) - std::max(x1, x2);
-        const float overlapY = std::min(y1 + h1, y2 + h2) - std::max(y1, y2);
+        const float overlapX = minValue(x1 + w1, x2 + w2) - maxValue(x1, x2);
+        const float overlapY = minValue(y1 + h1, y2 + h2) - maxValue(y1, y2);
 
         if (overlapX < overlapY)
         {
@@ -167,8 +168,8 @@ namespace magique
             info.normalVector.y = y1 + h1 / 2 < y2 + h2 / 2 ? -1.0f : 1.0f;
             info.penDepth = overlapY;
         }
-        info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
-        info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
+        info.collisionPoint.x = (maxValue(x1, x2) + minValue(x1 + w1, x2 + w2)) / 2.0f;
+        info.collisionPoint.y = (maxValue(y1, y2) + minValue(y1 + h1, y2 + h2)) / 2.0f;
     }
 
     inline void RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx,
@@ -500,7 +501,7 @@ namespace magique
                 SquareRoot(edgeLength);
 
                 float t = ((cx - pxs[i]) * dx + (cy - pys[i]) * dy) / (edgeLength * edgeLength);
-                t = std::max(0.0f, std::min(1.0f, t));
+                t = maxValue(0.0f, minValue(1.0f, t));
 
                 const float closestPx = pxs[i] + t * dx;
                 const float closestPy = pys[i] + t * dy;
@@ -536,7 +537,7 @@ namespace magique
         }
         if (windingNumber != 0)
         {
-            info.depth = cr;
+            info.penDepth = cr;
             info.normalVector.x = 0.0f;
             info.normalVector.y = 0.0f;
             info.collisionPoint.x = cx;
@@ -573,7 +574,7 @@ namespace magique
             {
                 float distance = distSq;
                 SquareRoot(distance);
-                info.depth = cr - distance;
+                info.penDepth = cr - distance;
                 info.normalVector.x = (cx - pxs[i]) / distance;
                 info.normalVector.y = (cy - pys[i]) / distance;
                 info.collisionPoint.x = pxs[i];

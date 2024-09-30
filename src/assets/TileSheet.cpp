@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstring>
 #include <raylib/raylib.h>
 
 #include <magique/assets/types/TileSheet.h>

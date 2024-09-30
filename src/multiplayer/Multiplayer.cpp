@@ -3,14 +3,17 @@
 #include <magique/multiplayer/Multiplayer.h>
 
 #include "internal/globals/MultiplayerData.h"
+#include "internal/globals/EngineData.h"
 
 namespace magique
 {
+    void EnterClientMode() { global::ENGINE_DATA.isClientMode = true; }
 
-    Payload CreatePayload(const void* data, const int size, const MessageType type)
-    {
-        return {data, size, type};
-    }
+    void ExitClientMode() { global::ENGINE_DATA.isClientMode = false; }
+
+    bool IsInClientMode() { return global::ENGINE_DATA.isClientMode; }
+
+    Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
@@ -78,7 +81,7 @@ namespace magique
         return res == k_EResultOK;
     }
 
-    const std::vector<Message>& ReceiveMessages(const int max)
+    const std::vector<Message>& ReceiveIncomingMessages(const int max)
     {
         auto& data = global::MP_DATA;
 

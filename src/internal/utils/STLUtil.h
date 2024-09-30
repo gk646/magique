@@ -50,7 +50,7 @@ void UnorderedDelete(Container& container, const T& value, Pred pred)
 }
 
 template <typename T>
-T min(const T& t1, const T& t2)
+T minValue(const T& t1, const T& t2)
 {
     if (t1 < t2)
         return t1;
@@ -58,7 +58,7 @@ T min(const T& t1, const T& t2)
 }
 
 template <typename T>
-T max(const T& t1, const T& t2)
+T maxValue(const T& t1, const T& t2)
 {
     if (t1 < t2)
         return t2;

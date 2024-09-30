@@ -2,6 +2,7 @@
 #define MAGIQUE_DATATABLE_H
 
 #include <vector>
+#include <cstring>
 #include <initializer_list>
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
