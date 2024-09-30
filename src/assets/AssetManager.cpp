@@ -160,7 +160,7 @@ namespace magique
         return global::ASSET_MANAGER.addResource(std::move(tileMap));
     }
 
-    handle RegisterTileMapGen(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
+    handle RegisterTileMap(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
 
     handle RegisterTileSet(Asset asset)
     {

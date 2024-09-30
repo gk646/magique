@@ -298,8 +298,9 @@ namespace magique
     enum class MultiplayerEvent : uint8_t
     {
         //----------------- HOST -----------------//
-        HOST_NEW_CONNECTION,           // Posted when we accept a new client connection
-        HOST_CLIENT_CLOSED_CONNECTION, // Posted when the client closed the connection
+        HOST_NEW_CONNECTION,      // Posted when we accept a new client connection
+        HOST_CLIENT_DISCONNECTED, // Posted when the client closed the connection
+
         //----------------- CLIENT -----------------//
         CLIENT_CONNECTION_ACCEPTED, // Posted when the host accepted our connection
         CLIENT_CONNECTION_CLOSED,   // Posted when the host closed our connection

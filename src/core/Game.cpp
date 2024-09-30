@@ -125,7 +125,9 @@ namespace magique
     }
 
     bool Game::getIsRunning() const { return isRunning; }
+
     bool Game::getIsLoading() const { return isLoading; }
+
     const char* Game::getName() const { return gameName; }
 
     void Game::shutDown() { isRunning = false; }

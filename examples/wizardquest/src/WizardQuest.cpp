@@ -112,7 +112,7 @@ void WizardQuest::updateGame(GameState gameState)
         break;
     }
 
-    auto& messages = ReceiveMessages();
+    auto& messages = ReceiveIncomingMessages();
     for (auto& msg : messages)
     {
         switch (msg.payload.type)

@@ -6,14 +6,15 @@
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
+#include "internal/datastructures/VectorType.h"
+#include "internal/utils/STLUtil.h"
+
 #if MAGIQUE_USE_STEAM == 0
 #include "external/networkingsockets/steamnetworkingsockets.h"
 #include "external/networkingsockets/isteamnetworkingutils.h"
 #else
 #include <steam/steam_api.h>
 #endif
-
-#include "internal/datastructures/VectorType.h"
 
 inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
@@ -28,19 +29,21 @@ namespace magique
 {
     struct MultiplayerData final
     {
-        HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
-        bool isHost = false;                                            // If the program is host or client
-        bool isInSession = false;                                       // If program is part of multiplayer activity
-        HSteamNetConnection connections[MAGIQUE_MAX_ACTORS]{};          // All possible outgoing connections as host
         std::function<void(MultiplayerEvent)> callback;                 // Callback
+        std::vector<HSteamNetConnection> connections;                   // Holds all current valid connections
+        std::vector<Message> msgVec;                                    // Message buffer
         vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
-        std::vector<Message> msgVec{};                                  // Message buffer
         SteamNetworkingMessage_t** msgBuffer = nullptr;                 // Incoming message data buffer
+        HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         int buffSize = 0;                                               // Buffer size
         int buffCap = 0;                                                // Buffer capacity
+        bool isHost = false;                                            // If the program is host or client
+        bool isInSession = false;                                       // If program is part of multiplayer activity
+        bool isInitialized = false;                                     // Manual flag to give clean error msg
 
         MultiplayerData()
         {
+            msgVec.reserve(101);
             batchedMsgs.reserve(MAGIQUE_ESTIMATED_MESSAGES);
             msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_ESTIMATED_MESSAGES];
             buffCap = MAGIQUE_ESTIMATED_MESSAGES;
@@ -49,8 +52,12 @@ namespace magique
         void close()
         {
             delete[] msgBuffer;
-            if (!isInSession)
-                return;
+            isInSession = false;
+            for (auto* const msg : batchedMsgs)
+            {
+                msg->Release();
+            }
+            batchedMsgs.clear();
 #if MAGIQUE_STEAM == 0
             GameNetworkingSockets_Kill();
 #else
@@ -81,7 +88,7 @@ namespace magique
         void goOffline()
         {
             MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
-            std::memset(connections, 0, sizeof(int) * MAGIQUE_MAX_ACTORS);
+            connections.clear();
             isHost = false;
             isInSession = false;
             msgVec.clear();
@@ -113,21 +120,18 @@ namespace magique
                 {
                     if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK)
                     {
-                        LOG_INFO("Host accepted a new client connection");
-                        bool accepted = false;
-                        for (auto& clientConn : connections)
+                        if (connections.size() == MAGIQUE_MAX_PLAYERS)
                         {
-                            if (clientConn == k_HSteamNetConnection_Invalid)
-                            {
-                                clientConn = pParam->m_hConn;
-                                accepted = true;
-                                if (callback)
-                                    callback(MultiplayerEvent::HOST_NEW_CONNECTION);
-                                break;
-                            }
+                            LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d",
+                                        MAGIQUE_MAX_PLAYERS);
                         }
-                        if (!accepted)
-                            LOG_WARNING("Trying to accept more connections than configured: %d", MAGIQUE_MAX_ACTORS);
+                        else
+                        {
+                            connections.push_back(pParam->m_hConn);
+                            if (callback)
+                                callback(MultiplayerEvent::HOST_NEW_CONNECTION);
+                            LOG_INFO("Host accepted a new client connection");
+                        }
                     }
                     else
                     {
@@ -156,20 +160,15 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
                 if (isHost)
                 {
-                    for (auto& conn : connections)
-                    {
-                        if (conn == pParam->m_hConn)
-                        {
-                            conn = k_HSteamNetConnection_Invalid;
-                            break;
-                        }
-                    }
+                    UnorderedDelete(connections, pParam->m_hConn);
                     if (callback)
-                        callback(MultiplayerEvent::HOST_CLIENT_CLOSED_CONNECTION);
+                        callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
                 }
                 else // If you're a client and the host disconnects
                 {
+                    if (callback)
+                        callback(MultiplayerEvent::CLIENT_CONNECTION_CLOSED);
                     LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
                     goOffline();
                 }
@@ -184,23 +183,8 @@ namespace magique
                 const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
-                    int i = 0;
-                    for (auto& conn : connections)
-                    {
-                        if (conn == pParam->m_hConn)
-                            conn = k_HSteamNetConnection_Invalid;
-                        else if (conn == k_HSteamNetConnection_Invalid)
-                            ++i;
-                    }
-                    if (i == 0) // Go offline if no more clients are connected
-                    {
-                        goOffline();
-                        LOG_INFO("(Host) Local problem with connection. Closed session: %s", errStr);
-                    }
-                    else
-                    {
-                        LOG_INFO("(Host) Local problem with connection. Disconnected client from session: %s", errStr);
-                    }
+                    UnorderedDelete(connections, pParam->m_hConn);
+                    LOG_INFO("(Host) Local problem with connection. Disconnected client from session: %s", errStr);
                 }
                 else
                 {
@@ -218,7 +202,6 @@ namespace magique
 
     inline void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
     {
-        printf("Hey");
         global::MP_DATA.onConnectionStatusChange(pParam);
     }
 } // namespace magique

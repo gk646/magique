@@ -15,16 +15,21 @@ target_include_directories(magique-${MODULE_NAME} PRIVATE
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    add_compile_options(-Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden)
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og -g")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -g")
+    # Baseline compile flags for GCC/Clang
+    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native -mavx2 -flto -fno-exceptions -fno-rtti -ffast-math")
+    set(CMAKE_EXE_LINKER_FLAGS "-flto")
 
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Ofast -ffast-math -fno-exceptions -fno-rtti")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -flto -fno-exceptions -fno-rtti -ffast-math")
+    target_compile_options(magique-${MODULE_NAME} PRIVATE
+            -Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
+    )
 
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -flto")
+    target_link_options(magique-${MODULE_NAME} PRIVATE
+            -flto
+    )
+
     if (ENABLE_SANITIZER)
-        add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
@@ -45,5 +50,6 @@ elseif (MSVC)
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /fsanitize=address")
         set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /fsanitize=address")
     endif ()
-
+else ()
+    message(FATAL_ERROR "Compiler not supported")
 endif ()

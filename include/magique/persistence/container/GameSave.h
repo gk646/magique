@@ -126,7 +126,7 @@ namespace magique
         if constexpr (std::is_same_v<T, void>)
         {
             auto* copy = new unsigned char[size];
-            std::memcpy(copy, cell->data, size);
+            memcpy(copy, cell->data, size);
             return {reinterpret_cast<T*>(copy), size};
         }
         else
@@ -140,7 +140,7 @@ namespace magique
 
             const auto numElements = size / sizeof(T);
             auto* data = new T[numElements];
-            std::memcpy(data, cell->data, size);
+            memcpy(data, cell->data, size);
 
             return {data, size};
         }
@@ -160,7 +160,7 @@ namespace magique
             return {};
         }
         std::vector<T> ret(cell->size / sizeof(T));
-        std::memcpy(ret.data(), cell->data, cell->size);
+        memcpy(ret.data(), cell->data, cell->size);
         return ret;
     }
 

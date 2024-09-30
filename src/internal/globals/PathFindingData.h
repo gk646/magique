@@ -45,7 +45,7 @@ namespace magique
 
         using VisitedCellID = uint32_t;
 
-        static [[nodiscard]] VisitedCellID GetVisitedCell(const int cellX, const int cellY)
+      [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
         {
             const auto first = static_cast<uint16_t>(cellX);
             const auto second = static_cast<uint16_t>(cellY);

@@ -5,6 +5,7 @@
 #include <magique/internal/Macros.h>
 
 #include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/STLUtil.h"
 
 namespace magique
 {
@@ -38,7 +39,7 @@ namespace magique
         constexpr auto D2 = 1.0F;
         const auto dx = abs(x - p.x);
         const auto dy = abs(y - p.y);
-        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
+        return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
 
     float Point::octile(Point p) const
@@ -47,7 +48,7 @@ namespace magique
         constexpr auto D2 = 1.41421356237F;
         const auto dx = abs(x - p.x);
         const auto dy = abs(y - p.y);
-        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
+        return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
 
     Point Point::operator*(const float i) const { return {x * i, y * i}; }

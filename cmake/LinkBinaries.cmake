@@ -36,7 +36,10 @@ elseif (MAGIQUE_LAN)
 endif ()
 
 if(WIN32)
-    target_compile_options(magique PUBLIC /Zc:preprocessor)
+    target_link_libraries(magique PRIVATE ws2_32.lib)
+    if(MSVC)
+        target_compile_options(magique PUBLIC /Zc:preprocessor)
+    endif ()
 endif ()
 
 target_link_libraries(magique PUBLIC raylib)

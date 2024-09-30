@@ -72,6 +72,12 @@ namespace magique
     // Supports loading multiple layers - all layers must have same dimensions!
     handle RegisterTileMap(Asset asset);
 
+    // Registers a tilemap from the given custom layer data
+    // This creates a new tilemap out of the given data like so:
+    // Outer vector: Layers  |  Inner vector 1: holds the column vectors | Inner vector 2: holds tile indices for the column
+    // -> This means column major order -> layerData[1][10][5] = the tile number in layer 1, in the 10th column and 5th row
+    handle RegisterTileMap(const std::vector<std::vector<std::vector<uint16_t>>>& layerData);
+
     // Registers a tileset - defines the details of all tiles in a project
     handle RegisterTileSet(Asset asset);
 

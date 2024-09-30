@@ -1,9 +1,6 @@
 namespace magique::updater
 {
-    inline void StartTick()
-    {
-        PollInputEvents();
-    }
+    inline void StartTick() { PollInputEvents(); }
 
     inline double EndTick(const double startTime)
     {
@@ -19,6 +16,7 @@ namespace magique::updater
             InternalUpdatePre(reg, game); // Internal update upfront
             game.updateGame(GetGameState());
             InternalUpdatePost();
+            game.postTickUpdate(GetGameState());
         }
         return EndTick(startTime);
     }

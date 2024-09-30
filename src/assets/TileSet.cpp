@@ -1,3 +1,4 @@
+#include <limits>
 #include <cxutil/cxstring.h>
 
 #include <magique/assets/types/TileSet.h>

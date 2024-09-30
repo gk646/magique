@@ -16,7 +16,7 @@ namespace magique
 {
     // Feel free to change that
     // Default: equal to the maximum amount of possible players
-    inline constexpr int THREAT_TABLE_SIZE = MAGIQUE_MAX_ACTORS;
+    inline constexpr int THREAT_TABLE_SIZE = MAGIQUE_MAX_PLAYERS;
 
     struct ThreatC final
     {

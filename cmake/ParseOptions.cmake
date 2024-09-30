@@ -14,9 +14,7 @@ endif ()
 
 # No steam sdk path given
 if (MAGIQUE_STEAM AND NOT STEAM_SDK_PATH)
-    message(FATAL_ERROR "Trying to use Steam integration without specifying the steam sdk path!
-                         Use set(STEAM_SDK_PATH \"path/to/steam/sdk\") BEFORE adding magique"
-    )
+    message(FATAL_ERROR "Trying to use Steam integration without specifying the steam sdk path!\nUse set(STEAM_SDK_PATH \"path/to/steam/sdk\") BEFORE adding magique")
 endif ()
 
 if(MAGIQUE_STEAM AND MAGIQUE_LAN)

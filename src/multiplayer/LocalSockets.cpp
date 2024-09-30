@@ -4,7 +4,6 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 #else
 #include <ifaddrs.h>
 #include <sys/socket.h>
@@ -13,6 +12,7 @@
 #endif
 
 #include <magique/multiplayer/LocalSockets.h>
+
 #include "internal/globals/MultiplayerData.h"
 
 namespace magique
@@ -27,11 +27,18 @@ namespace magique
             LOG_FATAL("GameNetworkingSockets_Init failed.  %s", errMsg);
             return false;
         }
+        global::MP_DATA.isInitialized = true;
         return true;
 #else
         const auto res = SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
-        return res == k_ESteamNetworkingAvailability_Current;
+        global::MP_DATA.isInitialized = true;
+        if (res == k_ESteamNetworkingAvailability_Current)
+        {
+            global::MP_DATA.isInitialized = true;
+            return true;
+        }
+        return false;
 #endif
     }
 
@@ -41,6 +48,8 @@ namespace magique
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(port < UINT16_MAX, "Port has to be smaller than 65536");
+        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
         SteamNetworkingConfigValue_t opt{}; // Register callback
         opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
@@ -60,15 +69,14 @@ namespace magique
     bool CloseLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
+        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
+
         if (!data.isInSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
             return false;
 
         for (const auto conn : data.connections)
         {
-            if (conn != k_HSteamNetConnection_Invalid)
-            {
-                SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true);
-            }
+            SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true);
         }
 
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
@@ -80,17 +88,18 @@ namespace magique
 
     Connection ConnectToLocalSocket(const char* ip, const int port)
     {
-        MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
-        MAGIQUE_ASSERT(port >= 0 && port <= UINT16_MAX, "passed nullptr");
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
+        MAGIQUE_ASSERT(port >= 0 && port <= UINT16_MAX, "passed nullptr");
+        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
         char fullAddress[64]{};
         const int ipLen = static_cast<int>(strlen(ip));
-        std::memcpy(fullAddress, ip, ipLen);
-        fullAddress[ipLen] = ':'; // no allocation - small buffer optimized
-        const std::string number = std::to_string(port);
-        std::memcpy(fullAddress + ipLen + 1, number.c_str(), number.length());
+        memcpy(fullAddress, ip, ipLen);
+        fullAddress[ipLen] = ':';
+        const std::string number = std::to_string(port); // no allocation - small buffer optimized
+        memcpy(fullAddress + ipLen + 1, number.c_str(), number.length());
 
         SteamNetworkingIPAddr addr{};
         addr.Clear();
@@ -110,7 +119,7 @@ namespace magique
             LOG_WARNING("Failed to connect to local socket with ip", buffer);
             return Connection::INVALID_CONNECTION;
         }
-        data.connections[0] = conn;
+        data.connections.push_back(conn);
         data.goOnline(false);
         return static_cast<Connection>(data.connections[0]);
     }
@@ -118,6 +127,8 @@ namespace magique
     bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
+        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
+
         if (!data.isInSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
             return false;
 
