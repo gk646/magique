@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 # Note: This is used when the magique directory is outside your project root directory
 #       You can simply copy it into the root of your project as well
 
-set(MAGIQUE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../)
+set(MAGIQUE_PATH ../../..)
 
 add_subdirectory(${MAGIQUE_PATH} magique)
 

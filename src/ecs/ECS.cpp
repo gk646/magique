@@ -75,7 +75,7 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntityNetwork(uint32_t id, EntityType type, const float x, const float y, MapID map)
+    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, const float x, const float y, MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
@@ -84,7 +84,7 @@ namespace magique
         {
             return entt::null; // EntityType not registered
         }
-        const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(id));
+        const auto entity = internal::REGISTRY.create(id);
         {
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
@@ -142,6 +142,7 @@ namespace magique
             tickData.entityUpdateVec.clear();
             tickData.collisionVec.clear();
             dyCollData.mapEntityGrids.clear();
+            internal::REGISTRY.clear();
             return;
         }
 

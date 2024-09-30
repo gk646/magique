@@ -76,7 +76,8 @@ namespace magique
 
         for (const auto conn : data.connections)
         {
-            SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true);
+            const auto steamConn = static_cast<HSteamNetConnection>(conn);
+            SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
         }
 
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
@@ -119,9 +120,9 @@ namespace magique
             LOG_WARNING("Failed to connect to local socket with ip", buffer);
             return Connection::INVALID_CONNECTION;
         }
-        data.connections.push_back(conn);
+        data.connections.push_back(static_cast<Connection>(conn));
         data.goOnline(false);
-        return static_cast<Connection>(data.connections[0]);
+        return data.connections[0];
     }
 
     bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
@@ -129,10 +130,11 @@ namespace magique
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
-        if (!data.isInSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
+        if (!data.isInSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
             return false;
 
-        const auto res = SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
+        const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);
+        const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
         data.goOffline();
         return res;
     }
@@ -166,10 +168,10 @@ namespace magique
             return nullptr;
         }
 
-        for (const addrinfo* p = info; p != nullptr; p = p->ai_next)
+        for (const addrinfo* p = info; p != nullptr;)
         {
             auto* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
-            auto ipPointer = inet_ntoa(ipv4->sin_addr);
+            auto* ipPointer = inet_ntoa(ipv4->sin_addr);
             const int ipLen = (int)strlen(ipPointer);
             std::memcpy(IP_BUFFER, ipPointer, ipLen);
             IP_BUFFER[ipLen] = '\0';
@@ -193,7 +195,7 @@ namespace magique
                 continue;
 
             if (ifa->ifa_addr->sa_family == AF_INET)
-            { // Check it is IPv4
+            {
                 char addressBuffer[INET_ADDRSTRLEN];
                 void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
                 inet_ntop(AF_INET, addr, addressBuffer, INET_ADDRSTRLEN);

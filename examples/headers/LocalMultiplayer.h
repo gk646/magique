@@ -1,7 +1,5 @@
-#ifndef LOCALMULTIPLAYERTEST_H
-#define LOCALMULTIPLAYERTEST_H
-
-#include <raylib/raylib.h>
+#ifndef MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
+#define MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
 
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
@@ -11,6 +9,17 @@
 #include <magique/core/Draw.h>
 #include <magique/multiplayer/LocalSockets.h>
 #include <magique/multiplayer/Multiplayer.h>
+#include <magique/util/Logging.h>
+
+#include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
+
+//-----------------------------------------------
+// Local Multiplayer Test
+//-----------------------------------------------
+// .....................................................................
+// This is a simple multiplayer test. It's not optimized and uses the easiest implementation possible to showcase the
+// functionality
+// .....................................................................
 
 using namespace magique;
 
@@ -24,6 +33,7 @@ enum EntityType : uint16_t
 enum class MessageType : uint8_t
 {
     POSITION_UPDATE,
+    INPUT_UPDATE,
     SPAWN_UPDATE,
 };
 
@@ -33,11 +43,28 @@ struct TestCompC final
     bool isColliding = false;
 };
 
-struct PositionUpdate final
+// Network updates
+
+struct PositionUpdate final // Position update from ane entity in the host world
 {
     entt::entity entity;
     float x, y;
 };
+
+struct InputUpdate final // Inputs from the client to the host
+{
+    int key;
+};
+
+struct SpawnUpdate final // Entity spawned in the host world
+{
+    float x, y;
+    entt::entity entity;
+    EntityType type;
+    MapID map;
+};
+
+// Scripts
 
 struct PlayerScript final : EntityScript
 {
@@ -98,13 +125,18 @@ struct ObjectScript final : EntityScript // Moving platform
     }
 };
 
+// Game class
+
 struct Test final : Game
 {
-    Test() : Game("magique - CollisionTest") {}
+    Test() : Game("magique - Local Multiplayer Test") {}
+
+    HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
 
     void onStartup(AssetLoader& loader, GameConfig& config) override
     {
         SetShowHitboxes(true);
+        // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
@@ -115,16 +147,17 @@ struct Test final : Game
         };
         RegisterEntity(PLAYER, playerFunc);
 
-        const auto netplayerFunc = [](entt::entity e, EntityType type)
+        // Other players
+        const auto netPlayerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
             GiveScript(e);
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
+        RegisterEntity(NET_PLAYER, netPlayerFunc);
 
-        RegisterEntity(NET_PLAYER, netplayerFunc);
-
+        // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
             GiveScript(e);
@@ -137,11 +170,41 @@ struct Test final : Game
         SetEntityScript(NET_PLAYER, new NetPlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
 
+        // Create some entities
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
             CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
+
+        InitLocalMultiplayer();
+
+        // Setup event callback so we can react to multiplayer events
+        SetMultiplayerCallback(
+            [&](MultiplayerEvent event)
+            {
+                if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
+                {
+                    const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
+                    const auto lastConnection = GetCurrentConnections().back();
+                    networkPlayerMap[lastConnection] = id; // Save the mapping
+
+                    // Send the new client the current world state - iterate all entities
+                    for (const auto e : GetRegistry().view<PositionC>())
+                    {
+                        SpawnUpdate spawnUpdate;
+                        spawnUpdate.entity = e;
+                        spawnUpdate.map = MapID(0);
+                        const auto& pos = GetComponent<PositionC>(e);
+                        spawnUpdate.x = pos.x;
+                        spawnUpdate.y = pos.y;
+                        spawnUpdate.type = pos.type;
+
+                        const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
+                        BatchMessage(lastConnection, payload);
+                    }
+                }
+            });
     }
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
@@ -186,6 +249,7 @@ struct Test final : Game
 
     void updateGame(GameState gameState) override
     {
+        // Enter a session
         if (!IsInMultiplayerSession())
         {
             const int port = 15000;
@@ -197,24 +261,55 @@ struct Test final : Game
             {
                 ConnectToLocalSocket(GetLocalIP(), port);
                 EnterClientMode();
+                DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
             }
         }
 
+        // Here we receive incoming messages and update the gamestate
         if (IsInMultiplayerSession())
         {
+            // The host gets the client inputs
             if (IsHost())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
                 {
+                    if (msg.payload.type != MessageType::INPUT_UPDATE)
+                    {
+                        LOG_WARNING("Received wrong message"); // Client only sends inputs
+                    }
                 }
             }
 
+            // The client gets the gamestate updates
             if (IsClient())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
                 {
+                    switch (msg.payload.type)
+                    {
+                    case MessageType::POSITION_UPDATE:
+                        {
+                            // Get the data
+                            PositionUpdate positionUpdate = msg.payload.getDataAs<PositionUpdate>();
+                            auto& pos = GetComponent<PositionC>(positionUpdate.entity);
+                            pos.x = positionUpdate.x;
+                            pos.y = positionUpdate.y;
+                        }
+                        break;
+                    case MessageType::INPUT_UPDATE:
+                        LOG_WARNING("Received wrong message");
+                        break;
+                    case MessageType::SPAWN_UPDATE:
+                        {
+
+                            auto [x, y, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
+                            assert(!EntityExists(entity));                // Entity MUST not exist already!
+                            CreateEntityNetwork(entity, type, x, y, map); // Create a new entity
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -222,25 +317,54 @@ struct Test final : Game
 
     void postTickUpdate(GameState gameState) override
     {
+        // Here we send out the data for this tick
         if (IsInMultiplayerSession())
         {
+            // The host sends out the current gamestate to all clients
+            // Note: Usually you want to optimize this to send as little as possible
+            //      -> instead of position send the position delta - pack multiple single updates together...
             if (IsHost())
             {
                 for (const auto e : GetUpdateEntities())
                 {
                     const auto& pos = GetComponent<const PositionC>(e);
+
+                    // Create the data
+                    PositionUpdate posUpdate;
+                    posUpdate.x = pos.x;
+                    posUpdate.y = pos.y;
+                    posUpdate.entity = e;
+
+                    // Create the payload
+                    const auto payload = CreatePayload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
+
+                    // Use batching to avoid the overhead of sending multiple times - send to all connected clients
+                    BatchMessageToAll(payload);
                 }
             }
 
+            // Send inputs - in client mode all script event methods are skipped!
             if (IsClient())
             {
-                const auto& msgs = ReceiveIncomingMessages();
-                for (const auto& msg : msgs)
+                const auto host = GetCurrentConnections()[0];
+
+                int key = GetKeyPressed();
+                while (key != 0)
                 {
+                    if (key == KEY_W || key == KEY_A || key == KEY_S || key == KEY_D || key == KEY_SPACE)
+                    {
+                        InputUpdate inputUpdate;
+                        inputUpdate.key = KEY_W;
+                        BatchMessage(host, CreatePayload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
+                    }
+                    key = GetKeyPressed();
                 }
             }
+
+            // Send the accumulated message for this tick
+            SendBatch();
         }
     }
 };
 
-#endif //LOCALMULTIPLAYERTEST_H
+#endif //MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
