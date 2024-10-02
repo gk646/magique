@@ -63,7 +63,7 @@ namespace magique
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        if (!data.isClientMode && internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
@@ -79,6 +79,7 @@ namespace magique
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& ecs = global::ECS_DATA;
+        auto& data = global::ENGINE_DATA;
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
@@ -89,7 +90,7 @@ namespace magique
             internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        if (!data.isClientMode && internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
@@ -98,7 +99,7 @@ namespace magique
 
     bool DestroyEntity(const entt::entity entity)
     {
-        auto& tickData = global::ENGINE_DATA;
+        auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;
         if (internal::REGISTRY.valid(entity)) [[likely]]
         {
@@ -107,16 +108,16 @@ namespace magique
             {
                 InvokeEvent<onDestroy>(entity);
             }
-            if (internal::REGISTRY.all_of<CollisionC>(entity)) [[likely]]
+            if (!data.isClientMode && internal::REGISTRY.all_of<CollisionC>(entity)) [[likely]]
             {
-                UnorderedDelete(tickData.collisionVec, entity);
+                UnorderedDelete(data.collisionVec, entity);
             }
             internal::REGISTRY.destroy(entity);
-            tickData.entityUpdateCache.erase(entity);
+            data.entityUpdateCache.erase(entity);
             if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
                 dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
-            UnorderedDelete(tickData.drawVec, entity);
-            UnorderedDelete(tickData.entityUpdateVec, entity);
+            UnorderedDelete(data.drawVec, entity);
+            UnorderedDelete(data.entityUpdateVec, entity);
             return true;
         }
         return false;
@@ -125,22 +126,22 @@ namespace magique
     void DestroyEntities(const std::initializer_list<EntityType>& ids)
     {
         auto& reg = internal::REGISTRY;
-        auto& tickData = global::ENGINE_DATA;
+        auto& data = global::ENGINE_DATA;
         auto& dyCollData = global::DY_COLL_DATA;
         const auto view = reg.view<PositionC>(); // Get all entities
         if (ids.size() == 0)
         {
             for (const auto e : view)
             {
-                if (reg.all_of<ScriptC>(e)) [[likely]]
+                if (!data.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
                 {
                     InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[view.get<PositionC>(e).type], e);
                 }
             }
-            tickData.entityUpdateCache.clear();
-            tickData.drawVec.clear();
-            tickData.entityUpdateVec.clear();
-            tickData.collisionVec.clear();
+            data.entityUpdateCache.clear();
+            data.drawVec.clear();
+            data.entityUpdateVec.clear();
+            data.collisionVec.clear();
             dyCollData.mapEntityGrids.clear();
             internal::REGISTRY.clear();
             return;
@@ -153,18 +154,18 @@ namespace magique
             {
                 if (pos.type == id)
                 {
-                    if (reg.all_of<ScriptC>(e)) [[likely]]
+                    if (!data.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
                     {
                         InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                     }
                     if (reg.all_of<CollisionC>(e)) [[likely]]
                     {
-                        UnorderedDelete(tickData.collisionVec, e);
+                        UnorderedDelete(data.collisionVec, e);
                     }
                     internal::REGISTRY.destroy(e);
-                    tickData.entityUpdateCache.erase(e);
-                    UnorderedDelete(tickData.drawVec, e);
-                    UnorderedDelete(tickData.entityUpdateVec, e);
+                    data.entityUpdateCache.erase(e);
+                    UnorderedDelete(data.drawVec, e);
+                    UnorderedDelete(data.entityUpdateVec, e);
                     if (dyCollData.mapEntityGrids.contains(pos.map)) [[likely]]
                     {
                         dyCollData.mapEntityGrids[pos.map].removeWithHoles(e);

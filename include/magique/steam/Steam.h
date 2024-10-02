@@ -16,6 +16,12 @@ namespace magique
     // Note: This should be used to load and store local data for steam games - automatically adjusts to game and user
     const char* GetUserDataLocation();
 
+
+    //----------------- FRIENDS -----------------//
+
+
+
+
 } // namespace magique
 
 
