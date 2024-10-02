@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_INPUTSYSTEM_H
-#define MAGIQUE_INPUTSYSTEM_H
+#ifndef MAGIQUE_INPUT_SYSTEM_H
+#define MAGIQUE_INPUT_SYSTEM_H
 
 namespace magique
 {
@@ -29,6 +29,10 @@ namespace magique
         // Should be a subtle optimization
         // Do some initial checks to avoid calling event functions every tick
 
+        const auto& data = global::ENGINE_DATA;
+        if (data.isClientMode)
+            return;
+
         const bool invokeKey = GetKeyPressed() != 0 || GetCharPressed() != 0 || HasKeyEventHappened();
 
         const bool invokeMouse = CORE.Input.Mouse.previousPosition.x != CORE.Input.Mouse.currentPosition.x ||
@@ -36,7 +40,7 @@ namespace magique
 
         if (invokeKey && invokeMouse)
         {
-            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
+            for (const auto e : data.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {
@@ -47,7 +51,7 @@ namespace magique
         }
         else if (invokeKey)
         {
-            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
+            for (const auto e : data.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {
@@ -57,7 +61,7 @@ namespace magique
         }
         else if (invokeMouse)
         {
-            for (const auto e : global::ENGINE_DATA.entityUpdateVec)
+            for (const auto e : data.entityUpdateVec)
             {
                 if (registry.all_of<ScriptC>(e)) [[likely]]
                 {
@@ -69,4 +73,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_INPUTSYSTEM_H
+#endif //MAGIQUE_INPUT_SYSTEM_H

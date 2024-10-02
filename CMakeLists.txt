@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.21)
 project(magique LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
-set(MAGIQUE_VERSION "0.3.0")
+set(MAGIQUE_VERSION "0.3.5")
 
 # Set CMake modules directory - path searched when using include()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -63,6 +63,7 @@ set(MAGIQUE_OBJECTS
         $<TARGET_OBJECTS:magique-multiplayer>
         $<TARGET_OBJECTS:magique-gamedev>
         $<TARGET_OBJECTS:magique-persistence>
+        examples/headers/SteamMultiplayer.h
 )
 
 # Conditionally include Steam object library if Steam integration is enabled

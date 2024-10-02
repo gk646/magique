@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
-#define MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
+#ifndef MAGIQUE_STEAM_MULTIPLAYER_TEST_H
+#define MAGIQUE_STEAM_MULTIPLAYER_TEST_H
 
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
@@ -12,6 +12,10 @@
 #include <magique/util/Logging.h>
 
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
+
+#ifndef MAGIQUE_USE_STEAM
+#error "This example needs Steam enabled!"
+#endif
 
 //-----------------------------------------------
 // Local Multiplayer Test
@@ -392,4 +396,4 @@ struct Test final : Game
     }
 };
 
-#endif //MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
+#endif //MAGIQUE_STEAM_MULTIPLAYER_TEST_H

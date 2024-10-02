@@ -29,8 +29,8 @@ namespace magique
 
         // Allocate with buffer - +1 for the type
         const auto msg = SteamNetworkingUtils()->AllocateMessage(payload.size + 1);
-        std::memcpy((char*)msg->m_pData + 1, payload.data, payload.size);
-        ((char*)msg->m_pData)[0] = (char)payload.type;
+        std::memcpy(static_cast<char*>(msg->m_pData) + 1, payload.data, payload.size);
+        static_cast<char*>(msg->m_pData)[0] = static_cast<char>(payload.type);
 
         msg->m_nFlags = static_cast<int>(flag);
         msg->m_conn = static_cast<HSteamNetConnection>(conn);
@@ -189,4 +189,4 @@ namespace magique
 
     bool IsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
-} // namespace magique
+} // namespace magiqueä

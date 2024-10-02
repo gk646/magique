@@ -230,6 +230,9 @@ namespace magique
             }
         }
 
+        if (data.isClientMode) // Skip script method in client mode
+            return;
+
         for (const auto e : updateVec) // Needs to be called later to allow removing entities!
         {
             if (registry.all_of<ScriptC>(e))

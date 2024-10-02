@@ -266,8 +266,12 @@ namespace magique
 
     inline void InternalUpdatePost() // After user space update
     {
-        StaticCollisionSystem();       // After cause user systems can modify entity state
-        DynamicCollisionSystem();      // After cause user systems can modify entity state
+        if (!global::ENGINE_DATA.isClientMode)
+        {
+            StaticCollisionSystem();  // After cause user systems can modify entity state
+            DynamicCollisionSystem(); // After cause user systems can modify entity state
+        }
+
         global::UI_DATA.update();      // After gametick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
     }

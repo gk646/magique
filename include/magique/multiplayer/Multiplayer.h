@@ -35,7 +35,7 @@
 namespace magique
 {
     // Puts this game into client mode - all game simulation is skipped except rendering
-    // Comprehensive list of things that are skipped in ClientMode:
+    // Comprehensive list of things that are SKIPPED in ClientMode:
     //      - Dynamic and Static collisions
     //      - ALL scripting event methods
     void EnterClientMode();
