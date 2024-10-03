@@ -4,8 +4,7 @@
 #include <vector>
 #include <entt/entity/fwd.hpp>
 #include <magique/core/Types.h>
-#include <magique/internal/Macros.h>
-INCLUDE_FUNCTIONAL()
+#include <magique/internal/PlatformIncludes.h>
 
 //-----------------------------------------------
 // Core Module

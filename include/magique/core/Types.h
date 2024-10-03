@@ -342,6 +342,29 @@ namespace magique
 
     enum class SteamID : uint64_t;
 
+    using SteamOverlayCallback = void (*)(bool isOpening);
+
+    enum class LobbyType
+    {
+        PRIVATE,
+        FRIENDS_ONLY,
+        PUBLIC,
+    };
+
+    enum class LobbyEvent
+    {
+        // Called only when you created a lobby
+        ON_LOBBY_CREATED,
+        // Called when you enter a lobby
+        ON_LOBBY_ENTERED,
+        // Called when you exit the lobby
+        ON_LOBBY_EXIT,
+        // Only called when you are in a lobby and someone ELSE joins the lobby
+        ON_USER_JOINED,
+        // Only called when you are in a lobby and someone ELSE leaves the lobby
+        ON_USER_LEFT,
+    };
+
     //----------------- UI -----------------//
 
     // Anchor position used in the UI module to position objects

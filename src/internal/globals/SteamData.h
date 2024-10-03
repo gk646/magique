@@ -1,7 +1,8 @@
 #ifndef MAGIQUE_STEAMDATA_H
 #define MAGIQUE_STEAMDATA_H
 
-#include <fstream>
+#include <functional>
+
 #if MAGIQUE_USE_STEAM == 0
 #error "Using Steam features without enabling it! To enable Steam use CMake: MAGIQUE_STEAM"
 #else
@@ -12,36 +13,19 @@ namespace magique
 {
     struct SteamData final
     {
-        CSteamID userID{};
+        STEAM_CALLBACK(SteamData, OnLobbyChatUpdate, LobbyChatUpdate_t) const;
+        STEAM_CALLBACK(SteamData, OnLobbyDataUpdate, LobbyDataUpdate_t) const;
+        STEAM_CALLBACK(SteamData, OnLobbyChatMessage, LobbyChatMsg_t);
+        STEAM_CALLBACK(SteamData, OnLobbyEntered, LobbyEnter_t) const;
+        CCallResult<SteamData, LobbyCreated_t> m_SteamCallResultCreateLobby;
 
-        SteamData()
-        {
-            constexpr auto* filename = "steam_appid.txt";
-            constexpr auto* id = "480";
+        std::function<void(SteamID, const std::string&)> chatCallback;
+        std::function<void(SteamID, LobbyEvent)> lobbyEventCallback;
+        std::string cacheString;
 
-            const std::ifstream file(filename);
-            if (!file.good())
-            {
-                const auto newFile = fopen(filename, "wb");
-                if (newFile != nullptr)
-                {
-                    fwrite(id, 3, 1, newFile);
-                    fclose(newFile);
-                }
-                else
-                {
-                    LOG_ERROR("Unable to create steam_appid.txt file with test id 480 - Do it manually!");
-                }
-            }
-
-            SteamErrMsg errMsg;
-            if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
-            {
-                LOG_ERROR(errMsg);
-                return;
-            }
-            LOG_INFO("Successfully initialized steam");
-        }
+        CSteamID userID;
+        CSteamID lobbyID = CSteamID(0, k_EUniverseInvalid, k_EAccountTypeInvalid);
+        bool initialized = false;
 
         void close()
         {
@@ -50,7 +34,13 @@ namespace magique
         }
 
         void update() { SteamAPI_RunCallbacks(); }
+
+        void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     };
+
+    inline CSteamID SteamIDFromMagique(SteamID magiqueID) { return {static_cast<uint64_t>(magiqueID)}; }
+
+    inline SteamID MagiqueIDFromSteam(const CSteamID steamID) { return static_cast<SteamID>(steamID.ConvertToUint64()); }
 
     namespace global
     {

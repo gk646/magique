@@ -42,10 +42,11 @@ namespace magique
 
         for (const auto conn : data.connections)
         {
-                if (!SteamNetworkingSockets()->CloseConnection(conn, closeCode, closeReason, true))
-                {
-                    LOG_ERROR("Failed to close existing connections when closing the global socket");
-                }
+            const auto steamConn = static_cast<HSteamNetConnection>(conn);
+            if (!SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true))
+            {
+                LOG_ERROR("Failed to close existing connections when closing the global socket");
+            }
         }
 
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
@@ -60,7 +61,7 @@ namespace magique
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
 
-        CSteamID steamID{(uint64_t)magiqueSteamID};
+        const CSteamID steamID{static_cast<uint64_t>(magiqueSteamID)};
         if (steamID.IsValid())
         {
             LOG_WARNING("Passed invalid steam id");
@@ -80,7 +81,7 @@ namespace magique
             LOG_WARNING("Failed to connect to global socket");
             return Connection::INVALID_CONNECTION;
         }
-        data.connections.push_back(conn);
+        data.connections.push_back(static_cast<Connection>(conn));
         data.goOnline(false);
         return static_cast<Connection>(data.connections[0]);
     }
@@ -88,10 +89,11 @@ namespace magique
     bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.isInSession || data.isHost || data.connections[0] == k_HSteamNetConnection_Invalid)
+        if (!data.isInSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
             return false;
 
-        const auto res = SteamNetworkingSockets()->CloseConnection(data.connections[0], closeCode, closeReason, true);
+        const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);
+        const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
         data.goOffline();
         return res;
     }

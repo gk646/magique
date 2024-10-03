@@ -5,7 +5,7 @@
 // Macros
 //-----------------------------------------------
 // ................................................................................
-// Dont look here
+// Don't look here
 // ................................................................................
 
 //----------------- ASSERTS -----------------//
@@ -83,12 +83,6 @@ namespace magique::internal
     }
 
 //----------------- BUILDING -----------------//
-
-#ifdef __APPLE__
-#define INCLUDE_FUNCTIONAL() #include<functional>
-#else
-#define INCLUDE_FUNCTIONAL()
-#endif
 
 #ifdef _MSC_VER
 #define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))

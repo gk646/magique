@@ -42,11 +42,21 @@ Other than implementation files the source directory should only contain select 
 
 - **headers**: Contains headers that help with the implementation of the source files
 
-**Exception**: src/internal is also the place to put all internal code used throughout the modules and has multiple folders
+**Exception**: src/internal is also the place to put all internal code used throughout the modules and has multiple
+folders
+
+### Code Style
+
+Use the `.clang-format` file at the root of the project to format all source code (excluding dependencies).
+
+Specific code rules:
+
+- Whenever casting use `static_cast<T>()` over the C-style cast `(T)`
 
 ### Include style
 
 #### For implementation files
+
 The include order and style is the following:
 
 - 1: third-party or STL includes with `<..>`
@@ -69,7 +79,6 @@ Example:
 #### For public headers
 
 Same as for implementation files but without new lines between the categories to save space.
-
 
 ### Types
 

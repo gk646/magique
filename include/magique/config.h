@@ -70,6 +70,8 @@
 // Estimated multiplayer messages being sent each tick
 #define MAGIQUE_ESTIMATED_MESSAGES 150
 
+// Maximum length of a chat message sent in a lobby
+#define MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH 512
 
 //----------------- GRAPHICS -----------------//
 
@@ -113,14 +115,14 @@
 
 //----------------- COMPILATION -----------------//
 
-// Tries to forward declare std::function which improves compiled time about 150ms per TU
+// Tries to forward declare std::function which improves compile time about 150ms per TU
 // Only possible on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
 
 
-//----------------- IMPLEMENTATION -----------------//
+//----------------- INTERNAL -----------------//
 
-#if MAGIQUE_FORWARD_FUNCTION == 1
+#if MAGIQUE_FORWARD_FUNCTION == 1 && defined(_MSC_VER)
 namespace std
 {
     template <class>

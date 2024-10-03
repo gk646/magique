@@ -10,7 +10,11 @@
 // Note: This module needs steam to be enabled (via CMake: MAGIQUE_STEAM)
 // This module is only for global multiplayer - it uses the steam backend with P2P networking
 // This allows seamless multiplayer with any steam user anywhere in the world out of the box!
-// Note: See steam/Steam.h for helper methods and steam/Lobbies.h to create game lobbies
+// Note: If you create a global socket you should use steam/Lobbies.h to build a session!
+// Intended Workflow to create a global multiplayer session:
+//      1. Create a global socket
+//      2. Create a game lobby
+//      3. Let clients join the lobby and connect to you when they enter the lobby!
 // .....................................................................
 
 namespace magique
@@ -32,8 +36,8 @@ namespace magique
 
     //----------------- CLIENT -----------------//
 
-    // Connects to a global local socket at the given ip and port
-    //      - ip: the ip address and port as string in the form XXX.XXX.X.XX:port (like minecraft, normal ip4)
+    // Connects to a global socket via the steam id
+    // Note: To get the steam id of the clients you usually have to create a lobby
     Connection ConnectToGlobalSocket(SteamID steamID);
 
     // Disconnects from the socket (if any)
