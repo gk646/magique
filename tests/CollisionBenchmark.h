@@ -15,7 +15,7 @@
 // Collision Benchmark
 //-----------------------------------------------
 // .....................................................................
-// Just some anecdotal values when running for around 5s
+// Just some anecdotal average tick times when running for around 5s
 // Time: 18.9ms | Start
 // Time: 17.5ms | Added early return bounding-box check to CircleToQuadrilateral()
 // Time: 17.1ms | Added early return bounding-box check to CircleToCapsule()

@@ -63,15 +63,13 @@ namespace magique
 #else
             for (const auto conn : connections)
             {
-                if (conn != k_HSteamNetConnection_Invalid)
-                {
-                    const char* msg = nullptr;
-                    if (isHost)
-                        msg = "Host closed application";
-                    else
-                        msg = "Client closed application";
-                    SteamNetworkingSockets()->CloseConnection(conn, 0, msg, false);
-                }
+                const char* msg = nullptr;
+                if (isHost)
+                    msg = "Host closed application";
+                else
+                    msg = "Client closed application";
+                const auto steamConn = static_cast<HSteamNetConnection>(conn);
+                SteamNetworkingSockets()->CloseConnection(steamConn, 0, msg, false);
             }
             if (listenSocket != k_HSteamListenSocket_Invalid)
                 SteamNetworkingSockets()->CloseListenSocket(listenSocket);

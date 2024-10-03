@@ -13,7 +13,7 @@
 
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
 
-#ifndef MAGIQUE_USE_STEAM
+#if MAGIQUE_STEAM == 0
 #error "This example needs Steam enabled!"
 #endif
 

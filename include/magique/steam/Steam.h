@@ -1,6 +1,8 @@
 #ifndef MAGIQUE_STEAM_H
 #define MAGIQUE_STEAM_H
 
+#include <magique/core/Types.h>
+
 //-----------------------------------------------
 // Steam Module
 //-----------------------------------------------
@@ -12,18 +14,24 @@
 namespace magique
 {
 
+    // Returns true if the initialization of steam was successful
+    // If specified creates a test steam_appid.txt file with the id 480 (test project)
+    bool InitSteam(bool createAppIDFile);
+
+    // Returns your own steam id
+    SteamID GetUserSteamID();
+
+    // Sets the callback function called when the steam overlay is opened or closed
+    void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback);
+
+    //----------------- PERSISTENCE -----------------//
+
     // Returns the location of the local user data folder specific to the game and steam id
     // Note: This should be used to load and store local data for steam games - automatically adjusts to game and user
     const char* GetUserDataLocation();
 
 
-    //----------------- FRIENDS -----------------//
-
-
-
-
 } // namespace magique
-
 
 
 #endif //MAGIQUE_STEAM_H

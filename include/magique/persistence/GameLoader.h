@@ -19,7 +19,7 @@ namespace magique
     struct GameLoader final : internal::TaskExecutor<GameSave>
     {
 
-        // Registers a new task
+        // Registers a new loading task
         // task     - a new instance of a subclass of ITask, takes owner ship
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task

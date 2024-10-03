@@ -90,10 +90,10 @@ namespace magique
     // Returns true if currently hosting or connected to a host
     bool IsInMultiplayerSession();
 
-    // Returns true if currently in a session as host
+    // Returns true if currently in a session as the host
     bool IsHost();
 
-    // Returns true if currently in a session as client
+    // Returns true if currently in a session as a client
     bool IsClient();
 
 } // namespace magique

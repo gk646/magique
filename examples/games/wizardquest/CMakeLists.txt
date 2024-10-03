@@ -3,7 +3,7 @@ project(wizardquest CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 set(STEAM_SDK_PATH "C:/Users/gk646/Documents/Libraries/sdk")
-#set(MAGIQUE_STEAM ON) - Use this to enable steam support
+#set(MAGIQUE_STEAM ON) #- Use this to enable steam support
 
 # Set the path to the magique directory
 add_subdirectory(../../.. magique)

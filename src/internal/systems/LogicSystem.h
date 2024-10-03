@@ -124,10 +124,10 @@ namespace magique
     inline void LogicSystem(const entt::registry& registry)
     {
         const auto& config = global::ENGINE_CONFIG;
+        const auto& group = internal::POSITION_GROUP;
         auto& data = global::ENGINE_DATA;
         auto& dynamicData = global::DY_COLL_DATA;
 
-        const auto& group = internal::POSITION_GROUP;
         auto& drawVec = data.drawVec;
         auto& cache = data.entityUpdateCache;
         auto& updateVec = data.entityUpdateVec;
