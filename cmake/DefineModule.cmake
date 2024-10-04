@@ -53,3 +53,7 @@ elseif (MSVC)
 else ()
     message(FATAL_ERROR "Compiler not supported")
 endif ()
+
+if(MAGIQUE_STEAM)
+    target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_USE_STEAM) # Compile the definition for the target and all consuming ones
+endif ()

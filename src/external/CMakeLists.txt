@@ -4,7 +4,10 @@ set(OPENGL_VERSION "4.3")
 set(PLATFORM "Desktop")
 
 
+message(STATUS "\n-- ------------- raylib ------------------")
 add_subdirectory(raylib)
+message(STATUS "---------------- raylib ------------------\n")
+
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
