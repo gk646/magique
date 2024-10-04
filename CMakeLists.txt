@@ -68,6 +68,8 @@ set(MAGIQUE_OBJECTS
         $<TARGET_OBJECTS:magique-persistence>
         examples/headers/SteamMultiplayer.h
         include/magique/internal/PlatformIncludes.h
+        examples/demos/localization/src/main.cpp
+        examples/demos/localization/src/LocalizationDemo.h
 )
 
 # Conditionally include Steam object library if Steam integration is enabled

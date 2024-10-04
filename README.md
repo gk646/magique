@@ -8,10 +8,13 @@
 
 `magique` is a **C++ 20** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
 It's carefully designed to be **intuitive and easy to learn**, at installation through development and up to sharing the
-finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all game
+finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all
+game
 development needs in definitive way both in **performance and usability**.
 
-Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.
+Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
+Checkout the[ official YouTube channel](https://www.youtube.com/@magique-engine) for spotlights, development sessions
+and tutorials.
 
 ---
 
@@ -68,10 +71,14 @@ int main()
     return game.run();
 }
 ```
+
 ### 1. Is magique for you?
 
-`magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project and meant to be **extended by user written code**!
-As such it does not have all solutions for any game! Instead, it tries to offer several well implemented general purpose modules that find usage in a multitude of projects. However, there are some **fundamental principles and restrictions** that you have to follow when using magique:
+`magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project
+and meant to be **extended by user written code**!
+As such it does not have all solutions for any game! Instead, it tries to offer several well implemented general purpose
+modules that find usage in a multitude of projects. However, there are some **fundamental principles and restrictions**
+that you have to follow when using magique:
 
 - Game template
     - You have to overwrite the core/Game.h class and implement your game logic in its virtual methods
@@ -79,10 +86,13 @@ As such it does not have all solutions for any game! Instead, it tries to offer 
     - Every game object is supposed to be an entity with components
     - The PositionC component is implicit for every object! (look at ecs/Components.h)
 - Scripting (Collisions)
-    - For now the only way to react to engine internal events like static/dynamic collisions is to use the provided C++ scripting system
-    - Collisions are detected internally and the collision point, normal vector and penetration depth can be processed by the user
+    - For now the only way to react to engine internal events like static/dynamic collisions is to use the provided C++
+      scripting system
+    - Collisions are detected internally and the collision point, normal vector and penetration depth can be processed
+      by the user
 
-Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by user code.
+Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
+user code.
 
 ### 2. Installation
 

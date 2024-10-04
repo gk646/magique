@@ -3,8 +3,8 @@ It uses textures and sprites, some lighting effects and local networking.
 
 Features used and showcased in this example:
 
-- Assetloading
-- Assetpacking
+- Asset-Loading
+- Asset-Packing
 - Scripting
 - ECS integration
 - User Interface components

@@ -1,0 +1,6 @@
+language:DE
+greeting:Willkommen!
+goodbye:Auf Wiedersehen!
+burger:Hamburger
+jam:
+# jam is empty and should throw a warning when loading
