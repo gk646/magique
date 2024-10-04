@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#if MAGIQUE_USE_STEAM == 0
+#if MAGIQUE_STEAM == 0
 #error "Using Steam features without enabling it! To enable Steam use CMake: MAGIQUE_STEAM"
 #else
 #include <steam/steam_api.h>

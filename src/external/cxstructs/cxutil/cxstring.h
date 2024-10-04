@@ -438,6 +438,7 @@ namespace cxstructs
         std::size_t operator()(const std::string& key) const { return str_hash_fnv1a_32(key.c_str()); }
         std::size_t operator()(const char* key) const { return str_hash_fnv1a_32(key); }
     };
+
     struct StringCharEquals
     {
         using is_transparent = void;

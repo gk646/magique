@@ -13,8 +13,8 @@
 
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
 
-#if MAGIQUE_STEAM == 0
-#error "This example needs Steam enabled!"
+#if MAGIQUE_USE_STEAM == 0
+#error "Using Steam features without enabling it! To enable Steam use CMake: MAGIQUE_STEAM"
 #endif
 
 //-----------------------------------------------
