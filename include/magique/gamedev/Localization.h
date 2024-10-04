@@ -18,11 +18,13 @@
 // language:{Your language code}
 // {keyword}:{translation}
 // {keyword}:{translation}
+// # This is a line comment
 // ...
 // Note: the keywords MUST not contain a semicolon (everything after the first semicolon is translation)
 // Example (german.mtf):
 // language:DE
 // greeting:Herzlich Willkommen!
+// # We might wanna make this shorter
 // goodbye:Auf Wiedersehen!
 // .....................................................................
 
@@ -30,7 +32,7 @@ namespace magique
 {
 
     // Returns the localized string for the given keyword
-    // Failure: if no language is set or doesnt exist or the keyword is not translated, the keyword itself is returned
+    // Failure: if no language is set or doesn't exist or the keyword is not translated, the keyword itself is returned
     const char* Localize(const char* keyword);
 
     //-------------- LOAD --------------//
@@ -49,12 +51,12 @@ namespace magique
 
     // Returns the current language
     // Failure: if no language is set returns empty string
-    const std::string& GetCurrentLanguage();
+    const std::string& GetLocalizationLanguage();
 
-    // Scans all registered localization and reports:
+    // Scans all registered languages and compares them to reference language:
     //      - missing translation for keywords
-    //      - missing keywords in some languages
-    void ValidateLocalizations();
+    //      - missing keywords in other languages
+    void ValidateLocalizations(const char* referenceLanguage);
 
 } // namespace magique
 

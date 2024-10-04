@@ -73,7 +73,8 @@ namespace magique
             }
             if (listenSocket != k_HSteamListenSocket_Invalid)
                 SteamNetworkingSockets()->CloseListenSocket(listenSocket);
-            SteamNetworkingSockets()->RunCallbacks();
+            if (isInitialized)
+                SteamNetworkingSockets()->RunCallbacks();
 #endif
         }
 
