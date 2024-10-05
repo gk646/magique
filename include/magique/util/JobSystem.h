@@ -134,7 +134,7 @@ namespace magique
         std::apply(func, args);
     }
     template <typename Callable>
-   IJob* CreateJob(Callable callable)
+    IJob* CreateJob(Callable callable)
     {
         constexpr auto size = sizeof(Job<Callable>);
         void* ptr = internal::GetJobMemory(size);

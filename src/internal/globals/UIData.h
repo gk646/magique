@@ -1,32 +1,21 @@
-#ifndef MAGIQUE_UIDATA_H
-#define MAGIQUE_UIDATA_H
+#ifndef MAGIQUE_UI_DATA_H
+#define MAGIQUE_UI_DATA_H
 
 #include <raylib/raylib.h>
 
 #include <magique/ui/UIObject.h>
 
 #include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/StringHashMap.h"
+#include "internal/datastructures/HashTypes.h"
 #include "external/raylib/src/coredata.h"
 #include "internal/utils/STLUtil.h"
 
 namespace magique
 {
-    struct RenderData final
-    {
-        UIObject* obj;
-        float transparency = 1.0F;
-        bool scissor = false;
-    };
-
     struct UIData final
     {
-        StringHashMap<UIScene*> sceneMap;   // Stores by name
-        HashSet<const UIObject*> renderSet; // Stores existence of rendered objects
-        vector<RenderData> renderObjects;
         vector<UIObject*> allObjects;
-
-        UIObject* hoveredObject = nullptr; // Currently hovered object
+        HashSet<const UIObject*> renderSet;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
@@ -34,78 +23,34 @@ namespace magique
         int dataIndex = 0;
         bool inputConsumed = false;
 
+        // Called at the end of the update tick
         void update()
         {
-            scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(CORE.Window.display.height);
-            scaleX = scaleY;
+            scaleX = MAGIQUE_UI_RESOLUTION_X / static_cast<float>(CORE.Window.screen.width);
+            scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(CORE.Window.screen.height);
             const auto [mx, my] = GetMousePosition();
             mouseX = mx;
             mouseY = my;
             inputConsumed = false;
-
+            renderSet.clear();
             for (int i = 0; i < allObjects.size(); ++i) // Using fori to support deletions in the update methods
             {
                 auto& obj = *allObjects[i];
-                obj.update(obj.getBounds(), renderSet.contains(&obj));
+                obj.onUpdate(obj.getBounds(), renderSet.contains(&obj));
             }
-        }
-
-        void draw()
-        {
-            const auto start = renderObjects.size() - 1;
-            for (int i = start; i > -1; --i)
-            {
-                auto& data = renderObjects[i];
-                const auto bounds = data.obj->getBounds();
-                if (data.scissor)
-                {
-                    BeginScissorMode(bounds.x, bounds.y, bounds.width, bounds.height);
-                    data.obj->draw(bounds);
-                    EndScissorMode();
-                }
-                else
-                {
-                    data.obj->draw(bounds);
-                }
-            }
-        }
-
-        void clearRenderObjects()
-        {
-            renderObjects.clear();
-            renderSet.clear();
-        }
-
-        void addRenderObject(UIObject& object, const float t, const bool sc)
-        {
-            renderSet.insert(&object);
-            renderObjects.push_back({&object, t, sc});
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject& object)
-        {
-            allObjects.push_back(&object);
-        }
+        void registerObject(UIObject& object) { allObjects.push_back(&object); }
 
         // All objects are un-registered in the dtor
-        void unregisterObject(const UIObject& object)
+        void unregisterObject(const UIObject* object)
         {
-            UnorderedDelete(allObjects, &object);
-            const auto it = renderSet.find(&object);
-            if (it != renderSet.end())
-            {
-                renderSet.erase(it);
-                for (auto jt = renderObjects.begin(); jt != renderObjects.end(); ++jt)
-                {
-                    if (jt->obj == &object)
-                    {
-                        renderObjects.erase(jt);
-                        break;
-                    }
-                }
-            }
+            UnorderedDelete(allObjects, object);
+            renderSet.erase(object);
         }
+
+        void registerDrawCall(const UIObject* object) { renderSet.insert(object); }
 
         //----------------- UTIL -----------------//
 
@@ -125,4 +70,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_UIDATA_H
+#endif //MAGIQUE_UI_DATA_H

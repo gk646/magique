@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/Lobbies.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
@@ -6,7 +7,6 @@
 
 namespace magique
 {
-
     bool CreateSteamLobby(const LobbyType type, const int maxPlayers)
     {
         SteamAPICall_t hSteamAPICall = k_uAPICallInvalid;
@@ -130,13 +130,13 @@ namespace magique
         }
     }
 
-    void SteamData::OnLobbyEntered(LobbyEnter_t* pParam) const
+    void SteamData::OnLobbyEntered(LobbyEnter_t* /**/) const
     {
         if (lobbyEventCallback)
             lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_ENTERED);
     }
 
-    void SteamData::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure)
+    void SteamData::OnLobbyCreated(LobbyCreated_t* pCallback, bool /**/)
     {
         if (pCallback->m_eResult == k_EResultOK && lobbyEventCallback)
             lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_CREATED);

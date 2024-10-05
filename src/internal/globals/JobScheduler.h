@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_JOBSCHEDULER_H
-#define MAGIQUE_JOBSCHEDULER_H
+#ifndef MAGIQUE_JOB_SCHEDULER_H
+#define MAGIQUE_JOB_SCHEDULER_H
 
 #include <deque>
 #include <thread>
@@ -13,8 +13,7 @@
 #include "internal/datastructures/VectorType.h"
 #include "external/cxstructs/cxallocator/allocators/BumpAllocator.h"
 
-#pragma warning(push)
-#pragma warning(disable : 4324) // structure was padded due to alignment specifier
+IGNORE_WARNING(4324) // structure was padded due to alignment specifier
 
 namespace magique
 {
@@ -26,7 +25,7 @@ namespace magique
         cxstructs::DynamicBumpAllocator jobAllocator{1000}; // Allocator for jobs
         Spinlock queueLock;                                 // The lock to make queue access thread safe
         Spinlock workedLock;                                // The lock to worked vector thread safe
-        std::atomic<bool> shutDown = false;                 // Signal to shutdown all threads
+        std::atomic<bool> shutDown = false;                 // Signal to shut down all threads
         std::atomic<bool> isHibernate = false;              // If the scheduler is running
         std::atomic<int> currentJobsSize = 0;               // Current jobs
         std::atomic<uint16_t> handleID = 0;                 // The internal handle counter
@@ -48,7 +47,7 @@ namespace magique
             workedLock.lock();
             --currentJobsSize;
             UnorderedDelete(workedJobs, job);
-            if(workedJobs.empty())
+            if (workedJobs.empty())
                 jobAllocator.reset();
             workedLock.unlock();
             // Just spin the handles around
@@ -116,6 +115,6 @@ namespace magique
     }
 } // namespace magique
 
-#pragma warning(pop)
+UNIGNORE_WARNING()
 
-#endif //MAGIQUE_JOBSCHEDULER_H
+#endif //MAGIQUE_JOB_SCHEDULER_H

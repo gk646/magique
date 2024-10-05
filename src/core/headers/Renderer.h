@@ -5,7 +5,7 @@ namespace magique::renderer
 {
     inline void Close()
     {
-        for (uint_fast32_t i = 1; i < 15000; i++)
+        for (uint_fast32_t i = 1; i < 50'000; i++)
         {
             rlUnloadTexture(i);
         }
@@ -38,7 +38,6 @@ namespace magique::renderer
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
-        auto& uiData = global::UI_DATA;
         auto& cmdData = global::CMD_DATA;
 
         auto& camera = data.camera;
@@ -55,10 +54,8 @@ namespace magique::renderer
             if (config.showHitboxes) [[unlikely]]
                 RenderHitboxes();
             RenderLighting(registry);
-
-            uiData.clearRenderObjects();
             game.drawUI(gameState);
-            uiData.draw();
+            //uiData.draw();
             cmdData.draw();
         }
         return EndTick(startTime);

@@ -65,7 +65,7 @@ namespace magique
         {
             const auto& hashGrid = dynamic.mapEntityGrids[loadedMap];
             const int size = static_cast<int>(hashGrid.cellMap.size());
-            if (size < WORK_PARTS && thread != WORK_PARTS-1) // If cant be split into parts let main thread do it alone
+            if (size < WORK_PARTS && thread != WORK_PARTS - 1) // If cant be split into parts let main thread do it alone
                 continue;
 
             const int startIdx = static_cast<int>(beginP * static_cast<float>(size));
@@ -143,10 +143,6 @@ namespace magique
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            if (col.resolutionVec.x != 0.0F && col.resolutionVec.y != 0.0F)
-            {
-                volatile int b = 123;
-            }
             pos.x += col.resolutionVec.x;
             pos.y += col.resolutionVec.y;
             col.clearCollisionData();

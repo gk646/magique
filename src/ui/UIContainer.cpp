@@ -6,40 +6,28 @@
 namespace magique
 {
 
-    bool ContainsEntry(const std::vector<internal::UIContainerEntry>& vec, const char* name, UIObject* obj)
+    UIContainer::UIContainer(const float x, const float y, const float w, const float h, const ScalingMode scaling) :
+        UIObject(x, y, w, h, scaling)
     {
-        for (const auto& e : vec)
-        {
-            if (name != nullptr && strcmp(name, e.name) == 0)
-            {
-                return true;
-            }
-            if (e.object == obj)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
-    UIContainer::UIContainer(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
+    UIContainer::UIContainer(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}
 
-    void UIContainer::render(const float transparency, const bool scissor)
+    UIContainer::UIContainer(const AnchorPosition anchor, const float w, const float h, const ScalingMode scaling) :
+        UIObject(0, 0, w, h, scaling)
     {
-        global::UI_DATA.addRenderObject(*this, transparency, scissor);
-        for(const auto& e : children)
-        {
-            global::UI_DATA.addRenderObject(*e.object, transparency, scissor);
-        }
+        setAnchor(anchor);
     }
 
-    void UIContainer::addChild(const float x, const float y, UIObject* child,const char* name)
+    void UIContainer::addChild(UIObject* child, const char* name)
     {
-        internal::UIContainerEntry entry{};
-        if (ContainsEntry(children, name, child))
+        for (const auto oldChild : children)
         {
-            LOG_WARNING("Given name or child is already present in this container!: %s", name);
-            return;
+            if (oldChild == child)
+            {
+                LOG_ERROR("Given child already exists");
+                return;
+            }
         }
         if (name != nullptr)
         {
@@ -49,23 +37,35 @@ namespace magique
                 LOG_WARNING("Given name is longer than configured!: %s", name);
                 return;
             }
-            std::memcpy(entry.name, name, len);
-            entry.name[MAGIQUE_UI_OBJECT_NAME_LEN - 1] = '\0';
+
+            for (const auto& mapping : nameMapping)
+            {
+                if (strcmp(mapping.name, name) == 0)
+                {
+                    LOG_ERROR("Given name already exists");
+                    return;
+                }
+            }
+            internal::UIContainerMapping mapping;
+            std::memcpy(mapping.name, name, len);
+            mapping.name[MAGIQUE_UI_OBJECT_NAME_LEN - 1] = '\0';
+            mapping.index = static_cast<int>(children.size());
+            nameMapping.push_back(mapping);
         }
-        entry.object = child;
-        children.push_back(entry);
+        children.push_back(child);
     }
 
     bool UIContainer::removeChild(const char* name)
     {
         MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
-        const auto it = std::ranges::find_if(children, [&](const internal::UIContainerEntry& entry)
-                                             { return strncmp(entry.name, name, MAGIQUE_UI_OBJECT_NAME_LEN) == 0; });
-        if (it != children.end())
+        for (auto it = nameMapping.begin(); it != nameMapping.end(); ++it)
         {
-            LOG_INFO("Removing child with name: %s", name);
-            children.erase(it);
-            return true;
+            if (strcmp(it->name, name) == 0)
+            {
+                children.erase(children.begin() + it->index);
+                nameMapping.erase(it);
+                return true;
+            }
         }
         LOG_WARNING("Child with name '%s' not found in container", name);
         return false;
@@ -73,7 +73,7 @@ namespace magique
 
     bool UIContainer::removeChild(const int index)
     {
-        MAGIQUE_ASSERT(index >= 0, "Name cannot be negative");
+        MAGIQUE_ASSERT(index >= 0, "index cannot be negative");
         if (index >= children.size())
         {
             LOG_WARNING("Child with index %d is out of bounds", index);
@@ -86,28 +86,17 @@ namespace magique
     UIObject* UIContainer::getChild(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
-        const auto it = std::ranges::find_if(children, [&](const internal::UIContainerEntry& entry)
-                                             { return strncmp(entry.name, name, MAGIQUE_UI_OBJECT_NAME_LEN) == 0; });
-        if (it != children.end())
+        for (const auto& mapping : nameMapping)
         {
-            LOG_INFO("Child with name '%s' found", name);
-            return it->object;
+            if (strcmp(mapping.name, name) == 0)
+            {
+                return children[mapping.index];
+            }
         }
-        LOG_WARNING("Child with name '%s' not found", name);
+        LOG_WARNING("No child named '%s' in this container", name);
         return nullptr;
     }
 
-    UIObject* UIContainer::getChild(const int index) const
-    {
-        MAGIQUE_ASSERT(index >= 0, "Name cannot be negative");
-        if (index >= children.size())
-        {
-            LOG_WARNING("Child with index %d is out of bounds", index);
-            return nullptr;
-        }
-        return children[index].object;
-    }
-
-    int UIContainer::getChildrenCount() const { return static_cast<int>(children.size()); }
+    const std::vector<UIObject*>& UIContainer::getChildren() const { return children; }
 
 } // namespace magique

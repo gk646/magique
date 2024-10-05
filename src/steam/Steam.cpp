@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <fstream>
 
 #include <magique/steam/Steam.h>
@@ -44,7 +45,7 @@ namespace magique
         const auto id = SteamUser()->GetSteamID();
         memcpy(&steamData.userID, &id, sizeof(id));
 
-        steamData.initialized = true;
+        steamData.isInitialized = true;
         LOG_INFO("Successfully initialized steam");
         return true;
     }
@@ -52,20 +53,25 @@ namespace magique
     SteamID GetUserSteamID()
     {
         auto& steamData = global::STEAM_DATA;
-        MAGIQUE_ASSERT(steamData.initialized, "Steam is not initialized");
+        MAGIQUE_ASSERT(steamData.isInitialized, "Steam is not initialized");
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
+    }
+
+    const char* GetSteamUserName()
+    {
+       return SteamFriends()->GetPersonaName();
     }
 
     void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback)
     {
-
+        global::STEAM_DATA.overlayCallback = steamOverlayCallback;
     }
 
     static char TEMP[512]{};
 
     const char* GetUserDataLocation()
     {
-        MAGIQUE_ASSERT(global::STEAM_DATA.initialized, "Steam is not initialized");
+        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized");
         SteamUser()->GetUserDataFolder(TEMP, 512);
         return TEMP;
     }

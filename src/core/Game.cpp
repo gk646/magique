@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <random>
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
@@ -101,7 +102,7 @@ namespace magique
         config = GameConfig::LoadFromFile(configPath, encryptionKey);
 
         // Call startup
-        onStartup(*static_cast<AssetLoader*>(loader), config);
+        onStartup(*static_cast<AssetLoader*>(loader));
 
         // Load atlas to gpu - needs to be the last task
         const auto loadAtlasGPU = [](AssetContainer&) { global::ATLAS_DATA.loadToGPU(); };

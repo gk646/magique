@@ -217,10 +217,10 @@ namespace magique
                     break;
                 }
             }
-            data.camera.target.x =
-                std::floor(data.camera.target.x + (targetPosition.x - data.camera.target.x) * smoothing);
-            data.camera.target.y =
-                std::floor(data.camera.target.y + (targetPosition.y - data.camera.target.y) * smoothing);
+            data.camera.target.x += (targetPosition.x - data.camera.target.x) * smoothing;
+            data.camera.target.y += (targetPosition.y - data.camera.target.y) * smoothing;
+            data.camera.target.x = std::floor(data.camera.target.x);
+            data.camera.target.y = std::floor(data.camera.target.y);
         }
     }
 

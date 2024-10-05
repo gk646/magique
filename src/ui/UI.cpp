@@ -7,39 +7,45 @@ namespace magique
     Point GetUIAnchor(const AnchorPosition anchor, const float width, const float height, const float inset)
     {
         Point point{};
+        const auto res = global::UI_DATA.getScreenDims();
         switch (anchor)
         {
         case AnchorPosition::TOP_LEFT:
             point = {inset, inset};
             break;
+
         case AnchorPosition::TOP_CENTER:
-            point = {MAGIQUE_UI_RESOLUTION_X / 2 - width / 2, inset};
+            point = {(res.x - width) / 2.0F, inset};
             break;
+
         case AnchorPosition::TOP_RIGHT:
-            point = {MAGIQUE_UI_RESOLUTION_X - width - inset, inset};
+            point = {res.x - width - inset, inset};
             break;
+
         case AnchorPosition::MID_LEFT:
-            point = {inset, MAGIQUE_UI_RESOLUTION_Y / 2 - height / 2};
+            point = {inset, res.y / 2 - height / 2};
             break;
+
         case AnchorPosition::MID_CENTER:
-            point = {MAGIQUE_UI_RESOLUTION_X / 2 - width / 2, MAGIQUE_UI_RESOLUTION_Y / 2 - height / 2};
+            point = {res.x / 2 - width / 2, res.y / 2 - height / 2};
             break;
+
         case AnchorPosition::MID_RIGHT:
-            point = {MAGIQUE_UI_RESOLUTION_X - width - inset, MAGIQUE_UI_RESOLUTION_Y / 2 - height / 2};
+            point = {res.x - width - inset, res.y / 2 - height / 2};
             break;
+
         case AnchorPosition::BOTTOM_LEFT:
-            point = {inset, MAGIQUE_UI_RESOLUTION_Y - height - inset};
+            point = {inset, res.y - height - inset};
             break;
+
         case AnchorPosition::BOTTOM_CENTER:
-            point = {MAGIQUE_UI_RESOLUTION_X / 2 - width / 2, MAGIQUE_UI_RESOLUTION_Y - height - inset};
+            point = {res.x / 2 - width / 2, res.y - height - inset};
             break;
+
         case AnchorPosition::BOTTOM_RIGHT:
-            point = {MAGIQUE_UI_RESOLUTION_X - width - inset, MAGIQUE_UI_RESOLUTION_Y - height - inset};
+            point = {res.x - width - inset, res.y - height - inset};
             break;
         }
-        const auto [sx, sy] = global::UI_DATA.getScaling();
-        point.x *= sx;
-        point.y *= sy;
         return point;
     }
 

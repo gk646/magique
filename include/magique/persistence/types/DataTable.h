@@ -12,8 +12,8 @@
 // DataTable
 //-----------------------------------------------
 // .....................................................................
-// This is made for saving gamedata in a database like fashing
-// This class provides all the necessary
+// This is made for accessing data in a database like fashion
+// Compared to databases its statically typed which makes it easier to work with
 // .....................................................................
 
 namespace magique
@@ -35,7 +35,7 @@ namespace magique
         [[nodiscard]] constexpr int getColumns() const;
 
         // Returns the index of the given column name
-        // Faliure: Returns -1 if the column is not found
+        // Failure: Returns -1 if the column is not found
         int getColumnIndex(const char* column) const;
 
         // Returns a vector containing all the columns names

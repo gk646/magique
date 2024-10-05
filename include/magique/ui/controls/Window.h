@@ -20,8 +20,9 @@ namespace magique
         Window(float x, float y, float w, float h, float moverHeight = 0.0F);
 
         // Draws the control - called each tick on draw thread
-        void draw(const Rectangle& bounds) override
+        void draw()
         {
+            const auto bounds = getBounds();
             const auto moverHeight = bounds.height * moverHeightP;
             const Rectangle moverBody = {bounds.x, bounds.y, bounds.width, moverHeight};
             drawMover(moverBody, getIsHovered());
@@ -30,7 +31,7 @@ namespace magique
         }
 
         // Updates the control - called each tick on update thread
-        void update(const Rectangle& bounds, bool isDrawn) override {}
+        void onUpdate(const Rectangle& bounds, bool isDrawn) override {}
 
         //----------------- DRAW DEFAULTS -----------------//
         // Override them to achieve custom visuals

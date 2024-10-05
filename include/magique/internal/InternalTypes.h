@@ -250,10 +250,10 @@ namespace magique::internal
         float threat;
     };
 
-    struct UIContainerEntry final
+    struct UIContainerMapping final
     {
         char name[MAGIQUE_UI_OBJECT_NAME_LEN]{};
-        UIObject* object = nullptr;
+        int index = 0;
     };
 
 } // namespace magique::internal

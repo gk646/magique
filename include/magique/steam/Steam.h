@@ -18,8 +18,13 @@ namespace magique
     // If specified creates a test steam_appid.txt file with the id 480 (test project)
     bool InitSteam(bool createAppIDFile);
 
+    //----------------- USER -----------------//
+
     // Returns your own steam id
     SteamID GetUserSteamID();
+
+    // Returns the name of this steam user - copy the string if you want to save it
+    const char* GetSteamUserName();
 
     // Sets the callback function called when the steam overlay is opened or closed
     void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback);

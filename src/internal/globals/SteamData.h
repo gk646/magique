@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#if MAGIQUE_STEAM == 0
+#if MAGIQUE_USE_STEAM == 0
 #error "Using Steam features without enabling it! To enable Steam use CMake: MAGIQUE_STEAM"
 #else
 #include <steam/steam_api.h>
@@ -22,10 +22,11 @@ namespace magique
         std::function<void(SteamID, const std::string&)> chatCallback;
         std::function<void(SteamID, LobbyEvent)> lobbyEventCallback;
         std::string cacheString;
+        SteamOverlayCallback overlayCallback = nullptr;
 
         CSteamID userID;
         CSteamID lobbyID = CSteamID(0, k_EUniverseInvalid, k_EAccountTypeInvalid);
-        bool initialized = false;
+        bool isInitialized = false;
 
         void close()
         {

@@ -13,6 +13,10 @@
 
 #include <magique/multiplayer/LocalSockets.h>
 
+#if MAGIQUE_USE_STEAM == 1
+#include "internal/globals/SteamData.h"
+#endif
+
 #include "internal/globals/MultiplayerData.h"
 
 namespace magique
@@ -30,6 +34,7 @@ namespace magique
         global::MP_DATA.isInitialized = true;
         return true;
 #else
+        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized,"Steam is not initialized!");
         const auto res = SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
         global::MP_DATA.isInitialized = true;
