@@ -20,7 +20,7 @@ namespace magique
     {
 
         // Registers a new loading task
-        // task     - a new instance of a subclass of ITask, takes owner ship
+        // task     - a new instance of a subclass of ITask, takes ownership
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
         void registerTask(ITask<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);

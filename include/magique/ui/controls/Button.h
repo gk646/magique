@@ -18,13 +18,10 @@ namespace magique
     struct Button : UIObject
     {
         // Creates a new button from coordinates in the logical UI resolution
-        Button(float x, float y, float w, float h, UILayer layer = UILayer::MEDIUM);
+        Button(float x, float y, float w, float h);
 
         // Called each tick on update thread
-        void update(const Rectangle& bounds, bool isDrawn) override;
-
-        // Called each tick on draw thread
-        void draw(const Rectangle& bounds) override;
+        void onUpdate(const Rectangle& bounds, bool isDrawn) override;
 
         // Called everytime the button is hovered if it wasnt before
         virtual void onHover(const Rectangle& bounds) {}

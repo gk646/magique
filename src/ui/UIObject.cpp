@@ -1,7 +1,5 @@
-#include <raylib/raylib.h>
-
+#include <magique/ui/UI.h>
 #include <magique/ui/UIObject.h>
-#include <magique/util/Logging.h>
 #include <magique/core/Types.h>
 
 #include "internal/globals/UIData.h"
@@ -9,69 +7,104 @@
 
 namespace magique
 {
-    UIObject::UIObject(const float x, const float y, const float w, const float h)
+
+    UIObject::UIObject(const float x, const float y, const float w, const float h, const ScalingMode scaling)
     {
         setDimensions(x, y, w, h);
+        setScalingMode(scaling);
         global::UI_DATA.registerObject(*this);
     }
 
-    UIObject::~UIObject() { global::UI_DATA.unregisterObject(*this); }
+    UIObject::UIObject(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}
 
-    void UIObject::render(const float transparency, const bool scissor)
+    UIObject::UIObject(const AnchorPosition anchor, const float w, const float h, const ScalingMode scaling) :
+        UIObject(0, 0, w, h, scaling)
     {
-        global::UI_DATA.addRenderObject(*this, transparency, scissor);
+        setAnchor(anchor);
     }
+
+    void UIObject::draw()
+    {
+        onDraw(getBounds());
+        global::UI_DATA.registerDrawCall(this);
+    }
+
+    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
 
     //----------------- UTIL -----------------//
 
-    void UIObject::align(const AnchorPosition anchor, const UIObject& relativeTo, const float inset)
+    void UIObject::align(const AnchorPosition alignAnchor, const UIObject& relativeTo, const float inset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
-        float newX = relX;
-        float newY = relY;
-
-        switch (anchor)
+        Point pos = {relX, relY};
+        switch (alignAnchor)
         {
         case AnchorPosition::TOP_LEFT:
-            newX += inset;
-            newY += inset;
-            break;
-        case AnchorPosition::MID_LEFT:
-            newX += inset;
-            newY += relHeight / 2 - myHeight / 2;
-            break;
-        case AnchorPosition::BOTTOM_LEFT:
-            newX += inset;
-            newY += relHeight - myHeight - inset;
+            pos.x += inset;
+            pos.y += inset;
             break;
         case AnchorPosition::TOP_CENTER:
-            newX += (relWidth / 2) - (myWidth / 2);
-            newY += inset;
-            break;
-        case AnchorPosition::MID_CENTER:
-            newX += (relWidth / 2) - (myWidth / 2);
-            newY += relHeight / 2 - myHeight / 2;
-            break;
-        case AnchorPosition::BOTTOM_CENTER:
-            newX += (relWidth / 2) - (myWidth / 2);
-            newY += relHeight - myHeight - inset;
+            pos.x += (relWidth - myWidth) / 2.0F;
+            pos.y += inset;
             break;
         case AnchorPosition::TOP_RIGHT:
-            newX += relWidth - myWidth - inset;
-            newY += inset;
+            pos.x += (relWidth - myWidth) - inset;
+            pos.y += inset;
+            break;
+        case AnchorPosition::MID_LEFT:
+            pos.x += inset;
+            pos.y += (relHeight - myHeight) / 2.0F;
+            break;
+        case AnchorPosition::MID_CENTER:
+            pos.x += (relWidth - myWidth) / 2.0F;
+            pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case AnchorPosition::MID_RIGHT:
-            newX += relWidth - myWidth - inset;
-            newY += (relHeight / 2) - (myHeight / 2);
+            pos.x += (relWidth - myWidth) - inset;
+            pos.y += (relHeight - myHeight) / 2.0F;
+            break;
+        case AnchorPosition::BOTTOM_LEFT:
+            pos.x += inset;
+            pos.y += (relHeight - myWidth) - inset;
+            break;
+        case AnchorPosition::BOTTOM_CENTER:
+            pos.x += (relWidth - myWidth) / 2.0F;
+            pos.y += (relHeight - myWidth) - inset;
             break;
         case AnchorPosition::BOTTOM_RIGHT:
-            newX += relWidth - myWidth - inset;
-            newY += relHeight - myHeight - inset;
+            pos.x += (relWidth - myWidth) - inset;
+            pos.y += (relHeight - myWidth) - inset;
             break;
         }
+        // Apply scaling as setDimensions() expect values in logical resolution (1920x1080) - ours are in the current res
+        const auto scaling = global::UI_DATA.getScaling();
+        setDimensions(pos.x * scaling.x, pos.y * scaling.y);
+    }
 
-        setDimensions(newX, newY);
+    void UIObject::align(const Direction direction, const UIObject& relativeTo, const float offset)
+    {
+        const auto otherBounds = relativeTo.getBounds();
+        const auto bounds = getBounds();
+        Point pos = {otherBounds.x, otherBounds.y};
+        switch (direction)
+        {
+        case Direction::LEFT:
+            pos.x -= bounds.width + offset;
+            break;
+        case Direction::RIGHT:
+            pos.x += bounds.width + offset;
+            break;
+        case Direction::UP:
+            pos.y -= bounds.height + offset;
+            break;
+        case Direction::DOWN:
+            pos.y += bounds.height + offset;
+            break;
+        }
+        // Apply scaling as setDimensions() expect values in logical resolution (1920x1080) - ours are in the current res
+        const auto scaling = global::UI_DATA.getScaling();
+        setDimensions(pos.x * scaling.x, pos.y * scaling.y);
     }
 
     void UIObject::setDimensions(const float x, const float y, const float w, const float h)
@@ -86,69 +119,56 @@ namespace magique
 
     Rectangle UIObject::getBounds() const
     {
-        const auto [sx, sy] = UIData::getScreenDims();
-
-        constexpr float aspectRatioBase = MAGIQUE_UI_RESOLUTION_X / MAGIQUE_UI_RESOLUTION_Y;
-        float currentAspectRatio = static_cast<float>(sx) / sy;
-
-        float x = px * sy * aspectRatioBase;
-        float y = py * sy;
-        float w = pw * sy * aspectRatioBase;
-        float h = ph * sy;
-
-        if (aspectRatioBase > currentAspectRatio)
+        const auto [sx, sy] = global::UI_DATA.getScreenDims();
+        Rectangle bounds{px, py, pw, ph};
+        switch (scaleMode)
         {
-            float npw = w / sx;
-            float npx = px - (npw - pw) / 2.0F;
-            x = npx * sy * currentAspectRatio;
+        case ScalingMode::FULL:
+            bounds.x *= sx;
+            bounds.y *= sy;
+            bounds.width *= sx;
+            bounds.height *= sy;
+            break;
+        case ScalingMode::KEEP_RATIO:
+            bounds.x *= sx;
+            bounds.y *= sy;
+            bounds.width = pw * MAGIQUE_UI_RESOLUTION_X / MAGIQUE_UI_RESOLUTION_Y * sy;
+            bounds.height *= sy;
+            break;
+        case ScalingMode::NONE:
+            bounds.x *= MAGIQUE_UI_RESOLUTION_X;
+            bounds.y *= MAGIQUE_UI_RESOLUTION_Y;
+            bounds.width *= MAGIQUE_UI_RESOLUTION_X;
+            bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
+            break;
         }
-        return {std::round(x), std::round(y), std::round(w), std::round(h)};
+
+        if (anchor != AnchorPosition::NONE)
+        {
+            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
+            bounds.x = pos.x;
+            bounds.y = pos.y;
+        }
+        return bounds;
     }
 
     bool UIObject::getIsHovered() const
     {
-        const auto& ui = global::UI_DATA;
-        const auto [mx, my] = ui.getMousePos();
+        const auto [mx, my] = global::UI_DATA.getMousePos();
         const auto [rx, ry, rw, rh] = getBounds();
-
-        if (!PointToRect(mx, my, rx, ry, rw, rh))
-            return false;
-
-        // For safety dont use operator[]
-        //auto mapIt = ui.stateData.find(GetGameState());
-        //ASSERT(mapIt != ui.stateData.end(), "Internal Error: No objects for this gamestate");
-        std::vector<UIObject*> sortedObjects = {};
-
-        const auto it = std::ranges::find(sortedObjects, this);
-        if (it == sortedObjects.end()) [[unlikely]]
-        {
-            LOG_ERROR("Internal Error: UIObject not found");
-            return false;
-        }
-
-        // Iterate from the beginning of the vector to the current object's position
-        for (auto iter = sortedObjects.begin(); iter != it; ++iter)
-        {
-            if ((*iter))
-            {
-                const auto [ox, oy, ow, oh] = (*iter)->getBounds();
-                if (PointToRect(mx, my, ox, oy, ow, oh))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return PointToRect(mx, my, rx, ry, rw, rh);
     }
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
-    void UIObject::setLayer(const UILayer newLayer) { layer = newLayer; }
+    AnchorPosition UIObject::getAnchor() const { return anchor; }
 
-    UILayer UIObject::getLayer() const { return layer; }
+    void UIObject::setAnchor(const AnchorPosition newAnchor) { anchor = newAnchor; }
 
-    void UIObject::setOpaque(const bool val) { isOpaque = val; }
+    void UIObject::setScalingMode(const ScalingMode newScaling) { scaleMode = newScaling; }
 
-    bool UIObject::getIsOpaque() const { return isOpaque; }
+    ScalingMode UIObject::getScalingMode() const { return scaleMode; }
+
+    bool UIObject::getWasVisible() const { return wasVisible; }
 
 } // namespace magique

@@ -25,6 +25,7 @@ namespace magique
         Point operator*(Point other) const;
         [[nodiscard]] Point operator*(float i) const;
 
+        // Distance functions
         [[nodiscard]] float manhattan(Point p) const;
         [[nodiscard]] float euclidean(Point p) const;
         [[nodiscard]] float chebyshev(Point p) const;
@@ -105,7 +106,7 @@ namespace magique
     };
 
     // A custom definable property inside the Tiled Tile Editor
-    // -> go to your tileset -> click on a tile -> right click on custom properties -> choose type, name and value
+    // -> go to your TileSet -> click on a tile -> right click on custom properties -> choose type, name and value
     struct TileObjectCustomProperty final
     {
         // Returns the value
@@ -123,7 +124,7 @@ namespace magique
 
     private:
         char* name = nullptr;
-        TileObjectPropertyType type;
+        TileObjectPropertyType type = TileObjectPropertyType::INT;
         union
         {
             float floating;
@@ -370,6 +371,7 @@ namespace magique
     // Anchor position used in the UI module to position objects
     enum class AnchorPosition
     {
+        NONE,          // No anchoring - for UIObject
         TOP_LEFT,      // LT
         MID_LEFT,      // LM
         BOTTOM_LEFT,   // LB
@@ -381,29 +383,30 @@ namespace magique
         BOTTOM_RIGHT   // RB
     };
 
+    enum class Direction
+    {
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
+
     enum class KeyLayout
     {
         QWERTY,
         QWERTZ,
     };
 
-    enum Size
+    enum class ScalingMode
     {
-        MINI,
-        SMALL,
-        MID,
-        BIG
-    };
-
-    // The render order of ui elements - the higher the layer the closer the element is to the screen
-    enum class UILayer : uint8_t
-    {
-        BACK_GROUND,
-        LOW,
-        MEDIUM,
-        HIGH,
-        ON_TOP,
-        ROOT,
+        // Fully scales with the current screen dimensions - used for background, or windows
+        // Note: if the current aspect ratio is not 16:9, the object will be stretched or squished accordingly
+        FULL,
+        // Scales only the dimensions by the current screen height - used for most things and with a distinct shape (square...)
+        // In this mode you should use anchor points or align() to position the object as the static position will not fit the size anymore
+        KEEP_RATIO,
+        // Object is not changed at all by different resolutions - should only be used in special cases
+        NONE,
     };
 
     //----------------- HELPER TYPES -----------------//

@@ -42,7 +42,8 @@ namespace magique
 
         // Called once on startup - register your loaders here
         // This is where you access your assets that are loaded from the asset image
-        virtual void onStartup(AssetLoader& loader, GameConfig& config) {}
+        // Note: The registered tasks are executed after this method returns - to access results use onLoadingFinished()
+        virtual void onStartup(AssetLoader& loader) {}
 
         // Called once on startup when all registered task have been loaded
         virtual void onLoadingFinished() {}
@@ -60,15 +61,15 @@ namespace magique
         // Default: called 60 times per second (constant)
         virtual void updateGame(GameState gameState) {}
 
-              // Called each render tick - passed the current gamestate and camera
+        // Called after the internal update tick (collision, ui, sound)
+        virtual void postTickUpdate(GameState gameState) {}
+
+        // Called each render tick - passed the current gamestate and camera
         // Default: called 90 times per second - changed by SetTargetFPS()
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
 
         // Called each render tick after drawGame()
         virtual void drawUI(GameState gameState) {}
-
-        // Called after the internal update tick (collision, ui, sound)
-        virtual void postTickUpdate(GameState gameState) {}
 
         //----------------- VARIABLES -----------------//
 

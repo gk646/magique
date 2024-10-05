@@ -178,21 +178,17 @@ namespace magique
     {
         MAGIQUE_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
 
-        const auto cameraBounds = GetCameraNativeBounds();
-
+        const auto cBounds = GetCameraNativeBounds(); // Camera bounds
         const float tileSize = tileSheet.getTextureSize();
-        const int mapWidth = tileMap.getWidth() * static_cast<int>(tileSize);
-        const int mapHeight = tileMap.getHeight() * static_cast<int>(tileSize);
-        const int mapWidthTiles = tileMap.getWidth();
+        const int mWidth = tileMap.getWidth();
+        const int mHeight = tileMap.getHeight();
 
-        const int startTileX = std::max(0, static_cast<int>(std::floor(cameraBounds.x / tileSize)));
-        const int endTileX =
-            std::min(mapWidth, static_cast<int>(std::ceil((cameraBounds.x + cameraBounds.width) / tileSize) + 1));
-        const int startTileY = std::max(0, static_cast<int>(std::floor(cameraBounds.y / tileSize)));
-        const int endTileY =
-            std::min(mapHeight, static_cast<int>(std::ceil((cameraBounds.y + cameraBounds.height) / tileSize) + 1));
+        const int startTileX = std::max(0, (int)std::floor(cBounds.x / tileSize));
+        const int endTileX = std::min(mWidth, (int)std::ceil((cBounds.x + cBounds.width) / tileSize));
+        const int startTileY = std::max(0, (int)std::floor(cBounds.y / tileSize));
+        const int endTileY = std::min(mHeight, (int)std::ceil((cBounds.y + cBounds.height) / tileSize));
 
-        auto* start = tileMap.getLayerData(layer) + startTileX + startTileY * mapWidthTiles;
+        auto* start = tileMap.getLayerData(layer) + startTileX + startTileY * mWidth;
         const int diffX = endTileX - startTileX;
         const int diffY = endTileY - startTileY;
         const float startX = static_cast<float>(startTileX) * tileSize;
@@ -231,7 +227,7 @@ namespace magique
 
                 screenX += tileSize;
             }
-            start += mapWidthTiles;
+            start += mWidth;
             screenY += tileSize;
         }
         rlEnd();

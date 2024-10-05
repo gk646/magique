@@ -19,43 +19,46 @@ namespace magique
 {
     struct UIContainer : UIObject
     {
-        // Constructor with absolute coordinates in the logical resolution
-        UIContainer(float x, float y, float w, float h);
-        ~UIContainer() override = default;
-
-        // Submits the container (and all its children) to be rendered (and updated) this tick
-        //      - transparency: controls the opacity of container and its children
-        //      - scissor     : if set, everything outside the container bounds will not be visible (scissors mode)
-        void render(float transparency = 1.0F, bool scissor = false);
+        // Creates the container from absolute dimensions in the logical UI resolution
+        // Optionally specify an anchor point the object is anchored to and a scaling mode
+        UIContainer(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
+        UIContainer(float w, float h, ScalingMode scaling = ScalingMode::FULL);
+        UIContainer(AnchorPosition anchor, float w, float h, ScalingMode scaling = ScalingMode::FULL);
 
     protected:
-        // Draws the container itself
-        void draw(const Rectangle& bounds) override {}
+        // Controls how the container including all of its children are visualized!
+        // Note: It's the containers responsibility to draw all of its children!
+        // Note: You should only draw within the objects getBounds() region - use anchors or align() methods to position it
+        void onDraw(const Rectangle &bounds) override{}
 
-        // Updates the container itself
-        void update(const Rectangle& bounds, bool isDrawn) override {}
+        // Controls how the container is updated - called automatically at then end of each update tick
+        //      - wasDrawn: if the object was drawn last tick
+        // Note: This allows for containers to be updated regardless if they are drawn or not (background task,...)
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}
 
     public:
-        // Adds a new child at the given position relative to the container (sets the child position)
-        // Pass new instance of your class new MyClass() - if valid name will be copied
-        // Note: passed pointer is managed by the engine and must not be accessed anymore
-        void addChild(float x, float y, UIObject* child, const char* name = nullptr);
+        // Adds a new child to the container with an optional name identifier
+        // Pass a new instance of your class new MyClass() - the name will be copied if specified
+        // Note: the container takes ownership of the child pointer
+        void addChild(UIObject* child, const char* name = nullptr);
 
         // Returns true the child associated with the given name or index was removed
         // Failure: returns wrong if no child with the given name or index exists
         bool removeChild(const char* name);
         bool removeChild(int index);
 
-        // Returns a pointer to the child associated with the given name or index (if any)
-        // Failure: returns nullptr if the name or index doesn't exist
+        // Returns a pointer to the child associated with the given name (if any)
+        // Failure: returns nullptr if the name doesn't exist
         [[nodiscard]] UIObject* getChild(const char* name) const;
-        [[nodiscard]] UIObject* getChild(int index) const;
 
-        // Returns the amount of children within this container
-        [[nodiscard]] int getChildrenCount() const;
+        // Returns a vector that contains all current children
+        [[nodiscard]] const std::vector<UIObject*>& getChildren() const;
+
+        ~UIContainer() override = default;
 
     private:
-        std::vector<internal::UIContainerEntry> children;
+        std::vector<UIObject*> children;
+        std::vector<internal::UIContainerMapping> nameMapping;
     };
 } // namespace magique
 

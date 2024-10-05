@@ -99,9 +99,9 @@ namespace magique
         scd.isHibernate = true;
     }
 
-    void* internal::GetJobMemory(size_t size)
+    void* internal::GetJobMemory(const size_t bytes)
     {
-        return global::SCHEDULER.jobAllocator.allocate(size);
+        return global::SCHEDULER.jobAllocator.allocate(bytes);
     }
 
 } // namespace magique

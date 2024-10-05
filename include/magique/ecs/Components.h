@@ -68,7 +68,8 @@ namespace magique
         // Removes ALL collisions layers
         void unsetAll();
 
-        void clearCollisionData(); // Clears the accumulated collision data for the next tick
+        // Clears the accumulated collision data for the next tick
+        void clearCollisionData();
 
         Point resolutionVec{}; // Accumulated normals * depth
         Point lastNormal{};    // Last normal
