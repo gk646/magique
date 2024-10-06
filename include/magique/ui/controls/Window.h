@@ -42,14 +42,14 @@ namespace magique
         // Controls how the window is updated - called automatically at the end of each update tick
         //      - bounds: the total bounds of the object - equal to getBounds()
         //      - wasDrawn: if the object was drawn last tick
-        // Note: Dragging the window is done automatically - everything inside the TopBar is draggable
+        // Note: Dragging the window is done automatically - everything inside the TopBar is draggable (except window buttons)
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}
 
     public:
-        // Returns the bounds of the body of this window
+        // Returns the bounds window body
         [[nodiscard]] Rectangle getBodyBounds() const;
 
-        // Returns the bounds of the top bar
+        // Returns the bounds of the window top bar
         [[nodiscard]] Rectangle getTopBarBounds() const;
 
         //----------------- Window Buttons -----------------//
@@ -65,10 +65,10 @@ namespace magique
         WindowButton* getWindowButton(const char* name);
 
     private:
-        void drawDefault(); // Default visuals
+        void drawDefault() const; // Default visuals
 
         Point lastMousePos{};
-        float moverHeightP = 10.0F;
+        float moverHeightP = 0.10F;
     };
 
     struct WindowButton : UIObject

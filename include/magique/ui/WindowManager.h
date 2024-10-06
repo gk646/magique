@@ -23,8 +23,9 @@ namespace magique
         // Draws all managed windows that are visible
         void draw();
 
-        // Adds a new window to the window manager - optionally register it with a name
-        // Windows can be accessed in the order they are added as well (use getWindows())
+        // Adds a new window to the window manager with the given name - is visible per default
+        // Passed string is copied - can (should) be temporary
+        // Note: takes ownership of the pointer along as its managed
         void addWindow(Window* window, const char* name);
 
         //----------------- ACCESSORS -----------------//
@@ -32,19 +33,18 @@ namespace magique
         // Returns a managed window by name or index
         // Failure: returns nullptr if no window was added with that name
         Window* getWindow(const char* name);
-        Window* getWindow(int index);
 
-        // Returns true if the window was successfully removed
+        // Returns true if the window was successfully removed - gives back ownership of the window!
         // Failure: returns false if no window matched the identifier
-        bool removeWindow(Window* window);
+        bool removeWindow(const Window* window);
         bool removeWindow(const char* name);
 
         // Sets the shown status of the given window to the given value
-        void setShown(Window* window, bool shown);
+        void setShown(const Window* window, bool shown);
         void setShown(const char* name, bool shown);
 
         // Returns the shown status of the given window
-        bool getIsShown(Window* window);
+        bool getIsShown(const Window* window);
         bool getIsShown(const char* name);
 
         // Toggles the shown status of the given window
@@ -62,10 +62,11 @@ namespace magique
 
         //----------------- UTIL -----------------//
 
-
+        Window* getHoveredWindow();
 
     private:
-        WindowManager();
+        WindowManager() = default;
+        friend WindowManager& GetWindowManager();
     };
 
 

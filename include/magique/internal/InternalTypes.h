@@ -252,8 +252,14 @@ namespace magique::internal
 
     struct UIContainerMapping final
     {
-        char name[MAGIQUE_UI_OBJECT_NAME_LEN]{};
+        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
         int index = 0;
+    };
+
+    struct WindowManagerMapping final
+    {
+        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
+        Window* window = nullptr;
     };
 
 } // namespace magique::internal

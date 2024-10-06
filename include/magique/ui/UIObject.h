@@ -3,7 +3,8 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
-IGNORE_WARNING(4100) // unreferenced formal parameter
+IGNORE_WARNING(4100)
+IGNORE_WARNING(4458)
 
 //-----------------------------------------------
 // UIObject
@@ -82,15 +83,20 @@ namespace magique
         [[nodiscard]] ScalingMode getScalingMode() const;
 
         // Returns true if the object was drawn in the last tick
-        [[nodiscard]] bool getWasVisible() const;
+        [[nodiscard]] bool getWasDrawn() const;
+
+        // Note: Only needs to be called for statically declared objects (e.g. objects created at program startup)
+        // Those object are not tracked internally and thus might not be updated automatically - no effect on tracked objects
+        void trackObject();
 
         virtual ~UIObject();
 
-    private:
+    protected:
         float px = 0, py = 0, pw = 0, ph = 0;         // Percent values for the dimensions
         ScalingMode scaleMode = ScalingMode::FULL;    // How the object scales with different screen dimensions
         AnchorPosition anchor = AnchorPosition::NONE; // Where (and if) the object is anchored to on the screen
-        bool wasVisible = false;
+        bool wasDrawn = false;
+        bool isContainer = false;
         friend struct UIData;
     };
 

@@ -16,7 +16,7 @@ namespace magique
     {
         vector<UIObject*> objects;
         vector<UIObject*> containers;
-        HashSet<const UIObject*> renderSet;
+        HashSet<UIObject*> objectsSet;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
@@ -37,21 +37,23 @@ namespace magique
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)
             {
-                auto& container = *objects[i];
-                container.onUpdate(container.getBounds(), renderSet.contains(&container));
+                auto& container = *containers[i];
+                container.onUpdate(container.getBounds(), container.wasDrawn);
+                container.wasDrawn = false;
             }
 
             for (int i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
-                obj.onUpdate(obj.getBounds(), renderSet.contains(&obj));
+                obj.onUpdate(obj.getBounds(), obj.wasDrawn);
+                obj.wasDrawn = false;
             }
-            renderSet.clear();
         }
 
         // All objects are registered in their ctor
         void registerObject(UIObject* object, const bool isContainer = false)
         {
+            objectsSet.insert(object);
             if (isContainer)
             {
                 containers.push_back(object);
@@ -62,13 +64,37 @@ namespace magique
         }
 
         // All objects are un-registered in the dtor
-        void unregisterObject(const UIObject* object)
-        {
-            UnorderedDelete(objects, object);
-            renderSet.erase(object);
-        }
+        void unregisterObject(const UIObject* object) { UnorderedDelete(objects, object); }
 
-        void registerDrawCall(const UIObject* object) { renderSet.insert(object); }
+        void registerDrawCall(UIObject* object, const bool isContainer)
+        {
+            object->wasDrawn = true;
+            if (!objectsSet.contains(object)) [[unlikely]]
+                registerObject(object, object->isContainer);
+
+            // Moving 3 to the front
+            // [1][2][3][4][5]
+            // [3]              -> assign temporary
+            // [0][1][2][4][5]  -> copy everything before 1 back
+            // [3][1][2][4][5]
+            // or using std:: iterators ... :(
+
+            auto sortUpfront = [](vector<UIObject*>& objects, UIObject* obj)
+            {
+                auto* it = std::ranges::find(objects, obj);
+                objects.erase(it);
+                objects.insert(objects.begin(), obj);
+            };
+
+            if (isContainer)
+            {
+                sortUpfront(containers, object);
+            }
+            else
+            {
+                sortUpfront(objects, object);
+            }
+        }
 
         //----------------- UTIL -----------------//
 
