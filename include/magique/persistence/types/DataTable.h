@@ -102,7 +102,7 @@ namespace magique
         T& getTupleColumn(int column, std::tuple<Types...>& t);
 
         OffsetArray offsets;                                         // Accumulative offset for the columns
-        char names[sizeof...(Types)][MAGIQUE_TABLE_NAME_LEN]{}; // Column names
+        char names[sizeof...(Types)][MAGIQUE_MAX_NAMES_LENGTH]{}; // Column names
         std::vector<ColumnsTuple> data;                              // Data storage row-wise
         int columns = sizeof...(Types);                              // Amount of columns
     };
@@ -126,7 +126,7 @@ namespace magique
                 continue;
             }
             int len = static_cast<int>(strlen(arg));
-            memcpy(names[i], arg, std::min(MAGIQUE_TABLE_NAME_LEN, len));
+            memcpy(names[i], arg, std::min(MAGIQUE_MAX_NAMES_LENGTH, len));
             i++;
         }
     }

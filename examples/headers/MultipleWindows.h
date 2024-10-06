@@ -90,13 +90,19 @@ struct Test final : Game
 
     void updateGame(GameState gameState) override
     {
+        if (IsKeyPressed(KEY_SPACE))
+        {
+            GetWindowManager().moveInFrontOf("RedWindow", "GreenWindow");
+        }
 
+        if(IsKeyPressed(KEY_ESCAPE))
+        {
+            GetWindowManager().moveInFrontOf("GreenWindow", "RedWindow");
+
+        }
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
-    {
-        GetWindowManager().draw();
-    }
+    void drawGame(GameState gameState, Camera2D& camera2D) override { GetWindowManager().draw(); }
 };
 
 #endif //MAGIQUE_MULTIPLE_WINDOWS_H

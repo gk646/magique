@@ -10,6 +10,7 @@
 // 0: to disable an option
 // .....................................................................
 
+
 //----------------- CORE -----------------//
 
 // Logic ticks per second
@@ -17,6 +18,10 @@
 
 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 physical cores
 #define MAGIQUE_WORKER_THREADS 3
+
+// Controls the maximum length of names for various things:
+// window names in the WindowManager, column names in the DataTable, children names in the UIContainer
+#define MAGIQUE_MAX_NAMES_LENGTH 16
 
 //----------------- PERFORMANCE -----------------//
 
@@ -84,9 +89,6 @@
 
 //----------------- PERSISTENCE -----------------//
 
-// Maximum length of column names for the datatable
-#define MAGIQUE_TABLE_NAME_LEN 16
-
 
 //----------------- UI -----------------//
 
@@ -95,9 +97,6 @@
 
 // Logical height the UI system
 #define MAGIQUE_UI_RESOLUTION_Y 1080.0F
-
-// Maximum length of UIObject names inside UIContainer's
-#define MAGIQUE_UI_OBJECT_NAME_LEN 16
 
 //----------------- UTIL -----------------//
 

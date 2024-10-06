@@ -26,7 +26,7 @@ namespace magique
     void UIObject::draw()
     {
         onDraw(getBounds());
-        global::UI_DATA.registerDrawCall(this);
+        global::UI_DATA.registerDrawCall(this, isContainer);
     }
 
     UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
@@ -169,6 +169,13 @@ namespace magique
 
     ScalingMode UIObject::getScalingMode() const { return scaleMode; }
 
-    bool UIObject::getWasVisible() const { return wasVisible; }
+    bool UIObject::getWasDrawn() const { return wasDrawn; }
+
+    void UIObject::trackObject()
+    {
+        auto& uiData = global::UI_DATA;
+        if (!uiData.objectsSet.contains(this))
+            global::UI_DATA.registerObject(this, isContainer);
+    }
 
 } // namespace magique

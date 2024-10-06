@@ -9,6 +9,7 @@ namespace magique
     UIContainer::UIContainer(const float x, const float y, const float w, const float h, const ScalingMode scaling) :
         UIObject(x, y, w, h, scaling)
     {
+        isContainer = true;
         global::UI_DATA.registerObject(this, true);
     }
 
@@ -33,7 +34,7 @@ namespace magique
         if (name != nullptr)
         {
             const int len = static_cast<int>(strlen(name));
-            if (len + 1 > MAGIQUE_UI_OBJECT_NAME_LEN)
+            if (len + 1 > MAGIQUE_MAX_NAMES_LENGTH)
             {
                 LOG_WARNING("Given name is longer than configured!: %s", name);
                 return;
@@ -49,7 +50,7 @@ namespace magique
             }
             internal::UIContainerMapping mapping;
             std::memcpy(mapping.name, name, len);
-            mapping.name[MAGIQUE_UI_OBJECT_NAME_LEN - 1] = '\0';
+            mapping.name[MAGIQUE_MAX_NAMES_LENGTH - 1] = '\0';
             mapping.index = static_cast<int>(children.size());
             nameMapping.push_back(mapping);
         }
