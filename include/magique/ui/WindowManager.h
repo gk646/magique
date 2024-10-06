@@ -2,7 +2,7 @@
 #define MAGIQUE_WINDOW_MANAGER_H
 
 #include <vector>
-#include <magique/core/Types.h>
+#include <magique/ui/UI.h>
 
 //-----------------------------------------------
 // Window Manager
@@ -25,7 +25,7 @@ namespace magique
 
         // Adds a new window to the window manager with the given name - is visible per default
         // Passed string is copied - can (should) be temporary
-        // Note: takes ownership of the pointer along as its managed
+        // Note: takes ownership of the pointer as long as its managed
         void addWindow(Window* window, const char* name);
 
         //----------------- ACCESSORS -----------------//
@@ -36,15 +36,15 @@ namespace magique
 
         // Returns true if the window was successfully removed - gives back ownership of the window!
         // Failure: returns false if no window matched the identifier
-        bool removeWindow(const Window* window);
+        bool removeWindow(Window* window);
         bool removeWindow(const char* name);
 
         // Sets the shown status of the given window to the given value
-        void setShown(const Window* window, bool shown);
+        void setShown(Window* window, bool shown);
         void setShown(const char* name, bool shown);
 
         // Returns the shown status of the given window
-        bool getIsShown(const Window* window);
+        bool getIsShown( Window* window);
         bool getIsShown(const char* name);
 
         // Toggles the shown status of the given window
@@ -62,11 +62,23 @@ namespace magique
 
         //----------------- UTIL -----------------//
 
+        // Returns true if given window covered by another window at the given position
+        bool getIsCovered(Window* window, Point pos = GetMousePos());
+        bool getIsCovered(const char* window, Point pos = GetMousePos());
+
+        // Makes the given window the top most window
+        void makeTopMost(Window* window);
+        void makeTopMost(const char* name);
+
+        // Returns the first window "below" the mouse cursor - check for layering
+        // Failure: returns nullptr if no window area intersects the mouse position
         Window* getHoveredWindow();
 
     private:
         WindowManager() = default;
+        void update();
         friend WindowManager& GetWindowManager();
+        friend void InternalUpdatePost();
     };
 
 

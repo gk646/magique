@@ -22,69 +22,84 @@ using namespace magique;
 // Draws the window - method for all windows to avoid duplication
 void DrawWindow(const Window& window, Color color)
 {
+    const auto body = window.getBounds();
+    DrawRectangleRounded(body, 0.1F, 30, color);
+    DrawRectangleRoundedLinesEx(body, 0.1F, 30, 2, GRAY);
+
     const auto topBar = window.getTopBarBounds();
-    if (CheckCollisionPointRec(GetMousePosition(), topBar))
+    if (CheckCollisionPointRec(GetMousePosition(), topBar) && &window == GetWindowManager().getHoveredWindow())
     {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Pressed
         {
             DrawRectangleRounded(topBar, 0.2F, 30, DARKGRAY);
-            DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, GRAY);
+            DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
         }
         else // Hovered
         {
-            DrawRectangleRounded(topBar, 0.2F, 30, GRAY);
-            DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, DARKGRAY);
+            DrawRectangleRounded(topBar, 0.1F, 30, GRAY);
+            DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, DARKGRAY);
         }
     }
     else // Idle
     {
-        DrawRectangleRounded(topBar, 0.2F, 30, color);
-        DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, GRAY);
+        DrawRectangleRounded(topBar, 0.1F, 30, color);
+        DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
     }
-
-    const auto body = window.getBodyBounds();
-    DrawRectangleRounded(body, 0.2F, 30, color);
-    DrawRectangleRoundedLinesEx(body, 0.2F, 30, 2, GRAY);
 }
+
+void UpdateWindow(Window* window)
+{
+    if (UIInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !GetWindowManager().getIsCovered(window))
+    {
+        GetWindowManager().makeTopMost(window);
+    }
+    window->updateDrag(window->getTopBarBounds());
+}
+
+float topBarHeight = 25;
 
 struct BlueWindow final : Window
 {
-    BlueWindow(float x, float y, float w, float h) : Window(x, y, w, h, 50) {}
+    BlueWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, BLUE); }
+    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
 };
 
 struct RedWindow final : Window
 {
-    RedWindow(float x, float y, float w, float h) : Window(x, y, w, h, 50) {}
+    RedWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, RED); }
+    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
 };
 
 struct PurpleWindow final : Window
 {
-    PurpleWindow(float x, float y, float w, float h) : Window(x, y, w, h, 50) {}
+    PurpleWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, PURPLE); }
+    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
 };
 
 struct GreenWindow final : Window
 {
-    GreenWindow(float x, float y, float w, float h) : Window(x, y, w, h, 50) {}
+    GreenWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, GREEN); }
+    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
 };
 
 struct Test final : Game
 {
     void onLoadingFinished() override
     {
-        float width = 500;
-        float height = 600;
+        float width = 250;
+        float height = 350;
         auto& wManager = GetWindowManager();
-        Window* newWindow = new BlueWindow(GetRandomFloat(0, 1000), GetRandomFloat(0, 500), width, height);
+        Window* newWindow = new BlueWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
         wManager.addWindow(newWindow, "BlueWindow");
-        newWindow = new RedWindow(GetRandomFloat(0, 1000), GetRandomFloat(0, 500), width, height);
+        newWindow = new RedWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
         wManager.addWindow(newWindow, "RedWindow");
-        newWindow = new PurpleWindow(GetRandomFloat(0, 1000), GetRandomFloat(0, 500), width, height);
+        newWindow = new PurpleWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
         wManager.addWindow(newWindow, "PurpleWindow");
-        newWindow = new GreenWindow(GetRandomFloat(0, 1000), GetRandomFloat(0, 500), width, height);
+        newWindow = new GreenWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
         wManager.addWindow(newWindow, "GreenWindow");
     }
 
@@ -95,10 +110,9 @@ struct Test final : Game
             GetWindowManager().moveInFrontOf("RedWindow", "GreenWindow");
         }
 
-        if(IsKeyPressed(KEY_ESCAPE))
+        if (IsKeyPressed(KEY_ESCAPE))
         {
             GetWindowManager().moveInFrontOf("GreenWindow", "RedWindow");
-
         }
     }
 

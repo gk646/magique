@@ -3,8 +3,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
-IGNORE_WARNING(4100)
-IGNORE_WARNING(4458)
+IGNORE_WARNING(4100) // unreferenced formal parameter
 
 //-----------------------------------------------
 // UIObject
@@ -20,7 +19,6 @@ IGNORE_WARNING(4458)
 //      - Use align() with a direction to align the object outside another object
 //
 // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
-// Note: Passed coordinates are assumed to be in the logical UI resolution of 1920x1080 (see ui/UI.h for more info)
 // Note: At creation UIObjects are tracked internally so you cant declare them statically
 // .....................................................................
 
@@ -28,7 +26,7 @@ namespace magique
 {
     struct UIObject
     {
-        // Creates the object from absolute dimensions in the logical UI resolution
+        // Creates the object from absolute dimensions in the logical UI resolution (see ui/UI.h)
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIObject(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
         UIObject(float w, float h, ScalingMode scaling = ScalingMode::FULL);
@@ -36,7 +34,7 @@ namespace magique
 
         //----------------- CORE -----------------//
 
-        // Immediately calls onDraw() and renders the object - also internally tracks the rendering
+        // Immediately calls onDraw() and renders the object - additionally tracks the rendering internally
         void draw();
 
     protected:
@@ -53,9 +51,12 @@ namespace magique
         // Returns the bounds of this object
         [[nodiscard]] Rectangle getBounds() const;
 
-        // Sets new dimensions from the given values inside the logical UI resolution
+        // Sets a new position for this object - values are scaled to the CURRENT resolution
+        void setPosition(float x, float y);
+
+        // Sets new dimensions for this object - values are scaled to the CURRENT resolution
         // Note: Negative values will be ignored
-        void setDimensions(float x, float y, float w = -1.0F, float h = -1.0F);
+        void setSize(float width, float height);
 
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
@@ -91,13 +92,14 @@ namespace magique
 
         virtual ~UIObject();
 
-    protected:
+    private:
         float px = 0, py = 0, pw = 0, ph = 0;         // Percent values for the dimensions
         ScalingMode scaleMode = ScalingMode::FULL;    // How the object scales with different screen dimensions
         AnchorPosition anchor = AnchorPosition::NONE; // Where (and if) the object is anchored to on the screen
-        bool wasDrawn = false;
+        bool wasDrawnLastTick = false;
         bool isContainer = false;
         friend struct UIData;
+        friend struct Window;
     };
 
 } // namespace magique
