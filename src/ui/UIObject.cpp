@@ -12,7 +12,7 @@ namespace magique
     {
         setDimensions(x, y, w, h);
         setScalingMode(scaling);
-        global::UI_DATA.registerObject(*this);
+        global::UI_DATA.registerObject(this);
     }
 
     UIObject::UIObject(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}

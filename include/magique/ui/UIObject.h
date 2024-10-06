@@ -42,7 +42,7 @@ namespace magique
         // Controls how the object is visualized
         virtual void onDraw(const Rectangle& bounds) {}
 
-        // Controls how the object is updated - called automatically at then end of each update tick
+        // Controls how the object is updated - called automatically at the end of each update tick
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for objects to be updated regardless if they are drawn or not (background task,...)
         // Note: All UIContainers are updated first

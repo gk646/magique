@@ -14,7 +14,8 @@ namespace magique
 {
     struct UIData final
     {
-        vector<UIObject*> allObjects;
+        vector<UIObject*> objects;
+        vector<UIObject*> containers;
         HashSet<const UIObject*> renderSet;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
@@ -32,21 +33,38 @@ namespace magique
             mouseX = mx;
             mouseY = my;
             inputConsumed = false;
-            renderSet.clear();
-            for (int i = 0; i < allObjects.size(); ++i) // Using fori to support deletions in the update methods
+
+            // Using fori to support deletions in the update methods
+            for (int i = 0; i < containers.size(); ++i)
             {
-                auto& obj = *allObjects[i];
+                auto& container = *objects[i];
+                container.onUpdate(container.getBounds(), renderSet.contains(&container));
+            }
+
+            for (int i = 0; i < objects.size(); ++i)
+            {
+                auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), renderSet.contains(&obj));
             }
+            renderSet.clear();
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject& object) { allObjects.push_back(&object); }
+        void registerObject(UIObject* object, const bool isContainer = false)
+        {
+            if (isContainer)
+            {
+                containers.push_back(object);
+                objects.pop_back(); // Is added as an object as well
+            }
+            else
+                objects.push_back(object);
+        }
 
         // All objects are un-registered in the dtor
         void unregisterObject(const UIObject* object)
         {
-            UnorderedDelete(allObjects, object);
+            UnorderedDelete(objects, object);
             renderSet.erase(object);
         }
 

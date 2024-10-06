@@ -7,8 +7,6 @@
 #include <magique/ui/controls/Button.h>
 
 using namespace magique;
-// Its used explicitly each time to denote magique functions
-// It is advised and safe to use: "using namespace magique;"
 
 // Entity identifiers
 enum EntityType : uint16_t
@@ -45,8 +43,7 @@ struct PlayerStatsC final
 struct Asteroids final : Game
 {
     Asteroids() : Game("Asteroids") {}
-    void onStartup(AssetLoader& loader, GameConfig& config) override;
-    void onCloseEvent() override;
+    void onStartup(AssetLoader& loader) override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;
 };
@@ -55,6 +52,7 @@ struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override;
     void onTick(entt::entity self) override;
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
 };
 
 struct BulletScript final : EntityScript
@@ -67,6 +65,14 @@ struct RockScript final : EntityScript
 {
     void onTick(entt::entity self) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
+};
+
+struct HouseScript final : EntityScript
+{
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
+    {
+        // Make it not react to collision
+    }
 };
 
 struct PlayerBarUI final : UIObject

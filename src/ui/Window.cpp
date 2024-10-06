@@ -9,4 +9,9 @@ namespace magique
         moverHeightP = moverHeight / h;
     }
 
+    void Window::drawDefault()
+    {
+
+    }
+
 } // namespace magique

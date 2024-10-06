@@ -10,7 +10,7 @@ using namespace magique;
 
 struct LocalizationDemo final : Game
 {
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         const auto loadLocalization = [](AssetContainer& assets)
         {
