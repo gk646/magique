@@ -8,8 +8,10 @@
 // #include "CollisionBenchmark.h"
 // #include "CollisionTest.h"
 // #include "HashGridTest.h"
+
 //#include "../examples/headers/LocalMultiplayer.h"
-#include "../examples/headers/SteamMultiplayer.h"
+//#include "../examples/headers/SteamMultiplayer.h"
+#include "../examples/headers/MultipleWindows.h"
 
 int main()
 {

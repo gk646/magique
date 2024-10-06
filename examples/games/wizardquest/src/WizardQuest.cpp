@@ -7,15 +7,18 @@
 #include "ecs/Systems.h"
 #include "loading/Loaders.h"
 
-void WizardQuest::onStartup(AssetLoader& loader, GameConfig& config)
+void WizardQuest::onStartup(AssetLoader& loader)
 {
     // Configure raylib
-    SetWindowSize(1920,1080);
+    SetWindowSize(1920, 1080);
     SetTargetFPS(100);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 
     // Configure magique
     SetShowHitboxes(true);
+
+    // Init steam
+    InitSteam(true);
     InitLocalMultiplayer();
 
     SetStaticWorldBounds({0, 0, 1280, 1000});
@@ -37,10 +40,7 @@ void WizardQuest::onLoadingFinished()
     AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
 
     SetGameState(GameState::GAME);
-    SetMultiplayerCallback([](MultiplayerEvent event)
-    {
-        printf("Event: %d\n", (int)event);
-    });
+    SetMultiplayerCallback([](MultiplayerEvent event) { printf("Event: %d\n", (int)event); });
 }
 
 void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
@@ -89,8 +89,9 @@ void WizardQuest::drawUI(GameState gameState)
     case GameState::MAIN_MENU:
         break;
     case GameState::GAME:
-        gameUI.playerHUD.render();
-        gameUI.playerHotbar.render();
+        gameUI.playerHUD.draw();
+        gameUI.playerHotbar.draw();
+        gameUI.lobbyBrowser.draw();
         break;
     case GameState::GAME_OVER:
         break;

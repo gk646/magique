@@ -9,6 +9,7 @@ namespace magique
     UIContainer::UIContainer(const float x, const float y, const float w, const float h, const ScalingMode scaling) :
         UIObject(x, y, w, h, scaling)
     {
+        global::UI_DATA.registerObject(this, true);
     }
 
     UIContainer::UIContainer(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}

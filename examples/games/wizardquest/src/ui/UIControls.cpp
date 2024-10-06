@@ -5,25 +5,26 @@
 #include "ui/UIControls.h"
 #include "ecs/Components.h"
 
-void PlayerHUD::draw(const Rectangle& bounds)
+void PlayerHUD::onDraw(const Rectangle& bounds)
 {
-    const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity());
+    const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity()); // Player is always the camera in this example
 
-    const Rectangle health = {bounds.x, bounds.y, bounds.width * stats.getHealthPercent(), bounds.height / 2.0F};
+    const auto healthWidth = bounds.width * stats.getHealthPercent();
+    const Rectangle health = {bounds.x, bounds.y, healthWidth, bounds.height / 2.0F};
     DrawRectangleRec(health, RED);
 
-    const Rectangle mana = {bounds.x, bounds.y + bounds.height / 2.0F, bounds.width * stats.getManaPercent(),
-                            bounds.height / 2.0F};
+    const auto manaWidth = bounds.width * stats.getManaPercent();
+    const Rectangle mana = {bounds.x, bounds.y + bounds.height / 2.0F, manaWidth, bounds.height / 2.0F};
     DrawRectangleRec(mana, BLUE);
 
-    const auto& font = GetFontDefault();
+    const auto& font = GetFontDefault(); // Use a custom font here
     Vector2 p = {bounds.x, bounds.y};
     DrawTextFmt(font, "${P_HEALTH}/${P_MAX_HEALTH}", p, 18, 1.0F);
     p.y += bounds.height / 2.0F;
     DrawTextFmt(font, "${P_MANA}/${P_MAX_MANA}", p, 18, 1.0F);
 }
 
-void PlayerHUD::update(const Rectangle& bounds, const bool isDrawn)
+void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
 {
     if (!isDrawn) // No need for update
         return;
@@ -34,20 +35,37 @@ void PlayerHUD::update(const Rectangle& bounds, const bool isDrawn)
     SetFormatValue("P_MAX_MANA", (int)stats.maxMana);
 }
 
-void HotbarSlot::draw(const Rectangle& bounds)
+void HotbarSlot::onDraw(const Rectangle& bounds)
 {
     DrawRectangleLinesEx(bounds, 1, DARKGRAY);
 }
 
-PlayerHotbar::PlayerHotbar() : UIContainer(480, 900, 960, 180)
+PlayerHotbar::PlayerHotbar() : UIContainer(AnchorPosition::BOTTOM_CENTER, 960, 180, ScalingMode::KEEP_RATIO)
 {
+    setDimensions(480, 900, slots * HotbarSlot::size, 180);
     for (int i = 0; i < slots; ++i)
     {
-        addChild(0,0, new HotbarSlot());
-        getChild(i)->setDimensions(480 + i * HotbarSlot::size, 900);
+        addChild(new HotbarSlot());
     }
 }
 
-void PlayerHotbar::draw(const Rectangle& bounds) { DrawRectangleLinesEx(bounds, 2, DARKGRAY); }
+void PlayerHotbar::onDraw(const Rectangle& bounds)
+{
+    DrawRectangleLinesEx(bounds, 2, DARKGRAY);
 
-void PlayerHotbar::update(const Rectangle& bounds, bool isDrawn) {}
+    // Align the slots next to each other
+    const UIObject* prevChild = nullptr;
+    for (const auto child : getChildren())
+    {
+        if (prevChild == nullptr)
+        {
+            child->align(AnchorPosition::TOP_LEFT, *this);
+        }
+        else
+        {
+            child->align(Direction::RIGHT, *prevChild);
+        }
+        prevChild = child;
+        child->draw();
+    }
+}

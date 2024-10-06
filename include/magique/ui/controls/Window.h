@@ -3,75 +3,81 @@
 
 #include <raylib/raylib.h>
 #include <magique/ui/types/UIContainer.h>
+IGNORE_WARNING(4100)
 
 //-----------------------------------------------
-// Windows
+// Window
 //-----------------------------------------------
 // .....................................................................
-// Generic window class which can be subclasses to achieve custom visuals
+// Generic window class which can be subclassed to achieve custom visuals.
+// Windows are meant to be used with the window manager (see ui/WindowManager.h) - it handles visibility and layering
+// A window consists out of 3 main parts:
+//      - Body: Everything that's not the top bar (mover) is considered body
+//      - TopBar: The area starting from the top to the topBarHeight - area is automatically draggable
+//      - Window Buttons: window buttons can be added manually
+//|----------------------|
+//| TopBar               |
+//|----------------------|
+//|                      |
+//|                      |
+//| Body                 |
+//|----------------------|
+// Note: The window is a subclass of the UIContainer and has all its functionality
+// Note: Dragging the window is done automatically - everything inside the topBar is considered draggable (except buttons)
 // .....................................................................
 
 namespace magique
 {
     struct Window : UIContainer
     {
-        // Creates a new button from coordinates in the logical UI resolution
-        // If not specified the mover is 10% of the total height
-        Window(float x, float y, float w, float h, float moverHeight = 0.0F);
+        // Creates a new window from coordinates in the logical UI resolution
+        // If not specified the top bar is 10% of the total height
+        Window(float x, float y, float w, float h, float topBarHeight = 0.0);
 
-        // Draws the control - called each tick on draw thread
-        void draw()
-        {
-            const auto bounds = getBounds();
-            const auto moverHeight = bounds.height * moverHeightP;
-            const Rectangle moverBody = {bounds.x, bounds.y, bounds.width, moverHeight};
-            drawMover(moverBody, getIsHovered());
-            const Rectangle body = {bounds.x, bounds.y + moverHeight, bounds.width, bounds.height - moverHeight};
-            drawBody(body);
-        }
+    protected:
+        // Controls how the window including all of its children are visualized
+        //      - bounds: the total bounds of the object - equal to getBounds()
+        void onDraw(const Rectangle& bounds) override { drawDefault(); }
 
-        // Updates the control - called each tick on update thread
-        void onUpdate(const Rectangle& bounds, bool isDrawn) override {}
+        // Controls how the window is updated - called automatically at the end of each update tick
+        //      - bounds: the total bounds of the object - equal to getBounds()
+        //      - wasDrawn: if the object was drawn last tick
+        // Note: Dragging the window is done automatically - everything inside the TopBar is draggable
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}
 
-        //----------------- DRAW DEFAULTS -----------------//
-        // Override them to achieve custom visuals
+    public:
+        // Returns the bounds of the body of this window
+        [[nodiscard]] Rectangle getBodyBounds() const;
 
-        // Draws the moveable bar of the window
-        // Gets passed the bounds of the mover and if its hovered or not
-        virtual void drawMover(const Rectangle bounds, const bool isHovered)
-        {
-            if (isHovered)
-            {
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Pressed
-                {
-                    DrawRectangleRounded(bounds, 0.2F, 30, DARKGRAY);
-                    DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, GRAY);
-                }
-                else // Hovered
-                {
-                    DrawRectangleRounded(bounds, 0.2F, 30, GRAY);
-                    DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, DARKGRAY);
-                }
-            }
-            else // Idle
-            {
-                DrawRectangleRounded(bounds, 0.2F, 30, LIGHTGRAY);
-                DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, GRAY);
-            }
-        }
+        // Returns the bounds of the top bar
+        [[nodiscard]] Rectangle getTopBarBounds() const;
 
-        // Draws the body of the window - is called before drawMover()
-        // Gets passed the bounds of the window
-        virtual void drawBody(const Rectangle bounds)
-        {
-            DrawRectangleRounded(bounds, 0.2F, 30, LIGHTGRAY);
-            DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, GRAY);
-        }
+        //----------------- Window Buttons -----------------//
+
+        // Adds a new window button to this window with the given name - anchored inside the window
+        void addWindowButton(WindowButton* window, const char* name, AnchorPosition anchor);
+
+        // Adds a new window button to this window with the given name - relative to an existing button (given by its name)
+        void addWindowButton(WindowButton* window, const char* name, Direction direction, const char* relativeTo);
+
+        // Returns the button identified by the given name
+        // Failure: return nullptr if the name does not exist
+        WindowButton* getWindowButton(const char* name);
 
     private:
+        void drawDefault(); // Default visuals
+
+        Point lastMousePos{};
         float moverHeightP = 10.0F;
     };
 
+    struct WindowButton : UIObject
+    {
+    };
+
+
 } // namespace magique
+
+UNIGNORE_WARNING()
 
 #endif //MAGIQUE_WINDOW_H

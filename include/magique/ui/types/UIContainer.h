@@ -31,7 +31,7 @@ namespace magique
         // Note: You should only draw within the objects getBounds() region - use anchors or align() methods to position it
         void onDraw(const Rectangle &bounds) override{}
 
-        // Controls how the container is updated - called automatically at then end of each update tick
+        // Controls how the container is updated - called automatically at the end of each update tick
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for containers to be updated regardless if they are drawn or not (background task,...)
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}

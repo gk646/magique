@@ -74,7 +74,7 @@ struct WizardQuestUI final
 struct WizardQuest final : Game
 {
     WizardQuestUI gameUI{};
-    void onStartup(AssetLoader& loader, GameConfig& config) override;
+    void onStartup(AssetLoader& loader) override;
     void onLoadingFinished() override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;

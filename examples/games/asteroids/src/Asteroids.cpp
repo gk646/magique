@@ -18,9 +18,9 @@ using namespace magique;
 inline ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
 inline entt::entity PLAYER_ID = entt::null;
 
-void Asteroids::onStartup(AssetLoader& loader, GameConfig& config)
+void Asteroids::onStartup(AssetLoader& loader)
 {
-    SetShowHitboxes(true);
+    //SetShowHitboxes(true); // Enable if wanted
     SetWindowSize(1280, 960); // Setup screen bounds
 
     SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to set up world bounds
@@ -44,7 +44,7 @@ void Asteroids::onStartup(AssetLoader& loader, GameConfig& config)
     };
     loader.registerTask(loadSound, BACKGROUND_THREAD); // Add the task
 
-    // Load the texture on the main thread as they require gpu acess
+    // Load the texture on the main thread as they require gpu access
     auto loadTextures = [](AssetContainer& assets)
     {
         assets.iterateDirectory("SPRITES", // Iterate the sprites directory for the textures
@@ -61,6 +61,7 @@ void Asteroids::onStartup(AssetLoader& loader, GameConfig& config)
     SetEntityScript(PLAYER, new PlayerScript());
     SetEntityScript(BULLET, new BulletScript());
     SetEntityScript(ROCK, new RockScript());
+    SetEntityScript(HOUSE, new HouseScript());
 
     // Register the player entity
     RegisterEntity(PLAYER,
@@ -121,8 +122,6 @@ void Asteroids::onStartup(AssetLoader& loader, GameConfig& config)
     SetGameState(GameState::GAME); // Set the initial gamestate
 }
 
-void Asteroids::onCloseEvent() { shutDown(); }
-
 void Asteroids::updateGame(GameState gameState)
 {
     if (gameState != GameState::GAME)
@@ -131,7 +130,7 @@ void Asteroids::updateGame(GameState gameState)
     ROCK_COUNTER--;
     if (ROCK_COUNTER == 0)
     {
-        CreateEntity(ROCK, GetRandomValue(600, 700), 0, MapID::LEVEL_1);
+        CreateEntity(ROCK, GetRandomValue(0, 1280), 0, MapID::LEVEL_1);
         ROCK_COUNTER = 80;
     }
 }
@@ -144,8 +143,7 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
         return;
 
     DrawParticles(); // Render particles below the entities
-    const auto map = GetCameraMap();
-    // As the entities dont have sprite sheets we use a simple switch
+    // As the entities don't have sprite sheets we use a simple switch
     // Get the entities that need to be drawn
     auto& drawEntities = GetDrawEntities();
     for (const auto e : drawEntities)
@@ -173,7 +171,6 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
             break; // Invisible camera
         }
     }
-    DrawHashGridDebug(map);
     EndMode2D();
 }
 
@@ -252,6 +249,13 @@ void PlayerScript::onTick(entt::entity self)
     }
 }
 
+void PlayerScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
+{
+    const auto& oPos = GetComponent<PositionC>(other);
+    if (oPos.type != BULLET && oPos.type != HOUSE)
+        AccumulateCollision(info);
+}
+
 void BulletScript::onTick(entt::entity self)
 {
     auto& pos = GetComponent<PositionC>(self);
@@ -263,7 +267,7 @@ void BulletScript::onStaticCollision(entt::entity self, ColliderInfo collider, C
     DestroyEntity(self);
 }
 
-void RockScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
+void RockScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
 {
     if (!EntityExists(self)) // If multiple collisions happen and rock was already destroyed
         return;

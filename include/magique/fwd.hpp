@@ -94,6 +94,9 @@ namespace magique
     enum class AnchorPosition : int;
     enum class UILayer : uint8_t;
     struct UIScene;
+    struct Window;
+    struct WindowManager;
+    struct WindowButton;
 
     //----------------- UTIL -----------------//
     enum LogLevel : int;

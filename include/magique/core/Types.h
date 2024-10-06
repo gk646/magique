@@ -383,12 +383,13 @@ namespace magique
         BOTTOM_RIGHT   // RB
     };
 
+    // When used for alignment positions the object in the specified direction
     enum class Direction
     {
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN
+        LEFT,  // Object is moved left from the anchor object by its width
+        RIGHT, // Object is moved right from where the anchor object ends horizontally by its width
+        UP,    // Object is moved up from the anchor object by its height
+        DOWN   // Object is moved up down from where the anchor object ends vertically by its height
     };
 
     enum class KeyLayout
