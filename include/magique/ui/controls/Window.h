@@ -14,7 +14,6 @@ IGNORE_WARNING(4100)
 // A window consists out of 3 main parts:
 //      - Body: Everything that's not the top bar (mover) is considered body
 //      - TopBar: The area starting from the top to the topBarHeight - area is automatically draggable
-//      - Window Buttons: window buttons can be added manually
 //|----------------------|
 //| TopBar               |
 //|----------------------|
@@ -22,8 +21,11 @@ IGNORE_WARNING(4100)
 //|                      |
 //| Body                 |
 //|----------------------|
+//
+// IMPORTANT: Its recommended to use the ui/WindowManager.h to manage windows
+//            Use its accessor to determine window overlap and layering (e.g. getHoveredWindow(), ...)
 // Note: The window is a subclass of the UIContainer and has all its functionality
-// Note: Dragging the window is done automatically - everything inside the topBar is considered draggable (except buttons)
+// Note: Window buttons (close button, maximize, minimize, ...) have to be added manually as children - anchor them accordingly
 // .....................................................................
 
 namespace magique
@@ -42,8 +44,11 @@ namespace magique
         // Controls how the window is updated - called automatically at the end of each update tick
         //      - bounds: the total bounds of the object - equal to getBounds()
         //      - wasDrawn: if the object was drawn last tick
-        // Note: Dragging the window is done automatically - everything inside the TopBar is draggable (except window buttons)
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        {
+            // if(this == GetWindowManager().getHoveredWindow())  // When using the window manager
+            updateDrag(getTopBarBounds());
+        }
 
     public:
         // Returns the bounds window body
@@ -52,29 +57,19 @@ namespace magique
         // Returns the bounds of the window top bar
         [[nodiscard]] Rectangle getTopBarBounds() const;
 
-        //----------------- Window Buttons -----------------//
+        // Returns true if the window is currently dragged
+        [[nodiscard]] bool getIsDragged() const;
 
-        // Adds a new window button to this window with the given name - anchored inside the window
-        void addWindowButton(WindowButton* window, const char* name, AnchorPosition anchor);
-
-        // Adds a new window button to this window with the given name - relative to an existing button (given by its name)
-        void addWindowButton(WindowButton* window, const char* name, Direction direction, const char* relativeTo);
-
-        // Returns the button identified by the given name
-        // Failure: return nullptr if the name does not exist
-        WindowButton* getWindowButton(const char* name);
+        // Makes the window draggable in the given area and polls drag for this tick for the given mouse click
+        // Note: Uses UIInput and consumes the input if successfully dragged
+        void updateDrag(const Rectangle& area, int mouseButton = MOUSE_BUTTON_LEFT);
 
     private:
         void drawDefault() const; // Default visuals
-
-        Point lastMousePos{};
+        Point clickOffset{};
         float moverHeightP = 0.10F;
+        bool isDragged = false;
     };
-
-    struct WindowButton : UIObject
-    {
-    };
-
 
 } // namespace magique
 

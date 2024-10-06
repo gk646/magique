@@ -2,6 +2,7 @@
 #include <magique/ui/UI.h>
 
 #include "internal/globals/UIData.h"
+#include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -10,6 +11,30 @@ namespace magique
         UIContainer(x, y, w, h)
     {
         moverHeightP = moverHeight / MAGIQUE_UI_RESOLUTION_Y;
+    }
+
+    void Window::updateDrag(const Rectangle& area, const int mouseButton)
+    {
+        const auto mouse = global::UI_DATA.getMousePos();
+        if (UIInput::IsMouseButtonDown(mouseButton))
+        {
+            if (isDragged)
+            {
+                UIInput::Consume();
+                setPosition(mouse.x + clickOffset.x, mouse.y + clickOffset.y);
+            }
+            else if (PointToRect(mouse.x, mouse.y, area.x, area.y, area.width, area.height))
+            {
+                UIInput::Consume();
+                const auto bounds = getBounds();
+                clickOffset = {bounds.x - mouse.x, bounds.y - mouse.y};
+                isDragged = true;
+            }
+        }
+        else
+        {
+            isDragged = false;
+        }
     }
 
     Rectangle Window::getBodyBounds() const
@@ -82,30 +107,32 @@ namespace magique
         return bounds;
     }
 
+    bool Window::getIsDragged() const { return isDragged; }
+
     void Window::drawDefault() const
     {
+        const auto body = getBounds();
+        DrawRectangleRounded(body, 0.1F, 30, LIGHTGRAY);
+        DrawRectangleRoundedLinesEx(body, 0.1F, 30, 2, GRAY);
+
         const auto topBar = getTopBarBounds();
         if (CheckCollisionPointRec(GetMousePosition(), topBar))
         {
             if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Pressed
             {
                 DrawRectangleRounded(topBar, 0.2F, 30, DARKGRAY);
-                DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, GRAY);
+                DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
             }
             else // Hovered
             {
-                DrawRectangleRounded(topBar, 0.2F, 30, GRAY);
-                DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, DARKGRAY);
+                DrawRectangleRounded(topBar, 0.1F, 30, GRAY);
+                DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, DARKGRAY);
             }
         }
         else // Idle
         {
-            DrawRectangleRounded(topBar, 0.2F, 30, LIGHTGRAY);
-            DrawRectangleRoundedLinesEx(topBar, 0.2F, 30, 2, GRAY);
+            DrawRectangleRounded(topBar, 0.1F, 30, LIGHTGRAY);
+            DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
         }
-
-        const auto body = getBodyBounds();
-        DrawRectangleRounded(body, 0.2F, 30, LIGHTGRAY);
-        DrawRectangleRoundedLinesEx(body, 0.2F, 30, 2, GRAY);
     }
 } // namespace magique

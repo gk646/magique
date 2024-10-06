@@ -3,16 +3,17 @@
 #include <magique/util/Logging.h>
 
 #include "internal/utils/STLUtil.h"
-#include "internal/datastructures/HashTypes.h"
+#include "internal/globals/UIData.h"
+#include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
 {
-
     struct WindowManagerData final
     {
         std::vector<Window*> windows;
         std::vector<internal::WindowManagerMapping> nameMapping;
         HashSet<const Window*> shownSet;
+        Window* hoveredWindow = nullptr;
 
         void removeWindow(const Window* window)
         {
@@ -114,7 +115,7 @@ namespace magique
         LOG_WARNING("No window with such name: %s", name);
     }
 
-    bool WindowManager::removeWindow(const Window* window)
+    bool WindowManager::removeWindow(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
         if (!WINDOW_DATA.getWindowExists(window))
@@ -128,7 +129,7 @@ namespace magique
 
     bool WindowManager::removeWindow(const char* name) { return removeWindow(getWindow(name)); }
 
-    void WindowManager::setShown(const Window* window, const bool shown)
+    void WindowManager::setShown(Window* window, const bool shown)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
         if (shown)
@@ -143,7 +144,7 @@ namespace magique
 
     void WindowManager::setShown(const char* name, const bool shown) { setShown(getWindow(name), shown); }
 
-    bool WindowManager::getIsShown(const Window* window)
+    bool WindowManager::getIsShown(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
         return WINDOW_DATA.shownSet.contains(window);
@@ -211,6 +212,61 @@ namespace magique
     void WindowManager::moveInFrontOf(const char* moved, const char* inFrontOf)
     {
         moveInFrontOf(getWindow(moved), getWindow(inFrontOf));
+    }
+
+    bool WindowManager::getIsCovered(Window* window, const Point pos)
+    {
+        MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
+        // Iterated in reverse - last drawn is the front most window - return as soon as we find obstruction
+        for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
+        {
+            if (WINDOW_DATA.shownSet.contains(*it)) // only search visible ones
+            {
+                const auto bounds = (*it)->getBounds();
+                if (PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
+                {
+                    if (*it == window) // We found the given window and nothing before - it's not covered
+                        return false;
+                    return true; // We found something, and it's not the given window - covered
+                }
+            }
+        }
+        return false; // Found nothing?
+    }
+
+    bool WindowManager::getIsCovered(const char* window, const Point pos)
+    {
+        return getIsCovered(getWindow(window), pos);
+    }
+
+    void WindowManager::makeTopMost(Window* window)
+    {
+        MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
+        if (WINDOW_DATA.windows.back() == window)
+            return;
+        moveInFrontOf(window, WINDOW_DATA.windows.back()); // Reuse the method - move
+    }
+
+    void WindowManager::makeTopMost(const char* name) { makeTopMost(getWindow(name)); }
+
+    Window* WindowManager::getHoveredWindow() { return WINDOW_DATA.hoveredWindow; }
+
+    void WindowManager::update()
+    {
+        // Iterated in reverse - last drawn is the front most window - as soon as we find a hovered the ones behind cant be
+        const auto mouse = global::UI_DATA.getMousePos();
+        for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
+        {
+            if (WINDOW_DATA.shownSet.contains(*it))
+            {
+                const auto bounds = (*it)->getBounds();
+                if (PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height))
+                {
+                    WINDOW_DATA.hoveredWindow = *it;
+                    break;
+                }
+            }
+        }
     }
 
 } // namespace magique

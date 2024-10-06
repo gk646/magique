@@ -38,15 +38,15 @@ namespace magique
             for (int i = 0; i < containers.size(); ++i)
             {
                 auto& container = *containers[i];
-                container.onUpdate(container.getBounds(), container.wasDrawn);
-                container.wasDrawn = false;
+                container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
+                container.wasDrawnLastTick = false;
             }
 
             for (int i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
-                obj.onUpdate(obj.getBounds(), obj.wasDrawn);
-                obj.wasDrawn = false;
+                obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+                obj.wasDrawnLastTick = false;
             }
         }
 
@@ -56,6 +56,7 @@ namespace magique
             objectsSet.insert(object);
             if (isContainer)
             {
+                object->isContainer = true;
                 containers.push_back(object);
                 objects.pop_back(); // Is added as an object as well
             }
@@ -68,7 +69,7 @@ namespace magique
 
         void registerDrawCall(UIObject* object, const bool isContainer)
         {
-            object->wasDrawn = true;
+            object->wasDrawnLastTick = true;
             if (!objectsSet.contains(object)) [[unlikely]]
                 registerObject(object, object->isContainer);
 

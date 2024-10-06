@@ -16,6 +16,7 @@
 #include <magique/util/JobSystem.h>
 #include <magique/persistence/container/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
+#include <magique/ui/WindowManager.h>
 
 #include "external/raylib/src/external/glad.h"
 #include "external/raylib/src/coredata.h"
@@ -67,10 +68,11 @@ namespace magique
         static bool madeGame = false;
         MAGIQUE_ASSERT(madeGame == false, "There can only be 1 game class per program!");
         madeGame = true;
+
+        // Setup raylib
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
-        // Init Window
-        InitWindow(1280, 960, name);
+        InitWindow(1280, 720, name);
         InitAudioDevice();
         SetTargetFPS(90);
         SetExitKey(0);
@@ -78,6 +80,8 @@ namespace magique
         using namespace chrono;
         // Generate seed
         SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
+
+        // Setup magique
         InitMagique();
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);

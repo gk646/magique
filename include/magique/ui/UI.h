@@ -33,8 +33,15 @@ namespace magique
     // Note: This is useful when needing static offsets that automatically scale
     float GetScaled(float val);
 
-    // Returns the current scale horizontal and vertical scaling
+    // Returns the current horizontal and vertical scaling
     Point GetUIScaling();
+
+    // Returns the position where the mouse was first pressed - resets when the mouse is released
+    // Failure: returns {-1,-1} if the mouse was not yet pressed or was released
+    Point GetDragStartPosition();
+
+    // Same as raylibs but returns a magique::Point
+    Point GetMousePos();
 
     // Getters for input that allows for consumption - when consumed all methods return false
     // The consumed state is automatically reset at the beginning of each tick
@@ -45,7 +52,9 @@ namespace magique
         // Returns true only if input state AND not consumed
         static bool IsKeyPressed(int key);
         static bool IsKeyDown(int key);
-        static bool IsKeyUp(int key);
+
+        static bool IsMouseButtonPressed(int key);
+        static bool IsMouseButtonDown(int key);
 
         // Consume the input for this tick - all input methods after this will return false
         static void Consume();

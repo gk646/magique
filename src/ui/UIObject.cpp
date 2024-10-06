@@ -10,7 +10,12 @@ namespace magique
 
     UIObject::UIObject(const float x, const float y, const float w, const float h, const ScalingMode scaling)
     {
-        setDimensions(x, y, w, h);
+        px = x / MAGIQUE_UI_RESOLUTION_X;
+        py = y / MAGIQUE_UI_RESOLUTION_Y;
+        if (w >= 0)
+            pw = w / MAGIQUE_UI_RESOLUTION_X;
+        if (h >= 0)
+            ph = h / MAGIQUE_UI_RESOLUTION_Y;
         setScalingMode(scaling);
         global::UI_DATA.registerObject(this);
     }
@@ -77,9 +82,7 @@ namespace magique
             pos.y += (relHeight - myWidth) - inset;
             break;
         }
-        // Apply scaling as setDimensions() expect values in logical resolution (1920x1080) - ours are in the current res
-        const auto scaling = global::UI_DATA.getScaling();
-        setDimensions(pos.x * scaling.x, pos.y * scaling.y);
+        setPosition(pos.x, pos.y);
     }
 
     void UIObject::align(const Direction direction, const UIObject& relativeTo, const float offset)
@@ -102,19 +105,7 @@ namespace magique
             pos.y += bounds.height + offset;
             break;
         }
-        // Apply scaling as setDimensions() expect values in logical resolution (1920x1080) - ours are in the current res
-        const auto scaling = global::UI_DATA.getScaling();
-        setDimensions(pos.x * scaling.x, pos.y * scaling.y);
-    }
-
-    void UIObject::setDimensions(const float x, const float y, const float w, const float h)
-    {
-        px = x / MAGIQUE_UI_RESOLUTION_X;
-        py = y / MAGIQUE_UI_RESOLUTION_Y;
-        if (w >= 0)
-            pw = w / MAGIQUE_UI_RESOLUTION_X;
-        if (h >= 0)
-            ph = h / MAGIQUE_UI_RESOLUTION_Y;
+        setPosition(pos.x, pos.y);
     }
 
     Rectangle UIObject::getBounds() const
@@ -152,6 +143,22 @@ namespace magique
         return bounds;
     }
 
+    void UIObject::setPosition(float x, float y)
+    {
+        const auto dims = global::UI_DATA.getScreenDims();
+        px = x / dims.x;
+        py = y / dims.y;
+    }
+
+    void UIObject::setSize(float width, float height)
+    {
+        const auto dims = global::UI_DATA.getScreenDims();
+        if (width >= 0)
+            pw = width / dims.x;
+        if (height >= 0)
+            ph = height / dims.y;
+    }
+
     bool UIObject::getIsHovered() const
     {
         const auto [mx, my] = global::UI_DATA.getMousePos();
@@ -169,7 +176,7 @@ namespace magique
 
     ScalingMode UIObject::getScalingMode() const { return scaleMode; }
 
-    bool UIObject::getWasDrawn() const { return wasDrawn; }
+    bool UIObject::getWasDrawn() const { return wasDrawnLastTick; }
 
     void UIObject::trackObject()
     {
