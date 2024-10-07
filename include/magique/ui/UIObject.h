@@ -19,7 +19,7 @@ IGNORE_WARNING(4100) // unreferenced formal parameter
 //      - Use align() with a direction to align the object outside another object
 //
 // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
-// Note: At creation UIObjects are tracked internally so you cant declare them statically
+// Note: If you declare a UIObject statically you have to use trackObject() for it to be updated
 // .....................................................................
 
 namespace magique
@@ -38,14 +38,20 @@ namespace magique
         void draw();
 
     protected:
-        // Controls how the object is visualized
+        // Controls how the object is visualized - should only be used to draw
+        // Called with getBounds()
         virtual void onDraw(const Rectangle& bounds) {}
 
         // Controls how the object is updated - called automatically at the end of each update tick
+        // The call order is sorted after draw order dynamically - the elements on top are updated first
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for objects to be updated regardless if they are drawn or not (background task,...)
-        // Note: All UIContainers are updated first
+        // Note: All UIContainers are updated separately and before objects
         virtual void onUpdate(const Rectangle& bounds, bool wasDrawn) {}
+
+        // Same as onUpdate() but called at the beginning of the draw tick (each render tick)
+        // This is essential for real time components (like dragging windows)
+        virtual void onDrawUpdate(const Rectangle& bounds) {}
 
     public:
         // Returns the bounds of this object
@@ -86,7 +92,7 @@ namespace magique
         // Returns true if the object was drawn in the last tick
         [[nodiscard]] bool getWasDrawn() const;
 
-        // Note: Only needs to be called for statically declared objects (e.g. objects created at program startup)
+        // Note: Only needs to be called for statically declared objects (e.g. objects created at program startup, globals)
         // Those object are not tracked internally and thus might not be updated automatically - no effect on tracked objects
         void trackObject();
 

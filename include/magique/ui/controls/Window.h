@@ -26,6 +26,7 @@ IGNORE_WARNING(4100)
 //            Use its accessor to determine window overlap and layering (e.g. getHoveredWindow(), ...)
 // Note: The window is a subclass of the UIContainer and has all its functionality
 // Note: Window buttons (close button, maximize, minimize, ...) have to be added manually as children - anchor them accordingly
+// Note: Everything requiring real time updates like dragging, should be called in the draw method as it runs every draw tick!
 // .....................................................................
 
 namespace magique
@@ -37,18 +38,12 @@ namespace magique
         Window(float x, float y, float w, float h, float topBarHeight = 0.0);
 
     protected:
-        // Controls how the window including all of its children are visualized
-        //      - bounds: the total bounds of the object - equal to getBounds()
-        void onDraw(const Rectangle& bounds) override { drawDefault(); }
+        // Same as ui/UIContainer.h
+        // Note: The window is responsible to draw all its children!
+        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
-        // Controls how the window is updated - called automatically at the end of each update tick
-        //      - bounds: the total bounds of the object - equal to getBounds()
-        //      - wasDrawn: if the object was drawn last tick
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
-        {
-            // if(this == GetWindowManager().getHoveredWindow())  // When using the window manager
-            updateDrag(getTopBarBounds());
-        }
+        // Same as ui/UIObject.h
+        void onDrawUpdate(const Rectangle& bounds) override { updateDrag(getTopBarBounds()); }
 
     public:
         // Returns the bounds window body
@@ -60,12 +55,13 @@ namespace magique
         // Returns true if the window is currently dragged
         [[nodiscard]] bool getIsDragged() const;
 
-        // Makes the window draggable in the given area and polls drag for this tick for the given mouse click
-        // Note: Uses UIInput and consumes the input if successfully dragged
-        void updateDrag(const Rectangle& area, int mouseButton = MOUSE_BUTTON_LEFT);
+        // Returns true if the window was clicked in the given area with the given mouse button
+        // Does not check if anything is in front - use the ui/WindowManager.h
+        // Note: Uses UIInput to check for click - if true probably want to call UIInput::Consume()
+        bool updateDrag(const Rectangle& area, int mouseButton = MOUSE_BUTTON_LEFT);
 
     private:
-        void drawDefault() const; // Default visuals
+        void drawDefault(const Rectangle& bounds) const; // Default visuals
         Point clickOffset{};
         float moverHeightP = 0.10F;
         bool isDragged = false;

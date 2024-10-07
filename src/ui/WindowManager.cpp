@@ -222,11 +222,11 @@ namespace magique
         {
             if (WINDOW_DATA.shownSet.contains(*it)) // only search visible ones
             {
+                if(*it == window) // We found the given window - nothing is in front
+                    return false;
                 const auto bounds = (*it)->getBounds();
                 if (PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
                 {
-                    if (*it == window) // We found the given window and nothing before - it's not covered
-                        return false;
                     return true; // We found something, and it's not the given window - covered
                 }
             }
