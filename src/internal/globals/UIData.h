@@ -39,13 +39,28 @@ namespace magique
             {
                 auto& container = *containers[i];
                 container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
-                container.wasDrawnLastTick = false;
             }
 
             for (int i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+            }
+        }
+
+        void updateDrawTick()
+        {
+            // Using fori to support deletions in the update methods
+            for (int i = 0; i < containers.size(); ++i)
+            {
+                auto& container = *containers[i];
+                container.onDrawUpdate(container.getBounds());
+                container.wasDrawnLastTick = false;
+            }
+            for (int i = 0; i < objects.size(); ++i)
+            {
+                auto& obj = *objects[i];
+                obj.onDrawUpdate(obj.getBounds());
                 obj.wasDrawnLastTick = false;
             }
         }

@@ -51,7 +51,7 @@ namespace magique
         void toggleShown(Window* window);
         void toggleShown(const char* name);
 
-        // Returns a vector that contains all managed windows
+        // Returns a vector that contains all managed windows - sorted from top to bottom, front to back
         const std::vector<Window*>& getWindows();
 
         //----------------- LAYERING -----------------//

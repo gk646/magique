@@ -7,12 +7,11 @@
 IGNORE_WARNING(4100)
 
 //-----------------------------------------------
-// UI Container - Base UI Class
+// UIContainer
 //-----------------------------------------------
 // .....................................................................
-// A container for ui-objects that should be used whenever multiple ui elements should be together.
-// Note: The position of all children is relative to the container position.
-//       -> Moving the parent automatically moves all children!
+// A container for ui-objects that are referenced by name. This is useful to organize ui elements with multiple components
+// Note: UIContainer is a subclass of UIObject and has its functionality (onDraw(), onUpdate(), ...)
 // .....................................................................
 
 namespace magique
@@ -25,18 +24,11 @@ namespace magique
         UIContainer(float w, float h, ScalingMode scaling = ScalingMode::FULL);
         UIContainer(AnchorPosition anchor, float w, float h, ScalingMode scaling = ScalingMode::FULL);
 
-    protected:
         // Controls how the container including all of its children are visualized!
         // Note: It's the containers responsibility to draw all of its children!
-        // Note: You should only draw within the objects getBounds() region - use anchors or align() methods to position it
         void onDraw(const Rectangle &bounds) override{}
 
-        // Controls how the container is updated - called automatically at the end of each update tick
-        //      - wasDrawn: if the object was drawn last tick
-        // Note: This allows for containers to be updated regardless if they are drawn or not (background task,...)
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override {}
-
-    public:
+    protected:
         // Adds a new child to the container with an optional name identifier
         // Pass a new instance of your class new MyClass() - the name will be copied if specified
         // Note: the container takes ownership of the child pointer

@@ -13,28 +13,29 @@ namespace magique
         moverHeightP = moverHeight / MAGIQUE_UI_RESOLUTION_Y;
     }
 
-    void Window::updateDrag(const Rectangle& area, const int mouseButton)
+    bool Window::updateDrag(const Rectangle& area, const int mouseButton)
     {
         const auto mouse = global::UI_DATA.getMousePos();
         if (UIInput::IsMouseButtonDown(mouseButton))
         {
             if (isDragged)
             {
-                UIInput::Consume();
                 setPosition(mouse.x + clickOffset.x, mouse.y + clickOffset.y);
+                return true;
             }
-            else if (PointToRect(mouse.x, mouse.y, area.x, area.y, area.width, area.height))
+            if (PointToRect(mouse.x, mouse.y, area.x, area.y, area.width, area.height))
             {
-                UIInput::Consume();
                 const auto bounds = getBounds();
                 clickOffset = {bounds.x - mouse.x, bounds.y - mouse.y};
                 isDragged = true;
+                return true;
             }
         }
         else
         {
             isDragged = false;
         }
+        return false;
     }
 
     Rectangle Window::getBodyBounds() const
@@ -62,7 +63,6 @@ namespace magique
             bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
             break;
         }
-
         if (anchor != AnchorPosition::NONE)
         {
             const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
@@ -97,7 +97,6 @@ namespace magique
             bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
             break;
         }
-
         if (anchor != AnchorPosition::NONE)
         {
             const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
@@ -109,11 +108,10 @@ namespace magique
 
     bool Window::getIsDragged() const { return isDragged; }
 
-    void Window::drawDefault() const
+    void Window::drawDefault(const Rectangle& bounds) const
     {
-        const auto body = getBounds();
-        DrawRectangleRounded(body, 0.1F, 30, LIGHTGRAY);
-        DrawRectangleRoundedLinesEx(body, 0.1F, 30, 2, GRAY);
+        DrawRectangleRounded(bounds, 0.1F, 30, LIGHTGRAY);
+        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, GRAY);
 
         const auto topBar = getTopBarBounds();
         if (CheckCollisionPointRec(GetMousePosition(), topBar))

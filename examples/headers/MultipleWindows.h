@@ -20,7 +20,7 @@
 using namespace magique;
 
 // Draws the window - method for all windows to avoid duplication
-void DrawWindow(const Window& window, Color color)
+void DrawWindow(Window& window, Color color)
 {
     const auto body = window.getBounds();
     DrawRectangleRounded(body, 0.1F, 30, color);
@@ -29,7 +29,7 @@ void DrawWindow(const Window& window, Color color)
     const auto topBar = window.getTopBarBounds();
     if (CheckCollisionPointRec(GetMousePosition(), topBar) && &window == GetWindowManager().getHoveredWindow())
     {
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Pressed
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) // Pressed
         {
             DrawRectangleRounded(topBar, 0.2F, 30, DARKGRAY);
             DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
@@ -49,11 +49,15 @@ void DrawWindow(const Window& window, Color color)
 
 void UpdateWindow(Window* window)
 {
-    if (UIInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !GetWindowManager().getIsCovered(window))
+    if (!GetWindowManager().getIsCovered(window))
     {
-        GetWindowManager().makeTopMost(window);
+        const bool res = window->updateDrag(window->getTopBarBounds());
+        if (res || UIInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && window->getIsHovered())
+        {
+            GetWindowManager().makeTopMost(window);
+            UIInput::Consume();
+        }
     }
-    window->updateDrag(window->getTopBarBounds());
 }
 
 float topBarHeight = 25;
@@ -62,28 +66,28 @@ struct BlueWindow final : Window
 {
     BlueWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, BLUE); }
-    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
+    void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct RedWindow final : Window
 {
     RedWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, RED); }
-    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
+    void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct PurpleWindow final : Window
 {
     PurpleWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, PURPLE); }
-    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
+    void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct GreenWindow final : Window
 {
     GreenWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, GREEN); }
-    void onUpdate(const Rectangle& bounds, bool wasDrawn) override { UpdateWindow(this); }
+    void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct Test final : Game

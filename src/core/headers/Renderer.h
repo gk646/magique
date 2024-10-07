@@ -18,12 +18,14 @@ namespace magique::renderer
         rlglState.prevDrawCalls = rlglState.drawCalls;
         rlglState.drawCalls = 0;
         AssignCameraPosition(registry);
+        global::UI_DATA.updateDrawTick();
     }
 
     inline double EndTick(const double starTime)
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& perfData = global::PERF_DATA;
+        global::UI_DATA.inputConsumed = false; // End of render ticks vs start of update tick is the same
         if (config.showPerformanceOverlay)
         {
             perfData.draw();
