@@ -1,5 +1,6 @@
-#ifndef MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
-#define MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
+#ifndef MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
+#define MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
+#define MAGIQUE_EXAMPLE
 
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
@@ -127,13 +128,13 @@ struct ObjectScript final : EntityScript // Moving platform
 
 // Game class
 
-struct Test final : Game
+struct Example final : Game
 {
-    Test() : Game("magique - Local Multiplayer Test") {}
+    Example() : Game("magique - Example: Local Multiplayer") {}
 
     HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
 
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         SetShowHitboxes(true);
         // Player
@@ -392,4 +393,4 @@ struct Test final : Game
     }
 };
 
-#endif //MAGIQUE_LOCAL_MULTIPLAYER_TEST_H
+#endif //MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H

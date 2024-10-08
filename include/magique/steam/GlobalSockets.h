@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_GLOBAL_SOCKETS_H
-#define MAGIQUE_GLOBAL_SOCKETS_H
+#ifndef MAGIQUE_STEAM_GLOBAL_SOCKETS_H
+#define MAGIQUE_STEAM_GLOBAL_SOCKETS_H
 
 #include <magique/core/Types.h>
 

@@ -121,6 +121,7 @@ struct Sound;
 struct Music;
 struct Rectangle;
 
+#define MOUSE_LEFT_BUTTON 0
 //-----------------RAYLIB-----------------//
 
 namespace entt

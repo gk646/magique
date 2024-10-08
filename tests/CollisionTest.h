@@ -78,7 +78,7 @@ struct ObjectScript final : EntityScript // Moving platform
 struct Test final : Game
 {
     Test() : Game("magique - CollisionTest") {}
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e, EntityType type)

@@ -24,11 +24,12 @@ namespace magique
         UIContainer(float w, float h, ScalingMode scaling = ScalingMode::FULL);
         UIContainer(AnchorPosition anchor, float w, float h, ScalingMode scaling = ScalingMode::FULL);
 
+    protected:
         // Controls how the container including all of its children are visualized!
         // Note: It's the containers responsibility to draw all of its children!
-        void onDraw(const Rectangle &bounds) override{}
+        void onDraw(const Rectangle& bounds) override {}
 
-    protected:
+    public:
         // Adds a new child to the container with an optional name identifier
         // Pass a new instance of your class new MyClass() - the name will be copied if specified
         // Note: the container takes ownership of the child pointer

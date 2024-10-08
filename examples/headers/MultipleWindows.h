@@ -1,5 +1,6 @@
 #ifndef MAGIQUE_MULTIPLE_WINDOWS_H
 #define MAGIQUE_MULTIPLE_WINDOWS_H
+#define MAGIQUE_EXAMPLE
 
 #include <magique/core/Game.h>
 #include <magique/ui/WindowManager.h>
@@ -20,14 +21,15 @@
 using namespace magique;
 
 // Draws the window - method for all windows to avoid duplication
-void DrawWindow(Window& window, Color color)
+inline void DrawWindow(Window& window, Color color)
 {
     const auto body = window.getBounds();
     DrawRectangleRounded(body, 0.1F, 30, color);
     DrawRectangleRoundedLinesEx(body, 0.1F, 30, 2, GRAY);
 
     const auto topBar = window.getTopBarBounds();
-    if (CheckCollisionPointRec(GetMousePosition(), topBar) && &window == GetWindowManager().getHoveredWindow())
+    // Check if the window is covered at the mouse position
+    if (CheckCollisionPointRec(GetMousePosition(), topBar) && !GetWindowManager().getIsCovered(&window))
     {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) // Pressed
         {
@@ -45,53 +47,96 @@ void DrawWindow(Window& window, Color color)
         DrawRectangleRounded(topBar, 0.1F, 30, color);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
     }
+
+    for (auto* child : window.getChildren())
+    {
+        child->align(AnchorPosition::TOP_RIGHT, window);
+        child->draw();
+    }
 }
 
-void UpdateWindow(Window* window)
+// Update windows - method for all windows to avoid duplication
+inline void UpdateWindow(Window* window)
 {
-    if (!GetWindowManager().getIsCovered(window))
+    if (!GetWindowManager().getIsCovered(window)) // Check if the window is covered at the mouse position
     {
-        const bool res = window->updateDrag(window->getTopBarBounds());
+        auto* closeButton = window->getChild("CloseButton");
+        if (closeButton->getIsClicked())
+        {
+            GetWindowManager().setShown(window, false);
+            UIInput::Consume();
+        }
+
+        const bool res = window->updateDrag(window->getTopBarBounds()); // Returns true if is dragged
         if (res || UIInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && window->getIsHovered())
         {
             GetWindowManager().makeTopMost(window);
-            UIInput::Consume();
+            UIInput::Consume(); // Consume input if clicked or dragged
         }
     }
 }
 
 float topBarHeight = 25;
 
+struct CloseButton final : UIObject
+{
+    CloseButton() : UIObject(topBarHeight, topBarHeight) {}
+
+    void onDraw(const Rectangle& bounds) override
+    {
+        const Vector2 topLeft = {bounds.x + 1, bounds.y + 1};
+        const Vector2 bottomRight = {bounds.x + bounds.width - 1, bounds.y + bounds.height - 1};
+        const Vector2 bottomLeft = {bounds.x, bounds.y + bounds.height - 1};
+        const Vector2 topRight = {bounds.x + bounds.width - 1, bounds.y + 1};
+        DrawLineEx(topLeft, bottomRight, 1, GRAY);
+        DrawLineEx(bottomLeft, topRight, 1, GRAY);
+        DrawRectangleLinesEx(bounds, 1, DARKGRAY);
+    }
+};
+
 struct BlueWindow final : Window
 {
-    BlueWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
+    BlueWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight)
+    {
+        addChild(new CloseButton(), "CloseButton");
+    }
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, BLUE); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct RedWindow final : Window
 {
-    RedWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
+    RedWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight)
+    {
+        addChild(new CloseButton(), "CloseButton");
+    }
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, RED); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct PurpleWindow final : Window
 {
-    PurpleWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
+    PurpleWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight)
+    {
+        addChild(new CloseButton(), "CloseButton");
+    }
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, PURPLE); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
 struct GreenWindow final : Window
 {
-    GreenWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight) {}
+    GreenWindow(float x, float y, float w, float h) : Window(x, y, w, h, topBarHeight)
+    {
+        addChild(new CloseButton(), "CloseButton");
+    }
     void onDraw(const Rectangle& bounds) override { DrawWindow(*this, GREEN); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
-struct Test final : Game
+struct Example final : Game
 {
+    Example() : Game("magique - Example: Multiple Windows") {}
     void onLoadingFinished() override
     {
         float width = 250;
@@ -109,18 +154,29 @@ struct Test final : Game
 
     void updateGame(GameState gameState) override
     {
+        auto wManager = GetWindowManager();
         if (IsKeyPressed(KEY_SPACE))
         {
-            GetWindowManager().moveInFrontOf("RedWindow", "GreenWindow");
+            for (auto* window : wManager.getWindows())
+            {
+                wManager.setShown(window, true);
+            }
         }
-
         if (IsKeyPressed(KEY_ESCAPE))
         {
-            GetWindowManager().moveInFrontOf("GreenWindow", "RedWindow");
+            for (auto* window : wManager.getWindows())
+            {
+                wManager.setShown(window, false);
+            }
         }
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override { GetWindowManager().draw(); }
+    void drawGame(GameState gameState, Camera2D& camera2D) override
+    {
+        GetWindowManager().draw();
+        DrawText("Press SPACE to open all windows", 50, 50, 25, BLACK);
+        DrawText("Press ESC to close all windows", 50, 100, 25, BLACK);
+    }
 };
 
 #endif //MAGIQUE_MULTIPLE_WINDOWS_H

@@ -180,7 +180,7 @@ namespace magique
             }
         case INT:
             {
-                // Due to small buffer optimization doesnt cause allocation below 15 digits - and its faster than snprintf
+                // Due to small buffer optimization doesn't cause allocation below 15 digits - and it's faster than snprintf
                 const std::string intStr = std::to_string(VALUE_STORAGE.getValueVec<int>()[info.index]);
                 std::memcpy(FORMAT_CACHE.data(), intStr.c_str(), intStr.size() + 1);
                 break;
