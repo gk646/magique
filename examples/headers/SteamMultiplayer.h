@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_STEAM_MULTIPLAYER_TEST_H
-#define MAGIQUE_STEAM_MULTIPLAYER_TEST_H
+#ifndef MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
+#define MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
 
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
@@ -137,7 +137,7 @@ struct Test final : Game
 
     HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
 
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         SetShowHitboxes(true);
         // Player
@@ -396,4 +396,4 @@ struct Test final : Game
     }
 };
 
-#endif //MAGIQUE_STEAM_MULTIPLAYER_TEST_H
+#endif //MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H

@@ -123,7 +123,7 @@ standalone units.**
 
 ### 3. Documentation
 
-There are 2 main ways magique is documented:
+There are 3 ways `magique` is documented:
 
 - **In-Header Documentation**
     - Each public function or struct comes with a comment or description
@@ -133,14 +133,21 @@ There are 2 main ways magique is documented:
         - `Failure:` The behavior or return value if the method fails its purpose
         - `Example:` Shows how this method or struct is correctly used
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
+- **[YouTube Channel](https://www.youtube.com/@magique-engine)**
+  - Contains tutorial, walkthrough, showcase and development videos
 - **GitHub Wiki**
     - Written like a tutorial and focuses on general examples rather than individual methods
     - Each module has its own page plus additional pages for combined functionality and extras
+    - Might be incomplete
 
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
-### 4. Paradigms and design philosophy of `magique`:
+### 4. Paradigms and design philosophy of `magique`
+
+> *Software has no functionality if nobody is using it!*  
+
+The core philosophy behind `magique` is usability. 
 
 - 1 Main Thread + Job System
     - Main thread handles calling render and update functions correctly

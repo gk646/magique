@@ -76,7 +76,7 @@ namespace magique
         [[nodiscard]] bool getIsHovered() const;
 
         // Returns true if specified mouse button is pressed while the object is hovered
-        [[nodiscard]] bool getIsClicked(int mouseButton) const;
+        [[nodiscard]] bool getIsClicked(int mouseButton = MOUSE_LEFT_BUTTON) const;
 
         // Controls the anchor position of the object - set to AnchorPosition::NONE in order to un-anchor the object
         // Default: NONE

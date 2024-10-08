@@ -9,7 +9,7 @@ IGNORE_WARNING(4100)
 // Button
 //-----------------------------------------------
 // .....................................................................
-// The draw functions can be overridden so the visuals can be modified completly
+// The draw functions can be overridden so the visuals can be modified completely
 // Defaults implementations are provided for guidance
 // .....................................................................
 
@@ -23,7 +23,7 @@ namespace magique
         // Called each tick on update thread
         void onUpdate(const Rectangle& bounds, bool isDrawn) override;
 
-        // Called everytime the button is hovered if it wasnt before
+        // Called everytime the button is hovered if it wasn't before
         virtual void onHover(const Rectangle& bounds) {}
 
         // Called everytime the button is clicked with either right or left click

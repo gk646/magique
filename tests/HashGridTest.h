@@ -1,5 +1,5 @@
-#ifndef HASHGRIDTEST_H
-#define HASHGRIDTEST_H
+#ifndef MAGIQUE_HASHGRID_TEST_H
+#define MAGIQUE_HASHGRID_TEST_H
 
 #include <string>
 #include <raylib/raylib.h>
@@ -59,7 +59,7 @@ struct ObjectScript final : EntityScript
 struct Test final : Game
 {
     Test() : Game("magique - HashGridTest") {}
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e)
@@ -144,4 +144,4 @@ struct Test final : Game
     }
 };
 
-#endif //HASHGRIDTEST_H
+#endif //MAGIQUE_HASHGRID_TEST_H

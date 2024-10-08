@@ -95,7 +95,7 @@ struct ObjectScript final : EntityScript
 struct Test final : Game
 {
     Test() : Game("magique - CollisionBenchmark") {}
-    void onStartup(AssetLoader& loader, GameConfig& config) override
+    void onStartup(AssetLoader& loader) override
     {
         SetRandomSeed(100);
         SetShowHitboxes(true);

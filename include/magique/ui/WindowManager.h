@@ -62,7 +62,7 @@ namespace magique
 
         //----------------- UTIL -----------------//
 
-        // Returns true if given window covered by another window at the given position
+        // Returns true if given window covered any other another window at the given position
         bool getIsCovered(Window* window, Point pos = GetMousePos());
         bool getIsCovered(const char* window, Point pos = GetMousePos());
 
