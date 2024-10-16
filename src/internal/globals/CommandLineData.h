@@ -81,6 +81,7 @@ namespace magique
             if (showConsole) [[unlikely]]
             {
                 const int pos = cursorPos;
+                const int inputSize = static_cast<int>(input.size());
                 if (blinkCounter > 30)
                 {
                     showCursor = !showCursor;
@@ -91,7 +92,7 @@ namespace magique
                     input.erase(cursorPos - 1, 1);
                     cursorPos--;
                 }
-                else if ((IsKeyPressed(KEY_DELETE) || IsKeyPressedRepeat(KEY_DELETE)) && cursorPos < input.size())
+                else if ((IsKeyPressed(KEY_DELETE) || IsKeyPressedRepeat(KEY_DELETE)) && cursorPos < inputSize)
                 {
                     input.erase(cursorPos, 1);
                     refreshSuggestions();
@@ -101,7 +102,7 @@ namespace magique
                     --cursorPos;
                 }
 
-                else if ((IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) && cursorPos < input.size())
+                else if ((IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) && cursorPos < inputSize)
                 {
                     ++cursorPos;
                 }
@@ -112,14 +113,14 @@ namespace magique
                 else if (IsKeyPressed(KEY_TAB) && suggestions.size() == 1)
                 {
                     input = suggestions[0]->name;
-                    cursorPos = static_cast<int>(input.size());
+                    cursorPos =inputSize;
                 }
                 else if ((IsKeyPressed(KEY_UP) || IsKeyPressedRepeat(KEY_UP)) &&
-                         historyPos < static_cast<int>(history.size()) - 1)
+                         historyPos < history.size() - 1)
                 {
                     ++historyPos;
                     input = history[history.size() - 1 - historyPos];
-                    cursorPos = static_cast<int>(input.size());
+                    cursorPos =inputSize;
                 }
                 else if ((IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)) && historyPos > -1)
                 {
@@ -132,7 +133,7 @@ namespace magique
                     {
                         input = history[history.size() - 1 - historyPos];
                     }
-                    cursorPos = static_cast<int>(input.size());
+                    cursorPos = static_cast<int>(inputSize);
                 }
 
                 char c;

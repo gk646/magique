@@ -304,12 +304,12 @@ namespace magique
                 LOG_WARNING("Given data does not match the format! Use getFormatData() to get the current empty data");
                 return {};
             }
-            if (dp.name == nullptr && fp.name || fp.name == nullptr && dp.name)
+            if ((dp.name == nullptr && fp.name != nullptr) || (fp.name == nullptr && dp.name != nullptr))
             {
                 LOG_WARNING("Given data does not match the format! Use getFormatData() to get the current empty data");
                 return {};
             }
-            if (dp.name && strcmp(dp.name, fp.name) != 0)
+            if (dp.name != nullptr && strcmp(dp.name, fp.name) != 0)
             {
                 LOG_WARNING("Given data does not match the format! Use getFormatData() to get the current empty data");
                 return {};

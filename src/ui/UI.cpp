@@ -4,45 +4,45 @@
 
 namespace magique
 {
-    Point GetUIAnchor(const AnchorPosition anchor, const float width, const float height, const float inset)
+    Point GetUIAnchor(const Anchor anchor, const float width, const float height, const float inset)
     {
         Point point{};
         const auto res = global::UI_DATA.getScreenDims();
         switch (anchor)
         {
-        case AnchorPosition::TOP_LEFT:
+        case Anchor::TOP_LEFT:
             point = {inset, inset};
             break;
 
-        case AnchorPosition::TOP_CENTER:
+        case Anchor::TOP_CENTER:
             point = {(res.x - width) / 2.0F, inset};
             break;
 
-        case AnchorPosition::TOP_RIGHT:
+        case Anchor::TOP_RIGHT:
             point = {res.x - width - inset, inset};
             break;
 
-        case AnchorPosition::MID_LEFT:
+        case Anchor::MID_LEFT:
             point = {inset, res.y / 2 - height / 2};
             break;
 
-        case AnchorPosition::MID_CENTER:
+        case Anchor::MID_CENTER:
             point = {res.x / 2 - width / 2, res.y / 2 - height / 2};
             break;
 
-        case AnchorPosition::MID_RIGHT:
+        case Anchor::MID_RIGHT:
             point = {res.x - width - inset, res.y / 2 - height / 2};
             break;
 
-        case AnchorPosition::BOTTOM_LEFT:
+        case Anchor::BOTTOM_LEFT:
             point = {inset, res.y - height - inset};
             break;
 
-        case AnchorPosition::BOTTOM_CENTER:
+        case Anchor::BOTTOM_CENTER:
             point = {res.x / 2 - width / 2, res.y - height - inset};
             break;
 
-        case AnchorPosition::BOTTOM_RIGHT:
+        case Anchor::BOTTOM_RIGHT:
             point = {res.x - width - inset, res.y - height - inset};
             break;
         }

@@ -27,7 +27,7 @@ namespace magique
     // -------------------------
     // Returns the (top-left) coordinates of the specified anchor point
     // Passing width and height aligns the anchor to fit them - inset applies an inset for the border points inwards
-    Point GetUIAnchor(AnchorPosition anchor, float width = 0, float height = 0, float inset = 0);
+    Point GetUIAnchor(Anchor anchor, float width = 0, float height = 0, float inset = 0);
 
     // Accepts a value in the logical resolution and returns the value in the current resolution (scaled horizontally)
     // Note: This is useful when needing static offsets that automatically scale

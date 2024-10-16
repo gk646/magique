@@ -11,9 +11,10 @@
 // #include "HashGridTest.h"
 
 // Examples
-#include "../examples/headers/LocalMultiplayer.h"
+//#include "../examples/headers/LocalMultiplayer.h"
 //#include "../examples/headers/SteamMultiplayer.h"
 //#include "../examples/headers/MultipleWindows.h"
+#include "../examples/headers/UserInterface.h"
 
 int main()
 {
@@ -24,5 +25,4 @@ int main()
     Test test{};
     return test.run();
 #endif
-
 }

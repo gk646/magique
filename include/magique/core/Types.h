@@ -369,7 +369,7 @@ namespace magique
     //----------------- UI -----------------//
 
     // Anchor position used in the UI module to position objects
-    enum class AnchorPosition
+    enum class Anchor
     {
         NONE,          // No anchoring - for UIObject
         TOP_LEFT,      // LT

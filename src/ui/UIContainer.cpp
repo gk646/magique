@@ -12,12 +12,10 @@ namespace magique
         global::UI_DATA.registerObject(this, true);
     }
 
-    UIContainer::UIContainer(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}
-
-    UIContainer::UIContainer(const AnchorPosition anchor, const float w, const float h, const ScalingMode scaling) :
-        UIObject(0, 0, w, h, scaling)
+    UIContainer::UIContainer(const float w, const float h, const Anchor anchor, const ScalingMode scaling) :
+        UIObject(w, h, anchor, scaling)
     {
-        setAnchor(anchor);
+        global::UI_DATA.registerObject(this, true);
     }
 
     void UIContainer::addChild(UIObject* child, const char* name)

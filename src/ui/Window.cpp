@@ -63,7 +63,7 @@ namespace magique
             bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
             break;
         }
-        if (anchor != AnchorPosition::NONE)
+        if (anchor != Anchor::NONE)
         {
             const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
             bounds.x = pos.x;
@@ -97,7 +97,7 @@ namespace magique
             bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
             break;
         }
-        if (anchor != AnchorPosition::NONE)
+        if (anchor != Anchor::NONE)
         {
             const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
             bounds.x = pos.x;

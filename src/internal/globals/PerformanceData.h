@@ -10,7 +10,7 @@ namespace magique
     struct PerformanceBlock final
     {
         float width = 0;
-        char text[20] = {};
+        char text[20]{};
     };
 
 
@@ -26,7 +26,7 @@ namespace magique
         uint32_t drawTickTime = 0;
         int tickCounter = 0;
         int updateDelayTicks = 15;
-        PerformanceBlock blocks[6]; // 5 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
+        PerformanceBlock blocks[6]{}; // 5 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
 
 #if MAGIQUE_PROFILING == 1
         vector<uint32_t> logicTimes;

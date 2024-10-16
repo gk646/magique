@@ -1274,7 +1274,7 @@ int InitPlatform(void)
     // Disable GlFW auto iconify behaviour
     // Auto Iconify automatically minimizes (iconifies) the window if the window loses focus
     // additionally auto iconify restores the hardware resolution of the monitor if the window that loses focus is a fullscreen window
-    glfwWindowHint(GLFW_AUTO_ICONIFY, 0); 
+    glfwWindowHint(GLFW_AUTO_ICONIFY, 0);
 
     // Check window creation flags
     if ((CORE.Window.flags & FLAG_FULLSCREEN_MODE) > 0) CORE.Window.fullscreen = true;
@@ -1748,7 +1748,7 @@ static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, i
         ((key == KEY_NUM_LOCK) && ((mods & GLFW_MOD_NUM_LOCK) > 0))) CORE.Input.Keyboard.currentKeyState[key] = 1;
 
     // Check if there is space available in the key queue
-    if ((CORE.Input.Keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS))
+    if ((CORE.Input.Keyboard.keyPressedQueueCount < MAX_KEY_PRESSED_QUEUE) && (action == GLFW_PRESS || action == GLFW_REPEAT))
     {
         // Add character to the queue
         CORE.Input.Keyboard.keyPressedQueue[CORE.Input.Keyboard.keyPressedQueueCount] = key;

@@ -77,7 +77,6 @@ typedef struct CoreData
 
             int charPressedQueue[MAX_CHAR_PRESSED_QUEUE]; // Input characters queue (unicode)
             int charPressedQueueCount;                    // Input characters queue count
-
         } Keyboard;
         struct
         {
