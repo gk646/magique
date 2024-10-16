@@ -83,6 +83,7 @@ namespace magique
 
         // Setup magique
         InitMagique();
+
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
     }

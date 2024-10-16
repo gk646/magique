@@ -17,7 +17,7 @@ namespace magique
         cxstructs::str_skip_char(data, '\n', 1);
         MAGIQUE_ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
 #ifdef MAGIQUE_DEBUG
-        const auto val = XMLGetValueInLine<const char*>(data, "encoding", "nope");
+        const auto* val = XMLGetValueInLine<const char*>(data, "encoding", "nope");
         MAGIQUE_ASSERT(cxstructs::str_cmp_prefix(val, "csv"), "Tilemap has invalid encoding! Only supports csv");
 #endif
         cxstructs::str_skip_char(data, '\n', 1);
@@ -171,9 +171,10 @@ namespace magique
         {
             if (XMLLineContainsTag(data, "layer"))
             {
-                const auto* msg = "Layers have different dimensions!";
-                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "width", UINT16_MAX) == width, msg);
-                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "height", UINT16_MAX) == height, msg);
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "width", UINT16_MAX) == width,
+                               "Layers have different dimensions!");
+                MAGIQUE_ASSERT(XMLGetValueInLine<int>(data, "height", UINT16_MAX) == height,
+                               "Layers have different dimensions!");
                 ParseTileLayer(*this, data);
             }
             else if (XMLLineContainsTag(data, "objectgroup"))

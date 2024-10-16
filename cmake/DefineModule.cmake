@@ -4,8 +4,10 @@ if (NOT DEFINED MODULE_NAME)
     message("Use set(MODULE_NAME \"MyModule\") to set the name")
 endif ()
 
+# Parse files
 file(GLOB_RECURSE MODULE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
 
+# Add the module as static library
 add_library(magique-${MODULE_NAME} OBJECT ${MODULE_FILES})
 
 target_include_directories(magique-${MODULE_NAME} PRIVATE
@@ -16,8 +18,8 @@ target_include_directories(magique-${MODULE_NAME} PRIVATE
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # Baseline compile flags for GCC/Clang
-    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g")
-    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -march=native -mavx2 -flto -fno-exceptions -fno-rtti -ffast-math")
+    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -march=native")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -march=native -mavx -flto -fno-exceptions -fno-rtti -ffast-math")
     set(CMAKE_EXE_LINKER_FLAGS "-flto")
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE
@@ -39,7 +41,7 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_RELEASE "/O2 /DNDEBUG /Ob3")
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE
-            /W4 /Zc:preprocessor /EHc /GA /fp:fast /arch:AVX2 /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi
+            /W4 /Zc:preprocessor /EHc /GA /fp:fast /arch:AVX /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi
     )
     target_link_options(magique-${MODULE_NAME} PRIVATE
             /LTCG /OPT:REF /OPT:ICF

@@ -21,8 +21,7 @@ namespace magique
         // Creates the container from absolute dimensions in the logical UI resolution
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIContainer(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIContainer(float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIContainer(AnchorPosition anchor, float w, float h, ScalingMode scaling = ScalingMode::FULL);
+        UIContainer(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
 
     protected:
         // Controls how the container including all of its children are visualized!

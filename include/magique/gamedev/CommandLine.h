@@ -3,6 +3,7 @@
 
 #include <string>
 #include <magique/fwd.hpp>
+#include <magique/internal/PlatformIncludes.h>
 
 //-----------------------------------------------
 // CommandLine Module

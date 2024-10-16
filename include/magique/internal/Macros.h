@@ -40,7 +40,7 @@ namespace magique::internal
 
 //----------------- UTIL -----------------//
 
-#if !defined(_DEBUG) || defined(NDEBUG)
+#if defined(NDEBUG)
 #define MAGIQUE_ASSERT(expr, message) ((void)0)
 #else
 #define MAGIQUE_ASSERT(expr, message)                                                                                   \
@@ -76,7 +76,7 @@ namespace magique::internal
 //----------------- HELPERS -----------------//
 
 #define M_SHARECODE_CHECKTYPE(checkType, err)                                                                           \
-    if (p.type != checkType)                                         \
+    if (p.type != checkType)                                                                                            \
     {                                                                                                                   \
         LOG_WARNING(err, p.name);                                                                                       \
         return;                                                                                                         \
@@ -85,12 +85,15 @@ namespace magique::internal
 //----------------- BUILDING -----------------//
 
 #ifdef _MSC_VER
-#define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
 
+#define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
 #define UNIGNORE_WARNING() __pragma(warning(pop))
+
 #else
+
 #define IGNORE_WARNING(num)
 #define UNIGNORE_WARNING()
+
 #endif
 
 

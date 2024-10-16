@@ -20,10 +20,7 @@ namespace magique
         global::UI_DATA.registerObject(this);
     }
 
-    UIObject::UIObject(const float w, const float h, const ScalingMode scaling) : UIObject(0, 0, w, h, scaling) {}
-
-    UIObject::UIObject(const AnchorPosition anchor, const float w, const float h, const ScalingMode scaling) :
-        UIObject(0, 0, w, h, scaling)
+    UIObject::UIObject(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(0, 0, w, h, scaling)
     {
         setAnchor(anchor);
     }
@@ -38,46 +35,46 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    void UIObject::align(const AnchorPosition alignAnchor, const UIObject& relativeTo, const float inset)
+    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, const float inset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
         switch (alignAnchor)
         {
-        case AnchorPosition::TOP_LEFT:
+        case Anchor::TOP_LEFT:
             pos.x += inset;
             pos.y += inset;
             break;
-        case AnchorPosition::TOP_CENTER:
+        case Anchor::TOP_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
             pos.y += inset;
             break;
-        case AnchorPosition::TOP_RIGHT:
+        case Anchor::TOP_RIGHT:
             pos.x += (relWidth - myWidth) - inset;
             pos.y += inset;
             break;
-        case AnchorPosition::MID_LEFT:
+        case Anchor::MID_LEFT:
             pos.x += inset;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
-        case AnchorPosition::MID_CENTER:
+        case Anchor::MID_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
-        case AnchorPosition::MID_RIGHT:
+        case Anchor::MID_RIGHT:
             pos.x += (relWidth - myWidth) - inset;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
-        case AnchorPosition::BOTTOM_LEFT:
+        case Anchor::BOTTOM_LEFT:
             pos.x += inset;
             pos.y += (relHeight - myWidth) - inset;
             break;
-        case AnchorPosition::BOTTOM_CENTER:
+        case Anchor::BOTTOM_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
             pos.y += (relHeight - myWidth) - inset;
             break;
-        case AnchorPosition::BOTTOM_RIGHT:
+        case Anchor::BOTTOM_RIGHT:
             pos.x += (relWidth - myWidth) - inset;
             pos.y += (relHeight - myWidth) - inset;
             break;
@@ -134,7 +131,7 @@ namespace magique
             break;
         }
 
-        if (anchor != AnchorPosition::NONE)
+        if (anchor != Anchor::NONE)
         {
             const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
             bounds.x = pos.x;
@@ -168,9 +165,9 @@ namespace magique
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
-    AnchorPosition UIObject::getAnchor() const { return anchor; }
+    Anchor UIObject::getAnchor() const { return anchor; }
 
-    void UIObject::setAnchor(const AnchorPosition newAnchor) { anchor = newAnchor; }
+    void UIObject::setAnchor(const Anchor newAnchor) { anchor = newAnchor; }
 
     void UIObject::setScalingMode(const ScalingMode newScaling) { scaleMode = newScaling; }
 

@@ -41,7 +41,7 @@ namespace magique
             auto& vec = getResourceVec<T>();
             auto handle = vec.size();
             vec.push_back(resource);
-            return static_cast<enum class handle>(handle);
+            return static_cast<enum handle>(handle);
         }
 
         // Function to move add a resource
@@ -51,7 +51,7 @@ namespace magique
             auto& vec = getResourceVec<T>();
             auto handle = vec.size();
             vec.push_back(std::forward<T>(resource));
-            return static_cast<enum class handle>(handle);
+            return static_cast<enum handle>(handle);
         }
 
         // Function to get a resource

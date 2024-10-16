@@ -116,6 +116,8 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
 
 namespace magique
 {
+    static constexpr Asset emptyAsset{};
+
     AssetContainer::~AssetContainer() { delete[] nativeData; }
 
     void AssetContainer::sort()
@@ -148,7 +150,7 @@ namespace magique
             func(assets[pos]);
             pos++;
         }
-        while (pos < assets.size() && strncmp(assets[pos].path, name, size) == 0);
+        while (pos < static_cast<int>(assets.size()) && strncmp(assets[pos].path, name, size) == 0);
     }
 
     const Asset& AssetContainer::getAssetByPath(const char* name) const
@@ -161,7 +163,7 @@ namespace magique
         if (pos == -1) [[unlikely]]
         {
             LOG_ERROR("No asset with name %s found! Returning empty asset", name);
-            return Asset();
+            return emptyAsset;
         }
 
         return assets[pos];
@@ -177,7 +179,7 @@ namespace magique
                 return asset;
         }
         LOG_ERROR("No asset with name %s found! Returning empty asset", name);
-        return Asset();
+        return emptyAsset;
     }
 
     int AssetContainer::getSize() const { return static_cast<int>(assets.size()); }
