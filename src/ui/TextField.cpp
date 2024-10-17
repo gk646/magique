@@ -1,8 +1,8 @@
-#include <raylib/raylib.h>
-
 #include <magique/ui/controls/TextField.h>
+#include <magique/util/RayUtils.h>
 
 #include "external/raylib/src/coredata.h"
+#include "external/cxstructs/cxutil/cxmath.h"
 
 namespace magique
 {
@@ -23,7 +23,7 @@ namespace magique
 
     const std::string& TextField::getText() const { return text; }
 
-    bool TextField::getHasTextChanged()
+    bool TextField::pollTextHasChanged()
     {
         const bool val = textChanged;
         textChanged = false;
@@ -40,92 +40,188 @@ namespace magique
 
     void TextField::updateInputs()
     {
-        auto delChar = [](std::string& str, int& pos, bool infront) // Handles deleting upfront and behind
-        {
-            if (str.empty())
-                return;
-
-            if (infront)
-            {
-                if (pos == 0)
-                    return;
-                str.erase(pos - 1);
-            }
-            else
-            {
-                if (pos == static_cast<int>(str.size()))
-                    return;
-                str.erase(pos + 1);
-            }
-        };
-
-        auto moveLineHorizontal = [](std::string& str, int& pos, const bool left)
-        {
-            if (left)
-            {
-                if (pos < static_cast<int>(str.size()))
-                {
-                    ++pos;
-                }
-            }
-            else
-            {
-                if (pos > 0)
-                    --pos;
-            }
-        };
-
-        auto moveLineVertical = [](std::string& str, int& pos, bool up) {
-
-        };
-
-        if (IsKeyPressedAnyWay(MOVE_LEFT))
-        {
-            moveLineHorizontal(text, cursorPos, true);
-            return;
-        }
-        if (IsKeyPressedAnyWay(MOVE_RIGHT))
-        {
-            moveLineHorizontal(text, cursorPos, false);
-            return;
-        }
-        if (IsKeyPressedAnyWay(MOVE_UP))
-        {
-            moveLineHorizontal(text, cursorPos, true);
-            return;
-        }
-        if (IsKeyPressedAnyWay(MOVE_DOWN))
-        {
-            moveLineHorizontal(text, cursorPos, true);
-            return;
-        }
-
-        if (IsKeyPressedAnyWay(BACKSPACE))
-        {
-            delChar(text, cursorPos, true);
-            return;
-        }
-        if (IsKeyPressedAnyWay(DELETE))
-        {
-            delChar(text, cursorPos, false);
-            return;
-        }
+        updateControls();
 
         // Iterate characters
         for (int i = 0; i < CORE.Input.Keyboard.charPressedQueueCount; ++i)
         {
             const char pressedChar = static_cast<char>(CORE.Input.Keyboard.charPressedQueue[i]);
             text.insert(text.begin() + cursorPos, pressedChar);
+            ++cursorPos;
         }
+    }
+
+    void TextField::drawText(const float fontSize, const Color color, const Font& font, const float spacing)
+    {
+        const auto bounds = getBounds();
+        const Vector2 tPos = {bounds.x, bounds.y};
+        DrawTextEx(font, getCText(), tPos, fontSize, spacing, BLACK);
+        const auto cursorOffX =
+            MeasureTextUpTo(text.data() + currLineStart, cursorPos - currLineStart, font, fontSize, spacing);
+        const auto cursorOffY = (fontSize + static_cast<float>(GetTextLineSpacing())) * static_cast<float>(cursorLine);
+        DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, color);
     }
 
     void TextField::scaleSizeWithText(float fontSize, bool scaleHorizontal, bool scaleVertical) {}
 
-    void TextField::drawDefault(const Rectangle& bounds)
+    void TextField::updateControls()
     {
-        DrawRectangleLinesEx(bounds, 2, GRAY);
-        DrawRectangleRec(bounds, LIGHTGRAY);
-        DrawText(getCText(), bounds.x, bounds.y, 15, BLACK);
+        // Finds the current line start
+        auto findLine = [](std::string& str, const int cursorPos, int& lineStart, int& currLine)
+        {
+            lineStart = 0;
+            currLine = 0;
+            for (int i = 0; i < cursorPos; ++i)
+            {
+                if (str[i] == '\n')
+                {
+                    ++currLine;
+                    lineStart = i;
+                }
+            }
+        };
+
+        // Clamp as safety at the beginning
+        cursorPos = cxstructs::clamp(cursorPos, 0, static_cast<int>(text.size()));
+
+        // Parses controls and returns true if cursor or text have changed
+        auto parseControls = [](std::string& str, int& pos)
+        {
+            const int size = static_cast<int>(str.size());
+
+            if (IsKeyPressedAnyWay(MOVE_LEFT))
+            {
+                if (IsKeyDown(KEY_LEFT_CONTROL))
+                {
+                    if (pos - 1 < 0)
+                        return false;
+                    if (isspace(str[pos - 1]))
+                    {
+                        --pos;
+                        return true;
+                    }
+                    for (int i = pos - 1; i > -1; --i)
+                    {
+                        if (isspace(str[i]))
+                        {
+                            pos = i + 1;
+                            return true;
+                        }
+                        if (i == 0)
+                        {
+                            pos = 0;
+                            return true;
+                        }
+                    }
+                }
+                else if (pos > 0)
+                {
+                    --pos;
+                    return true;
+                }
+                return false;
+            }
+
+            if (IsKeyPressedAnyWay(MOVE_RIGHT))
+            {
+                if (IsKeyDown(KEY_LEFT_CONTROL))
+                {
+                    if (isspace(str[pos]))
+                    {
+                        ++pos;
+                        return true;
+                    }
+                    for (int i = pos; i < size; ++i)
+                    {
+                        if (isspace(str[i]))
+                        {
+                            pos = i;
+                            return true;
+                        }
+
+                        if (i == size - 1)
+                        {
+                            pos = i + 1;
+                            return true;
+                        }
+                    }
+                }
+                else if (pos < size)
+                {
+                    ++pos;
+                    return true;
+                }
+                return false;
+            }
+
+            if (IsKeyPressedAnyWay(MOVE_UP))
+            {
+                if (pos - 1 < 0)
+                    return false;
+                for (int i = pos - 1; i > -1; --i)
+                {
+                    if (str[i] == '\n')
+                    {
+                        pos = i;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if (IsKeyPressedAnyWay(MOVE_DOWN))
+            {
+                for (int i = pos; i < size; ++i)
+                {
+                    if (str[i] == '\n')
+                    {
+                        pos = i + 1;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            if (str.empty())
+                return false;
+
+            if (IsKeyPressedAnyWay(BACKSPACE))
+            {
+                if (pos == 0)
+                    return false;
+                str.erase(pos - 1, 1);
+                --pos;
+                return true;
+            }
+
+            if (IsKeyPressedAnyWay(DELETE))
+            {
+                if (pos == size)
+                    return false;
+                str.erase(pos, 1);
+                return true;
+            }
+            return false;
+        };
+
+        if (parseControls(text, cursorPos))
+        {
+            textChanged = true;
+            findLine(text, cursorPos, currLineStart, cursorLine);
+            return;
+        }
+
+        if (IsKeyPressedAnyWay(KEY_ENTER))
+        {
+            if (!onEnterPressed(IsKeyDown(KEY_LEFT_CONTROL), IsKeyDown(KEY_LEFT_SHIFT), IsKeyDown(KEY_LEFT_ALT)))
+            {
+                text.insert(text.begin() + cursorPos, '\n');
+                textChanged = true;
+                ++cursorPos;
+                findLine(text, cursorPos, currLineStart, cursorLine);
+            }
+        }
     }
+
 
 } // namespace magique
