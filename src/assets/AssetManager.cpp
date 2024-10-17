@@ -92,7 +92,7 @@ namespace magique
         Rectangle dest = {0, 0, source.width, source.height}; // copy 1:1 they are scaled later
         Image singleImage = GenImageColor(static_cast<int>(assets.size()) * width, height, BLANK);
 
-        for (int i = 1; i < assets.size(); ++i)
+        for (int i = 1; i < static_cast<int>(assets.size()); ++i)
         {
             ImageDraw(&singleImage, image, source, dest, WHITE);
             dest.x += static_cast<float>(width);
