@@ -4,19 +4,16 @@
 #include <string>
 #include <raylib/raylib.h>
 #include <magique/ui/UIObject.h>
-#include <magique/internal/PlatformIncludes.h>
 IGNORE_WARNING(4100)
 
 //-----------------------------------------------
 // TextField
 //-----------------------------------------------
 // .....................................................................
-// The textfield is useful to capture text input and allows selecting and editing text inside the field
+// The textfield is useful to capture text input and allows editing text inside the field
 // Controls are:
 //      - Arrow keys        : move cursor
 //      - Arrow keys + CTRL : move cursor one word
-//      - CTRL + C          : copy selection
-//      - CTRL + V          : paste selection
 //      - BACKSPACE/DEL     : delete in front/behind
 //
 // The default behavior is to require the user to focus it by clicking it once - once focused it registers the input
@@ -36,9 +33,9 @@ namespace magique
         // Note: Text needs to be drawn manually
         void onDraw(const Rectangle& bounds) override
         {
-            DrawRectangleLinesEx(bounds, 2, GRAY);
-            DrawRectangleRec(bounds, LIGHTGRAY);
-            drawText(15, BLACK);
+            DrawRectangleLinesEx(bounds, 2, getIsFocused() ? LIGHTGRAY : DARKGRAY);
+            DrawRectangleRec(bounds, getIsFocused() ? LIGHTGRAY : GRAY);
+            drawText(15, getIsFocused() ? LIGHTGRAY : DARKGRAY);
         }
 
         // Same as ui/UIObject.h
@@ -54,16 +51,18 @@ namespace magique
         // Sets if the cursor is shown or not and the blink delay in ticks
         void setCursorStatus(bool shown, int delay);
 
+        // Returns true if the textfield is focused
+        [[nodiscard]] bool getIsFocused() const;
+
+        // Returns the total amount of lines (count of newlines '\n')
+        [[nodiscard]] int getLineCount() const;
+
     protected:
-        // Updates the text with the current inputs for this tick - also updates text selection
+        // Updates the text with the current inputs for this tick - should be called each update tick
         void updateInputs();
 
         // Draws the text
         void drawText(float size, Color color, const Font& font = GetFontDefault(), float spacing = 1);
-
-        // Scales the dimensions of the textfield based on the current text and given font size
-        // If set, adjusts the width to the length of the longest line and the height to the amount of lines
-        void scaleSizeWithText(float fontSize, bool scaleHorizontal = true, bool scaleVertical = true);
 
         // Called everytime the textfield is focused and enter is pressed
         // Return true: signals enter action was consumed and should NOT be treated as newline
@@ -72,13 +71,15 @@ namespace magique
 
     private:
         void updateControls();
+        void updateScaling(float fontSize, const Font& font, float spacing);
+
         std::string text;
+        float longestLineLen = 0; // Length of the longest line
         int cursorPos = 0;        // Current text index the cursor is at
         int cursorLine = 0;       // Current line the cursor is in
         int currLineStart = 0;    // Text index where the current line starts
-        int selectionStart = 0;   //  Text index where the selection starts
-        int selectionEnd = 0;     // Text index where the selection ends
         int blinkDelay = 30;      // Blink delay of the cursor - 30 ticks are 0.5 seconds at 60 ticks/s
+        int lineCount = 0;       // Amount of lines (separated by newlines)
         bool isFocused = false;   // If the textfield is focused
         bool textChanged = false; // If the text was changed
         bool showCursor = true;   // If the cursor is shown
@@ -87,6 +88,5 @@ namespace magique
 } // namespace magique
 
 UNIGNORE_WARNING()
-
 
 #endif //MAGIQUE_TEXTFIELD_H

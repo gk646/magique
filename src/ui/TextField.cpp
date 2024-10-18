@@ -6,7 +6,6 @@
 
 namespace magique
 {
-
     // Keybindings to avoid hardcoding
     static constexpr int MOVE_LEFT = KEY_LEFT;
     static constexpr int MOVE_RIGHT = KEY_RIGHT;
@@ -36,6 +35,10 @@ namespace magique
         blinkDelay = delay;
     }
 
+    bool TextField::getIsFocused() const { return isFocused; }
+
+    int TextField::getLineCount() const { return lineCount; }
+
     bool IsKeyPressedAnyWay(const int key) { return IsKeyPressed(key) || IsKeyPressedRepeat(key); }
 
     void TextField::updateInputs()
@@ -62,21 +65,25 @@ namespace magique
         DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, color);
     }
 
-    void TextField::scaleSizeWithText(float fontSize, bool scaleHorizontal, bool scaleVertical) {}
-
     void TextField::updateControls()
     {
         // Finds the current line start
-        auto findLine = [](std::string& str, const int cursorPos, int& lineStart, int& currLine)
+        auto findLine = [](std::string& str, const int cursorPos, int& currLineStart, int& currLine, int& lineCount)
         {
-            lineStart = 0;
+            currLineStart = 0;
             currLine = 0;
-            for (int i = 0; i < cursorPos; ++i)
+            lineCount = 0;
+            const int size = static_cast<int>(str.size());
+            for (int i = 0; i < size; ++i)
             {
                 if (str[i] == '\n')
                 {
-                    ++currLine;
-                    lineStart = i;
+                    if (i < cursorPos)
+                    {
+                        ++currLine;
+                        currLineStart = i;
+                    }
+                    ++lineCount;
                 }
             }
         };
@@ -207,7 +214,7 @@ namespace magique
         if (parseControls(text, cursorPos))
         {
             textChanged = true;
-            findLine(text, cursorPos, currLineStart, cursorLine);
+            findLine(text, cursorPos, currLineStart, cursorLine, lineCount);
             return;
         }
 
@@ -218,10 +225,9 @@ namespace magique
                 text.insert(text.begin() + cursorPos, '\n');
                 textChanged = true;
                 ++cursorPos;
-                findLine(text, cursorPos, currLineStart, cursorLine);
+                findLine(text, cursorPos, currLineStart, cursorLine, lineCount);
             }
         }
     }
-
 
 } // namespace magique
