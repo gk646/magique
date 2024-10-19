@@ -11,7 +11,7 @@
 #include "internal/utils/STLUtil.h"
 #include "internal/types/Spinlock.h"
 #include "internal/datastructures/VectorType.h"
-#include "external/cxstructs/cxallocator/allocators/BumpAllocator.h"
+#include "external/cxstructs/cxallocator/SlotAllocator.h"
 
 IGNORE_WARNING(4324) // structure was padded due to alignment specifier
 
@@ -19,16 +19,16 @@ namespace magique
 {
     struct Scheduler final
     {
-        alignas(64) std::deque<IJob*> jobQueue;             // Global job queue
-        alignas(64) vector<const IJob*> workedJobs;         // Currently processed jobs
-        vector<std::thread> threads;                        // All working threads
-        cxstructs::DynamicBumpAllocator jobAllocator{1000}; // Allocator for jobs
-        Spinlock queueLock;                                 // The lock to make queue access thread safe
-        Spinlock workedLock;                                // The lock to worked vector thread safe
-        std::atomic<bool> shutDown = false;                 // Signal to shut down all threads
-        std::atomic<bool> isHibernate = false;              // If the scheduler is running
-        std::atomic<int> currentJobsSize = 0;               // Current jobs
-        std::atomic<uint16_t> handleID = 0;                 // The internal handle counter
+        alignas(64) std::deque<IJob*> jobQueue;     // Global job queue
+        alignas(64) vector<const IJob*> workedJobs; // Currently processed jobs
+        vector<std::thread> threads;                // All working threads
+        cxstructs::SlotAllocator<50> jobAllocator;  // Allocator for jobs
+        Spinlock queueLock;                         // The lock to make queue access thread safe
+        Spinlock workedLock;                        // The lock to worked vector thread safe
+        std::atomic<bool> shutDown = false;         // Signal to shut down all threads
+        std::atomic<bool> isHibernate = false;      // If the scheduler is running
+        std::atomic<int> currentJobsSize = 0;       // Current jobs
+        std::atomic<uint16_t> handleID = 0;         // The internal handle counter
         double targetTime = 0;
         double sleepTime = 0;
 
@@ -47,8 +47,7 @@ namespace magique
             workedLock.lock();
             --currentJobsSize;
             UnorderedDelete(workedJobs, job);
-            if (workedJobs.empty())
-                jobAllocator.reset();
+            jobAllocator.free(job);
             workedLock.unlock();
             // Just spin the handles around
             if (handleID >= 65000)
@@ -67,6 +66,7 @@ namespace magique
                     t.join();
             }
             threads.clear();
+            jobAllocator.destroy();
         }
 
         jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }

@@ -63,8 +63,6 @@ namespace magique
         // Default: 0.5
         void setLearnRate(float learnRate);
 
-        void explorationRate(float explorationRate);
-
         //----------------- RULES -----------------//
         // Note: Rules are useful to define fixed behavior regardless of the learning progress (e.g. boss patterns, ...)
         //       They are evaluated BEFORE the agents decision and skip it in case a matching rule is found
@@ -83,7 +81,6 @@ namespace magique
         const float valueRange;       // valid score and q-score range
         float learnRate = 0.6F;       // or alpha
         float progressiveness = 0.1F; // or gamma - how much we value potential future rewards
-        float curiosity = 0.5F;       // The ratio with which all non best scores are increased (so it picks new ones)
         StateEnum currentState{};
     };
 

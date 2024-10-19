@@ -13,7 +13,7 @@
 
 #include <magique/multiplayer/LocalSockets.h>
 
-#if MAGIQUE_USE_STEAM == 1
+#ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #endif
 
@@ -23,7 +23,7 @@ namespace magique
 {
     bool InitLocalMultiplayer()
     {
-#if MAGIQUE_USE_STEAM == 0
+#ifndef MAGIQUE_STEAM
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg))

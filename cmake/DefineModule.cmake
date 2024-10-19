@@ -36,13 +36,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
     endif ()
 elseif (MSVC)
-    # Clear flags
-    set(CMAKE_CXX_FLAGS_DEBUG "/Od /Zi /RTC1")
-    set(CMAKE_CXX_FLAGS_RELEASE "/O2 /DNDEBUG /Ob3")
-
     target_compile_options(magique-${MODULE_NAME} PRIVATE
-            /W4 /Zc:preprocessor /EHc /GA /fp:fast /arch:AVX /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi
+            $<$<CONFIG:Debug>:/W3 /Od /Zi /RTC1 /Zc:preprocessor>
+            $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX2 /Zc:inline /Zc:preprocessor /GS  /Gy /Oi /Gw /GF /GL /GR- /Oi >
     )
+
     target_link_options(magique-${MODULE_NAME} PRIVATE
             /LTCG /OPT:REF /OPT:ICF
     )
@@ -56,6 +54,9 @@ else ()
     message(FATAL_ERROR "Compiler not supported")
 endif ()
 
+# Compile the definition for the target and all consuming ones
 if(MAGIQUE_STEAM)
-    target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_USE_STEAM) # Compile the definition for the target and all consuming ones
+    target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_STEAM)
+elseif (MAGIQUE_LAN)
+    target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)
 endif ()

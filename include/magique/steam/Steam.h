@@ -39,4 +39,5 @@ namespace magique
 } // namespace magique
 
 
+
 #endif //MAGIQUE_STEAM_H
