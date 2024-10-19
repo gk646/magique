@@ -29,18 +29,30 @@ namespace magique
         TextField(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
         TextField(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
 
+    protected:
         // Same as ui/UIObject.h
         // Note: Text needs to be drawn manually
-        void onDraw(const Rectangle& bounds) override
-        {
-            DrawRectangleLinesEx(bounds, 2, getIsFocused() ? LIGHTGRAY : DARKGRAY);
-            DrawRectangleRec(bounds, getIsFocused() ? LIGHTGRAY : GRAY);
-            drawText(15, getIsFocused() ? LIGHTGRAY : DARKGRAY);
-        }
+        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
         // Same as ui/UIObject.h
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
 
+        // Updates the text with the current inputs for this tick and updates the focused state
+        // Note: This should be called each update tick
+        void updateInputs();
+
+        // Draws the text
+        void drawText(float size, Color txt, Color cursor, const Font& font = GetFontDefault(), float spacing = 1);
+
+        // Draws the default graphical representation of this textfield
+        void drawDefault(const Rectangle& bounds);
+
+        // Called everytime the textfield is focused and enter is pressed
+        // Return true: signals enter action was consumed and should NOT be treated as newline
+        // Return false: signals that enter action was not used and should be treated as newline
+        virtual bool onEnterPressed(bool ctrl, bool shift, bool alt) { return false; }
+
+    public:
         // Returns the current text of the textfield
         [[nodiscard]] const char* getCText() const;
         [[nodiscard]] const std::string& getText() const;
@@ -57,21 +69,9 @@ namespace magique
         // Returns the total amount of lines (count of newlines '\n')
         [[nodiscard]] int getLineCount() const;
 
-    protected:
-        // Updates the text with the current inputs for this tick - should be called each update tick
-        void updateInputs();
-
-        // Draws the text
-        void drawText(float size, Color color, const Font& font = GetFontDefault(), float spacing = 1);
-
-        // Called everytime the textfield is focused and enter is pressed
-        // Return true: signals enter action was consumed and should NOT be treated as newline
-        // Return false: signals that enter action was not used and should be treated as newline
-        virtual bool onEnterPressed(bool ctrl, bool shift, bool alt) { return false; }
 
     private:
         void updateControls();
-        void updateScaling(float fontSize, const Font& font, float spacing);
 
         std::string text;
         float longestLineLen = 0; // Length of the longest line
@@ -79,10 +79,11 @@ namespace magique
         int cursorLine = 0;       // Current line the cursor is in
         int currLineStart = 0;    // Text index where the current line starts
         int blinkDelay = 30;      // Blink delay of the cursor - 30 ticks are 0.5 seconds at 60 ticks/s
-        int lineCount = 0;       // Amount of lines (separated by newlines)
+        int lineCount = 0;        // Amount of lines (separated by newlines)
         bool isFocused = false;   // If the textfield is focused
         bool textChanged = false; // If the text was changed
         bool showCursor = true;   // If the cursor is shown
+        uint8_t blinkCounter = 0; // Blink counter
     };
 
 } // namespace magique

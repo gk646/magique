@@ -10,7 +10,14 @@ namespace magique
     Window::Window(const float x, const float y, const float w, const float h, const float moverHeight) :
         UIContainer(x, y, w, h)
     {
-        moverHeightP = moverHeight / MAGIQUE_UI_RESOLUTION_Y;
+        if (moverHeight == 0.0F)
+        {
+            moverHeightP = (h * 0.10F) / MAGIQUE_UI_RESOLUTION_Y;
+        }
+        else
+        {
+            moverHeightP = moverHeight / MAGIQUE_UI_RESOLUTION_Y;
+        }
     }
 
     bool Window::updateDrag(const Rectangle& area, const int mouseButton)
@@ -110,27 +117,16 @@ namespace magique
 
     void Window::drawDefault(const Rectangle& bounds) const
     {
+        // Body
         DrawRectangleRounded(bounds, 0.1F, 30, LIGHTGRAY);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, GRAY);
 
+        // Top bar
         const auto topBar = getTopBarBounds();
-        if (CheckCollisionPointRec(GetMousePosition(), topBar))
-        {
-            if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) // Pressed
-            {
-                DrawRectangleRounded(topBar, 0.2F, 30, DARKGRAY);
-                DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
-            }
-            else // Hovered
-            {
-                DrawRectangleRounded(topBar, 0.1F, 30, GRAY);
-                DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, DARKGRAY);
-            }
-        }
-        else // Idle
-        {
-            DrawRectangleRounded(topBar, 0.1F, 30, LIGHTGRAY);
-            DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, GRAY);
-        }
+        const auto hovered = CheckCollisionPointRec(GetMousePosition(), topBar);
+        const Color body = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? DARKGRAY : hovered ? GRAY : LIGHTGRAY;
+        const Color outline = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? GRAY : hovered ? DARKGRAY : GRAY;
+        DrawRectangleRounded(topBar, 0.2F, 30, body);
+        DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }
 } // namespace magique

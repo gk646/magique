@@ -17,6 +17,7 @@ namespace magique
         vector<UIObject*> objects;
         vector<UIObject*> containers;
         HashSet<UIObject*> objectsSet;
+        Point dragStart;
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
@@ -33,6 +34,15 @@ namespace magique
             mouseX = mx;
             mouseY = my;
             inputConsumed = false;
+
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {mx, my};
+            }
+            else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {-1, -1};
+            }
 
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)

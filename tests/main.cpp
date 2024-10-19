@@ -11,10 +11,10 @@
 // #include "HashGridTest.h"
 
 // Examples
-//#include "../examples/headers/LocalMultiplayer.h"
-//#include "../examples/headers/SteamMultiplayer.h"
-//#include "../examples/headers/MultipleWindows.h"
-#include "../examples/headers/UserInterface.h"
+//#include "../examples/headers/MulitplayerExample.h"
+//#include "../examples/headers/SteamExample.h"
+//#include "../examples/headers/WindowExample.h"
+#include "../examples/headers/UIExample.h"
 
 int main()
 {

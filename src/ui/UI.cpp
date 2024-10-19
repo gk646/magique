@@ -53,14 +53,15 @@ namespace magique
 
     Point GetUIScaling() { return global::UI_DATA.getScaling(); }
 
-    Point GetMousePos()
-    {
-        return global::UI_DATA.getMousePos();
-    }
+    Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
+
+    Point GetMousePos() { return global::UI_DATA.getMousePos(); }
 
     bool UIInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
 
     bool UIInput::IsKeyDown(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyDown(key); }
+
+    bool UIInput::IsKeyReleased(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyReleased(key); }
 
     bool UIInput::IsMouseButtonPressed(const int key)
     {
