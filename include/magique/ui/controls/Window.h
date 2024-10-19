@@ -45,6 +45,9 @@ namespace magique
         // Same as ui/UIObject.h
         void onDrawUpdate(const Rectangle& bounds) override { updateDrag(getTopBarBounds()); }
 
+        // Default visuals
+        void drawDefault(const Rectangle& bounds) const;
+
     public:
         // Returns the bounds window body
         [[nodiscard]] Rectangle getBodyBounds() const;
@@ -61,7 +64,6 @@ namespace magique
         bool updateDrag(const Rectangle& area, int mouseButton = MOUSE_BUTTON_LEFT);
 
     private:
-        void drawDefault(const Rectangle& bounds) const; // Default visuals
         Point clickOffset{};
         float moverHeightP = 0.10F;
         bool isDragged = false;

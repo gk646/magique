@@ -42,14 +42,14 @@ namespace magique
         virtual void onDraw(const Rectangle& bounds) {}
 
         // Controls how the object is updated - called automatically at the end of each update tick
-        // The call order is sorted after draw order dynamically - the elements on top are updated first
+        // The call order is sorted after draw order dynamically - the elements on top (drawn last) are updated first
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for objects to be updated regardless if they are drawn or not (background task,...)
         // Note: All UIContainers are updated separately and before objects
         virtual void onUpdate(const Rectangle& bounds, bool wasDrawn) {}
 
         // Same as onUpdate() but called at the beginning of the draw tick (each render tick)
-        // This is essential for real time components (like dragging windows)
+        // This is essential for real time behavior of components (like dragging windows)
         virtual void onDrawUpdate(const Rectangle& bounds) {}
 
     public:

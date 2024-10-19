@@ -36,11 +36,11 @@ namespace magique
     // Returns the current horizontal and vertical scaling
     Point GetUIScaling();
 
-    // Returns the position where the mouse was first pressed - resets when the mouse is released
+    // Returns the position where the left mouse button was first pressed - resets when the button is released
     // Failure: returns {-1,-1} if the mouse was not yet pressed or was released
     Point GetDragStartPosition();
 
-    // Same as raylibs but returns a magique::Point
+    // Same as raylib's but returns a magique::Point
     Point GetMousePos();
 
     // Getters for input that allows for consumption - when consumed all methods return false
@@ -52,6 +52,7 @@ namespace magique
         // Returns true only if input state AND not consumed
         static bool IsKeyPressed(int key);
         static bool IsKeyDown(int key);
+        static bool IsKeyReleased(int key);
 
         static bool IsMouseButtonPressed(int key);
         static bool IsMouseButtonDown(int key);

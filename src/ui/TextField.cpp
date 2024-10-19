@@ -1,8 +1,10 @@
 #include <magique/ui/controls/TextField.h>
 #include <magique/util/RayUtils.h>
+#include <magique/ui/UI.h>
 
 #include "external/raylib/src/coredata.h"
 #include "external/cxstructs/cxutil/cxmath.h"
+#include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -43,6 +45,19 @@ namespace magique
 
     void TextField::updateInputs()
     {
+        ++blinkCounter;
+        if (blinkCounter > 2 * blinkDelay)
+            blinkCounter = 0;
+        const auto bounds = getBounds();
+        const auto mouse = GetMousePos();
+        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        {
+            isFocused = PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height);
+        }
+
+        if (!isFocused)
+            return;
+
         updateControls();
 
         // Iterate characters
@@ -54,15 +69,30 @@ namespace magique
         }
     }
 
-    void TextField::drawText(const float fontSize, const Color color, const Font& font, const float spacing)
+    void TextField::drawText(const float fontSize, const Color color, const Color cursor, const Font& font,
+                             const float spacing)
     {
         const auto bounds = getBounds();
         const Vector2 tPos = {bounds.x, bounds.y};
-        DrawTextEx(font, getCText(), tPos, fontSize, spacing, BLACK);
-        const auto cursorOffX =
-            MeasureTextUpTo(text.data() + currLineStart, cursorPos - currLineStart, font, fontSize, spacing);
+        DrawTextEx(font, getCText(), tPos, fontSize, spacing, color);
+
+        if (!isFocused || blinkCounter > blinkDelay)
+            return;
+
+        auto* lineStart = text.data() + currLineStart;
+        const auto cursorOffX = MeasureTextUpTo(lineStart, cursorPos - currLineStart, font, fontSize, spacing);
         const auto cursorOffY = (fontSize + static_cast<float>(GetTextLineSpacing())) * static_cast<float>(cursorLine);
-        DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, color);
+        DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, cursor);
+    }
+
+    void TextField::drawDefault(const Rectangle& bounds)
+    {
+        const auto isHovered = getIsHovered();
+        const Color body = getIsFocused() ? LIGHTGRAY : isHovered ? LIGHTGRAY : GRAY;
+        const Color outline = DARKGRAY;
+        DrawRectangleRounded(bounds, 0.1F, 20, body);
+        DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
+        drawText(15, getIsFocused() ? GRAY : DARKGRAY, BLACK);
     }
 
     void TextField::updateControls()

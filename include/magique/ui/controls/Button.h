@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_BUTTON_H
 #define MAGIQUE_BUTTON_H
 
-#include <raylib/raylib.h>
 #include <magique/ui/UIObject.h>
 IGNORE_WARNING(4100)
 
@@ -9,8 +8,7 @@ IGNORE_WARNING(4100)
 // Button
 //-----------------------------------------------
 // .....................................................................
-// The draw functions can be overridden so the visuals can be modified completely
-// Defaults implementations are provided for guidance
+//
 // .....................................................................
 
 namespace magique
@@ -20,38 +18,27 @@ namespace magique
         // Creates a new button from coordinates in the logical UI resolution
         Button(float x, float y, float w, float h);
 
-        // Called each tick on update thread
-        void onUpdate(const Rectangle& bounds, bool isDrawn) override;
+        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
-        // Called everytime the button is hovered if it wasn't before
+        // Called each tick on update thread
+        void onUpdate(const Rectangle& bounds, bool isDrawn) override { updateButtonActions(bounds); }
+
+    protected:
+        // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
 
-        // Called everytime the button is clicked with either right or left click
-        virtual void onClick(const Rectangle& bounds) {}
+        // Called if the mouse is clicked inside the button bounds - can be called multiple times with different buttons
+        virtual void onClick(const Rectangle& bounds, int button) {}
 
-        //----------------- DRAW -----------------//
-        // Override them to achieve custom visuals
+        // Updates the action state and calls onHover() and onClick() if necessary
+        // Note: You can conditionally NOT call this based on UIInput.isConsumed() to respect layers
+        void updateButtonActions(const Rectangle& bounds);
 
-        virtual void drawIdle(const Rectangle& bounds)
-        {
-            DrawRectangleRounded(bounds, 0.2F, 30, LIGHTGRAY);
-            DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, GRAY);
-        }
-
-        virtual void drawHovered(const Rectangle& bounds)
-        {
-            DrawRectangleRounded(bounds, 0.2F, 30, GRAY);
-            DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, DARKGRAY);
-        }
-
-        virtual void drawClicked(const Rectangle& bounds)
-        {
-            DrawRectangleRounded(bounds, 0.2F, 30, DARKGRAY);
-            DrawRectangleRoundedLinesEx(bounds, 0.2F, 30, 2, GRAY);
-        }
+        // Draws a default graphical representation of this button
+        void drawDefault(const Rectangle& bounds) const;
 
     private:
-        bool wasHovered = false;
+        bool isHovered = false;
     };
 } // namespace magique
 
