@@ -9,11 +9,13 @@
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/STLUtil.h"
 
-#if MAGIQUE_USE_STEAM == 0
+#ifdef MAGIQUE_LAN
 #include "external/networkingsockets/steamnetworkingsockets.h"
 #include "external/networkingsockets/isteamnetworkingutils.h"
-#else
+#elif MAGIQUE_STEAM
 #include <steam/steam_api.h>
+#else
+#error "Using Networking without enabling it in CMake! Set the networking status in CMakeLists.txt in the root!"
 #endif
 
 inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
@@ -58,7 +60,7 @@ namespace magique
                 msg->Release();
             }
             batchedMsgs.clear();
-#if MAGIQUE_STEAM == 0
+#ifdef MAGIQUE_LAN
             GameNetworkingSockets_Kill();
 #else
             for (const auto conn : connections)

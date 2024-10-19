@@ -98,4 +98,6 @@ namespace magique
     bool IsClient();
 
 } // namespace magique
+
+
 #endif //MAGIQUE_MULTIPLAYER_H

@@ -114,8 +114,7 @@
 
 //----------------- COMPILATION -----------------//
 
-// Tries to forward declare std::function which improves compile time about 150ms per TU
-// Only possible on MSVC
+// Tries to forward declare std::function which improves compile time about 150ms per TU - only on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
 
 
@@ -133,12 +132,6 @@ namespace std
 #define MAGIQUE_DEBUG
 #endif
 
-#ifdef MAGIQUE_USE_STEAM
-#define MAGIQUE_STEAM 1
-#else
-#define STEAMNETWORKINGSOCKETS_STANDALONELIB
-#endif
-
 #define IS_POWER_OF_TWO(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
 
 #if IS_POWER_OF_TWO(MAGIQUE_COLLISION_CELL_SIZE)
@@ -150,8 +143,6 @@ namespace std
 #else
 #error "PathFinding Cell size is not a power of 2. Choose from: 8,16,32"
 #endif
-
-//----------------- INTERNAL CONFIG -----------------//
 
 #define MAGIQUE_WORLD_BOUND_DEPTH 100
 

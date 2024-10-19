@@ -35,9 +35,11 @@
 #include "internal/globals/ParticleData.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
-#include "internal/globals/MultiplayerData.h"
-#if MAGIQUE_USE_STEAM == 1
+#ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
+#include "internal/globals/MultiplayerData.h"
+#elif MAGIQUE_LAN
+#include "internal/globals/MultiplayerData.h"
 #endif
 #include "internal/headers/CollisionPrimitives.h"
 #include "internal/headers/IncludeWindows.h"
@@ -90,9 +92,11 @@ namespace magique
 
     Game::~Game()
     {
+#ifdef MAGIQUE_STEAM
         global::MP_DATA.close();
-#if MAGIQUE_USE_STEAM == 1
         global::STEAM_DATA.close();
+#elif MAGIQUE_LAN
+        global::MP_DATA.close();
 #endif
         CloseAudioDevice();
         CloseWindow();

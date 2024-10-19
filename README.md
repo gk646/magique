@@ -9,8 +9,7 @@
 `magique` is a **C++ 20** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
 It's carefully designed to be **intuitive and easy to learn**, at installation through development and up to sharing the
 finished game. By using a small **stack of proven libraries** and many **custom crafted modules** it aims to answer all
-game
-development needs in definitive way both in **performance and usability**.
+game development needs in definitive way both in **performance and usability**.
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
 Checkout the[ official YouTube channel](https://www.youtube.com/@magique-engine) for spotlights, development sessions
@@ -94,13 +93,16 @@ that you have to follow when using magique:
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
 user code.
 
+**_Even if you don't want to use the whole engine there are plenty of interesting concepts within magique that you can use or learn from.**_
+
 ### 2. Installation
 
 `magique` is using CMake as its build system hence it's recommended for projects to use it as well.
+Configuration of the library happens inside `include/magique/config.h` (documented in source).
 
 #### CMake (recommended)
 
-When using CMake just download or clone this repository and add the directory to your project with:
+When using CMake just download or clone this repository and add it as subdirectory with the path:
 
 ```cmake
 add_subdirectory(path/to/magique)
@@ -110,14 +112,17 @@ target_link_libraries(MyGame PRIVATE magique)
 
 This will automatically build magique with your project and set up the include path. Don't forget to link your project
 against `magique`! This approach will automatically build for the platform your using.
-Check the `CMakeLists.txt` in the root for optional CMake flags you can set before adding magique.
+Inside the `CMakeLists.txt` you can configure the build setup e.g. enabling Steam, sanitizer...
 
-#### Prebuilt binaries / Custom
+####  Custom or prebuilt binaries
 
-The other option is to download the prebuilt binaries for your platform and link your program against them.
+Doing a custom build even without CMake should be very straightforward:  
+_Compile all files in src into a single library with /include as include path._ _(conditionally exclude steam or multiplayer if you're not using it)_
 
-**Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
-modules can easily be made into standalone units.**
+If released you can download the latest binaries, link against them and just copy the include folder into your project.
+
+_**Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
+modules can easily be made into standalone units.**_
 
 ### 3. Documentation
 

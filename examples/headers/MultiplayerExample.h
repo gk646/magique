@@ -2,6 +2,8 @@
 #define MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
 #define MAGIQUE_EXAMPLE
 
+#include <cassert> // For asserts
+
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>

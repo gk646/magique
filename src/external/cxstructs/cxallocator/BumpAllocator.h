@@ -21,11 +21,10 @@
 #ifndef BUMPALLOCATOR_H
 #define BUMPALLOCATOR_H
 
-#include "../IAllocator.h"
 
 namespace cxstructs
 {
-    struct DynamicBumpAllocator final : IAllocator
+    struct DynamicBumpAllocator final
     {
         unsigned char* memory = nullptr;
         size_t size = 0;

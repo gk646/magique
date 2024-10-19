@@ -8,7 +8,6 @@ endfunction()
 
 # Link against the GameNetworkingSockets or the Steam SDK (and platform specific libs)
 if (MAGIQUE_STEAM)
-    target_compile_definitions(magique PUBLIC MAGIQUE_USE_STEAM) # Compile the definition for the target and all consuming ones
     if (WIN32)
         target_link_libraries(magique PRIVATE winmm ${MAGIQUE_BINARY_DIR}/win64/steam_api64.lib)
         copy_shared_library("${MAGIQUE_BINARY_DIR}/win64/steam_api64.dll")

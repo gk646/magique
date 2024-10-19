@@ -22,7 +22,7 @@ namespace magique
 
     // True if the given "val" is within the specified range (included) - only uses 'operator<'
     template <typename T>
-    bool IsValueInRange(T val, T min, T max);
+    bool IsValueInRange(const T& val, const T& min, const T& max);
 
     // Returns true if the given number is a power of two
     bool IsPowerOfTwo(unsigned int x);
@@ -38,7 +38,7 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    bool IsValueInRange(T val, T min, T max)
+    bool IsValueInRange(const T& val, const T& min, const T& max)
     {
         return min <= val && val <= max;
     }
