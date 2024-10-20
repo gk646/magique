@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.2.0-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.8.0-blue)
 ![License Badge](https://img.shields.io/github/license/gk646/magique)
 
 > _What if raylib was an engine? ..._
@@ -12,7 +12,7 @@ finished game. By using a small **stack of proven libraries** and many **custom 
 game development needs in definitive way both in **performance and usability**.
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
-Checkout the[ official YouTube channel](https://www.youtube.com/@magique-engine) for spotlights, development sessions
+Checkout my [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
 and tutorials.
 
 ---
@@ -35,13 +35,13 @@ Most notable features:
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
     - _**Procedural particle system**_ inspired by Godot4
-    - Persistence API for gamesaves, gameconfigs and typesafe database emulator
+    - Persistence API for gamesaves and gameconfig with typesafe data access
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
-    - Out of the box support for _**[Tiled](https://www.mapeditor.org/) exports**_ (.tmx, .tsx)
+    - Supports _**[Tiled](https://www.mapeditor.org/) tilemaps and tilset exports**_ (.tmx, .tsx)
     - Object-oriented UI framework with automatic scaling and intuitive anchoring and alignment tools
-    - _**Achievements, InGame-CommandLine, NoiseGeneration, 2DSound, AIAgent, VirtualClock, and many more!**_
+    - _**Achievements, InGame-CommandLine, Localization, 2DSound, AIAgent, VirtualClock, and many more!**_
 - **Multiplayer support**
-    - Seamless transition between local and global networking with a custom unified API
+    - Seamless transition between local and global networking with a unified API
 - **Steam integration**
     - Provided a Steam SDK, allows access to _**steam features**_ like matchmaking and chat
 
@@ -54,7 +54,7 @@ Most notable features:
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets):** local networking via IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(if provided)_:  steam features and global P2P networking
 
-### Minimal Example
+#### Minimal Example
 
 ```c++
 using namespace magique;
@@ -136,7 +136,7 @@ There are 3 ways `magique` is documented:
         - `Failure:` The behavior or return value if the method fails its purpose
         - `Example:` Shows how this method or struct is correctly used
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
-- **[YouTube Channel](https://www.youtube.com/@magique-engine)**
+- **[YouTube Channel](https://www.youtube.com/@gk646-yt)**
     - Contains tutorial, walkthrough, showcase and development videos
 - **GitHub Wiki**
     - Written like a tutorial and focuses on general examples rather than individual methods
@@ -154,7 +154,7 @@ The core philosophy behind `magique` is usability. Using libraries or software s
 In this case usability means you think about the users mental state, their existing knowledge and goals. Then you provide them with what they need to help them achieve their goal without restricting their freedom. On top of that, by adhering to formatting, naming and implementation rules you allow the user to build a mental image of what to expect. Then, when presented new functionality (headers, modules) its already clear how to use them and what they likely do internally to achieve that.
 
 
-### API Design
+#### API Design
 
 Why should magique be
 
@@ -171,6 +171,6 @@ The limitation to this approach is that the ticks cannot take as long as they ca
 The higher the framerate the more this becomes apparent: 60fps -> 16ms time  | 120fps -> 8ms | 240fps -> 4ms
 But for the kind of games this engine is for this approach should be very good.
 
-### Entity Component System (ECS)
+#### Entity Component System (ECS)
 
 `magique` uses the concept of a ecs. Handling game objects as entities with components should in almost all cases be better over other approach as it nudges you to design modular systems and diverse interactions. If made object-oriented hierarchies in the past and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also, the very nice typesafety of EnTT makes it a joy to use in C++.

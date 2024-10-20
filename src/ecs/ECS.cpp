@@ -219,7 +219,7 @@ namespace magique
                                                      shape);
     }
 
-    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
+    EmitterC& GiveEmitter(const entt::entity entity,  const Color color, const int intensity, LightStyle style)
     {
         return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity,
                                                     style);

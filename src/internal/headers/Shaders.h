@@ -9,6 +9,7 @@ out vec4 FragColor;
 void main() {
     gl_FragColor = vec4(1,0,0,1);
 })";
+
     constexpr auto shadowVert = R"(
 #version 330 core
 layout (location = 0) in vec3 vertexPosition;     // Vertex input attribute: position
@@ -25,8 +26,8 @@ void main()
     }
     gl_Position = mvp * vec4(pos, 0., 1.);
 }
-
 )";
+
     constexpr auto lightFrag = R"(
 #version 330 core
 
@@ -44,14 +45,13 @@ void main() {
     float distance = length(dis);
     float str;
 
-    if (lightStyle == 0) {  // Light style 0: point light with falloff
+    if (lightStyle == 0) {                                  // Light style 0: point light with falloff
         str = 1.0 / (distance * distance / intensity + 1.0);
-    } else if (lightStyle == 1) {  // Light style 1: sunlight with minimal falloff
+    } else if (lightStyle == 1) {                           // Light style 1: sunlight with minimal falloff
         str = 1.0 / (distance / intensity + 1.0);
     } else {
-        str = 1.0; // Default to no falloff if lightStyle is not recognized
+        str = 1.0;                                          // Default to no falloff if lightStyle is not recognized
     }
-
     finalColor = vec4(vec3(lightColor.xyz) * str, lightColor.w);
 }
 )";
@@ -77,6 +77,44 @@ void main()
 }
 )";
 
+    constexpr auto shadowTextureFrag = R"(
+#version 330 core
+in vec2 fragTexCoord;
+in vec4 fragColor;
+
+out vec4 finalColor;
+
+uniform sampler2D texture0;
+uniform vec4 colDiffuse;
+
+void main()
+{
+     vec4 texelColor = texture(texture0, fragTexCoord);
+     finalColor = vec4(vec3(fragColor.a * texelColor.rgb + 1 - fragColor.a),1.);
+}
+)";
+
+    constexpr auto shadowTextureVert = R"(
+#version 330 core
+
+in vec3 vertexPosition;
+in vec2 vertexTexCoord;
+in vec4 vertexColor;
+
+out vec2 fragTexCoord;
+out vec4 fragColor;
+
+uniform mat4 mvp;
+
+void main()
+{
+    fragTexCoord = vertexTexCoord;
+    fragColor = vertexColor;
+    gl_Position = mvp*vec4(vertexPosition, 1.0);
+}
+)";
+
+
     constexpr auto rayVert = R"(
 #version 330 core
 
@@ -88,6 +126,8 @@ void main() {
     gl_Position = mvp * vec4(vertexPosition, 1.0);
 }
 )";
+
+
     constexpr auto rayFrag = R"(
 #version 330 core
 

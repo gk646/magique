@@ -9,12 +9,13 @@ namespace magique
 {
     inline void RenderHardShadows(const entt::registry& registry)
     {
-        auto& shaders = global::SHADERS;
-        auto& shadowShader = shaders.shadow;
-        auto& lightShader = shaders.light;
-        auto& shadowQuads = shaders.shadowQuads;
+        auto& shader = global::SHADERS;
+        auto& shadowShader = shader.shadow;
+        auto& lightShader = shader.light;
+        auto& shadowQuads = shader.shadowQuads;
         shadowQuads.clear();
 
+        //TODO add missing shapes
         const auto occluders = registry.view<const PositionC, const OccluderC>();
         for (const auto e : occluders)
         {
@@ -34,22 +35,21 @@ namespace magique
             }
         }
 
-        int size = static_cast<int>(shadowQuads.size());
-        int lightLightLoc = shaders.lightLightLoc;
-        int lightColorLoc = shaders.lightColorLoc;
-        int lightTypeLoc = shaders.lightTypeLoc;
-        int lightIntensityLoc = shaders.lightIntensityLoc;
+        const int size = shadowQuads.size();
+        const int lightLightLoc = shader.lightLightLoc;
+        const int lightColorLoc = shader.lightColorLoc;
+        const int lightTypeLoc = shader.lightTypeLoc;
+        const int lightIntensityLoc = shader.lightIntensityLoc;
 
-        int shadowLightLoc = shaders.shadowLightLoc;
-        int mvpLoc = shaders.mvpLoc;
+        const int shadowLightLoc = shader.shadowLightLoc;
+        const int mvpLoc = shader.mvpLoc;
 
         if (size > 0)
         {
-            shaders.updateObjectBuffer(shadowQuads.data(), size);
+            shader.updateObjectBuffer(shadowQuads.data(), size);
         }
 
-        const Rectangle backRect = GetCameraNativeBounds();
-
+        const Rectangle drawRect = {0, 0, shader.shadowResolution.x, shader.shadowResolution.y};
         Matrix projectionMatrix =
             MatrixOrtho(0.0f, CORE.Window.currentFbo.width, CORE.Window.currentFbo.height, 0.0f, 0.0f, 1.0f);
         Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(global::ENGINE_DATA.camera), projectionMatrix);
@@ -62,10 +62,9 @@ namespace magique
         glUniformMatrix4fv(mvpLoc, 1, false, matMVPfloat);
         glUseProgram(0);
 
-        BeginTextureMode(shaders.shadowTexture);
+        BeginTextureMode(shader.shadowTexture);
         {
             ClearBackground({0, 0, 0, 0});
-
             const auto lights = registry.view<const PositionC, const EmitterC>();
             for (const auto e : lights)
             {
@@ -81,7 +80,7 @@ namespace magique
                 {
                     glBlendFuncSeparate(GL_ZERO, GL_ONE, GL_ONE, GL_ZERO);
                     SetShaderValue(shadowShader, shadowLightLoc, &light, SHADER_UNIFORM_VEC2);
-                    rlEnableVertexArray(shaders.vao);
+                    rlEnableVertexArray(shader.vao);
                     rlDrawVertexArray(0, size);
                     rlDisableVertexArray();
                 }
@@ -92,11 +91,12 @@ namespace magique
                 {
                     BeginShaderMode(lightShader);
                     {
-                        SetShaderValue(lightShader, lightLightLoc, &light, SHADER_UNIFORM_VEC2);
+                        const auto screnPos = GetWorldToScreen2D(light, GetCamera());
+                        SetShaderValue(lightShader, lightLightLoc, &screnPos, SHADER_UNIFORM_VEC2);
                         SetShaderValueV(lightShader, lightColorLoc, &color, SHADER_UNIFORM_VEC4, 1);
                         SetShaderValueV(lightShader, lightTypeLoc, &style, SHADER_UNIFORM_INT, 1);
                         SetShaderValueV(lightShader, lightIntensityLoc, &intensity, SHADER_UNIFORM_INT, 1);
-                        DrawRectangleRec(backRect, BLANK);
+                        DrawRectangleRec(drawRect, BLANK);
                     }
                     EndShaderMode();
                 }
@@ -105,14 +105,18 @@ namespace magique
         }
         EndTextureMode();
 
+        BeginShaderMode(shader.texture);
+        {
+            rlSetBlendFactors(GL_ZERO, GL_SRC_COLOR, GL_FUNC_ADD);
+            BeginBlendMode(BLEND_CUSTOM);
 
-        rlSetBlendFactors(GL_ZERO, GL_SRC_COLOR, GL_FUNC_ADD);
-        BeginBlendMode(BLEND_CUSTOM);
+            const auto srcRect = Rectangle{0, 0, drawRect.width, -drawRect.height};
+            const auto origin = Vector2{0, 0};
+            DrawTexturePro(shader.shadowTexture.texture, srcRect, drawRect, origin, 0, ColorAlpha(WHITE, 0.8));
 
-        DrawTexturePro(shaders.shadowTexture.texture, {0, 0, 1920, -1080},
-                       {0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()}, {0, 0}, 0, {255, 255, 255, 200});
-
-        EndBlendMode();
+            EndBlendMode();
+        }
+        EndShaderMode();
     }
 
     inline void RenderRayTracing(const entt::registry& registry)

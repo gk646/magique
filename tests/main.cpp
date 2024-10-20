@@ -5,16 +5,18 @@
 // Uncomment the header you want to use or make your own
 // .....................................................................
 
+
 // Tests
 // #include "CollisionBenchmark.h"
 // #include "CollisionTest.h"
 // #include "HashGridTest.h"
 
 // Examples
-#include "../examples/headers/MultiplayerExample.h"
+//#include "../examples/headers/MultiplayerExample.h"
 //#include "../examples/headers/SteamExample.h"
 //#include "../examples/headers/WindowExample.h"
 //#include "../examples/headers/UIExample.h"
+#include "../examples/headers/LightingExample.h"
 
 int main()
 {

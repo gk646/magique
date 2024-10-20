@@ -1,5 +1,5 @@
-#ifndef SHADERS_H
-#define SHADERS_H
+#ifndef MAGIQUE_SHADERS_H
+#define MAGIQUE_SHADERS_H
 
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
@@ -13,52 +13,54 @@ namespace magique
         vector<Vector3> shadowQuads; // Shadow segments
         Vector2 shadowResolution{};  //Shadow map resolution
 
-        Shader shadow;
-        Shader light;
-        Shader raytracing;
+        Shader shadow{};
+        Shader light{};
+        Shader texture{};
+
+        Shader raytracing{};
 
         // shader locations
-        int lightLightLoc;
-        int lightColorLoc;
-        int lightTypeLoc;
-        int lightIntensityLoc;
+        int lightLightLoc = 0;
+        int lightColorLoc = 0;
+        int lightTypeLoc = 0;
+        int lightIntensityLoc = 0;
 
-        int shadowLightLoc;
-        int mvpLoc;
+        int shadowLightLoc = 0;
+        int mvpLoc = 0;
 
-        RenderTexture shadowTexture;
+        RenderTexture shadowTexture{};
 
-        unsigned int vao, vbo;
-        int currentSize;
+        unsigned int vao = 0, vbo = 0;
+        int currentSize = 0; // Current size of the vertex buffer in bytes
 
-        void init(const int initialSize = 1024 * sizeof(Vector3))
+        void init(const int vertices = 1024)
         {
-            shadowResolution = {1280, 960};
-            shadowQuads.reserve(500);
-            shadowTexture = LoadRenderTexture(1920, 1080);
+            shadowResolution = {static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())};
+            shadowQuads.reserve(vertices);
+            shadowTexture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
 
-            currentSize = initialSize;
+            currentSize = vertices * static_cast<int>(sizeof(Vector3));
 
-            // Generate and bind a Vertex Array Object
             vao = rlLoadVertexArray();
             rlEnableVertexArray(vao);
 
-            // Allocate the initial size for the Vertex Buffer Object
-            vbo = rlLoadVertexBuffer(nullptr, currentSize, true); // true indicates dynamic usage
+            vbo = rlLoadVertexBuffer(nullptr, currentSize, true);
             rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
             rlEnableVertexAttribute(0);
 
-            // Unbind the VAO
-            rlDisableVertexArray();
+            rlDisableVertexArray(); // Has to be after loading the vbo
 
+            // Load shaders
             light = LoadShaderFromMemory(lightVert, lightFrag);
             shadow = LoadShaderFromMemory(shadowVert, shadowFrag);
+            texture = LoadShaderFromMemory(shadowTextureVert, shadowTextureFrag);
+
+            //raytracing = LoadShaderFromMemory(rayVert, rayFrag);
 
             lightLightLoc = GetShaderLocation(light, "lightPos");
             lightColorLoc = GetShaderLocation(light, "lightColor");
             lightTypeLoc = GetShaderLocation(light, "lightType");
             lightIntensityLoc = GetShaderLocation(light, "intensity");
-
             shadowLightLoc = GetShaderLocation(shadow, "lightPosition");
             mvpLoc = GetShaderLocation(shadow, "mvp");
         }
@@ -66,23 +68,17 @@ namespace magique
         void updateObjectBuffer(const Vector3* vertices, const int vertexCount)
         {
             const int requiredSize = vertexCount * static_cast<int>(sizeof(Vector3));
-
-            // Check if the current buffer size is sufficient
             if (requiredSize > currentSize)
             {
-                // Reallocate buffer with larger size
                 currentSize = requiredSize;
                 rlUnloadVertexBuffer(vbo);
                 vbo = rlLoadVertexBuffer(nullptr, currentSize, true);
 
-                // Re-bind and re-enable vertex attribute
                 rlEnableVertexArray(vao);
                 rlSetVertexAttribute(0, 3, RL_FLOAT, false, 0, 0);
                 rlEnableVertexAttribute(0);
                 rlDisableVertexArray();
             }
-
-            // Update the Vertex Buffer Object with the new data
             rlEnableVertexArray(vao);
             rlUpdateVertexBuffer(vbo, vertices, requiredSize, 0);
             rlDisableVertexArray();
@@ -95,4 +91,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //SHADERS_H
+#endif //MAGIQUE_SHADERS_H

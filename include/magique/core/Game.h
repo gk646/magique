@@ -65,6 +65,7 @@ namespace magique
         virtual void postTickUpdate(GameState gameState) {}
 
         // Called each render tick - passed the current gamestate and camera
+        // Note: BeginDraw() is already called before this method
         // Default: called 90 times per second - changed by SetTargetFPS()
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
 
