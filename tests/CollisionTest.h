@@ -7,6 +7,7 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
+#include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
 
 using namespace magique;
@@ -151,7 +152,7 @@ struct Test final : Game
                 break;
             }
         }
-        DrawHashGridDebug();
+        DrawHashGridDebug(GetCameraMap());
         EndMode2D();
     }
     void updateGame(GameState gameState) override

@@ -72,7 +72,7 @@ namespace magique
         void clearCollisionData();
 
         Point resolutionVec{}; // Accumulated normals * depth
-        Point lastNormal{};    // Last normal
+        Point lastNormal{};    // Last normal - to avoid adding the same normal twice
     };
 
     // Animation component references an animation and saves its current state
@@ -87,7 +87,7 @@ namespace magique
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
 
-        // Sets a new action state - automatically reset the spritecount to 0 when a state change happens
+        // Sets a new action state - automatically reset the sprite count to 0 when a state change happens
         void setAnimationState(AnimationState state);
 
         //----------------- GETTERS -----------------//
@@ -118,6 +118,7 @@ namespace magique
     // If added entity will emit light
     struct EmitterC final
     {
+       // float radius = 50.0F; // Radius of the light
         uint8_t r, g, b, a; // 0 - 255, a = transparency
         uint16_t intensity; // Style dependant - the size of the light
         LightStyle style;
