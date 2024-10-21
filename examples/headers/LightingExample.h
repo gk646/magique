@@ -9,7 +9,6 @@
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
 
 using namespace magique;
 
@@ -107,8 +106,7 @@ struct Example final : Game
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
-
-        DrawRectangle(0, 0, 75, 75, RED); // Non-moving reference rectangles
+        DrawRectangle(0, 0, 50, 50, RED); // Non-moving reference rectangle
         for (const auto e : GetDrawEntities())
         {
             const auto& pos = GetComponent<const PositionC>(e);

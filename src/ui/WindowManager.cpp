@@ -56,7 +56,7 @@ namespace magique
         }
     };
 
-    inline WindowManagerData WINDOW_DATA{};
+    static WindowManagerData WINDOW_DATA{};
 
     WindowManager& GetWindowManager()
     {
@@ -113,6 +113,7 @@ namespace magique
             }
         }
         LOG_WARNING("No window with such name: %s", name);
+        return nullptr;
     }
 
     bool WindowManager::removeWindow(Window* window)
@@ -222,7 +223,7 @@ namespace magique
         {
             if (WINDOW_DATA.shownSet.contains(*it)) // only search visible ones
             {
-                if(*it == window) // We found the given window - nothing is in front
+                if (*it == window) // We found the given window - nothing is in front
                     return false;
                 const auto bounds = (*it)->getBounds();
                 if (PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))

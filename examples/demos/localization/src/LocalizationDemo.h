@@ -1,10 +1,11 @@
 #ifndef MAGIQUE_LOCALIZATION_DEMO_H
 #define MAGIQUE_LOCALIZATION_DEMO_H
 
+#include <raylib/raylib.h>
+
 #include <magique/assets/AssetLoader.h>
 #include <magique/gamedev/Localization.h>
 #include <magique/core/Game.h>
-#include <raylib/raylib.h>
 
 using namespace magique;
 

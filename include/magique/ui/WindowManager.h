@@ -44,7 +44,7 @@ namespace magique
         void setShown(const char* name, bool shown);
 
         // Returns the shown status of the given window
-        bool getIsShown( Window* window);
+        bool getIsShown(Window* window);
         bool getIsShown(const char* name);
 
         // Toggles the shown status of the given window

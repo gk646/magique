@@ -16,7 +16,7 @@ namespace magique
     // Default: false
     void SetShowPerformanceOverlay(bool val);
 
-    // If true shows red hitboxes for collidable entities - can get very expensive
+    // If true shows red hitboxes for collideable entities - can get very expensive
     // This is the single point of truth - If two hitboxes visually overlap then a collision happened!
     void SetShowHitboxes(bool val);
 
@@ -30,6 +30,9 @@ namespace magique
 
     // Draws the debug grid for the dynamic entity hash grid including entity count
     void DrawHashGridDebug(MapID map);
+
+    // Draws helpful coordinate grid lines with markings each 500 pixels and the origin point in the given color
+    void Draw2DCompass(Color& color);
 
     //----------------- TIME MEASURE -----------------//
 
