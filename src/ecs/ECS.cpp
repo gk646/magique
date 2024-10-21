@@ -10,6 +10,7 @@
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
+#include "internal/globals/PathFindingData.h"
 #include "internal/globals/ScriptData.h"
 #include "internal/utils/STLUtil.h"
 
@@ -20,7 +21,7 @@ namespace magique
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
         if (map.contains(type))
-            LOG_WARNING("Overriding existing create function for entity: %d (enum value)", (int)type);
+            LOG_WARNING("Overriding existing create function for entity: %d (enum value)", static_cast<int>(type));
         map[type] = createFunc;
 
         global::SCRIPT_DATA.padUpToEntity(type); // This assures it's always valid to index with type
@@ -72,6 +73,13 @@ namespace magique
             data.cameraEntity = entity;
             data.cameraMap = map;
         }
+
+        // Creating entities shouldn't happen that often - like this we can avoid the checks in tighter methods
+        auto& pathData = global::PATH_DATA;
+        if (!pathData.mapsStaticGrids.contains(map))
+            pathData.mapsStaticGrids.add(map);
+        if (!pathData.mapsDynamicGrids.contains(map))
+            pathData.mapsDynamicGrids.add(map);
         return entity;
     }
 
@@ -219,13 +227,13 @@ namespace magique
                                                      shape);
     }
 
-    EmitterC& GiveEmitter(const entt::entity entity,  const Color color, const int intensity, LightStyle style)
+    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
     {
-        return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a, (uint16_t)intensity,
-                                                    style);
+        return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a,
+                                                    static_cast<uint16_t>(intensity), style);
     }
 
-    void GiveActor(const entt::entity e) { return internal::REGISTRY.emplace<ActorC>(e); }
+    void GiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
 
     void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
 

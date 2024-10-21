@@ -3,7 +3,7 @@
 
 int main()
 {
-    CompileImage("../res");
+    CompileImage("../res"); // Dont forget to compile the asset image
     LocalizationDemo demo{};
     return demo.run();
 }

@@ -1,5 +1,6 @@
 #include <magique/core/Debug.h>
 #include <magique/core/Types.h>
+#include <magique/core/Core.h>
 
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/EngineConfig.h"
@@ -44,6 +45,16 @@ namespace magique
                 }
             }
         }
+    }
+
+    void Draw2DCompass(Color& color)
+    {
+        constexpr float DISTANCE = 10'000;
+        DrawLineV({-DISTANCE, 0}, {DISTANCE, 0}, color);
+        DrawLineV({0, -DISTANCE}, {0, DISTANCE}, color);
+
+        const auto bounds = GetCameraBounds();
+
     }
 
     inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};

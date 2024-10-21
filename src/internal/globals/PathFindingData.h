@@ -1,17 +1,12 @@
 #ifndef MAGIQUE_PATHFINDING_DATA_H
 #define MAGIQUE_PATHFINDING_DATA_H
 
-#include <vector>
 #include <bitset>
 
-#include <magique/ecs/ECS.h>
 #include <magique/util/Logging.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
-#include "internal/globals/EngineData.h"
 #include "internal/globals/StaticCollisionData.h"
-#include "internal/globals/DynamicCollisionData.h"
-#include "internal/datastructures/HashTypes.h"
 #include "internal/headers/CollisionPrimitives.h"
 
 //-----------------------------------------------
@@ -38,44 +33,59 @@ namespace magique
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }
     };
 
+    using VisitedCellID = uint32_t;
+
+    [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
+    {
+        // VisitedCellID must be uint otherwise the shifting doesn't work
+        // A signed int has its signed saved in the most significant bit regardless of size
+        // Thus shifting the number left shifts it away...
+        // The casting of negative numbers to uint results in: Largest value - abs(value)
+        // So negative numbers go down from the top - which is good for hash distribution anyway
+        const auto first = static_cast<uint16_t>(cellX);
+        const auto second = static_cast<uint16_t>(cellY);
+        return (static_cast<VisitedCellID>(first) << 16) | second;
+    }
+
+    // This is just a technique to pack data more closely
+    // Instead of treating the pathfinding grid as a grid with the main size given in config.h
+    // We increase the outer grid by a factor - this reduces the values stored in the hashmap which is already better.
+    // Then we use a bitset to tightly pack the data of each of the subgrids within the bigger grid
+    // Given a MAGIQUE_PATHFINDING_CELL_SIZE of 32 and a subgrid size of 16 the outer grid is 16 * 32 = 512
+    // This means there are 16 * 16 normal grids inside the enlarged grid
+    // By dividing the normalize coordinate inside the current enlarged grid cell (value between 0 - 512) by 32
+    // We get the index at which it is stored inside the bitset (flattened array)
     template <int mainGridBaseSize, int subGridSize = 16> // Fits into cache line (key/value pair)
     struct DenseLookupGrid final
     {
+        // Is constexpr and power of 2 to get optimized division and modulo
         constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
-
-        using VisitedCellID = uint32_t;
-
-      [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
-        {
-            const auto first = static_cast<uint16_t>(cellX);
-            const auto second = static_cast<uint16_t>(cellY);
-            return static_cast<VisitedCellID>(first) << sizeof(VisitedCellID) * 4 | second;
-        }
 
         HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
 
         [[nodiscard]] bool getIsMarked(const float x, const float y) const
         {
-            const int cellX = static_cast<int>(std::floor(x / mainGridSize));
-            const int cellY = static_cast<int>(std::floor(y / mainGridSize));
+            const int cellX = static_cast<int>(std::floor(x / static_cast<float>(mainGridSize)));
+            const int cellY = static_cast<int>(std::floor(y / static_cast<float>(mainGridSize)));
             const auto pathCell = GetVisitedCell(cellX, cellY);
             const auto it = visited.find(pathCell);
-            if (it != visited.end())
+            if (it != visited.end()) // Get the position within the subgrid
             {
-                const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / subGridSize;
-                const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / subGridSize;
-                return it->second[vCellX + vCellY * subGridSize];
+                const int vCellX = abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+                const int vCellY = abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+                return it->second[vCellX + (vCellY * subGridSize)];
             }
             return false;
         }
 
         void setMarked(const float x, const float y)
         {
-            const int cellX = static_cast<int>(std::floor(x / mainGridSize));
-            const int cellY = static_cast<int>(std::floor(y / mainGridSize));
-            const int vCellX = (static_cast<int>(x) - cellX * mainGridSize) / subGridSize;
-            const int vCellY = (static_cast<int>(y) - cellY * mainGridSize) / subGridSize;
-            visited[GetVisitedCell(cellX, cellY)].set(vCellX + vCellY * subGridSize, true);
+            const int cellX = static_cast<int>(std::floor(x / (float)mainGridSize));
+            const int cellY = static_cast<int>(std::floor(y / (float)mainGridSize));
+            const int vCellX = abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+            const int vCellY = abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+            const auto cell = GetVisitedCell(cellX, cellY);
+            visited[cell].set(vCellX + (vCellY * subGridSize), true);
         }
 
         void clear() { visited.clear(); }
@@ -103,8 +113,8 @@ namespace magique
         //----------------- METHODS -----------------//
 
         // Checks if the given coordinates are in a solid tile - directly takes the grids to avoid the lookup
-        [[nodiscard]] bool isCellSolid(const float x, const float y, const DenseLookupGrid<cellSize>& staticGrid,
-                                       const DenseLookupGrid<cellSize>& dynamicGrid, const bool dynamic) const
+        [[nodiscard]] static bool IsCellSolid(const float x, const float y, const DenseLookupGrid<cellSize>& staticGrid,
+                                              const DenseLookupGrid<cellSize>& dynamicGrid, const bool dynamic)
         {
             if (staticGrid.getIsMarked(x, y)) [[unlikely]]
             {
@@ -193,79 +203,21 @@ namespace magique
             }
         }
 
-        /*
-        void updateDynamicGrid()
-        {
-            if (!enableDynamic)
-                return;
-            const auto& data = global::ENGINE_DATA;
-            const auto group = internal::POSITION_GROUP;
-            dynamicGrid.clear();
-            const auto insertFunc = [this](const PathCellID id) { dynamicGrid[id] = true; };
-            for (const auto e : data.collisionVec)
-            {
-                const auto& pos = group.get<const PositionC>(e);
-                const auto& col = group.get<const CollisionC>(e);
-                switch (col.shape) // Same as LogicSystem::HandleCollision
-                {
-                [[likely]] case Shape::RECT:
-                    {
-                        if (pos.rotation == 0) [[likely]]
-                        {
-                            RasterizeRect<cellSize>(insertFunc, GetPathCellID, pos.x, pos.y, col.p1, col.p2);
-                            continue;
-                        }
-                        float pxs[4] = {0, col.p1, col.p1, 0};
-                        float pys[4] = {0, 0, col.p2, col.p2};
-                        RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-                        const auto bb = GetBBQuadrilateral(pxs, pys);
-                        return RasterizeRect<cellSize>(insertFunc, GetPathCellID, bb.x, bb.y, bb.width, bb.height);
-                    }
-                case Shape::CIRCLE:
-                    return RasterizeRect<cellSize>(insertFunc, GetPathCellID, pos.x, pos.y, col.p1 * 2.0F,
-                                                   col.p1 * 2.0F); // Top left and diameter as w and h
-                case Shape::CAPSULE:
-                    // Top left and height as height / diameter as w
-                    return RasterizeRect<cellSize>(insertFunc, GetPathCellID, pos.x, pos.y, col.p1 * 2.0F, col.p2);
-                case Shape::TRIANGLE:
-                    {
-                        if (pos.rotation == 0)
-                        {
-                            const auto bb = GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3,
-                                                          pos.y + col.p4);
-                            RasterizeRect<cellSize>(insertFunc, GetPathCellID, bb.x, bb.y, bb.width, bb.height);
-                            continue;
-                        }
-                        float txs[4] = {0, col.p1, col.p3, 0};
-                        float tys[4] = {0, col.p2, col.p4, 0};
-                        RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
-                        const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
-                        RasterizeRect<cellSize>(insertFunc, GetPathCellID, bb.x, bb.y, bb.width, bb.height);
-                    }
-                }
-            }
-        }
-
-*/
-
         void findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen,
                       const bool dynamic)
         {
-            if (!mapsStaticGrids.contains(map) || !mapsDynamicGrids.contains(map))
-                return;
-
             // Setup and get grids
             path.clear();
             frontier.clear();
             visited.clear();
-            auto& staticGrid = mapsStaticGrids[map];
-            auto& dynamicGrid = mapsDynamicGrids[map];
+            const auto& staticGrid = mapsStaticGrids[map];
+            const auto& dynamicGrid = mapsDynamicGrids[map];
 
             const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
             const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
 
             // Viability check
-            if (isCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid, dynamic))
+            if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid, dynamic))
             {
                 LOG_WARNING("Cant search a path to a solid (or non existent) pathfinding cell!");
                 return;
@@ -280,26 +232,23 @@ namespace magique
                 auto& current = nodePool[counter];
                 if (current.position == end)
                 {
-                    return constructPath(current, path);
+                    constructPath(current, path);
+                    return;
                 }
                 frontier.pop();
                 visited.setMarked(current.position.x * cellSize, current.position.y * cellSize);
-                for (const auto& dir : crossMove)
+                for (const auto dir : crossMove)
                 {
-                    Point newPos = {current.position.x + dir.x, current.position.y + dir.y};
+                    Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
                     // Is not visited and not solid
                     if (!visited.getIsMarked(newPosCoX, newPosCoY) &&
-                        !isCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid, dynamic))
+                        !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid, dynamic))
                     {
                         const float moveCost = dir.x != 0 && dir.y != 0 ? 1.4142F : 1.0F;
                         const auto hCost = newPos.octile(end) * 1.01F;
                         frontier.push({newPos, current.gCost + moveCost, hCost, counter});
-
-                        // Debug
-                        const Rectangle rect = {newPos.x * cellSize, newPos.y * cellSize, cellSize, cellSize};
-                        DrawRectangleRec(rect, PURPLE);
                     }
                 }
                 counter++;
@@ -312,8 +261,8 @@ namespace magique
             const GridNode* curr = &current;
             while (curr->parent != UINT16_MAX)
             {
-                const Point p = {curr->position.x * cellSize + cellSize / 2.0F,
-                                 curr->position.y * cellSize + cellSize / 2.0F};
+                const Point p = {(curr->position.x * cellSize) + (cellSize / 2.0F),
+                                 (curr->position.y * cellSize) + (cellSize / 2.0F)};
                 path.push_back(p);
                 curr = &nodePool[curr->parent];
             }

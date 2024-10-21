@@ -16,7 +16,8 @@
 //#include "../examples/headers/SteamExample.h"
 //#include "../examples/headers/WindowExample.h"
 //#include "../examples/headers/UIExample.h"
-#include "../examples/headers/LightingExample.h"
+//#include "../examples/headers/LightingExample.h"
+#include "../examples/headers/PathFindingExample.h"
 
 int main()
 {

@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_COLLISIONDETECTION_H
-#define MAGIQUE_COLLISIONDETECTION_H
+#ifndef MAGIQUE_COLLISION_PRIMITIVES_H
+#define MAGIQUE_COLLISION_PRIMITIVES_H
 
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
@@ -403,7 +403,7 @@ namespace magique
         {
             return;
         }
-        float distance_squared = _mm_cvtss_f32(dist_sq_sum);
+        const float distance_squared = _mm_cvtss_f32(dist_sq_sum);
 #else
         const float dx = x2 - x1;
         const float dy = y2 - y1;
@@ -493,8 +493,7 @@ namespace magique
 
             for (int i = 0; i < 4; ++i)
             {
-                int next = (i + 1) % 4;
-
+                int const next = (i + 1) % 4;
                 const float dx = pxs[next] - pxs[i];
                 const float dy = pys[next] - pys[i];
                 float edgeLength = dx * dx + dy * dy;
@@ -698,8 +697,8 @@ namespace magique
         __m128 rotatedX = _mm_sub_ps(_mm_mul_ps(tx, cosVec), _mm_mul_ps(ty, sinVec));
         __m128 rotatedY = _mm_add_ps(_mm_mul_ps(tx, sinVec), _mm_mul_ps(ty, cosVec));
 
-        __m128 xVec = _mm_set1_ps(x);
-        __m128 yVec = _mm_set1_ps(y);
+        __m128 const xVec = _mm_set1_ps(x);
+        __m128 const yVec = _mm_set1_ps(y);
         rotatedX = _mm_add_ps(_mm_add_ps(rotatedX, anchorXVec), xVec);
         rotatedY = _mm_add_ps(_mm_add_ps(rotatedY, anchorYVec), yVec);
 
@@ -725,6 +724,8 @@ namespace magique
 #endif
     }
 
+
+
 } // namespace magique
 
-#endif //MAGIQUE_COLLISIONDETECTION_H
+#endif //MAGIQUE_COLLISION_PRIMITIVES_H

@@ -17,7 +17,6 @@ void createSimpleObjectBuffer(const Vector3 *vertices, int vertexCount, unsigned
     rlDisableVertexArray();
 }
 
-
 void CreateShadowQuads(magique::vector<Vector3> &quads, Vector2 posA, Vector2 posB)
 {
     // Triangle 1
@@ -41,31 +40,6 @@ void CreateQuadsFromRect(magique::vector<Vector3> &quads, const Rectangle rect)
     CreateShadowQuads(quads, {rect.x + rect.width, rect.y + rect.height}, {rect.x, rect.y + rect.height});
     // Left edge
     CreateShadowQuads(quads, {rect.x, rect.y + rect.height}, {rect.x, rect.y});
-}
-
-Rectangle GetRelativeRect(Rectangle r)
-{
-    auto screenWidth = (float)GetScreenWidth();
-    auto screenHeight = (float)GetScreenHeight();
-
-    float x = 2.0f * r.x / screenWidth - 1.0f;
-    float y = 1.0f - 2.0f * r.y / screenHeight; // Inverted y-coordinate
-    float width = 2.0f * r.width / screenWidth;
-    float height = -2.0f * r.height / screenHeight; // Negative because y-axis is inverted
-
-    return {x, y, width, height};
-}
-
-Vector2 GetRelativePoint(Vector2 r)
-{
-    auto screenWidth = (float)GetScreenWidth();
-    auto screenHeight = (float)GetScreenHeight();
-
-    float x = 2.0f * r.x / screenWidth - 1.0f;
-    float y = 1.0f - 2.0f * r.y / screenHeight; // Inverted y-coordinate
-
-
-    return {x, y};
 }
 
 

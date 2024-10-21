@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE DEMO_FILES "src/*.cpp")
 add_executable(localization ${DEMO_FILES})
 
-# Set the path to the magique directory
+# Set the path to the magique directory - inside this project we can just use the relative path
 add_subdirectory(../../.. magique)
 
 # Don't forget to link against magique

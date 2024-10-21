@@ -18,7 +18,7 @@ using namespace std::chrono;
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
 
-void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
+static void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
 {
     for (const auto& entry : fs::directory_iterator(directory))
     {
@@ -33,7 +33,7 @@ void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathLis
     }
 }
 
-bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
+static bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
 {
     fs::path dirPath(directory);
     std::error_code ec;
@@ -61,20 +61,17 @@ bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
 
 namespace magique
 {
-    // Dangerous method - but just switches out pointers - outside memory manage is sound
+    // Dangerous method - but just switches out pointers - outside memory management is (should be) sound
     void UnCompressImage(char*& imageData, int& imageSize)
     {
         const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
-        auto data = magique::DeCompress(start, imageSize);
+        auto data = DeCompress(start, imageSize);
         delete[] imageData;
         imageSize = data.getSize();
         imageData = (char*)data.getData();
-        data.pointer = nullptr; // we switch out pointer
+        data.pointer = nullptr; // we switch out the pointer
     }
-} // namespace magique
 
-namespace magique
-{
     bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
         int totalSize = 0;
