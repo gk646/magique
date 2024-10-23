@@ -45,7 +45,7 @@
 
 // Controls the maximum amount of tile that can be evaluated in a single search
 // Note: This is the global maximum, a specific maximum can be set on each query
-#define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 4096
+#define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 1024
 
 //----------------- ASSETS -----------------//
 

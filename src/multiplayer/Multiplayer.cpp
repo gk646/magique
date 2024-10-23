@@ -3,15 +3,15 @@
 #include <magique/multiplayer/Multiplayer.h>
 
 #include "internal/globals/MultiplayerData.h"
-#include "internal/globals/EngineData.h"
+#include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
-    void EnterClientMode() { global::ENGINE_DATA.isClientMode = true; }
+    void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
-    void ExitClientMode() { global::ENGINE_DATA.isClientMode = false; }
+    void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
 
-    bool IsInClientMode() { return global::ENGINE_DATA.isClientMode; }
+    bool IsInClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
     Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
 

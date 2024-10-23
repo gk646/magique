@@ -31,8 +31,8 @@ namespace magique
     // Draws the debug grid for the dynamic entity hash grid including entity count
     void DrawHashGridDebug(MapID map);
 
-    // Draws helpful coordinate grid lines with markings each 500 pixels and the origin point in the given color
-    void Draw2DCompass(Color& color);
+    // Draws a cartesian coordinate system with markings 500 pixels in the given color
+    void Draw2DCompass(const Color& color);
 
     //----------------- TIME MEASURE -----------------//
 

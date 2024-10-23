@@ -26,18 +26,14 @@ namespace magique
     struct DynamicCollisionData final
     {
         MapHolder<EntityHashGrid> mapEntityGrids{}; // Separate hashgrid for each map
-        HashSet<uint64_t> pairSet;                // Filters unique collision pairs
-        CollPairCollector collisionPairs{}; // Collision pair collectors
+        HashSet<uint64_t> pairSet;                  // Filters unique collision pairs
+        CollPairCollector collisionPairs{};         // Collision pair collectors
 
-        DynamicCollisionData()
-        {
-            pairSet.reserve(1000);
-        }
+        DynamicCollisionData() { pairSet.reserve(1000); }
     };
 
     namespace global
     {
-
         inline DynamicCollisionData DY_COLL_DATA{};
     }
 } // namespace magique

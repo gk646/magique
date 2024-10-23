@@ -13,7 +13,7 @@ namespace magique
 
         int8_t getActorNum(const MapID map, const int offset)
         {
-            return dataVec[static_cast<int>(map) * MAGIQUE_MAX_PLAYERS + offset];
+            return dataVec[(static_cast<int>(map) * MAGIQUE_MAX_PLAYERS) + offset];
         }
 
         void insertActorNum(const MapID map, const int num)
@@ -21,39 +21,23 @@ namespace magique
             dataVec.resize(static_cast<int>(map) * maxPlayers, -1);
             for (int i = 0; i < maxPlayers; i++)
             {
-                if (dataVec[maxPlayers * static_cast<int>(map) + i] == -1)
+                if (dataVec[(maxPlayers * static_cast<int>(map)) + i] == -1)
                 {
-                    dataVec[maxPlayers * static_cast<int>(map) + i] = static_cast<int8_t>(num);
+                    dataVec[(maxPlayers * static_cast<int>(map)) + i] = static_cast<int8_t>(num);
                     return;
                 }
             }
         }
     };
 
-    inline Vector2 GetUpdateCircle(const float x, const float y)
-    {
-        return {x - global::ENGINE_CONFIG.entityUpdateDistance, y - global::ENGINE_CONFIG.entityUpdateDistance};
-    }
 
-    // Builds the lookup tables so the main iteration is as fast as possible
-    inline void BuildCache(Vector2 (&actorCircles)[MAGIQUE_MAX_PLAYERS], bool (&actorMaps)[UINT8_MAX],
-                           ActorMapDistribution& actorDist, int& actorCount)
+    inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col, EntityHashGrid& grid,
+                               vector<entt::entity>& cVec)
     {
-        const auto& registry = internal::REGISTRY;
-        const auto view = registry.view<const ActorC, const PositionC>();
-        for (const auto actor : view)
-        {
-            MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
-            const auto& pos = view.get<const PositionC>(actor);
-            actorMaps[static_cast<int>(pos.map)] = true;
-            actorCircles[actorCount] = GetUpdateCircle(pos.x, pos.y);
-            actorDist.insertActorNum(pos.map, actorCount);
-            actorCount++;
-        }
-    }
+        auto& pathData = global::PATH_DATA;
+        auto& dynamicGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - checked in CreateEntity()
+        const auto isPathSolid = pathData.getIsPathSolid(e, pos.type);
 
-    void HandleCollisionEntity(const entt::entity e, const PositionC pos, CollisionC& col, auto& grid, auto& cVec)
-    {
         cVec.push_back(e);
         switch (col.shape) // Same as CollisionSystem::QueryHashGrid()
         {
@@ -61,33 +45,50 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    return grid.insert(e, pos.x, pos.y, col.p1, col.p2);
+                    grid.insert(e, pos.x, pos.y, col.p1, col.p2);
+                    if (isPathSolid) [[unlikely]]
+                        dynamicGrid.insert(pos.x, pos.y, col.p1, col.p2);
+                    break;
                 }
                 float pxs[4] = {0, col.p1, col.p1, 0};
                 float pys[4] = {0, 0, col.p2, col.p2};
                 RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
                 const auto bb = GetBBQuadrilateral(pxs, pys);
-                return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                if (isPathSolid) [[unlikely]]
+                    dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
             }
+            break;
         case Shape::CIRCLE:
-            return grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
+            grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
+            if (isPathSolid) [[unlikely]]
+                dynamicGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F);
+            break;
         case Shape::CAPSULE:
-            // Top left and height as height / diameter as w
-            return grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p2);
+            grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p2); // Top left and height as height / diameter as w
+            if (isPathSolid) [[unlikely]]
+                dynamicGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p2);
+            break;
         case Shape::TRIANGLE:
             {
                 if (pos.rotation == 0)
                 {
                     const auto bb =
                         GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
-                    return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                    grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                    if (isPathSolid) [[unlikely]]
+                        dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
+                    break;
                 }
                 float txs[4] = {0, col.p1, col.p3, 0};
                 float tys[4] = {0, col.p2, col.p4, 0};
                 RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
                 const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
-                return grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+                if (isPathSolid) [[unlikely]]
+                    dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
             }
+            break;
         }
     }
 
@@ -121,42 +122,50 @@ namespace magique
 #endif
     }
 
-    inline void LogicSystem(const entt::registry& registry)
+    // Builds the lookup tables so the main iteration is as fast as possible
+    inline void BuildCache(Vector2 (&actorCircles)[MAGIQUE_MAX_PLAYERS], bool (&actorMaps)[UINT8_MAX],
+                           ActorMapDistribution& actorDist, int& actorCount)
     {
+        const auto& registry = internal::REGISTRY;
         const auto& config = global::ENGINE_CONFIG;
-        const auto& group = internal::POSITION_GROUP;
+        const auto view = registry.view<const ActorC, const PositionC>();
+        for (const auto actor : view)
+        {
+            MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
+            const auto& pos = view.get<const PositionC>(actor);
+            actorMaps[static_cast<int>(pos.map)] = true;
+            actorCircles[actorCount] = {pos.x - config.entityUpdateDistance, pos.y - config.entityUpdateDistance};
+            actorDist.insertActorNum(pos.map, actorCount);
+            actorCount++;
+        }
+    }
+
+    inline void IterateEntities(const entt::registry& registry)
+    {
         auto& data = global::ENGINE_DATA;
+        auto& config = global::ENGINE_CONFIG;
+        const auto& group = internal::POSITION_GROUP;
         auto& dynamicData = global::DY_COLL_DATA;
 
         auto& drawVec = data.drawVec;
         auto& cache = data.entityUpdateCache;
-        auto& updateVec = data.entityUpdateVec;
         auto& collisionVec = data.collisionVec;
         auto& loadedMaps = data.loadedMaps;
 
-        AssignCameraData(registry);
-
         // Cache
         const auto updateDist = config.entityUpdateDistance * 2.0F;
-        const auto cameraMap = data.cameraMap;
         const uint16_t cacheDuration = config.entityCacheDuration;
-        const auto camBound = GetCameraBounds();
         int actorCount = 0;
+        const auto cameraMap = data.cameraMap;
+        const auto camBound = GetCameraBounds();
 
         // Lookup tables
-        // Dist is just a flattened array: int [Count Maps][Count Players]
         ActorMapDistribution actorDist{};
-        Vector2 actorCircles[MAGIQUE_MAX_PLAYERS];
+        Vector2 updateOffsets[MAGIQUE_MAX_PLAYERS];
         bool loadedMapsTable[UINT8_MAX]{};
         bool actorMapsTable[UINT8_MAX]{};
 
-        BuildCache(actorCircles, actorMapsTable, actorDist, actorCount);
-
-        loadedMaps.clear();
-        drawVec.clear();
-        dynamicData.mapEntityGrids.clear();
-        updateVec.clear();
-        collisionVec.clear();
+        BuildCache(updateOffsets, actorMapsTable, actorDist, actorCount);
 
         // Iterate all entities and insert them into the hashgrids and drawVec/collisionVec
         const auto view = registry.view<PositionC>();
@@ -166,9 +175,7 @@ namespace magique
             const auto map = pos.map;
 
             loadedMapsTable[static_cast<int>(map)] = true;
-            if (!dynamicData.mapEntityGrids.contains(map))
-                dynamicData.mapEntityGrids.add(map);
-            auto& hashGrid = dynamicData.mapEntityGrids[map];
+            auto& hashGrid = dynamicData.mapEntityGrids[map]; // Must exist - checked in CreateEntity()
 
             if (actorMapsTable[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
@@ -186,13 +193,14 @@ namespace magique
                 }
                 else
                 {
-                    for (int i = 0; i < actorCount; ++i)
+                    for (int i = 0; i < actorCount; ++i) // Iterate through the different actors within the map
                     {
                         const int8_t actorNum = actorDist.getActorNum(map, i);
-                        if (actorNum == -1)
+                        if (actorNum == -1) // No more actors in that map
                             break;
-                        const auto [x, y] = actorCircles[actorNum];
-                        // Check if inside any update circle
+
+                        const auto [x, y] = updateOffsets[actorNum];
+                        // Check if inside any update rect - rect is an enlarged rectangle
                         if (PointToRect(pos.x, pos.y, x, y, updateDist, updateDist))
                         {
                             cache[e] = cacheDuration;
@@ -212,8 +220,35 @@ namespace magique
         for (int i = 0; i < UINT8_MAX; ++i)
         {
             if (loadedMapsTable[i])
-                loadedMaps.push_back(MapID(i));
+                loadedMaps.push_back(static_cast<MapID>(i));
         }
+    }
+
+    inline void LogicSystem(const entt::registry& registry)
+    {
+        auto& data = global::ENGINE_DATA;
+        auto& dynamicData = global::DY_COLL_DATA;
+        auto& pathData = global::PATH_DATA;
+        auto& config = global::ENGINE_CONFIG;
+
+        auto& drawVec = data.drawVec;
+        auto& cache = data.entityUpdateCache;
+        auto& updateVec = data.entityUpdateVec;
+        auto& collisionVec = data.collisionVec;
+        auto& loadedMaps = data.loadedMaps;
+
+        AssignCameraData(registry);
+
+        // Clear data
+        loadedMaps.clear();                 // Loaded maps vector
+        drawVec.clear();                    // Drawn entities
+        updateVec.clear();                  // Update entities
+        collisionVec.clear();               // Collision entities
+        dynamicData.mapEntityGrids.clear(); // Collision entity hashgrid
+        pathData.mapsDynamicGrids.clear();  // Pathfinding solid entities hashgrid
+
+        // Iterates all entities
+        IterateEntities(registry);
 
         // Fill the update vec after to avoid adding entities that drop out
         for (auto it = cache.begin(); it != cache.end();)
@@ -230,7 +265,7 @@ namespace magique
             }
         }
 
-        if (data.isClientMode) // Skip script method in client mode
+        if (config.isClientMode) // Skip script method in client mode
             return;
 
         for (const auto e : updateVec) // Needs to be called later to allow removing entities!

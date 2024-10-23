@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
-#include <cfloat>
 #include <cstdint> // My favourite header
 #include <magique/config.h>
 

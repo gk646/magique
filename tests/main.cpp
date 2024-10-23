@@ -2,9 +2,8 @@
 // Test Headers
 //-----------------------------------------------
 // .....................................................................
-// Uncomment the header you want to use or make your own
+// Uncomment the header you want to use and/or add your own
 // .....................................................................
-
 
 // Tests
 // #include "CollisionBenchmark.h"
