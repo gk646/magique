@@ -1,4 +1,3 @@
-# Generated from CLion C/C++ Code Style settings
 ---
 Language: Cpp
 BasedOnStyle: LLVM
@@ -31,11 +30,11 @@ BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 121
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 IncludeCategories:
-  - Regex: '^<.*'
+  - Regex: '^<.*>'
     Priority: 1
-  - Regex: '^".*'
+  - Regex: '<.*/.*>'
     Priority: 2
-  - Regex: '.*'
+  - Regex: '".*"'
     Priority: 3
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IndentCaseBlocks: true
@@ -50,10 +49,11 @@ SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+IncludeBlocks: Regroup
+SortIncludes: Never
 TabWidth: 4
 PointerAlignment: Left
 ReflowComments: false
 FixNamespaceComments: true
-SortIncludes: Never
 AlignAfterOpenBracket: Align
 ContinuationIndentWidth: 4

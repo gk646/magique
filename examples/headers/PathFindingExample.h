@@ -6,6 +6,7 @@
 
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <magique/core/Debug.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/gamedev/PathFinding.h>
 
@@ -60,6 +61,9 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
+        SetTypePathSolid(HUNTER, true);
+        const auto res = GetIsTypePathSolid(HUNTER);
+
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -99,6 +103,7 @@ struct Example final : Game
         }
         EndMode2D();
         DrawPathFindingGrid(MapID::DEFAULT);
+        Draw2DCompass(GREEN);
     }
 };
 

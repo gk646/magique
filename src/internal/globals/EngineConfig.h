@@ -32,6 +32,8 @@ namespace magique
         LightingMode lighting = LightingMode::NONE; // Current selected lighting mode
         bool showPerformanceOverlay = true;         // Toggles the performance overlay
         bool showHitboxes = false;                  // Shows red outlines for the hitboxes
+        bool handleCollisions = true;               // Enables collision checking by magique
+        bool isClientMode = false;                  // Flag to disable certain engine tasks on multiplayer clients
 
         void init()
         {

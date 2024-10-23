@@ -52,6 +52,11 @@ namespace magique
     // Manually clears the entity cache in this tick
     void ClearEntityCache();
 
+    // Allows to turn off collision handling by magique if you want to do it on your own
+    // Note: This means no onStaticCollision() and onDynamicCollision() event method will be called anymore
+    // Default: true
+    void SetEnableCollisionHandling(bool value);
+
     // Returns the game configuration
     GameConfig& GetGameConfig();
 

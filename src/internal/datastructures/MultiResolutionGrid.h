@@ -12,90 +12,100 @@
 // This simplifies memory and thus cache friendliness even more
 // With this setup you have 0 (zero) allocations in game ticks which involves completely clearing and refilling grid
 
-using CellID = int64_t;
+using CellID = uint64_t;
 // This creates a unique value - both values are unique themselves so their concatenated version is as well
 // We still use a hash function on it to get more byte range (all bits flipped)
-inline CellID GetCellID(const int cellX, const int cellY) { return static_cast<int64_t>(cellX) << 32 | cellY; }
-
-template <int cellSize, typename IdFunc, typename Func>
-void RasterizeRect(Func func, IdFunc idFunc, const float x, const float y, const float w, const float h)
+inline CellID GetCellID(const int cellX, const int cellY)
 {
+    return static_cast<uint64_t>(cellX) << 32 | static_cast<uint32_t>(cellY);
+}
+
+// This is essential when handling the space around 0
+// Integer casting converts values from -0.99 up to 0.99 to 0 meaning that essential cells left and right of the origin
+// map to the same cell
+// To solve this we truly floor all values, meaning we always convert them to the lower whole number
+// -0.99 -> -1
+// The template is used to allow compiler optimization for power of two divisors
+template <int div>
+int floordiv(const int x)
+{
+    const int res = x / div;
+    if (x < 0) [[unlikely]]
+        return res - 1;
+    return res;
+}
+
+template <int cellSize, typename Func>
+void RasterizeRect(Func func, const float x, const float y, const float w, const float h)
+{
+    const int x1 = floordiv<cellSize>(static_cast<int>(x));
+    const int y1 = floordiv<cellSize>(static_cast<int>(y));
+    const int x2 = floordiv<cellSize>(static_cast<int>(x + w));
+    const int y2 = floordiv<cellSize>(static_cast<int>(y + h));
+
     if (w > cellSize || h > cellSize) [[unlikely]] // It's bigger than a single cell
     {
         if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
         {
-            const int startX = static_cast<int>(x) / cellSize;
-            const int startY = static_cast<int>(y) / cellSize;
-            const int endX = static_cast<int>(x + w) / cellSize;
-            const int endY = static_cast<int>(y + h) / cellSize;
-            for (int i = startY; i <= endY; ++i)
+            for (int i = y1; i <= y2; ++i)
             {
-                for (int j = startX; j <= endX; ++j)
+                for (int j = x1; j <= x2; ++j)
                 {
-                    func(idFunc(j, i));
+                    func(j, i);
                 }
             }
             return;
         }
         // 4 corners, the 4 middle points of the edges and the middle pointer -> 9 potential cells
-        const int x1 = static_cast<int>(x) / cellSize;
-        const int y1 = static_cast<int>(y) / cellSize;
-        const int x2 = static_cast<int>(x + w) / cellSize;
-        const int y2 = static_cast<int>(y + h) / cellSize;
+        const int xhalf = floordiv<cellSize>(static_cast<int>(x + (w / 2.0F)));
+        const int yhalf = floordiv<cellSize>(static_cast<int>(y + (h / 2.0F)));
 
-        const int xhalf = static_cast<int>(x + w / 2.0F) / cellSize;
-        const int yhalf = static_cast<int>(y + h / 2.0F) / cellSize;
         // Process the corners
-        func(idFunc(x1, y1)); // Top-left
+        func(x1, y1); // Top-left
         if (x1 != x2)
-            func(idFunc(x2, y1)); // Top-right
+            func(x2, y1); // Top-right
         if (y1 != y2)
-            func(idFunc(x1, y2)); // Bottom-left
+            func(x1, y2); // Bottom-left
         if (x1 != x2 && y1 != y2)
-            func(idFunc(x2, y2)); // Bottom-right
+            func(x2, y2); // Bottom-right
 
         // edge midpoints
         if (xhalf != x1 && xhalf != x2)
         {
-            func(idFunc(xhalf, y1)); // Top-edge midpoint
+            func(xhalf, y1); // Top-edge midpoint
             if (y1 != y2)
-                func(idFunc(xhalf, y2)); // Bottom-edge midpoint
+                func(xhalf, y2); // Bottom-edge midpoint
         }
         if (yhalf != y1 && yhalf != y2)
         {
-            func(idFunc(x1, yhalf)); // Left-edge midpoint
+            func(x1, yhalf); // Left-edge midpoint
             if (x1 != x2)
-                func(idFunc(x2, yhalf)); // Right-edge midpoint
+                func(x2, yhalf); // Right-edge midpoint
         }
 
         // Process the center point
         if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
-            func(idFunc(xhalf, yhalf));
+            func(xhalf, yhalf);
         return;
     }
-    // Its smaller than a cell -> maximum of 4 cells
-    const int x1 = static_cast<int>(x) / cellSize;
-    const int y1 = static_cast<int>(y) / cellSize;
-    const int x2 = static_cast<int>(x + w) / cellSize;
-    const int y2 = static_cast<int>(y + h) / cellSize;
-
-    func(idFunc(x1, y1));
+    // It's smaller than a cell -> maximum of 4 cells
+    func(x1, y1);
 
     if (x1 != x2)
     {
-        func(idFunc(x2, y1));
+        func(x2, y1);
 
         if (y1 != y2)
         {
-            func(idFunc(x1, y2));
-            func(idFunc(x2, y2));
+            func(x1, y2);
+            func(x2, y2);
             return;
         }
     }
 
     if (y1 != y2)
     {
-        func(idFunc(x1, y2));
+        func(x1, y2);
     }
 }
 
@@ -180,20 +190,28 @@ struct DataBlock final
 template <typename V, int blockSize = 15, int cellSize = 64 /*power of two is optimized*/>
 struct SingleResolutionHashGrid final
 {
-    magique::HashMap<CellID, int> cellMap{};
+    magique::HashMap<CellID, int> cellMap;
     magique::vector<DataBlock<V, blockSize>> dataBlocks{};
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
-        const auto insertFunction = [this, val](const CellID cellID) { insertElement(cellID, val); };
-        RasterizeRect<cellSize>(insertFunction, GetCellID, x, y, w, h);
+        const auto insertFunction = [this, val](const int cellX, const int cellY)
+        {
+            const auto cellID = GetCellID(cellX, cellY);
+            insertElement(cellID, val);
+        };
+        RasterizeRect<cellSize>(insertFunction, x, y, w, h);
     }
 
     template <typename Container>
     void query(Container& elems, const float x, const float y, const float w, const float h) const
     {
-        const auto queryFunction = [this, &elems](const CellID cellID) { queryElements(cellID, elems); };
-        RasterizeRect<cellSize>(queryFunction, GetCellID, x, y, w, h);
+        const auto queryFunction = [this, &elems](const int cellX, const int cellY)
+        {
+            const auto cellID = GetCellID(cellX, cellY);
+            queryElements(cellID, elems);
+        };
+        RasterizeRect<cellSize>(queryFunction, x, y, w, h);
     }
 
     void clear()

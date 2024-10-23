@@ -7,7 +7,6 @@
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/ShaderData.h"
-#include "internal/globals/PerformanceData.h"
 
 namespace magique
 {
@@ -80,6 +79,8 @@ namespace magique
     }
 
     void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
+
+    void SetEnableCollisionHandling(bool value) {global::ENGINE_CONFIG.handleCollisions = value;}
 
     void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
 

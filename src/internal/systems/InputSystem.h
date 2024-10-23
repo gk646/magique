@@ -30,7 +30,9 @@ namespace magique
         // Do some initial checks to avoid calling event functions every tick
 
         const auto& data = global::ENGINE_DATA;
-        if (data.isClientMode)
+        const auto& config = global::ENGINE_CONFIG;
+
+        if (config.isClientMode)
             return;
 
         const bool invokeKey = GetKeyPressed() != 0 || GetCharPressed() != 0 || HasKeyEventHappened();

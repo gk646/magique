@@ -9,6 +9,7 @@
 
 #include "internal/globals/ECSData.h"
 #include "internal/globals/EngineData.h"
+#include "internal/globals/EngineConfig.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/PathFindingData.h"
 #include "internal/globals/ScriptData.h"
@@ -52,23 +53,26 @@ namespace magique
     entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        const auto& config = global::ENGINE_CONFIG;
         auto& ecs = global::ECS_DATA;
         auto& data = global::ENGINE_DATA;
+        auto& registry = internal::REGISTRY;
+
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
             return entt::null; // EntityType not registered
         }
-        const auto entity = internal::REGISTRY.create(static_cast<entt::entity>(ecs.entityID++));
+        const auto entity = registry.create(static_cast<entt::entity>(ecs.entityID++));
         {
-            internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
+            registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (!data.isClientMode && internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        if (!config.isClientMode && registry.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
-        if (internal::REGISTRY.all_of<CameraC>(entity)) [[unlikely]]
+        if (registry.all_of<CameraC>(entity)) [[unlikely]]
         {
             data.cameraEntity = entity;
             data.cameraMap = map;
@@ -80,25 +84,31 @@ namespace magique
             pathData.mapsStaticGrids.add(map);
         if (!pathData.mapsDynamicGrids.contains(map))
             pathData.mapsDynamicGrids.add(map);
+
+        if (!global::DY_COLL_DATA.mapEntityGrids.contains(map))
+            global::DY_COLL_DATA.mapEntityGrids.add(map);
+
         return entity;
     }
 
     entt::entity CreateEntityNetwork(entt::entity id, EntityType type, const float x, const float y, MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
+        const auto& config = global::ENGINE_CONFIG;
         auto& ecs = global::ECS_DATA;
-        auto& data = global::ENGINE_DATA;
+        auto& registry = internal::REGISTRY;
+
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
             return entt::null; // EntityType not registered
         }
-        const auto entity = internal::REGISTRY.create(id);
+        const auto entity = registry.create(id);
         {
-            internal::REGISTRY.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
+            registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (!data.isClientMode && internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+        if (!config.isClientMode && registry.all_of<ScriptC>(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
@@ -107,20 +117,23 @@ namespace magique
 
     bool DestroyEntity(const entt::entity entity)
     {
+        const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;
-        if (internal::REGISTRY.valid(entity)) [[likely]]
+        auto& registry = internal::REGISTRY;
+
+        if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (internal::REGISTRY.all_of<ScriptC>(entity)) [[likely]]
+            if (registry.all_of<ScriptC>(entity)) [[likely]]
             {
                 InvokeEvent<onDestroy>(entity);
             }
-            if (!data.isClientMode && internal::REGISTRY.all_of<CollisionC>(entity)) [[likely]]
+            if (!config.isClientMode && registry.all_of<CollisionC>(entity)) [[likely]]
             {
                 UnorderedDelete(data.collisionVec, entity);
             }
-            internal::REGISTRY.destroy(entity);
+            registry.destroy(entity);
             data.entityUpdateCache.erase(entity);
             if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
                 dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
@@ -133,15 +146,17 @@ namespace magique
 
     void DestroyEntities(const std::initializer_list<EntityType>& ids)
     {
+        const auto& config = global::ENGINE_CONFIG;
         auto& reg = internal::REGISTRY;
         auto& data = global::ENGINE_DATA;
         auto& dyCollData = global::DY_COLL_DATA;
+
         const auto view = reg.view<PositionC>(); // Get all entities
         if (ids.size() == 0)
         {
             for (const auto e : view)
             {
-                if (!data.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
+                if (!config.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
                 {
                     InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[view.get<PositionC>(e).type], e);
                 }
@@ -162,7 +177,7 @@ namespace magique
             {
                 if (pos.type == id)
                 {
-                    if (!data.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
+                    if (!config.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
                     {
                         InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                     }
@@ -182,6 +197,7 @@ namespace magique
                 }
             }
         }
+        // Don't need to patch as its cleared each tick
     }
 
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
@@ -274,8 +290,9 @@ namespace magique
         const auto& dynamicData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
 
+        // For security - user might call this before creating any entities
         if (!dynamicData.mapEntityGrids.contains(map))
-            return {};
+            return data.nearbyQueryData.cache.values();
 
         if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
             return data.nearbyQueryData.cache.values();

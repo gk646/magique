@@ -49,7 +49,6 @@ namespace magique
         GameState gameState{};                     // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls
-        bool isClientMode = false;                 // Flag to disable certain engine tasks on multiplayer clients
 
         EngineData()
         {

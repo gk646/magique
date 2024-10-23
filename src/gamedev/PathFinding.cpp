@@ -8,19 +8,18 @@
 
 namespace magique
 {
-    void FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int searchLen,
-                  const bool dynamic)
+    void FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int searchLen)
     {
         auto& path = global::PATH_DATA;
         constexpr int capacity = MAGIQUE_PATHFINDING_SEARCH_CAPACITY;
         const int maxLen = std::min(searchLen == 0 ? capacity : searchLen, capacity);
-        path.findPath(pathVec, start, end, map, maxLen, dynamic);
+        path.findPath(pathVec, start, end, map, maxLen);
     }
 
-    Point GetNextOnPath(const Point start, const Point end, const MapID map, const int searchLen, const bool dynamic)
+    Point GetNextOnPath(const Point start, const Point end, const MapID map, const int searchLen)
     {
         auto& path = global::PATH_DATA;
-        FindPath(path.pathCache, start, end, map, searchLen, dynamic);
+        FindPath(path.pathCache, start, end, map, searchLen);
         if (path.pathCache.empty())
             return {0, 0};
         return path.pathCache[path.pathCache.size() - 1];
@@ -30,9 +29,9 @@ namespace magique
     // The pathfinding tries to find a path that fits the entity
     void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
 
-    bool GetPathRayCast(const Point start, const Point end, MapID map)
+    bool GetPathRayCast(const Point start, const Point end, const MapID map)
     {
-        auto& path = global::PATH_DATA; // Must exists - check in CreateEntity()
+        auto& path = global::PATH_DATA; // Must exist - checked in CreateEntity()
         const auto& staticGrid = path.mapsStaticGrids[map];
         const auto& dynamicGrid = path.mapsDynamicGrids[map];
 
@@ -49,11 +48,11 @@ namespace magique
 
         while (true)
         {
-            const float x = (float)x0 * MAGIQUE_PATHFINDING_CELL_SIZE;
-            const float y = (float)y0 * MAGIQUE_PATHFINDING_CELL_SIZE;
-            if (PathFindingData::IsCellSolid(x, y, staticGrid, dynamicGrid, true))
+            const float x = static_cast<float>(x0) * MAGIQUE_PATHFINDING_CELL_SIZE;
+            const float y = static_cast<float>(y0) * MAGIQUE_PATHFINDING_CELL_SIZE;
+            if (PathFindingData::IsCellSolid(x, y, staticGrid, dynamicGrid))
             {
-                DrawRectangle(x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE,PURPLE);
+                DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
                 return false;
             }
             if (x0 == x1 && y0 == y1)
@@ -73,11 +72,31 @@ namespace magique
         return false;
     }
 
+    void SetTypePathSolid(const EntityType type, const bool value)
+    {
+        if (value)
+            global::PATH_DATA.solidTypes.insert(type);
+        else
+            global::PATH_DATA.solidTypes.erase(type);
+    }
+
+    bool GetIsTypePathSolid(const EntityType type) { return global::PATH_DATA.solidTypes.contains(type); }
+
+    void SetEntityPathSolid(const entt::entity entity, const bool value)
+    {
+        if (value)
+            global::PATH_DATA.solidEntities.insert(entity);
+        else
+            global::PATH_DATA.solidEntities.erase(entity);
+    }
+
+    bool GetIsEntityPathSolid(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
+
     Point GetDirectionVector(const Point current, const Point target)
     {
         const float diffX = target.x - current.x;
         const float diffY = target.y - current.y;
-        float lenSquared = diffX * diffX + diffY * diffY;
+        float lenSquared = (diffX * diffX) + (diffY * diffY);
         if (lenSquared != 0.0f)
         {
             SquareRoot(lenSquared);
@@ -90,16 +109,17 @@ namespace magique
     void DrawPathFindingGrid(const MapID map)
     {
         const auto& path = global::PATH_DATA;
+        const auto& staticGrid = path.mapsStaticGrids[map];   // Must exist - check in CreateEntity()
+        const auto& dynamicGrid = path.mapsDynamicGrids[map]; // Must exist - check in CreateEntity()
 
-        // Must exist - check in CreateEntity()
-        const auto& staticGrid = path.mapsStaticGrids[map];
-        const auto& dynamicGrid = path.mapsDynamicGrids[map];
         const auto bounds = GetCameraBounds();
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
         const int startX = static_cast<int>(bounds.x) / cellSize;
         const int startY = static_cast<int>(bounds.y) / cellSize;
         const int width = static_cast<int>(bounds.width) / cellSize;
         const int height = static_cast<int>(bounds.height) / cellSize;
+
+        BeginMode2D(GetCamera());
         for (int i = 0; i < height; ++i)
         {
             const int currY = startY + i;
@@ -107,13 +127,15 @@ namespace magique
             {
                 const int currX = startX + j;
                 const Rectangle rect = {(float)currX * cellSize, (float)currY * cellSize, cellSize, cellSize};
-                const bool isSolid = path.IsCellSolid(rect.x, rect.y, staticGrid, dynamicGrid, false);
+                const bool isSolid = PathFindingData::IsCellSolid(rect.x, rect.y, staticGrid, dynamicGrid);
                 if (isSolid)
                 {
                     DrawRectangleRec(rect, ColorAlpha(RED, 0.4F));
                 }
+                DrawRectangleLinesEx(rect, 1, BLACK);
             }
         }
+        EndMode2D();
     }
 
     void DrawPath(const std::vector<Point>& path)

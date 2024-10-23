@@ -268,7 +268,8 @@ namespace magique
 
     inline void InternalUpdatePost() // After user space update
     {
-        if (!global::ENGINE_DATA.isClientMode)
+        const auto& config = global::ENGINE_CONFIG;
+        if (!config.isClientMode && config.handleCollisions) [[likely]]
         {
             StaticCollisionSystem();  // After cause user systems can modify entity state
             DynamicCollisionSystem(); // After cause user systems can modify entity state
