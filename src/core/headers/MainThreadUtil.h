@@ -189,15 +189,20 @@ namespace magique
     {
         auto& data = global::ENGINE_DATA;
         auto& config = global::ENGINE_CONFIG;
-        const auto view = registry.view<const CameraC, const PositionC>();
         const auto smoothing = 1.0F - config.cameraSmoothing; // The higher the value the smoother
-        for (const auto e : view)
+        const auto cameraEntity = GetCameraEntity();
+        const auto& pos = internal::REGISTRY.get<PositionC>(cameraEntity);
+        // Center the camera on the collision shape if provided
+        Point targetPosition{pos.x, pos.y};
+        if (config.cameraPositionOff.x != 0.0F || config.cameraPositionOff.y != 0.0F)
         {
-            const auto& pos = view.get<PositionC>(e);
-            const auto coll = internal::REGISTRY.try_get<CollisionC>(e);
-
-            Point targetPosition{pos.x, pos.y};
-            if (coll) [[likely]]
+            targetPosition.x += config.cameraPositionOff.x;
+            targetPosition.y += config.cameraPositionOff.y;
+        }
+        else
+        {
+            CollisionC* coll = internal::REGISTRY.try_get<CollisionC>(cameraEntity);
+            if (coll != nullptr)
             {
                 switch (coll->shape)
                 {
@@ -217,11 +222,12 @@ namespace magique
                     break;
                 }
             }
-            data.camera.target.x += (targetPosition.x - data.camera.target.x) * smoothing;
-            data.camera.target.y += (targetPosition.y - data.camera.target.y) * smoothing;
-            data.camera.target.x = std::floor(data.camera.target.x);
-            data.camera.target.y = std::floor(data.camera.target.y);
         }
+
+        data.camera.target.x += (targetPosition.x - data.camera.target.x) * smoothing;
+        data.camera.target.y += (targetPosition.y - data.camera.target.y) * smoothing;
+        data.camera.target.x = std::floor(data.camera.target.x);
+        data.camera.target.y = std::floor(data.camera.target.y);
     }
 
     //----------------- UPDATER -----------------//

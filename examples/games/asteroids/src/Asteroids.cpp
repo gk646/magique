@@ -1,29 +1,24 @@
 #include "Asteroids.h"
 
-#include <magique/assets/AssetLoader.h>
-#include <magique/assets/AssetManager.h>
-#include <magique/assets/HandleRegistry.h>
-#include <magique/assets/types/Playlist.h>
-#include <magique/core/Core.h>
-#include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
-#include <magique/core/Particles.h>
-#include <magique/core/Sound.h>
-#include <magique/core/StaticCollision.h>
-#include <magique/ecs/ECS.h>
-#include <magique/ui/UI.h>
-
 using namespace magique;
 
-inline ScreenEmitter ROCK_PARTICLES; // For simplicity as global variable
-inline entt::entity PLAYER_ID = entt::null;
+// For simplicity some global variable
+ScreenEmitter ROCK_PARTICLES;        // Particle emitter
+entt::entity PLAYER_ID = entt::null; // Saving the player id
+PlayerBarUI PLAYER_BAR;              // The player UI
+ScoreCounter SCORE_COUNTER;          // The score counter UI
+GameOverUI GAMEOVER;                 // The game over UI
+int SCORE = 0;                       // The player score
+int ROCK_COUNTER = 0;                // Respawn counter for rocks
+int ROCK_SPAWN_DELAY = 80;           // Respawn delay for rocks
+float FONT_SIZE = 30;                // Text size
+/// Game
 
 void Asteroids::onStartup(AssetLoader& loader)
 {
     //SetShowHitboxes(true); // Enable if wanted
-    SetWindowSize(1280, 960); // Setup screen bounds
 
-    SetStaticWorldBounds({0, 0, 1280, 960}); // Easy way to set up world bounds
+    SetStaticWorldBounds({0, 0, (float)GetScreenWidth(), (float)GetScreenHeight()}); // Easy way to set up world bounds
 
     SetTargetFPS(120); // Set FPS to 120 - all raylib functions work as usual and are integrated
 
@@ -39,8 +34,8 @@ void Asteroids::onStartup(AssetLoader& loader)
                                 });
         auto& asset = assets.getAsset("Automatav2.mp3"); // Create a playlist so it automatically loops
 
-        auto* background = new Playlist{GetMusic(RegisterMusic(asset))};
-        PlayPlaylist(background, 0.6F); // Start playlist
+        auto& playList = GetPlaylist(RegisterPlaylist({asset}));
+        PlayPlaylist(playList, 0.6F); // Start playlist
     };
     loader.registerTask(loadSound, BACKGROUND_THREAD); // Add the task
 
@@ -120,19 +115,21 @@ void Asteroids::onStartup(AssetLoader& loader)
     ROCK_PARTICLES.setVelocity(2, 3.5).setScale(0.75, 1.5F);
 
     SetGameState(GameState::GAME); // Set the initial gamestate
+    // As we use a static camera with no collision component we offset by the player half the player dimensions
+    // So the camera is centered on the player middle and no the top left
+    SetCameraPositionOffset(18, 18);
 }
 
 void Asteroids::updateGame(GameState gameState)
 {
     if (gameState != GameState::GAME)
         return;
-    static int ROCK_COUNTER = 80;
-    ROCK_COUNTER--;
-    if (ROCK_COUNTER == 0)
+    if (ROCK_COUNTER >= ROCK_SPAWN_DELAY)
     {
         CreateEntity(ROCK, GetRandomValue(0, 1280), 0, MapID::LEVEL_1);
-        ROCK_COUNTER = 80;
+        ROCK_COUNTER = 0;
     }
+    ROCK_COUNTER++; // Spawn a rock all 80 ticks
 }
 
 void Asteroids::drawGame(GameState gameState, Camera2D& camera)
@@ -143,9 +140,9 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
         return;
 
     DrawParticles(); // Render particles below the entities
+
     // As the entities don't have sprite sheets we use a simple switch
-    // Get the entities that need to be drawn
-    auto& drawEntities = GetDrawEntities();
+    auto& drawEntities = GetDrawEntities(); // Get the entities that need to be drawn
     for (const auto e : drawEntities)
     {
         auto& pos = GetComponent<PositionC>(e); // Get the implicit position component
@@ -161,8 +158,13 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
             DrawRegion(GetTexture(handle), pos.x, pos.y);
             break;
         case ROCK:
-            handle = GetHandle(GetHash("ROCK"));
-            DrawRegion(GetTexture(handle), pos.x, pos.y, pos.rotation);
+            {
+                handle = GetHandle(GetHash("ROCK"));
+                const auto texture = GetTexture(handle);
+                Point dims = {(float)texture.width, (float)texture.height}; // Get the texture dimensions
+                // Draw the texture rotated around its middle point
+                DrawRegionPro(texture, {pos.x, pos.y, dims.x, dims.y}, pos.rotation, dims / 2);
+            }
             break;
         case HOUSE:
             handle = GetHandle(GetHash("HOUSE"));
@@ -174,39 +176,15 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
     EndMode2D();
 }
 
-// UI
-
-void PlayerBarUI::draw(const Rectangle& bounds)
+void Asteroids::drawUI(GameState gameState)
 {
-    Point anchor = GetUIAnchor(AnchorPosition::TOP_LEFT);
-    anchor.y += 50; // Show below the overlay
-    auto& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
-    DrawRectangleRec({anchor.x, anchor.y, 152, 25}, ColorAlpha(DARKGRAY, 0.8F));
-    DrawText("Player Health", anchor.x, anchor.y - 20, 20, WHITE);
-    for (int i = 0; i < stats.health; ++i)
-    {
-        DrawRectangleRec({1 + anchor.x + i * 30, anchor.y + 2, 25, 20}, ColorAlpha(RED, 0.8F));
-    }
+    PLAYER_BAR.draw();
+    SCORE_COUNTER.draw();
+    if (gameState == GameState::GAME_OVER)
+        GAMEOVER.draw();
 }
 
-void GameOverUI::onClick(const Rectangle& bounds)
-{
-    // Spawn new houses
-    auto y = (float)GetScreenHeight() - 45;
-    for (int x = 17; x < GetScreenWidth() - 45; x += 50)
-    {
-        CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
-    }
-    auto& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
-    auto& pos = GetComponent<PositionC>(PLAYER_ID);
-    stats.health = 5;
-    pos.x = 640; // Reset player position
-    pos.y = 480;
-    pos.map = MapID::LEVEL_1;
-    SetGameState(GameState::GAME);
-}
-
-// Scripting
+/// Scripting
 
 void PlayerScript::onKeyEvent(entt::entity self)
 {
@@ -226,8 +204,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
         if (shoot.shootCounter == 0)
         {
             CreateEntity(BULLET, pos.x + 3, pos.y - 3, pos.map);
-            const auto handle = GetHandle(GetHash("BULLET_1"));
-            PlaySound(GetSound(handle), 0.5F);
+            PlaySound(GetSound(GetHash("BULLET_1")), 0.5F);
             shoot.shootCounter = PlayerStatsC::SHOOT_COOLDOWN;
         }
     }
@@ -244,8 +221,8 @@ void PlayerScript::onTick(entt::entity self)
         // Move player (actor) to different map to avoid updating all entities and destroy all current ones
         auto& pos = GetComponent<PositionC>(self);
         pos.map = MapID::GAME_OVER_LEVEL;
-        ClearEntityCache();
         DestroyEntities({ROCK, HOUSE}); // Destroy all rocks + houses
+        ClearEntityCache();
     }
 }
 
@@ -264,13 +241,11 @@ void BulletScript::onTick(entt::entity self)
 
 void BulletScript::onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
 {
-    DestroyEntity(self);
+    DestroyEntity(self); // Destroy on static collision
 }
 
 void RockScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
 {
-    if (!EntityExists(self)) // If multiple collisions happen and rock was already destroyed
-        return;
     auto& pos = GetComponent<PositionC>(self);
     auto& col = GetComponent<CollisionC>(self);
     auto& oPos = GetComponent<PositionC>(other);
@@ -290,13 +265,73 @@ void RockScript::onDynamicCollision(entt::entity self, entt::entity other, Colli
     else if (oPos.type == BULLET)
     {
         DestroyEntity(other);
+        SCORE++;
     }
     DestroyEntity(self);
+}
+
+void RockScript::onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
+{
+    DestroyEntity(self); // Destroy rock on static collision
 }
 
 void RockScript::onTick(entt::entity self)
 {
     auto& pos = GetComponent<PositionC>(self);
-    // pos.rotation++;
+    pos.rotation++;
     pos.y += 1;
+}
+
+/// UI
+
+void PlayerBarUI::onDraw(const Rectangle& bounds)
+{
+    // Draw the health bar - first outline and then simple rects for each life left
+    const PlayerStatsC& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
+    DrawRectangleRec({bounds.x, bounds.y, 152, 25}, ColorAlpha(DARKGRAY, 0.8F));
+    DrawText("Player Health", bounds.x, bounds.y - 20, 20, WHITE);
+    for (int i = 0; i < stats.health; ++i)
+    {
+        DrawRectangleRec({1 + bounds.x + i * 30, bounds.y + 2, 25, 20}, ColorAlpha(RED, 0.8F));
+    }
+}
+
+void ScoreCounter::onDraw(const Rectangle& bounds)
+{
+    DrawRectangleLinesEx(bounds, 2, WHITE);
+    SetFormatValue("Score", SCORE); // Update the format value
+    const char* text = GetFormattedText("Score: ${Score}");
+    const auto width = MeasureText(text, FONT_SIZE);
+    auto middlePos = GetCenteredPos(bounds, width, FONT_SIZE); // Make the text centered inside the element bounds
+    DrawText(text, middlePos.x, middlePos.y, FONT_SIZE, WHITE);
+}
+
+void GameOverUI::onDraw(const Rectangle& bounds)
+{
+    drawDefault(bounds);
+    const char* gameOver = "Game Over";
+    const Point topCenter = GetUIAnchor(Anchor::TOP_CENTER, MeasureText(gameOver, FONT_SIZE),50);
+    DrawText("Game Over", topCenter.x, topCenter.y, FONT_SIZE, WHITE);
+    const char* restart = "Restart";
+    // Make the text centered inside the element bounds
+    auto middlePos = GetCenteredPos(bounds, MeasureText(restart, FONT_SIZE), FONT_SIZE);
+    DrawText(restart, middlePos.x, middlePos.y, FONT_SIZE, WHITE);
+}
+
+void GameOverUI::onClick(const Rectangle& bounds, int button)
+{
+    // Spawn new houses
+    auto y = (float)GetScreenHeight() - 45;
+    for (int x = 17; x < GetScreenWidth() - 45; x += 50)
+    {
+        CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
+    }
+    auto& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
+    auto& pos = GetComponent<PositionC>(PLAYER_ID);
+    stats.health = 5;
+    pos.x = 640; // Reset player position
+    pos.y = 480;
+    pos.map = MapID::LEVEL_1;
+    SCORE = 0;
+    SetGameState(GameState::GAME);
 }

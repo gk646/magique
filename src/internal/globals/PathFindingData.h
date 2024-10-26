@@ -4,11 +4,9 @@
 #include <bitset>
 
 #include <magique/util/Logging.h>
-#include <magique/ecs/ECS.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/StaticCollisionData.h"
-#include "internal/globals/EngineData.h"
 #include "internal/headers/CollisionPrimitives.h"
 
 //-----------------------------------------------
@@ -216,6 +214,19 @@ namespace magique
                 {
                     const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
                     rasterizeRect(x, y, w, h);
+                }
+            }
+
+            if (staticData.colliderReferences.groupMap.contains(map))
+            {
+                const auto& groupInfoVec = staticData.colliderReferences.groupMap.at(map);
+                for (const auto& groupInfo : groupInfoVec)
+                {
+                    for (const auto idx : groupInfo.objectIds)
+                    {
+                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
+                        rasterizeRect(x, y, w, h);
+                    }
                 }
             }
         }

@@ -32,6 +32,9 @@ namespace magique
 
     //----------------- Textures -----------------//
 
+    // Allows to register an already existing or custom loaded texture onto the given atlas
+    handle RegisterTexture(const Texture& texture, AtlasID atlas = {});
+
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
     handle RegisterTexture(Asset asset, AtlasID atlas = {}, float scale = 1);
@@ -53,6 +56,9 @@ namespace magique
     handle RegisterSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas = {}, float scale = 1);
 
     //----------------- Audio -----------------//
+
+    // Allows to register an already existing or custom loaded sound
+    handle RegisterSound(const Sound& sound);
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
     handle RegisterSound(Asset asset);
@@ -92,30 +98,18 @@ namespace magique
     // This is useful if you have split images instead of a single TileSheet - Use with iterateDirectory()
     handle RegisterTileSheet(const std::vector<Asset>& assets, int tileSize, float scale = 1);
 
+    //----------------- REGISTER  -----------------//
+
     //----------------- GET -----------------//
 
-    // Returns the texture identified by this handle
+    // Returns the resources identified by this handle
     TextureRegion GetTexture(handle handle);
-
-    // Returns the sprite sheet identified by this handle
     SpriteSheet GetSpriteSheet(handle handle);
-
-    // Returns the sound identified by this handle
     Sound& GetSound(handle handle);
-
-    // Returns the tilemap identified by this handle
     TileMap& GetTileMap(handle handle);
-
-    // Returns the tileset identified by this handle
     TileSet& GetTileSet(handle handle);
-
-    // Returns the TileSheet identified by this handle
     TileSheet& GetTileSheet(handle handle);
-
-    // Returns the music identified by this handle
     Music& GetMusic(handle handle);
-
-    // Returns the playlist identified by this handle
     Playlist& GetPlaylist(handle handle);
 
     //----------------- DIRECT GET -----------------//
@@ -130,6 +124,10 @@ namespace magique
 
     TileSet& GetTileSet(HandleID handle);
     TileSet& GetTileSet(uint32_t hash);
+
+    Sound& GetSound(HandleID handle);
+    Sound& GetSound(uint32_t handle);
+
 
 } // namespace magique
 

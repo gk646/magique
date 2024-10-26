@@ -73,7 +73,7 @@ namespace magique
     // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
     // Only pass a playlist with permanent storage (either use RegisterPlaylist() or allocate it)
     // A playlist cannot be played multiple times simultaneously - plays (loops) until stopped
-    void PlayPlaylist(Playlist* playlist, float volume = 1.0F);
+    void PlayPlaylist(Playlist& playlist, float volume = 1.0F);
 
     // Stops playing the playlist
     void StopPlaylist(Playlist& playlist);

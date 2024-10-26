@@ -21,6 +21,7 @@ namespace magique
         bool operator==(Point other) const;
         bool operator!=(Point other) const;
         Point operator+(Point other) const;
+        Point operator/(float divisor) const;
         Point& operator+=(Point other);
         Point operator*(Point other) const;
         [[nodiscard]] Point operator*(float i) const;
@@ -369,7 +370,7 @@ namespace magique
     //----------------- UI -----------------//
 
     // Anchor position used in the UI module to position objects
-    enum class Anchor
+    enum class Anchor : uint8_t
     {
         NONE,          // No anchoring - for UIObject
         TOP_LEFT,      // LT
@@ -384,7 +385,7 @@ namespace magique
     };
 
     // When used for alignment positions the object in the specified direction
-    enum class Direction
+    enum class Direction : uint8_t
     {
         LEFT,  // Object is moved left from the anchor object by its width
         RIGHT, // Object is moved right from where the anchor object ends horizontally by its width
@@ -392,13 +393,13 @@ namespace magique
         DOWN   // Object is moved up down from where the anchor object ends vertically by its height
     };
 
-    enum class KeyLayout
+    enum class KeyLayout : uint8_t
     {
         QWERTY,
         QWERTZ,
     };
 
-    enum class ScalingMode
+    enum class ScalingMode : uint8_t
     {
         // Fully scales with the current screen dimensions - used for background, or windows
         // Note: if the current aspect ratio is not 16:9, the object will be stretched or squished accordingly

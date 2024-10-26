@@ -2,6 +2,7 @@
 #define MAGIQUE_H
 
 // The single include header
+
 #include "fwd.hpp"
 
 // Assets
@@ -10,6 +11,10 @@
 #include "assets/AssetLoader.h"
 #include "assets/HandleRegistry.h"
 #include "assets/container/AssetContainer.h"
+#include "assets/types/Playlist.h"
+#include "assets/types/TileMap.h"
+#include "assets/types/TileSet.h"
+#include "assets/types/TileSheet.h"
 
 // Core
 #include "core/Animations.h"
@@ -60,6 +65,9 @@
 #include "ui/UI.h"
 #include "ui/TextFormat.h"
 #include "ui/types/UIContainer.h"
+#include "ui/controls/Button.h"
+#include "ui/controls/Window.h"
+#include "ui/controls/TextField.h"
 
 // Util
 #include "util/Logging.h"

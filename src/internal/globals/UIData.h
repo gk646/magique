@@ -10,6 +10,8 @@
 #include "external/raylib/src/coredata.h"
 #include "internal/utils/STLUtil.h"
 
+inline bool initialized = false;
+
 namespace magique
 {
     struct UIData final
@@ -39,10 +41,6 @@ namespace magique
             {
                 dragStart = {mx, my};
             }
-            else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {-1, -1};
-            }
 
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)
@@ -55,6 +53,11 @@ namespace magique
             {
                 auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+            }
+
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {-1, -1};
             }
         }
 
@@ -78,6 +81,12 @@ namespace magique
         // All objects are registered in their ctor
         void registerObject(UIObject* object, const bool isContainer = false)
         {
+            if (!initialized)
+            {
+                *this = {};
+                initialized = true;
+            }
+
             objectsSet.insert(object);
             if (isContainer)
             {
@@ -136,7 +145,7 @@ namespace magique
 
     namespace global
     {
-        inline UIData UI_DATA{};
+        inline UIData UI_DATA;
     }
 } // namespace magique
 

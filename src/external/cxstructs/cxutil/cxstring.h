@@ -244,11 +244,11 @@ namespace cxstructs
         if (*str == '.')
         {
             ++str;
-            float factor = 0.1;
+            float factor = 0.1F;
             while (*str != 0 && *str >= '0' && *str <= '9')
             {
                 result += (*str - '0') * factor;
-                factor *= 0.1;
+                factor *= 0.1F;
                 ++str;
             }
         }

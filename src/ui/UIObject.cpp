@@ -20,7 +20,8 @@ namespace magique
         global::UI_DATA.registerObject(this);
     }
 
-    UIObject::UIObject(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(0, 0, w, h, scaling)
+    UIObject::UIObject(const float w, const float h, const Anchor anchor, const ScalingMode scaling) :
+        UIObject(0, 0, w, h, scaling)
     {
         setAnchor(anchor);
     }
@@ -78,6 +79,8 @@ namespace magique
             pos.x += (relWidth - myWidth) - inset;
             pos.y += (relHeight - myWidth) - inset;
             break;
+        case Anchor::NONE:
+            return;
         }
         setPosition(pos.x, pos.y);
     }
@@ -174,12 +177,5 @@ namespace magique
     ScalingMode UIObject::getScalingMode() const { return scaleMode; }
 
     bool UIObject::getWasDrawn() const { return wasDrawnLastTick; }
-
-    void UIObject::trackObject()
-    {
-        auto& uiData = global::UI_DATA;
-        if (!uiData.objectsSet.contains(this))
-            global::UI_DATA.registerObject(this, isContainer);
-    }
 
 } // namespace magique

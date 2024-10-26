@@ -1,5 +1,5 @@
-#ifndef MAGIQUE_NPCBEHAVIOR_H
-#define MAGIQUE_NPCBEHAVIOR_H
+#ifndef MAGIQUE_BEHAVIOR_TREE_H
+#define MAGIQUE_BEHAVIOR_TREE_H
 
 #include <magique/core/Types.h>
 #include <entt/entity/fwd.hpp>
@@ -19,65 +19,56 @@
 
 namespace magique
 {
-    struct Leaf final
-    {
-    };
 
     template <typename CustomData>
-    struct TreeBuilder final
+    struct BehaviorTree final
     {
         // Function that operates on component data and returns either true (success) or false (failure)
         using ConditionFunc = bool (*)(entt::registry&, entt::entity self, CustomData& cd);
 
-        template <class... Funcs>
-        class Condition final
+        struct Branch
         {
-            int n = 0;
-            //            Funcs functions[sizeof...(Funcs)]{};
+            virtual bool condition() = 0;
+            virtual void onTrue() = 0;
+            virtual void onFalse() = 0;
         };
 
-        struct Branch final
+        template <class TrueFunc, class FalseFunc>
+        struct BranchImpl : Branch
         {
-            //explicit Branch(const Condition& condition);
+            BranchImpl(ConditionFunc condition, TrueFunc onTrue, FalseFunc onFalse) :
+                conditionFunc(condition), trueFunc(onTrue), falseFunc(onFalse)
+            {
 
-            Branch& onSuccess(Branch& branch);
-            Branch& onSuccess(Leaf& branch);
+            }
 
-            Branch& onFailure(Branch& branch);
-            Branch& onFailure(Leaf& branch);
+            bool condition() { return conditionFunc(); }
+
+            void onTrue() { trueFunc(); }
+
+            void onFalse() { falseFunc(); }
+
+        private:
+            ConditionFunc conditionFunc;
+            TrueFunc trueFunc;
+            FalseFunc falseFunc;
         };
 
-        //----------------- BRANCH -----------------//
+        void addBranch(Branch* branch)
+        {
 
-        template <typename T>
-        Branch& branch(const Condition<T>& branch);
+        }
 
-
-        //----------------- CONDITIONS -----------------//
-
-        // Adds a if-branch to the tree
-        template <typename T>
-        Condition<T> If(ConditionFunc func);
-
-        // Adds a anyOf-branch (true if any of the conditions are true) to this tree
-        // Checks them in the given order and early returns when possible (same as && operator)
-        // Condition< AnyOf(ConditionFunc... functions);
-
-        // Condition NOf(int n, ConditionFunc... functions);
-
-
-        //----------------- BUILD -----------------//
-
-        void setRoot(const Branch& branch);
-
-        // Returns the built behavior tree
-        BehaviorTree<CustomData> build();
+        void func()
+        {
+            BehaviorTree tree;
+           // tree.addBranch(new BranchImpl([]()));
+        }
     };
 
 } // namespace magique
 
-
 //----------------- IMPLEMENTATION -----------------//
 
 
-#endif //MAGIQUE_NPCBEHAVIOR_H
+#endif //MAGIQUE_BEHAVIOR_TREE_H

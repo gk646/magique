@@ -47,6 +47,10 @@
 // Note: This is the global maximum, a specific maximum can be set on each query
 #define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 1024
 
+// Checks if the entity still exists before calling the collision method
+// This incurs some overhead but makes it easier to avoid accessing deleted entities
+#define MAGIQUE_CHECK_EXISTS_BEFORE_EVENT 1
+
 //----------------- ASSETS -----------------//
 
 // Maximum width of any texture atlas

@@ -22,7 +22,6 @@ namespace magique
 
     void DrawHashGridDebug(const MapID map)
     {
-        BeginMode2D(GetCamera());
         const auto& dynamic = global::DY_COLL_DATA;
         if (!dynamic.mapEntityGrids.contains(map)) // Could be called before any entity is created
             return;
@@ -35,7 +34,6 @@ namespace magique
         const int width = static_cast<int>(bounds.width) / cellSize;
         const int height = static_cast<int>(bounds.height) / cellSize;
 
-        BeginMode2D(GetCamera());
         const int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
         for (int i = 0; i < height; ++i)
         {
@@ -57,7 +55,6 @@ namespace magique
                 DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, BLACK);
             }
         }
-        EndMode2D();
     }
 
     void Draw2DCompass(const Color& color)

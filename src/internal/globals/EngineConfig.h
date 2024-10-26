@@ -21,10 +21,11 @@ namespace magique
     {
         Font font{};                                // Font
         Timing timing;                              // Thread timing information
-        Vector2 manualCamOff{0, 0};                 // Manual camera offset
+        Vector2 cameraViewOff{};                    // Manual camera view offset
+        Vector2 cameraPositionOff{};                // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
         float entityUpdateDistance = 1000;          // Update distance
-        float cameraViewPadding = 250;              // Padding around the cameras native bounds
+        float cameraCullPadding = 250;              // Padding around the cameras native bounds
         float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
