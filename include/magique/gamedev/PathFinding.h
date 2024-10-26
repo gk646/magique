@@ -20,18 +20,18 @@ namespace magique
 
     // Assigns the (middle points) cells along the shortest path to the given vector - excluding the start tile
     //      - searchLen: stops searching for a better path after that many iterations
-    // Note: The point list is in REVERSE order!
+    // Note: The point list is in REVERSE order! (last element is the next point)
     // Failure: if no path can be found returns an empty vector
-    void FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 64);
+    void FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 128);
 
     // Finds the next position you should move to, in order to reach the end point the fastest
     // Same as FindPath() but returns the next point
-    // Failure: returns {0,0} if no path can be found or the search took too many iterations or target is not traversable
-    Point GetNextOnPath(Point start, Point end, MapID map, int searchLen = 64);
+    // Failure: returns {0,0} if no path can be found (search took too many iterations) or target is not traversable
+    Point GetNextOnPath(Point start, Point end, MapID map, int searchLen = 128);
 
     //----------------- QUERY -----------------//
 
-    // Returns true if the ray cast through the pathfinding grid only hits traversable tiles
+    // Returns true if the ray cast through the pathfinding grid does not hit solid cells (in line of sight)
     bool GetPathRayCast(Point start, Point end, MapID map);
 
     //----------------- UTIL -----------------//

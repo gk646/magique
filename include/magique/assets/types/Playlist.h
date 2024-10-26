@@ -53,6 +53,7 @@ namespace magique
         bool isPlaying_ = false;
         bool fading = true;
         friend AudioPlayer;
+        friend handle RegisterPlaylist(const std::vector<Asset>&);
     };
 
 } // namespace magique

@@ -8,7 +8,8 @@ IGNORE_WARNING(4100)
 // Button
 //-----------------------------------------------
 // .....................................................................
-//
+// The button control
+// Note: You need to updateButtonActions() in order for the even methods onHover() and onClick() to work!
 // .....................................................................
 
 namespace magique
@@ -17,6 +18,7 @@ namespace magique
     {
         // Creates a new button from coordinates in the logical UI resolution
         Button(float x, float y, float w, float h);
+        Button(float w, float h, Anchor anchor);
 
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 

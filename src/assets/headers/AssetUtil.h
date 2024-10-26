@@ -1,5 +1,5 @@
-#ifndef LOADWRAPPERS_H
-#define LOADWRAPPERS_H
+#ifndef MAGIQUE_ASSET_UTIL_H
+#define MAGIQUE_ASSET_UTIL_H
 
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
@@ -46,6 +46,29 @@ namespace magique
         );
     }
 
+    inline bool IsSupportedSoundFormat(const char* fileType)
+    {
+        if (fileType == nullptr)
+            return false;
+        return ((false)
+#if defined(SUPPORT_FILEFORMAT_WAV)
+                || ((strcmp(fileType, ".wav") == 0) || (strcmp(fileType, ".WAV") == 0))
+#endif
+#if defined(SUPPORT_FILEFORMAT_OGG)
+                || ((strcmp(fileType, ".ogg") == 0) || (strcmp(fileType, ".OGG") == 0))
+#endif
+#if defined(SUPPORT_FILEFORMAT_MP3)
+                || ((strcmp(fileType, ".mp3") == 0) || (strcmp(fileType, ".MP3") == 0))
+#endif
+#if defined(SUPPORT_FILEFORMAT_QOA)
+                || ((strcmp(fileType, ".qoa") == 0) || (strcmp(fileType, ".QOA") == 0))
+#endif
+#if defined(SUPPORT_FILEFORMAT_FLAC)
+                || ((strcmp(fileType, ".flac") == 0) || (strcmp(fileType, ".FLAC") == 0))
+#endif
+        );
+    }
+
     inline Image LoadImage(const Asset& asset)
     {
         const auto* ext = asset.getExtension();
@@ -58,4 +81,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //LOADWRAPPERS_H
+#endif //MAGIQUE_ASSET_UTIL_H

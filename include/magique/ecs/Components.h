@@ -103,7 +103,7 @@ namespace magique
         [[nodiscard]] AnimationState getCurrentState() const;
 
         // Returns the current sprite count
-        [[nodiscard]] uint8_t getSpriteCount() const;
+        [[nodiscard]] uint16_t getSpriteCount() const;
 
     private:
         const EntityAnimation* entityAnimation; // Always valid

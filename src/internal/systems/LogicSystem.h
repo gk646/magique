@@ -107,7 +107,7 @@ namespace magique
             tickData.cameraMap = pos.map;
             tickData.cameraEntity = e;
             tickData.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
-            const auto manualOff = global::ENGINE_CONFIG.manualCamOff;
+            const auto manualOff = global::ENGINE_CONFIG.cameraViewOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
                 tickData.camera.offset = manualOff;
@@ -143,6 +143,7 @@ namespace magique
     inline void IterateEntities(const entt::registry& registry)
     {
         auto& data = global::ENGINE_DATA;
+        auto& pathData = global::PATH_DATA;
         auto& config = global::ENGINE_CONFIG;
         const auto& group = internal::POSITION_GROUP;
         auto& dynamicData = global::DY_COLL_DATA;
@@ -171,11 +172,19 @@ namespace magique
         const auto view = registry.view<PositionC>();
         for (const auto e : view)
         {
+
             const auto& pos = group.get<const PositionC>(e);
             const auto map = pos.map;
 
             loadedMapsTable[static_cast<int>(map)] = true;
-            auto& hashGrid = dynamicData.mapEntityGrids[map]; // Must exist - checked in CreateEntity()
+            // Sadly have to check that - could be that an entity just switches layer
+            if(!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
+                dynamicData.mapEntityGrids.add(map);
+
+            if(!pathData.mapsDynamicGrids.contains(map)) [[unlikely]]
+                pathData.mapsDynamicGrids.add(map);
+
+            auto& hashGrid = dynamicData.mapEntityGrids[map];
 
             if (actorMapsTable[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {

@@ -1,12 +1,11 @@
 #include <cmath>
-#include <cstring>
 #include <raylib/raylib.h>
 
 #include <magique/assets/types/TileSheet.h>
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 
-#include "assets/headers/LoadWrappers.h"
+#include "assets/headers/AssetUtil.h"
 
 namespace magique
 {

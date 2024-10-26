@@ -118,20 +118,20 @@ namespace magique
 
     void StopMusic(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
 
-    void PlayPlaylist(Playlist* playlist, const float volume)
+    void PlayPlaylist(Playlist& playlist, const float volume)
     {
-        if (playlist == nullptr)
+        if (&playlist == nullptr)
         {
             LOG_ERROR("Passed nullptr");
             return;
         }
-        if (playlist->getSize() == 0)
+        if (playlist.getSize() == 0)
         {
             LOG_ERROR("Cannot play empty playlist");
             return;
         }
-        playlist->setVolume(volume);
-        global::AUDIO_PLAYER.startPlaylist(*playlist);
+        playlist.setVolume(volume);
+        global::AUDIO_PLAYER.startPlaylist(playlist);
     }
 
     void StopPlaylist(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }

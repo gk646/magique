@@ -50,9 +50,9 @@ namespace magique
         {
             const float x = static_cast<float>(x0) * MAGIQUE_PATHFINDING_CELL_SIZE;
             const float y = static_cast<float>(y0) * MAGIQUE_PATHFINDING_CELL_SIZE;
+            DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
             if (PathFindingData::IsCellSolid(x, y, staticGrid, dynamicGrid))
             {
-                DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
                 return false;
             }
             if (x0 == x1 && y0 == y1)
@@ -69,7 +69,7 @@ namespace magique
                 y0 = y0 + sy;
             }
         }
-        return false;
+        return true;
     }
 
     void SetTypePathSolid(const EntityType type, const bool value)
@@ -119,7 +119,7 @@ namespace magique
         const int width = static_cast<int>(bounds.width) / cellSize;
         const int height = static_cast<int>(bounds.height) / cellSize;
 
-        BeginMode2D(GetCamera());
+
         for (int i = 0; i < height; ++i)
         {
             const int currY = startY + i;
@@ -135,7 +135,6 @@ namespace magique
                 DrawRectangleLinesEx(rect, 1, BLACK);
             }
         }
-        EndMode2D();
     }
 
     void DrawPath(const std::vector<Point>& path)

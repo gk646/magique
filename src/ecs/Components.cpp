@@ -76,7 +76,7 @@ namespace magique
 
     AnimationState AnimationC::getCurrentState() const { return currentState; }
 
-    uint8_t AnimationC::getSpriteCount() const { return spriteCount; }
+    uint16_t AnimationC::getSpriteCount() const { return spriteCount; }
 
     //----------------- COLLISION -----------------//
 

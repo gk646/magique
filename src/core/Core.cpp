@@ -59,12 +59,17 @@ namespace magique
         global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
     }
 
-    void SetCameraViewPadding(const int distance)
+    void SetCameraCullPadding(const int distance)
     {
-        global::ENGINE_CONFIG.cameraViewPadding = static_cast<float>(distance);
+        global::ENGINE_CONFIG.cameraCullPadding = static_cast<float>(distance);
     }
 
-    void SetManualCameraOffset(const float x, const float y) { global::ENGINE_CONFIG.manualCamOff = {x, y}; }
+    void SetCameraViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
+
+    void SetCameraPositionOffset(float x, float y)
+    {
+        global::ENGINE_CONFIG.cameraPositionOff = {x, y};
+    }
 
     void SetCameraSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
@@ -114,7 +119,7 @@ namespace magique
 
     Rectangle GetCameraBounds()
     {
-        const auto pad = global::ENGINE_CONFIG.cameraViewPadding;
+        const auto pad = global::ENGINE_CONFIG.cameraCullPadding;
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
         const float halfWidth = offset.x / zoom;

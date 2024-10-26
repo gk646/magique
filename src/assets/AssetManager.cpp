@@ -12,10 +12,20 @@
 
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AssetManager.h"
-#include "assets/headers/LoadWrappers.h"
+#include "assets/headers/AssetUtil.h"
 
 namespace magique
 {
+    handle RegisterTexture(const Texture& texture, AtlasID atlas)
+    {
+        MAGIQUE_ASSERT(texture.id != 0, "Trying to register an invalid texture");
+        auto& texAtlas = global::ATLAS_DATA.getAtlas(atlas);
+        const Image textImg = LoadImageFromTexture(texture);
+        const auto region = texAtlas.addTexture(textImg, texture.width, texture.height);
+        UnloadImage(textImg);
+        return global::ASSET_MANAGER.addResource(region);
+    }
+
     handle RegisterTexture(Asset asset, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
@@ -115,13 +125,25 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
+    handle RegisterSound(const Sound& sound)
+    {
+        if(!IsSoundReady(sound))
+        {
+            LOG_WARNING("Trying to register invalid sound");
+            return handle::null;
+        }
+        const auto handle = global::ASSET_MANAGER.addResource<Sound>(sound);
+        return handle;
+    }
+
     handle RegisterSound(Asset asset)
     {
         ASSET_CHECK(asset);
         const auto ext = asset.getExtension();
-        if (ext == nullptr)
+        if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
+            return handle::null;
         }
         const Wave wave = LoadWaveFromMemory(ext, (unsigned char*)asset.data, asset.size);
         const Sound sound = LoadSoundFromWave(wave);
@@ -132,13 +154,15 @@ namespace magique
 
     handle RegisterMusic(Asset asset)
     {
+        ASSET_CHECK(asset);
         const auto ext = asset.getExtension();
-        if (ext == nullptr)
+        if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
+            return handle::null;
         }
-        // Duplicate data as stream isnt copied
-        // This is leaked but until the end of the programm / still should make a manager for it
+        // Duplicate data as stream isn't copied
+        // This is leaked but until the end of the programm
         auto* newData = new char[asset.size];
         std::memcpy(newData, asset.data, asset.size);
         const auto music = LoadMusicStreamFromMemory(ext, (unsigned char*)newData, asset.size);
@@ -146,7 +170,33 @@ namespace magique
         return handle;
     }
 
-    handle RegisterPlaylist(const std::vector<Asset>& assets) { return handle::null; }
+    handle RegisterPlaylist(const std::vector<Asset>& assets)
+    {
+        if (assets.empty()) // Check empty
+        {
+            LOG_WARNING("Passed empty asset vector to RegisterPlaylist()");
+            return handle::null;
+        }
+
+        Playlist playlist{};
+        playlist.tracks.reserve(assets.size() + 1);
+        for (const auto& asset : assets)
+        {
+            ASSET_CHECK(asset);
+            const auto* ext = asset.getExtension();
+            if (!IsSupportedSoundFormat(ext))
+            {
+                LOG_ERROR("Asset file type is not a sound file!: %s", ext);
+                return handle::null;
+            }
+            auto* newData = new char[asset.size];
+            std::memcpy(newData, asset.data, asset.size);
+            const auto music = LoadMusicStreamFromMemory(ext, (unsigned char*)newData, asset.size);
+            playlist.tracks.emplace_back(music);
+        }
+        const auto handle = global::ASSET_MANAGER.addResource<Playlist>(std::move(playlist));
+        return handle;
+    }
 
     handle RegisterTileMap(Asset asset)
     {
@@ -241,5 +291,8 @@ namespace magique
 
     TileSet& GetTileSet(const HandleID handle) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(handle)); }
     TileSet& GetTileSet(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileSet>(GetHandle(hash)); }
+
+    Sound& GetSound(const HandleID handle) { return global::ASSET_MANAGER.getResource<Sound>(GetHandle(handle)); }
+    Sound& GetSound(const uint32_t hash) { return global::ASSET_MANAGER.getResource<Sound>(GetHandle(hash)); }
 
 } // namespace magique

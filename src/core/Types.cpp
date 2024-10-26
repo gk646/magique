@@ -15,6 +15,12 @@ namespace magique
 
     Point Point::operator+(const Point other) const { return {x + other.x, y + other.y}; }
 
+    Point Point::operator/(const float divisor) const
+    {
+        return {x / divisor, y / divisor};
+    }
+
+
     Point& Point::operator+=(const Point other)
     {
         x += other.x;

@@ -29,9 +29,11 @@ namespace magique
     void ResetBenchmarkTimes();
 
     // Draws the debug grid for the dynamic entity hash grid including entity count
+    // Note: This method assumes that BeginMode2D() was called before
     void DrawHashGridDebug(MapID map);
 
     // Draws a cartesian coordinate system with markings 500 pixels in the given color
+    // Note: This method assumes that BeginMode2D() was called before
     void Draw2DCompass(const Color& color);
 
     //----------------- TIME MEASURE -----------------//

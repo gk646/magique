@@ -77,7 +77,8 @@ namespace magique
         // Returns true if specified mouse button is pressed while the object is hovered
         [[nodiscard]] bool getIsClicked(int mouseButton = MOUSE_LEFT_BUTTON) const;
 
-        // Controls the anchor position of the object - set to AnchorPosition::NONE in order to un-anchor the object
+        // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
+        // Note: Anchoring is updated each tick automatically
         // Default: NONE
         void setAnchor(Anchor anchor);
         [[nodiscard]] Anchor getAnchor() const;
@@ -91,16 +92,12 @@ namespace magique
         // Returns true if the object was drawn in the last tick
         [[nodiscard]] bool getWasDrawn() const;
 
-        // Note: Only needs to be called for statically declared objects (e.g. objects created at program startup, globals)
-        // Those object are not tracked internally and thus might not be updated automatically - no effect on tracked objects
-        void trackObject();
-
         virtual ~UIObject();
 
     private:
-        float px = 0, py = 0, pw = 0, ph = 0;         // Percent values for the dimensions
-        ScalingMode scaleMode = ScalingMode::FULL;    // How the object scales with different screen dimensions
-        Anchor anchor = Anchor::NONE; // Where (and if) the object is anchored to on the screen
+        float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
+        Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
         bool isContainer = false;
         friend struct UIData;

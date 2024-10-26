@@ -19,6 +19,9 @@ namespace magique
     // Returns a random float using raylibs GetRandomValue() - min and max included
     float GetRandomFloat(float min, float max);
 
+    // Returns the top left point to center something with the given width and height within the rectangle 'within'
+    Vector2 GetCenteredPos(Rectangle within, float width, float height);
+
 } // namespace magique
 
 #endif //MAGIQUE_RAYUTILS_H

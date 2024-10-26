@@ -1,10 +1,7 @@
 #ifndef ASTEROIDS_H
 #define ASTEROIDS_H
 
-#include <magique/core/Game.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/ui/UIObject.h>
-#include <magique/ui/controls/Button.h>
+#include <magique/magique.hpp> // Single header include
 
 using namespace magique;
 
@@ -39,14 +36,18 @@ struct PlayerStatsC final
     int health = 5;
 };
 
-// The game class
+/// Game class
+
 struct Asteroids final : Game
 {
-    Asteroids() : Game("Asteroids") {}
+    Asteroids() : Game("magique - Asteroids") {}
     void onStartup(AssetLoader& loader) override;
     void updateGame(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;
+    void drawUI(GameState gameState) override;
 };
+
+/// Scripts
 
 struct PlayerScript final : EntityScript
 {
@@ -65,6 +66,7 @@ struct RockScript final : EntityScript
 {
     void onTick(entt::entity self) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
+    void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
 
 struct HouseScript final : EntityScript
@@ -75,16 +77,25 @@ struct HouseScript final : EntityScript
     }
 };
 
+/// UI
+
 struct PlayerBarUI final : UIObject
 {
-    PlayerBarUI() : UIObject(50, 50, 200, 50) {}
-    void draw(const Rectangle& bounds) override;
+    PlayerBarUI() : UIObject(50, 70, 200, 50) {}
+    void onDraw(const Rectangle& bounds) override;
+};
+
+struct ScoreCounter final : UIObject
+{
+    ScoreCounter() : UIObject(200, 50, Anchor::TOP_CENTER) {}
+    void onDraw(const Rectangle& bounds) override;
 };
 
 struct GameOverUI final : Button
 {
-    GameOverUI() : Button(960, 520, 150, 50) {}
-    void onClick(const Rectangle& bounds) override;
+    GameOverUI() : Button(250,50, Anchor::MID_CENTER) {}
+    void onClick(const Rectangle& bounds, int button) override;
+    void onDraw(const Rectangle &bounds) override;
 };
 
 #endif // ASTEROIDS_H

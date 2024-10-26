@@ -60,6 +60,8 @@ namespace magique
     {
         const auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;
+        const auto& group = internal::POSITION_GROUP;
+
         auto& pairs = dynamic.collisionPairs[thread].vec;
         for (const auto loadedMap : data.loadedMaps)
         {
@@ -72,7 +74,6 @@ namespace magique
             const int endIdx = static_cast<int>(endP * static_cast<float>(size));
             const auto start = hashGrid.dataBlocks.begin() + startIdx;
             const auto end = hashGrid.dataBlocks.begin() + endIdx;
-            const auto& group = internal::POSITION_GROUP;
             for (auto it = start; it != end; ++it)
             {
                 const auto& block = *it;
@@ -126,13 +127,20 @@ namespace magique
                 secondInfo.normalVector.y *= -1;
 
                 // Call for first entity
-                InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
+#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
+                const bool invokeEvent = group.contains(e1) && group.contains(e2);
+                if (invokeEvent)
+#endif
+                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
 
                 if (info.getIsAccumulated())
                     AccumulateInfo(col1, info);
 
-                // Call for second entity
-                InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, secondInfo);
+                    // Call for second entity
+#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
+                if (invokeEvent)
+#endif
+                    InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, secondInfo);
 
                 if (secondInfo.getIsAccumulated())
                     AccumulateInfo(col2, secondInfo);

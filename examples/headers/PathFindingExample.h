@@ -7,6 +7,7 @@
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
+#include <magique/core/StaticCollision.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/gamedev/PathFinding.h>
 
@@ -61,9 +62,6 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetTypePathSolid(HUNTER, true);
-        const auto res = GetIsTypePathSolid(HUNTER);
-
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -89,21 +87,45 @@ struct Example final : Game
         const MapID map = MapID::DEFAULT;
         CreateEntity(PLAYER, 0, 0, map);
         CreateEntity(HUNTER, GetRandomValue(250, 1000), GetRandomValue(250, 1000), map);
+
+        ManualColliderGroup myGroup;
+
+        // Create pillars around the origin - offset the negative elements cause you specify the top left point
+        myGroup.addRectCollider(150, 150, 50, 50);
+        myGroup.addRectCollider(-200, 150, 50, 50);
+        myGroup.addRectCollider(150, -200, 50, 50);
+        myGroup.addRectCollider(-200, -200, 50, 50);
+
+        AddColliderGroup(MapID::DEFAULT, myGroup);
     }
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
-        DrawRectangle(0, 0, 50, 50, RED); // Orientation
-        for (const auto e : GetDrawEntities())
         {
-            const auto& pos = GetComponent<const PositionC>(e);
-            const auto& col = GetComponent<const CollisionC>(e);
-            DrawRectangleRec({pos.x, pos.y, col.p1, col.p2}, BLUE);
+            for (const auto e : GetDrawEntities())
+            {
+                const auto& pos = GetComponent<const PositionC>(e);
+                const auto& col = GetComponent<const CollisionC>(e);
+                DrawRectangleRec({pos.x, pos.y, col.p1, col.p2}, BLUE);
+            }
+
+            const auto& pos = GetComponent<const PositionC>(GetCameraEntity());
+            const auto& tarPos = GetComponent<const PositionC>(entt::entity(1)); // Unsafe
+
+            // Draws the pathfinding grid
+            DrawPathFindingGrid(MapID::DEFAULT);
+
+            // Solid Objects -
+            DrawRectangle(150, 150, 50, 50, GRAY);
+            DrawRectangle(-200, 150, 50, 50, GRAY);
+            DrawRectangle(150, -200, 50, 50, GRAY);
+            DrawRectangle(-200, -200, 50, 50, GRAY);
+
+            Draw2DCompass(GREEN);
         }
         EndMode2D();
-        DrawPathFindingGrid(MapID::DEFAULT);
-        Draw2DCompass(GREEN);
+
     }
 };
 

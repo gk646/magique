@@ -85,15 +85,20 @@ namespace magique
 
     //----------------- CAMERA -----------------//
 
-    // Adds additional padding to the sides of the normal camera rectangle (enlarged rectangle) - scales with zoom
-    // Useful for when you have large effects or entities
+    // Adds additional padding to the sides of the normal camera rectangle to be used to cull entities inside visible space
+    // Entities are checked with their topleft to be inside the enlarged rectangle (so necessary when you have large entities)
     // Default: 250
-    void SetCameraViewPadding(int distance);
+    void SetCameraCullPadding(int distance);
 
-    // Manually sets the camera offset from the top left of the screen
-    // Automatically set to half the screen dimensions and centered on the collision shape of the camera entity (if any)
-    // If any offset other than (0,0) is set there are no automatic adjustments
-    void SetManualCameraOffset(float x, float y);
+    // Manually sets the camera view offset from the top left of the screen - automatically set to be half the screen dimensions
+    // Note: If any offset other than (0,0) is set there are no automatic adjustments
+    // Default: (0,0)
+    void SetCameraViewOffset(float x, float y);
+
+    // Sets the cameras position offset - automatically centered within the camera entities collision shape (if it exists)
+    // Note: If any offset other than (0,0) is set there are no automatic adjustments
+    // Default: (0,0)
+    void SetCameraPositionOffset(float x, float y);
 
     // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the slowest
     // Controls how fast the camera position catches up to the position of the camera holder
