@@ -29,10 +29,9 @@ SOFTWARE.
 #ifndef FAST_VECTOR_H
 #define FAST_VECTOR_H
 
-#ifdef __MINGW32__
-    #include <utility>
+#if defined(__MINGW32__) || defined(__GNUG__)
+#include <utility>
 #endif
-
 
 #include <type_traits>
 #include <cassert>

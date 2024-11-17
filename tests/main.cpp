@@ -6,8 +6,8 @@
 // .....................................................................
 
 // Tests
-// #include "CollisionBenchmark.h"
-// #include "CollisionTest.h"
+//#include "CollisionBenchmark.h"
+ #include "CollisionTest.h"
 // #include "HashGridTest.h"
 
 // Examples
@@ -16,7 +16,7 @@
 //#include "../examples/headers/WindowExample.h"
 //#include "../examples/headers/UIExample.h"
 //#include "../examples/headers/LightingExample.h"
-#include "../examples/headers/PathFindingExample.h"
+//#include "../examples/headers/PathFindingExample.h"
 
 int main()
 {

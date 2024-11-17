@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cmath>
+#include <cfloat>
 #include <magique/internal/InternalTypes.h>
 #include <magique/util/RayUtils.h>
 #include <magique/util/Math.h>

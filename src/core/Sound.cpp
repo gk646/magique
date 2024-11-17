@@ -120,11 +120,6 @@ namespace magique
 
     void PlayPlaylist(Playlist& playlist, const float volume)
     {
-        if (&playlist == nullptr)
-        {
-            LOG_ERROR("Passed nullptr");
-            return;
-        }
         if (playlist.getSize() == 0)
         {
             LOG_ERROR("Cannot play empty playlist");

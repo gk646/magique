@@ -21,7 +21,11 @@ Procedural Level Generation
 - Give utilities to generate maps based on manually created room cells
 - Could use wave function collapse
 
+
 ### Core
+
+Performance
+- Use [xsimd](https://github.com/xtensor-stack/xsimd) to simplify simd usage (and make it potentiall faster and more compatible)
 
 ### Misc
 

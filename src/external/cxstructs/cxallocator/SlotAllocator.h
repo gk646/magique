@@ -52,7 +52,7 @@ namespace cxstructs
             for (int i = 0; i < N; i++)
             {
                 auto& slot = slots[i];
-                if (!slot.used && slot.size == bytes)
+                if (!slot.used && slot.size == static_cast<int>(bytes))
                 {
                     slot.used = true;
                     return slot.memory;
