@@ -21,7 +21,7 @@ namespace magique
             scData.scripts.resize(entity + 1, ScriptData::defaultScript);
         }
         // Dont delete the default script
-        if (scData.scripts[entity] && scData.scripts[entity] != ScriptData::defaultScript)
+        if ((scData.scripts[entity] != nullptr) && scData.scripts[entity] != ScriptData::defaultScript)
             delete scData.scripts[entity]; // deletion of object with no polymorphic destructor - but object has no data
         scData.scripts[entity] = script;
     }

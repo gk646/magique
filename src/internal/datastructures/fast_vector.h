@@ -403,7 +403,7 @@ void fast_vector<T>::push_back(T&& value) noexcept
 {
     if (m_size == m_capacity)
     {
-        reserve(m_capacity * grow_factor + 1);
+        reserve((m_capacity * grow_factor) + 1);
     }
 
     if constexpr (std::is_trivial_v<T>)

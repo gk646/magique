@@ -150,4 +150,10 @@ namespace std
 
 #define MAGIQUE_WORLD_BOUND_DEPTH 100
 
+#ifndef MAGIQUE_DEBUG
+#undef MAGIQUE_LOGGING
+#define MAGIQUE_LOGGING 0  // Turn off lower level logging
+#endif
+
+
 #endif //MAGIQUE_CONFIG_H

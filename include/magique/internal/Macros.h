@@ -84,6 +84,7 @@ namespace magique::internal
 
 //----------------- BUILDING -----------------//
 
+
 #ifdef _MSC_VER
 
 #define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))

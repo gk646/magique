@@ -7,13 +7,14 @@ if (UNIX)
     set(GLFW_BUILD_WAYLAND ON) # Use wayland per default
 endif (UNIX)
 
+set(SUPPORT_MODULE_RAUDIO ON)
 message(STATUS "\n-- ------------- raylib ------------------")
 add_subdirectory(raylib)
 message(STATUS "---------------- raylib ------------------\n")
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(raylib PRIVATE
-            $<$<CONFIG:Debug>: -Og -Wall -Wextra -g >
+            $<$<CONFIG:Debug>: -Og -Wall -g >
             $<$<CONFIG:Release>:-Ofast -ffast-math -funroll-loops -march=native -DNDEBUG>
     )
     target_link_options(raylib PRIVATE )

@@ -48,7 +48,7 @@ namespace magique
 
 //----------------- IMPLEMENTATION -----------------//
 
-#ifndef MAGIQUE_LOGGING
+#if MAGIQUE_LOGGING == 0
 #undef LOG_ALLOC
 #undef LOG_INFO
 #undef LOG_WARNING
