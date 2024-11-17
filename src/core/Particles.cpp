@@ -38,6 +38,9 @@ namespace magique
                 particle.x = data.emX;
                 particle.y = data.emY;
                 break;
+            case Shape::TRIANGLE:
+                MAGIQUE_ASSERT(false, "Triangle not implemented");
+                break;
             }
             // Higher quality randomness should be worth it - and the random is pretty fast
 

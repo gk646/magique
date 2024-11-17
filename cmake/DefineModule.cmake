@@ -17,17 +17,20 @@ target_include_directories(magique-${MODULE_NAME} PRIVATE
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    # Baseline compile flags for GCC/Clang
-    set(CMAKE_CXX_FLAGS_DEBUG "-Og -g -march=native")
-    set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DNDEBUG -march=native -mavx -flto -fno-exceptions -fno-rtti -ffast-math")
-    set(CMAKE_EXE_LINKER_FLAGS "-flto")
+    target_compile_options(magique-${MODULE_NAME} PRIVATE
+            -Wall -march=native -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
+    )
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE
-            -Wall -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
+            $<$<CONFIG:Debug>:
+            -Og -g >
+            $<$<CONFIG:Release>:
+            -Ofast -DNDEBUG >
     )
 
     target_link_options(magique-${MODULE_NAME} PRIVATE
-            -flto
+            $<$<CONFIG:Debug>:  >
+            $<$<CONFIG:Release>:>
     )
 
     if (ENABLE_SANITIZER)
@@ -38,7 +41,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 elseif (MSVC)
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             $<$<CONFIG:Debug>:/W3 /Od /Zi /RTC1 /Zc:preprocessor>
-            $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX2 /Zc:inline /Zc:preprocessor /GS  /Gy /Oi /Gw /GF /GL /GR- /Oi >
+            $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX2 /Zc:inline /Zc:preprocessor /GS /Gy /Oi /Gw /GF /GL /GR- /Oi >
     )
 
     target_link_options(magique-${MODULE_NAME} PRIVATE
@@ -55,7 +58,7 @@ else ()
 endif ()
 
 # Compile the definition for the target and all consuming ones
-if(MAGIQUE_STEAM)
+if (MAGIQUE_STEAM)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_STEAM)
 elseif (MAGIQUE_LAN)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)

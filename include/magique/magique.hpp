@@ -35,7 +35,7 @@
 
 // Gamedev
 #include "gamedev/Achievements.h"
-#include "gamedev/Pathfinding.h"
+#include "gamedev/PathFinding.h"
 #include "gamedev/CommandLine.h"
 #include "gamedev/Procedural.h"
 #include "gamedev/Localization.h"

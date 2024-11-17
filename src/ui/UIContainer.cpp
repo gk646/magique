@@ -73,7 +73,7 @@ namespace magique
     bool UIContainer::removeChild(const int index)
     {
         MAGIQUE_ASSERT(index >= 0, "index cannot be negative");
-        if (index >= children.size())
+        if (index >= static_cast<int>(children.size()))
         {
             LOG_WARNING("Child with index %d is out of bounds", index);
             return false;

@@ -107,7 +107,8 @@ namespace magique
                 float txs[4] = {0, cB.p1, cB.p3, 0};
                 float tys[4] = {0, cB.p2, cB.p4, 0};
                 RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
-                return SAT(pxs, pys, txs, tys, i);
+                SAT(pxs, pys, txs, tys, i);
+                return;
             }
         case Shape::CIRCLE:
             switch (cB.shape)
@@ -116,30 +117,36 @@ namespace magique
                 {
                     if (pB.rotation == 0)
                     {
-                        return RectToCircle(pB.x, pB.y, cB.p1, cB.p2, pA.x + cA.p1, pA.y + cA.p1, cA.p1, i);
+                        RectToCircle(pB.x, pB.y, cB.p1, cB.p2, pA.x + cA.p1, pA.y + cA.p1, cA.p1, i);
+                        return;
                     }
                     float pxs[4] = {0, cB.p1, cB.p1, 0}; // rect b
                     float pys[4] = {0, 0, cB.p2, cB.p2}; // rect b
                     RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY);
-                    return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pxs, pys, i);
+                    CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pxs, pys, i);
+                    return;
                 }
             case Shape::CIRCLE:
                 // We can skip the translation to the middle point as both are in the same system
-                return CircleToCircle(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x + cB.p1, pB.y + cB.p1, cB.p1, i);
+                CircleToCircle(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x + cB.p1, pB.y + cB.p1, cB.p1, i);
+                return;
             case Shape::CAPSULE:
-                return CircleToCapsule(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x, pB.y, cB.p1, cB.p2, i);
+                CircleToCapsule(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pB.x, pB.y, cB.p1, cB.p2, i);
+                return;
             case Shape::TRIANGLE:
                 {
                     if (pB.rotation == 0)
                     {
                         const float txs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p3, pB.x};
                         const float tys[4] = {pB.y, pB.y + cB.p2, pB.y + cB.p4, pB.y};
-                        return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
+                        CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
+                        return;
                     }
                     float txs[4] = {0, cB.p1, cB.p3, 0};
                     float tys[4] = {0, cB.p2, cB.p4, 0};
                     RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
-                    return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
+                    CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
+                    return;
                 }
             }
         case Shape::CAPSULE:

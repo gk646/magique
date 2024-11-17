@@ -15,7 +15,7 @@ inline void SetTargetFPS(const int fps) // raylib function implemented here
     }
 }
 
-inline int GetFPS()
+int GetFPS()
 {
     auto& config = magique::global::ENGINE_CONFIG.timing;
 #define FPS_BUFF_SIZE 15
@@ -46,6 +46,7 @@ inline int GetFPS()
 
     return ret;
 }
+
 
 // Get time in seconds for last frame drawn (delta time)
 inline float GetFrameTime()

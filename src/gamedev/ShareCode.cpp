@@ -53,7 +53,7 @@ namespace magique
         }
 
         const auto len = static_cast<int>(strlen(str));
-        if (len < sizeof(CHECKSUM_TYPE) + sizeof(VERSION))
+        if (len < (int)sizeof(CHECKSUM_TYPE) +  (int)sizeof(VERSION))
         {
             LOG_WARNING("Passed string is not a ShareCode: %s", str);
             return;
@@ -133,7 +133,7 @@ namespace magique
 
     ShareCode::~ShareCode()
     {
-        delete[] binaryCode;
+        delete[] binaryCode; // Compiler warning is not correct - pointer is replaced before deletion
         binaryCode = nullptr;
         delete[] base64;
         base64 = nullptr;
@@ -238,7 +238,7 @@ namespace magique
     {
         internal::ShareCodeProperty prop;
         prop.bits = internal::getBitSize(amount);
-        prop.name = name == nullptr ? nullptr : _strdup(name);
+        prop.name = name == nullptr ? nullptr : strdup(name);
         prop.type = internal::ShareCodePropertyType::INTEGER;
         properties.push_back(prop);
     }
@@ -247,7 +247,7 @@ namespace magique
     {
         internal::ShareCodeProperty prop;
         prop.bits = 32; // Fixed with
-        prop.name = name == nullptr ? nullptr : _strdup(name);
+        prop.name = name == nullptr ? nullptr : strdup(name);
         prop.type = internal::ShareCodePropertyType::FLOATING;
         properties.push_back(prop);
     }
@@ -256,7 +256,7 @@ namespace magique
     {
         internal::ShareCodeProperty prop;
         prop.bits = 0;
-        prop.name = name == nullptr ? nullptr : _strdup(name);
+        prop.name = name == nullptr ? nullptr : strdup(name);
         prop.type = internal::ShareCodePropertyType::STRING;
         properties.push_back(prop);
     }
@@ -455,7 +455,7 @@ namespace magique
         const auto strData = shareCode.binaryCode;
         ShareCodeData data = getFormatData();
         int currentBit = 24;
-        for (int i = 0; i < properties.size(); ++i)
+        for (int i = 0; i < static_cast<int>(properties.size()); ++i)
         {
             const auto& fp = properties[i];
             auto& dp = data.properties[i];

@@ -17,3 +17,7 @@ add_executable(asteroids ${GAME_FILES})
 
 # Dont forget to link against magique
 target_link_libraries(asteroids PRIVATE magique)
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(asteroids PRIVATE -fno-rtti) # magique is compiled without rtti - can be changed
+endif ()

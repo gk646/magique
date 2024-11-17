@@ -10,10 +10,7 @@ namespace magique
         info.isAccumulated = true;
     }
 
-    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo)
-    {
-        SetIsAccumulated(collisionInfo);
-    }
+    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
 
     void SetEntityScript(const EntityType entity, EntityScript* script)
     {
@@ -25,7 +22,7 @@ namespace magique
         }
         // Dont delete the default script
         if (scData.scripts[entity] && scData.scripts[entity] != ScriptData::defaultScript)
-            delete scData.scripts[entity];
+            delete scData.scripts[entity]; // deletion of object with no polymorphic destructor - but object has no data
         scData.scripts[entity] = script;
     }
 

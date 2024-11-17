@@ -1,9 +1,9 @@
 #include <magique/ui/controls/TextField.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
+#include <magique/util/Math.h>
 
 #include "external/raylib/src/coredata.h"
-#include "external/cxstructs/cxutil/cxmath.h"
 #include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
@@ -119,7 +119,7 @@ namespace magique
         };
 
         // Clamp as safety at the beginning
-        cursorPos = cxstructs::clamp(cursorPos, 0, static_cast<int>(text.size()));
+        cursorPos = clamp(cursorPos, 0, static_cast<int>(text.size()));
 
         // Parses controls and returns true if cursor or text have changed
         auto parseControls = [](std::string& str, int& pos)

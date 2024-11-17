@@ -15,7 +15,7 @@
 namespace magique::internal
 {
     template <typename T>
-    static constexpr size_t SizeOf()
+    static constexpr uint64_t SizeOf()
     {
         return sizeof(T);
     }

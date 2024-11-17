@@ -2833,13 +2833,13 @@ void InitTimer(void)
 #endif
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
-    struct timespec now = { 0 };
+   // struct timespec now = { 0 };
 
-    if (clock_gettime(CLOCK_MONOTONIC, &now) == 0)  // Success
+   // if (clock_gettime(CLOCK_MONOTONIC, &now) == 0)  // Success
     {
-        CORE.Time.base = (unsigned long long int)now.tv_sec*1000000000LLU + (unsigned long long int)now.tv_nsec;
+    //    CORE.Time.base = (unsigned long long int)now.tv_sec*1000000000LLU + (unsigned long long int)now.tv_nsec;
     }
-    else TRACELOG(LOG_WARNING, "TIMER: Hi-resolution timer not available");
+  //  else TRACELOG(LOG_WARNING, "TIMER: Hi-resolution timer not available");
 #endif
 }
 
