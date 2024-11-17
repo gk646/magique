@@ -188,7 +188,7 @@ namespace magique
 
     ShareCodeProperty ShareCodeData::getData(const int index) const
     {
-        if (index < 0 || index >= properties.size())
+        if (index < 0 || index >= static_cast<int>(properties.size()))
         {
             LOG_WARNING("Property with index does not exist: %d", index);
             return {};

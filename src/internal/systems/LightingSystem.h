@@ -121,6 +121,8 @@ namespace magique
 
     inline void RenderRayTracing(const entt::registry& registry)
     {
+        /*
+
         // Lights
         Vector2 lightPositions[MAGIQUE_RAYTRACING_ENTITIES];
         Vector3 lightColors[MAGIQUE_RAYTRACING_ENTITIES];
@@ -151,6 +153,9 @@ namespace magique
             const auto& pos = view.get<const PositionC>(e);
             const auto& emit = view.get<const OccluderC>(e);
         }
+
+
+        */
     }
 
     inline void RenderLighting(const entt::registry& registry)

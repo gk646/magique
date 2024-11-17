@@ -49,7 +49,7 @@ namespace magique
          {0, 1}, {3, 1}, {1, 2}, {4, 1}, {6, 1}, {3, 3}, {1, 1}, {1, 3}, {1, 3}, {5, 1}}, // q - z
     };
 
-    PointI GetCharIndices(const KeyLayout layout, const char c)
+    static PointI GetCharIndices(const KeyLayout layout, const char c)
     {
         const int num = static_cast<int>(layout);
         if (c >= '1' && c <= '9')
@@ -61,7 +61,7 @@ namespace magique
         return {UINT8_MAX, UINT8_MAX};
     }
 
-    Point GetCharPosition(const KeyLayout layout, const char c)
+    static Point GetCharPosition(const KeyLayout layout, const char c)
     {
         const auto [x, y] = GetCharIndices(layout, static_cast<char>(std::tolower(c)));
         if (x == UINT8_MAX)
@@ -79,7 +79,7 @@ namespace magique
         return cxstructs::str_sort_levenshtein_case<16>(s1.c_str(), s2.c_str(), caseSensitive);
     }
 
-    float GetCharacterSimilarity(char base, char check, const bool caseSensitive) noexcept
+    static float GetCharacterSimilarity(char base, char check, const bool caseSensitive) noexcept
     {
         if (base == check)
             return 1.0F;
@@ -163,18 +163,18 @@ namespace magique
 
     int ReplaceInBuffer(char* buffer, const int bufferSize, const char* keyword, const char* replacement)
     {
-        const size_t lenKeyword = strlen(keyword);
-        const size_t lenReplacement = strlen(replacement);
+        const auto lenKeyword = static_cast<int>(strlen(keyword));
+        const auto lenReplacement = static_cast<int>(strlen(replacement));
         int replacements = 0;
 
         if (lenKeyword == 0)
             return 0;
 
         char* pos = strstr(buffer, keyword);
-        while (pos)
+        while (pos != nullptr)
         {
-            const size_t lenBefore = pos - buffer;
-            const size_t lenAfter = strlen(pos + lenKeyword);
+            const auto lenBefore = static_cast<int>(pos - buffer);
+            const auto lenAfter = static_cast<int>(strlen(pos + lenKeyword));
 
             if (lenBefore + lenAfter + lenReplacement >= bufferSize)
             {

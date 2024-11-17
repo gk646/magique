@@ -60,7 +60,7 @@ Specific code rules:
 The include order and style is the following:
 
 - 1: third-party or STL includes with `<..>`
-- 2: first party (./include/) includes with `<..>`
+- 2: first party (/include/magique) includes with `<..>`
 - 3: internal includes with `"..."`
 
 Always include from the root and specify the full include path. No relative includes. After every category one newline.

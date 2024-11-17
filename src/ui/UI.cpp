@@ -45,6 +45,9 @@ namespace magique
         case Anchor::BOTTOM_RIGHT:
             point = {res.x - width - inset, res.y - height - inset};
             break;
+        case Anchor::NONE:
+            MAGIQUE_ASSERT(false, "Invalid ");
+            break;
         }
         return point;
     }
