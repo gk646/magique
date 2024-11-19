@@ -6,12 +6,12 @@
 // .....................................................................
 
 // Tests
-#include "CollisionBenchmark.h"
+// #include "CollisionBenchmark.h"
  //#include "CollisionTest.h"
-// #include "HashGridTest.h"
+//#include "HashGridTest.h"
 
 // Examples
-//#include "../examples/headers/MultiplayerExample.h"
+#include "../examples/headers/MultiplayerExample.h"
 //#include "../examples/headers/SteamExample.h"
 //#include "../examples/headers/WindowExample.h"
 //#include "../examples/headers/UIExample.h"

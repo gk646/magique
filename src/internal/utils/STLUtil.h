@@ -71,7 +71,7 @@ T maxValue(const T& t1, const T& t2)
 template <typename T, typename Compare>
 bool QuickSort(T* arr, const int elements, Compare comp)
 {
-    constexpr int MAX_LEVELS = 1000;
+    constexpr int MAX_LEVELS = 500;
 
     int beg[MAX_LEVELS];
     int end[MAX_LEVELS];

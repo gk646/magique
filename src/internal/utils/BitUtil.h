@@ -3,7 +3,7 @@
 
 namespace magique
 {
-    // Writes 'bitsToWrite' many bits from val to 'byte' starting at the given offset
+    // Writes 'bitsToWrite' many bits from val to 'byte' starting at the given bit offset
     template <typename T>
     int WriteBits(T val, const int bitsToWrite, char& byte, const int offset)
     {
@@ -15,7 +15,7 @@ namespace magique
         return bitsToWriteNow;
     }
 
-    // Read 'bitsToRead' many bits into val from 'byte' starting at the given offset
+    // Read 'bitsToRead' many bits into val from 'byte' starting at the given bit offset
     template <typename T>
     int ReadBits(T& val, const int bitsToRead, const char byte, const int offset)
     {

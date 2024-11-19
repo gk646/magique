@@ -14,7 +14,7 @@
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
 
 #ifndef MAGIQUE_STEAM
-#error "Using Steam features without enabling it! To enable Steam use CMake: MAGIQUE_STEAM"
+#error "Using Steam features without enabling it! To enable Steam configure it in /CMakeLists.txt"
 #endif
 
 //-----------------------------------------------

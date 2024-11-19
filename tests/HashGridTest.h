@@ -8,11 +8,12 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
+#include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
 
 using namespace magique;
 
-enum EntityID : uint16_t
+enum EntityType : uint16_t
 {
     PLAYER,
     OBJECT,
@@ -38,11 +39,11 @@ struct PlayerScript final : EntityScript
             pos.x += 2.5F;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, const CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         auto& pos = GetComponent<PositionC>(self);
-        pos.x += info.normalVector.x * info.depth;
-        pos.y += info.normalVector.y * info.depth;
+        pos.x += info.normalVector.x * info.penDepth;
+        pos.y += info.normalVector.y * info.penDepth;
     }
 };
 
@@ -62,7 +63,7 @@ struct Test final : Game
     void onStartup(AssetLoader& loader) override
     {
         SetShowHitboxes(true);
-        const auto playerFunc = [](entt::entity e)
+        const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
             GiveScript(e);
@@ -71,7 +72,7 @@ struct Test final : Game
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
-        const auto objFunc = [](entt::entity e)
+        const auto objFunc = [](entt::entity e, EntityType type)
         {
             GiveScript(e);
             const auto val = GetRandomValue(0,100);
@@ -96,8 +97,8 @@ struct Test final : Game
         };
         RegisterEntity(OBJECT, objFunc);
 
-        SetScript(PLAYER, new PlayerScript());
-        SetScript(OBJECT, new ObjectScript());
+        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(OBJECT, new ObjectScript());
 
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 5; ++i)
@@ -131,7 +132,7 @@ struct Test final : Game
                 break;
             }
         }
-        DrawHashGridDebug();
+        DrawHashGridDebug(GetCameraMap());
         EndMode2D();
 
     }

@@ -167,6 +167,7 @@ namespace magique
             data.collisionVec.clear();
             dyCollData.mapEntityGrids.clear();
             internal::REGISTRY.clear();
+            data.cameraEntity = entt::entity{UINT32_MAX};
             return;
         }
 

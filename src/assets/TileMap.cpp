@@ -13,7 +13,6 @@ namespace magique
     void ParseTileLayer(TileMap& tileMap, char*& data)
     {
         MAGIQUE_ASSERT(tileMap.width != 0 && tileMap.height != 0, "Internal Error: Dimensions not set!");
-
         cxstructs::str_skip_char(data, '\n', 1);
         MAGIQUE_ASSERT(XMLLineContainsTag(data, "data"), "Layout Error: Failed to parse tile layer");
 #ifdef MAGIQUE_DEBUG
@@ -56,7 +55,6 @@ namespace magique
                 ++data;
             }
         }
-
         layerData[layerSize] = static_cast<uint16_t>(cxstructs::str_parse_int(data));
         cxstructs::str_skip_char(data, '\n', 3);
     }

@@ -145,7 +145,10 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
+    entt::entity GetCameraEntity()
+    {
+        return global::ENGINE_DATA.cameraEntity;
+    }
 
     GameConfig& GetGameConfig() { return global::ENGINE_DATA.gameConfig; }
 

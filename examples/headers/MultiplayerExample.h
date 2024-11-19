@@ -195,13 +195,13 @@ struct Example final : Game
                     // Send the new client the current world state - iterate all entities
                     for (const auto e : GetRegistry().view<PositionC>())
                     {
-                        SpawnUpdate spawnUpdate;
+                        SpawnUpdate spawnUpdate{};
                         spawnUpdate.entity = e;
                         spawnUpdate.map = MapID(0);
                         const auto& pos = GetComponent<PositionC>(e);
                         spawnUpdate.x = pos.x;
                         spawnUpdate.y = pos.y;
-                        if (id == e) // If its the network player itself send the player type (for the camera)
+                        if (id == e) // If it's the network player itself send the player type (for the camera)
                             spawnUpdate.type = PLAYER;
                         else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
                             spawnUpdate.type = NET_PLAYER;
@@ -360,7 +360,7 @@ struct Example final : Game
                     const auto& pos = GetComponent<const PositionC>(e);
 
                     // Create the data
-                    PositionUpdate posUpdate;
+                    PositionUpdate posUpdate{};
                     posUpdate.x = pos.x;
                     posUpdate.y = pos.y;
                     posUpdate.entity = e;
@@ -377,12 +377,12 @@ struct Example final : Game
             if (IsClient())
             {
                 const auto host = GetCurrentConnections()[0];
-                constexpr auto keyArr = {KEY_W, KEY_A, KEY_S, KEY_D};
+                constexpr KeyboardKey keyArr[] = {KEY_W, KEY_A, KEY_S, KEY_D};
                 for (const auto key : keyArr)
                 {
                     if (IsKeyDown(key))
                     {
-                        InputUpdate inputUpdate;
+                        InputUpdate inputUpdate{};
                         inputUpdate.key = key;
                         BatchMessage(host, CreatePayload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
                     }

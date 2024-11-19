@@ -22,11 +22,24 @@ Procedural Level Generation
 - Could use wave function collapse
 
 
+Simple Minimap
+- Minimap drawing given a tilemap
+- Custom color mappings can be set
+  - To tile categories, solid...
+
+SkillTree
+- Panel with zoom able and draggable background
+- Definable skill nodes 
+- Draw function is implemented by user
+- Connections are managed by the engine
+- Similar to how you know it from many games e.g. PoE
+
 ### Core
 
 Performance
-- Use [xsimd](https://github.com/xtensor-stack/xsimd) to simplify simd usage (and make it potentiall faster and more compatible)
+- Use [xsimd](https://github.com/xtensor-stack/xsimd) to simplify simd usage (and make it potentially faster and more compatible)
 
 ### Misc
+
 
 ### Buildsystem
