@@ -34,7 +34,7 @@ namespace magique
         global::MP_DATA.isInitialized = true;
         return true;
 #else
-        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized,"Steam is not initialized!");
+        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized!");
         const auto res = SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
         global::MP_DATA.isInitialized = true;
@@ -186,12 +186,12 @@ namespace magique
         WSACleanup();
 
 #else // Unix-based systems (Linux/macOS)
-        struct ifaddrs* ifAddrStruct = nullptr;
-        struct ifaddrs* ifa = nullptr;
+        ifaddrs* ifAddrStruct = nullptr;
+        ifaddrs* ifa = nullptr;
 
         if (getifaddrs(&ifAddrStruct) == -1)
         {
-            return localIP;
+            return nullptr;
         }
 
         for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next)
@@ -201,11 +201,9 @@ namespace magique
 
             if (ifa->ifa_addr->sa_family == AF_INET)
             {
-                char addressBuffer[INET_ADDRSTRLEN];
                 void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
-                inet_ntop(AF_INET, addr, addressBuffer, INET_ADDRSTRLEN);
-                localIP = addressBuffer;
-                break; // Get the first IPv4
+                inet_ntop(AF_INET, addr, IP_BUFFER, 64);
+                break;
             }
         }
 

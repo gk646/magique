@@ -11,9 +11,13 @@ else ()
     message(STATUS "LibraryType: Static")
 endif ()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
+
 if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
     message(STATUS "BuildType  : Debug")
-elseif (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+elseif (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     message(STATUS "BuildType  : Release")
 endif ()
 

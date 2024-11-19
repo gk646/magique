@@ -45,7 +45,7 @@ namespace magique
         std::vector<MapID> loadedMaps{};           // Currently loaded zones
         GameConfig gameConfig{};                   // Global game config instance
         Camera2D camera{};                         // Current camera
-        entt::entity cameraEntity{};               // Entity id of the camera
+        entt::entity cameraEntity{UINT32_MAX};     // Entity id of the camera
         GameState gameState{};                     // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls

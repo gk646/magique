@@ -47,7 +47,6 @@ int GetFPS()
     return ret;
 }
 
-
 // Get time in seconds for last frame drawn (delta time)
 inline float GetFrameTime()
 {
@@ -125,8 +124,6 @@ namespace magique
             }
         }
 
-        //TODO clean up
-        // Static tile map objects
         if (staticData.colliderReferences.tileObjectMap.contains(map))
         {
             for (const auto& info : staticData.colliderReferences.tileObjectMap.at(map))
@@ -169,7 +166,30 @@ namespace magique
             }
         }
 
+        // Collision Groups
+        if (staticData.colliderReferences.groupMap.contains(map))
+        {
+            for (const auto& info : staticData.colliderReferences.groupMap.at(map))
+            {
+                for (const auto idx : info.objectIds)
+                {
+                    const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx);
+                    if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
+                        continue;
 
+                    if (p2 != 0)
+                    {
+                        DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+                    }
+                    else
+                    {
+                        DrawCircleLinesV({x + p1, y + p1}, p1, RED);
+                    }
+                }
+            }
+        }
+
+        // WorldBounds
         if (staticData.getIsWorldBoundSet()) // enabled
         {
             constexpr float depth = MAGIQUE_WORLD_BOUND_DEPTH;
@@ -186,15 +206,20 @@ namespace magique
         EndMode2D();
     }
 
-    inline void AssignCameraPosition(const entt::registry& registry)
+    inline void AssignCameraPosition()
     {
         auto& data = global::ENGINE_DATA;
         auto& config = global::ENGINE_CONFIG;
         const auto smoothing = 1.0F - config.cameraSmoothing; // The higher the value the smoother
         const auto cameraEntity = GetCameraEntity();
-        const auto& pos = internal::REGISTRY.get<PositionC>(cameraEntity);
+
+        Point targetPosition{0, 0};
+        if (cameraEntity != entt::entity{UINT32_MAX}) [[unlikely]] // No camera assigned
+        {
+            targetPosition = internal::REGISTRY.get<PositionC>(cameraEntity).getPosition();
+        }
+
         // Center the camera on the collision shape if provided
-        Point targetPosition{pos.x, pos.y};
         if (config.cameraPositionOff.x != 0.0F || config.cameraPositionOff.y != 0.0F)
         {
             targetPosition.x += config.cameraPositionOff.x;

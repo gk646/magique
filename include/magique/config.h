@@ -67,8 +67,6 @@
 
 //----------------- GAMEDEV -----------------//
 
-// Maximum amount of possible decision for any single questnode
-#define MAGIQUE_MAX_QUEST_DECISIONS 4
 
 
 //----------------- MULTIPLAYER -----------------//
@@ -118,9 +116,8 @@
 
 //----------------- COMPILATION -----------------//
 
-// Tries to forward declare std::function which improves compile time about 150ms per TU - only on MSVC
+// Forward declares std::function which improves compile time about 150ms per TU - only on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
-
 
 //----------------- INTERNAL -----------------//
 
@@ -149,11 +146,6 @@ namespace std
 #endif
 
 #define MAGIQUE_WORLD_BOUND_DEPTH 100
-
-#ifndef MAGIQUE_DEBUG
-#undef MAGIQUE_LOGGING
-#define MAGIQUE_LOGGING 0  // Turn off lower level logging
-#endif
 
 
 #endif //MAGIQUE_CONFIG_H

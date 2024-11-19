@@ -122,6 +122,7 @@ namespace magique
     Rectangle GetCameraNativeBounds();
 
     // Returns the current camera holder
+    // Failure: returns UINT32_MAX if there is no camera currently
     entt::entity GetCameraEntity();
 
     //----------------- UTILS -----------------//

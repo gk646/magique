@@ -11,13 +11,13 @@ namespace magique::renderer
         }
     }
 
-    inline void StartTick(const entt::registry& registry)
+    inline void StartTick()
     {
         auto& rlglState = RLGL.State;
         BeginDrawing();
         rlglState.prevDrawCalls = rlglState.drawCalls;
         rlglState.drawCalls = 0;
-        AssignCameraPosition(registry);
+        AssignCameraPosition();
         global::UI_DATA.updateDrawTick();
     }
 
@@ -44,7 +44,7 @@ namespace magique::renderer
 
         auto& camera = data.camera;
         const auto gameState = GetGameState();
-        StartTick(registry);
+        StartTick();
         {
             ClearBackground(RAYWHITE); // Thanks ray
             if (game.getIsLoading()) [[unlikely]]

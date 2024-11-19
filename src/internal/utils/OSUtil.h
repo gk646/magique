@@ -8,14 +8,12 @@ inline void WaitTime(const double destinationTime, double sleepSeconds)
 
         // System halt functions
 #if defined(_WIN32)
-    Sleep((unsigned long)(sleepSeconds * 1000.0));
+    Sleep(static_cast<unsigned long>(sleepSeconds * 1000.0));
 #endif
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
-    struct timespec req = {0};
-    time_t sec = sleepSeconds;
-    long nsec = (sleepSeconds - sec) * 1000000000L;
-    req.tv_sec = sec;
-    req.tv_nsec = nsec;
+    timespec req;
+    req.tv_sec = static_cast<time_t>(sleepSeconds);                     // Seconds portion
+    req.tv_nsec = static_cast<long>((sleepSeconds - (float)(int)req.tv_sec) * 1e9); // Nanoseconds portion
     while (nanosleep(&req, &req) == -1)
         continue;
 #endif
@@ -58,7 +56,6 @@ inline void SetupProcessPriority()
     }
 #endif
 }
-
 
 
 #endif //MAGIQUE_OSUTIL_H

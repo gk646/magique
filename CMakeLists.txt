@@ -17,7 +17,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Options - IF USING CMAKE CACHE, CHANGES NEED A CACHE RESET TO APPLY!
 option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_SDK_PATH)" OFF)
-option(MAGIQUE_LAN "Enable local networking" OFF)
+option(MAGIQUE_LAN "Enable local networking" ON)
 option(MAGIQUE_SHARED "Build Magique as a shared library (experimental)" OFF)
 option(MAGIQUE_SANITIZER "Compile with address sanitizer" OFF)
 
