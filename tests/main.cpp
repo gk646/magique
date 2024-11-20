@@ -20,7 +20,6 @@
 
 int main()
 {
-    InitSteam();
 #ifdef MAGIQUE_EXAMPLE
     Example test{};
     return test.run();

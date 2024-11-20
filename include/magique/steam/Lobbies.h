@@ -24,22 +24,31 @@ namespace magique
     bool CreateSteamLobby(LobbyType type, int maxPlayers);
 
     // Tries to connect to the lobby specified by the given id
-    void ConnectToSteamLobby(SteamID lobbyID);
+    void JoinSteamLobby(LobbyID lobbyID);
 
-    // Leaves the lobby specified by the given id
-    void LeaveSteamLobby(SteamID lobbyID);
+    // Leaves the current lobby specified by the given id
+    // Failure: returns false if not currently in a lobby
+    bool LeaveSteamLobby();
 
     // Opens the steam invite dialogue to invite friends to your lobby
-    // Note: This requires you to be in lobby
-    void OpenInviteDialogue();
+    // Failure: returns false if not currently in a lobby
+    bool OpenLobbyInviteDialogue();
+
+    // Returns true if the lobby invite was successfully sent to the given user
+    bool InviteUserToLobby(SteamID userID);
 
     //================= CHAT =================//
 
     // Sends a new chat message in the lobby chat
-    void SendLobbyMessage(const char* message);
+    // Note: requires you to be in a lobby
+    void SendLobbyChatMessage(const char* message);
+
+    // Called with the steamID of the sender and the sent string
+    using ChatCallback = std::function<void(SteamID sender, const std::string& chatMessage)>;
 
     // Sets the callback that is called on each new chat message sent in the lobby
-    void SetChatMessageCallback(const std::function<void(SteamID sender, const std::string& chatMessage)>& chatCallback);
+    // Note: This will also be called for your OWN message - so you don't have to make a special case for those
+    void SetChatMessageCallback(const ChatCallback& chatCallback);
 
     //================= INFO =================//
 
@@ -49,12 +58,19 @@ namespace magique
     // Returns true if your currently in a lobby AND the owner of the lobby
     bool IsLobbyOwner();
 
+    // Returns the LobbyID of your current lobby
+    LobbyID GetLobbyID();
+
     // Returns the SteamID of the lobby owner
+    // Note: requires you to be in a lobby
     SteamID GetLobbyOwner();
 
-    // Sets the callback that is called for various events that happen during the lobby lifetime
-    // Check LobbyEvents for when each event is called, gets passed the SteamID of the affected user (e.g. who joined?)
-    void SetLobbyEventCallback(const std::function<void(SteamID steamID, LobbyEvent lobbyEvent)>& lobbyEventCallback);
+    // Called with the lobby id, the protagonist of that event and the event type
+    // See the LobbyEvent enum for a detailed description when each event gets called
+    using LobbyCallback = std::function<void(LobbyID lobby, SteamID steamID, LobbyEvent lobbyEvent)>;
+
+    // Sets the callback that is called for various events that happen in regard to lobbies
+    void SetLobbyEventCallback(const LobbyCallback& lobbyEventCallback);
 
 
 } // namespace magique
