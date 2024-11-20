@@ -342,7 +342,9 @@ namespace magique
 
     //================= STEAM =================//
 
-    enum class SteamID : uint64_t;
+    enum class LobbyID : uint64_t; // Steam lobby ID - internally is just a SteamID
+
+    enum class SteamID : uint64_t; // SteamID
 
     using SteamOverlayCallback = void (*)(bool isOpening);
 
@@ -355,16 +357,23 @@ namespace magique
 
     enum class LobbyEvent
     {
-        // Called only when you created a lobby
+        // Called only when you created a lobby - called with your id
         ON_LOBBY_CREATED,
-        // Called when you enter a lobby
+        // Called when you enter a lobby - called with your id
         ON_LOBBY_ENTERED,
-        // Called when you exit the lobby
+        // Called when you exit the lobby - called with your id
         ON_LOBBY_EXIT,
-        // Only called when you are in a lobby and someone ELSE joins the lobby
+        // Only called when you are in a lobby and someone ELSE joins the lobby - called with joiners id
         ON_USER_JOINED,
-        // Only called when you are in a lobby and someone ELSE leaves the lobby
+        // Only called when you are in a lobby and someone ELSE leaves the lobby - called with leaver id
         ON_USER_LEFT,
+
+        // Called when a friend sends you a lobby invite - called with others lobby id, called with inviters id
+        // Note: It's up to you to handle a few things:
+        //      - Handle the case you are in a lobby currently
+        //          - Leave the current lobby or display a confirmation message
+        //      - Join the new lobby with JoinSteamLobby(lobbyID);
+        ON_LOBBY_INVITE,
     };
 
     //================= UI =================//

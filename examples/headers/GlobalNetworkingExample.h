@@ -14,6 +14,7 @@
 #include <magique/steam/GlobalSockets.h>
 
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
+#include <magique/core/Types.h>
 #include <magique/steam/Lobbies.h>
 #include <magique/util/RayUtils.h>
 
@@ -151,6 +152,7 @@ struct Test final : Game
     void onStartup(AssetLoader& loader) override
     {
         // Initialize steam
+        InitSteam();
 
         SetShowHitboxes(true);
         // Player
@@ -197,37 +199,54 @@ struct Test final : Game
         InitGlobalMultiplayer();
 
         // Setup event callback so we can react to multiplayer events
-        SetMultiplayerCallback(
-            [&](MultiplayerEvent event)
+        auto multiplayerCallback = [&](MultiplayerEvent event)
+        {
+            if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
             {
-                if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
+                const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
+                const auto lastConnection = GetCurrentConnections().back();
+                networkPlayerMap[lastConnection] = id; // Save the mapping
+
+                // Send the new client the current world state - iterate all entities
+                for (const auto e : GetRegistry().view<PositionC>())
                 {
-                    const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
-                    const auto lastConnection = GetCurrentConnections().back();
-                    networkPlayerMap[lastConnection] = id; // Save the mapping
+                    SpawnUpdate spawnUpdate{};
+                    spawnUpdate.entity = e;
+                    spawnUpdate.map = MapID(0);
+                    const auto& pos = GetComponent<PositionC>(e);
+                    spawnUpdate.x = pos.x;
+                    spawnUpdate.y = pos.y;
+                    if (id == e) // If it's the network player itself send the player type (for the camera)
+                        spawnUpdate.type = PLAYER;
+                    else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
+                        spawnUpdate.type = NET_PLAYER;
+                    else
+                        spawnUpdate.type = pos.type;
 
-                    // Send the new client the current world state - iterate all entities
-                    for (const auto e : GetRegistry().view<PositionC>())
-                    {
-                        SpawnUpdate spawnUpdate{};
-                        spawnUpdate.entity = e;
-                        spawnUpdate.map = MapID(0);
-                        const auto& pos = GetComponent<PositionC>(e);
-                        spawnUpdate.x = pos.x;
-                        spawnUpdate.y = pos.y;
-                        if (id == e) // If it's the network player itself send the player type (for the camera)
-                            spawnUpdate.type = PLAYER;
-                        else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
-                            spawnUpdate.type = NET_PLAYER;
-                        else
-                            spawnUpdate.type = pos.type;
+                    const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
 
-                        const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
-
-                        BatchMessage(lastConnection, payload);
-                    }
+                    BatchMessage(lastConnection, payload);
                 }
-            });
+            }
+        };
+        SetMultiplayerCallback(multiplayerCallback);
+
+        // Setup event call backs for steam lobbies
+
+        auto lobbyCallback = [](LobbyID lobbyId, SteamID steamID, LobbyEvent event)
+        {
+            if (event == LobbyEvent::ON_LOBBY_CREATED)
+            {
+                OpenLobbyInviteDialogue();
+            }
+            else if (event == LobbyEvent::ON_LOBBY_INVITE)
+            {
+                if (IsInLobby()) // Just leave the lobby - we don't have to clean anything up
+                    LeaveSteamLobby();
+                JoinSteamLobby(lobbyId); // Connect to the new lobby
+            }
+        };
+        SetLobbyEventCallback(lobbyCallback);
     }
 
     void drawGame(GameState /*gameState*/, Camera2D& camera2D) override
@@ -279,16 +298,12 @@ struct Test final : Game
             {
                 // Doesnt need a socket
                 CreateGlobalSocket();
+
                 // In order for other players to join us we need to create a lobby
-                CreateSteamLobby(LobbyType::FRIENDS_ONLY, 4);
-                // Invite friends to the lobby
-                OpenInviteDialogue();
-            }
-            if (IsKeyPressed(KEY_J))
-            {
-                // ConnectToGlobalSocket();
-                EnterClientMode();
-                DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
+                if (!CreateSteamLobby(LobbyType::FRIENDS_ONLY, 4))
+                {
+                    LOG_WARNING("Could not create lobby");
+                }
             }
         }
 

@@ -1,6 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/Lobbies.h>
-#include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
 #include "internal/globals/SteamData.h"
@@ -27,28 +26,25 @@ namespace magique
         return hSteamAPICall != k_uAPICallInvalid;
     }
 
-    void ConnectToSteamLobby(SteamID lobbyID)
+    void JoinSteamLobby(LobbyID lobbyID)
     {
         MAGIQUE_ASSERT(!IsInLobby(), "Cant join a lobby when in a lobby");
         SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyID)));
     }
 
-    void LeaveSteamLobby(SteamID lobbyID)
+    bool LeaveSteamLobby()
     {
-        const auto& steamData = global::STEAM_DATA;
-        MAGIQUE_ASSERT(IsInLobby(), "Cant leave the lobby when not in a lobby");
-        SteamMatchmaking()->LeaveLobby(CSteamID(static_cast<uint64>(lobbyID)));
-        if (steamData.lobbyEventCallback)
-            steamData.lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_EXIT);
-    }
-
-    void OpenInviteDialogue()
-    {
-        auto& steam = global::STEAM_DATA;
-        if (IsInLobby())
+        if (!IsInLobby())
+            return false;
+        const auto& steam = global::STEAM_DATA;
+        SteamMatchmaking()->LeaveLobby(steam.lobbyID);
+        if (steam.lobbyEventCallback)
         {
-            SteamFriends()->ActivateGameOverlayInviteDialog(steam.lobbyID);
+            const auto lobbyID = LobbyIDFromSteam(steam.lobbyID);
+            const auto steamID = MagiqueIDFromSteam(steam.userID);
+            steam.lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_LOBBY_EXIT);
         }
+        return true;
     }
 
     bool IsInLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }
@@ -64,19 +60,38 @@ namespace magique
         return false;
     }
 
+    LobbyID GetLobbyID() { return static_cast<LobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
+
     SteamID GetLobbyOwner()
     {
         MAGIQUE_ASSERT(IsInLobby(), "Cant get the lobby owner when not in a lobby");
         return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(global::STEAM_DATA.lobbyID).ConvertToUint64());
     }
 
-    void SetLobbyEventCallback(const std::function<void(SteamID steamID, LobbyEvent lobbyEvent)>& lobbyEventCallback)
+    void SetLobbyEventCallback(const LobbyCallback& lobbyEventCallback)
     {
         auto& steamData = global::STEAM_DATA;
         steamData.lobbyEventCallback = lobbyEventCallback;
     }
 
-    void SendLobbyMessage(const char* message)
+    bool OpenLobbyInviteDialogue()
+    {
+        auto& steam = global::STEAM_DATA;
+        if (IsInLobby())
+        {
+            SteamFriends()->ActivateGameOverlayInviteDialog(steam.lobbyID);
+            return true;
+        }
+        return false;
+    }
+
+    bool InviteUserToLobby(SteamID userID)
+    {
+        MAGIQUE_ASSERT(IsInLobby(), "Cant invite others to lobby if not in a lobby");
+        return SteamMatchmaking()->InviteUserToLobby(global::STEAM_DATA.lobbyID, SteamIDFromMagique(userID));
+    }
+
+    void SendLobbyChatMessage(const char* message)
     {
         MAGIQUE_ASSERT(IsInLobby(), "Cant send a chat message when not in a lobby");
         MAGIQUE_ASSERT(message != nullptr, "passed null msg");
@@ -84,7 +99,7 @@ namespace magique
         SteamMatchmaking()->SendLobbyChatMsg(global::STEAM_DATA.lobbyID, message, messageLength);
     }
 
-    void SetChatMessageCallback(const std::function<void(SteamID sender, const std::string& chatMessage)>& chatCallback)
+    void SetChatMessageCallback(const ChatCallback& chatCallback)
     {
         auto& steamData = global::STEAM_DATA;
         steamData.chatCallback = chatCallback;
@@ -98,16 +113,16 @@ namespace magique
             return;
 
         const auto steamID = static_cast<SteamID>(pCallback->m_ulSteamIDUserChanged);
+        const auto lobbyID = LobbyIDFromSteam(global::STEAM_DATA.lobbyID);
         if (pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeEntered)
         {
             MAGIQUE_ASSERT(pCallback->m_ulSteamIDUserChanged != userID.ConvertToUint64(), "Our event already fired?");
-            lobbyEventCallback(steamID, LobbyEvent::ON_USER_JOINED);
+            lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_USER_JOINED);
         }
-
         else if (pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeLeft)
         {
             MAGIQUE_ASSERT(pCallback->m_ulSteamIDUserChanged != userID.ConvertToUint64(), "Our event already fired?");
-            lobbyEventCallback(steamID, LobbyEvent::ON_USER_LEFT);
+            lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_USER_LEFT);
         }
     }
 
@@ -115,7 +130,7 @@ namespace magique
     {
         if (pCallback->m_ulSteamIDLobby == lobbyID.ConvertToUint64())
         {
-            LOG_INFO("Lobby data updated");
+            // LOG_INFO("Lobby data updated");
         }
     }
 
@@ -139,16 +154,31 @@ namespace magique
         }
     }
 
-    void SteamData::OnLobbyEntered(LobbyEnter_t* /**/) const
+    void SteamData::OnLobbyEntered(LobbyEnter_t* pCallback) const
     {
+        auto& steam = global::STEAM_DATA;
+        steam.lobbyID = pCallback->m_ulSteamIDLobby;
         if (lobbyEventCallback)
-            lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_ENTERED);
+        {
+            const auto lobbyID = LobbyIDFromSteam(steam.lobbyID);
+            const auto steamID = MagiqueIDFromSteam(steam.userID);
+            lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_LOBBY_ENTERED);
+        }
     }
 
     void SteamData::OnLobbyCreated(LobbyCreated_t* pCallback, bool /**/)
     {
-        if (pCallback->m_eResult == k_EResultOK && lobbyEventCallback)
-            lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_CREATED);
+        auto& steam = global::STEAM_DATA;
+        if (pCallback->m_eResult == k_EResultOK)
+        {
+            steam.lobbyID = pCallback->m_ulSteamIDLobby;
+            if (lobbyEventCallback)
+            {
+                const auto lobbyID = LobbyIDFromSteam(steam.lobbyID);
+                const auto steamID = MagiqueIDFromSteam(steam.userID);
+                lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_LOBBY_CREATED);
+            }
+        }
     }
 
 
