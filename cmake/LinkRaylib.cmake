@@ -1,17 +1,24 @@
+
+# ----------------------------------------------------------------------
+# Add raylib
+# ----------------------------------------------------------------------
+
+# Set build params
 set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
 set(OPENGL_VERSION "4.3")
 set(PLATFORM "Desktop")
+set(SUPPORT_MODULE_RAUDIO ON)
 
 if (UNIX)
     set(GLFW_BUILD_WAYLAND ON) # Use wayland per default
 endif (UNIX)
 
-set(SUPPORT_MODULE_RAUDIO ON)
-message(STATUS "\n-- ------------- raylib ------------------")
-add_subdirectory(raylib)
-message(STATUS "---------------- raylib ------------------\n")
 
+message(STATUS "\n-- ------------- raylib ------------------")
+add_subdirectory(src/external/raylib)
+
+# Compiler args for raylib
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >
@@ -26,4 +33,13 @@ elseif (MSVC)
     target_link_options(raylib PRIVATE $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF>)
 endif()
 
+# Includes for raylib
 target_include_directories(raylib PRIVATE ${MAGIQUE_PUBLIC_INCLUDE})
+
+# ----------------------------------------------------------------------
+# Link raylib
+# ----------------------------------------------------------------------
+
+
+# Link raylib to magique
+target_link_libraries(magique PUBLIC raylib)

@@ -1,5 +1,6 @@
 #ifndef MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
 #define MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
+
 #define MAGIQUE_EXAMPLE
 
 #include <cassert> // For asserts
@@ -20,8 +21,14 @@
 // Local Multiplayer Test
 //-----------------------------------------------
 // .....................................................................
-// This is a simple multiplayer test. It's not optimized and uses the easiest implementation possible to showcase the
-// functionality
+// This is a simple multiplayer test.
+// It's not optimized and uses the easiest implementation possible to showcase the functionality
+// magique only gives you the facilities to send and receive message.
+// For a smooth experience you should look into:
+//     - delta compression
+//     - message interpolation
+//     - message buffering
+//     - ...
 // .....................................................................
 
 using namespace magique;

@@ -20,10 +20,10 @@ and tutorials.
 Most notable features:
 
 - **Easy to learn and use**
-    - **No external dependencies!** (all dependencies in the source)
+    - _**No external dependencies!**_ (all dependencies in the source)
     - All `raylib` functionalities are the same allowing for an easy transition
     - _**_Fully documented headers_**_ and GitHub wiki
-    - **Many examples** from single headers to whole games! (see _examples/_)
+    - _**Many examples**_ from single headers to whole games! (see _examples/_)
     - Intuitive public API optimized for maximum usability
     - Robust logging and error handling with debugger
 - **Fast and modern**
@@ -47,12 +47,12 @@ Most notable features:
 
 `magique` is using the following popular libraries:
 
-- **[raylib](https://github.com/raysan5/raylib):** rendering, resource loading, sound,...
-- **[EnTT](https://github.com/skypjack/entt):** fast and modern entity-component system
+- **[raylib](https://github.com/raysan5/raylib) _(5.5)_:** rendering, resource loading, sound,...
+- **[EnTT](https://github.com/skypjack/entt) _(3.14)_:** fast and modern entity-component system
 - **[ankerl](https://github.com/martinus/unordered_dense):** optimized dense hashmap and hashset
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite):** fast and easy noise generation
-- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets):** local networking via IP
-- **[Steam SDK](https://partner.steamgames.com/)** _(if provided)_:  steam features and global P2P networking
+- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) :** local networking via IP
+- **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
 
 #### Minimal Example
 

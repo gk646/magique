@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/ui/UI.h>
 
-//-----------------------------------------------
+//===============================================
 // Window Manager
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows to easily control multiple windows and their layering
 // Windows are identified by either their pointer or by the name they were added with
@@ -28,7 +28,7 @@ namespace magique
         // Note: takes ownership of the pointer as long as its managed
         void addWindow(Window* window, const char* name);
 
-        //----------------- ACCESSORS -----------------//
+        //================= ACCESSORS =================//
 
         // Returns a managed window by name or index
         // Failure: returns nullptr if no window was added with that name
@@ -54,13 +54,13 @@ namespace magique
         // Returns a vector that contains all managed windows - sorted from top to bottom, front to back
         const std::vector<Window*>& getWindows();
 
-        //----------------- LAYERING -----------------//
+        //================= LAYERING =================//
 
         // Moves the first window in front of the second one
         void moveInFrontOf(Window* moved, Window* inFrontOf);
         void moveInFrontOf(const char* moved, const char* inFrontOf);
 
-        //----------------- UTIL -----------------//
+        //================= UTIL =================//
 
         // Returns true if given window covered any other another window at the given position
         bool getIsCovered(Window* window, Point pos = GetMousePos());

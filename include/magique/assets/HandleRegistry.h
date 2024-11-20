@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Handle Registry
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // This module helps to organize, storing and retrieving handles
 // Your free to manage and store handles on your own as well!
@@ -18,7 +18,7 @@ namespace magique
     // Customizable parameter to handle collisions - https://en.wikipedia.org/wiki/Salt_(cryptography)
     inline constexpr int HASH_SALT = 0;
 
-    //----------------- REGISTER -----------------//
+    //================= REGISTER =================//
 
     // Saves a handle by the given type - enum ordinal value will be used as index
     void RegisterHandle(handle handle, HandleID type);
@@ -29,7 +29,7 @@ namespace magique
     // Saves an unnamed handle directly by number
     void RegisterDirectHandle(handle handle, int id);
 
-    //----------------- GET -----------------//
+    //================= GET =================//
 
     // Retrieves a handle identified by a type - enum ordinal value will be used as index
     handle GetHandle(HandleID type);
@@ -41,14 +41,14 @@ namespace magique
     // Retrieves a direct handle
     handle GetDirectHandle(int id);
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
 
     // Use this to get the hash
     consteval uint32_t GetHash(char const* s) noexcept;
 
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

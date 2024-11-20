@@ -61,7 +61,7 @@ namespace magique
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
 
-        const CSteamID steamID{static_cast<uint64_t>(magiqueSteamID)};
+        const CSteamID steamID{static_cast<uint64>(magiqueSteamID)};
         if (steamID.IsValid())
         {
             LOG_WARNING("Passed invalid steam id");
@@ -83,7 +83,7 @@ namespace magique
         }
         data.connections.push_back(static_cast<Connection>(conn));
         data.goOnline(false);
-        return static_cast<Connection>(data.connections[0]);
+        return data.connections[0];
     }
 
     bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason)

@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Local Sockets Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module is only for local multiplayer (LAN) - it uses valve's open source GameNetworkingSockets
 // If steam integration is disabled only local sockets can be used!
@@ -19,7 +19,7 @@ namespace magique
     // Note: HAS to be called MANUALLY before any other local multiplayer methods
     bool InitLocalMultiplayer();
 
-    //----------------- HOST -----------------//
+    //================= HOST =================//
 
     // Creates a LAN-socket so others can connect to you on the given port - makes you the host
     // Returns true if it was successful
@@ -29,7 +29,7 @@ namespace magique
     // Returns true if an existing connection was closed successfully
     bool CloseLocalSocket(int closeCode = 0, const char* closeReason = nullptr);
 
-    //----------------- CLIENT -----------------//
+    //================= CLIENT =================//
 
     // Connects to an open local socket at the given ip and port
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
@@ -41,7 +41,7 @@ namespace magique
     // Returns true if an existing connection was closed successfully
     bool DisconnectFromLocalSocket(int closeCode = 0, const char* closeReason = nullptr);
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
 
     // Returns a temporary pointer to the local ip as a string
     // Note: Needs to be copied if you want to save it!

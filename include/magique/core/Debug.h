@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Debug Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // This module allows to enable/disable debug functionality
 // ................................................................................
@@ -36,7 +36,7 @@ namespace magique
     // Note: This method assumes that BeginMode2D() was called before
     void Draw2DCompass(const Color& color);
 
-    //----------------- TIME MEASURE -----------------//
+    //================= TIME MEASURE =================//
 
     // Starts a timer from 0 with the given id
     void StartTimer(int num);

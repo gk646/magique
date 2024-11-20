@@ -30,16 +30,25 @@ namespace magique
     void ConnectToSteamLobby(SteamID lobbyID)
     {
         MAGIQUE_ASSERT(!IsInLobby(), "Cant join a lobby when in a lobby");
-        SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64_t>(lobbyID)));
+        SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyID)));
     }
 
     void LeaveSteamLobby(SteamID lobbyID)
     {
         const auto& steamData = global::STEAM_DATA;
         MAGIQUE_ASSERT(IsInLobby(), "Cant leave the lobby when not in a lobby");
-        SteamMatchmaking()->LeaveLobby(CSteamID(static_cast<uint64_t>(lobbyID)));
+        SteamMatchmaking()->LeaveLobby(CSteamID(static_cast<uint64>(lobbyID)));
         if (steamData.lobbyEventCallback)
             steamData.lobbyEventCallback(MagiqueIDFromSteam(global::STEAM_DATA.userID), LobbyEvent::ON_LOBBY_EXIT);
+    }
+
+    void OpenInviteDialogue()
+    {
+        auto& steam = global::STEAM_DATA;
+        if (IsInLobby())
+        {
+            SteamFriends()->ActivateGameOverlayInviteDialog(steam.lobbyID);
+        }
     }
 
     bool IsInLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }

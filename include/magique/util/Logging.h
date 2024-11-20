@@ -1,9 +1,9 @@
 #ifndef MAGIQUE_LOGGING_H
 #define MAGIQUE_LOGGING_H
 
-//-----------------------------------------------
+//===============================================
 // Logging Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Use the provided macros for easier logging
 // ................................................................................
@@ -21,7 +21,7 @@ namespace magique
 
     using LogCallbackFunc = void (*)(LogLevel level, const char* msg);
 
-    //----------------- LOGGING -----------------//
+    //================= LOGGING =================//
 
     // Logs a message in a simpler interface
     void Log(LogLevel level, const char* msg, ...);
@@ -35,7 +35,7 @@ namespace magique
 #define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 #define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, msg, ##__VA_ARGS__)
 
-    //----------------- CONTROL -----------------//
+    //================= CONTROL =================//
 
     // Sets the minimal allowed log level
     void SetLogLevel(LogLevel level);
@@ -46,7 +46,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 #if MAGIQUE_LOGGING == 0
 #undef LOG_ALLOC

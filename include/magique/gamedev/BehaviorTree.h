@@ -4,9 +4,9 @@
 #include <magique/core/Types.h>
 #include <entt/entity/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // BehaviorTree
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Utilities to easily build complex behavior trees
 // The structure of trees is not changed after it's built
@@ -68,7 +68,7 @@ namespace magique
 
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 
 #endif //MAGIQUE_BEHAVIOR_TREE_H

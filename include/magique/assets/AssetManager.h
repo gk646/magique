@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Asset Management Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // All Register__ methods load and store the resource internally
 // The returned handle is used by Get__ methods to retrieve the resource again
@@ -30,7 +30,7 @@ namespace magique
         null = UINT32_MAX // The null handle - identifies invalid handles
     };
 
-    //----------------- Textures -----------------//
+    //================= Textures =================//
 
     // Allows to register an already existing or custom loaded texture onto the given atlas
     handle RegisterTexture(const Texture& texture, AtlasID atlas = {});
@@ -55,7 +55,7 @@ namespace magique
     // Use with iterateDirectory()
     handle RegisterSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas = {}, float scale = 1);
 
-    //----------------- Audio -----------------//
+    //================= Audio =================//
 
     // Allows to register an already existing or custom loaded sound
     handle RegisterSound(const Sound& sound);
@@ -70,7 +70,7 @@ namespace magique
     // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
     handle RegisterPlaylist(const std::vector<Asset>& assets);
 
-    //----------------- Tile Exports -----------------//
+    //================= Tile Exports =================//
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
     // Note: A TilSheet has its own atlas - you can access it manually as well and get a TextureRegion back
 
@@ -98,9 +98,9 @@ namespace magique
     // This is useful if you have split images instead of a single TileSheet - Use with iterateDirectory()
     handle RegisterTileSheet(const std::vector<Asset>& assets, int tileSize, float scale = 1);
 
-    //----------------- REGISTER  -----------------//
+    //================= REGISTER  =================//
 
-    //----------------- GET -----------------//
+    //================= GET =================//
 
     // Returns the resources identified by this handle
     TextureRegion GetTexture(handle handle);
@@ -112,7 +112,7 @@ namespace magique
     Music& GetMusic(handle handle);
     Playlist& GetPlaylist(handle handle);
 
-    //----------------- DIRECT GET -----------------//
+    //================= DIRECT GET =================//
     // Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
     // They call GetHandle() internally thus skipping the manual call
 

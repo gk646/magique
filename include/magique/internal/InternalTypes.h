@@ -4,9 +4,9 @@
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
 
-//-----------------------------------------------
+//===============================================
 // Public Internal Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Internal but public simple types or methods. Don't modify or use them (unless you know what your doing).
 // They have to be public due to templates (or other reasons) and are used internally
@@ -57,12 +57,12 @@ namespace magique::internal
         ColorFunction colorFunc = nullptr;
         void* tickFunc = nullptr;
 
-        //----------------- EMISSION SHAPE -----------------//
+        //================= EMISSION SHAPE =================//
         float emX = 0, emY = 0;
         float emp1 = 0; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
         float emp2 = 0; // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
 
-        //----------------- PARTICLE -----------------//
+        //================= PARTICLE =================//
         float p1 = 5.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
         float p2 = 5.0F; // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
         float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2

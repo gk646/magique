@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // TileMap
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // A tilemap defines the actual map data by storing numbers that correspond to textures.
 // Thus, to draw a tilemap a TileSheet is needed that converts those numbers into visuals.
@@ -17,7 +17,7 @@ namespace magique
 {
     struct TileMap final
     {
-        //----------------- TILES -----------------//
+        //================= TILES =================//
 
         // Returns a modifiable reference to the tile index at the given position
         uint16_t& getTileIndex(int x, int y, int layer);
@@ -39,7 +39,7 @@ namespace magique
         // Returns the layer count
         [[nodiscard]] int getLayerCount() const;
 
-        //----------------- OBJECTS -----------------//
+        //================= OBJECTS =================//
 
         [[nodiscard]] int getObjectLayerCount() const;
 

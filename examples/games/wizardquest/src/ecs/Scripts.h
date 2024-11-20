@@ -13,12 +13,10 @@ struct PlayerScript final : EntityScript
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
             anim.setAnimationState(AnimationState::IDLE);
 
-
-
         static Connection conn;
         if (IsKeyPressed(KEY_H))
         {
-            printf("User: %s\n", GetUserDataLocation());
+            printf("User: %s\n", GetSteamUserDataLocation());
             if (CreateLocalSocket(35000))
                 printf("Opened server\n");
             return;

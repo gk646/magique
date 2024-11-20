@@ -1,9 +1,9 @@
 #ifndef MAGIQUE_CONFIG_H
 #define MAGIQUE_CONFIG_H
 
-//-----------------------------------------------
+//===============================================
 // Config
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This allows to configure magique at compile time
 // 1: to enable an option
@@ -11,7 +11,7 @@
 // .....................................................................
 
 
-//----------------- CORE -----------------//
+//================= CORE =================//
 
 // Logic ticks per second
 #define MAGIQUE_LOGIC_TICKS 60
@@ -23,7 +23,7 @@
 // window names in the WindowManager, column names in the DataTable, children names in the UIContainer
 #define MAGIQUE_MAX_NAMES_LENGTH 16
 
-//----------------- PERFORMANCE -----------------//
+//================= PERFORMANCE =================//
 
 // Enables usage of SIMD (faster)
 #define MAGIQUE_SIMD 1
@@ -51,7 +51,7 @@
 // This incurs some overhead but makes it easier to avoid accessing deleted entities
 #define MAGIQUE_CHECK_EXISTS_BEFORE_EVENT 1
 
-//----------------- ASSETS -----------------//
+//================= ASSETS =================//
 
 // Maximum width of any texture atlas
 #define MAGIQUE_TEXTURE_ATLAS_SIZE 8192
@@ -65,11 +65,11 @@
 // Maximum amount of custom tile properties for each tile object (inside Tiled)
 #define MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2
 
-//----------------- GAMEDEV -----------------//
+//================= GAMEDEV =================//
 
 
 
-//----------------- MULTIPLAYER -----------------//
+//================= MULTIPLAYER =================//
 
 // Maximum amount of actors (players) supported - also applies for networking (maximum amount of clients for the host)
 #define MAGIQUE_MAX_PLAYERS 4
@@ -80,7 +80,7 @@
 // Maximum length of a chat message sent in a lobby
 #define MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH 512
 
-//----------------- GRAPHICS -----------------//
+//================= GRAPHICS =================//
 
 // Maximum amount of entities being raytraced
 #define MAGIQUE_RAYTRACING_ENTITIES 50
@@ -89,10 +89,10 @@
 #define MAGIQUE_PARTICLE_COLORPOOL_SIZE 5
 
 
-//----------------- PERSISTENCE -----------------//
+//================= PERSISTENCE =================//
 
 
-//----------------- UI -----------------//
+//================= UI =================//
 
 // Logical width the UI system
 #define MAGIQUE_UI_RESOLUTION_X 1920.0F
@@ -100,7 +100,7 @@
 // Logical height the UI system
 #define MAGIQUE_UI_RESOLUTION_Y 1080.0F
 
-//----------------- UTIL -----------------//
+//================= UTIL =================//
 
 // Enables logging - error and fatal messages are always enabled
 #define MAGIQUE_LOGGING 1
@@ -114,12 +114,12 @@
 // Maximum amount of timers supported at the same time
 #define MAGIQUE_MAX_SUPPORTED_TIMERS 4
 
-//----------------- COMPILATION -----------------//
+//================= COMPILATION =================//
 
 // Forward declares std::function which improves compile time about 150ms per TU - only on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
 
-//----------------- INTERNAL -----------------//
+//================= INTERNAL =================//
 
 #if MAGIQUE_FORWARD_FUNCTION == 1 && defined(_MSC_VER)
 namespace std

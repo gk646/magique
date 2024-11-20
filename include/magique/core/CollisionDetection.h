@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Collision Detection Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Note: This is an advanced module
 // This module offers optimized collision detection methods that work for the new shapes magique adds
@@ -25,19 +25,19 @@
 
 namespace magique
 {
-    //----------------- ENTITY -----------------//
+    //================= ENTITY =================//
 
     // Performs a collision check between two entities based on their position and collision components
     // This automatically takes into account their current position, shape and dimensions!
     void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                 const CollisionC& colB, CollisionInfo& info);
 
-    //----------------- RECTANGLES -----------------//
+    //================= RECTANGLES =================//
 
     // Performs a collision check between a rectangle and a capsule given by its top left position, radius and height
     void CheckCollisionRecCapsule(const Rectangle& rect, Point pos, float r, float h, CollisionInfo& info);
 
-    //----------------- CIRCLE -----------------//
+    //================= CIRCLE =================//
 
     // Performs a collision check between a circle given by its center and radius
     // and a quadrilateral given by its 4 points
@@ -47,7 +47,7 @@ namespace magique
     // and a capsule given by its top left position, radius and height
     void CheckCollisionCircleToCapsule(Point c, float r, Point pos, float cR, float cH, CollisionInfo& info);
 
-    //----------------- CAPSULE -----------------//
+    //================= CAPSULE =================//
 
     // Performs a collision check between two capsules given by their top left position and radius and height
     void CheckCollisionCapsuleCapsule(Point p1, float r1, float h1, Point p2, float r2, float h2, CollisionInfo& info);
@@ -57,13 +57,13 @@ namespace magique
     void CheckCollisionCapsuleQuadrilateral(Point p1, float r1, float h1, Point q1, Point q2, Point q3, Point q4,
                                             CollisionInfo& info);
 
-    //----------------- QUADRILATERAL & TRIANGLES -----------------//
+    //================= QUADRILATERAL & TRIANGLES =================//
 
     // Performs a collision check between two quadrilaterals (p and q) given by their 4 points respectively
     void CheckCollisionQuadrilaterals(Point p1, Point p2, Point p3, Point p4, Point q1, Point q2, Point q3, Point q4,
                                       CollisionInfo& info);
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
 
     // Rotates the given points by the angle (starting with 0 degrees at 12'o clock clockwise) around the given anchor
     void RotatePoints(float angle, Point anchor, Point& p1, Point& p2, Point& p3, Point& p4);

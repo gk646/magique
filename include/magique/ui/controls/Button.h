@@ -4,9 +4,9 @@
 #include <magique/ui/UIObject.h>
 IGNORE_WARNING(4100)
 
-//-----------------------------------------------
+//===============================================
 // Button
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // The button control
 // Note: You need to updateButtonActions() in order for the even methods onHover() and onClick() to work!

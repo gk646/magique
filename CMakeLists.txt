@@ -5,6 +5,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(magique LANGUAGES CXX C)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE  ON)
 set(CMAKE_CXX_STANDARD 20)
 set(MAGIQUE_VERSION "0.9.5")
 
@@ -16,8 +17,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # ----------------------------------------------------------------------
 
 # Options - IF USING CMAKE CACHE, CHANGES NEED A CACHE RESET TO APPLY!
-option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_SDK_PATH)" OFF)
-option(MAGIQUE_LAN "Enable local networking" ON)
+set(STEAM_PATH "/home/gk646/devlibs/steamworks_sdk_161/sdk")
+option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_PATH)" ON)
+option(MAGIQUE_LAN "Enable local networking" OFF)
 option(MAGIQUE_SHARED "Build Magique as a shared library (experimental)" OFF)
 option(MAGIQUE_SANITIZER "Compile with address sanitizer" OFF)
 
@@ -35,7 +37,6 @@ include(ParseOptions)      # Parses options and sets parameters
 add_subdirectory(src/assets)
 add_subdirectory(src/core)
 add_subdirectory(src/ecs)
-add_subdirectory(src/external)   # External dependencies (e.g., raylib)
 add_subdirectory(src/gamedev)
 add_subdirectory(src/internal)
 add_subdirectory(src/persistence)
@@ -95,7 +96,10 @@ target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE})
 
 # Link against the GameNetworkingSockets or the Steam SDK and platform-specific libraries
 include(LinkBinaries)
+include(LinkRaylib)
 
 # ----------------------------------------------------------------------
 # End of CMake Configuration
 # ----------------------------------------------------------------------
+
+message(STATUS "\n-- ---------------------------------------")

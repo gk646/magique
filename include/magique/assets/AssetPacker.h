@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Assetpacker Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // The asset management in magique expects an all resources in a single folder!
 // This folder then has to be compiled into an asset image - a single file which can simply be distributed

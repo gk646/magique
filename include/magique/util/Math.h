@@ -1,9 +1,9 @@
 #ifndef MAGIQUE_MATH_H
 #define MAGIQUE_MATH_H
 
-//-------------------------------
+//===============================
 // Math Module
-//-------------------------------
+//===============================
 // ................................................................................
 // This module contains helpful math functions related to game development
 // ................................................................................
@@ -37,7 +37,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

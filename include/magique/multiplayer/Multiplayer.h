@@ -5,9 +5,9 @@
 #include <magique/core/Types.h>
 #include <magique/internal/PlatformIncludes.h>
 
-//-----------------------------------------------
+//===============================================
 // Multiplayer Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows to send messages between applications and is works with both local and global sockets
 // Apart from creating your own networking model magique proposes a unique way:
@@ -45,7 +45,7 @@ namespace magique
     // Returns true if this game is currently in client mode
     bool IsInClientMode();
 
-    //----------------- MESSAGES -----------------//
+    //================= MESSAGES =================//
 
     // Returns a network message object to be sent via the network - should be used directly and not stored
     // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
@@ -79,9 +79,10 @@ namespace magique
     // IMPORTANT: Each call cleans up the previously returned messages
     const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = 100);
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
 
     // Returns the vector that contains all current valid connections
+    // Note: When you're a client the hosts connection is always at index 0 (e.g. GetCurrentConnections()[0];)
     const std::vector<Connection>& GetCurrentConnections();
 
     // Sets the callback function that is called on various multiplayer events

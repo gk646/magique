@@ -4,7 +4,7 @@
 #include <cstdint> // My favourite header
 #include <magique/config.h>
 
-//----------------- USER DEFINED -----------------//
+//================= USER DEFINED =================//
 
 enum class GameState : int;          // Identifies different game states
 enum EntityType : uint16_t;          // Identifies entity types       - uses uint16_t to be small for networking
@@ -18,7 +18,7 @@ enum class AtlasID : int;            // Identifies different texture atlas
 
 namespace magique
 {
-    //----------------- CORE -----------------//
+    //================= CORE =================//
     struct Keybind;          // Efficient representation of a keybind
     struct Game;             // Core Game class
     struct ScreenEmitter;    // Particle emitter for screen (simple) particles
@@ -27,7 +27,7 @@ namespace magique
     enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
 
-    //----------------- LOADING & SAVING -----------------//
+    //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
@@ -50,7 +50,7 @@ namespace magique
     struct DataTable;         // Type-safe database-like interface to save game data
     using float16 = uint16_t; // Used to optimize memory usage
 
-    //-----------------ECS-----------------//
+    //=================ECS=================//
     struct EntityScript;
     enum EventType : uint8_t;
     enum CollisionLayer : uint8_t;
@@ -58,7 +58,7 @@ namespace magique
     struct PositionC;  // Implicit position component
     struct CollisionC; // Built in collision component
 
-    //----------------- ASSETS -----------------//
+    //================= ASSETS =================//
     struct Asset;                 // Memory container for any asset
     struct TextureRegion;         // All textures are stitched into an atlas, you can only retrieve their region
     struct SpriteSheet;           // Identifies a sprite sheet
@@ -69,7 +69,7 @@ namespace magique
     struct Playlist;              // Stores multiple music objects to easily play and loop them
     struct TileObject;            // TileObject imported from the Tile Editor
 
-    //----------------- GAMEDEV -----------------//
+    //================= GAMEDEV =================//
     template <typename CustomData = int>
     struct BehaviorTree;
     template <typename CustomData = int>
@@ -82,10 +82,10 @@ namespace magique
     struct ShareCode;
     struct ShareCodeProperty;
 
-    //----------------- Multiplayer -----------------//
+    //================= Multiplayer =================//
 
 
-    //----------------- UI -----------------//
+    //================= UI =================//
     struct UIObject;
     struct UIContainer;
     struct UIData; // Internal
@@ -97,19 +97,19 @@ namespace magique
     struct WindowManager;
     struct WindowButton;
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
     enum LogLevel : int;
     struct Scheduler;
     enum class jobHandle : uint16_t;
     struct IJob;
 
-    //----------------- INTERNAL -----------------//
+    //================= INTERNAL =================//
     struct AudioPlayer;
 
 } // namespace magique
 
 
-//-----------------RAYLIB-----------------//
+//=================RAYLIB=================//
 struct Camera2D;
 struct Font;
 struct Vector2;
@@ -121,7 +121,7 @@ struct Music;
 struct Rectangle;
 
 #define MOUSE_LEFT_BUTTON 0
-//-----------------RAYLIB-----------------//
+//=================RAYLIB=================//
 
 namespace entt
 {

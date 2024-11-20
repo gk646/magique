@@ -4,9 +4,9 @@
 #include <entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
 
-//-------------------------------
+//===============================
 // ECS Module
-//-------------------------------
+//===============================
 // ................................................................................
 // All entities have the PositionC auto assigned per default!
 // ................................................................................
@@ -18,7 +18,7 @@ namespace magique
     // Returns the magique registry
     entt::registry& GetRegistry();
 
-    //-------------- REGISTER --------------//
+    //============== REGISTER ==============//
 
     using CreateFunc = std::function<void(entt::entity entity, EntityType type)>;
     // Registers an entity with the given create function - replaces the existing function if present
@@ -29,7 +29,7 @@ namespace magique
     // Failure: Returns false
     bool UnRegisterEntity(EntityType type);
 
-    //----------------- INTERACTION -----------------//
+    //================= INTERACTION =================//
 
     // Retrieves the specified component from the public registry
     template <typename T>
@@ -51,7 +51,7 @@ namespace magique
     // Returns true if the given entity is an actor - has the actor component
     bool EntityIsActor(entt::entity entity);
 
-    //-------------- LIFE CYCLE --------------//
+    //============== LIFE CYCLE ==============//
 
     // Creates a new entity by calling the registered function for that type
     // Note: All entities have the PositionC auto assigned per default!
@@ -70,7 +70,7 @@ namespace magique
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
     void DestroyEntities(const std::initializer_list<EntityType>& ids);
 
-    //--------------Creating--------------//
+    //==============Creating==============//
 
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
@@ -113,7 +113,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

@@ -4,9 +4,9 @@
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Draw Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Here are all the magique drawing function that take its custom types
 // Generally you cant really use raylib types anymore as texture are stored into atlases
@@ -15,7 +15,7 @@
 
 namespace magique
 {
-    //----------------- TEXTURES -----------------//
+    //================= TEXTURES =================//
 
     // Draws a given texture region - rotation happens around the middle point
     void DrawRegion(TextureRegion region, float x, float y, bool flipX = false, Color tint = WHITE);
@@ -36,7 +36,7 @@ namespace magique
     // 'layer' is 0-based indexing and starts from the bottom up in draw order
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
 
-    //----------------- TEXT -----------------//
+    //================= TEXT =================//
 
     // Draws the given text centered around the given position
     // Drop in replacement for DrawTextEx()
@@ -46,7 +46,7 @@ namespace magique
     // Drop in replacement for DrawTextEx()
     void DrawRightBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
-    //----------------- SHAPES -----------------//
+    //================= SHAPES =================//
 
     // Draws a capsule given its top left coordinates and the radius of the two circles
     void DrawCapsule2D(float x, float y, float radius, float height, Color tint);

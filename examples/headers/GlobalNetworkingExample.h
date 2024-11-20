@@ -1,28 +1,39 @@
 #ifndef MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
 #define MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
 
+#include <cassert>
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
-#include <magique/multiplayer/LocalSockets.h>
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/util/Logging.h>
+#include <magique/steam/Steam.h>
+#include <magique/steam/GlobalSockets.h>
 
 #include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
+#include <magique/steam/Lobbies.h>
+#include <magique/util/RayUtils.h>
 
-#ifndef MAGIQUE_STEAM
-#error "Using Steam features without enabling it! To enable Steam configure it in /CMakeLists.txt"
-#endif
 
 //-----------------------------------------------
-// Local Multiplayer Test
+// Global/Steam Multiplayer Example
 //-----------------------------------------------
 // .....................................................................
-// This is a simple multiplayer test. It's not optimized and uses the easiest implementation possible to showcase the
-// functionality
+// This is a simple multiplayer test.
+// It's not optimized and uses the easiest implementation possible to showcase the functionality
+// magique only gives you the facilities to send and receive message.
+// For a smooth experience you should look into:
+//     - delta compression
+//     - message interpolation
+//     - message buffering
+//     - ...
+// Note: This example is almost equal to the Local example. Because with the unified Networking interface
+//        you just have to switch the underlying connection.
+// IMPORTANT: Due to the nature of steam you need 2 steam accounts to test it!
+//            You should friend the two accounts and then send an game invitation
 // .....................................................................
 
 using namespace magique;
@@ -133,12 +144,14 @@ struct ObjectScript final : EntityScript // Moving platform
 
 struct Test final : Game
 {
-    Test() : Game("magique - Local Multiplayer Test") {}
+    Test() : Game("magique - Steam Multiplayer Test") {}
 
     HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
 
     void onStartup(AssetLoader& loader) override
     {
+        // Initialize steam
+
         SetShowHitboxes(true);
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
@@ -178,10 +191,10 @@ struct Test final : Game
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
+            CreateEntity(OBJECT, GetRandomFloat(1, 1000), GetRandomFloat(1, 1000), MapID(0));
         }
 
-        InitLocalMultiplayer();
+        InitGlobalMultiplayer();
 
         // Setup event callback so we can react to multiplayer events
         SetMultiplayerCallback(
@@ -196,13 +209,13 @@ struct Test final : Game
                     // Send the new client the current world state - iterate all entities
                     for (const auto e : GetRegistry().view<PositionC>())
                     {
-                        SpawnUpdate spawnUpdate;
+                        SpawnUpdate spawnUpdate{};
                         spawnUpdate.entity = e;
                         spawnUpdate.map = MapID(0);
                         const auto& pos = GetComponent<PositionC>(e);
                         spawnUpdate.x = pos.x;
                         spawnUpdate.y = pos.y;
-                        if (id == e) // If its the network player itself send the player type (for the camera)
+                        if (id == e) // If it's the network player itself send the player type (for the camera)
                             spawnUpdate.type = PLAYER;
                         else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
                             spawnUpdate.type = NET_PLAYER;
@@ -217,7 +230,7 @@ struct Test final : Game
             });
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void drawGame(GameState /*gameState*/, Camera2D& camera2D) override
     {
         if (IsClient())
             DrawText("You are a client", 50, 100, 25, BLACK);
@@ -257,19 +270,23 @@ struct Test final : Game
         EndMode2D();
     }
 
-    void updateGame(GameState gameState) override
+    void updateGame(GameState /*gameState*/) override
     {
         // Enter a session
         if (!IsInMultiplayerSession())
         {
-            const int port = 15000;
             if (IsKeyPressed(KEY_H))
             {
-                CreateLocalSocket(port);
+                // Doesnt need a socket
+                CreateGlobalSocket();
+                // In order for other players to join us we need to create a lobby
+                CreateSteamLobby(LobbyType::FRIENDS_ONLY, 4);
+                // Invite friends to the lobby
+                OpenInviteDialogue();
             }
             if (IsKeyPressed(KEY_J))
             {
-                ConnectToLocalSocket(GetLocalIP(), port);
+                // ConnectToGlobalSocket();
                 EnterClientMode();
                 DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
             }
@@ -324,7 +341,7 @@ struct Test final : Game
                     case MessageType::POSITION_UPDATE:
                         {
                             // Get the data
-                            PositionUpdate positionUpdate = msg.payload.getDataAs<PositionUpdate>();
+                            auto positionUpdate = msg.payload.getDataAs<PositionUpdate>();
                             auto& pos = GetComponent<PositionC>(positionUpdate.entity);
                             pos.x = positionUpdate.x;
                             pos.y = positionUpdate.y;
@@ -346,7 +363,7 @@ struct Test final : Game
         }
     }
 
-    void postTickUpdate(GameState gameState) override
+    void postTickUpdate(GameState /*gameState*/) override
     {
         // Here we send out the data for this tick
         if (IsInMultiplayerSession())
@@ -361,7 +378,7 @@ struct Test final : Game
                     const auto& pos = GetComponent<const PositionC>(e);
 
                     // Create the data
-                    PositionUpdate posUpdate;
+                    PositionUpdate posUpdate{};
                     posUpdate.x = pos.x;
                     posUpdate.y = pos.y;
                     posUpdate.entity = e;
@@ -378,12 +395,12 @@ struct Test final : Game
             if (IsClient())
             {
                 const auto host = GetCurrentConnections()[0];
-                constexpr auto keyArr = {KEY_W, KEY_A, KEY_S, KEY_D};
+                constexpr KeyboardKey keyArr[] = {KEY_W, KEY_A, KEY_S, KEY_D};
                 for (const auto key : keyArr)
                 {
                     if (IsKeyDown(key))
                     {
-                        InputUpdate inputUpdate;
+                        InputUpdate inputUpdate{};
                         inputUpdate.key = key;
                         BatchMessage(host, CreatePayload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
                     }

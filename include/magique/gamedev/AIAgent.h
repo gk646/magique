@@ -8,9 +8,9 @@
 #include <magique/util/RayUtils.h>
 #include <magique/util/Math.h>
 
-//-------------------------------
+//===============================
 // AI Agent Module
-//-------------------------------
+//===============================
 // ................................................................................
 // Note: This is an advanced module!
 // This module allows to define, pretrain and deploy a learning agent (modified Q-Learning).
@@ -34,7 +34,7 @@ namespace magique
     {
         using Memory = internal::AgentMemory<StateEnum, EventEnum>;
 
-        //----------------- SETUP -----------------//
+        //================= SETUP =================//
 
         // Creates a new agent in the given initial state
         explicit AIAgent(StateEnum initialState, float valueRange);
@@ -48,7 +48,7 @@ namespace magique
         //      - stateScore: the score of the state in reaction to the given event
         void setScore(StateEnum state, EventEnum event, float stateScore);
 
-        //----------------- USAGE -----------------//
+        //================= USAGE =================//
 
         // Returns the best state in reaction to the given event and learns from the provided stateScore
         //      - stateScore: the score (success) of current state since the last time this method was called
@@ -64,7 +64,7 @@ namespace magique
         // Default: 0.5
         void setLearnRate(float learnRate);
 
-        //----------------- RULES -----------------//
+        //================= RULES =================//
         // Note: Rules are useful to define fixed behavior regardless of the learning progress (e.g. boss patterns, ...)
         //       They are evaluated BEFORE the agents decision and skip it in case a matching rule is found
 
@@ -87,7 +87,7 @@ namespace magique
 
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

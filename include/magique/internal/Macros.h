@@ -1,21 +1,21 @@
 #ifndef MAGIQUE_MACROS_H
 #define MAGIQUE_MACROS_H
 
-//-----------------------------------------------
+//===============================================
 // Macros
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Don't look here
 // ................................................................................
 
-//----------------- ASSERTS -----------------//
+//================= ASSERTS =================//
 
 namespace magique::internal
 {
     void AssertHandler(const char* expr, const char* file, int line, const char* message);
 } // namespace magique::internal
 
-//----------------- SCRIPTING -----------------//
+//================= SCRIPTING =================//
 
 #define PARENS ()
 #define EXPAND(...) EXPAND4(EXPAND4(EXPAND4(EXPAND4(__VA_ARGS__))))
@@ -38,7 +38,7 @@ namespace magique::internal
         FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                            \
     }
 
-//----------------- UTIL -----------------//
+//================= UTIL =================//
 
 #if defined(NDEBUG)
 #define MAGIQUE_ASSERT(expr, message) ((void)0)
@@ -47,7 +47,7 @@ namespace magique::internal
     ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
 #endif
 
-//----------------- ASSET LOADING -----------------//
+//================= ASSET LOADING =================//
 
 #define ASSET_CHECK(asset)                                                                                              \
     if (!AssetBaseCheck(asset))                                                                                         \
@@ -73,7 +73,7 @@ namespace magique::internal
     }
 
 
-//----------------- HELPERS -----------------//
+//================= HELPERS =================//
 
 #define M_SHARECODE_CHECKTYPE(checkType, err)                                                                           \
     if (p.type != checkType)                                                                                            \
@@ -82,7 +82,7 @@ namespace magique::internal
         return;                                                                                                         \
     }
 
-//----------------- BUILDING -----------------//
+//================= BUILDING =================//
 
 
 #ifdef _MSC_VER
