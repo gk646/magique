@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Components Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // These are the built-in ECS components
 // Note that EntityID and MapID are both user defined types. They are used to identify different maps (levels, zones,...)
@@ -90,7 +90,7 @@ namespace magique
         // Sets a new action state - automatically reset the sprite count to 0 when a state change happens
         void setAnimationState(AnimationState state);
 
-        //----------------- GETTERS -----------------//
+        //================= GETTERS =================//
 
         // Returns the current animation
         [[nodiscard]] SpriteAnimation getCurrentAnimation() const;

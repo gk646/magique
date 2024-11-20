@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-------------------------------
+//===============================
 // Virtual Clock Module
-//-------------------------------
+//===============================
 // ................................................................................
 // This module allows to simulate virtual time.
 // Note: Time starts at 00:00 at day 0 (so at night)
@@ -20,7 +20,7 @@ namespace magique
         // Default: equal to real time
         explicit VirtualClock(int realMinutes = 24 * 60);
 
-        //----------------- TIME -----------------//
+        //================= TIME =================//
 
         // Returns the day from starting
         // Range: 0 - infinity
@@ -45,7 +45,7 @@ namespace magique
         // Values have to be within their valid range as shown above - negative values are ignored
         void setTime(int hour, int minute, int second = -1, int day = -1);
 
-        //----------------- ADJUST -----------------//
+        //================= ADJUST =================//
 
         // Sets in real minutes how long a full day (24 hours) of the virtual clock should take
         void setRealMinutes(int realMinutes);
@@ -59,13 +59,13 @@ namespace magique
         // Default: 1.0
         void setTimeScale(float scale);
 
-        //----------------- UTILS -----------------//
+        //================= UTILS =================//
 
         // Sets the virtual day time equal to the current real time - once set it progresses on its own again
         // Note: This only sets hour, minute and second not day!
         void syncTimeOfDay();
 
-        //----------------- PERSISTENCE -----------------//
+        //================= PERSISTENCE =================//
 
         // Returns an allocated pointer and size to save the current state of the virtual clock
         // IMPORTANT: allocates memory on each call

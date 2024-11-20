@@ -6,9 +6,9 @@
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/PlatformIncludes.h>
 
-//-----------------------------------------------
+//===============================================
 // Particle Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module is for creating particle effects. The interface is inspired by Godot4's CPUParticle2D node.
 // You create an emitter first (either Entity or Screen) and then create the particle effect by calling
@@ -25,7 +25,7 @@ namespace magique
     // Note: Needs to be called manually - so you can control at which layer particles are rendered
     void DrawParticles();
 
-    //----------------- CREATE -----------------//
+    //================= CREATE =================//
 
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
@@ -35,11 +35,11 @@ namespace magique
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     entt::entity CreateEntityParticle(const EntityEmitter& emitter, int amount = 1);
 
-    //----------------- EMITTERS -----------------//
+    //================= EMITTERS =================//
 
     struct EmitterBase
     {
-        //----------------- FUNCTIONS -----------------//
+        //================= FUNCTIONS =================//
         // Note: They are called each tick for each particle!
 
         // Takes the current scale and the normalized time (ticksAlive/totalLifetime / 0.0 - 1.0)
@@ -54,7 +54,7 @@ namespace magique
         // This allows you to do anything - call gameplay related code and create new particles!
         using TickFunction = std::function<void(ScreenParticle& p, float t)>;
 
-        //----------------- EMISSION SHAPE -----------------//
+        //================= EMISSION SHAPE =================//
         // Note: Emission shape determines where particles can spawn
         //       Particles can spawn anywhere inside the emission shape randomly!
 
@@ -69,7 +69,7 @@ namespace magique
         // Default: None - is directly spawned on the emission point
         EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
 
-        //----------------- PARTICLE -----------------//
+        //================= PARTICLE =================//
         // Note: Default shape is Rect with dimensions (5,5)
 
         // Sets the emission shape to be a rect
@@ -97,7 +97,7 @@ namespace magique
         // Default: 100
         EmitterBase& setLifetime(int minLife, int maxLife = 0);
 
-        //----------------- ADDITIONALS -----------------//
+        //================= ADDITIONALS =================//
 
         // Sets the gravity (pixels/s**2) in both x and y direction
         // Note: Gravity is applied every tick to the particles velocity
@@ -135,7 +135,7 @@ namespace magique
         // Default: True
         EmitterBase& setResolutionScaling(bool val);
 
-        //----------------- FUNCTIONS -----------------//
+        //================= FUNCTIONS =================//
 
         // Sets the coloring function to dynamically set the particles color depending on the time
         // Default: nullptr
@@ -149,7 +149,7 @@ namespace magique
         // Default: nullptr
         EmitterBase& setTickFunction(const TickFunction& func);
 
-        //----------------- HELPERS -----------------//
+        //================= HELPERS =================//
 
         // Returns a smooth step scale function
         static ScaleFunction GetSmoothStep();
@@ -175,7 +175,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

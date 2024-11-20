@@ -1,10 +1,17 @@
 # Function to copy
-function(copy_shared_library source)
-    add_custom_command(TARGET magique POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${source}"
-            ${CMAKE_BINARY_DIR})
-    message(STATUS "Copied networking libraries to the root of the build directory. Adjust if your executable is somewhere else")
+function(copy_shared_library ...)
+    # Iterate over each item in the arguments
+    foreach(source IN LISTS ARGV)
+        add_custom_command(TARGET magique POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${source}"
+                ${CMAKE_BINARY_DIR}
+                COMMENT "Copied ${source} to the root of the build directory. Adjust if your executable is located elsewhere."
+        )
+    endforeach()
+    message(STATUS "Copied networking libs to the root of the build directory. Adjust if your executable is located elsewhere.")
 endfunction()
+
 
 # Link against the GameNetworkingSockets or the Steam SDK (and platform specific libs)
 if (MAGIQUE_STEAM)
@@ -12,7 +19,7 @@ if (MAGIQUE_STEAM)
         target_link_libraries(magique PRIVATE winmm ${MAGIQUE_BINARY_DIR}/win64/steam_api64.lib)
         copy_shared_library("${MAGIQUE_BINARY_DIR}/win64/steam_api64.dll")
     elseif (LINUX)
-        target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/linux64/steam_api)
+        target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/linux64/libsteam_api.so)
         copy_shared_library("${MAGIQUE_BINARY_DIR}/linux64/libsteam_api.so")
     elseif (OSX)
         target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/osx/steam_api)
@@ -27,11 +34,10 @@ elseif (MAGIQUE_LAN)
     elseif (LINUX)
         target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/linux64/libGameNetworkingSockets.so)
         target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/linux64/libprotobuf.so.30)
-        copy_shared_library("${MAGIQUE_BINARY_DIR}/linux64/libGameNetworkingSockets.so")
-        copy_shared_library("${MAGIQUE_BINARY_DIR}/linux64/libprotobuf.so.30")
-        set_target_properties(magique PROPERTIES BUILD_RPATH "$ORIGIN" INSTALL_RPATH "$ORIGIN")
+        copy_shared_library("${MAGIQUE_BINARY_DIR}/linux64/libGameNetworkingSockets.so" "${MAGIQUE_BINARY_DIR}/linux64/libprotobuf.so.30")
+        set_target_properties(magique PROPERTIES BUILD_RPATH "$ORIGIN" INSTALL_RPATH "$ORIGIN") # To find the lib
     elseif (OSX)
-        message(FATAL_ERROR "OS is not supported for GameNetworkingSockets!")
+        message(FATAL_ERROR "OS is (currently) not supported for GameNetworkingSockets!")
         target_link_libraries(magique PRIVATE ${MAGIQUE_BINARY_DIR}/osx/GameNetworkingSockets)
         copy_shared_library("${MAGIQUE_BINARY_DIR}/osx/libGameNetworkingSockets.dylib")
     else ()
@@ -39,17 +45,14 @@ elseif (MAGIQUE_LAN)
     endif ()
 endif ()
 
+
 if (WIN32)
     target_link_libraries(magique PRIVATE ws2_32.lib)
     if (MSVC)
         target_compile_options(magique PUBLIC /Zc:preprocessor)
     endif ()
-    target_link_libraries(magique PUBLIC raylib)
 elseif (UNIX)
-    target_link_libraries(magique PUBLIC raylib -lm -lpthread -ldl)
+    #
 else ()
-    target_link_libraries(magique PUBLIC raylib)
+    #
 endif ()
-
-
-message(STATUS "--------------- magique ------------------\n")

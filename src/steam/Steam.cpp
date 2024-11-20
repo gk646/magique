@@ -34,6 +34,7 @@ namespace magique
             }
         }
 
+        MAGIQUE_ASSERT(steamData.isInitialized == false, "Steam already has been initialized");
         SteamErrMsg errMsg;
         if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
         {
@@ -57,10 +58,7 @@ namespace magique
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
     }
 
-    const char* GetSteamUserName()
-    {
-       return SteamFriends()->GetPersonaName();
-    }
+    const char* GetSteamUserName() { return SteamFriends()->GetPersonaName(); }
 
     void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback)
     {
@@ -69,7 +67,7 @@ namespace magique
 
     static char TEMP[512]{};
 
-    const char* GetUserDataLocation()
+    const char* GetSteamUserDataLocation()
     {
         MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized");
         SteamUser()->GetUserDataFolder(TEMP, 512);

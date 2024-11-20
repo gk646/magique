@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Loading Screen
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This modules allows to draw custom loading screen. Subclass LoadingScreen and implement the loading method
 // If you don't set a custom LoadingScreen an instance of this default one is assigned

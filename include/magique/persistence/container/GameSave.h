@@ -5,9 +5,9 @@
 #include <vector>
 #include <magique/persistence/types/DataTable.h>
 
-//-----------------------------------------------
+//===============================================
 // Game Save
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This is a manual interface to manage game saves (compared to the automatic game config and assets)
 // It works by saving plain bytes from the given data which has some limitations for cross-platform saves
@@ -25,7 +25,7 @@ namespace magique
 {
     struct GameSave final
     {
-        //----------------- PERSISTENCE -----------------//
+        //================= PERSISTENCE =================//
 
         // Persists the given save to disk
         // Failure: Returns false
@@ -35,7 +35,7 @@ namespace magique
         // Failure: GameSave.data will be null
         static GameSave Load(const char* filePath, uint64_t encryptionKey = 0);
 
-        //----------------- SAVING -----------------//
+        //================= SAVING =================//
         // Note: All data is copied on call
 
         // Saves a string value to the specified slot
@@ -53,7 +53,7 @@ namespace magique
         template <typename... Types>
         void saveDataTable(StorageID id, const DataTable<Types...>& table);
 
-        //----------------- GETTING -----------------//
+        //================= GETTING =================//
 
         // If the storage exists AND stores a string returns a copy of it
         // Failure: else returns the given default value
@@ -76,7 +76,7 @@ namespace magique
         template <typename... Types>
         DataTable<Types...> getDataTable(StorageID id);
 
-        //----------------- UTIL -----------------//
+        //================= UTIL =================//
 
         // Returns the storage type of the specified id
         // Failure: if the storage doesnt exist or is empty returns StorageType::EMPTY
@@ -99,7 +99,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 namespace magique
 {
     template <typename T>

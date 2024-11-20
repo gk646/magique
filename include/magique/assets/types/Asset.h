@@ -1,9 +1,9 @@
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
-//-----------------------------------------------
+//===============================================
 // Asset
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Every loaded resources into the game is treated as asset.
 // At startup the asset image specified in Game::run() is loaded
@@ -31,7 +31,7 @@ namespace magique
         // True if the asset path contains the given sequence anywhere
         bool contains(const char* str) const;
 
-        //----------------- GETTERS -----------------//
+        //================= GETTERS =================//
         // IMPORTANT: The string returned by these methods is only correct until any of these methods are called again
 
         // Returns the direct file name without the asset - This means all characters after the last separator ("/")

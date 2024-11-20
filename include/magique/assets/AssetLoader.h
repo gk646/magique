@@ -4,9 +4,9 @@
 #include <magique/internal/TaskExecutor.h>
 #include <magique/assets/container/AssetContainer.h>
 
-//-----------------------------------------------
+//===============================================
 // Asset Loader
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // The main loader to get from startup to the initialized game (MainMenu)
 // There are 2 guarantees when using the loader:

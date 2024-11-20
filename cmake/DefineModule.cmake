@@ -60,6 +60,7 @@ endif ()
 # Compile the definition for the target and all consuming ones
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_STEAM)
+    target_include_directories(magique-${MODULE_NAME} PRIVATE ${STEAM_PATH}/public) # Include
 elseif (MAGIQUE_LAN)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)
 endif ()

@@ -3,9 +3,9 @@
 
 #include <magique/internal/InternalTypes.h>
 
-//-------------------------------
+//===============================
 // Threat Component
-//-------------------------------
+//===============================
 // ................................................................................
 // This component is useful to simulate dynamic targeting behavior for enemies.
 // Threat is a concept of games like World of Warcraft where other entities (e.g. players or even other monsters)

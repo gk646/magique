@@ -5,9 +5,9 @@
 #include <string>
 #include <magique/internal/InternalTypes.h>
 
-//-----------------------------------------------
+//===============================================
 // GameConfig
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Use the global accessor: core/Core.h::GetGameConfig()
 // The GameConfig is a container for information that's consistent across saves like:
@@ -26,7 +26,7 @@ namespace magique
 {
     struct GameConfig
     {
-        //----------------- SAVE -----------------//
+        //================= SAVE =================//
 
         // Saves a keybind at the given id
         // Example: saveKeyBind(ConfigID::OPEN_MAP, Keybind{KEY_M});
@@ -40,7 +40,7 @@ namespace magique
         template <typename T>
         void saveValue(ConfigID id, T val);
 
-        //----------------- GET -----------------//
+        //================= GET =================//
 
         // If present returns a copy to the keybind at the given id
         // Failure: if the value is not present returns the default
@@ -55,7 +55,7 @@ namespace magique
         template <typename T>
         T getValueOrElse(ConfigID id, const T& defaultValue = {});
 
-        //----------------- REMOVE -----------------//
+        //================= REMOVE =================//
 
         // Erases the storage with the given id
         void erase(ConfigID id);
@@ -72,7 +72,7 @@ namespace magique
     };
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

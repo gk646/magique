@@ -5,22 +5,22 @@
 #include <magique/ui/types/UIContainer.h>
 IGNORE_WARNING(4100)
 
-//-----------------------------------------------
+//===============================================
 // Window
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Generic window class which can be subclassed to achieve custom visuals.
 // Windows are meant to be used with the window manager (see ui/WindowManager.h) - it handles visibility and layering
 // A window consists out of 3 main parts:
 //      - Body: Everything that's not the top bar (mover) is considered body
 //      - TopBar: The area starting from the top to the topBarHeight - area is automatically draggable
-//|----------------------|
+//|======================|
 //| TopBar               |
-//|----------------------|
+//|======================|
 //|                      |
 //|                      |
 //| Body                 |
-//|----------------------|
+//|======================|
 //
 // IMPORTANT: Its recommended to use the ui/WindowManager.h to manage windows
 //            Use its accessor to determine window overlap and layering (e.g. getHoveredWindow(), ...)

@@ -4,9 +4,9 @@
 #include <string>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Achievements Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This helps to create dynamic and flexible achievements that are automatically managed
 // .....................................................................
@@ -36,7 +36,7 @@ namespace magique
     // Note: This is called automatically every 30 ticks - but may want to be invoked manually
     void CheckAchievements();
 
-    //----------------- PERSISTENCE -----------------//
+    //================= PERSISTENCE =================//
 
     // Returns an allocated pointer and size to save the current achievements state - use e.g. GameSave::saveData()
     // Note: Only name and completion state is saved not the constraint - achievements have to be added each time

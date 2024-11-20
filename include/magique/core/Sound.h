@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Sound Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Supported Sound and Music formats: mp3, wav, flac, ogg (all raylib formats)
 // Sound:       Smaller sound effects up to 10 seconds (recommended)
@@ -20,7 +20,7 @@
 
 namespace magique
 {
-    //----------------- CONTROLS -----------------//
+    //================= CONTROLS =================//
 
     // This scales all volume
     // SetMasterVolume() - raylib
@@ -38,7 +38,7 @@ namespace magique
     // Returns the current music volume - (0.0 - 1.0)
     float GetMusicMasterVolume();
 
-    //----------------- SOUND & SOUND2D -----------------//
+    //================= SOUND & SOUND2D =================//
 
     // Plays the given sound - multiple calls play it multiple times
     void PlaySound(const Sound& sound, float volume = 1.0F);
@@ -59,7 +59,7 @@ namespace magique
     // Checks both normal and 2D
     bool IsSoundPlaying(const Sound& sound);
 
-    //----------------- MUSIC -----------------//
+    //================= MUSIC =================//
 
     // Plays the given music - multiple calls play it multiple times
     // fade controls both fade-in and fade-out
@@ -68,7 +68,7 @@ namespace magique
     // Stops the first instance of this music
     void StopMusic(const Music& music);
 
-    //----------------- PLAYLIST -----------------//
+    //================= PLAYLIST =================//
 
     // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
     // Only pass a playlist with permanent storage (either use RegisterPlaylist() or allocate it)

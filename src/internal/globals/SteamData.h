@@ -39,7 +39,8 @@ namespace magique
         void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
     };
 
-    inline CSteamID SteamIDFromMagique(SteamID magiqueID) { return {static_cast<uint64_t>(magiqueID)}; }
+
+    inline CSteamID SteamIDFromMagique(SteamID magiqueID) { return CSteamID{static_cast<uint64>(magiqueID)}; }
 
     inline SteamID MagiqueIDFromSteam(const CSteamID steamID) { return static_cast<SteamID>(steamID.ConvertToUint64()); }
 

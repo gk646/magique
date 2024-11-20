@@ -37,9 +37,9 @@ else ()
 endif ()
 
 # No steam sdk path given
-if (MAGIQUE_STEAM AND NOT STEAM_SDK_PATH)
+if (MAGIQUE_STEAM AND NOT STEAM_PATH)
     message(FATAL_ERROR "Trying to use Steam integration without specifying the steam sdk path!\n
-    Use 'set(STEAM_SDK_PATH \"path/to/steam/sdk\")' BEFORE addding magique via add_subdirectory(...)")
+    Use 'set(STEAM_PATH \"path/to/steam/sdk\")' BEFORE addding magique via add_subdirectory(...)")
 endif ()
 
 if (MAGIQUE_STEAM AND MAGIQUE_LAN)

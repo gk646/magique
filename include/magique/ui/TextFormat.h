@@ -4,9 +4,9 @@
 #include <string>
 #include <raylib/raylib.h>
 
-//-----------------------------------------------
+//===============================================
 // Text Formatting Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows formatting and rendering of text with dynamic placeholders.
 // To denote a placeholder you have to use the saved placeholder string and the prefix + enclosing symbols
@@ -21,7 +21,7 @@
 
 namespace magique
 {
-    //----------------- VALUES -----------------//
+    //================= VALUES =================//
 
     // Sets the value with which the specified placeholder will be replaced
     // Given string has to be valid until this method returns!
@@ -36,7 +36,7 @@ namespace magique
     template <typename T>
     T& GetFormatValue(const char* placeholder);
 
-    //----------------- FORMAT -----------------//
+    //================= FORMAT =================//
 
     // Formats and draws the given text with the current placeholder state
     // Note: Acts as a drop in replacement for DrawTextEx()
@@ -46,7 +46,7 @@ namespace magique
     // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again
     const char* GetFormattedText(const char* text);
 
-    //----------------- CUSTOMIZE -----------------//
+    //================= CUSTOMIZE =================//
 
     // Sets the prefix to search for when looking for placeholders
     // Default: '$'

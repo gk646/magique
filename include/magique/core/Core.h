@@ -6,9 +6,9 @@
 #include <magique/core/Types.h>
 #include <magique/internal/PlatformIncludes.h>
 
-//-----------------------------------------------
+//===============================================
 // Core Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // This module allows access and control over the core behavior of the engine
 // Also provides util methods to configure the engine
@@ -27,7 +27,7 @@ namespace magique
     // Note: Called after the new gamestate has been assigned internally
     void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func);
 
-    //----------------- CORE BEHAVIOR -----------------//
+    //================= CORE BEHAVIOR =================//
 
     // Sets the size of the update square centered on the actors in each direction
     // Entities in range will be collision checked and added to the update vector
@@ -60,7 +60,7 @@ namespace magique
     // Returns the game configuration
     GameConfig& GetGameConfig();
 
-    //----------------- DATA ACCESS -----------------//
+    //================= DATA ACCESS =================//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!
     const std::vector<entt::entity>& GetUpdateEntities();
@@ -71,7 +71,7 @@ namespace magique
     // Returns the currently loaded maps - a map is loaded if it contains at least 1 entity
     const std::vector<MapID>& GetLoadedMaps();
 
-    //----------------- QUERY DYNAMIC ENTITIES -----------------//
+    //================= QUERY DYNAMIC ENTITIES =================//
     // Note: These methods cache their call parameters
     // -> No overhead when called with the same parameters in the same tick (with no other calls in between)
 
@@ -83,7 +83,7 @@ namespace magique
     // Note: This is a hash lookup O(1) (after querying the hashgrid)
     bool NearbyEntitiesContain(MapID map, Point origin, float radius, entt::entity target);
 
-    //----------------- CAMERA -----------------//
+    //================= CAMERA =================//
 
     // Adds additional padding to the sides of the normal camera rectangle to be used to cull entities inside visible space
     // Entities are checked with their topleft to be inside the enlarged rectangle (so necessary when you have large entities)
@@ -125,7 +125,7 @@ namespace magique
     // Failure: returns UINT32_MAX if there is no camera currently
     entt::entity GetCameraEntity();
 
-    //----------------- UTILS -----------------//
+    //================= UTILS =================//
 
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);

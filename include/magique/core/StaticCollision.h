@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Static Collision Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // This module is for defining and controlling static collision elements
 // There are multiple supported ways for adding static collision:
@@ -21,14 +21,14 @@
 
 namespace magique
 {
-    //----------------- WORLD BOUNDS -----------------//
+    //================= WORLD BOUNDS =================//
 
     // Sets static collision bounds - this is only useful for simpler (static) scenes
     // Everything outside the rectangle is considered solid - pass a width or height of 0 to disable
     // Default: Disabled
     void SetStaticWorldBounds(const Rectangle& rectangle);
 
-    //----------------- TILE OBJECTS -----------------//
+    //================= TILE OBJECTS =================//
 
     // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
     // This can be called at any time and has immediate effect - recommended at startup as many objects get expensive
@@ -40,7 +40,7 @@ namespace magique
     // This method usually does not need to be called but there might be niche uses cases
     void RemoveTileMapObjects(MapID map, const std::vector<TileObject>& collisionObjects);
 
-    //----------------- TILESET -----------------//
+    //================= TILESET =================//
 
     // Sets the global tileset and allows to specify which class numbers mark a collidable tile
     // Note: In Tiled click on the tileset file -> select any tiles that should be solid and set the class property (e.g. 1)
@@ -57,7 +57,7 @@ namespace magique
     // Removes the tile collision data associated with this map
     void RemoveTileCollisions(MapID map);
 
-    //----------------- MANUAL GROUPS -----------------//
+    //================= MANUAL GROUPS =================//
 
     struct ManualColliderGroup final
     {

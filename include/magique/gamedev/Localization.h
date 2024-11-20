@@ -4,9 +4,9 @@
 #include <string>
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Localization Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows to dynamically change language and get the correct strings based on a given keyword
 // Each keyword is unique and identifies the translated strings across languages
@@ -35,7 +35,7 @@ namespace magique
     // Failure: if no language is set or doesn't exist or the keyword is not translated, the keyword itself is returned
     const char* Localize(const char* keyword);
 
-    //-------------- LOAD --------------//
+    //============== LOAD ==============//
 
     // Loads the given magique translation file (.mtf) and adds the specified localizations for that language
     void LoadLocalization(const Asset& asset);
@@ -43,7 +43,7 @@ namespace magique
     // Manually adds a localization of the keyword in the given language
     void AddLocalization(const char* keyword, const char* language, const char* translation);
 
-    //-------------- UTIL --------------//
+    //============== UTIL ==============//
 
     // Sets the localization language - takes effect immediately and Localize() returns the translation for this language
     // Default: empty

@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // UI Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // All UI modules in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
@@ -18,13 +18,13 @@ namespace magique
 {
     // T = Top / M = Middle / B = Bottom
     // L = Left / C = Center / R = Right
-    // -------------------------
+    // =========================
     // |(TL)      (TC)      (TR)|
     // |                        |
     // |(ML)      (MC)      (MR)|
     // |                        |
     // |(BL)      (BC)      (BR)|
-    // -------------------------
+    // =========================
     // Returns the (top-left) coordinates of the specified anchor point
     // Passing width and height aligns the anchor to fit them - inset applies an inset for the border points inwards
     Point GetUIAnchor(Anchor anchor, float width = 0, float height = 0, float inset = 0);

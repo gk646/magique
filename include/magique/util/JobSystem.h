@@ -4,9 +4,9 @@
 #include <tuple>
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Job System
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Note: This is for advanced module.
 // This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
@@ -28,7 +28,7 @@ namespace magique
     // Note: Does not have to be called manually when using the game template
     bool InitJobSystem();
 
-    //----------------- JOBS -----------------//
+    //================= JOBS =================//
 
     // Creates a new job from a lambda or function
     // Note: Only use the returned job pointer to submit jobs
@@ -40,7 +40,7 @@ namespace magique
     template <typename Callable, typename... Args>
     IJob* CreateExplicitJob(Callable callable, Args... args);
 
-    //----------------- ADDING -----------------//
+    //================= ADDING =================//
     // Note: Takes ownership of all passed pointers (should not be accessed after)
 
     // Adds a new job to the global queue
@@ -49,7 +49,7 @@ namespace magique
     // Adds the job to a group
     //jobHandle AddGroupJob(IJob* job, int group);
 
-    //----------------- WAITING -----------------//
+    //================= WAITING =================//
 
     // Waits till the specified job is completed if it exists
     void AwaitJob(jobHandle handle);
@@ -62,7 +62,7 @@ namespace magique
     // Awaits the completion of all current tasks
     void AwaitAllJobs();
 
-    //----------------- LIFECYCLE -----------------//
+    //================= LIFECYCLE =================//
     // Note: Called automatically when using the game template - ONLY call if your not using the game template!
 
     // Brings all workers back to speed (out of hibernate)
@@ -71,7 +71,7 @@ namespace magique
     // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
     void HibernateJobs(double target, double sleepTime);
 
-    //----------------- JOBS -----------------//
+    //================= JOBS =================//
 
     // Job base class - allows to call templated lambdas
     struct IJob
@@ -106,7 +106,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

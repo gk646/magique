@@ -5,9 +5,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Strings Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows for advanced and useful string operations in the context of games.
 // Check raylib for some more fundamental text options like number parsing etc.
@@ -15,7 +15,7 @@
 
 namespace magique
 {
-    //----------------- SORTING -----------------//
+    //================= SORTING =================//
 
     // Returns the levenshtein distance of the two strings
     // Only compares up to a length of 16 characters
@@ -34,7 +34,7 @@ namespace magique
     float StringSimilarity(const char* s1, const char* s2, bool caseSensitive = false);
     float StringSimilarity(const std::string& s1, const std::string& s2, bool caseSensitive = false);
 
-    //----------------- OPERATIONS -----------------//
+    //================= OPERATIONS =================//
 
     // Replaces all occurrences of the given keyword inside buffer with the replacement string in-place
     // Returns the total amount of replacements
@@ -52,7 +52,7 @@ namespace magique
     // Removes any leading whitespace in-place and returns the string
     std::string& TrimLeadingWhitespace(std::string& s);
 
-    //----------------- ENCODING -----------------//
+    //================= ENCODING =================//
 
     // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it
     int GetBase64EncodedLength(int bytes);
@@ -75,14 +75,14 @@ namespace magique
     // Returns the decoded base64 input as string - makes a single copy
     std::string DecodeBase64(std::string input);
 
-    //----------------- FORMATTING -----------------//
+    //================= FORMATTING =================//
     // IMPORTANT: All functions in this section use raylibs TextFormat() and have the same limitations
     // -> only valid until called again
 
     // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
     const char* GetTimeString(int seconds);
 
-    //----------------- HASHING -----------------//
+    //================= HASHING =================//
 
     // Uses fnav32a1 to hash the string
     constexpr uint32_t HashString(char const* s) noexcept;
@@ -90,7 +90,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 
 namespace magique

@@ -8,9 +8,9 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Logging.h>
 
-//-----------------------------------------------
+//===============================================
 // DataTable
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This is made for accessing data in a database like fashion
 // Compared to databases its statically typed which makes it easier to work with
@@ -22,7 +22,7 @@ namespace magique
     struct DataTable final
     {
         using ColumnsTuple = std::tuple<Types...>;
-        //----------------- TABLE -----------------//
+        //================= TABLE =================//
 
         // Constructs an EMPTY data table - specify the column names
         // Example:     DataTable table{"age", "height"};
@@ -42,7 +42,7 @@ namespace magique
         // Note: vector is created for each method call
         [[nodiscard]] std::vector<const char*> getColumnNames() const;
 
-        //----------------- SET -----------------//
+        //================= SET =================//
         // 0 - based indexing
 
         // Sets a value at the specified position
@@ -61,7 +61,7 @@ namespace magique
         // Adds a new row with the given values
         void addRow(ColumnsTuple&& tuple);
 
-        //----------------- GET -----------------//
+        //================= GET =================//
         // 0 - based indexing
 
         // Row getters
@@ -83,7 +83,7 @@ namespace magique
         // Returns the underlying data vector
         const std::vector<ColumnsTuple>& getData() const;
 
-        //----------------- ITERATORS -----------------//
+        //================= ITERATORS =================//
         // iterators for rows - use with structured bindings for a very nice syntax
 
         Iterator<ColumnsTuple> begin();
@@ -109,7 +109,7 @@ namespace magique
 } // namespace magique
 
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

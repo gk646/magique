@@ -5,9 +5,9 @@
 #include <magique/internal/Macros.h>
 IGNORE_WARNING(4100)
 
-//-----------------------------------------------
+//===============================================
 // Internal Scripting Module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // I thought quite a bit about how to do scripting. The main problem is that by
 // allowing users to create their own components and functions it's very hard
@@ -48,7 +48,7 @@ namespace magique
 
     struct EntityScript
     {
-        //----------------- AUTOMATIC -----------------// // These events are called automatically
+        //================= AUTOMATIC =================// // These events are called automatically
 
         // Called once after all components have been added
         virtual void onCreate(entt::entity self) {}
@@ -77,7 +77,7 @@ namespace magique
         // Called once at the beginning of each tick IF mouse state changed - includes mouse movement
         virtual void onMouseEvent(entt::entity self) {}
 
-        //----------------- USER -----------------// // These events have to be called by the user
+        //================= USER =================// // These events have to be called by the user
         // Examples:
 
         // virtual void onInteract(entt::entity self, entt::entity target) {}
@@ -86,7 +86,7 @@ namespace magique
 
         // ... feel free to add more global methods or create subclasses with special methods!
 
-        //----------------- UTIL -----------------//
+        //================= UTIL =================//
 
         // Adds the given info on top the existing info for this entity - will be applied after all collisions are resolved
         // Note: This essentially makes the other shape 'solid' preventing you from entering it!
@@ -119,7 +119,7 @@ namespace magique
 
 UNIGNORE_WARNING()
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

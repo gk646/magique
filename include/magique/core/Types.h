@@ -3,9 +3,9 @@
 
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // Types Modules
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // These are the simple and public types/enums used and exposed by magique
 // Note: Some enum use an explicit type to save memory when used in the ECS or networking
@@ -33,7 +33,7 @@ namespace magique
         [[nodiscard]] float octile(Point p) const;
     };
 
-    //----------------- CORE -----------------//
+    //================= CORE =================//
 
     enum class LightingMode
     {
@@ -42,7 +42,7 @@ namespace magique
         NONE, // Default
     };
 
-    //----------------- ASSETS  -----------------//
+    //================= ASSETS  =================//
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
@@ -166,7 +166,7 @@ namespace magique
         friend struct TileSet;
     };
 
-    //----------------- ECS -----------------//
+    //================= ECS =================//
 
     // Default action states - Feel free to rename or create your own
     enum class ActionState : uint8_t
@@ -261,7 +261,7 @@ namespace magique
         friend void SetIsAccumulated(CollisionInfo& info);
     };
 
-    //----------------- GAMEDEV -----------------//
+    //================= GAMEDEV =================//
 
     enum class NoiseType
     {
@@ -279,7 +279,7 @@ namespace magique
 
     };
 
-    //----------------- MULTIPLAYER -----------------//
+    //================= MULTIPLAYER =================//
 
     enum class SendFlag : uint8_t
     {
@@ -300,11 +300,11 @@ namespace magique
 
     enum class MultiplayerEvent : uint8_t
     {
-        //----------------- HOST -----------------//
+        //================= HOST =================//
         HOST_NEW_CONNECTION,      // Posted after we accept a new client connection
         HOST_CLIENT_DISCONNECTED, // Posted after the client closed the connection
 
-        //----------------- CLIENT -----------------//
+        //================= CLIENT =================//
         CLIENT_CONNECTION_ACCEPTED, // Posted after the host accepted our connection
         CLIENT_CONNECTION_CLOSED,   // Posted after the host closed our connection
     };
@@ -327,7 +327,7 @@ namespace magique
         int64_t timeStamp;     // When the message was received (micros) - should only be compared to other timestamps
     };
 
-    //----------------- PERSISTENCE -----------------//
+    //================= PERSISTENCE =================//
 
     enum class StorageType : uint8_t // The type of the storage cell
     {
@@ -340,7 +340,7 @@ namespace magique
         EMPTY,      // Storage is empty
     };
 
-    //----------------- STEAM -----------------//
+    //================= STEAM =================//
 
     enum class SteamID : uint64_t;
 
@@ -367,7 +367,7 @@ namespace magique
         ON_USER_LEFT,
     };
 
-    //----------------- UI -----------------//
+    //================= UI =================//
 
     // Anchor position used in the UI module to position objects
     enum class Anchor : uint8_t
@@ -411,7 +411,7 @@ namespace magique
         NONE,
     };
 
-    //----------------- HELPER TYPES -----------------//
+    //================= HELPER TYPES =================//
 
     // Efficient representation of a keybind with optional modifiers
     struct Keybind final
@@ -473,7 +473,7 @@ namespace magique
         friend struct internal::TaskExecutor<T>;
     };
 
-    //----------------- MISC -----------------//
+    //================= MISC =================//
 
     // Pointer will always be allocated with new []
     template <typename T>
@@ -548,7 +548,7 @@ namespace magique
 
 } // namespace magique
 
-//----------------- IMPLEMENTATION -----------------//
+//================= IMPLEMENTATION =================//
 
 namespace magique
 {

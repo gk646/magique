@@ -5,9 +5,9 @@
 #include <magique/fwd.hpp>
 #include <magique/internal/PlatformIncludes.h>
 
-//-----------------------------------------------
+//===============================================
 // CommandLine Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allow to register dynamic command that can be executed in game.
 // Pressing the open key (default: PageUp) opens the command line.
@@ -21,7 +21,7 @@
 
 namespace magique
 {
-    //----------------- COMMANDS -----------------//
+    //================= COMMANDS =================//
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)
@@ -30,7 +30,7 @@ namespace magique
     // Removes the command
     void UnRegisterCommand(const std::string& name);
 
-    //----------------- CONTROL -----------------//
+    //================= CONTROL =================//
 
     // Sets the key which opens the command line
     // Default: KEY_PAGE_UP

@@ -6,9 +6,9 @@
 #include <magique/internal/InternalTypes.h>
 IGNORE_WARNING(4100)
 
-//-----------------------------------------------
+//===============================================
 // UIContainer
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // A container for ui-objects that are referenced by name. This is useful to organize ui elements with multiple components
 // Note: UIContainer is a subclass of UIObject and has its functionality (onDraw(), onUpdate(), ...)

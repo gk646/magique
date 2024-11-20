@@ -3,9 +3,9 @@
 
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Global Sockets Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // Note: This module needs steam to be enabled (via CMake: MAGIQUE_STEAM)
 // This module is only for global multiplayer - it uses the steam backend with P2P networking
@@ -24,9 +24,9 @@ namespace magique
     // Note: HAS to be called MANUALLY before any other global multiplayer methods
     bool InitGlobalMultiplayer();
 
-    //----------------- HOST -----------------//
+    //================= HOST =================//
 
-    // Creates a global sockets so others can connect to you  on the given port - makes you the host
+    // Creates a global steam sockets so others can connect to you - makes you the host
     // Returns true if it was successful
     bool CreateGlobalSocket();
 
@@ -34,7 +34,7 @@ namespace magique
     // Returns true if an existing connection was closed successfully
     bool CloseGlobalSocket(int closeCode = 0, const char* closeReason = nullptr);
 
-    //----------------- CLIENT -----------------//
+    //================= CLIENT =================//
 
     // Connects to a global socket via the steam id
     // Note: To get the steam id of the clients you usually have to create a lobby
@@ -48,4 +48,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_GLOBAL_SOCKETS_H
+#endif //MAGIQUE_STEAM_GLOBAL_SOCKETS_H

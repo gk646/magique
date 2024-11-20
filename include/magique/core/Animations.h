@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-------------------------------
+//===============================
 // Animation Module
-//-------------------------------
+//===============================
 // ................................................................................
 // This module allows to define animations that are shared across all entities of that type
 // Every skeleton has the same underlying spritesheets, but each instance can be in a different state or progress

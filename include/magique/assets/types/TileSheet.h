@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/fwd.hpp>
 
-//-----------------------------------------------
+//===============================================
 // TileSheet
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Defines the textures associated with the tile numbers from a TileMap
 // You should only have 1 per project and all TileMaps should use that TileSheet

@@ -5,9 +5,9 @@
 #include <magique/internal/TaskExecutor.h>
 #include <magique/persistence/container/GameSave.h>
 
-//-----------------------------------------------
+//===============================================
 // Game Saver
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Uses the same interface as magique::AssetLoader but all tasks automatically run on a background thread
 // ................................................................................

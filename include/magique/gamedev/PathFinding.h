@@ -4,9 +4,9 @@
 #include <vector>
 #include <magique/core/Types.h>
 
-//-----------------------------------------------
+//===============================================
 // Pathfinding Module
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // This module allows to find paths using the collision data static collision (see core/StaticCollision.h)
 // It uses A-Star and works by keeping a search grid of traversable tiles
@@ -16,7 +16,7 @@
 
 namespace magique
 {
-    //----------------- PATH -----------------//
+    //================= PATH =================//
 
     // Assigns the (middle points) cells along the shortest path to the given vector - excluding the start tile
     //      - searchLen: stops searching for a better path after that many iterations
@@ -29,12 +29,12 @@ namespace magique
     // Failure: returns {0,0} if no path can be found (search took too many iterations) or target is not traversable
     Point GetNextOnPath(Point start, Point end, MapID map, int searchLen = 128);
 
-    //----------------- QUERY -----------------//
+    //================= QUERY =================//
 
     // Returns true if the ray cast through the pathfinding grid does not hit solid cells (in line of sight)
     bool GetPathRayCast(Point start, Point end, MapID map);
 
-    //----------------- UTIL -----------------//
+    //================= UTIL =================//
 
     // If set, all entities of the given type are considered solid for pathfinding and make cells non-traversable
     // The dynamic pathfinding grid will be updated each tick with their position and collision shapes
@@ -51,7 +51,7 @@ namespace magique
     // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
     Point GetDirectionVector(Point current, Point target);
 
-    //----------------- DEBUG -----------------//
+    //================= DEBUG =================//
 
     // Draws the current state of the pathfinding grid
     // Transparent (not solid), grey (solid from static source), black (solid from dynamic source)

@@ -5,9 +5,9 @@
 #include <magique/internal/Macros.h>
 IGNORE_WARNING(4100) // unreferenced formal parameter
 
-//-----------------------------------------------
+//===============================================
 // Game module
-//-----------------------------------------------
+//===============================================
 // ................................................................................
 // Core game class you should subclass. You then override and implement the methods which are called automatically.
 // All raylib timing and input functions work just as normal and have the same effect (e.g. SetTargetFPS(),...)
@@ -38,7 +38,7 @@ namespace magique
         // Stops the game
         void shutDown();
 
-        //-----------------LIFE CYCLE-----------------//
+        //=================LIFE CYCLE=================//
 
         // Called once on startup - register your loaders here
         // This is where you access your assets that are loaded from the asset image
@@ -55,7 +55,7 @@ namespace magique
         // Called once when the game closes
         virtual void onShutDown() {}
 
-        //----------------- CORE -----------------//
+        //================= CORE =================//
 
         // Called each update tick BEFORE drawGame()
         // Default: called 60 times per second (constant)
@@ -72,7 +72,7 @@ namespace magique
         // Called each render tick after drawGame()
         virtual void drawUI(GameState gameState) {}
 
-        //----------------- VARIABLES -----------------//
+        //================= VARIABLES =================//
 
         [[nodiscard]] bool getIsRunning() const;
         [[nodiscard]] bool getIsLoading() const;

@@ -5,9 +5,9 @@
 #include <magique/internal/Macros.h>
 IGNORE_WARNING(4100) // unreferenced formal parameter
 
-//-----------------------------------------------
+//===============================================
 // UIObject
-//-----------------------------------------------
+//===============================================
 // .....................................................................
 // The UIObject is the base class of all ui elements.
 // UIObjects can be positioned in multiple ways:
@@ -31,7 +31,7 @@ namespace magique
         UIObject(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
         UIObject(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
 
-        //----------------- CORE -----------------//
+        //================= CORE =================//
 
         // Immediately calls onDraw() and renders the object - additionally tracks the rendering internally
         void draw();
