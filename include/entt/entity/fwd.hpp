@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <memory>
 #include <type_traits>
+#include "../config/config.h"
 #include "../core/fwd.hpp"
 #include "../core/type_traits.hpp"
 
@@ -31,6 +32,9 @@ class basic_storage;
 template<typename, typename>
 class basic_sigh_mixin;
 
+template<typename, typename>
+class basic_reactive_mixin;
+
 template<typename Entity = entity, typename = std::allocator<Entity>>
 class basic_registry;
 
@@ -43,14 +47,14 @@ class basic_runtime_view;
 template<typename, typename, typename>
 class basic_group;
 
-template<typename, typename Mask = std::uint32_t, typename = std::allocator<Mask>>
+template<typename, typename = std::allocator<void>>
 class basic_observer;
 
 template<typename>
 class basic_organizer;
 
 template<typename, typename...>
-struct basic_handle;
+class basic_handle;
 
 template<typename>
 class basic_snapshot;
@@ -66,7 +70,7 @@ using sparse_set = basic_sparse_set<>;
 
 /**
  * @brief Alias declaration for the most common use case.
- * @tparam Type Type of objects assigned to the entities.
+ * @tparam Type Element type.
  */
 template<typename Type>
 using storage = basic_storage<Type>;
@@ -77,6 +81,13 @@ using storage = basic_storage<Type>;
  */
 template<typename Type>
 using sigh_mixin = basic_sigh_mixin<Type, basic_registry<typename Type::entity_type, typename Type::base_type::allocator_type>>;
+
+/**
+ * @brief Alias declaration for the most common use case.
+ * @tparam Type Underlying storage type.
+ */
+template<typename Type>
+using reactive_mixin = basic_reactive_mixin<Type, basic_registry<typename Type::entity_type, typename Type::base_type::allocator_type>>;
 
 /*! @brief Alias declaration for the most common use case. */
 using registry = basic_registry<>;
@@ -129,7 +140,7 @@ using const_runtime_view = basic_runtime_view<const sparse_set>;
 template<typename... Type>
 struct exclude_t final: type_list<Type...> {
     /*! @brief Default constructor. */
-    explicit constexpr exclude_t() {}
+    explicit constexpr exclude_t() = default;
 };
 
 /**
@@ -140,34 +151,34 @@ template<typename... Type>
 inline constexpr exclude_t<Type...> exclude{};
 
 /**
- * @brief Alias for lists of observed components.
+ * @brief Alias for lists of observed elements.
  * @tparam Type List of types.
  */
 template<typename... Type>
 struct get_t final: type_list<Type...> {
     /*! @brief Default constructor. */
-    explicit constexpr get_t() {}
+    explicit constexpr get_t() = default;
 };
 
 /**
- * @brief Variable template for lists of observed components.
+ * @brief Variable template for lists of observed elements.
  * @tparam Type List of types.
  */
 template<typename... Type>
 inline constexpr get_t<Type...> get{};
 
 /**
- * @brief Alias for lists of owned components.
+ * @brief Alias for lists of owned elements.
  * @tparam Type List of types.
  */
 template<typename... Type>
 struct owned_t final: type_list<Type...> {
     /*! @brief Default constructor. */
-    explicit constexpr owned_t() {}
+    explicit constexpr owned_t() = default;
 };
 
 /**
- * @brief Variable template for lists of owned components.
+ * @brief Variable template for lists of owned elements.
  * @tparam Type List of types.
  */
 template<typename... Type>
@@ -215,7 +226,21 @@ struct type_list_transform<owned_t<Type...>, Op> {
 template<typename Type, typename Entity = entity, typename Allocator = std::allocator<Type>, typename = void>
 struct storage_type {
     /*! @brief Type-to-storage conversion result. */
-    using type = sigh_mixin<basic_storage<Type, Entity, Allocator>>;
+    using type = ENTT_STORAGE(sigh_mixin, basic_storage<Type, Entity, Allocator>);
+};
+
+/*! @brief Empty value type for reactive storage types. */
+struct reactive final {};
+
+/**
+ * @ brief Partial specialization for reactive storage types.
+ * @tparam Entity A valid entity type.
+ * @tparam Allocator Type of allocator used to manage memory and elements.
+ */
+template<typename Entity, typename Allocator>
+struct storage_type<reactive, Entity, Allocator> {
+    /*! @brief Type-to-storage conversion result. */
+    using type = ENTT_STORAGE(reactive_mixin, basic_storage<reactive, Entity, Allocator>);
 };
 
 /**

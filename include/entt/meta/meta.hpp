@@ -1,6 +1,7 @@
 #ifndef ENTT_META_META_HPP
 #define ENTT_META_META_HPP
 
+#include <array>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -37,8 +38,7 @@ public:
     using iterator = meta_iterator;
 
     /*! @brief Default constructor. */
-    meta_sequence_container() noexcept
-        : meta_sequence_container{locator<meta_ctx>::value_or()} {}
+    meta_sequence_container() = default;
 
     /**
      * @brief Context aware constructor.
@@ -70,18 +70,18 @@ public:
 
     [[nodiscard]] inline meta_type value_type() const noexcept;
     [[nodiscard]] inline size_type size() const noexcept;
-    inline bool resize(const size_type);
+    inline bool resize(size_type);
     inline bool clear();
-    inline bool reserve(const size_type);
+    inline bool reserve(size_type);
     [[nodiscard]] inline iterator begin();
     [[nodiscard]] inline iterator end();
-    inline iterator insert(iterator, meta_any);
-    inline iterator erase(iterator);
-    [[nodiscard]] inline meta_any operator[](const size_type);
+    inline iterator insert(const iterator &, meta_any);
+    inline iterator erase(const iterator &);
+    [[nodiscard]] inline meta_any operator[](size_type);
     [[nodiscard]] inline explicit operator bool() const noexcept;
 
 private:
-    const meta_ctx *ctx{};
+    const meta_ctx *ctx{&locator<meta_ctx>::value_or()};
     internal::meta_type_node (*value_type_node)(const internal::meta_context &){};
     internal::meta_type_node (*const_reference_node)(const internal::meta_context &){};
     size_type (*size_fn)(const void *){};
@@ -107,8 +107,7 @@ public:
     using iterator = meta_iterator;
 
     /*! @brief Default constructor. */
-    meta_associative_container() noexcept
-        : meta_associative_container{locator<meta_ctx>::value_or()} {}
+    meta_associative_container() = default;
 
     /**
      * @brief Context aware constructor.
@@ -143,13 +142,12 @@ public:
         data = &instance;
     }
 
-    [[nodiscard]] inline bool key_only() const noexcept;
     [[nodiscard]] inline meta_type key_type() const noexcept;
     [[nodiscard]] inline meta_type mapped_type() const noexcept;
     [[nodiscard]] inline meta_type value_type() const noexcept;
     [[nodiscard]] inline size_type size() const noexcept;
     inline bool clear();
-    inline bool reserve(const size_type);
+    inline bool reserve(size_type);
     [[nodiscard]] inline iterator begin();
     [[nodiscard]] inline iterator end();
     inline bool insert(meta_any, meta_any);
@@ -158,7 +156,7 @@ public:
     [[nodiscard]] inline explicit operator bool() const noexcept;
 
 private:
-    const meta_ctx *ctx{};
+    const meta_ctx *ctx{&locator<meta_ctx>::value_or()};
     internal::meta_type_node (*key_type_node)(const internal::meta_context &){};
     internal::meta_type_node (*mapped_type_node)(const internal::meta_context &){};
     internal::meta_type_node (*value_type_node)(const internal::meta_context &){};
@@ -215,31 +213,27 @@ class meta_any {
     }
 
     void release() {
-        if(node.dtor.dtor && (storage.policy() == any_policy::owner)) {
+        if((node.dtor.dtor != nullptr) && (storage.policy() == any_policy::owner)) {
             node.dtor.dtor(storage.data());
         }
     }
 
-    meta_any(const meta_ctx &area, const meta_any &other, any ref) noexcept
+    meta_any(const meta_any &other, any ref) noexcept
         : storage{std::move(ref)},
-          ctx{&area},
+          ctx{other.ctx},
           node{storage ? other.node : internal::meta_type_node{}},
           vtable{storage ? other.vtable : &basic_vtable<void>} {}
 
 public:
     /*! Default constructor. */
-    meta_any() noexcept
-        : meta_any{meta_ctx_arg, locator<meta_ctx>::value_or()} {}
+    meta_any() = default;
 
     /**
      * @brief Context aware constructor.
      * @param area The context from which to search for meta types.
      */
-    meta_any(meta_ctx_arg_t, const meta_ctx &area) noexcept
-        : storage{},
-          ctx{&area},
-          node{},
-          vtable{&basic_vtable<void>} {}
+    meta_any(meta_ctx_arg_t, const meta_ctx &area)
+        : ctx{&area} {}
 
     /**
      * @brief Constructs a wrapper by directly initializing the new object.
@@ -290,10 +284,10 @@ public:
      * @param other The instance to copy from.
      */
     meta_any(const meta_ctx &area, const meta_any &other)
-        : meta_any{other} {
-        ctx = &area;
-        node = node.resolve ? node.resolve(internal::meta_context::from(*ctx)) : node;
-    }
+        : storage{other.storage},
+          ctx{&area},
+          node{(other.node.resolve != nullptr) ? other.node.resolve(internal::meta_context::from(*ctx)) : other.node},
+          vtable{other.vtable} {}
 
     /**
      * @brief Context aware move constructor.
@@ -301,10 +295,10 @@ public:
      * @param other The instance to move from.
      */
     meta_any(const meta_ctx &area, meta_any &&other)
-        : meta_any{std::move(other)} {
-        ctx = &area;
-        node = node.resolve ? node.resolve(internal::meta_context::from(*ctx)) : node;
-    }
+        : storage{std::move(other.storage)},
+          ctx{&area},
+          node{(other.node.resolve != nullptr) ? std::exchange(other.node, internal::meta_type_node{}).resolve(internal::meta_context::from(*ctx)) : std::exchange(other.node, internal::meta_type_node{})},
+          vtable{std::exchange(other.vtable, &basic_vtable<void>)} {}
 
     /**
      * @brief Copy constructor.
@@ -333,11 +327,14 @@ public:
      * @return This meta any object.
      */
     meta_any &operator=(const meta_any &other) {
-        release();
-        storage = other.storage;
-        ctx = other.ctx;
-        node = other.node;
-        vtable = other.vtable;
+        if(this != &other) {
+            release();
+            storage = other.storage;
+            ctx = other.ctx;
+            node = other.node;
+            vtable = other.vtable;
+        }
+
         return *this;
     }
 
@@ -347,6 +344,8 @@ public:
      * @return This meta any object.
      */
     meta_any &operator=(meta_any &&other) noexcept {
+        ENTT_ASSERT(this != &other, "Self move assignment");
+
         release();
         storage = std::move(other.storage);
         ctx = other.ctx;
@@ -361,9 +360,8 @@ public:
      * @param value An instance of an object to use to initialize the wrapper.
      * @return This meta any object.
      */
-    template<typename Type>
-    std::enable_if_t<!std::is_same_v<std::decay_t<Type>, meta_any>, meta_any &>
-    operator=(Type &&value) {
+    template<typename Type, typename = std::enable_if_t<!std::is_same_v<std::decay_t<Type>, meta_any>>>
+    meta_any &operator=(Type &&value) {
         emplace<std::decay_t<Type>>(std::forward<Type>(value));
         return *this;
     }
@@ -389,11 +387,11 @@ public:
      * @return A wrapper containing the returned value, if any.
      */
     template<typename... Args>
-    meta_any invoke(const id_type id, Args &&...args) const;
+    meta_any invoke(id_type id, Args &&...args) const;
 
     /*! @copydoc invoke */
     template<typename... Args>
-    meta_any invoke(const id_type id, Args &&...args);
+    meta_any invoke(id_type id, Args &&...args);
 
     /**
      * @brief Sets the value of a given variable.
@@ -403,17 +401,17 @@ public:
      * @return True in case of success, false otherwise.
      */
     template<typename Type>
-    bool set(const id_type id, Type &&value);
+    bool set(id_type id, Type &&value);
 
     /**
      * @brief Gets the value of a given variable.
      * @param id Unique identifier.
      * @return A wrapper containing the value of the underlying variable.
      */
-    [[nodiscard]] meta_any get(const id_type id) const;
+    [[nodiscard]] meta_any get(id_type id) const;
 
     /*! @copydoc get */
-    [[nodiscard]] meta_any get(const id_type id);
+    [[nodiscard]] meta_any get(id_type id);
 
     /**
      * @brief Tries to cast an instance to a given type.
@@ -443,7 +441,7 @@ public:
      * @return A reference to the contained instance.
      */
     template<typename Type>
-    [[nodiscard]] Type cast() const {
+    [[nodiscard]] std::remove_const_t<Type> cast() const {
         auto *const instance = try_cast<std::remove_reference_t<Type>>();
         ENTT_ASSERT(instance, "Invalid instance");
         return static_cast<Type>(*instance);
@@ -451,7 +449,7 @@ public:
 
     /*! @copydoc cast */
     template<typename Type>
-    [[nodiscard]] Type cast() {
+    [[nodiscard]] std::remove_const_t<Type> cast() {
         // forces const on non-reference types to make them work also with wrappers for const references
         auto *const instance = try_cast<std::remove_reference_t<const Type>>();
         ENTT_ASSERT(instance, "Invalid instance");
@@ -588,7 +586,7 @@ public:
 
     /*! @copydoc any::operator== */
     [[nodiscard]] bool operator==(const meta_any &other) const noexcept {
-        return (ctx == other.ctx) && ((!node.info && !other.node.info) || (node.info && other.node.info && *node.info == *other.node.info && storage == other.storage));
+        return (ctx == other.ctx) && (((node.info == nullptr) && (other.node.info == nullptr)) || ((node.info != nullptr) && (other.node.info != nullptr) && *node.info == *other.node.info && storage == other.storage));
     }
 
     /*! @copydoc any::operator!= */
@@ -598,17 +596,12 @@ public:
 
     /*! @copydoc any::as_ref */
     [[nodiscard]] meta_any as_ref() noexcept {
-        return meta_any{*ctx, *this, storage.as_ref()};
+        return meta_any{*this, storage.as_ref()};
     }
 
     /*! @copydoc any::as_ref */
     [[nodiscard]] meta_any as_ref() const noexcept {
-        return meta_any{*ctx, *this, storage.as_ref()};
-    }
-
-    /*! @copydoc any::owner */
-    [[deprecated("use policy() and meta_any_policy instead")]] [[nodiscard]] bool owner() const noexcept {
-        return (storage.policy() == any_policy::owner);
+        return meta_any{*this, storage.as_ref()};
     }
 
     /**
@@ -620,10 +613,10 @@ public:
     }
 
 private:
-    any storage;
-    const meta_ctx *ctx;
-    internal::meta_type_node node;
-    vtable_type *vtable;
+    any storage{};
+    const meta_ctx *ctx{&locator<meta_ctx>::value_or()};
+    internal::meta_type_node node{};
+    vtable_type *vtable{&basic_vtable<void>};
 };
 
 /**
@@ -657,28 +650,27 @@ template<typename Type>
  */
 struct meta_handle {
     /*! Default constructor. */
-    meta_handle() noexcept
-        : meta_handle{meta_ctx_arg, locator<meta_ctx>::value_or()} {}
+    meta_handle() = default;
 
     /**
      * @brief Context aware constructor.
      * @param area The context from which to search for meta types.
      */
-    meta_handle(meta_ctx_arg_t, const meta_ctx &area) noexcept
+    meta_handle(meta_ctx_arg_t, const meta_ctx &area)
         : any{meta_ctx_arg, area} {}
 
     /**
      * @brief Creates a handle that points to an unmanaged object.
      * @param value An instance of an object to use to initialize the handle.
      */
-    meta_handle(meta_any &value) noexcept
+    meta_handle(meta_any &value)
         : any{value.as_ref()} {}
 
     /**
      * @brief Creates a handle that points to an unmanaged object.
      * @param value An instance of an object to use to initialize the handle.
      */
-    meta_handle(const meta_any &value) noexcept
+    meta_handle(const meta_any &value)
         : any{value.as_ref()} {}
 
     /**
@@ -688,7 +680,7 @@ struct meta_handle {
      * @param value An instance of an object to use to initialize the handle.
      */
     template<typename Type, typename = std::enable_if_t<!std::is_same_v<std::decay_t<Type>, meta_handle>>>
-    meta_handle(const meta_ctx &ctx, Type &value) noexcept
+    meta_handle(const meta_ctx &ctx, Type &value)
         : any{ctx, std::in_place_type<Type &>, value} {}
 
     /**
@@ -697,7 +689,7 @@ struct meta_handle {
      * @param value An instance of an object to use to initialize the handle.
      */
     template<typename Type, typename = std::enable_if_t<!std::is_same_v<std::decay_t<Type>, meta_handle>>>
-    meta_handle(Type &value) noexcept
+    meta_handle(Type &value)
         : meta_handle{locator<meta_ctx>::value_or(), value} {}
 
     /**
@@ -721,6 +713,9 @@ struct meta_handle {
 
     /*! @brief Default move constructor. */
     meta_handle(meta_handle &&) = default;
+
+    /*! @brief Default destructor. */
+    ~meta_handle() = default;
 
     /**
      * @brief Default copy assignment operator, deleted on purpose.
@@ -766,23 +761,21 @@ struct meta_handle {
     }
 
 private:
-    meta_any any;
+    meta_any any{meta_ctx_arg, locator<meta_ctx>::value_or()};
 };
 
 /*! @brief Opaque wrapper for properties of any type. */
 struct meta_prop {
     /*! @brief Default constructor. */
-    meta_prop() noexcept
-        : node{},
-          ctx{} {}
+    meta_prop() noexcept = default;
 
     /**
      * @brief Context aware constructor for meta objects.
      * @param area The context from which to search for meta types.
      * @param curr The underlying node with which to construct the instance.
      */
-    meta_prop(const meta_ctx &area, const internal::meta_prop_node &curr) noexcept
-        : node{&curr},
+    meta_prop(const meta_ctx &area, internal::meta_prop_node curr) noexcept
+        : node{std::move(curr)},
           ctx{&area} {}
 
     /**
@@ -790,7 +783,7 @@ struct meta_prop {
      * @return A wrapper containing the value stored with the property.
      */
     [[nodiscard]] meta_any value() const {
-        return node->value ? node->type(internal::meta_context::from(*ctx)).from_void(*ctx, nullptr, node->value.get()) : meta_any{meta_ctx_arg, *ctx};
+        return node.value ? node.type(internal::meta_context::from(*ctx)).from_void(*ctx, nullptr, node.value.get()) : meta_any{meta_ctx_arg, *ctx};
     }
 
     /**
@@ -798,7 +791,7 @@ struct meta_prop {
      * @return A wrapper containing the value stored with the property.
      */
     [[nodiscard]] meta_any value() {
-        return node->value ? node->type(internal::meta_context::from(*ctx)).from_void(*ctx, node->value.get(), nullptr) : meta_any{meta_ctx_arg, *ctx};
+        return node.value ? node.type(internal::meta_context::from(*ctx)).from_void(*ctx, node.value.get(), nullptr) : meta_any{meta_ctx_arg, *ctx};
     }
 
     /**
@@ -806,7 +799,7 @@ struct meta_prop {
      * @return True if the object is valid, false otherwise.
      */
     [[nodiscard]] explicit operator bool() const noexcept {
-        return (node != nullptr);
+        return static_cast<bool>(node.type);
     }
 
     /**
@@ -815,12 +808,12 @@ struct meta_prop {
      * @return True if the objects refer to the same type, false otherwise.
      */
     [[nodiscard]] bool operator==(const meta_prop &other) const noexcept {
-        return (ctx == other.ctx && node == other.node);
+        return (ctx == other.ctx && node.value == other.node.value);
     }
 
 private:
-    const internal::meta_prop_node *node;
-    const meta_ctx *ctx;
+    internal::meta_prop_node node{};
+    const meta_ctx *ctx{};
 };
 
 /**
@@ -833,15 +826,48 @@ private:
     return !(lhs == rhs);
 }
 
+/*! @brief Opaque wrapper for user defined data of any type. */
+struct meta_custom {
+    /*! @brief Default constructor. */
+    meta_custom() noexcept = default;
+
+    /**
+     * @brief Basic constructor for meta objects.
+     * @param curr The underlying node with which to construct the instance.
+     */
+    meta_custom(internal::meta_custom_node curr) noexcept
+        : node{std::move(curr)} {}
+
+    /**
+     * @brief Generic conversion operator.
+     * @tparam Type Type to which conversion is requested.
+     */
+    template<typename Type>
+    [[nodiscard]] operator Type *() const noexcept {
+        return (type_id<Type>().hash() == node.type) ? std::static_pointer_cast<Type>(node.value).get() : nullptr;
+    }
+
+    /**
+     * @brief Generic conversion operator.
+     * @tparam Type Type to which conversion is requested.
+     */
+    template<typename Type>
+    [[nodiscard]] operator Type &() const noexcept {
+        ENTT_ASSERT(type_id<Type>().hash() == node.type, "Invalid type");
+        return *std::static_pointer_cast<Type>(node.value);
+    }
+
+private:
+    internal::meta_custom_node node{};
+};
+
 /*! @brief Opaque wrapper for data members. */
 struct meta_data {
     /*! @brief Unsigned integer type. */
     using size_type = typename internal::meta_data_node::size_type;
 
     /*! @brief Default constructor. */
-    meta_data() noexcept
-        : node{},
-          ctx{} {}
+    meta_data() noexcept = default;
 
     /**
      * @brief Context aware constructor for meta objects.
@@ -887,6 +913,7 @@ struct meta_data {
      * @return True in case of success, false otherwise.
      */
     template<typename Type>
+    // NOLINTNEXTLINE(modernize-use-nodiscard)
     bool set(meta_handle instance, Type &&value) const {
         return node->set && node->set(meta_handle{*ctx, std::move(instance)}, meta_any{*ctx, std::forward<Type>(value)});
     }
@@ -905,13 +932,13 @@ struct meta_data {
      * @param index Index of the setter of which to return the accepted type.
      * @return The type accepted by the i-th setter.
      */
-    [[nodiscard]] inline meta_type arg(const size_type index) const noexcept;
+    [[nodiscard]] inline meta_type arg(size_type index) const noexcept;
 
     /**
      * @brief Returns a range to visit registered meta properties.
      * @return An iterable range to visit registered meta properties.
      */
-    [[nodiscard]] meta_range<meta_prop, typename decltype(internal::meta_data_node::prop)::const_iterator> prop() const noexcept {
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_range<meta_prop, typename decltype(internal::meta_data_node::prop)::const_iterator> prop() const noexcept {
         return {{*ctx, node->prop.cbegin()}, {*ctx, node->prop.cend()}};
     }
 
@@ -920,9 +947,32 @@ struct meta_data {
      * @param key The key to use to search for a property.
      * @return The registered meta property for the given key, if any.
      */
-    [[nodiscard]] meta_prop prop(const id_type key) const {
-        const auto it = node->prop.find(key);
-        return it != node->prop.cend() ? meta_prop{*ctx, it->second} : meta_prop{};
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_prop prop(const id_type key) const {
+        for(auto &&elem: node->prop) {
+            if(elem.id == key) {
+                return meta_prop{*ctx, elem};
+            }
+        }
+
+        return meta_prop{};
+    }
+
+    /**
+     * @brief Returns all meta traits for a given meta object.
+     * @tparam Type The type to convert the meta traits to.
+     * @return The registered meta traits, if any.
+     */
+    template<typename Type>
+    [[nodiscard]] Type traits() const noexcept {
+        return internal::meta_to_user_traits<Type>(node->traits);
+    }
+
+    /**
+     * @brief Returns user defined data for a given meta object.
+     * @return User defined arbitrary data.
+     */
+    [[nodiscard]] meta_custom custom() const noexcept {
+        return {node->custom};
     }
 
     /**
@@ -939,8 +989,8 @@ struct meta_data {
     }
 
 private:
-    const internal::meta_data_node *node;
-    const meta_ctx *ctx;
+    const internal::meta_data_node *node{};
+    const meta_ctx *ctx{};
 };
 
 /**
@@ -959,9 +1009,7 @@ struct meta_func {
     using size_type = typename internal::meta_func_node::size_type;
 
     /*! @brief Default constructor. */
-    meta_func() noexcept
-        : node{},
-          ctx{} {}
+    meta_func() noexcept = default;
 
     /**
      * @brief Context aware constructor for meta objects.
@@ -1007,14 +1055,10 @@ struct meta_func {
      * @param index Index of the argument of which to return the type.
      * @return The type of the i-th argument of a member function.
      */
-    [[nodiscard]] inline meta_type arg(const size_type index) const noexcept;
+    [[nodiscard]] inline meta_type arg(size_type index) const noexcept;
 
     /**
      * @brief Invokes the underlying function, if possible.
-     *
-     * @warning
-     * The context of the arguments is **never** changed.
-     *
      * @param instance An opaque instance of the underlying type.
      * @param args Parameters to use to invoke the function.
      * @param sz Number of parameters to use to invoke the function.
@@ -1032,13 +1076,14 @@ struct meta_func {
      * @return A wrapper containing the returned value, if any.
      */
     template<typename... Args>
+    // NOLINTNEXTLINE(modernize-use-nodiscard)
     meta_any invoke(meta_handle instance, Args &&...args) const {
-        meta_any arguments[sizeof...(Args) + !sizeof...(Args)]{{*ctx, std::forward<Args>(args)}...};
-        return invoke(std::move(instance), arguments, sizeof...(Args));
+        std::array<meta_any, sizeof...(Args)> arguments{meta_any{*ctx, std::forward<Args>(args)}...};
+        return invoke(std::move(instance), arguments.data(), sizeof...(Args));
     }
 
     /*! @copydoc meta_data::prop */
-    [[nodiscard]] meta_range<meta_prop, typename decltype(internal::meta_func_node::prop)::const_iterator> prop() const noexcept {
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_range<meta_prop, typename decltype(internal::meta_func_node::prop)::const_iterator> prop() const noexcept {
         return {{*ctx, node->prop.cbegin()}, {*ctx, node->prop.cend()}};
     }
 
@@ -1047,9 +1092,25 @@ struct meta_func {
      * @param key The key to use to search for a property.
      * @return The registered meta property for the given key, if any.
      */
-    [[nodiscard]] meta_prop prop(const id_type key) const {
-        const auto it = node->prop.find(key);
-        return it != node->prop.cend() ? meta_prop{*ctx, it->second} : meta_prop{};
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_prop prop(const id_type key) const {
+        for(auto &&elem: node->prop) {
+            if(elem.id == key) {
+                return meta_prop{*ctx, elem};
+            }
+        }
+
+        return meta_prop{};
+    }
+
+    /*! @copydoc meta_data::traits */
+    template<typename Type>
+    [[nodiscard]] Type traits() const noexcept {
+        return internal::meta_to_user_traits<Type>(node->traits);
+    }
+
+    /*! @copydoc meta_data::custom */
+    [[nodiscard]] meta_custom custom() const noexcept {
+        return {node->custom};
     }
 
     /**
@@ -1074,8 +1135,8 @@ struct meta_func {
     }
 
 private:
-    const internal::meta_func_node *node;
-    const meta_ctx *ctx;
+    const internal::meta_func_node *node{};
+    const meta_ctx *ctx{};
 };
 
 /**
@@ -1107,16 +1168,18 @@ class meta_type {
                 size_type match{};
                 size_type pos{};
 
+                // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic) - waiting for C++20 (and std::span)
                 for(; pos < sz && args[pos]; ++pos) {
                     const auto other = curr->arg(*ctx, pos);
                     const auto type = args[pos].type();
 
                     if(const auto &info = other.info(); info == type.info()) {
                         ++match;
-                    } else if(!((type.node.details && (type.node.details->base.contains(info.hash()) || type.node.details->conv.contains(info.hash()))) || (type.node.conversion_helper && other.node.conversion_helper))) {
+                    } else if(!(type.node.conversion_helper && other.node.conversion_helper) && !(type.node.details && (internal::find_member<&internal::meta_base_node::type>(type.node.details->base, info.hash()) || internal::find_member<&internal::meta_conv_node::type>(type.node.details->conv, info.hash())))) {
                         break;
                     }
                 }
+                // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
                 if(pos == sz) {
                     if(!candidate || match > same) {
@@ -1146,17 +1209,15 @@ public:
     using size_type = typename internal::meta_type_node::size_type;
 
     /*! @brief Default constructor. */
-    meta_type() noexcept
-        : node{},
-          ctx{} {}
+    meta_type() noexcept = default;
 
     /**
      * @brief Context aware constructor for meta objects.
      * @param area The context from which to search for meta types.
      * @param curr The underlying node with which to construct the instance.
      */
-    meta_type(const meta_ctx &area, const internal::meta_type_node &curr) noexcept
-        : node{curr},
+    meta_type(const meta_ctx &area, internal::meta_type_node curr) noexcept
+        : node{std::move(curr)},
           ctx{&area} {}
 
     /**
@@ -1165,7 +1226,7 @@ public:
      * @param curr The underlying node with which to construct the instance.
      */
     meta_type(const meta_ctx &area, const internal::meta_base_node &curr) noexcept
-        : meta_type{area, curr.type(internal::meta_context::from(area))} {}
+        : meta_type{area, curr.resolve(internal::meta_context::from(area))} {}
 
     /**
      * @brief Returns the type info object of the underlying type.
@@ -1245,7 +1306,7 @@ public:
      * @return True if the underlying type is a pointer, false otherwise.
      */
     [[nodiscard]] bool is_pointer() const noexcept {
-        return node.info && (node.info->hash() != remove_pointer().info().hash());
+        return static_cast<bool>(node.traits & internal::meta_traits::is_pointer);
     }
 
     /**
@@ -1254,7 +1315,7 @@ public:
      * doesn't refer to a pointer type.
      */
     [[nodiscard]] meta_type remove_pointer() const noexcept {
-        return {*ctx, node.remove_pointer(internal::meta_context::from(*ctx))}; // NOLINT
+        return {*ctx, node.remove_pointer(internal::meta_context::from(*ctx))};
     }
 
     /**
@@ -1304,7 +1365,7 @@ public:
      * @return The tag for the class template of the underlying type.
      */
     [[nodiscard]] inline meta_type template_type() const noexcept {
-        return node.templ.type ? meta_type{*ctx, node.templ.type(internal::meta_context::from(*ctx))} : meta_type{};
+        return (node.templ.resolve != nullptr) ? meta_type{*ctx, node.templ.resolve(internal::meta_context::from(*ctx))} : meta_type{};
     }
 
     /**
@@ -1360,7 +1421,7 @@ public:
      */
     [[nodiscard]] meta_data data(const id_type id) const {
         const auto *elem = internal::look_for<&internal::meta_type_descriptor::data>(internal::meta_context::from(*ctx), node, id);
-        return elem ? meta_data{*ctx, *elem} : meta_data{};
+        return (elem != nullptr) ? meta_data{*ctx, *elem} : meta_data{};
     }
 
     /**
@@ -1382,27 +1443,23 @@ public:
      */
     [[nodiscard]] meta_func func(const id_type id) const {
         const auto *elem = internal::look_for<&internal::meta_type_descriptor::func>(internal::meta_context::from(*ctx), node, id);
-        return elem ? meta_func{*ctx, *elem} : meta_func{};
+        return (elem != nullptr) ? meta_func{*ctx, *elem} : meta_func{};
     }
 
     /**
      * @brief Creates an instance of the underlying type, if possible.
-     *
-     * @warning
-     * The context of the arguments is **never** changed.
-     *
      * @param args Parameters to use to construct the instance.
      * @param sz Number of parameters to use to construct the instance.
      * @return A wrapper containing the new instance, if any.
      */
     [[nodiscard]] meta_any construct(meta_any *const args, const size_type sz) const {
         if(node.details) {
-            if(const auto *candidate = lookup(args, sz, false, [first = node.details->ctor.cbegin(), last = node.details->ctor.cend()]() mutable { return first == last ? nullptr : &(first++)->second; }); candidate) {
+            if(const auto *candidate = lookup(args, sz, false, [first = node.details->ctor.cbegin(), last = node.details->ctor.cend()]() mutable { return first == last ? nullptr : &*(first++); }); candidate) {
                 return candidate->invoke(*ctx, args);
             }
         }
 
-        if(sz == 0u && node.default_constructor) {
+        if(sz == 0u && (node.default_constructor != nullptr)) {
             return node.default_constructor(*ctx);
         }
 
@@ -1417,30 +1474,26 @@ public:
      */
     template<typename... Args>
     [[nodiscard]] meta_any construct(Args &&...args) const {
-        meta_any arguments[sizeof...(Args) + !sizeof...(Args)]{{*ctx, std::forward<Args>(args)}...};
-        return construct(arguments, sizeof...(Args));
+        std::array<meta_any, sizeof...(Args)> arguments{meta_any{*ctx, std::forward<Args>(args)}...};
+        return construct(arguments.data(), sizeof...(Args));
     }
 
     /**
      * @brief Wraps an opaque element of the underlying type.
-     * @param element A valid pointer to an element of the underlying type.
+     * @param elem A valid pointer to an element of the underlying type.
      * @return A wrapper that references the given instance.
      */
-    [[nodiscard]] meta_any from_void(void *element) const {
-        return (element && node.from_void) ? node.from_void(*ctx, element, nullptr) : meta_any{meta_ctx_arg, *ctx};
+    [[nodiscard]] meta_any from_void(void *elem) const {
+        return ((elem != nullptr) && (node.from_void != nullptr)) ? node.from_void(*ctx, elem, nullptr) : meta_any{meta_ctx_arg, *ctx};
     }
 
     /*! @copydoc from_void */
-    [[nodiscard]] meta_any from_void(const void *element) const {
-        return (element && node.from_void) ? node.from_void(*ctx, nullptr, element) : meta_any{meta_ctx_arg, *ctx};
+    [[nodiscard]] meta_any from_void(const void *elem) const {
+        return ((elem != nullptr) && (node.from_void != nullptr)) ? node.from_void(*ctx, nullptr, elem) : meta_any{meta_ctx_arg, *ctx};
     }
 
     /**
      * @brief Invokes a function given an identifier, if possible.
-     *
-     * @warning
-     * The context of the arguments is **never** changed.
-     *
      * @param id Unique identifier.
      * @param instance An opaque instance of the underlying type.
      * @param args Parameters to use to invoke the function.
@@ -1449,8 +1502,8 @@ public:
      */
     meta_any invoke(const id_type id, meta_handle instance, meta_any *const args, const size_type sz) const {
         if(node.details) {
-            if(auto it = node.details->func.find(id); it != node.details->func.cend()) {
-                if(const auto *candidate = lookup(args, sz, instance && (instance->data() == nullptr), [curr = &it->second]() mutable { return curr ? std::exchange(curr, curr->next.get()) : nullptr; }); candidate) {
+            if(auto *elem = internal::find_member<&internal::meta_func_node::id>(node.details->func, id); elem != nullptr) {
+                if(const auto *candidate = lookup(args, sz, instance && (instance->data() == nullptr), [curr = elem]() mutable { return (curr != nullptr) ? std::exchange(curr, curr->next.get()) : nullptr; }); candidate) {
                     return candidate->invoke(*ctx, meta_handle{*ctx, std::move(instance)}, args);
                 }
             }
@@ -1474,9 +1527,10 @@ public:
      * @return A wrapper containing the returned value, if any.
      */
     template<typename... Args>
+    // NOLINTNEXTLINE(modernize-use-nodiscard)
     meta_any invoke(const id_type id, meta_handle instance, Args &&...args) const {
-        meta_any arguments[sizeof...(Args) + !sizeof...(Args)]{{*ctx, std::forward<Args>(args)}...};
-        return invoke(id, std::move(instance), arguments, sizeof...(Args));
+        std::array<meta_any, sizeof...(Args)> arguments{meta_any{*ctx, std::forward<Args>(args)}...};
+        return invoke(id, std::move(instance), arguments.data(), sizeof...(Args));
     }
 
     /**
@@ -1508,7 +1562,7 @@ public:
      * @brief Returns a range to visit registered top-level meta properties.
      * @return An iterable range to visit registered top-level meta properties.
      */
-    [[nodiscard]] meta_range<meta_prop, typename decltype(internal::meta_type_descriptor::prop)::const_iterator> prop() const noexcept {
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_range<meta_prop, typename decltype(internal::meta_type_descriptor::prop)::const_iterator> prop() const noexcept {
         using range_type = meta_range<meta_prop, typename decltype(internal::meta_type_descriptor::prop)::const_iterator>;
         return node.details ? range_type{{*ctx, node.details->prop.cbegin()}, {*ctx, node.details->prop.cend()}} : range_type{};
     }
@@ -1518,9 +1572,20 @@ public:
      * @param key The key to use to search for a property.
      * @return The registered meta property for the given key, if any.
      */
-    [[nodiscard]] meta_prop prop(const id_type key) const {
+    [[nodiscard]] [[deprecated("use ::custom() instead")]] meta_prop prop(const id_type key) const {
         const auto *elem = internal::look_for<&internal::meta_type_descriptor::prop>(internal::meta_context::from(*ctx), node, key);
-        return elem ? meta_prop{*ctx, *elem} : meta_prop{};
+        return (elem != nullptr) ? meta_prop{*ctx, *elem} : meta_prop{};
+    }
+
+    /*! @copydoc meta_data::traits */
+    template<typename Type>
+    [[nodiscard]] Type traits() const noexcept {
+        return internal::meta_to_user_traits<Type>(node.traits);
+    }
+
+    /*! @copydoc meta_data::custom */
+    [[nodiscard]] meta_custom custom() const noexcept {
+        return {node.custom};
     }
 
     /**
@@ -1533,12 +1598,12 @@ public:
 
     /*! @copydoc meta_prop::operator== */
     [[nodiscard]] bool operator==(const meta_type &other) const noexcept {
-        return (ctx == other.ctx) && ((!node.info && !other.node.info) || (node.info && other.node.info && *node.info == *other.node.info));
+        return (ctx == other.ctx) && (((node.info == nullptr) && (other.node.info == nullptr)) || ((node.info != nullptr) && (other.node.info != nullptr) && *node.info == *other.node.info));
     }
 
 private:
-    internal::meta_type_node node;
-    const meta_ctx *ctx;
+    internal::meta_type_node node{};
+    const meta_ctx *ctx{};
 };
 
 /**
@@ -1552,10 +1617,11 @@ private:
 }
 
 [[nodiscard]] inline meta_type meta_any::type() const noexcept {
-    return node.info ? meta_type{*ctx, node} : meta_type{};
+    return (node.info != nullptr) ? meta_type{*ctx, node} : meta_type{};
 }
 
 template<typename... Args>
+// NOLINTNEXTLINE(modernize-use-nodiscard)
 meta_any meta_any::invoke(const id_type id, Args &&...args) const {
     return type().invoke(id, *this, std::forward<Args>(args)...);
 }
@@ -1637,18 +1703,14 @@ class meta_sequence_container::meta_iterator final {
     }
 
 public:
-    using difference_type = std::ptrdiff_t;
     using value_type = meta_any;
     using pointer = input_iterator_pointer<value_type>;
     using reference = value_type;
+    using difference_type = std::ptrdiff_t;
     using iterator_category = std::input_iterator_tag;
     using iterator_concept = std::bidirectional_iterator_tag;
 
-    meta_iterator() noexcept
-        : meta_iterator{locator<meta_ctx>::value_or()} {}
-
-    meta_iterator(const meta_ctx &area) noexcept
-        : ctx{&area} {}
+    meta_iterator() = default;
 
     template<typename It>
     meta_iterator(const meta_ctx &area, It iter) noexcept
@@ -1705,7 +1767,7 @@ public:
     }
 
 private:
-    const meta_ctx *ctx{};
+    const meta_ctx *ctx{&locator<meta_ctx>::value_or()};
     vtable_type *vtable{};
     any handle{};
 };
@@ -1728,18 +1790,14 @@ class meta_associative_container::meta_iterator final {
     }
 
 public:
-    using difference_type = std::ptrdiff_t;
     using value_type = std::pair<meta_any, meta_any>;
     using pointer = input_iterator_pointer<value_type>;
     using reference = value_type;
+    using difference_type = std::ptrdiff_t;
     using iterator_category = std::input_iterator_tag;
     using iterator_concept = std::forward_iterator_tag;
 
-    meta_iterator() noexcept
-        : meta_iterator{locator<meta_ctx>::value_or()} {}
-
-    meta_iterator(const meta_ctx &area) noexcept
-        : ctx{&area} {}
+    meta_iterator() = default;
 
     template<bool KeyOnly, typename It>
     meta_iterator(const meta_ctx &area, std::bool_constant<KeyOnly>, It iter) noexcept
@@ -1781,7 +1839,7 @@ public:
     }
 
 private:
-    const meta_ctx *ctx{};
+    const meta_ctx *ctx{&locator<meta_ctx>::value_or()};
     vtable_type *vtable{};
     any handle{};
 };
@@ -1792,7 +1850,7 @@ private:
  * @return The meta value type of the container.
  */
 [[nodiscard]] inline meta_type meta_sequence_container::value_type() const noexcept {
-    return value_type_node ? meta_type{*ctx, value_type_node(internal::meta_context::from(*ctx))} : meta_type{};
+    return (value_type_node != nullptr) ? meta_type{*ctx, value_type_node(internal::meta_context::from(*ctx))} : meta_type{};
 }
 
 /**
@@ -1851,14 +1909,14 @@ inline bool meta_sequence_container::reserve(const size_type sz) {
  * @param value Element value to insert.
  * @return A possibly invalid iterator to the inserted element.
  */
-inline meta_sequence_container::iterator meta_sequence_container::insert(iterator it, meta_any value) {
+inline meta_sequence_container::iterator meta_sequence_container::insert(const iterator &it, meta_any value) {
     // this abomination is necessary because only on macos value_type and const_reference are different types for std::vector<bool>
     if(const auto vtype = value_type_node(internal::meta_context::from(*ctx)); !const_only && (value.allow_cast({*ctx, vtype}) || value.allow_cast({*ctx, const_reference_node(internal::meta_context::from(*ctx))}))) {
         const bool is_value_type = (value.type().info() == *vtype.info);
         return insert_fn(*ctx, const_cast<void *>(data), is_value_type ? std::as_const(value).data() : nullptr, is_value_type ? nullptr : std::as_const(value).data(), it);
     }
 
-    return iterator{*ctx};
+    return iterator{};
 }
 
 /**
@@ -1866,13 +1924,12 @@ inline meta_sequence_container::iterator meta_sequence_container::insert(iterato
  * @param it Iterator to the element to remove.
  * @return A possibly invalid iterator following the last removed element.
  */
-inline meta_sequence_container::iterator meta_sequence_container::erase(iterator it) {
-    return const_only ? iterator{*ctx} : erase_fn(*ctx, const_cast<void *>(data), it);
+inline meta_sequence_container::iterator meta_sequence_container::erase(const iterator &it) {
+    return const_only ? iterator{} : erase_fn(*ctx, const_cast<void *>(data), it);
 }
 
 /**
- * @brief Returns a reference to the element at a given location of a container
- * (no bounds checking is performed).
+ * @brief Returns a reference to the element at a given location of a container.
  * @param pos The position of the element to return.
  * @return A reference to the requested element properly wrapped.
  */
@@ -1891,19 +1948,11 @@ inline meta_sequence_container::iterator meta_sequence_container::erase(iterator
 }
 
 /**
- * @brief Returns true if a container is also key-only, false otherwise.
- * @return True if the associative container is also key-only, false otherwise.
- */
-[[deprecated("use mapped_type() instead")]] [[nodiscard]] inline bool meta_associative_container::key_only() const noexcept {
-    return (mapped_type_node == nullptr);
-}
-
-/**
  * @brief Returns the meta key type of a container.
  * @return The meta key type of the a container.
  */
 [[nodiscard]] inline meta_type meta_associative_container::key_type() const noexcept {
-    return key_type_node ? meta_type{*ctx, key_type_node(internal::meta_context::from(*ctx))} : meta_type{};
+    return (key_type_node != nullptr) ? meta_type{*ctx, key_type_node(internal::meta_context::from(*ctx))} : meta_type{};
 }
 
 /**
@@ -1911,12 +1960,12 @@ inline meta_sequence_container::iterator meta_sequence_container::erase(iterator
  * @return The meta mapped type of the a container.
  */
 [[nodiscard]] inline meta_type meta_associative_container::mapped_type() const noexcept {
-    return mapped_type_node ? meta_type{*ctx, mapped_type_node(internal::meta_context::from(*ctx))} : meta_type{};
+    return (mapped_type_node != nullptr) ? meta_type{*ctx, mapped_type_node(internal::meta_context::from(*ctx))} : meta_type{};
 }
 
 /*! @copydoc meta_sequence_container::value_type */
 [[nodiscard]] inline meta_type meta_associative_container::value_type() const noexcept {
-    return value_type_node ? meta_type{*ctx, value_type_node(internal::meta_context::from(*ctx))} : meta_type{};
+    return (value_type_node != nullptr) ? meta_type{*ctx, value_type_node(internal::meta_context::from(*ctx))} : meta_type{};
 }
 
 /*! @copydoc meta_sequence_container::size */
@@ -1952,7 +2001,7 @@ inline bool meta_associative_container::reserve(const size_type sz) {
  */
 inline bool meta_associative_container::insert(meta_any key, meta_any value = {}) {
     return !const_only && key.allow_cast(meta_type{*ctx, key_type_node(internal::meta_context::from(*ctx))})
-           && (!mapped_type_node || value.allow_cast(meta_type{*ctx, mapped_type_node(internal::meta_context::from(*ctx))}))
+           && ((mapped_type_node == nullptr) || value.allow_cast(meta_type{*ctx, mapped_type_node(internal::meta_context::from(*ctx))}))
            && insert_fn(const_cast<void *>(data), std::as_const(key).data(), std::as_const(value).data());
 }
 
@@ -1971,7 +2020,7 @@ inline meta_associative_container::size_type meta_associative_container::erase(m
  * @return An iterator to the element with the given key, if any.
  */
 [[nodiscard]] inline meta_associative_container::iterator meta_associative_container::find(meta_any key) {
-    return key.allow_cast(meta_type{*ctx, key_type_node(internal::meta_context::from(*ctx))}) ? find_fn(*ctx, const_only ? nullptr : const_cast<void *>(data), data, std::as_const(key).data()) : iterator{*ctx};
+    return key.allow_cast(meta_type{*ctx, key_type_node(internal::meta_context::from(*ctx))}) ? find_fn(*ctx, const_only ? nullptr : const_cast<void *>(data), data, std::as_const(key).data()) : iterator{};
 }
 
 /**

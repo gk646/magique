@@ -3,11 +3,7 @@
 
 #include "version.h"
 
-#if !defined(_DEBUG) || defined(NDEBUG)
-#define ENTT_DISABLE_ASSERT
-#endif
-
-#define ENTT_NOEXCEPTION
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
 #if defined(__cpp_exceptions) && !defined(ENTT_NOEXCEPTION)
 #    define ENTT_CONSTEXPR
@@ -36,11 +32,11 @@
 #endif
 
 #ifndef ENTT_SPARSE_PAGE
-#    define ENTT_SPARSE_PAGE 8192
+#    define ENTT_SPARSE_PAGE 4096
 #endif
 
 #ifndef ENTT_PACKED_PAGE
-#    define ENTT_PACKED_PAGE 2048
+#    define ENTT_PACKED_PAGE 1024
 #endif
 
 #ifdef ENTT_DISABLE_ASSERT
@@ -48,7 +44,7 @@
 #    define ENTT_ASSERT(condition, msg) (void(0))
 #elif !defined ENTT_ASSERT
 #    include <cassert>
-#    define ENTT_ASSERT(condition, msg) assert(condition)
+#    define ENTT_ASSERT(condition, msg) assert(((condition) && (msg)))
 #endif
 
 #ifdef ENTT_DISABLE_ASSERT
@@ -64,6 +60,12 @@
 #    define ENTT_ETO_TYPE(Type) void
 #else
 #    define ENTT_ETO_TYPE(Type) Type
+#endif
+
+#ifdef ENTT_NO_MIXIN
+#    define ENTT_STORAGE(Mixin, ...) __VA_ARGS__
+#else
+#    define ENTT_STORAGE(Mixin, ...) Mixin<__VA_ARGS__>
 #endif
 
 #ifdef ENTT_STANDARD_CPP
@@ -87,5 +89,7 @@
 #    pragma detect_mismatch("entt.id", ENTT_XSTR(ENTT_ID_TYPE))
 #    pragma detect_mismatch("entt.nonstd", ENTT_XSTR(ENTT_NONSTD))
 #endif
+
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 #endif

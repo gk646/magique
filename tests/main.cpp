@@ -6,13 +6,13 @@
 // .....................................................................
 
 // Tests
-// #include "CollisionBenchmark.h"
+ #include "CollisionBenchmark.h"
  //#include "CollisionTest.h"
 //#include "HashGridTest.h"
 
 // Examples
 //#include "../examples/headers/MultiplayerExample.h"
-#include "../examples/headers/GlobalNetworkingExample.h"
+//#include "../examples/headers/GlobalNetworkingExample.h"
 //#include "../examples/headers/WindowExample.h"
 //#include "../examples/headers/UIExample.h"
 //#include "../examples/headers/LightingExample.h"

@@ -114,12 +114,12 @@ namespace magique
 
         const auto steamID = static_cast<SteamID>(pCallback->m_ulSteamIDUserChanged);
         const auto lobbyID = LobbyIDFromSteam(global::STEAM_DATA.lobbyID);
-        if (pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeEntered)
+        if ((pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeEntered) != 0)
         {
             MAGIQUE_ASSERT(pCallback->m_ulSteamIDUserChanged != userID.ConvertToUint64(), "Our event already fired?");
             lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_USER_JOINED);
         }
-        else if (pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeLeft)
+        else if ((pCallback->m_rgfChatMemberStateChange & k_EChatMemberStateChangeLeft) != 0)
         {
             MAGIQUE_ASSERT(pCallback->m_ulSteamIDUserChanged != userID.ConvertToUint64(), "Our event already fired?");
             lobbyEventCallback(lobbyID, steamID, LobbyEvent::ON_USER_LEFT);

@@ -1,3 +1,5 @@
+// IWYU pragma: always_keep
+
 #ifndef ENTT_META_CONTAINER_HPP
 #define ENTT_META_CONTAINER_HPP
 
@@ -60,13 +62,13 @@ template<typename Type>
 struct basic_meta_sequence_container_traits {
     static_assert(std::is_same_v<Type, std::remove_cv_t<std::remove_reference_t<Type>>>, "Unexpected type");
 
-    /*! @brief True in case of key-only containers, false otherwise. */
-    static constexpr bool fixed_size = internal::fixed_size_sequence_container_v<Type>;
-
     /*! @brief Unsigned integer type. */
     using size_type = typename meta_sequence_container::size_type;
     /*! @brief Meta iterator type. */
     using iterator = typename meta_sequence_container::iterator;
+
+    /*! @brief True in case of key-only containers, false otherwise. */
+    static constexpr bool fixed_size = internal::fixed_size_sequence_container_v<Type>;
 
     /**
      * @brief Returns the number of elements in a container.
@@ -129,8 +131,8 @@ struct basic_meta_sequence_container_traits {
      * @return An iterator to the first element of the container.
      */
     static iterator begin(const meta_ctx &area, void *container, const void *as_const) {
-        return container ? iterator{area, static_cast<Type *>(container)->begin()}
-                         : iterator{area, static_cast<const Type *>(as_const)->begin()};
+        return (container != nullptr) ? iterator{area, static_cast<Type *>(container)->begin()}
+                                      : iterator{area, static_cast<const Type *>(as_const)->begin()};
     }
 
     /**
@@ -141,8 +143,8 @@ struct basic_meta_sequence_container_traits {
      * @return An iterator that is past the last element of the container.
      */
     static iterator end(const meta_ctx &area, void *container, const void *as_const) {
-        return container ? iterator{area, static_cast<Type *>(container)->end()}
-                         : iterator{area, static_cast<const Type *>(as_const)->end()};
+        return (container != nullptr) ? iterator{area, static_cast<Type *>(container)->end()}
+                                      : iterator{area, static_cast<const Type *>(as_const)->end()};
     }
 
     /**
@@ -157,14 +159,14 @@ struct basic_meta_sequence_container_traits {
      * @param it Iterator before which the element will be inserted.
      * @return A possibly invalid iterator to the inserted element.
      */
-    [[nodiscard]] static iterator insert(const meta_ctx &area, [[maybe_unused]] void *container, [[maybe_unused]] const void *value, [[maybe_unused]] const void *cref, [[maybe_unused]] const iterator &it) {
+    [[nodiscard]] static iterator insert([[maybe_unused]] const meta_ctx &area, [[maybe_unused]] void *container, [[maybe_unused]] const void *value, [[maybe_unused]] const void *cref, [[maybe_unused]] const iterator &it) {
         if constexpr(fixed_size) {
-            return iterator{area};
+            return iterator{};
         } else {
             auto *const non_const = any_cast<typename Type::iterator>(&it.base());
             return {area, static_cast<Type *>(container)->insert(
                               non_const ? *non_const : any_cast<const typename Type::const_iterator &>(it.base()),
-                              value ? *static_cast<const typename Type::value_type *>(value) : *static_cast<const std::remove_reference_t<typename Type::const_reference> *>(cref))};
+                              (value != nullptr) ? *static_cast<const typename Type::value_type *>(value) : *static_cast<const std::remove_reference_t<typename Type::const_reference> *>(cref))};
         }
     }
 
@@ -175,9 +177,9 @@ struct basic_meta_sequence_container_traits {
      * @param it An opaque iterator to the element to erase.
      * @return A possibly invalid iterator following the last removed element.
      */
-    [[nodiscard]] static iterator erase(const meta_ctx &area, [[maybe_unused]] void *container, [[maybe_unused]] const iterator &it) {
+    [[nodiscard]] static iterator erase([[maybe_unused]] const meta_ctx &area, [[maybe_unused]] void *container, [[maybe_unused]] const iterator &it) {
         if constexpr(fixed_size) {
-            return iterator{area};
+            return iterator{};
         } else {
             auto *const non_const = any_cast<typename Type::iterator>(&it.base());
             return {area, static_cast<Type *>(container)->erase(non_const ? *non_const : any_cast<const typename Type::const_iterator &>(it.base()))};
@@ -193,13 +195,13 @@ template<typename Type>
 struct basic_meta_associative_container_traits {
     static_assert(std::is_same_v<Type, std::remove_cv_t<std::remove_reference_t<Type>>>, "Unexpected type");
 
-    /*! @brief True in case of key-only containers, false otherwise. */
-    static constexpr bool key_only = internal::key_only_associative_container_v<Type>;
-
     /*! @brief Unsigned integer type. */
     using size_type = typename meta_associative_container::size_type;
     /*! @brief Meta iterator type. */
     using iterator = typename meta_associative_container::iterator;
+
+    /*! @brief True in case of key-only containers, false otherwise. */
+    static constexpr bool key_only = internal::key_only_associative_container_v<Type>;
 
     /**
      * @brief Returns the number of elements in a container.
@@ -243,8 +245,8 @@ struct basic_meta_associative_container_traits {
      * @return An iterator to the first element of the container.
      */
     static iterator begin(const meta_ctx &area, void *container, const void *as_const) {
-        return container ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->begin()}
-                         : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->begin()};
+        return (container != nullptr) ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->begin()}
+                                      : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->begin()};
     }
 
     /**
@@ -255,8 +257,8 @@ struct basic_meta_associative_container_traits {
      * @return An iterator that is past the last element of the container.
      */
     static iterator end(const meta_ctx &area, void *container, const void *as_const) {
-        return container ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->end()}
-                         : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->end()};
+        return (container != nullptr) ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->end()}
+                                      : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->end()};
     }
 
     /**
@@ -293,8 +295,8 @@ struct basic_meta_associative_container_traits {
      * @return An iterator to the element with the given key, if any.
      */
     static iterator find(const meta_ctx &area, void *container, const void *as_const, const void *key) {
-        return container ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->find(*static_cast<const typename Type::key_type *>(key))}
-                         : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->find(*static_cast<const typename Type::key_type *>(key))};
+        return (container != nullptr) ? iterator{area, std::bool_constant<key_only>{}, static_cast<Type *>(container)->find(*static_cast<const typename Type::key_type *>(key))}
+                                      : iterator{area, std::bool_constant<key_only>{}, static_cast<const Type *>(as_const)->find(*static_cast<const typename Type::key_type *>(key))};
     }
 };
 
