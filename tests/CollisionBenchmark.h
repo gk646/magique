@@ -34,9 +34,12 @@
 // Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangles -> more shapes -> bit slower
 // Time: 9.8 ms | Added accumulation of collision info using a hashmap
 // Time: 9.2 ms | Removed hashmap in favor of caching data and saving it inside the collision component
+// Time: 5.8 ms | Switched to Linux + GCC 14.2 + all optimizations
+// Time: 5.4 ms | Upgrade to entt 3.14
 // .....................................................................
 
 using namespace magique;
+
 
 enum EntityType : uint16_t
 {
@@ -68,7 +71,7 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -83,7 +86,7 @@ struct ObjectScript final : EntityScript
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
@@ -138,6 +141,7 @@ struct Test final : Game
         {
             CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
         }
+        SetBenchmarkTicks(300);
     }
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {

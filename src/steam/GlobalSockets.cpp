@@ -62,9 +62,9 @@ namespace magique
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
 
         const CSteamID steamID{static_cast<uint64>(magiqueSteamID)};
-        if (steamID.IsValid())
+        if (!steamID.IsValid())
         {
-            LOG_WARNING("Passed invalid steam id");
+            LOG_WARNING("Cannot connect to invalid SteamID");
             return Connection::INVALID_CONNECTION;
         }
 

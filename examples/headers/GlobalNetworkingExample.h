@@ -243,7 +243,12 @@ struct Test final : Game
             {
                 if (IsInLobby()) // Just leave the lobby - we don't have to clean anything up
                     LeaveSteamLobby();
-                JoinSteamLobby(lobbyId); // Connect to the new lobby
+                JoinSteamLobby(lobbyId);        // Connect to the new lobby
+                ConnectToGlobalSocket(steamID); // Connect to the inviters socket
+
+                // Enter client mode - server has authority now
+                EnterClientMode();
+                DestroyEntities({});
             }
         };
         SetLobbyEventCallback(lobbyCallback);
