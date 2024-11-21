@@ -7,7 +7,7 @@
 #include <magique/core/Particles.h>
 #include <magique/util/Logging.h>
 
-#include "external/raylib/src/coredata.h"
+#include "external/raylib-compat/rshapes_compat.h"
 #include "internal/datastructures/VectorType.h"
 
 namespace magique
@@ -42,7 +42,8 @@ namespace magique
         {
             // TODO optimize with custom vertex buffer - could even be filled multithreaded
             rlSetTexture(GetShapesTexture().id);
-            const auto shapeRect = texShapesRec;
+            const auto shapeRect = GetTexShapesRect();
+            const auto& texShapes = GetTexShapes();
 
             rlTexCoord2f(shapeRect.x / texShapes.width, shapeRect.y / texShapes.height);
             rlTexCoord2f(shapeRect.x / texShapes.width, (shapeRect.y + shapeRect.height) / texShapes.height);

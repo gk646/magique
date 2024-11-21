@@ -20,6 +20,12 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+# Used as public API to be included into other projects
+set(raylib_public_headers
+        ../../../../include/raylib/raylib.h
+        ../../../../include/raylib/rlgl.h
+        ../../../../include/raylib/raymath.h
+    )
 
 # Sources to be compiled
 set(raylib_sources
@@ -93,16 +99,14 @@ include(CompileDefinitions)
 
 # Registering include directories
 target_include_directories(raylib
-        PUBLIC
-        $<INSTALL_INTERFACE:include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-        PRIVATE
-        ${CMAKE_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${OPENGL_INCLUDE_DIR}
-        ${OPENAL_INCLUDE_DIR}
-)
-
+                           PUBLIC
+                           $<INSTALL_INTERFACE:include>
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+                           PRIVATE
+                           ${CMAKE_CURRENT_SOURCE_DIR}
+                           ${OPENGL_INCLUDE_DIR}
+                           ${OPENAL_INCLUDE_DIR}
+                           )
 
 # Print the flags for the user
 if (DEFINED CMAKE_BUILD_TYPE)

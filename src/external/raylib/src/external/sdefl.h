@@ -175,6 +175,7 @@ extern int zsdeflate(struct sdefl *s, void *o, const void *i, int n, int lvl);
 #endif /* SDEFL_H_INCLUDED */
 
 #ifdef SDEFL_IMPLEMENTATION
+#undef SDEFL_IMPLEMENTATION
 
 #include <assert.h> /* assert */
 #include <string.h> /* memcpy */

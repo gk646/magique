@@ -99,8 +99,8 @@ namespace magique
 #ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
-        const auto sWidth = static_cast<float>(CORE.Window.screen.width);
-        const auto sHeight = static_cast<float>(CORE.Window.screen.height);
+        const auto sWidth = static_cast<float>(GetScreenWidth());
+        const auto sHeight = static_cast<float>(GetScreenHeight());
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);

@@ -50,8 +50,7 @@ namespace magique
         }
 
         const Rectangle drawRect = {0, 0, shader.shadowResolution.x, shader.shadowResolution.y};
-        Matrix projectionMatrix =
-            MatrixOrtho(0.0f, CORE.Window.currentFbo.width, CORE.Window.currentFbo.height, 0.0f, 0.0f, 1.0f);
+        Matrix projectionMatrix = MatrixOrtho(0.0f, GetFBOWidth(), GetFBOHeight(), 0.0f, 0.0f, 1.0f);
         Matrix matMVP = MatrixMultiply(GetCameraMatrix2D(global::ENGINE_DATA.camera), projectionMatrix);
 
         float matMVPfloat[16] = {matMVP.m0,  matMVP.m1,  matMVP.m2,  matMVP.m3, matMVP.m4,  matMVP.m5,

@@ -7,7 +7,7 @@
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
-#include "external/raylib/src/coredata.h"
+#include "external/raylib-compat/rcore_compat.h"
 #include "internal/utils/STLUtil.h"
 
 inline bool initialized = false;
@@ -30,8 +30,8 @@ namespace magique
         // Called at the end of the update tick
         void update()
         {
-            scaleX = MAGIQUE_UI_RESOLUTION_X / static_cast<float>(CORE.Window.screen.width);
-            scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(CORE.Window.screen.height);
+            scaleX = MAGIQUE_UI_RESOLUTION_X / static_cast<float>(GetScreenWidth());
+            scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(GetScreenHeight());
             const auto [mx, my] = GetMousePosition();
             mouseX = mx;
             mouseY = my;
@@ -137,7 +137,7 @@ namespace magique
 
         [[nodiscard]] static Point getScreenDims()
         {
-            return {static_cast<float>(CORE.Window.screen.width), static_cast<float>(CORE.Window.screen.height)};
+            return {static_cast<float>(GetScreenWidth()), static_cast<float>(GetScreenHeight())};
         }
 
         [[nodiscard]] Point getMousePos() const { return {mouseX, mouseY}; }

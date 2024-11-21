@@ -3,7 +3,7 @@
 #include <magique/ui/UI.h>
 #include <magique/util/Math.h>
 
-#include "external/raylib/src/coredata.h"
+#include "external/raylib-compat/rcore_compat.h"
 #include "internal/headers/CollisionPrimitives.h"
 
 namespace magique
@@ -41,7 +41,7 @@ namespace magique
 
     int TextField::getLineCount() const { return lineCount; }
 
-    bool IsKeyPressedAnyWay(const int key) { return IsKeyPressed(key) || IsKeyPressedRepeat(key); }
+    static bool IsKeyPressedAnyWay(const int key) { return IsKeyPressed(key) || IsKeyPressedRepeat(key); }
 
     void TextField::updateInputs()
     {
@@ -61,9 +61,9 @@ namespace magique
         updateControls();
 
         // Iterate characters
-        for (int i = 0; i < CORE.Input.Keyboard.charPressedQueueCount; ++i)
+        for (int i = 0; i < GetCharPressedQueueCount(); ++i)
         {
-            const char pressedChar = static_cast<char>(CORE.Input.Keyboard.charPressedQueue[i]);
+            const char pressedChar = static_cast<char>(GetCharPressedQueue()[i]);
             text.insert(text.begin() + cursorPos, pressedChar);
             ++cursorPos;
         }

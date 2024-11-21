@@ -3,9 +3,7 @@
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
 
-#define SINFL_IMPLEMENTATION
 #include "external/raylib/src/external/sinfl.h"
-#define SDEFL_IMPLEMENTATION
 #include "external/raylib/src/external/sdefl.h"
 
 namespace magique
