@@ -41,7 +41,7 @@ namespace magique
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        PlaySoundRaylib(alias);
+        ::PlaySound(alias);
         global::AUDIO_PLAYER.sounds.emplace_back(alias, volume);
     }
 
@@ -55,7 +55,7 @@ namespace magique
         }
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        PlaySoundRaylib(alias);
+        ::PlaySound(alias);
         auto& pos = GetRegistry().get<PositionC>(entity);
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
     }
@@ -64,7 +64,7 @@ namespace magique
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        PlaySoundRaylib(alias);
+        ::PlaySound(alias);
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &x, &y, x, y, true);
     }
 
@@ -73,7 +73,7 @@ namespace magique
         auto& ap = global::AUDIO_PLAYER;
         for (auto it = ap.sounds.begin(); it != ap.sounds.end();)
         {
-            if (IsAudioStreamEqual(it->sound.stream, sound.stream))
+            if (it->sound.stream.buffer == sound.stream.buffer)
             {
                 ap.sounds.erase(it);
                 return;
@@ -82,7 +82,7 @@ namespace magique
         }
         for (auto it = ap.sounds2D.begin(); it != ap.sounds2D.end();)
         {
-            if (IsAudioStreamEqual(it->sound.stream, sound.stream))
+            if (it->sound.stream.buffer, sound.stream.buffer)
             {
                 ap.sounds2D.erase(it);
                 return;
@@ -96,14 +96,14 @@ namespace magique
         const auto& sd = global::AUDIO_PLAYER;
         for (const auto& s : sd.sounds)
         {
-            if (IsAudioStreamEqual(s.sound.stream, sound.stream))
+            if (s.sound.stream.buffer == sound.stream.buffer)
             {
                 return true;
             }
         }
         for (const auto& s : sd.sounds2D)
         {
-            if (IsAudioStreamEqual(s.sound.stream, sound.stream))
+            if (s.sound.stream.buffer == sound.stream.buffer)
             {
                 return true;
             }

@@ -3,7 +3,7 @@
 
 
 #include "internal/datastructures/VectorType.h"
-#include "external/raylib/src/coredata.h"
+#include "external/raylib-compat/rlgl_compat.h"
 
 namespace magique
 {
@@ -94,7 +94,7 @@ namespace magique
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
             block++;
-            const int calls = RLGL.State.prevDrawCalls;
+            const int calls = GetPrevDrawCalls();
             snprintf(blocks[block].text, 32, "Draw Calls: %.1d", calls);
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 

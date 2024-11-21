@@ -127,7 +127,7 @@ namespace magique
 
     handle RegisterSound(const Sound& sound)
     {
-        if(!IsSoundReady(sound))
+        if(!IsSoundValid(sound))
         {
             LOG_WARNING("Trying to register invalid sound");
             return handle::null;

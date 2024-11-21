@@ -44,13 +44,16 @@
 *
 **********************************************************************************************/
 
-#include <raylib/raylib.h>     // Declares module functions
+#include "raylib.h"     // Declares module functions
 
-
+// Check if config flags have been externally provided on compilation line
+#if !defined(EXTERNAL_CONFIG_FLAGS)
+    #include "config.h"         // Defines module configuration flags
+#endif
 
 #if defined(SUPPORT_MODULE_RSHAPES)
 
-#include <raylib/rlgl.h>       // OpenGL abstraction layer to OpenGL 1.1, 2.1, 3.3+ or ES2
+#include "rlgl.h"       // OpenGL abstraction layer to OpenGL 1.1, 2.1, 3.3+ or ES2
 
 #include <math.h>       // Required for: sinf(), asinf(), cosf(), acosf(), sqrtf(), fabsf()
 #include <float.h>      // Required for: FLT_EPSILON
@@ -76,8 +79,8 @@
 //----------------------------------------------------------------------------------
 // Global Variables Definition
 //----------------------------------------------------------------------------------
-Texture2D texShapes = { 1, 1, 1, 1, 7 };                // Texture used on shapes drawing (white pixel loaded by rlgl)
-Rectangle texShapesRec = { 0.0f, 0.0f, 1.0f, 1.0f };    // Texture source rectangle used on shapes drawing
+static Texture2D texShapes = { 1, 1, 1, 1, 7 };     // Texture used on shapes drawing (white pixel loaded by rlgl)
+static Rectangle texShapesRec = { 0.0f, 0.0f, 1.0f, 1.0f };    // Texture source rectangle used on shapes drawing
 
 //----------------------------------------------------------------------------------
 // Module specific Functions Declaration
@@ -804,6 +807,30 @@ void DrawRectangleGradientEx(Rectangle rec, Color topLeft, Color bottomLeft, Col
 // but it solves another issue: https://github.com/raysan5/raylib/issues/3884
 void DrawRectangleLines(int posX, int posY, int width, int height, Color color)
 {
+    Matrix mat = rlGetMatrixModelview();
+    float zoomFactor = 0.5f/mat.m0;
+    rlBegin(RL_LINES);
+        rlColor4ub(color.r, color.g, color.b, color.a);
+        rlVertex2f((float)posX - zoomFactor, (float)posY);
+        rlVertex2f((float)posX + (float)width + zoomFactor, (float)posY);
+
+        rlVertex2f((float)posX + (float)width, (float)posY - zoomFactor);
+        rlVertex2f((float)posX + (float)width, (float)posY + (float)height + zoomFactor);
+
+        rlVertex2f((float)posX + (float)width + zoomFactor, (float)posY + (float)height);
+        rlVertex2f((float)posX - zoomFactor, (float)posY + (float)height);
+
+        rlVertex2f((float)posX, (float)posY + (float)height + zoomFactor);
+        rlVertex2f((float)posX, (float)posY - zoomFactor);
+    rlEnd();
+/*
+// Previous implementation, it has issues... but it does not require view matrix...
+#if defined(SUPPORT_QUADS_DRAW_MODE)
+    DrawRectangle(posX, posY, width, 1, color);
+    DrawRectangle(posX + width - 1, posY + 1, 1, height - 2, color);
+    DrawRectangle(posX, posY + height - 1, width, 1, color);
+    DrawRectangle(posX, posY + 1, 1, height - 2, color);
+#else
     rlBegin(RL_LINES);
         rlColor4ub(color.r, color.g, color.b, color.a);
         rlVertex2f((float)posX, (float)posY);
@@ -818,6 +845,8 @@ void DrawRectangleLines(int posX, int posY, int width, int height, Color color)
         rlVertex2f((float)posX + 1, (float)posY + (float)height);
         rlVertex2f((float)posX + 1, (float)posY + 1);
     rlEnd();
+//#endif
+*/
 }
 
 // Draw rectangle outline with extended parameters
@@ -825,8 +854,8 @@ void DrawRectangleLinesEx(Rectangle rec, float lineThick, Color color)
 {
     if ((lineThick > rec.width) || (lineThick > rec.height))
     {
-        if (rec.width > rec.height) lineThick = rec.height/2;
-        else if (rec.width < rec.height) lineThick = rec.width/2;
+        if (rec.width >= rec.height) lineThick = rec.height/2;
+        else if (rec.width <= rec.height) lineThick = rec.width/2;
     }
 
     // When rec = { x, y, 8.0f, 6.0f } and lineThick = 2, the following
@@ -1647,7 +1676,7 @@ void DrawSplineLinear(const Vector2 *points, int pointCount, float thick, Color 
         prevNormal = normal;
     }
 
-#else   // !SUPPORT_SPLINE_MITTERS
+#else   // !SUPPORT_SPLINE_MITERS
 
     Vector2 delta = { 0 };
     float length = 0.0f;
@@ -2381,5 +2410,7 @@ static float EaseCubicInOut(float t, float b, float c, float d)
 
     return result;
 }
+
+#include "rshapes_compat.c"
 
 #endif      // SUPPORT_MODULE_RSHAPES

@@ -109,7 +109,8 @@ RAYLIB_MODULE_RAYGUI_PATH ?= $(RAYLIB_SRC_PATH)/../../raygui/src
 # Use external GLFW library instead of rglfw module
 USE_EXTERNAL_GLFW     ?= FALSE
 
-# Enable support for both Wayland and X11 by default on Linux when using GLFW
+# Enable support for X11 by default on Linux when using GLFW
+# NOTE: Wayland is disabled by default, only enable if you are sure
 GLFW_LINUX_ENABLE_WAYLAND  ?= TRUE
 GLFW_LINUX_ENABLE_X11      ?= TRUE
 
@@ -117,6 +118,8 @@ GLFW_LINUX_ENABLE_X11      ?= TRUE
 # WARNING: Library is not included in raylib, it MUST be configured by users
 SDL_INCLUDE_PATH      ?= $(RAYLIB_SRC_PATH)/external/SDL2/include
 SDL_LIBRARY_PATH      ?= $(RAYLIB_SRC_PATH)/external/SDL2/lib
+SDL_LIBRARIES         ?= -lSDL2 -lSDL2main
+
 
 # Determine if the file has root access (only required to install raylib)
 # "whoami" prints the name of the user that calls him (so, if it is the root user, "whoami" prints "root")
@@ -180,11 +183,11 @@ endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_WEB)
     ifeq ($(PLATFORM_OS), WINDOWS)
         # Emscripten required variables
-        EMSDK_PATH         ?= C:/emsdk
+        EMSDK_PATH         ?= C:/raylib/emsdk
         EMSCRIPTEN_PATH    ?= $(EMSDK_PATH)/upstream/emscripten
         CLANG_PATH         := $(EMSDK_PATH)/upstream/bin
-        PYTHON_PATH        := $(EMSDK_PATH)/python/3.9.2-1_64bit
-        NODE_PATH          := $(EMSDK_PATH)/node/14.15.5_64bit/bin
+        PYTHON_PATH        := $(EMSDK_PATH)/python/3.9.2-nuget_64bit
+        NODE_PATH          := $(EMSDK_PATH)/node/20.18.0_64bit/bin
         export PATH        := $(EMSDK_PATH);$(EMSCRIPTEN_PATH);$(CLANG_PATH);$(NODE_PATH);$(PYTHON_PATH);C:/raylib/MinGW/bin;$(PATH)
     endif
 endif
@@ -229,8 +232,8 @@ ifeq ($(TARGET_PLATFORM),PLATFORM_ANDROID)
 endif
 
 # Define raylib graphics api depending on selected platform
+# NOTE: By default use OpenGL 3.3 on desktop platforms
 ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_GLFW)
-    # By default use OpenGL 3.3 on desktop platforms
     GRAPHICS ?= GRAPHICS_API_OPENGL_33
     #GRAPHICS = GRAPHICS_API_OPENGL_11      # Uncomment to use OpenGL 1.1
     #GRAPHICS = GRAPHICS_API_OPENGL_21      # Uncomment to use OpenGL 2.1
@@ -238,11 +241,9 @@ ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_GLFW)
     #GRAPHICS = GRAPHICS_API_OPENGL_ES2     # Uncomment to use OpenGL ES 2.0 (ANGLE)
 endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_SDL)
-    # By default use OpenGL 3.3 on desktop platform with SDL backend
     GRAPHICS ?= GRAPHICS_API_OPENGL_33
 endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_RGFW)
-    # By default use OpenGL 3.3 on desktop platforms
     GRAPHICS ?= GRAPHICS_API_OPENGL_33
     #GRAPHICS = GRAPHICS_API_OPENGL_11      # Uncomment to use OpenGL 1.1
     #GRAPHICS = GRAPHICS_API_OPENGL_21      # Uncomment to use OpenGL 2.1
@@ -256,7 +257,7 @@ endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_WEB)
     # On HTML5 OpenGL ES 2.0 is used, emscripten translates it to WebGL 1.0
     GRAPHICS = GRAPHICS_API_OPENGL_ES2
-    #GRAPHICS = GRAPHICS_API_OPENGL_ES3      # Uncomment to use ES3/WebGL2 (preliminary support).
+    #GRAPHICS = GRAPHICS_API_OPENGL_ES3
 endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_ANDROID)
     # By default use OpenGL ES 2.0 on Android
@@ -461,7 +462,7 @@ CFLAGS += $(CUSTOM_CFLAGS)
 # Define include paths for required headers: INCLUDE_PATHS
 # NOTE: Several external required libraries (stb and others)
 #------------------------------------------------------------------------------------------------
-INCLUDE_PATHS = -I. 
+INCLUDE_PATHS = -I. $(EXTRA_INCLUDE_PATHS)
 
 # Define additional directories containing required header files
 ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_GLFW)
@@ -587,7 +588,7 @@ ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_SDL)
             LDLIBS += -lX11
         endif
     endif
-    LDLIBS += -lSDL2 -lSDL2main
+    LDLIBS += $(SDL_LIBRARIES)
 endif
 ifeq ($(TARGET_PLATFORM),PLATFORM_DESKTOP_RGFW)
     ifeq ($(PLATFORM_OS),WINDOWS)
@@ -725,7 +726,7 @@ endif
 rcore.o : platforms/*.c
 
 # Compile core module
-rcore.o : rcore.c raylib.h rlgl.h utils.h raymath.h rcamera.h rgestures.h
+rcore.o : rcore.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h utils.h ../../../../include/raylib/raymath.h rcamera.h rgestures.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile rglfw module
@@ -733,15 +734,15 @@ rglfw.o : rglfw.c
 	$(CC) $(GLFW_OSX) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile shapes module
-rshapes.o : rshapes.c raylib.h rlgl.h
+rshapes.o : rshapes.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile textures module
-rtextures.o : rtextures.c raylib.h rlgl.h utils.h
+rtextures.o : rtextures.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile text module
-rtext.o : rtext.c raylib.h utils.h
+rtext.o : rtext.c ../../../../include/raylib/raylib.h utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile utils module
@@ -749,11 +750,11 @@ utils.o : utils.c utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile models module
-rmodels.o : rmodels.c raylib.h rlgl.h raymath.h
+rmodels.o : rmodels.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h ../../../../include/raylib/raymath.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile audio module
-raudio.o : raudio.c raylib.h
+raudio.o : raudio.c ../../../../include/raylib/raylib.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile raygui module

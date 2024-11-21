@@ -482,3 +482,4 @@ void _glfwUpdateGamepadGUIDCocoa(char* guid)
 }
 
 #endif // _GLFW_COCOA
+

@@ -3,13 +3,14 @@
 
 #include <functional>
 #include <string>
+#include <raylib/config.h>
 
 #include <magique/util/RayUtils.h>
 #include <magique/core/Draw.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/globals/EngineConfig.h"
-#include "external/raylib/src/coredata.h"
+#include "external/raylib-compat/rcore_compat.h"
 
 namespace magique
 {
@@ -150,7 +151,7 @@ namespace magique
                     refreshSuggestions();
 
                 // Consume key state
-                std::memset(CORE.Input.Keyboard.currentKeyState, 0, MAX_KEYBOARD_KEYS);
+                std::memset(GetCurrentKeyState(), 0, MAX_KEYBOARD_KEYS);
                 blinkCounter++;
             }
         }

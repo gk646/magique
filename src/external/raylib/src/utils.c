@@ -29,11 +29,11 @@
 *
 **********************************************************************************************/
 
-#include <raylib/raylib.h>                     // WARNING: Required for: LogType enum
+#include "raylib.h"                     // WARNING: Required for: LogType enum
 
 // Check if config flags have been externally provided on compilation line
 #if !defined(EXTERNAL_CONFIG_FLAGS)
-    #include <raylib/config.h>                 // Defines module configuration flags
+    #include "config.h"                 // Defines module configuration flags
 #endif
 
 #include "utils.h"
@@ -75,7 +75,6 @@ void SetLoadFileDataCallback(LoadFileDataCallback callback) { loadFileData = cal
 void SetSaveFileDataCallback(SaveFileDataCallback callback) { saveFileData = callback; }  // Set custom file data saver
 void SetLoadFileTextCallback(LoadFileTextCallback callback) { loadFileText = callback; }  // Set custom file text loader
 void SetSaveFileTextCallback(SaveFileTextCallback callback) { saveFileText = callback; }  // Set custom file text saver
-
 
 #if defined(PLATFORM_ANDROID)
 static AAssetManager *assetManager = NULL;          // Android assets manager pointer

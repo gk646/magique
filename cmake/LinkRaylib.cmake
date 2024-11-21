@@ -1,4 +1,3 @@
-
 # ----------------------------------------------------------------------
 # Add raylib
 # ----------------------------------------------------------------------
@@ -11,9 +10,9 @@ set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
 
 if (UNIX)
+    set(GLFW_BUILD_X11 ON) # Use wayland per default
     set(GLFW_BUILD_WAYLAND ON) # Use wayland per default
 endif (UNIX)
-
 
 message(STATUS "\n-- ------------- raylib ------------------")
 add_subdirectory(src/external/raylib)
@@ -34,7 +33,8 @@ elseif (MSVC)
 endif()
 
 # Includes for raylib
-target_include_directories(raylib PRIVATE ${MAGIQUE_PUBLIC_INCLUDE})
+target_include_directories(raylib PRIVATE ${MAGIQUE_PUBLIC_INCLUDE}/raylib src/external/raylib-compat)
+target_compile_definitions(raylib PRIVATE SUPPORT_CUSTOM_FRAME_CONTROL)
 
 # ----------------------------------------------------------------------
 # Link raylib

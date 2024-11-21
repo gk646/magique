@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_MAIN_THREAD_UTIL_H
 #define MAGIQUE_MAIN_THREAD_UTIL_H
 
-inline void SetTargetFPS(const int fps) // raylib function implemented here
+void SetTargetFPS(const int fps) // raylib function implemented here
 {
     auto& config = magique::global::ENGINE_CONFIG.timing;
     if (fps < 1)
@@ -48,7 +48,7 @@ int GetFPS()
 }
 
 // Get time in seconds for last frame drawn (delta time)
-inline float GetFrameTime()
+float GetFrameTime()
 {
     const auto& perf = magique::global::PERF_DATA;
     return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;

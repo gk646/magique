@@ -8,20 +8,20 @@ namespace magique
 
     inline bool HasKeyEventHappened()
     {
-        if (memcmp(CORE.Input.Keyboard.currentKeyState, emptyKeys, MAX_KEYBOARD_KEYS) != 0)
+        if (memcmp(GetCurrentKeyState(), emptyKeys, MAX_KEYBOARD_KEYS) != 0)
         {
             return true;
         }
-        return memcmp(CORE.Input.Keyboard.currentKeyState, CORE.Input.Keyboard.previousKeyState, MAX_KEYBOARD_KEYS) != 0;
+        return memcmp(GetCurrentKeyState(), GetPreviousKeyState(), MAX_KEYBOARD_KEYS) != 0;
     }
 
     inline bool HasMouseEventHappened()
     {
-        if (memcmp(CORE.Input.Mouse.currentButtonState, emptyButtons, MAX_MOUSE_BUTTONS) != 0)
+        if (memcmp(GetCurrentButtonState(), emptyButtons, MAX_MOUSE_BUTTONS) != 0)
         {
             return true;
         }
-        return memcmp(CORE.Input.Mouse.currentButtonState, CORE.Input.Mouse.previousButtonState, MAX_MOUSE_BUTTONS) != 0;
+        return memcmp(GetCurrentButtonState(), GetPreviousButtonState(), MAX_MOUSE_BUTTONS) != 0;
     }
 
     inline void InputSystem(const entt::registry& registry)
@@ -37,8 +37,9 @@ namespace magique
 
         const bool invokeKey = GetKeyPressed() != 0 || GetCharPressed() != 0 || HasKeyEventHappened();
 
-        const bool invokeMouse = CORE.Input.Mouse.previousPosition.x != CORE.Input.Mouse.currentPosition.x ||
-            CORE.Input.Mouse.previousPosition.y != CORE.Input.Mouse.currentPosition.y || HasMouseEventHappened();
+
+        const bool invokeMouse = GetPreviousMousePositionX() != GetCurrentMousePositionX() ||
+            GetPreviousMousePositionY() != GetCurrentMousePositionY() || HasMouseEventHappened();
 
         if (invokeKey && invokeMouse)
         {

@@ -1,8 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <random>
+#include <random> // Needed for non-deterministic hardware randomness
+#include <cxstructs/SmallVector.h>
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
-#include <cxstructs/SmallVector.h>
 
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
@@ -17,9 +17,6 @@
 #include <magique/persistence/container/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
-
-#include "external/raylib/src/external/glad.h"
-#include "external/raylib/src/coredata.h"
 
 #include "internal/globals/EngineData.h"
 #include "internal/globals/EngineConfig.h"
@@ -46,6 +43,9 @@
 #include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
+#include "external/raylib-compat/rcore_compat.h"
+#include "external/raylib/src/external/glad.h"
+
 #include "internal/systems/StaticCollisionSystem.h"
 #include "internal/systems/DynamicCollisionSystem.h"
 #include "internal/systems/InputSystem.h"
@@ -56,9 +56,6 @@
 #include "core/headers/Updater.h"
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"
-
-CoreData CORE = {0};
-rlglData RLGL = {0};
 
 // Note: All includes are pulled out topside for clarity
 // Here the whole render and update loops happen
@@ -72,7 +69,7 @@ namespace magique
         madeGame = true;
 
         // Setup raylib
-        SetTraceLogLevel(LOG_WARNING);
+        //SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, name);
         InitAudioDevice();
@@ -89,7 +86,7 @@ namespace magique
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
 #if !defined(MAGIQUE_DEBUG) && MAGIQUE_LOGGING == 1
-    LOG_WARNING("Full Logging enabled in Release mode. To disable set MAGIQUE_LOGGING 0 in config.h");
+        LOG_WARNING("Full Logging enabled in Release mode. To disable set MAGIQUE_LOGGING 0 in config.h");
 #endif
     }
 

@@ -65,15 +65,15 @@ namespace magique
         {
             for (auto& t : tracks)
             {
-                if (IsAudioStreamEqual(t.music.stream, music.stream))
-                {
-                    t.markedForRemoval = true;
-                    if (!t.fade)
+                if (t.music.stream.buffer == music.stream.buffer)
                     {
-                        t.currentVolume = 0;
+                        t.markedForRemoval = true;
+                        if (!t.fade)
+                        {
+                            t.currentVolume = 0;
+                        }
+                        return;
                     }
-                    return;
-                }
             }
         }
 
@@ -121,17 +121,17 @@ namespace magique
             }
 
             // Check if sound2D is done
-                for (auto it = sounds2D.begin(); it != sounds2D.end();)
+            for (auto it = sounds2D.begin(); it != sounds2D.end();)
+            {
+                if (!::IsSoundPlaying(it->sound))
                 {
-                    if (!::IsSoundPlaying(it->sound))
-                    {
-                        it = sounds2D.erase(it);
-                    }
-                    else
-                    {
-                        ++it;
-                    }
+                    it = sounds2D.erase(it);
                 }
+                else
+                {
+                    ++it;
+                }
+            }
 
             // Update music buffer and remove if done
             for (auto it = tracks.begin(); it != tracks.end();)

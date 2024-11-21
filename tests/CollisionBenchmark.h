@@ -14,7 +14,8 @@
 // Collision Benchmark
 //-----------------------------------------------
 // .....................................................................
-// Just some anecdotal average tick times when running for around 5s
+// With 4 threads and 50k dynamic entities
+// Just some anecdotal average tick times when running for 5s (300 ticks)
 // Time: 18.9ms | Start
 // Time: 17.5ms | Added early return bounding-box check to CircleToQuadrilateral()
 // Time: 17.1ms | Added early return bounding-box check to CircleToCapsule()
@@ -27,7 +28,7 @@
 // Time: 6.7 ms | Optimized ECS access further using groups
 // Fixed update area being wrong -> more objects are loaded now
 // Time: 9.1 ms | New Baseline
-// Time: 8.9 ms | Removed EnTT asserts in release builds
+// Time: 8.9 ms | Removed EnTT asserts in release builds (Edit: i just didnt define NDEBUG ...)
 // Time: 8.5 ms | Removed immediate collision resolving - its accumulated per user call
 // Time: 9.3 ms | Added static collisions
 // Time: 8.6 ms | Added power of two optimization

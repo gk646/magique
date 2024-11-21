@@ -16,7 +16,7 @@ namespace magique
     {
         for (auto it = tracks.begin(); it != tracks.end();)
         {
-            if (IsAudioStreamEqual(music.stream, it->stream))
+            if (music.stream.buffer == it->stream.buffer)
             {
                 it = tracks.erase(it);
             }

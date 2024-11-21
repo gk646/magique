@@ -1,3 +1,3 @@
-cleaned up version of the cxstructs library
+Cleaned up version of the `cxstructs` library
 
-only contains headers that are actually used
+Only contains headers that are actually used

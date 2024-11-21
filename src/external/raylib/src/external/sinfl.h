@@ -170,7 +170,7 @@ extern int zsinflate(void *out, int cap, const void *in, int size);
 #endif
 
 static int
-sinfl_bsr(unsigned long n) {
+sinfl_bsr(unsigned n) {
 #if defined(_MSC_VER) && !defined(__clang__)
   _BitScanReverse(&n, n);
   return n;
@@ -192,7 +192,7 @@ sinfl_copy64(unsigned char **dst, unsigned char **src) {
   memcpy(*dst, *src, 8);    // @raysan5
   *dst += 8, *src += 8;
 }
-inline unsigned char*
+static unsigned char*
 sinfl_write64(unsigned char *dst, unsigned long long w) {
   memcpy(dst, &w, 8);
   return dst + 8;
@@ -626,3 +626,4 @@ zsinflate(void *out, int cap, const void *mem, int size) {
   }
 }
 #endif
+

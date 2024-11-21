@@ -13,10 +13,10 @@ namespace magique::renderer
 
     inline void StartTick()
     {
-        auto& rlglState = RLGL.State;
-        BeginDrawing();
-        rlglState.prevDrawCalls = rlglState.drawCalls;
-        rlglState.drawCalls = 0;
+        rlLoadIdentity();                               // Reset current matrix (modelview)
+        rlMultMatrixf(MatrixToFloat(GetScreenScale())); // Apply screen scaling
+
+        SwapDrawCalls();
         AssignCameraPosition();
         global::UI_DATA.updateDrawTick();
     }
@@ -31,6 +31,8 @@ namespace magique::renderer
             perfData.draw();
         }
         EndDrawing();
+        SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
+        PollInputEvents();
         const double frameTime = GetTime() - starTime;
         perfData.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
         return frameTime;

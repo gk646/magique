@@ -33,7 +33,6 @@ endif()
 # Sets compiler flags and language standard
 include(CompilerFlags)
 
-
 if (UNIX AND NOT APPLE)
   if (NOT GLFW_BUILD_WAYLAND AND NOT GLFW_BUILD_X11)
     MESSAGE(FATAL_ERROR "Cannot disable both Wayland and X11")
