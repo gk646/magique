@@ -2,11 +2,10 @@
 #define MAGIQUE_COMMANDLINE_H
 
 #include <string>
-#include <magique/fwd.hpp>
 #include <magique/internal/PlatformIncludes.h>
 
 //===============================================
-// CommandLine Module
+// Console Module
 //===============================================
 // .....................................................................
 // This module allow to register dynamic command that can be executed in game.
@@ -27,12 +26,13 @@ namespace magique
     // Will replace the existing command with the same name with a warning (if exists)
     void RegisterCommand(const std::string& name, const std::string& description, const std::function<void()>& func);
 
-    // Removes the command
-    void UnRegisterCommand(const std::string& name);
+    // Returns true if the command with the given name is successfully removed
+    bool UnRegisterCommand(const std::string& name);
 
     //================= CONTROL =================//
 
     // Sets the key which opens the command line
+    // Note: Can be set to an invalid key to "lock" console
     // Default: KEY_PAGE_UP
     void SetCommandLineKey(int key);
 

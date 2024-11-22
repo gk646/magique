@@ -60,7 +60,7 @@ namespace magique
         // Erases the storage with the given id
         void erase(ConfigID id);
 
-        // Erases all storages
+        // Erases all storage slots
         void clear();
 
     private:

@@ -77,7 +77,7 @@
 #define MAX_FILEPATH_CAPACITY        8192       // Maximum file paths capacity
 #define MAX_FILEPATH_LENGTH          4096       // Maximum length for filepaths (Linux PATH_MAX default value)
 
-#define MAX_KEYBOARD_KEYS             512       // Maximum number of keyboard keys supported
+#define MAX_KEYBOARD_KEYS             350       // Maximum number of keyboard keys supported
 #define MAX_MOUSE_BUTTONS               8       // Maximum number of mouse buttons supported
 #define MAX_GAMEPADS                    4       // Maximum number of gamepads supported
 #define MAX_GAMEPAD_AXIS                8       // Maximum number of axis supported (per gamepad)
@@ -103,12 +103,12 @@
 
 #define RL_SUPPORT_MESH_GPU_SKINNING           1      // GPU skinning, comment if your GPU does not support more than 8 VBOs
 
-//#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096    // Default internal render batch elements limits
+#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096      // Default internal render batch elements limits
 #define RL_DEFAULT_BATCH_BUFFERS               1      // Default number of batch buffers (multi-buffering)
-#define RL_DEFAULT_BATCH_DRAWCALLS           256      // Default number of batch draw calls (by state changes: mode, texture)
+#define RL_DEFAULT_BATCH_DRAWCALLS           512      // Default number of batch draw calls (by state changes: mode, texture)
 #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS     4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
 
-#define RL_MAX_MATRIX_STACK_SIZE              32      // Maximum size of internal Matrix stack
+#define RL_MAX_MATRIX_STACK_SIZE              16      // Maximum size of internal Matrix stack
 
 #define RL_MAX_SHADER_LOCATIONS               32      // Maximum number of shader locations supported
 

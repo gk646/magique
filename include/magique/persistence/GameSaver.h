@@ -1,4 +1,6 @@
-#ifndef SAVELOADER_H
-#define SAVELOADER_H
+#ifndef MAGIQUE_GAMESAVER_H
+#define MAGIQUE_GAMESAVER_H
 
-#endif //SAVELOADER_H
+
+
+#endif //MAGIQUE_GAMESAVER_H

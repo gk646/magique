@@ -14,9 +14,9 @@ namespace magique
 {
 
     // Returns the length of the text up to the specified index
-    float MeasureTextUpTo(char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
+    float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
 
-    // Returns a random float using raylibs GetRandomValue() - min and max included
+    // Returns a random float using raylib's GetRandomValue() - min and max included
     float GetRandomFloat(float min, float max);
 
     // Returns the top left point to center something with the given width and height within the rectangle 'within'

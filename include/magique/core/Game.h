@@ -38,7 +38,7 @@ namespace magique
         // Stops the game
         void shutDown();
 
-        //=================LIFE CYCLE=================//
+        //================= LIFE CYCLE =================//
 
         // Called once on startup - register your loaders here
         // This is where you access your assets that are loaded from the asset image

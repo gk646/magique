@@ -1,9 +1,8 @@
-#ifndef COMMANDLINEDATA_H
-#define COMMANDLINEDATA_H
+#ifndef MAGIQUE_CONSOLE_DATA_H
+#define MAGIQUE_CONSOLE_DATA_H
 
 #include <functional>
 #include <string>
-#include <raylib/config.h>
 
 #include <magique/util/RayUtils.h>
 #include <magique/core/Draw.h>
@@ -21,7 +20,7 @@ namespace magique
         std::function<void()> func;
     };
 
-    struct CommandLineData final
+    struct ConsoleData final
     {
         vector<CommandInfo> commands;
         vector<std::string> history;
@@ -114,14 +113,13 @@ namespace magique
                 else if (IsKeyPressed(KEY_TAB) && suggestions.size() == 1)
                 {
                     input = suggestions[0]->name;
-                    cursorPos =inputSize;
+                    cursorPos = inputSize;
                 }
-                else if ((IsKeyPressed(KEY_UP) || IsKeyPressedRepeat(KEY_UP)) &&
-                         historyPos < history.size() - 1)
+                else if ((IsKeyPressed(KEY_UP) || IsKeyPressedRepeat(KEY_UP)) && historyPos < history.size() - 1)
                 {
                     ++historyPos;
                     input = history[history.size() - 1 - historyPos];
-                    cursorPos =inputSize;
+                    cursorPos = inputSize;
                 }
                 else if ((IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)) && historyPos > -1)
                 {
@@ -199,8 +197,9 @@ namespace magique
 
     namespace global
     {
-        inline CommandLineData CMD_DATA{};
+        inline ConsoleData CONSOLE_DATA{};
     }
+
 } // namespace magique
 
-#endif //COMMANDLINEDATA_H
+#endif //MAGIQUE_CONSOLE_DATA_H

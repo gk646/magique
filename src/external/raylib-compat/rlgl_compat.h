@@ -7,7 +7,7 @@ int GetPrevDrawCalls();
 
 int GetDrawCalls();
 
-void SwapDrawCalls();
+void ResetDrawCallCount();
 
 }
 

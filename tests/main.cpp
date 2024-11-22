@@ -6,8 +6,8 @@
 // .....................................................................
 
 // Tests
-// #include "CollisionBenchmark.h"
-#include "CollisionTest.h"
+ #include "CollisionBenchmark.h"
+//#include "CollisionTest.h"
 //#include "HashGridTest.h"
 
 // Examples

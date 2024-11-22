@@ -1,14 +1,14 @@
 # Function to copy
 function(copy_shared_library ...)
     # Iterate over each item in the arguments
-    foreach(source IN LISTS ARGV)
+    foreach (source IN LISTS ARGV)
         add_custom_command(TARGET magique POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${source}"
                 ${CMAKE_BINARY_DIR}
                 COMMENT "Copied ${source} to the root of the build directory. Adjust if your executable is located elsewhere."
         )
-    endforeach()
+    endforeach ()
     message(STATUS "Copied networking libs to the root of the build directory. Adjust if your executable is located elsewhere.")
 endfunction()
 
@@ -52,7 +52,7 @@ if (WIN32)
         target_compile_options(magique PUBLIC /Zc:preprocessor)
     endif ()
 elseif (UNIX)
-    #
+    target_compile_options(magique PUBLIC -fno-rtti) #
 else ()
     #
 endif ()

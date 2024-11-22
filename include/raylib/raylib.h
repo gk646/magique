@@ -690,11 +690,6 @@ typedef enum {
     KEY_VOLUME_DOWN     = 25        // Key: Android volume down button
 } KeyboardKey;
 
-// Add backwards compatibility support for deprecated names
-#define MOUSE_LEFT_BUTTON   MOUSE_BUTTON_LEFT
-#define MOUSE_RIGHT_BUTTON  MOUSE_BUTTON_RIGHT
-#define MOUSE_MIDDLE_BUTTON MOUSE_BUTTON_MIDDLE
-
 // Mouse buttons
 typedef enum {
     MOUSE_BUTTON_LEFT    = 0,       // Mouse button left

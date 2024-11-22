@@ -43,8 +43,7 @@ namespace magique
 
     //================= UTIL =================//
 
-    // Returns a temporary pointer to the local ip as a string
-    // Note: Needs to be copied if you want to save it!
+    // Returns a pointer to the local ip as a string - always save to access and cached after the first call
     // Failure: returns nullptr if it's not possible to retrieve the ip
     const char* GetLocalIP();
 

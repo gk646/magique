@@ -1,3 +1,6 @@
+#ifndef MAGIQUE_UPDATER_H
+#define MAGIQUE_UPDATER_H
+
 namespace magique::updater
 {
     inline void StartTick()
@@ -8,11 +11,11 @@ namespace magique::updater
     inline double EndTick(const double startTime)
     {
         const double tickTime = GetTime() - startTime;
-        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * 1'000'000'000.0F));
+        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * SEC_TO_NANOS));
         return tickTime;
     }
 
-    inline double Tick(const double startTime, entt::registry& reg, Game& game)
+    inline double Tick(const double startTime, const entt::registry& reg, Game& game)
     {
         StartTick();
         {
@@ -25,3 +28,5 @@ namespace magique::updater
     }
 
 } // namespace magique::updater
+
+#endif // MAGIQUE_UPDATER_H

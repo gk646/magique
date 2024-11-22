@@ -14,10 +14,10 @@
 //  - All task of a higher priority are finished before any task with a lower priority
 //  - However there's no guarantee about the order for tasks of the same priority
 //
-// For ANY kind of gpu access (texture loading) you HAVE to specify MAIN_THREAD.
-// For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
-// Loading dependencies and order can easily be created by specifying a lower priority for tasks that need data from previous tasks
+// Load dependencies and ordering can easily be created by specifying a lower priority for the depending tasks
 // Note: This loader cleans itself up after loading all tasks and takes ownership of pointers passed
+// IMPORTANT: For ANY kind of gpu access (texture loading) you HAVE to specify MAIN_THREAD.
+//            For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
 // .....................................................................
 
 namespace magique
@@ -33,7 +33,7 @@ namespace magique
         // impact   - an absolute estimate of the time needed to finish the task
         void registerTask(ITask<AssetContainer>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
-        // Registers a new task from a simple loading function - for smaller and less complex loading
+        // Registers a simple loading function - for smaller and less complex loading
         // func     - a loading func (lambda)
         // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
