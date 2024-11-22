@@ -6,15 +6,12 @@ namespace magique
 {
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
-        addLambdaTask(
-            [=](AssetContainer& assets)
-            {
-                LoadAssetImage(assetPath, assets, encryptionKey);
-            },
-            INTERNAL, BACKGROUND_THREAD, 0);
+
+        addLambdaTask([=](AssetContainer& assets) { LoadAssetImage(assetPath, assets, encryptionKey); }, INTERNAL,
+                      BACKGROUND_THREAD, 0, true);
     }
 
-    bool AssetLoader::step() { return stepLoop(assets); }
+    bool AssetLoader::step() { return stepMixed(assets); }
 
     bool BasicChecks(const void* func, const PriorityLevel pl, const int impact)
     {
@@ -45,7 +42,8 @@ namespace magique
         addTask(task, pl, thread, impact);
     }
 
-    void AssetLoader::registerTask(const AssetLoadFunc& func, const ThreadType thread, const PriorityLevel pl, const int impact)
+    void AssetLoader::registerTask(const AssetLoadFunc& func, const ThreadType thread, const PriorityLevel pl,
+                                   const int impact)
     {
         if (!BasicChecks(&func, pl, impact))
             return;

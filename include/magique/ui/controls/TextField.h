@@ -57,6 +57,9 @@ namespace magique
         [[nodiscard]] const char* getCText() const;
         [[nodiscard]] const std::string& getText() const;
 
+        // Sets the field text to the provided string
+        void setText(const char* newText);
+
         // Returns true if the text has changed since last time this method was called - resets the changed status
         bool pollTextHasChanged();
 

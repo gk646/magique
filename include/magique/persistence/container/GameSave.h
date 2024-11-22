@@ -23,17 +23,17 @@ enum class StorageID : int; // User implemented to identify stored information
 
 namespace magique
 {
+
+    // Persists the given save to disk
+    // Failure: Returns false
+    bool SaveToDisk(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+
+    // Loads an existing save from disk or creates a one at the given path
+    // Failure: Returns false
+    bool LoadFromDisk(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+
     struct GameSave final
     {
-        //================= PERSISTENCE =================//
-
-        // Persists the given save to disk
-        // Failure: Returns false
-        static bool Save(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
-
-        // Loads a save from disk or create a new game save
-        // Failure: GameSave.data will be null
-        static GameSave Load(const char* filePath, uint64_t encryptionKey = 0);
 
         //================= SAVING =================//
         // Note: All data is copied on call
@@ -94,6 +94,8 @@ namespace magique
         void assignDataImpl(StorageID id, const void* data, int bytes, StorageType type);
         std::vector<internal::GameSaveStorageCell> storage; // Internal data holder
         bool isPersisted = false;                           // If the game save has been saved to disk
+        friend bool SaveToDisk(GameSave&, const char*, uint64_t);
+        friend bool LoadFromDisk(GameSave&, const char*, uint64_t);
     };
 
 } // namespace magique

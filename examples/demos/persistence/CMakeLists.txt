@@ -10,7 +10,7 @@ add_executable(persistence ${DEMO_FILES})
 add_subdirectory(../../.. magique)
 
 # Don't forget to link against magique
-target_link_libraries(persistence PUBLIC magique)
+target_link_libraries(persistence PRIVATE magique)
 
 # OPTIONAL - Add src include path for clean includes
 target_include_directories(persistence PRIVATE src)

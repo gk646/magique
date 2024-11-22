@@ -57,7 +57,8 @@ namespace magique
     // Default: true
     void SetEnableCollisionHandling(bool value);
 
-    // Returns the game configuration
+    // Returns the global GameConfig instance
+    // Note: Only valid to call inside and after Game::onStartup() - will crash earlier
     GameConfig& GetGameConfig();
 
     //================= DATA ACCESS =================//

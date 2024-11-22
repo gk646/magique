@@ -21,7 +21,6 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - Give utilities to generate maps based on manually created room cells
 - Could use wave function collapse
 
-
 **Simple Minimap**
 - Minimap drawing given a tilemap
 - Custom color mappings can be set
@@ -49,7 +48,21 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
   - Shadows:
   - Collision Detection:
 
+
+### UI
+
+**More Controls**
+- ScrollPane
+- DropDown
+
+
+**Better Default Style**
+- Make a consistent default color palette
+
+
 ### Misc
 
-
-### Buildsystem
+**Modernize**
+- Review TaskExecutor and clean it up
+  - Spit up tasks to all threads
+  - Make internal handling easier and cleaner

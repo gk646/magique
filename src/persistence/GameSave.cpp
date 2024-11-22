@@ -56,7 +56,7 @@ namespace magique
 
     //----------------- PERSISTENCE -----------------//
 
-    bool GameSave::Save(GameSave& save, const char* filePath, const uint64_t encryptionKey)
+    bool SaveToDisk(GameSave& save, const char* filePath, const uint64_t encryptionKey)
     {
         int totalSize = 0;
         for (const auto& cell : save.storage)
@@ -108,15 +108,17 @@ namespace magique
         return true;
     }
 
-    GameSave GameSave::Load(const char* filePath, const uint64_t encryptionKey)
+    bool LoadFromDisk(GameSave& save, const char* filePath, const uint64_t encryptionKey)
     {
-        GameSave save;
+        MAGIQUE_ASSERT(save.isPersisted == false, "Can only load from empty save!");
+        MAGIQUE_ASSERT(save.storage.empty(), "Can only load from empty save!");
+
         save.isPersisted = true; // The loaded gamesave is not expected to be saved (?)
         FILE* file = fopen(filePath, "rb");
         if (file == nullptr)
         {
             LOG_WARNING("File does not exist. Will be created once you save: %s", filePath);
-            return save;
+            return false;
         }
         auto constexpr headerSize = static_cast<int>(std::char_traits<char>::length(FILE_HEADER));
 
@@ -131,7 +133,7 @@ namespace magique
         {
             LOG_ERROR("Malformed gamesave file: %s", filePath);
             fclose(file);
-            return save;
+            return false;
         }
 
         auto* data = new char[totalSize];
@@ -172,7 +174,7 @@ namespace magique
         fclose(file);
         delete[] data;
         LOG_INFO("Successfully loaded gamesave: %s | Size: %.2fkb", filePath, static_cast<float>(totalSize) / 1000.0F);
-        return save;
+        return true;
     }
 
     //----------------- SAVING -----------------//
@@ -194,7 +196,7 @@ namespace magique
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]
         {
-            LOG_ERROR("Storage with given id does not exist!");
+            LOG_WARNING("Storage with given id does not exist!");
             return defaultVal;
         }
         if (cell->type != StorageType::STRING)

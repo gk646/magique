@@ -2,44 +2,26 @@
 
 namespace magique
 {
-    template <typename Func>
-    bool BasicChecks(const Func func, const PriorityLevel pl, const int impact)
-    {
-        if (func == nullptr)
-        {
-            LOG_WARNING("Tried to register task with nullptr");
-            return false;
-        }
-        if (impact < 0)
-        {
-            LOG_WARNING("Tried to register task with negative impact");
-            return false;
-        }
+    GameLoader::GameLoader(const bool mainOnly) : mainOnly(mainOnly) {}
 
-        if (pl < 0 || pl > INTERNAL)
-        {
-            LOG_WARNING("Tried to register task with invalid priority");
-            return false;
-        }
-        return true;
+    bool GameLoader::registerTask(ITask<GameSave>* task, const PriorityLevel pl, const int impact)
+    {
+        return addTask(task, pl, mainOnly ? MAIN_THREAD : BACKGROUND_THREAD, impact);
     }
 
-    bool GameLoader::step() { return stepLoop(gameSave); }
-
-    void GameLoader::registerTask(ITask<GameSave>* task, const PriorityLevel pl, const int impact)
+    bool GameLoader::registerTask(const GameLoadFunc& func, const PriorityLevel pl, const int impact)
     {
-        if (!BasicChecks(task, pl, impact))
-            return;
-
-        addTask(task, pl, BACKGROUND_THREAD, impact);
+        return addLambdaTask(func, pl, mainOnly ? MAIN_THREAD : BACKGROUND_THREAD, impact);
     }
 
-    void GameLoader::registerTask(const GameLoadFunc& func, const PriorityLevel pl, const int impact)
+    void GameLoader::load(GameSave& save)
     {
-        if (!BasicChecks(func, pl, impact))
-            return;
+        // Load as long as there are tasks
+        while (!stepMixed(save))
+            ;
 
-        addLambdaTask(func, pl, BACKGROUND_THREAD, impact);
+        reset(); // Reset the loader so it can be reused
     }
+    bool GameLoader::step() { return true; }
 
 } // namespace magique

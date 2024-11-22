@@ -9,6 +9,15 @@
 #include <magique/core/Types.h>
 #include <magique/util/JobSystem.h>
 
+
+//===============================================
+// Task Executor
+//===============================================
+// ................................................................................
+// Generic Execution interface with strong guarantees about task priorities and background thread support
+//
+// ................................................................................
+
 namespace magique::internal
 {
     template <typename T>
@@ -27,6 +36,28 @@ namespace magique::internal
         [[nodiscard]] virtual bool isStartup() const = 0;
     };
 
+    template <typename Func>
+    bool IsTaskValid(const Func& func, const PriorityLevel pl, const int impact)
+    {
+        if (func == nullptr)
+        {
+            LOG_WARNING("Tried to register task with nullptr");
+            return false;
+        }
+        if (impact < 0)
+        {
+            LOG_WARNING("Tried to register task with negative impact");
+            return false;
+        }
+
+        if (pl < 0 || pl > CRITICAL)
+        {
+            LOG_WARNING("Tried to register task with invalid priority");
+            return false;
+        }
+        return true;
+    }
+
     template <typename T>
     struct TaskExecutor : IExecutor
     {
@@ -44,15 +75,18 @@ namespace magique::internal
                     delete task;
             }
         }
-        float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
-        bool isStartup() const final { return std::is_same_v<T, AssetContainer>; }
+
+        [[nodiscard]] float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
+        [[nodiscard]] bool isStartup() const final { return std::is_same_v<T, AssetContainer>; }
+
         void printStats() const
         {
             LOG_INFO("Registered %d tasks with a load pensum of: %d", getTotalTasks(), totalImpact);
         }
-        int getTotalTasks() const
+
+        [[nodiscard]] int getTotalTasks() const
         {
             int tasks = 0;
             for (int i = 0; i < CRITICAL; ++i)
@@ -65,7 +99,8 @@ namespace magique::internal
             }
             return tasks;
         }
-        bool stepLoop(T& res)
+
+        bool stepMixed(T& res)
         {
             if (currentLevel == -1)
             {
@@ -102,9 +137,7 @@ namespace magique::internal
 
             if (gpuDone && cpuDone)
             {
-                bool allTasksLoaded =
-                    areAllTasksLoaded(cpuTasks[currentLevel]) && areAllTasksLoaded(gpuTasks[currentLevel]);
-                if (allTasksLoaded)
+                if (isVectorLoaded(cpuTasks[currentLevel]) && isVectorLoaded(gpuTasks[currentLevel]))
                 {
                     gpuDone = false;
                     cpuDone = false;
@@ -115,11 +148,12 @@ namespace magique::internal
 
             return currentLevel == -1;
         }
-        void addTask(ITask<T>* task, PriorityLevel pl, const ThreadType d, int impact)
+
+        bool addTask(ITask<T>* task, PriorityLevel pl, const ThreadType d, int impact, bool internal = false)
         {
-            if (!task)
+            if (!internal && !IsTaskValid(task, pl, impact))
             {
-                return;
+                return false;
             }
             task->impact = impact;
             totalImpact += impact;
@@ -131,11 +165,40 @@ namespace magique::internal
             {
                 cpuTasks[pl].push_back(task);
             }
+            return true;
         }
-        void addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const ThreadType d, const int impact)
+
+        bool addLambdaTask(std::function<void(T&)> func, const PriorityLevel pl, const ThreadType d, const int impact,
+                           bool internal = false)
         {
-            addTask(new LambdaTask{func}, pl, d, impact);
+            addTask(new LambdaTask{func}, pl, d, impact, internal);
+            return true;
         }
+
+        void reset()
+        {
+            for (auto& vec : cpuTasks)
+            {
+                for (auto task : vec)
+                {
+                    task->isLoaded = false;
+                }
+            }
+            for (auto& vec : gpuTasks)
+            {
+                for (auto task : vec)
+                {
+                    task->isLoaded = false;
+                }
+            }
+            totalImpact = 0;
+            loadedImpact = 0;
+            currentLevel = INTERNAL;
+            cpuDone = false;
+            gpuDone = false;
+            cpuWorking = false;
+        }
+
         std::vector<ITask<T>*> cpuTasks[INTERNAL + 1]{};
         std::vector<ITask<T>*> gpuTasks[INTERNAL + 1]{};
         int totalImpact = 0;
@@ -157,6 +220,7 @@ namespace magique::internal
             }
             return true;
         }
+
         void loadTask(ITask<T>* task, T& res)
         {
             task->execute(res);
@@ -169,7 +233,8 @@ namespace magique::internal
             LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }
-        bool areAllTasksLoaded(const std::vector<ITask<T>*>& tasks) const
+
+        bool isVectorLoaded(const std::vector<ITask<T>*>& tasks) const
         {
             for (const auto task : tasks)
             {
@@ -180,6 +245,7 @@ namespace magique::internal
             }
             return true;
         }
+
         friend struct ITask<T>;
     };
 } // namespace magique::internal
