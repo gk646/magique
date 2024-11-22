@@ -1,5 +1,5 @@
-#ifndef MAINTHREAD_H
-#define MAINTHREAD_H
+#ifndef MAGIQUE_MAINTHREAD_H
+#define MAGIQUE_MAINTHREAD_H
 
 namespace magique::mainthread
 {
@@ -42,7 +42,7 @@ namespace magique::mainthread
                 UPDATE_WORK += config.workPerTick;
 
                 // Predict next frame time by last time - sleep shorter if next tick an update happens
-                const auto nextFrameTime = PREV_RENDER_TIME + (UPDATE_WORK >= 1.0F) * PREV_UPDATE_TIME;
+                const auto nextFrameTime = PREV_RENDER_TIME + ((UPDATE_WORK >= 1.0) * PREV_UPDATE_TIME);
                 const auto endTime = startTime + PREV_RENDER_TIME;
                 // How much of the time we sleep - round down to nearest millisecond as sleep accuracy is 1ms
                 const auto sleepTime = std::floor((config.sleepTime - nextFrameTime) * 1000) / 1000;
@@ -50,6 +50,7 @@ namespace magique::mainthread
                 HibernateJobs(target, sleepTime);
                 WaitTime(target, sleepTime);
             }
+            PollInputEvents(); // Somehow needed to prevent crash on wayland
             game.onCloseEvent();
         }
     }
@@ -57,4 +58,4 @@ namespace magique::mainthread
 } // namespace magique::mainthread
 
 
-#endif //MAINTHREAD_H
+#endif //MAGIQUE_MAINTHREAD_H

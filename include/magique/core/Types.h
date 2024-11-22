@@ -140,7 +140,7 @@ namespace magique
     struct TileObject final
     {
         [[nodiscard]] const char* getName() const; // Can be null
-        [[nodiscard]] int getClass() const;        // Only ints allowed as class
+        [[nodiscard]] int getClass() const;        // Only ints are allowed as class
         [[nodiscard]] int getID() const;
 
         float x = 0, y = 0, width = 0, height = 0;                                        // Mutable
@@ -271,12 +271,6 @@ namespace magique
         PERLIN,
         VALUE_CUBIC,
         VALUE,
-    };
-
-    enum class QuestNodeType : uint8_t
-    {
-        DIALOGUE,
-
     };
 
     //================= MULTIPLAYER =================//

@@ -4,12 +4,13 @@
 
 namespace magique
 {
-    float MeasureTextUpTo(char* text, const int index, const Font& f, const float fontSize, const float spacing)
+    float MeasureTextUpTo(const char* text, const int index, const Font& f, const float fontSize, const float spacing)
     {
+        char* nonConstText = const_cast<char*>(text);
         const auto temp = text[index];
-        text[index] = '\0';
+        nonConstText[index] = '\0';
         const float ret = MeasureTextEx(f, text, fontSize, spacing).x;
-        text[index] = temp;
+        nonConstText[index] = temp;
         return ret;
     }
 
@@ -22,9 +23,9 @@ namespace magique
         return val / ACCURACY;
     }
 
-    Vector2 GetCenteredPos(Rectangle within, float width, float height)
+    Vector2 GetCenteredPos(const Rectangle within, const float width, const float height)
     {
-        return Vector2{within.x + (within.width - width) / 2, within.y + (within.height - height) / 2};
+        return Vector2{within.x + ((within.width - width) / 2), within.y + ((within.height - height) / 2)};
     }
 
 } // namespace magique

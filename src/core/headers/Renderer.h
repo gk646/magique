@@ -1,11 +1,13 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#ifndef MAGIQUE_RENDERER_H
+#define MAGIQUE_RENDERER_H
 
 namespace magique::renderer
 {
+    inline static constexpr int BIG_NUMBER = 50'0000;
+
     inline void Close()
     {
-        for (uint_fast32_t i = 1; i < 50'000; i++)
+        for (uint_fast32_t i = 1; i < BIG_NUMBER; i++)
         {
             rlUnloadTexture(i);
         }
@@ -13,10 +15,10 @@ namespace magique::renderer
 
     inline void StartTick()
     {
-        rlLoadIdentity();                               // Reset current matrix (modelview)
-        rlMultMatrixf(MatrixToFloat(GetScreenScale())); // Apply screen scaling
+        rlLoadIdentity();
+        rlMultMatrixf(MatrixToFloat(GetScreenScale()));
 
-        SwapDrawCalls();
+        ResetDrawCallCount();
         AssignCameraPosition();
         global::UI_DATA.updateDrawTick();
     }
@@ -31,10 +33,9 @@ namespace magique::renderer
             perfData.draw();
         }
         EndDrawing();
-        SwapScreenBuffer();                  // Copy back buffer to front buffer (screen)
-        PollInputEvents();
+        SwapScreenBuffer();
         const double frameTime = GetTime() - starTime;
-        perfData.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * 1'000'000'000.0F));
+        perfData.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * SEC_TO_NANOS));
         return frameTime;
     }
 
@@ -42,7 +43,7 @@ namespace magique::renderer
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
-        auto& cmdData = global::CMD_DATA;
+        auto& cmdData = global::CONSOLE_DATA;
 
         auto& camera = data.camera;
         const auto gameState = GetGameState();
@@ -59,11 +60,11 @@ namespace magique::renderer
                 RenderHitboxes();
             RenderLighting(registry);
             game.drawUI(gameState);
-            //uiData.draw();
             cmdData.draw();
         }
         return EndTick(startTime);
     }
 
 } // namespace magique::renderer
-#endif //RENDERER_H
+
+#endif //MAGIQUE_RENDERER_H

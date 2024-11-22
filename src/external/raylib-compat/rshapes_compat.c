@@ -1,3 +1,3 @@
-static Rectangle GetTexShapesRect() { return texShapesRec; }
+Rectangle GetTexShapesRect() { return texShapesRec; }
 
-static Texture GetTexShapes() { return texShapes; }
+Texture GetTexShapes() { return texShapes; }

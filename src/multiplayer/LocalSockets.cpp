@@ -144,10 +144,12 @@ namespace magique
         return res;
     }
 
-    static char IP_BUFFER[64]{};
+    static std::string IP_ADDR{};
 
     const char* GetLocalIP()
     {
+        if (!IP_ADDR.empty()) // Cache
+            return IP_ADDR.c_str();
 #ifdef _WIN32
         WSADATA wsaData;
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) // Initialize Winsock
@@ -175,11 +177,9 @@ namespace magique
 
         for (const addrinfo* p = info; p != nullptr;)
         {
-            auto* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
-            auto* ipPointer = inet_ntoa(ipv4->sin_addr);
-            const int ipLen = (int)strlen(ipPointer);
-            std::memcpy(IP_BUFFER, ipPointer, ipLen);
-            IP_BUFFER[ipLen] = '\0';
+            const auto* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+            const auto* ipPointer = inet_ntoa(ipv4->sin_addr);
+            IP_ADDR.append(ipPointer);
             break; // Get the first IP
         }
         freeaddrinfo(info);
@@ -187,7 +187,7 @@ namespace magique
 
 #else // Unix-based systems (Linux/macOS)
         ifaddrs* ifAddrStruct = nullptr;
-        ifaddrs* ifa = nullptr;
+        const ifaddrs* ifa = nullptr;
 
         if (getifaddrs(&ifAddrStruct) == -1)
         {
@@ -201,16 +201,17 @@ namespace magique
 
             if (ifa->ifa_addr->sa_family == AF_INET)
             {
+                char buff[32];
                 void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
-                inet_ntop(AF_INET, addr, IP_BUFFER, 64);
+                inet_ntop(AF_INET, addr, buff, 32);
+                IP_ADDR.append(buff);
                 break;
             }
         }
-
         if (ifAddrStruct != nullptr)
             freeifaddrs(ifAddrStruct);
 #endif
-        return IP_BUFFER;
+        return IP_ADDR.c_str();
     }
 
 } // namespace magique

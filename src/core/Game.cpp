@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <random> // Needed for non-deterministic hardware randomness
 #include <cxstructs/SmallVector.h>
+#include <raylib/config.h>
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
 
@@ -28,7 +29,7 @@
 #include "internal/globals/AudioPlayer.h"
 #include "internal/globals/ScriptData.h"
 #include "internal/globals/UIData.h"
-#include "internal/globals/CommandLineData.h"
+#include "internal/globals/ConsoleData.h"
 #include "internal/globals/ParticleData.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
@@ -69,7 +70,8 @@ namespace magique
         madeGame = true;
 
         // Setup raylib
-        //SetTraceLogLevel(LOG_WARNING);
+        SetTraceLogLevel(LOG_WARNING);
+        SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, name);
         InitAudioDevice();

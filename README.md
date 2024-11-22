@@ -47,11 +47,12 @@ Most notable features:
 
 `magique` is using the following popular libraries:
 
-- **[raylib](https://github.com/raysan5/raylib) _(5.5)_:** rendering, resource loading, sound,...
-- **[EnTT](https://github.com/skypjack/entt) _(3.14)_:** fast and modern entity-component system
-- **[ankerl](https://github.com/martinus/unordered_dense):** optimized dense hashmap and hashset
-- **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite):** fast and easy noise generation
-- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets) :** local networking via IP
+- **[raylib](https://github.com/raysan5/raylib)** _(5.5-dev)_: rendering, resource loading, sound,...
+- **[EnTT](https://github.com/skypjack/entt)** _(3.14)_: fast and modern entity-component system
+- **[ankerl](https://github.com/martinus/unordered_dense)** _(4.4.0)_: optimized dense hashmap and hashset
+- **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
+- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
+  IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
 
 #### Minimal Example
@@ -93,7 +94,8 @@ that you have to follow when using magique:
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
 user code.
 
-**_Even if you don't want to use the whole engine there are plenty of interesting concepts within magique that you can use or learn from.**_
+**_Even if you don't want to use the whole engine there are plenty of interesting concepts within magique that you can
+use or learn from.**_
 
 ### 2. Installation
 
@@ -114,10 +116,11 @@ This will automatically build magique with your project and set up the include p
 against `magique`! This approach will automatically build for the platform your using.
 Inside the `CMakeLists.txt` you can configure the build setup e.g. enabling Steam, sanitizer...
 
-####  Custom or prebuilt binaries
+#### Custom or prebuilt binaries
 
 Doing a custom build even without CMake should be very straightforward:  
-_Compile all files in src into a single library with /include as include path._ _(conditionally exclude steam or multiplayer if you're not using it)_
+_Compile all files in src into a single library with /include as include path._ _(conditionally exclude steam or
+multiplayer if you're not using it)_
 
 If released you can download the latest binaries, link against them and just copy the include folder into your project.
 
@@ -151,26 +154,41 @@ Contrary if you have experience with the concepts the in-header documentation wi
 > *Software has no functionality if it cannot be used!*
 
 The core philosophy behind `magique` is usability. Using libraries or software should be understandable and intuitive.
-In this case usability means you think about the users mental state, their existing knowledge and goals. Then you provide them with what they need to help them achieve their goal without restricting their freedom. On top of that, by adhering to formatting, naming and implementation rules you allow the user to build a mental image of what to expect. Then, when presented new functionality (headers, modules) its already clear how to use them and what they likely do internally to achieve that.
-
+In this case usability means you think about the users mental state, their existing knowledge and goals. Then you
+provide them with what they need to help them achieve their goal without restricting their freedom. On top of that, by
+adhering to formatting, naming and implementation rules you allow the user to build a mental image of what to expect.
+Then, when presented new functionality (headers, modules) its already clear how to use them and what they likely do
+internally to achieve that.
 
 #### API Design
 
 Why should magique be
 
 #### Threading
-`magique` started out with 2 threads, one for drawing the other for updates. This causes many issues like the two threads being de-synced so updates happen while rendering is going on. Also, precise input handling becomes a problem if the threads go at different tick rates.
-Then I found a way to still have this notion of update and draw tick at different arbitrary tick rates on the same thread.
+
+`magique` started out with 2 threads, one for drawing the other for updates. This causes many issues like the two
+threads being de-synced so updates happen while rendering is going on. Also, precise input handling becomes a problem if
+the threads go at different tick rates.
+Then I found a way to still have this notion of update and draw tick at different arbitrary tick rates on the same
+thread.
 The assumption is that both ticks fit within the timeframe set by the render rate.
 Example with 120fps and 60 logic tick rate:
 The whole thread can take at most 8ms (from the render thread) otherwise the next tick is delayed.
-Next you find out the ratio at which logic ticks occurs -> 120/60 = 2 -> every two render ticks a update tick has to happen
-This means a update tick doesn't happen precisely every 16ms but its still consistent over the long run (or across 1 second).
-To smooth out the additional update time ever 2 ticks i save the time it took each time. Then if next tick a update tick occurs i preemptively sleep less so the next thread tick has longer. This again means a render tick doesnt happen every 8ms precisely but is still generally.
-The limitation to this approach is that the ticks cannot take as long as they can usually. If the render tick already 8ms the update tick will always delay the next thread tick. Which in turn delays render and update ticks.
-The higher the framerate the more this becomes apparent: 60fps -> 16ms time  | 120fps -> 8ms | 240fps -> 4ms
+Next you find out the ratio at which logic ticks occurs -> 120/60 = 2 -> every two render ticks a update tick has to
+happen
+This means a update tick doesn't happen precisely every 16ms but its still consistent over the long run (or across 1
+second).
+To smooth out the additional update time ever 2 ticks i save the time it took each time. Then if next tick a update tick
+occurs i preemptively sleep less so the next thread tick has longer. This again means a render tick doesnt happen every
+8ms precisely but is still generally.
+The limitation to this approach is that the ticks cannot take as long as they can usually. If the render tick already
+8ms the update tick will always delay the next thread tick. Which in turn delays render and update ticks.
+The higher the framerate the more this becomes apparent: 60fps -> 16ms time | 120fps -> 8ms | 240fps -> 4ms
 But for the kind of games this engine is for this approach should be very good.
 
 #### Entity Component System (ECS)
 
-`magique` uses the concept of a ecs. Handling game objects as entities with components should in almost all cases be better over other approach as it nudges you to design modular systems and diverse interactions. If made object-oriented hierarchies in the past and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also, the very nice typesafety of EnTT makes it a joy to use in C++.
+`magique` uses the concept of a ecs. Handling game objects as entities with components should in almost all cases be
+better over other approach as it nudges you to design modular systems and diverse interactions. If made object-oriented
+hierarchies in the past and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also,
+the very nice typesafety of EnTT makes it a joy to use in C++.

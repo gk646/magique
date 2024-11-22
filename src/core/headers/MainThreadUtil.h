@@ -56,6 +56,8 @@ float GetFrameTime()
 
 namespace magique
 {
+    inline static constexpr float SEC_TO_NANOS = 1'000'000'000.0F;
+
     //----------------- RENDERER -----------------//
 
     inline void HandleLoadingScreen(Game& game)
@@ -260,7 +262,7 @@ namespace magique
 
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
-        global::CMD_DATA.update();      // First in case needs to block input
+        global::CONSOLE_DATA.update();      // First in case needs to block input
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential

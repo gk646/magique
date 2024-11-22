@@ -9,12 +9,17 @@
 // Game Saver
 //===============================================
 // ................................................................................
-// Uses the same interface as magique::AssetLoader but all tasks automatically run on a background thread
+// This interface is meant as a helpful abstraction to the user.
+// You should create it once as a global variable and then reuse it (e.g. call it when the user wants to save the game)
+//
+// Note: Uses the same interface as magique::AssetLoader but all tasks automatically run on a background thread
 // ................................................................................
 
 namespace magique
 {
-    using GameLoadFunc = std::function<void(GameSave&)>; // For simple tasks not requiring variables
+    // For simple tasks not requiring variables
+    // Called with the gamesave
+    using GameLoadFunc = std::function<void(GameSave& save)>;
 
     struct GameLoader final : internal::TaskExecutor<GameSave>
     {
@@ -25,14 +30,13 @@ namespace magique
         // impact   - an absolute estimate of the time needed to finish the task
         void registerTask(ITask<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);
 
-        // Registers a new task
+        // Registers a new loading function
         // func     - a loading func (lambda)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
         void registerTask(const GameLoadFunc& func, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
-        GameLoader(const char* assetPath, uint64_t encryptionKey);
         bool step() override;
         GameSave gameSave;
     };

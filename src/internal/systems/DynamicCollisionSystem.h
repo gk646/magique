@@ -72,18 +72,18 @@ namespace magique
 
             const int startIdx = static_cast<int>(beginP * static_cast<float>(size));
             const int endIdx = static_cast<int>(endP * static_cast<float>(size));
-            const auto start = hashGrid.dataBlocks.begin() + startIdx;
-            const auto end = hashGrid.dataBlocks.begin() + endIdx;
-            for (auto it = start; it != end; ++it)
+            const auto* start = hashGrid.dataBlocks.begin() + startIdx;
+            const auto* end = hashGrid.dataBlocks.begin() + endIdx;
+            for (const auto* it = start; it != end; ++it)
             {
                 const auto& block = *it;
-                const auto dStart = block.data;
-                const auto dEnd = block.data + block.count;
-                for (auto dIt1 = dStart; dIt1 != dEnd; ++dIt1)
+                const auto* dStart = block.data;
+                const auto* dEnd = block.data + block.count;
+                for (const auto* dIt1 = dStart; dIt1 != dEnd; ++dIt1)
                 {
                     const auto first = *dIt1;
                     auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
-                    for (auto dIt2 = dStart; dIt2 != dEnd; ++dIt2)
+                    for (const auto* dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                     {
                         const auto second = *dIt2;
                         if (first >= second)
@@ -95,7 +95,7 @@ namespace magique
                         CheckCollisionEntities(posA, colA, posB, colB, info);
                         if (info.isColliding())
                         {
-                            pairs.push_back(PairInfo{info, colA, colB, posA, posB, first, second});
+                            pairs.push_back(PairInfo{info, &colA, &colB, &posA, &posB, first, second});
                         }
                     }
                 }
@@ -116,7 +116,7 @@ namespace magique
         {
             for (auto& [info, col1, col2, p1, p2, e1, e2] : vec)
             {
-                auto num = static_cast<uint64_t>(e1) << 32 | static_cast<uint32_t>(e2);
+                auto num = static_cast<uint64_t>(e1) << sizeof(uint32_t) | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
                     continue;
@@ -131,19 +131,19 @@ namespace magique
                 const bool invokeEvent = group.contains(e1) && group.contains(e2);
                 if (invokeEvent)
 #endif
-                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1.type], e1, e2, info);
+                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
 
                 if (info.getIsAccumulated())
-                    AccumulateInfo(col1, info);
+                    AccumulateInfo(*col1, info);
 
-                    // Call for second entity
+                // Call for second entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
                 if (invokeEvent)
 #endif
-                    InvokeEventDirect<onDynamicCollision>(scriptVec[p2.type], e2, e1, secondInfo);
+                    InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
 
                 if (secondInfo.getIsAccumulated())
-                    AccumulateInfo(col2, secondInfo);
+                    AccumulateInfo(*col2, secondInfo);
             }
             vec.clear();
         }

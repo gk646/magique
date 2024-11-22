@@ -79,7 +79,7 @@ namespace magique
         //================= UTIL =================//
 
         // Returns the storage type of the specified id
-        // Failure: if the storage doesnt exist or is empty returns StorageType::EMPTY
+        // Failure: if the storage doesn't exist or is empty returns StorageType::EMPTY
         StorageType getStorageInfo(StorageID id);
 
         GameSave() = default;

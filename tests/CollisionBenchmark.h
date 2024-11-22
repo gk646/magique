@@ -35,8 +35,8 @@
 // Time: 8.9 ms | Fixed Bounding box calculations for non rotated triangles -> more shapes -> bit slower
 // Time: 9.8 ms | Added accumulation of collision info using a hashmap
 // Time: 9.2 ms | Removed hashmap in favor of caching data and saving it inside the collision component
-// Time: 5.8 ms | Switched to Linux + GCC 14.2 + all optimizations
-// Time: 5.4 ms | Upgrade to entt 3.14
+// Time: 7.4 ms | Switched to Linux + GCC 14.2 + all optimizations
+// Time: 7.1 ms | Upgrade to entt 3.14
 // .....................................................................
 
 using namespace magique;
@@ -91,6 +91,8 @@ struct ObjectScript final : EntityScript
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
+        info.penDepth = 0;
+        info.normalVector = {0, 0};
         AccumulateCollision(info);
     }
 };

@@ -2978,6 +2978,7 @@ void rlDrawRenderBatch(rlRenderBatch *batch)
         // Draw buffers
         if (RLGL.State.vertexCounter > 0)
         {
+            RLGL.drawCalls++;
             // Set current shader and upload current MVP matrix
             glUseProgram(RLGL.State.currentShaderId);
 

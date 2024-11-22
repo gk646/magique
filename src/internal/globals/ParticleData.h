@@ -41,6 +41,8 @@ namespace magique
         void render() const
         {
             // TODO optimize with custom vertex buffer - could even be filled multithreaded
+            // Preallocate it - like with the hard shadows
+
             rlSetTexture(GetShapesTexture().id);
             const auto shapeRect = GetTexShapesRect();
             const auto& texShapes = GetTexShapes();
