@@ -88,6 +88,7 @@ void RasterizeRect(Func func, const float x, const float y, const float w, const
             func(xhalf, yhalf);
         return;
     }
+
     // It's smaller than a cell -> maximum of 4 cells
     func(x1, y1);
 
@@ -268,6 +269,7 @@ struct SingleResolutionHashGrid final
     }
 
     [[nodiscard]] constexpr int getBlockSize() const { return blockSize; }
+
     [[nodiscard]] constexpr int getCellSize() const { return cellSize; }
 
 private:
@@ -368,7 +370,7 @@ template <typename T>
 struct MapHolder final
 {
     uint8_t lookupTable[UINT8_MAX]{};
-    magique::vector<T> elements;
+    magique::vector<T> elements{};
 
     MapHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
 

@@ -25,7 +25,7 @@ namespace magique
     // |                        |
     // |(BL)      (BC)      (BR)|
     // =========================
-    // Returns the (top-left) coordinates of the specified anchor point
+    // Returns the (top-left) coordinates of the specified anchor point in absolute coordinates
     // Passing width and height aligns the anchor to fit them - inset applies an inset for the border points inwards
     Point GetUIAnchor(Anchor anchor, float width = 0, float height = 0, float inset = 0);
 

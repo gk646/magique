@@ -7,9 +7,15 @@
 
 namespace magique
 {
-    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
+    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h)
+    {
 
-    Button::Button(const float w,const float h,const Anchor anchor) : UIObject(w, h, anchor) {}
+    }
+
+    Button::Button(const float w,const float h,const Anchor anchor) : UIObject(w, h, anchor)
+    {
+
+    }
 
     void Button::updateButtonActions(const Rectangle& bounds)
     {

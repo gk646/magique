@@ -24,6 +24,11 @@ enum class ConfigID; // User implemented - used as direct index
 
 namespace magique
 {
+
+    // Returns the global GameConfig instance
+    // Note: Only valid to call inside and after Game::onStartup() - will crash earlier
+    GameConfig& GetGameConfig();
+
     struct GameConfig
     {
         //================= SAVE =================//
@@ -68,7 +73,9 @@ namespace magique
         static void SaveToFile(const GameConfig& config, const char* filePath, uint64_t key = 0);
         internal::GameConfigStorageCell* getCell(ConfigID id);
         std::vector<internal::GameConfigStorageCell> storage; // Saves all types except string
+        bool loaded = false;
         friend struct Game;
+        friend GameConfig& GetGameConfig();
     };
 } // namespace magique
 

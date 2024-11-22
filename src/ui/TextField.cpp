@@ -24,6 +24,12 @@ namespace magique
 
     const std::string& TextField::getText() const { return text; }
 
+    void TextField::setText(const char* newText)
+    {
+        MAGIQUE_ASSERT(newText != nullptr, "Passed null");
+        text = newText;
+    }
+
     bool TextField::pollTextHasChanged()
     {
         const bool val = textChanged;

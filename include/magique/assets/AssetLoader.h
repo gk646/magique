@@ -8,14 +8,17 @@
 // Asset Loader
 //===============================================
 // ................................................................................
-// The main loader to get from startup to the initialized game (MainMenu)
-// There are 2 guarantees when using the loader:
-//  - The task is guaranteed be executed on the main thread if specified
-//  - All task of a higher priority are finished before any task with a lower priority
-//  - However there's no guarantee about the order for tasks of the same priority
+// Allows to register tasks that operate on all assets loaded from disk
+// You can register your task at Game::onStartup() and it runs automatically after this method
 //
-// Load dependencies and ordering can easily be created by specifying a lower priority for the depending tasks
-// Note: This loader cleans itself up after loading all tasks and takes ownership of pointers passed
+// The loader gives 2 strong guarantees:
+//  - Order:
+//         - All task of a higher priority are finished before any task with a lower priority
+//  - Threading:
+//         - ThreadType == MAIN_THREAD -> task runs on the main thread
+//         - ThreadType == BACKGROUND_THREAD -> task runs on ANY available thread
+//
+// This means higher priority is loaded first -> If a task depends on another one give it a lower priority
 // IMPORTANT: For ANY kind of gpu access (texture loading) you HAVE to specify MAIN_THREAD.
 //            For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
 // .....................................................................

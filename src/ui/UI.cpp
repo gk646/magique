@@ -7,7 +7,7 @@ namespace magique
     Point GetUIAnchor(const Anchor anchor, const float width, const float height, const float inset)
     {
         Point point{};
-        const auto res = global::UI_DATA.getScreenDims();
+        const auto res = UIData::getScreenDims();
         switch (anchor)
         {
         case Anchor::TOP_LEFT:
@@ -46,7 +46,7 @@ namespace magique
             point = {res.x - width - inset, res.y - height - inset};
             break;
         case Anchor::NONE:
-            MAGIQUE_ASSERT(false, "Invalid ");
+            MAGIQUE_ASSERT(false, "Invalid anchor");
             break;
         }
         return point;

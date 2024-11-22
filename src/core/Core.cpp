@@ -66,10 +66,7 @@ namespace magique
 
     void SetCameraViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
 
-    void SetCameraPositionOffset(float x, float y)
-    {
-        global::ENGINE_CONFIG.cameraPositionOff = {x, y};
-    }
+    void SetCameraPositionOffset(float x, float y) { global::ENGINE_CONFIG.cameraPositionOff = {x, y}; }
 
     void SetCameraSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
@@ -85,7 +82,7 @@ namespace magique
 
     void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
-    void SetEnableCollisionHandling(bool value) {global::ENGINE_CONFIG.handleCollisions = value;}
+    void SetEnableCollisionHandling(bool value) { global::ENGINE_CONFIG.handleCollisions = value; }
 
     void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
 
@@ -145,11 +142,13 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    entt::entity GetCameraEntity()
-    {
-        return global::ENGINE_DATA.cameraEntity;
-    }
+    entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
 
-    GameConfig& GetGameConfig() { return global::ENGINE_DATA.gameConfig; }
+    GameConfig& GetGameConfig()
+    {
+        MAGIQUE_ASSERT(global::ENGINE_DATA.gameConfig.loaded,
+                       "Config has not been loaded yet! Accessible earliest inside Game::onStartup()");
+        return global::ENGINE_DATA.gameConfig;
+    }
 
 } // namespace magique

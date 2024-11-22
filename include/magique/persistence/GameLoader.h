@@ -1,18 +1,21 @@
 #ifndef MAGIQUE_GAMELOADER_H
 #define MAGIQUE_GAMELOADER_H
 
-#include <magique/core/Types.h>
 #include <magique/internal/TaskExecutor.h>
 #include <magique/persistence/container/GameSave.h>
 
 //===============================================
-// Game Saver
+// Game Loader
 //===============================================
 // ................................................................................
-// This interface is meant as a helpful abstraction to the user.
-// You should create it once as a global variable and then reuse it (e.g. call it when the user wants to save the game)
+// This interface is meant as a helpful abstraction to structure potentially complex loading tasks.
+// It is intended that create a single GameLoader where you define and register all tasks needed to load once.
+// Like this its possible to reuse the loader by passing in loaded GameSaves (e.g. from LoadFromDisk(save, path)
+// It will call all your loading task that extract data from the save and initialize your gameplay systems
+// This makes it very trivial to manage different saves as each is loaded with the same stored routine
 //
-// Note: Uses the same interface as magique::AssetLoader but all tasks automatically run on a background thread
+// Note: see assets/AssetLoader.h for a detailed description (same interface)
+// Note: If 'mainOnly' is NOT specified, tasks can run on any available thread
 // ................................................................................
 
 namespace magique
@@ -23,22 +26,29 @@ namespace magique
 
     struct GameLoader final : internal::TaskExecutor<GameSave>
     {
+        // Creates an empty gameloader
+        //      - mainOnly: if true only uses the main thread to execute the tasks
+        explicit GameLoader(bool mainOnly = false);
 
-        // Registers a new loading task
+        // Returns true if the loading task was successfully registered
         // task     - a new instance of a subclass of ITask, takes ownership
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(ITask<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);
+        bool registerTask(ITask<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);
 
-        // Registers a new loading function
+        // Returns true if the loading task was successfully registered
         // func     - a loading func (lambda)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(const GameLoadFunc& func, PriorityLevel pl = MEDIUM, int impact = 1);
+        bool registerTask(const GameLoadFunc& func, PriorityLevel pl = MEDIUM, int impact = 1);
+
+        // Has to be called after all tasks are registered - this call blocks until all tasks are finished
+        //      - save:     the save to load from
+        void load(GameSave& save);
 
     private:
         bool step() override;
-        GameSave gameSave;
+        bool mainOnly = false;
     };
 
 } // namespace magique

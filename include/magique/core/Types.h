@@ -465,10 +465,15 @@ namespace magique
     struct ITask
     {
         virtual ~ITask() = default;
+
+        // Main execution method - passed a modifiable reference to the used resource/container
         virtual void execute(T& res) = 0;
 
-        [[nodiscard]] bool getIsLoaded() const { return isLoaded; }
-        [[nodiscard]] int getImpact() const { return impact; }
+        // Returns true if the task has been loaded
+        [[nodiscard]] bool getIsLoaded() const;
+
+        // Returns the subjective arbitrary impact measurement - set by the user
+        [[nodiscard]] int getImpact() const;
 
     private:
         bool isLoaded = false;
@@ -559,6 +564,18 @@ namespace magique
     T Payload::getDataAs() const
     {
         return *static_cast<const T*>(data);
+    }
+
+    template <typename T>
+    bool ITask<T>::getIsLoaded() const
+    {
+        return isLoaded;
+    }
+
+    template <typename T>
+    int ITask<T>::getImpact() const
+    {
+        return impact;
     }
 } // namespace magique
 
