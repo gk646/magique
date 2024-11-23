@@ -48,4 +48,5 @@ namespace magique
     int StopTimer(int num);
 
 } // namespace magique
+
 #endif //MAGIQUE_DEBUG_H

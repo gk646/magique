@@ -122,7 +122,7 @@ struct Example final : Game
             DrawRectangle(150, -200, 50, 50, GRAY);
             DrawRectangle(-200, -200, 50, 50, GRAY);
 
-            Draw2DCompass(GREEN);
+            Draw2DCompass(DARKGREEN);
         }
         EndMode2D();
 

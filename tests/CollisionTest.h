@@ -125,9 +125,10 @@ struct Test final : Game
             CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
     }
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void drawGame(GameState /**/, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
+
         DrawRectangle(250, 250, 50, 50, RED);
         for (const auto e : GetDrawEntities())
         {
@@ -153,6 +154,7 @@ struct Test final : Game
             }
         }
         DrawHashGridDebug(GetCameraMap());
+
         EndMode2D();
     }
     void updateGame(GameState gameState) override

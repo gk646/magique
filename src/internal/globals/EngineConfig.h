@@ -42,7 +42,6 @@ namespace magique
             if (font.texture.id == 0)
             {
                 LOG_ERROR("Failed to load default font");
-                LOG_ERROR("Failed to initialize magique");
             }
             loadingScreen = new LoadingScreen();
         }

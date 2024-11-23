@@ -42,13 +42,13 @@
 // Module: rcore - Configuration Flags
 //------------------------------------------------------------------------------------
 // Camera module is included (rcamera.h) and multiple predefined cameras are available: free, 1st/3rd person, orbital
-#define SUPPORT_CAMERA_SYSTEM           1
+//#define SUPPORT_CAMERA_SYSTEM           1
 // Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
-#define SUPPORT_GESTURES_SYSTEM         1
+//#define SUPPORT_GESTURES_SYSTEM         1
 // Include pseudo-random numbers generator (rprand.h), based on Xoshiro128** and SplitMix64
 #define SUPPORT_RPRAND_GENERATOR        1
 // Mouse gestures are directly mapped like touches and processed by gestures system
-#define SUPPORT_MOUSE_GESTURES          1
+//#define SUPPORT_MOUSE_GESTURES          1
 // Reconfigure standard input to receive key inputs, works with SSH connection.
 #define SUPPORT_SSH_KEYBOARD_RPI        1
 // Setting a higher resolution can improve the accuracy of time-out intervals in wait functions.
@@ -61,11 +61,11 @@
 // Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
 #define SUPPORT_SCREEN_CAPTURE          1
 // Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
-#define SUPPORT_GIF_RECORDING           1
+//#define SUPPORT_GIF_RECORDING           1
 // Support CompressData() and DecompressData() functions
 #define SUPPORT_COMPRESSION_API         1
 // Support automatic generated events, loading and recording of those events when required
-#define SUPPORT_AUTOMATION_EVENTS       1
+//#define SUPPORT_AUTOMATION_EVENTS       1
 // Support custom frame control, only for advanced users
 // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timing + PollInputEvents()
 // Enabling this flag allows manual control of the frame processes, use at your own risk

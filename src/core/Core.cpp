@@ -16,13 +16,15 @@ namespace magique
         if (initCalled)
         {
             LOG_WARNING("Init called twice. Skipping...");
-            return true;
+            return false;
         }
         initCalled = true;
         global::ENGINE_CONFIG.init();
         global::SHADERS.init(); // Loads the shaders and buffers
         global::ENGINE_DATA.camera.zoom = 1.0F;
         InitJobSystem();
+
+
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
     }
