@@ -40,13 +40,13 @@ struct TextButton final : Button
 };
 
 // Variables
-TextField inputField{250, 250, Anchor::TOP_CENTER};
+TextField inputField{250, 250, Anchor::MID_CENTER};
 
 struct SaveClass final : ITask<GameSave>
 {
     void execute(GameSave& res) override
     {
-        printf("Saving text:%s\n",inputField.getText().c_str());
+        printf("Saving text:%s\n", inputField.getText().c_str());
         res.saveString(StorageID::TEXT_FIELD_STRING, inputField.getText());
     }
 };
@@ -56,7 +56,7 @@ struct LoadClass final : ITask<GameSave>
     void execute(GameSave& res) override
     {
         const std::string savedText = res.getStringOrElse(StorageID::TEXT_FIELD_STRING, "Not found");
-        printf("Loading text:%s\n",savedText.c_str());
+        printf("Loading text:%s\n", savedText.c_str());
         inputField.setText(savedText.c_str());
     }
 };
@@ -64,8 +64,8 @@ struct LoadClass final : ITask<GameSave>
 
 struct PersistenceDemo final : Game
 {
-    TextButton saveButton{"Save", 450, 350};
-    TextButton loadButton{"Load", 1000, 350};
+    TextButton saveButton{"Save", 550, 350};
+    TextButton loadButton{"Load", 1225, 350};
 
     void onStartup(AssetLoader& loader) override
     {
@@ -75,31 +75,29 @@ struct PersistenceDemo final : Game
 
     void onLoadingFinished() override {}
 
-    void updateGame(GameState gameState) override {}
-
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void updateGame(GameState gameState) override
     {
-        DrawText("Input Text to be saved:", 50, 50, 25, BLACK);
-
-        inputField.draw();
-
-        saveButton.draw();
         if (saveButton.getIsClicked())
         {
-            printf("Clicked Save\n");
-            GameSave save;
+            GameSave save; // Cleaned up automatically
             GAME_SAVER.save(save);
             SaveToDisk(save, SAVE_PATH);
         }
 
-        loadButton.draw();
         if (loadButton.getIsClicked())
         {
-            printf("Clicked Load\n");
-            GameSave save;
+            GameSave save; // Cleaned up automatically
             LoadFromDisk(save, SAVE_PATH);
             GAME_LOADER.load(save);
         }
+    }
+
+    void drawGame(GameState gameState, Camera2D& camera2D) override
+    {
+        DrawText("Input Text to be saved:", 50, 50, 25, BLACK);
+        inputField.draw();
+        saveButton.draw();
+        loadButton.draw();
     }
 };
 

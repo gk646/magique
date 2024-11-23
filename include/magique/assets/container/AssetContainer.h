@@ -48,7 +48,7 @@ namespace magique
         const char* nativeData = nullptr; // Pointer to all the file data
         std::vector<Asset> assets;        // Internal file list
         friend struct AssetLoader;
-        friend bool LoadAssetImage(const char*, AssetContainer&, uint64_t);
+        friend bool LoadAssetImage(AssetContainer&, const char*, uint64_t);
     };
 
 } // namespace magique

@@ -166,6 +166,27 @@ namespace magique
         friend struct TileSet;
     };
 
+    // Checksum (hash) for a file
+    struct Checksum final
+    {
+        // Initializes the checksum - should be the output of print() or another MD5 implementation
+        explicit Checksum(const char* hexadecimalHash);
+
+        bool operator==(const Checksum& other) const;
+
+        // Prints the checksum in hexadecimal digits to stdout
+        void print() const;
+
+    private:
+        Checksum() = default;
+        uint32_t first = 0;
+        uint32_t second = 0;
+        uint32_t third = 0;
+        uint32_t fourth = 0;
+        friend Checksum GetAssetImageChecksum(const char* path);
+        friend bool ValidateAssetImage(Checksum, const char*);
+    };
+
     //================= ECS =================//
 
     // Default action states - Feel free to rename or create your own

@@ -25,13 +25,13 @@ Most notable features:
     - _**_Fully documented headers_**_ and GitHub wiki
     - _**Many examples**_ from single headers to whole games! (see _examples/_)
     - Intuitive public API optimized for maximum usability
-    - Robust logging and error handling with debugger
+    - Extensive logging and error detection with asserts and debugger support
 - **Fast and modern**
     - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
     - Explicitly _**optimized for compile time**_ internally and externally!
     - Takes advantage of _**multithreading, SIMD, data-driven design and cache locality**_ where possible
 - **Large feature set with `pay for what you use` policy**
-    - Asset-Packing and Loading with **compression and encryption support**
+    - Asset-Packing and Loading with **compression, encryption and checksum support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
     - _**Procedural particle system**_ inspired by Godot4
@@ -85,16 +85,11 @@ that you have to follow when using magique:
 - ECS (entity component system)
     - Every game object is supposed to be an entity with components
     - The PositionC component is implicit for every object! (look at _ecs/Components.h_)
-- Scripting (Collisions)
-    - For now the only way to react to engine internal events like static/dynamic collisions is to use the provided C++
-      scripting system
-    - Collisions are detected internally and the collision point, normal vector and penetration depth can be processed
-      by the user
 
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
-user code.
+user code with _no overhead_.
 
-**_Even if you don't want to use the whole engine there are plenty of interesting concepts within magique that you can
+**_Even if you don't want to use the whole engine there are plenty of interesting concepts within `magique` that you can
 use or learn from.**_
 
 ### 2. Installation
@@ -112,8 +107,8 @@ add_subdirectory(path/to/magique)
 target_link_libraries(MyGame PRIVATE magique)
 ```
 
-This will automatically build magique with your project and set up the include path. Don't forget to link your project
-against `magique`! This approach will automatically build for the platform your using.
+This will automatically build magique (including all dependencies) with your project and set up the include path. Don't
+forget to link your project against `magique`! This approach will automatically build for the platform your using.
 Inside the `CMakeLists.txt` you can configure the build setup e.g. enabling Steam, sanitizer...
 
 #### Custom or prebuilt binaries
@@ -129,10 +124,10 @@ modules can easily be made into standalone units.**_
 
 ### 3. Documentation
 
-There are 3 ways `magique` is documented:
+There are 2 ways `magique` is documented:
 
 - **In-Header Documentation**
-    - Each public function or struct comes with a comment or description
+    - Each public module, function and struct comes with a comment or description
     - Tags are used to provide more insight:
         - `Note:` A helpful sidenote about usage, behavior, relation to other methods or common errors
         - `Default:` The default value or behavior for that method or struct
@@ -140,11 +135,7 @@ There are 3 ways `magique` is documented:
         - `Example:` Shows how this method or struct is correctly used
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
 - **[YouTube Channel](https://www.youtube.com/@gk646-yt)**
-    - Contains tutorial, walkthrough, showcase and development videos
-- **GitHub Wiki**
-    - Written like a tutorial and focuses on general examples rather than individual methods
-    - Each module has its own page plus additional pages for combined functionality and extras
-    - Might be incomplete
+    - Contains tutorials, showcase and development videos
 
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
@@ -162,7 +153,7 @@ internally to achieve that.
 
 #### API Design
 
-Why should magique be
+To address the
 
 #### Threading
 
@@ -174,12 +165,13 @@ thread.
 The assumption is that both ticks fit within the timeframe set by the render rate.
 Example with 120fps and 60 logic tick rate:
 The whole thread can take at most 8ms (from the render thread) otherwise the next tick is delayed.
-Next you find out the ratio at which logic ticks occurs -> 120/60 = 2 -> every two render ticks a update tick has to
+Next you find out the ratio at which logic ticks occurs -> 120/60 = 2 -> every two render ticks an update tick has to
 happen
-This means a update tick doesn't happen precisely every 16ms but its still consistent over the long run (or across 1
+This means an update tick doesn't happen precisely every 16ms but its still consistent over the long run (or across 1
 second).
-To smooth out the additional update time ever 2 ticks i save the time it took each time. Then if next tick a update tick
-occurs i preemptively sleep less so the next thread tick has longer. This again means a render tick doesnt happen every
+To smooth out the additional update time ever 2 ticks I save the time it took each time. Then if next tick an update
+tick
+occurs I preemptively sleep less so the next thread tick has longer. This again means a render tick doesn't happen every
 8ms precisely but is still generally.
 The limitation to this approach is that the ticks cannot take as long as they can usually. If the render tick already
 8ms the update tick will always delay the next thread tick. Which in turn delays render and update ticks.
@@ -188,7 +180,9 @@ But for the kind of games this engine is for this approach should be very good.
 
 #### Entity Component System (ECS)
 
-`magique` uses the concept of a ecs. Handling game objects as entities with components should in almost all cases be
+`magique` uses the concept of an ecs. Handling game objects as entities with components should in almost all cases be
 better over other approach as it nudges you to design modular systems and diverse interactions. If made object-oriented
-hierarchies in the past and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also,
+hierarchies in the past, and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also,
 the very nice typesafety of EnTT makes it a joy to use in C++.
+
+### 5. Further Resources

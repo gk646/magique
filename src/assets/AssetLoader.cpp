@@ -7,7 +7,7 @@ namespace magique
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
 
-        addLambdaTask([=](AssetContainer& assets) { LoadAssetImage(assetPath, assets, encryptionKey); }, INTERNAL,
+        addLambdaTask([=](AssetContainer& assets) { LoadAssetImage( assets,assetPath, encryptionKey); }, INTERNAL,
                       BACKGROUND_THREAD, 0, true);
     }
 

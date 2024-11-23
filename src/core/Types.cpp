@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
@@ -7,6 +8,8 @@
 #include "internal/headers/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
 
+#include <cstring>
+
 namespace magique
 {
     bool Point::operator==(const Point other) const { return x == other.x && y == other.y; }
@@ -15,11 +18,7 @@ namespace magique
 
     Point Point::operator+(const Point other) const { return {x + other.x, y + other.y}; }
 
-    Point Point::operator/(const float divisor) const
-    {
-        return {x / divisor, y / divisor};
-    }
-
+    Point Point::operator/(const float divisor) const { return {x / divisor, y / divisor}; }
 
     Point& Point::operator+=(const Point other)
     {
@@ -137,6 +136,50 @@ namespace magique
 
     int TileInfo::getClass() const { return clazz; }
 
+    static uint32_t ReverseBytes(const uint32_t value)
+    {
+        return ((value & 0x000000FFU) << 24) | ((value & 0x0000FF00U) << 8) | ((value & 0x00FF0000U) >> 8) |
+            ((value & 0xFF000000U) >> 24);
+    }
+
+    Checksum::Checksum(const char* hexadecimalHash)
+    {
+        if (hexadecimalHash == nullptr || strlen(hexadecimalHash) != 32)
+        {
+            LOG_WARNING("Invalid hexadecimal hash string");
+            first = second = third = fourth = 0;
+            return;
+        }
+        auto parseHex = [](const char* str) -> uint32_t
+        {
+            char buffer[9];
+            strncpy(buffer, str, 8);
+            buffer[8] = '\0';
+            return static_cast<uint32_t>(strtoul(buffer, nullptr, 16));
+        };
+
+        first = parseHex(hexadecimalHash);
+        second = parseHex(hexadecimalHash + 8);
+        third = parseHex(hexadecimalHash + 16);
+        fourth = parseHex(hexadecimalHash + 24);
+
+        first = ReverseBytes(first);
+        second = ReverseBytes(second);
+        third = ReverseBytes(third);
+        fourth = ReverseBytes(fourth);
+    }
+
+    bool Checksum::operator==(const Checksum& o) const
+    {
+        return first == o.first && second == o.second && third == o.third && fourth == o.fourth;
+    }
+
+    void Checksum::print() const
+    {
+        printf("Checksum: %08x%08x%08x%08x\n", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
+               ReverseBytes(fourth));
+    }
+
     //----------------- COLLIDER INFO -----------------//
 
     int ColliderInfo::getColliderClass() const
@@ -253,5 +296,6 @@ namespace magique
         b = color.b;
         a = color.a;
     }
+
 
 } // namespace magique
