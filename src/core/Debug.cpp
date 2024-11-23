@@ -28,7 +28,7 @@ namespace magique
         const auto& grid = dynamic.mapEntityGrids[map];
 
         const auto bounds = GetCameraBounds();
-        constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
+        constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
         const int startX = static_cast<int>(bounds.x) / cellSize;
         const int startY = static_cast<int>(bounds.y) / cellSize;
         const int width = static_cast<int>(bounds.width) / cellSize;
@@ -69,9 +69,8 @@ namespace magique
         const int width = static_cast<int>(bounds.width) / MARKER_GAP;
         const int height = static_cast<int>(bounds.height) / MARKER_GAP;
 
-        BeginMode2D(GetCamera());
-        DrawLineV({-DISTANCE, 0}, {DISTANCE, 0}, color);
-        DrawLineV({0, -DISTANCE}, {0, DISTANCE}, color);
+        DrawLineEx({-DISTANCE, 0}, {DISTANCE, 0},2, color);
+        DrawLineEx({0, -DISTANCE}, {0, DISTANCE},2, color);
 
         for (int i = 0; i < width; ++i)
         {
@@ -85,7 +84,6 @@ namespace magique
             const int y = currY * MARKER_GAP;
             DrawLine(-MARKER_SIZE, y, MARKER_SIZE, y, color);
         }
-        EndMode2D();
     }
 
     inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};

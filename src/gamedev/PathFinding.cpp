@@ -109,8 +109,10 @@ namespace magique
     void DrawPathFindingGrid(const MapID map)
     {
         const auto& path = global::PATH_DATA;
-        const auto& staticGrid = path.mapsStaticGrids[map];   // Must exist - check in CreateEntity()
-        const auto& dynamicGrid = path.mapsDynamicGrids[map]; // Must exist - check in CreateEntity()
+        if (!path.mapsDynamicGrids.contains(map)) // Could be called before any entity is created
+            return;
+        const auto& staticGrid = path.mapsStaticGrids[map];
+        const auto& dynamicGrid = path.mapsDynamicGrids[map];
 
         const auto bounds = GetCameraBounds();
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
@@ -118,7 +120,6 @@ namespace magique
         const int startY = static_cast<int>(bounds.y) / cellSize;
         const int width = static_cast<int>(bounds.width) / cellSize;
         const int height = static_cast<int>(bounds.height) / cellSize;
-
 
         for (int i = 0; i < height; ++i)
         {

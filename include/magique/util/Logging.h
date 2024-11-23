@@ -1,6 +1,8 @@
 #ifndef MAGIQUE_LOGGING_H
 #define MAGIQUE_LOGGING_H
 
+#include <cstdarg>
+
 //===============================================
 // Logging Module
 //===============================================
@@ -58,3 +60,9 @@ namespace magique
 #define LOG_WARNING(msg, ...) ((void)0)
 #endif
 #endif //MAGIQUE_LOGGING_H
+
+namespace magique::internal
+{
+    // Internal log function
+    void LogInternal(LogLevel level, const char* file, int line, const char* msg, va_list args);
+} // namespace magique::internal

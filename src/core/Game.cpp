@@ -65,18 +65,22 @@ namespace magique
 {
     Game::Game(const char* name) : isRunning(true), gameName(name)
     {
-        static bool madeGame = false;
-        MAGIQUE_ASSERT(madeGame == false, "There can only be 1 game class per program!");
-        madeGame = true;
-
         // Setup raylib
+        SetTraceLogCallback(
+            [](int logLevel, const char* text, va_list args)
+            {
+                logLevel = std::max(logLevel - 2, 1);
+                internal::LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
+            });
+
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, name);
         InitAudioDevice();
-        SetTargetFPS(90);
+        SetTargetFPS(GetMonitorRefreshRate(0));
         SetExitKey(0);
+
         using namespace std;
         using namespace chrono;
         // Generate seed
