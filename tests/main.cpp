@@ -20,6 +20,7 @@
 
 int main()
 {
+
 #ifdef MAGIQUE_EXAMPLE
     Example test{};
     return test.run();

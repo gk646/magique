@@ -166,7 +166,10 @@ namespace magique
         return PointToRect(mx, my, rx, ry, rw, rh);
     }
 
-    bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
+    bool UIObject::getIsClicked(const int button) const
+    {
+        return IsMouseButtonPressed(button) && getIsHovered();
+    }
 
     Anchor UIObject::getAnchor() const { return anchor; }
 

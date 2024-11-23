@@ -82,7 +82,7 @@ namespace magique
         }
         for (auto it = ap.sounds2D.begin(); it != ap.sounds2D.end();)
         {
-            if (it->sound.stream.buffer, sound.stream.buffer)
+            if (it->sound.stream.buffer == sound.stream.buffer)
             {
                 ap.sounds2D.erase(it);
                 return;

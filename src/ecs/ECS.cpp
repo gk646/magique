@@ -29,7 +29,7 @@ namespace magique
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
-            b = 5;                                     // Suppress unused variable
+            (void)b;                                   // Suppress unused variable
         }
         return true;
     }

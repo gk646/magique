@@ -137,7 +137,6 @@
 
 #if defined(SUPPORT_COMPRESSION_API)
     #define SINFL_IMPLEMENTATION
-    #define SINFL_NO_SIMD
     #include "external/sinfl.h"     // Deflate (RFC 1951) decompressor
 
     #define SDEFL_IMPLEMENTATION
