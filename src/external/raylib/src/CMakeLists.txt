@@ -22,9 +22,9 @@ endif()
 
 # Used as public API to be included into other projects
 set(raylib_public_headers
-        ../../../../include/raylib/raylib.h
-        ../../../../include/raylib/rlgl.h
-        ../../../../include/raylib/raymath.h
+    raylib.h
+    rlgl.h
+    raymath.h
     )
 
 # Sources to be compiled
@@ -54,7 +54,7 @@ else ()
     MESSAGE(STATUS "Audio Backend: None (-DCUSTOMIZE_BUILD=ON -DSUPPORT_MODULE_RAUDIO=OFF)")
 endif ()
 
-add_library(raylib ${raylib_sources} ${raylib_public_headers})
+add_library(raylib ${raylib_sources} )
 
 if (NOT BUILD_SHARED_LIBS)
     MESSAGE(STATUS "Building raylib static library")
@@ -107,6 +107,7 @@ target_include_directories(raylib
                            ${OPENGL_INCLUDE_DIR}
                            ${OPENAL_INCLUDE_DIR}
                            )
+
 
 # Print the flags for the user
 if (DEFINED CMAKE_BUILD_TYPE)

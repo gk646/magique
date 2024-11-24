@@ -24,6 +24,9 @@
 //     - setPlayerPos 512 1024
 // The parameters are parsed and validated automatically. See the ParameterType enum for parsing rules.
 // If the number of parameters and theirs types do not match that of the command, it is not executed!
+// Default commands:
+//      - print (NUMBER | BOOL | STRING) ...  / prints all given parameters
+//      - shutdown                            / closes the program via Game::shutdown
 //
 // Note: All logged messages are automatically displayed in the terminal as well (from util/Logging.h)
 // Note: See examples/headers/CommandExample.h on how to build and execute commands
@@ -36,11 +39,11 @@ namespace magique
     // Sets the key which opens the command line
     // Note: Can be set to an invalid key to "lock" the console
     // Default: KEY_PAGE_UP
-    void SetCommandLineKey(int key);
+    void SetConsoleKey(int key);
 
     // Sets the maximum length of the command history
     // Default: 10
-    void SetMaxCommandHistory(int len);
+    void SetCommandHistorySize(int len);
 
     //================= INTERACTION =================//
 
@@ -59,40 +62,14 @@ namespace magique
     // Returns true if the command with the given name is successfully removed
     bool UnRegisterCommand(const std::string& name);
 
-    struct Parameter final
-    {
-        // Returns the parameter string values
-        const char* getStringC() const;
-
-        // Returns the parameter string values
-        std::string getString() const;
-
-        // Returns the parameters boolean value
-        bool getBool() const; // Returns the parameters boolean value
-
-        // Returns the parameters float value
-        float getFloat() const;
-
-        // Returns the parameters integer value
-        int getInt() const;
-
-    private:
-        Parameter() = default;
-        union
-        {
-            float number;
-            bool boolean;
-            const char* string;
-        };
-        ParameterType type;
-    };
-
     // Function is passed the parsed parameters
     using CommandFunction = std::function<void(const std::vector<Parameter>& params)>;
 
     struct Command final
     {
-        Command(const char* cmdName, const char* description = nullptr);
+        // Creates a new command instance with the specified name and optional description
+        //      - cmdName: the name of the command - must not contain whitespace - can contain numbers
+        explicit Command(const char* cmdName, const char* description = nullptr);
 
         // Adds a new parameters that accepts any only arguments with the given type
         Command& addParam(const char* name, ParameterType type, bool optional = false);
@@ -100,14 +77,19 @@ namespace magique
         // Adds a new parameters that accepts any of the specified types
         Command& addParam(const char* name, std::initializer_list<ParameterType> types, bool optional = false);
 
+        // Adds a variable amount of parameters that must have any of the given types
+        // Note: MUST be the last parameter added to this command
+        Command& addVariadicParams(std::initializer_list<ParameterType> types);
+
         // Specifies the function that's executed with the parsed parameters if match the type and count specified
-        void setFunction(const CommandFunction& func);
+        Command& setFunction(const CommandFunction& func);
 
     private:
         CommandFunction func;
         std::vector<internal::ParameterData> parameters;
-        const char* name = nullptr;
-        const char* description = nullptr;
+        std::string name;
+        std::string description;
+        befriend(ConsoleData, ConsoleParameterParser, ConsoleHandler)
     };
 
 

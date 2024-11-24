@@ -11,7 +11,7 @@ set(SUPPORT_MODULE_RAUDIO ON)
 
 if (UNIX)
     set(GLFW_BUILD_X11 ON) # Use wayland per default
-    set(GLFW_BUILD_WAYLAND ON) # Use wayland per default
+    set(GLFW_BUILD_WAYLAND OFF) # Use wayland per default
 endif (UNIX)
 
 message(STATUS "\n-- ------------- raylib ------------------")

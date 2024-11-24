@@ -76,8 +76,6 @@ namespace magique
     std::string DecodeBase64(std::string input);
 
     //================= FORMATTING =================//
-    // IMPORTANT: All functions in this section use raylibs TextFormat() and have the same limitations
-    // -> only valid until called again
 
     // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
     const char* GetTimeString(int seconds);

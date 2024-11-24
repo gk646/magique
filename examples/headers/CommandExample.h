@@ -13,6 +13,8 @@ struct Example final : Game
 {
     void onStartup(AssetLoader& loader) override
     {
+        Command c {"hey"};
+        /*
         // printName Command
         Command printHello{"printHello"};
         printHello.addParam("name", ParameterType::STRING, true)
@@ -38,6 +40,7 @@ struct Example final : Game
                                           params[1].string);
                     }
                 });
+                */
     }
 
     void updateGame(GameState gameState) override {}
@@ -55,7 +58,7 @@ STRING: not a BOOL or NUMBER
 Default commands:
 print (NUMBER | BOOL | STRING) ...
         )";
-        DrawText(helpText, 0, 0, 25, BLACK);
+        DrawText(helpText, 10, 500, 18, BLACK);
     }
 };
 

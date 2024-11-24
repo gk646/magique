@@ -1,172 +1,142 @@
 #ifndef MAGIQUE_CONSOLE_DATA_H
 #define MAGIQUE_CONSOLE_DATA_H
 
-#include <functional>
 #include <deque>
-#include <string>
 
+#include <magique/gamedev/Console.h>
 #include <magique/util/RayUtils.h>
-#include <magique/core/Draw.h>
+#include <magique/util/Math.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/globals/EngineConfig.h"
 #include "external/raylib-compat/rcore_compat.h"
 
-
 namespace magique
 {
-    struct ConsoleCommand final
+
+
+    struct ConsoleHandler final
     {
-        std::string name;
-        std::string description;
-        CommandFunction func;
+        static constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
+        static constexpr int CURSOR_BLINK_TICKS = 30;
+
+        static void draw(const ConsoleData& data);
+        static void update(ConsoleData& data);
+
+    private:
+        static void PollControls(ConsoleData& data);
+    };
+
+    struct ConsoleParameterParser final
+    {
+        // Returns true if successful - logs errors internally
+        static bool parse(ConsoleData& data);
     };
 
     struct ConsoleData final
     {
-        vector<ConsoleCommand> commands;
-        vector<std::string> history;
-        vector<std::string> terminalLines;
-        vector<const ConsoleCommand*> suggestions;
-        std::string input;
-        int openKey = KEY_PAGE_UP;
-        int historyPos = 0;
-        int maxHistoryLen = 15;
-        int cursorPos = 0;
-        int blinkCounter = 0;
+        // Terminal data
+        std::deque<std::string> submitHistory; // Submitted text
+        std::deque<std::string> consoleLines;  // Past lines
+        std::string line;                      // Current input line
+
+        // Command data
+        vector<Command> commands;             // All registered commands
+        vector<const Command*> suggestions;   // Command suggestions
+        std::vector<Parameter> parameters;    // Command parameters
+        vector<std::string> stringParameters; // Storage for the string parmeters
+
+        // State data
+        int submitPos = 0;     // which entry of submitHistory to pick
+        int cursorPos = 0;     // Cursor position
+        int blinkCounter = 0;  //
+        int suggestionPos = 0; // which entry of suggestions to pick
         bool showConsole = false;
         bool showCursor = false;
 
-        // Console takes
-        void update()
+        // Config data
+        float fontSize = 15.0F;
+        int openKey = KEY_PAGE_UP;
+        int commandHistoryLen = 15;
+        int terminalHistoryLen = 20;
+
+        ConsoleData()
         {
-            if (IsKeyPressed(openKey)) [[unlikely]]
-                showConsole = !showConsole;
-
-            if (showConsole) [[unlikely]]
-            {
-                const int pos = cursorPos;
-                const int inputSize = static_cast<int>(input.size());
-                if (blinkCounter > 30)
-                {
-                    showCursor = !showCursor;
-                    blinkCounter = 0;
-                }
-                if ((IsKeyPressed(KEY_BACKSPACE) || IsKeyPressedRepeat(KEY_BACKSPACE)) && cursorPos > 0)
-                {
-                    input.erase(cursorPos - 1, 1);
-                    cursorPos--;
-                }
-                else if ((IsKeyPressed(KEY_DELETE) || IsKeyPressedRepeat(KEY_DELETE)) && cursorPos < inputSize)
-                {
-                    input.erase(cursorPos, 1);
-                    refreshSuggestions();
-                }
-                else if ((IsKeyPressed(KEY_LEFT) || IsKeyPressedRepeat(KEY_LEFT)) && cursorPos > 0)
-                {
-                    --cursorPos;
-                }
-
-                else if ((IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) && cursorPos < inputSize)
-                {
-                    ++cursorPos;
-                }
-                else if (IsKeyPressed(KEY_ENTER))
-                {
-                    submit();
-                }
-                else if (IsKeyPressed(KEY_TAB) && suggestions.size() == 1)
-                {
-                    input = suggestions[0]->name;
-                    cursorPos = inputSize;
-                }
-                else if ((IsKeyPressed(KEY_UP) || IsKeyPressedRepeat(KEY_UP)) && historyPos < history.size() - 1)
-                {
-                    ++historyPos;
-                    input = history[history.size() - 1 - historyPos];
-                    cursorPos = inputSize;
-                }
-                else if ((IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)) && historyPos > -1)
-                {
-                    --historyPos;
-                    if (historyPos == -1)
-                    {
-                        input.clear();
-                    }
-                    else
-                    {
-                        input = history[history.size() - 1 - historyPos];
-                    }
-                    cursorPos = static_cast<int>(inputSize);
-                }
-
-                char c;
-                while ((c = static_cast<char>(GetCharPressed())) != 0)
-                {
-                    if (c != openKey && GetKeyPressed() != openKey)
-                    {
-                        input.insert(cursorPos, 1, c);
-                        cursorPos++;
-                    }
-                }
-
-                if (pos != cursorPos)
-                    refreshSuggestions();
-
-                // Consume key state
-                std::memset(GetCurrentKeyState(), 0, MAX_KEYBOARD_KEYS);
-                blinkCounter++;
-            }
+            RegisterConsoleCommand(
+                Command{"print"}
+                    .addVariadicParams({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
+                    .setFunction(
+                        [](const std::vector<Parameter>& params)
+                        {
+                            auto printParam = [](const Parameter& param)
+                            {
+                                switch (param.getType())
+                                {
+                                case ParameterType::NUMBER:
+                                    if (IsWholeNumber(param.getFloat()))
+                                    {
+                                        AddConsoleStringF("%f", param.getFloat());
+                                    }
+                                    else
+                                    {
+                                        AddConsoleStringF("%d", param.getInt());
+                                    }
+                                    break;
+                                case ParameterType::BOOL:
+                                    if (param.getBool())
+                                    {
+                                        AddConsoleString("true");
+                                    }
+                                    else
+                                    {
+                                        AddConsoleString("false");
+                                    }
+                                    break;
+                                case ParameterType::STRING:
+                                    AddConsoleStringF("%s",param.getString());
+                                    break;
+                                }
+                            };
+                            for (const auto& param : params)
+                            {
+                                printParam(param);
+                            }
+                        }));
         }
-
         void refreshSuggestions()
         {
             suggestions.clear();
-            if (input.empty())
+            if (line.empty())
                 return;
-            const size_t inputLen = input.size();
+            const size_t inputLen = line.size();
             for (const auto& cmd : commands)
             {
-                if (strncmp(cmd.name.c_str(), input.c_str(), inputLen) == 0 && cmd.name.size() != inputLen)
+                if (strncmp(cmd.name.c_str(), line.c_str(), inputLen) == 0 && cmd.name.size() != inputLen)
                 {
                     suggestions.push_back(&cmd);
                 }
             }
         }
 
+        void draw() const { ConsoleHandler::draw(*this); }
+
+        void update() { ConsoleHandler::update(*this); }
+
         void submit()
         {
-            if (history.size() > maxHistoryLen)
+            if (ConsoleParameterParser::parse(*this))
             {
-                history.erase(history.begin());
             }
-            if (terminalLines.size() > maxHistoryLen)
-            {
-                terminalLines.erase(terminalLines.begin());
-            }
-            terminalLines.push_back(input);
-            history.push_back(input);
-            historyPos = -1;
-            cursorPos = 0;
-            for (const auto& cmd : commands)
-            {
-                if (cmd.name == input)
-                {
-                    cmd.func();
-                    break;
-                }
-            }
-            input.clear();
+            line.clear();
         }
 
-        void addString()
-        {
+        void addString(const char* string) { consoleLines.emplace_front(string); }
 
-        }
-
-        void addStringF()
+        void addStringF(const char* fmt, va_list va_args)
         {
-            addString();
+            consoleLines.emplace_front();
+            auto& string = consoleLines.front();
+            string.append(strlen(fmt), '\0');
         }
     };
 
@@ -176,53 +146,237 @@ namespace magique
     }
 
 
-    struct ConsoleRenderer final
+    //================= HANDLER =================//
+
+    inline void ConsoleHandler::draw(const ConsoleData& data)
     {
-        constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
-
-        void draw(const ConsoleData& data)
+        if (data.showConsole) [[unlikely]]
         {
-            if (data.showConsole) [[unlikely]]
+            const auto& font = global::ENGINE_CONFIG.font;
+            const auto fsize = data.fontSize;
+            const auto lineHeight = fsize * 1.3F;
+            constexpr auto spacing = 0.5F;
+            const auto inputOff = MeasureTextEx(font, "> ", fsize, spacing).x;
+
+            const auto cWidth = static_cast<float>(GetScreenWidth());
+            const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
+            const Rectangle cRect = {0, 0, cWidth, cHeight};
+            const Rectangle inputBox = {0, cHeight - lineHeight, cWidth, lineHeight};
+
+            // Draw shape
+            DrawRectangleRec(cRect, ColorAlpha(DARKGRAY, 0.75F));
+            DrawRectangleLinesEx(cRect, 2.0F, ColorAlpha(DARKGRAY, 0.85F));
+            DrawRectangleRec(inputBox, ColorAlpha(LIGHTGRAY, 0.35F));
+
+            // Draw input text
+            Vector2 textPos = {5, cHeight - lineHeight};
+
+            DrawTextEx(font, "> ", textPos, fsize, spacing, LIGHTGRAY);
+            DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, spacing, LIGHTGRAY);
+            if (data.showCursor)
             {
-                const auto& font = global::ENGINE_CONFIG.font;
-                const auto scw = static_cast<float>(GetScreenWidth());  // screen height
-                const auto sch = static_cast<float>(GetScreenHeight()); // screen width
-                const auto width = scw * 0.7F;
-                const auto height = sch * 0.04F;
-                const auto x = (scw - width) / 2.0F;
-                const auto y = sch - (height * 3.0F);
-                const auto fsize = height / 1.3F;              // font size
-                const auto tx = x + (width * 0.01F);           // text-x
-                const auto ty = y + ((height - fsize) / 2.0F); // text-y
-                const Rectangle rect = {x, y, width, height};
+                const float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, spacing);
+                DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, spacing, DARKGRAY);
+            }
 
-                DrawRectangleRec(rect, ColorAlpha(DARKGRAY, 0.75F));
-                DrawRectangleLinesEx(rect, 2.0F, ColorAlpha(GRAY, 0.75F));
-                DrawTextEx(font, input.c_str(), {tx, ty}, fsize, 0.5F, LIGHTGRAY);
+            // Draw console text
+            textPos.y -= lineHeight; // Start one line up for terminal strings
+            for (const auto& line : data.consoleLines)
+            {
+                if (textPos.y < 0)
+                    break;
+                DrawTextEx(font, line.c_str(), textPos, fsize, spacing, LIGHTGRAY);
+                textPos.y -= lineHeight;
+            }
 
-                if (!suggestions.empty())
+            const auto suggestions = data.suggestions.size();
+            if (suggestions > 0)
+            {
+                for (int i = 0; i < suggestions; ++i)
                 {
-                    for (int i = 0; i < suggestions.size(); ++i)
-                    {
-                        const auto sy = y - fsize * static_cast<float>(i + 1); // suggestion-y
-                        const char* txt = suggestions[i]->name.c_str();
-                        DrawTextEx(font, txt, {tx, sy}, fsize, 1.0F, DARKGRAY);
-                        txt = suggestions[i]->description.c_str();
-                        DrawRightBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
-                    }
+                    /*
+                    const auto sy = y - fsize * static_cast<float>(i + 1); // suggestion-y
+                    const char* txt = data.suggestions[i]->name.c_str();
+                    DrawTextEx(font, txt, {tx, sy}, fsize, 1.0F, DARKGRAY);
+                    txt = suggestions[i]->description.c_str();
+                    DrawRightBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
+                    */
                 }
+            }
+        }
+    }
 
-                if (showCursor)
+    inline void ConsoleHandler::PollControls(ConsoleData& data)
+    {
+        auto& cursorPos = data.cursorPos;
+        auto& historyPos = data.submitPos;
+        auto& suggestionPos = data.submitPos;
+        const auto inputSize = static_cast<int>(data.line.size());
+        const auto historySize = static_cast<int>(data.submitHistory.size());
+        const auto suggestionSize = data.suggestions.size();
+
+        if ((IsKeyPressed(KEY_BACKSPACE) || IsKeyPressedRepeat(KEY_BACKSPACE)) && cursorPos > 0)
+        {
+            data.line.erase(cursorPos - 1, 1);
+            cursorPos--;
+        }
+        else if ((IsKeyPressed(KEY_DELETE) || IsKeyPressedRepeat(KEY_DELETE)) && cursorPos < inputSize)
+        {
+            data.line.erase(cursorPos, 1);
+            data.refreshSuggestions();
+        }
+        else if ((IsKeyPressed(KEY_LEFT) || IsKeyPressedRepeat(KEY_LEFT)) && cursorPos > 0)
+        {
+            --cursorPos;
+        }
+
+        else if ((IsKeyPressed(KEY_RIGHT) || IsKeyPressedRepeat(KEY_RIGHT)) && cursorPos < inputSize)
+        {
+            ++cursorPos;
+        }
+        else if (IsKeyPressed(KEY_ENTER))
+        {
+            if (historyPos > data.commandHistoryLen)
+            {
+                data.submitHistory.pop_back();
+            }
+            data.submitHistory.push_front(data.line);
+
+            historyPos = -1;
+            cursorPos = 0;
+            data.submit();
+        }
+        else if (IsKeyPressed(KEY_TAB) && suggestionPos >= 0)
+        {
+            MAGIQUE_ASSERT(suggestionPos < suggestionSize, "Out of bounds");
+            data.line = data.suggestions[suggestionPos]->name;
+            cursorPos = static_cast<int>(data.line.size());
+            suggestionPos = -1;
+        }
+        else if ((IsKeyPressed(KEY_UP) || IsKeyPressedRepeat(KEY_UP)))
+        {
+            // If we have suggestions scroll them else insert previous submits
+            if (suggestionSize > 0) // Have one
+            {
+                if (suggestionPos < (suggestionSize - 1))
+                    suggestionPos++;
+            }
+            else if (historyPos < (historySize - 1))
+            {
+                ++historyPos;
+                data.line = data.submitHistory[historyPos];
+                cursorPos = static_cast<int>(data.line.size());
+            }
+        }
+        else if ((IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)))
+        {
+            if (suggestionSize > 0)
+            {
+                if (suggestionPos > 0)
                 {
-                    const float offset = MeasureTextUpTo(input.data(), cursorPos, font, fsize, 0.5F);
-                    DrawTextEx(font, "|", {tx + offset, ty}, fsize, 0.5F, DARKGRAY);
+                    suggestionPos--;
+                }
+            }
+            else
+            {
+                if (historyPos >= 0)
+                    --historyPos;
+                if (historyPos == -1)
+                {
+                    data.line.clear();
+                }
+                else
+                {
+                    data.line = data.submitHistory[historyPos];
+                }
+                cursorPos = static_cast<int>(data.line.size());
+            }
+        }
+    }
+
+    inline void ConsoleHandler::update(ConsoleData& data)
+    {
+
+        if (IsKeyPressed(data.openKey)) [[unlikely]]
+            data.showConsole = !data.showConsole;
+
+        if (!data.showConsole) [[likely]]
+            return;
+
+        data.blinkCounter++;
+        if (data.blinkCounter > CURSOR_BLINK_TICKS)
+        {
+            data.showCursor = !data.showCursor;
+            data.blinkCounter = 0;
+        }
+
+        PollControls(data);
+
+        // Handle input
+        char c;
+        while ((c = static_cast<char>(GetCharPressed())) != 0)
+        {
+            if (c != data.openKey)
+            {
+                data.line.insert(data.cursorPos, 1, c);
+                data.cursorPos++;
+                data.refreshSuggestions();
+            }
+        }
+
+        // Consume key state
+        std::memset(GetCurrentKeyState(), 0, MAX_KEYBOARD_KEYS);
+    }
+
+    //================= PARSER =================//
+
+    inline bool ConsoleParameterParser::parse(ConsoleData& data)
+    {
+        int off = 0;
+        int commandLen = 0;
+        const char* ptr = data.line.c_str();
+
+        // Skip the command name
+        while ((*ptr != 0) && isblank(ptr[off]) == 0)
+        {
+            off++;
+            commandLen++;
+        }
+        off++; // Skip the blank
+
+        const Command* command = nullptr;
+        for (const auto& cmd : data.commands)
+        {
+            if (static_cast<int>(cmd.name.size()) == commandLen)
+            {
+                if (strncmp(cmd.name.c_str(), ptr, commandLen) == 0)
+                {
+                    command = &cmd;
+                    break;
                 }
             }
         }
 
-    private:
+        if (command == nullptr)
+        {
+            data.line.resize(commandLen);
+            LOG_WARNING("No command with name:%s", data.line.c_str());
+            return false;
+        }
 
-    };
+        // Parse parameters
+        data.parameters.clear();
+        data.stringParameters.clear();
+
+        while ((*ptr != 0) && isblank(ptr[off]) == 0)
+        {
+            off++;
+        }
+
+
+        return true;
+    }
+
 
 } // namespace magique
 

@@ -1,5 +1,3 @@
-extern CoreData CORE;
-
 int GetCharPressedQueueCount() { return CORE.Input.Keyboard.charPressedQueueCount; }
 
 int* GetCharPressedQueue() { return CORE.Input.Keyboard.charPressedQueue; }
@@ -10,11 +8,9 @@ char* GetPreviousKeyState() { return CORE.Input.Keyboard.previousKeyState; }
 char* GetCurrentButtonState() { return CORE.Input.Mouse.currentButtonState; }
 char* GetPreviousButtonState() { return CORE.Input.Mouse.previousButtonState; }
 
-
 int GetFBOWidth() { return CORE.Window.currentFbo.width; }
 
 int GetFBOHeight() { return CORE.Window.currentFbo.width; }
-
 
 int GetCurrentMousePositionX() { return CORE.Input.Mouse.currentPosition.x; }
 int GetCurrentMousePositionY() { return CORE.Input.Mouse.currentPosition.y; }

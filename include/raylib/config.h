@@ -42,13 +42,13 @@
 // Module: rcore - Configuration Flags
 //------------------------------------------------------------------------------------
 // Camera module is included (rcamera.h) and multiple predefined cameras are available: free, 1st/3rd person, orbital
-//#define SUPPORT_CAMERA_SYSTEM           1
+#define SUPPORT_CAMERA_SYSTEM           1
 // Gestures module is included (rgestures.h) to support gestures detection: tap, hold, swipe, drag
-//#define SUPPORT_GESTURES_SYSTEM         1
+#define SUPPORT_GESTURES_SYSTEM         1
 // Include pseudo-random numbers generator (rprand.h), based on Xoshiro128** and SplitMix64
 #define SUPPORT_RPRAND_GENERATOR        1
 // Mouse gestures are directly mapped like touches and processed by gestures system
-//#define SUPPORT_MOUSE_GESTURES          1
+#define SUPPORT_MOUSE_GESTURES          1
 // Reconfigure standard input to receive key inputs, works with SSH connection.
 #define SUPPORT_SSH_KEYBOARD_RPI        1
 // Setting a higher resolution can improve the accuracy of time-out intervals in wait functions.
@@ -61,15 +61,39 @@
 // Allow automatic screen capture of current screen pressing F12, defined in KeyCallback()
 #define SUPPORT_SCREEN_CAPTURE          1
 // Allow automatic gif recording of current screen pressing CTRL+F12, defined in KeyCallback()
-//#define SUPPORT_GIF_RECORDING           1
+#define SUPPORT_GIF_RECORDING           1
 // Support CompressData() and DecompressData() functions
 #define SUPPORT_COMPRESSION_API         1
 // Support automatic generated events, loading and recording of those events when required
-//#define SUPPORT_AUTOMATION_EVENTS       1
+#define SUPPORT_AUTOMATION_EVENTS       1
 // Support custom frame control, only for advanced users
 // By default EndDrawing() does this job: draws everything + SwapScreenBuffer() + manage frame timing + PollInputEvents()
 // Enabling this flag allows manual control of the frame processes, use at your own risk
 //#define SUPPORT_CUSTOM_FRAME_CONTROL    1
+
+// Support for clipboard image loading
+// NOTE: Only working on SDL3, GLFW (Windows) and RGFW (Windows)
+#define SUPPORT_CLIPBOARD_IMAGE    1
+
+// NOTE: Clipboard image loading requires support for some image file formats
+// TODO: Those defines should probably be removed from here, I prefer to let the user manage them
+#if defined(SUPPORT_CLIPBOARD_IMAGE)
+    #ifndef SUPPORT_MODULE_RTEXTURES
+        #define SUPPORT_MODULE_RTEXTURES 1
+    #endif
+    #ifndef STBI_REQUIRED
+        #define STBI_REQUIRED
+    #endif
+    #ifndef SUPPORT_FILEFORMAT_BMP // For clipboard image on Windows
+        #define SUPPORT_FILEFORMAT_BMP 1
+    #endif
+    #ifndef SUPPORT_FILEFORMAT_PNG // Wayland uses png for prints, at least it was on 22 LTS ubuntu
+        #define SUPPORT_FILEFORMAT_PNG 1
+    #endif
+    #ifndef SUPPORT_FILEFORMAT_JPG
+        #define SUPPORT_FILEFORMAT_JPG 1
+    #endif
+#endif
 
 
 // rcore: Configuration values
@@ -77,7 +101,7 @@
 #define MAX_FILEPATH_CAPACITY        8192       // Maximum file paths capacity
 #define MAX_FILEPATH_LENGTH          4096       // Maximum length for filepaths (Linux PATH_MAX default value)
 
-#define MAX_KEYBOARD_KEYS             350       // Maximum number of keyboard keys supported
+#define MAX_KEYBOARD_KEYS             512       // Maximum number of keyboard keys supported
 #define MAX_MOUSE_BUTTONS               8       // Maximum number of mouse buttons supported
 #define MAX_GAMEPADS                    4       // Maximum number of gamepads supported
 #define MAX_GAMEPAD_AXIS                8       // Maximum number of axis supported (per gamepad)
@@ -103,12 +127,12 @@
 
 #define RL_SUPPORT_MESH_GPU_SKINNING           1      // GPU skinning, comment if your GPU does not support more than 8 VBOs
 
-#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096      // Default internal render batch elements limits
+//#define RL_DEFAULT_BATCH_BUFFER_ELEMENTS    4096    // Default internal render batch elements limits
 #define RL_DEFAULT_BATCH_BUFFERS               1      // Default number of batch buffers (multi-buffering)
-#define RL_DEFAULT_BATCH_DRAWCALLS           512      // Default number of batch draw calls (by state changes: mode, texture)
+#define RL_DEFAULT_BATCH_DRAWCALLS           256      // Default number of batch draw calls (by state changes: mode, texture)
 #define RL_DEFAULT_BATCH_MAX_TEXTURE_UNITS     4      // Maximum number of textures units that can be activated on batch drawing (SetShaderValueTexture())
 
-#define RL_MAX_MATRIX_STACK_SIZE              16      // Maximum size of internal Matrix stack
+#define RL_MAX_MATRIX_STACK_SIZE              32      // Maximum size of internal Matrix stack
 
 #define RL_MAX_SHADER_LOCATIONS               32      // Maximum number of shader locations supported
 
@@ -272,32 +296,5 @@
 // utils: Configuration values
 //------------------------------------------------------------------------------------
 #define MAX_TRACELOG_MSG_LENGTH       256       // Max length of one trace-log message
-
-
-// Enable partial support for clipboard image, only working on SDL3 or
-// being on both Windows OS + GLFW or Windows OS + RGFW
-#define SUPPORT_CLIPBOARD_IMAGE    1
-
-#if defined(SUPPORT_CLIPBOARD_IMAGE)
-    #ifndef STBI_REQUIRED
-        #define STBI_REQUIRED
-    #endif
-
-    #ifndef SUPPORT_FILEFORMAT_BMP // For clipboard image on Windows
-        #define SUPPORT_FILEFORMAT_BMP 1
-    #endif
-
-    #ifndef SUPPORT_FILEFORMAT_PNG // Wayland uses png for prints, at least it was on 22 LTS ubuntu
-        #define SUPPORT_FILEFORMAT_PNG 1
-    #endif
-
-    #ifndef SUPPORT_FILEFORMAT_JPG
-        #define SUPPORT_FILEFORMAT_JPG 1
-    #endif
-
-    #ifndef SUPPORT_MODULE_RTEXTURES
-        #define SUPPORT_MODULE_RTEXTURES 1
-    #endif
-#endif
 
 #endif // CONFIG_H

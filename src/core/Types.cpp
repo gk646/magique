@@ -220,6 +220,10 @@ namespace magique
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
 
+    //----------------- GAMEDEV -----------------/
+
+    ParameterType Parameter::getType() const { return type; }
+
     //----------------- KEYBIND -----------------//
 
     Keybind::Keybind(const int keyCode, const bool shiftDown, const bool CTRLDown, const bool altDown)

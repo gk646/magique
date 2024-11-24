@@ -34,6 +34,9 @@ namespace magique
     // Finds the closest power of two to the right of the given number
     unsigned int GetNextPowerOfTwo(unsigned int n);
 
+    // Returns true of the given float is a whole number (e.g. 3.0F)
+    bool IsWholeNumber(float num);
+
 } // namespace magique
 
 
