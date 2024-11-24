@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    void RegisterCommand(const std::string& name, const std::string& description, const std::function<void()>& func)
+    void RegisterConsoleCommand(const std::string& name, const std::string& description, const std::function<void()>& func)
     {
         auto& cmd = global::CONSOLE_DATA;
         for (auto& info : cmd.commands)
@@ -35,5 +35,9 @@ namespace magique
     void SetCommandLineKey(const int key) { global::CONSOLE_DATA.openKey = key; }
 
     void SetMaxCommandHistory(const int len) { global::CONSOLE_DATA.maxHistoryLen = len; }
+
+    void AddConsoleString(const char* text) {}
+
+    std::string Parameter::getString() const {}
 
 } // namespace magique
