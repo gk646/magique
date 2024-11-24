@@ -2,6 +2,7 @@
 #define MAGIQUE_CONSOLE_DATA_H
 
 #include <functional>
+#include <deque>
 #include <string>
 
 #include <magique/util/RayUtils.h>
@@ -11,68 +12,32 @@
 #include "internal/globals/EngineConfig.h"
 #include "external/raylib-compat/rcore_compat.h"
 
+
 namespace magique
 {
-    struct CommandInfo final
+    struct ConsoleCommand final
     {
         std::string name;
         std::string description;
-        std::function<void()> func;
+        CommandFunction func;
     };
 
     struct ConsoleData final
     {
-        vector<CommandInfo> commands;
+        vector<ConsoleCommand> commands;
         vector<std::string> history;
         vector<std::string> terminalLines;
-        vector<const CommandInfo*> suggestions;
+        vector<const ConsoleCommand*> suggestions;
         std::string input;
         int openKey = KEY_PAGE_UP;
         int historyPos = 0;
-        int maxHistoryLen = 10;
+        int maxHistoryLen = 15;
         int cursorPos = 0;
         int blinkCounter = 0;
         bool showConsole = false;
         bool showCursor = false;
 
-        void draw()
-        {
-            if (showConsole) [[unlikely]]
-            {
-                const auto& font = global::ENGINE_CONFIG.font;
-                const auto scw = static_cast<float>(GetScreenWidth());  // screen height
-                const auto sch = static_cast<float>(GetScreenHeight()); // screen width
-                const auto width = scw * 0.7F;
-                const auto height = sch * 0.04F;
-                const auto x = (scw - width) / 2.0F;
-                const auto y = sch - height * 3.0F;
-                const auto fsize = height / 1.3F;            // fontsize
-                const auto tx = x + width * 0.01F;           // text-x
-                const auto ty = y + (height - fsize) / 2.0F; // text-y
-                const Rectangle rect = {x, y, width, height};
-
-                DrawRectangleRec(rect, ColorAlpha(DARKGRAY, 0.75F));
-                DrawRectangleLinesEx(rect, 2.0F, ColorAlpha(GRAY, 0.75F));
-                DrawTextEx(font, input.c_str(), {tx, ty}, fsize, 0.5F, LIGHTGRAY);
-                if (!suggestions.empty())
-                {
-                    for (int i = 0; i < suggestions.size(); ++i)
-                    {
-                        const auto sy = y - fsize * static_cast<float>(i + 1); // suggestion-y
-                        const char* txt = suggestions[i]->name.c_str();
-                        DrawTextEx(font, txt, {tx, sy}, fsize, 1.0F, DARKGRAY);
-                        txt = suggestions[i]->description.c_str();
-                        DrawRightBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
-                    }
-                }
-                if (showCursor)
-                {
-                    const float offset = MeasureTextUpTo(input.data(), cursorPos, font, fsize, 0.5F);
-                    DrawTextEx(font, "|", {tx + offset, ty}, fsize, 0.5F, DARKGRAY);
-                }
-            }
-        }
-
+        // Console takes
         void update()
         {
             if (IsKeyPressed(openKey)) [[unlikely]]
@@ -193,12 +158,71 @@ namespace magique
             }
             input.clear();
         }
+
+        void addString()
+        {
+
+        }
+
+        void addStringF()
+        {
+            addString();
+        }
     };
 
     namespace global
     {
         inline ConsoleData CONSOLE_DATA{};
     }
+
+
+    struct ConsoleRenderer final
+    {
+        constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
+
+        void draw(const ConsoleData& data)
+        {
+            if (data.showConsole) [[unlikely]]
+            {
+                const auto& font = global::ENGINE_CONFIG.font;
+                const auto scw = static_cast<float>(GetScreenWidth());  // screen height
+                const auto sch = static_cast<float>(GetScreenHeight()); // screen width
+                const auto width = scw * 0.7F;
+                const auto height = sch * 0.04F;
+                const auto x = (scw - width) / 2.0F;
+                const auto y = sch - (height * 3.0F);
+                const auto fsize = height / 1.3F;              // font size
+                const auto tx = x + (width * 0.01F);           // text-x
+                const auto ty = y + ((height - fsize) / 2.0F); // text-y
+                const Rectangle rect = {x, y, width, height};
+
+                DrawRectangleRec(rect, ColorAlpha(DARKGRAY, 0.75F));
+                DrawRectangleLinesEx(rect, 2.0F, ColorAlpha(GRAY, 0.75F));
+                DrawTextEx(font, input.c_str(), {tx, ty}, fsize, 0.5F, LIGHTGRAY);
+
+                if (!suggestions.empty())
+                {
+                    for (int i = 0; i < suggestions.size(); ++i)
+                    {
+                        const auto sy = y - fsize * static_cast<float>(i + 1); // suggestion-y
+                        const char* txt = suggestions[i]->name.c_str();
+                        DrawTextEx(font, txt, {tx, sy}, fsize, 1.0F, DARKGRAY);
+                        txt = suggestions[i]->description.c_str();
+                        DrawRightBoundText(font, txt, {x + width, sy}, fsize, 1.0F, DARKGRAY);
+                    }
+                }
+
+                if (showCursor)
+                {
+                    const float offset = MeasureTextUpTo(input.data(), cursorPos, font, fsize, 0.5F);
+                    DrawTextEx(font, "|", {tx + offset, ty}, fsize, 0.5F, DARKGRAY);
+                }
+            }
+        }
+
+    private:
+
+    };
 
 } // namespace magique
 

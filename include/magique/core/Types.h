@@ -294,6 +294,33 @@ namespace magique
         VALUE,
     };
 
+    enum class ParameterType
+    {
+        // [Number type]
+        // Parsing rules:
+        // All numeric characters [0,1,2,3,4,5,6,7,8,9] optionally separated only by a single "."
+        //      - 123.333 -> single valid number
+        //      - 123 333 -> two valid numbers
+        //      - 3a3     -> parsed as string
+        NUMBER = 1,
+        // [Boolean type]
+        // Can either be 0 or 1
+        // Parsing rules:
+        //      - 0: False false FALSE OFF off
+        //      - 1: True true TRUE ON on
+        BOOL,
+        // [String type]
+        // Only ASCII characters supported
+        // Parsing rules:
+        //      - Everything that is not a NUMBER or BOOL is a string
+        STRING,
+
+        // Examples:
+        //      - 123 ON false  -> NUMBER BOOL BOOL
+        //      - 123 abc 1.4   -> NUMBER STRING NUMBER
+        //      - 123a abc 1.4  -> STRING STRING NUMBER
+    };
+
     //================= MULTIPLAYER =================//
 
     enum class SendFlag : uint8_t

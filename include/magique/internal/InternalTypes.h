@@ -262,6 +262,14 @@ namespace magique::internal
         Window* window = nullptr;
     };
 
+    struct ParameterData final
+    {
+        ParameterType types[3]{};
+        const char* name;
+        bool optional = false;
+    };
+
+
 } // namespace magique::internal
 
 #endif //MAGIQUE_INTERNAL_TYPES_H

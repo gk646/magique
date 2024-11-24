@@ -81,6 +81,7 @@ namespace magique
     struct ShareCodeData;
     struct ShareCode;
     struct ShareCodeProperty;
+    struct Command;
 
     //================= Multiplayer =================//
 
