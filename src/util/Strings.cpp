@@ -341,7 +341,7 @@ namespace magique
         return input;
     }
 
-    int Base64CharToValue(const char c)
+    static int Base64CharToValue(const char c)
     {
         if (c >= 'A' && c <= 'Z')
             return c - 'A';
@@ -419,11 +419,13 @@ namespace magique
 
     const char* GetTimeString(const int totalSeconds)
     {
+        static char buff[64]{};
         const int days = totalSeconds / 86400;
         const int hours = totalSeconds % 86400 / 3600;
         const int minutes = totalSeconds % 3600 / 60;
         const int seconds = totalSeconds % 60;
-        return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
+        snprintf(buff, 64, "%id:%ih:%im:%is", days, hours, minutes, seconds);
+        return buff;
     }
 
 

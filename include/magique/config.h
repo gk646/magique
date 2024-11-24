@@ -68,7 +68,6 @@
 //================= GAMEDEV =================//
 
 
-
 //================= MULTIPLAYER =================//
 
 // Maximum amount of actors (players) supported - also applies for networking (maximum amount of clients for the host)
@@ -119,6 +118,7 @@
 // Forward declares std::function which improves compile time about 150ms per TU - only on MSVC
 #define MAGIQUE_FORWARD_FUNCTION 1
 
+
 //================= INTERNAL =================//
 
 #if MAGIQUE_FORWARD_FUNCTION == 1 && defined(_MSC_VER)
@@ -133,7 +133,7 @@ namespace std
 #define MAGIQUE_DEBUG
 #endif
 
-#define IS_POWER_OF_TWO(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
+#define IS_POWER_OF_TWO(x) (((x) != 0) && ((x) & ((x) - 1)) == 0)
 
 #if IS_POWER_OF_TWO(MAGIQUE_COLLISION_CELL_SIZE)
 #else

@@ -111,7 +111,7 @@ USE_EXTERNAL_GLFW     ?= FALSE
 
 # Enable support for X11 by default on Linux when using GLFW
 # NOTE: Wayland is disabled by default, only enable if you are sure
-GLFW_LINUX_ENABLE_WAYLAND  ?= TRUE
+GLFW_LINUX_ENABLE_WAYLAND  ?= FALSE
 GLFW_LINUX_ENABLE_X11      ?= TRUE
 
 # PLATFORM_DESKTOP_SDL: It requires SDL library to be provided externally
@@ -726,7 +726,7 @@ endif
 rcore.o : platforms/*.c
 
 # Compile core module
-rcore.o : rcore.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h utils.h ../../../../include/raylib/raymath.h rcamera.h rgestures.h
+rcore.o : rcore.c raylib.h rlgl.h utils.h raymath.h rcamera.h rgestures.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile rglfw module
@@ -734,15 +734,15 @@ rglfw.o : rglfw.c
 	$(CC) $(GLFW_OSX) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile shapes module
-rshapes.o : rshapes.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h
+rshapes.o : rshapes.c raylib.h rlgl.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile textures module
-rtextures.o : rtextures.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h utils.h
+rtextures.o : rtextures.c raylib.h rlgl.h utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile text module
-rtext.o : rtext.c ../../../../include/raylib/raylib.h utils.h
+rtext.o : rtext.c raylib.h utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile utils module
@@ -750,11 +750,11 @@ utils.o : utils.c utils.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile models module
-rmodels.o : rmodels.c ../../../../include/raylib/raylib.h ../../../../include/raylib/rlgl.h ../../../../include/raylib/raymath.h
+rmodels.o : rmodels.c raylib.h rlgl.h raymath.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile audio module
-raudio.o : raudio.c ../../../../include/raylib/raylib.h
+raudio.o : raudio.c raylib.h
 	$(CC) -c $< $(CFLAGS) $(INCLUDE_PATHS)
 
 # Compile raygui module

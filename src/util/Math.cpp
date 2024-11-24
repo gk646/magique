@@ -30,5 +30,11 @@ namespace magique
         return n;
     }
 
+    bool IsWholeNumber(const float num)
+    {
+        constexpr float EPSILON = 0.00001F;
+        return (num - static_cast<float>(static_cast<int>(num))) < EPSILON;
+    }
+
 
 } // namespace magique

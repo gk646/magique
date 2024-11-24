@@ -66,3 +66,7 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - Review TaskExecutor and clean it up
   - Spit up tasks to all threads
   - Make internal handling easier and cleaner
+
+**Test**
+- add tests persistence, compression and encryption
+- collision detection (check against cute.h)

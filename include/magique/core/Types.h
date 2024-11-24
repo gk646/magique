@@ -321,6 +321,33 @@ namespace magique
         //      - 123a abc 1.4  -> STRING STRING NUMBER
     };
 
+    struct Parameter final
+    {
+        // Returns the parameter string values
+        const char* getString() const;
+
+        // Returns the parameters boolean value
+        bool getBool() const; // Returns the parameters boolean value
+
+        // Returns the parameters float value
+        float getFloat() const;
+
+        // Returns the parameters integer value
+        int getInt() const;
+
+        ParameterType getType()const;
+
+    private:
+        Parameter() = default;
+        union
+        {
+            float number;
+            bool boolean;
+            const char* string;
+        };
+        ParameterType type;
+    };
+
     //================= MULTIPLAYER =================//
 
     enum class SendFlag : uint8_t

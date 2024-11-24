@@ -33,6 +33,7 @@ endif()
 # Sets compiler flags and language standard
 include(CompilerFlags)
 
+
 if (UNIX AND NOT APPLE)
   if (NOT GLFW_BUILD_WAYLAND AND NOT GLFW_BUILD_X11)
     MESSAGE(FATAL_ERROR "Cannot disable both Wayland and X11")
@@ -41,3 +42,5 @@ endif()
 
 # Main sources directory (the second parameter sets the output directory name to raylib)
 add_subdirectory(src raylib)
+
+enable_testing()

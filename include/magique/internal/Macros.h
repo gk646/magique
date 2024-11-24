@@ -31,6 +31,7 @@ namespace magique::internal
     {                                                                                                                   \
         script->eventType(std::forward<Args>(args)...);                                                                 \
     }
+
 #define REGISTER_EVENTS(...)                                                                                            \
     template <EventType type, class Script, class... Args>                                                              \
     void Call(Script* script, Args... args)                                                                             \
@@ -81,6 +82,10 @@ namespace magique::internal
         LOG_WARNING(err, p.name);                                                                                       \
         return;                                                                                                         \
     }
+
+#define M_FRIEND(type) friend type;
+
+#define befriend(...) FOR_EACH(M_FRIEND, __VA_ARGS__)
 
 //================= BUILDING =================//
 
