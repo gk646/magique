@@ -13,8 +13,6 @@
 
 namespace magique
 {
-
-
     struct ConsoleHandler final
     {
         static constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
@@ -29,8 +27,11 @@ namespace magique
 
     struct ConsoleParameterParser final
     {
-        // Returns true if successful - logs errors internally
-        static bool parse(ConsoleData& data);
+        // Returns a ptr to the command to be executed - logs errors internally
+        static const Command* parse(ConsoleData& data);
+
+    private:
+        static bool ParseNextParam(ConsoleData& data, int& off, int& n, Parameter& param);
     };
 
     struct ConsoleData final
@@ -60,6 +61,7 @@ namespace magique
         int commandHistoryLen = 15;
         int terminalHistoryLen = 20;
 
+        // Register default commands
         ConsoleData()
         {
             RegisterConsoleCommand(
@@ -75,11 +77,11 @@ namespace magique
                                 case ParameterType::NUMBER:
                                     if (IsWholeNumber(param.getFloat()))
                                     {
-                                        AddConsoleStringF("%f", param.getFloat());
+                                        AddConsoleStringF("%d", param.getInt());
                                     }
                                     else
                                     {
-                                        AddConsoleStringF("%d", param.getInt());
+                                        AddConsoleStringF("%.3f", param.getFloat());
                                     }
                                     break;
                                 case ParameterType::BOOL:
@@ -93,7 +95,7 @@ namespace magique
                                     }
                                     break;
                                 case ParameterType::STRING:
-                                    AddConsoleStringF("%s",param.getString());
+                                    AddConsoleStringF("%s", param.getString());
                                     break;
                                 }
                             };
@@ -102,7 +104,11 @@ namespace magique
                                 printParam(param);
                             }
                         }));
+
+            RegisterConsoleCommand(
+                Command{"clear"}.setFunction([&](const std::vector<Parameter>& params) { consoleLines.clear(); }));
         }
+
         void refreshSuggestions()
         {
             suggestions.clear();
@@ -124,8 +130,10 @@ namespace magique
 
         void submit()
         {
-            if (ConsoleParameterParser::parse(*this))
+            const auto* command = ConsoleParameterParser::parse(*this);
+            if (command)
             {
+                command->cmdFunc(parameters);
             }
             line.clear();
         }
@@ -134,9 +142,12 @@ namespace magique
 
         void addStringF(const char* fmt, va_list va_args)
         {
+            constexpr int MAX_LEN = 150;
+            char buf[MAX_LEN]{};
             consoleLines.emplace_front();
             auto& string = consoleLines.front();
-            string.append(strlen(fmt), '\0');
+            vsnprintf(buf, MAX_LEN, fmt, va_args);
+            string.assign(buf);
         }
     };
 
@@ -144,7 +155,6 @@ namespace magique
     {
         inline ConsoleData CONSOLE_DATA{};
     }
-
 
     //================= HANDLER =================//
 
@@ -330,19 +340,109 @@ namespace magique
 
     //================= PARSER =================//
 
-    inline bool ConsoleParameterParser::parse(ConsoleData& data)
+    static bool ParseHasNext(const ConsoleData& data, int& off)
+    {
+        const char* ptr = data.line.c_str();
+        while ((ptr[off] != 0))
+        {
+            if (isblank(ptr[off]) == 0) // Not whitespace
+            {
+                return true;
+            }
+            off++;
+        }
+        return false;
+    }
+
+    inline bool ConsoleParameterParser::ParseNextParam(ConsoleData& data, int& off, int& paramCount, Parameter& param)
+    {
+        const char* ptr = data.line.c_str();
+        MAGIQUE_ASSERT(isblank(ptr[off]) == 0, "Internal parse error");
+
+        const int paramStart = off;
+        while ((ptr[off] != 0) && isblank(ptr[off]) == 0) // Not whitespace
+        {
+            off++;
+        }
+        const int paramEnd = off;
+        MAGIQUE_ASSERT(paramStart < paramEnd, "Internal parse error");
+
+        std::string* paramString;
+        // Reuse existing string memory
+        if (data.stringParameters.size() > paramCount)
+        {
+            paramString = &data.stringParameters[paramCount];
+        }
+        else
+        {
+            data.stringParameters.emplace_back();
+            paramString = &data.stringParameters.back();
+        }
+        paramString->assign(ptr + paramStart, paramEnd - paramStart);
+
+        const char* paramPtr = paramString->c_str();
+        // Bool cases
+        if (strcmp(paramPtr, "False") == 0 || strcmp(paramPtr, "false") == 0 || strcmp(paramPtr, "FALSE") == 0 ||
+            strcmp(paramPtr, "OFF") == 0 || strcmp(paramPtr, "off") == 0)
+        {
+            param.boolean = false;
+            param.type = ParameterType::BOOL;
+        }
+        else if (strcmp(paramPtr, "True") == 0 || strcmp(paramPtr, "true") == 0 || strcmp(paramPtr, "TRUE") == 0 ||
+                 strcmp(paramPtr, "ON") == 0 || strcmp(paramPtr, "on") == 0)
+        {
+            param.boolean = true;
+            param.type = ParameterType::BOOL;
+        }
+        else // Either number or string
+        {
+            int dotCount = 0;
+            bool isNum = true;
+            for (const auto c : *paramString)
+            {
+                if (c == '.')
+                {
+                    dotCount++;
+                    if (dotCount > 1)
+                    {
+                        isNum = false;
+                        break;
+                    }
+                }
+                else if (isdigit(c) == 0) // Not a number
+                {
+                    isNum = false;
+                    break;
+                }
+            }
+
+            if (isNum)
+            {
+                param.number = TextToFloat(paramPtr);
+                param.type = ParameterType::NUMBER;
+            }
+            else
+            {
+                param.string = paramPtr;
+                param.type = ParameterType::STRING;
+            }
+        }
+        paramCount++;
+        return true;
+    }
+
+    inline const Command* ConsoleParameterParser::parse(ConsoleData& data)
     {
         int off = 0;
         int commandLen = 0;
         const char* ptr = data.line.c_str();
 
         // Skip the command name
-        while ((*ptr != 0) && isblank(ptr[off]) == 0)
+        while ((ptr[off] != 0) && isblank(ptr[off]) == 0)
         {
             off++;
             commandLen++;
         }
-        off++; // Skip the blank
 
         const Command* command = nullptr;
         for (const auto& cmd : data.commands)
@@ -361,20 +461,23 @@ namespace magique
         {
             data.line.resize(commandLen);
             LOG_WARNING("No command with name:%s", data.line.c_str());
-            return false;
+            return nullptr;
         }
 
-        // Parse parameters
+        // Parse parameters - don't clear string parameters to reuse string memory
         data.parameters.clear();
-        data.stringParameters.clear();
 
-        while ((*ptr != 0) && isblank(ptr[off]) == 0)
+        int paramCount = 0;
+        while (ParseHasNext(data, off))
         {
-            off++;
+            Parameter param{};
+            if (!ParseNextParam(data, off, paramCount, param))
+            {
+                return nullptr;
+            }
+            data.parameters.push_back(param);
         }
-
-
-        return true;
+        return command;
     }
 
 

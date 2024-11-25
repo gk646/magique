@@ -100,8 +100,7 @@ namespace magique
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
         bool isContainer = false;
-        friend struct UIData;
-        friend struct Window;
+        befriend(UIData, Window);
     };
 
 } // namespace magique
