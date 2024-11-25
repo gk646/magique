@@ -6,24 +6,7 @@
 
 namespace magique
 {
-    void RegisterConsoleCommand(const std::string& name, const std::string& description,
-                                const std::function<void()>& func)
-    {
-        /*
-        auto& cmd = global::CONSOLE_DATA;
-        for (auto& info : cmd.commands)
-        {
-            if (strcmp(info.name.c_str(), name.c_str()) == 0)
-            {
-                info.name = name;
-                info.description = description;
-               // info.func = func;
-                return;
-            }
-        }
-        */
-        // cmd.commands.emplace_back(name, description, func);
-    }
+    void RegisterConsoleCommand(const Command& command) { global::CONSOLE_DATA.commands.push_back(command); }
 
     bool UnRegisterCommand(const std::string& name)
     {
@@ -41,13 +24,73 @@ namespace magique
 
     void SetCommandHistorySize(const int len) { global::CONSOLE_DATA.commandHistoryLen = len; }
 
-    void AddConsoleString(const char* text) {}
+    void AddConsoleString(const char* text) { global::CONSOLE_DATA.addString(text); }
+
+    void AddConsoleStringF(const char* format, ...)
+    {
+        va_list va_args;
+        va_start(va_args, format);
+        global::CONSOLE_DATA.addStringF(format, va_args);
+        va_end(va_args);
+    }
 
     //================= COMMAND =================//
 
     Command::Command(const char* cmdName, const char* description) :
-        name(cmdName), description(description ? description : "")
+        name(cmdName), description((description != nullptr) ? description : "")
     {
+    }
+
+    Command& Command::addParam(const char* name, const ParameterType type, const bool optional)
+    {
+        MAGIQUE_ASSERT(parameters.empty() || !parameters.back().variadic, "A variadic parameter must be the last one!");
+        internal::ParameterData data;
+        data.name = strdup(name); // Freed in console data
+        data.optional = optional;
+        data.types[0] = type;
+        parameters.push_back(data);
+        return *this;
+    }
+
+    Command& Command::addParam(const char* name, const std::initializer_list<ParameterType> types, const bool optional)
+    {
+        MAGIQUE_ASSERT(parameters.empty() || !parameters.back().variadic, "A variadic parameter must be the last one!");
+        MAGIQUE_ASSERT(types.size() <= 3, "Only specify the type once!");
+        internal::ParameterData data;
+        data.name = strdup(name); // Freed in console data
+        data.optional = optional;
+        int i = 0;
+        for (const auto type : types)
+        {
+            data.types[i++] = type;
+        }
+        parameters.push_back(data);
+        return *this;
+    }
+
+    Command& Command::addVariadicParams(std::initializer_list<ParameterType> types)
+    {
+        MAGIQUE_ASSERT(parameters.empty() || !parameters.back().variadic, "A variadic parameter must be the last one!");
+        MAGIQUE_ASSERT(types.size() <= 3, "Only specify the type once!");
+        internal::ParameterData data;
+        data.variadic = true;
+        int i = 0;
+        for (const auto type : types)
+        {
+            data.types[i++] = type;
+        }
+        parameters.push_back(data);
+        return *this;
+    }
+
+    Command& Command::setFunction(const CommandFunction& func)
+    {
+        if (cmdFunc)
+        {
+            LOG_WARNING("Command function already set. Replacing ...");
+        }
+        cmdFunc = func;
+        return *this;
     }
 
 

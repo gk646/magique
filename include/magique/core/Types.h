@@ -296,6 +296,12 @@ namespace magique
 
     enum class ParameterType
     {
+        // [Boolean type]
+        // Can either be 0 or 1
+        // Parsing rules:
+        //      - 0: False false FALSE OFF off
+        //      - 1: True true TRUE ON on
+        BOOL,
         // [Number type]
         // Parsing rules:
         // All numeric characters [0,1,2,3,4,5,6,7,8,9] optionally separated only by a single "."
@@ -303,12 +309,7 @@ namespace magique
         //      - 123 333 -> two valid numbers
         //      - 3a3     -> parsed as string
         NUMBER = 1,
-        // [Boolean type]
-        // Can either be 0 or 1
-        // Parsing rules:
-        //      - 0: False false FALSE OFF off
-        //      - 1: True true TRUE ON on
-        BOOL,
+
         // [String type]
         // Only ASCII characters supported
         // Parsing rules:
@@ -324,6 +325,7 @@ namespace magique
     struct Parameter final
     {
         // Returns the parameter string values
+        // Note: MUST not be stored by value - copy it instead if you want to save it
         const char* getString() const;
 
         // Returns the parameters boolean value
@@ -335,7 +337,7 @@ namespace magique
         // Returns the parameters integer value
         int getInt() const;
 
-        ParameterType getType()const;
+        ParameterType getType() const;
 
     private:
         Parameter() = default;
@@ -345,7 +347,8 @@ namespace magique
             bool boolean;
             const char* string;
         };
-        ParameterType type;
+        ParameterType type; // Type of the parameter
+        friend ConsoleParameterParser;
     };
 
     //================= MULTIPLAYER =================//

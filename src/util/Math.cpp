@@ -33,7 +33,8 @@ namespace magique
     bool IsWholeNumber(const float num)
     {
         constexpr float EPSILON = 0.00001F;
-        return (num - static_cast<float>(static_cast<int>(num))) < EPSILON;
+        const float fractionalPart = num - static_cast<float>(static_cast<int>(num));
+        return (fractionalPart < EPSILON) || (1.0F - fractionalPart < EPSILON);
     }
 
 

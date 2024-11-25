@@ -264,9 +264,10 @@ namespace magique::internal
 
     struct ParameterData final
     {
-        ParameterType types[3]{};
-        const char* name;
-        bool optional = false;
+        ParameterType types[3]{};   // Allowed types
+        const char* name = nullptr; // Name
+        bool optional = false;      // If param is optional
+        bool variadic = false;      // Stands for a variable amount of parameters
     };
 
 

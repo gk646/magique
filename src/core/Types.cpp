@@ -220,6 +220,29 @@ namespace magique
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
 
+    const char* Parameter::getString() const
+    {
+        MAGIQUE_ASSERT(type == ParameterType::STRING, "Accessing wrong type");
+        return string;
+    }
+
+    bool Parameter::getBool() const
+    {
+        MAGIQUE_ASSERT(type == ParameterType::BOOL, "Accessing wrong type");
+        return boolean;
+    }
+    float Parameter::getFloat() const
+    {
+        MAGIQUE_ASSERT(type == ParameterType::NUMBER, "Accessing wrong type");
+        return number;
+    }
+
+    int Parameter::getInt() const
+    {
+        MAGIQUE_ASSERT(type == ParameterType::NUMBER, "Accessing wrong type");
+        return (int)number;
+    }
+
     //----------------- GAMEDEV -----------------/
 
     ParameterType Parameter::getType() const { return type; }
