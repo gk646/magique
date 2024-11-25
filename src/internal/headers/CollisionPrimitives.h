@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_COLLISION_PRIMITIVES_H
 #define MAGIQUE_COLLISION_PRIMITIVES_H
 

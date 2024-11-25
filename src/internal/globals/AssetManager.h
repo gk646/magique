@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef ASSETMANAGER_H
 #define ASSETMANAGER_H
 

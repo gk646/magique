@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef DYNAMIC_COLLISION_SYSTEM_H
 #define DYNAMIC_COLLISION_SYSTEM_H
 

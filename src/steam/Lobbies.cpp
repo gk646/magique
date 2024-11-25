@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/Lobbies.h>
 #include <magique/internal/Macros.h>

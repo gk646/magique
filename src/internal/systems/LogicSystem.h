@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_LOGIC_SYSTEM_H
 #define MAGIQUE_LOGIC_SYSTEM_H
 

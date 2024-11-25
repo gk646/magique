@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_COMMANDLINE_H
 #define MAGIQUE_COMMANDLINE_H
 
@@ -71,15 +72,18 @@ namespace magique
         //      - cmdName: the name of the command - must not contain whitespace - can contain numbers
         explicit Command(const char* cmdName, const char* description = nullptr);
 
-        // Adds a new parameters that accepts any only arguments with the given type
-        Command& addParam(const char* name, ParameterType type, bool optional = false);
-
         // Adds a new parameters that accepts any of the specified types
-        Command& addParam(const char* name, std::initializer_list<ParameterType> types, bool optional = false);
+        Command& addParam(const char* name, std::initializer_list<ParameterType> types);
 
-        // Adds a variable amount of parameters that must have any of the given types
-        // Note: MUST be the last parameter added to this command
-        Command& addVariadicParams(std::initializer_list<ParameterType> types);
+        // Adds a new optional parameter - if not specified will have the provided value
+        // Note: optional params have to be last, but can be followed by other optional params (exclusive with variadic)
+        Command& addOptionalNumber(const char* name, float value);
+        Command& addOptionalString(const char* name, const char* value);
+        Command& addOptionalBool(const char* name, bool value);
+
+        // Adds a parameter that matches a variable amount of parsed params - parsed params must have any of the given types
+        // Note: MUST be the last parameter added to this command (exclusive with optionals)
+        Command& addVariadicParam(std::initializer_list<ParameterType> types);
 
         // Specifies the function that's executed with the parsed parameters if match the type and count specified
         Command& setFunction(const CommandFunction& func);
@@ -89,7 +93,7 @@ namespace magique
         std::vector<internal::ParameterData> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ConsoleParameterParser, ConsoleHandler)
+        befriend(ConsoleData, ConsoleParameterParser, ConsoleHandler, bool UnRegisterCommand(const std::string&))
     };
 
 

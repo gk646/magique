@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
 #include <cstring>
 #include <raylib/raylib.h>

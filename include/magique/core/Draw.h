@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_DRAW_H
 #define MAGIQUE_DRAW_H
 

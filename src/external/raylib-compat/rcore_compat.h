@@ -1,6 +1,6 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef RCORE_COMPAT_H
 #define RCORE_COMPAT_H
-
 
 extern "C" {
 

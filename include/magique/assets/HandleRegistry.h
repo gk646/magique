@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_HANDLE_REGISTRY_H
 #define MAGIQUE_HANDLE_REGISTRY_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_STATIC_COLLISION_H
 #define MAGIQUE_STATIC_COLLISION_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Core.h>
 #include <magique/assets/AssetManager.h>
 #include <magique/util/JobSystem.h>

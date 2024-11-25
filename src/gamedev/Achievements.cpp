@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <functional>
 
 #include <magique/gamedev/Achievements.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_PATHFINDING_DATA_H
 #define MAGIQUE_PATHFINDING_DATA_H
 

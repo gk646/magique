@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_VIRTUAL_CLOCK_H
 #define MAGIQUE_VIRTUAL_CLOCK_H
 

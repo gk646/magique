@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <ctime>
 
 #include <magique/gamedev/Procedural.h>

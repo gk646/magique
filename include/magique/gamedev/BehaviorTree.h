@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_BEHAVIOR_TREE_H
 #define MAGIQUE_BEHAVIOR_TREE_H
 

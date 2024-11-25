@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef ALLOCATOR_H
 #define ALLOCATOR_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_PLAYLIST_H
 #define MAGIQUE_PLAYLIST_H
 

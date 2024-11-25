@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_UI_OBJECT_H
 #define MAGIQUE_UI_OBJECT_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_STRINGS_H
 #define MAGIQUE_STRINGS_H
 

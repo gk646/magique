@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef TEXTURE_ATLAS_H
 #define TEXTURE_ATLAS_H
 

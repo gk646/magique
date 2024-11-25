@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef RSHAPES_COMPAT_H
 #define RSHAPES_COMPAT_H
 

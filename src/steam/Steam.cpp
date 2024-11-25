@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <fstream>
 
@@ -65,7 +66,7 @@ namespace magique
         global::STEAM_DATA.overlayCallback = steamOverlayCallback;
     }
 
-    static char TEMP[512]{};
+    static char TEMP[256]{};
 
     const char* GetSteamUserDataLocation()
     {

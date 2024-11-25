@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/persistence/GameLoader.h>
 
 namespace magique

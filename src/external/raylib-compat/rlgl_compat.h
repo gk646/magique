@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef RLGL_COMPAT_H
 #define RLGL_COMPAT_H
 

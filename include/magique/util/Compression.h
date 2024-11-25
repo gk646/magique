@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_COMPRESSION_H
 #define MAGIQUE_COMPRESSION_H
 

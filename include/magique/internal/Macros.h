@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_MACROS_H
 #define MAGIQUE_MACROS_H
 

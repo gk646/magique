@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_MULTIPLAYER_H
 #define MAGIQUE_MULTIPLAYER_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef INCLUDEWINDOWS_H
 #define INCLUDEWINDOWS_H
 

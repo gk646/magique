@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_GAME_CONFIG_H
 #define MAGIQUE_GAME_CONFIG_H
 

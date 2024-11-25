@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
 
 #include <magique/util/Compression.h>

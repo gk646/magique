@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_INPUT_SYSTEM_H
 #define MAGIQUE_INPUT_SYSTEM_H
 

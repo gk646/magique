@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MULTI_RESOLUTION_GRID_H
 #define MULTI_RESOLUTION_GRID_H
 

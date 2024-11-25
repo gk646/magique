@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef PERFDATA_H
 #define PERFDATA_H
 

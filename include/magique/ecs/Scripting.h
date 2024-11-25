@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_INTERNAL_SCRIPTING_H
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 

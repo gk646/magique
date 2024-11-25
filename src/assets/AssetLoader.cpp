@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/Logging.h>

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_BUTTON_H
 #define MAGIQUE_BUTTON_H
 

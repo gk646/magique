@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_TASKEXECUTOR_H_
 #define MAGIQUE_TASKEXECUTOR_H_
 

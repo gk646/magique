@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 int GetPrevDrawCalls() { return RLGL.drawCalls; }
 
 int GetDrawCalls() { return RLGL.prevDrawCalls; }
