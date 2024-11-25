@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <limits>
 #include <cxutil/cxstring.h>
 

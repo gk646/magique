@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_CONSOLE_DATA_H
 #define MAGIQUE_CONSOLE_DATA_H
 
@@ -13,6 +14,10 @@
 
 namespace magique
 {
+    static const char* GetTypeString(ParameterType type);
+    inline const char* GetTypesString(const ParameterType (&types)[3]);
+    inline bool GetTypeMatches(ParameterType actual, const ParameterType (&types)[3]);
+
     struct ConsoleHandler final
     {
         static constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
@@ -20,6 +25,7 @@ namespace magique
 
         static void draw(const ConsoleData& data);
         static void update(ConsoleData& data);
+
 
     private:
         static void PollControls(ConsoleData& data);
@@ -66,7 +72,7 @@ namespace magique
         {
             RegisterConsoleCommand(
                 Command{"print"}
-                    .addVariadicParams({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
+                    .addVariadicParam({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
                     .setFunction(
                         [](const std::vector<Parameter>& params)
                         {
@@ -107,6 +113,30 @@ namespace magique
 
             RegisterConsoleCommand(
                 Command{"clear"}.setFunction([&](const std::vector<Parameter>& params) { consoleLines.clear(); }));
+
+
+            Command cmd2("normalOptionalCommand", "Command with normal and optional parameters");
+            cmd2.addParam("param1", {ParameterType::NUMBER})
+                .addOptionalString("optionalParam", "default")
+                .setFunction(
+                    [](auto& params)
+                    {
+                        // Handle command
+                    });
+            RegisterConsoleCommand(cmd2);
+        }
+
+        ~ConsoleData()
+        {
+            for (auto& cmd : commands)
+            {
+                for (auto& param : cmd.parameters)
+                {
+                    free(param.name);
+                    if (param.types[0] == ParameterType::STRING)
+                        free(param.string);
+                }
+            }
         }
 
         void refreshSuggestions()
@@ -149,6 +179,18 @@ namespace magique
             vsnprintf(buf, MAX_LEN, fmt, va_args);
             string.assign(buf);
         }
+
+        // Saves allocations by reusing the string
+        std::string& getParsedParamString(const int i)
+        {
+            // Reuse existing string memory
+            if (stringParameters.size() > i)
+            {
+                return stringParameters[i];
+            }
+            stringParameters.emplace_back();
+            return stringParameters.back();
+        }
     };
 
     namespace global
@@ -157,6 +199,52 @@ namespace magique
     }
 
     //================= HANDLER =================//
+
+    inline const char* GetTypeString(const ParameterType type)
+    {
+        switch (type)
+        {
+        case ParameterType::BOOL:
+            return "BOOL";
+        case ParameterType::NUMBER:
+            return "NUMBER";
+        case ParameterType::STRING:
+            return "STRING";
+        }
+        return "(unknown)";
+    }
+
+    inline const char* GetTypesString(const ParameterType (&types)[3])
+    {
+        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::NUMBER && types[2] == ParameterType::STRING)
+            return "(BOOL | NUMBER | STRING)";
+        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::NUMBER)
+            return "(BOOL | NUMBER)";
+        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::STRING)
+            return "(BOOL | STRING)";
+        if (types[0] == ParameterType::NUMBER && types[1] == ParameterType::STRING)
+            return "(NUMBER | STRING)";
+        if (types[0] == ParameterType::BOOL)
+            return "(BOOL)";
+        if (types[0] == ParameterType::NUMBER)
+            return "(NUMBER)";
+        if (types[0] == ParameterType::STRING)
+            return "(STRING)";
+        return "(unknown)";
+    }
+
+    inline bool GetTypeMatches(const ParameterType actual, const ParameterType (&types)[3])
+    {
+        for (const auto type : types)
+        {
+            if (actual == type)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     inline void ConsoleHandler::draw(const ConsoleData& data)
     {
@@ -367,20 +455,10 @@ namespace magique
         const int paramEnd = off;
         MAGIQUE_ASSERT(paramStart < paramEnd, "Internal parse error");
 
-        std::string* paramString;
-        // Reuse existing string memory
-        if (data.stringParameters.size() > paramCount)
-        {
-            paramString = &data.stringParameters[paramCount];
-        }
-        else
-        {
-            data.stringParameters.emplace_back();
-            paramString = &data.stringParameters.back();
-        }
-        paramString->assign(ptr + paramStart, paramEnd - paramStart);
+        std::string& paramString = data.getParsedParamString(paramCount);
+        paramString.assign(ptr + paramStart, paramEnd - paramStart);
 
-        const char* paramPtr = paramString->c_str();
+        const char* paramPtr = paramString.c_str();
         // Bool cases
         if (strcmp(paramPtr, "False") == 0 || strcmp(paramPtr, "false") == 0 || strcmp(paramPtr, "FALSE") == 0 ||
             strcmp(paramPtr, "OFF") == 0 || strcmp(paramPtr, "off") == 0)
@@ -398,7 +476,7 @@ namespace magique
         {
             int dotCount = 0;
             bool isNum = true;
-            for (const auto c : *paramString)
+            for (const auto c : paramString)
             {
                 if (c == '.')
                 {
@@ -464,19 +542,152 @@ namespace magique
             return nullptr;
         }
 
-        // Parse parameters - don't clear string parameters to reuse string memory
-        data.parameters.clear();
+        auto& parsedParams = data.parameters;
+        const auto& definedParams = command->parameters;
 
-        int paramCount = 0;
+        parsedParams.clear();
+
+        int paramCount = 0; // Count of the parameters parsed
         while (ParseHasNext(data, off))
         {
             Parameter param{};
             if (!ParseNextParam(data, off, paramCount, param))
             {
+                MAGIQUE_ASSERT(false, "Internal error");
                 return nullptr;
             }
-            data.parameters.push_back(param);
+            parsedParams.push_back(param);
         }
+
+        // Take care of simple cases
+        bool hasVariadic = false;
+        int optionals = 0;
+        for (const auto& param : definedParams)
+        {
+            if (param.variadic)
+            {
+                hasVariadic = true;
+            }
+            if (param.optional)
+            {
+                optionals++;
+            }
+        }
+        MAGIQUE_ASSERT(!hasVariadic && (optionals > 0), "Internal Error");
+
+        // No params only allowed if all are optionals or a variadic
+        if (parsedParams.empty() && (!hasVariadic || optionals != definedParams.size()))
+        {
+            LOG_WARNING("Not enough arguments for command");
+            return nullptr;
+        }
+
+        // Must not have more parsed than defined
+        if (!hasVariadic && parsedParams.size() > definedParams.size())
+        {
+            LOG_WARNING("Too many arguments for command");
+            return nullptr;
+        }
+
+        // Must have exactly as many parsed as defined
+        if (!(optionals > 0) && !hasVariadic && parsedParams.size() != definedParams.size())
+        {
+            if (parsedParams.size() > definedParams.size())
+            {
+                LOG_WARNING("Too many arguments for command");
+            }
+            else
+            {
+                LOG_WARNING("Not enough arguments for command");
+            }
+            return nullptr;
+        }
+
+        // Must have at least non-optional amount
+        if ((optionals > 0) && parsedParams.size() < optionals)
+        {
+            LOG_WARNING("Not enough arguments for command");
+            return nullptr;
+        }
+
+        int i = 0;
+        for (const auto& paramDef : definedParams)
+        {
+            if (!paramDef.optional && !paramDef.variadic)
+            {
+                auto& parsedParam = data.parameters[i];
+                if (!GetTypeMatches(parsedParam.type, paramDef.types))
+                {
+                    const auto* paramString = data.stringParameters.back().c_str();
+                    const auto* expected = GetTypesString(paramDef.types);
+                    const auto* actual = GetTypeString(parsedParam.type);
+                    LOG_WARNING("Type mismatch at \"%s\"! Expected:%s Have:%s", paramString, expected, actual);
+                    return nullptr;
+                }
+                parsedParam.name = paramDef.name;
+            }
+            else if (paramDef.optional)
+            {
+                if (parsedParams.empty() || i == parsedParams.size())
+                {
+                    for (int j = i; j < definedParams.size(); j++)
+                    {
+                        const auto& paramDefI = definedParams[i];
+                        Parameter param{};
+                        param.type = paramDefI.types[0]; // Optionals have the type at 0
+                        param.name = paramDefI.name;
+                        switch (param.type)
+                        {
+                        case ParameterType::BOOL:
+                            param.boolean = paramDefI.boolean;
+                            break;
+                        case ParameterType::NUMBER:
+                            param.number = paramDefI.number;
+                            break;
+                        case ParameterType::STRING:
+                            param.string = data.getParsedParamString(j).c_str();
+                            break;
+                        }
+                    }
+                    break;
+                }
+
+                auto& parsedParam = data.parameters[i];
+                if (!GetTypeMatches(parsedParam.type, paramDef.types))
+                {
+                    const auto* paramString = data.stringParameters.back().c_str();
+                    const auto* expected = GetTypesString(paramDef.types);
+                    const auto* actual = GetTypeString(parsedParam.type);
+                    LOG_WARNING("Type mismatch at \"%s\"! Expected:%s Have:%s", paramString, expected, actual);
+                    return nullptr;
+                }
+                parsedParam.name = paramDef.name;
+            }
+            else
+            {
+                break;
+            }
+            i++;
+        }
+
+        if (hasVariadic)
+        {
+            const auto& paramDef = definedParams[i];
+            for (int j = i; j < parsedParams.size(); j++)
+            {
+                auto& parsedParam = data.parameters[j];
+                if (!GetTypeMatches(parsedParam.type, paramDef.types))
+                {
+                    const auto* paramString = data.stringParameters.back().c_str();
+                    const auto* expected = GetTypesString(paramDef.types);
+                    const auto* actual = GetTypeString(parsedParam.type);
+                    LOG_WARNING("Type mismatch at \"%s\"! Expected:%s Have:%s", paramString, expected, actual);
+                    return nullptr;
+                }
+                parsedParam.name = paramDef.name;
+            }
+        }
+
         return command;
     }
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_INTERNAL_TYPES_H
 #define MAGIQUE_INTERNAL_TYPES_H
 
@@ -264,10 +265,16 @@ namespace magique::internal
 
     struct ParameterData final
     {
-        ParameterType types[3]{};   // Allowed types
-        const char* name = nullptr; // Name
-        bool optional = false;      // If param is optional
-        bool variadic = false;      // Stands for a variable amount of parameters
+        ParameterType types[3]{}; // Allowed types
+        char* name = nullptr;     // Name
+        bool optional = false;    // If param is optional
+        bool variadic = false;    // Stands for a variable amount of parameters
+        union
+        {
+            float number;
+            bool boolean;
+            char* string;
+        };
     };
 
 

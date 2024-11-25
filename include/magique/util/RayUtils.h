@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_RAYUTILS_H
 #define MAGIQUE_RAYUTILS_H
 

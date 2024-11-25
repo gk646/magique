@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_SHADERS_H
 #define MAGIQUE_SHADERS_H
 

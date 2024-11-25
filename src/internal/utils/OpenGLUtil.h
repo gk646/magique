@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef OPENGLUTIL_H
 #define OPENGLUTIL_H
 

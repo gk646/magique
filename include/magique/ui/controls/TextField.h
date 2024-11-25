@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_TEXTFIELD_H
 #define MAGIQUE_TEXTFIELD_H
 

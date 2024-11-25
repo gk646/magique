@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/assets/types/Playlist.h>
 
 namespace magique

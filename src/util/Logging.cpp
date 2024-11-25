@@ -1,14 +1,14 @@
-#include <cstdarg>
-#include <cstdio>
-#include <cstdlib>
-
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/util/Logging.h>
+#include <magique/gamedev/Console.h>
 
 #include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
     static LogCallbackFunc CALL_BACK = nullptr;
+    static constexpr int FMT_CACHE_SIZE = 128;
+    static char FORMAT_CACHE[FMT_CACHE_SIZE]{};
 
     namespace internal
     {
@@ -41,21 +41,26 @@ namespace magique
 
             FILE* out = level >= LEVEL_ERROR ? stderr : stdout;
 
+            int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                fprintf(out, "[%s]: %s:%d ", level_str, file, line);
+                written = snprintf(FORMAT_CACHE, FMT_CACHE_SIZE, "[%s]: %s:%d ", level_str, file, line);
             }
             else
             {
-                fprintf(out, "[%s]: ", level_str);
+                written = snprintf(FORMAT_CACHE, FMT_CACHE_SIZE, "[%s]: ", level_str);
             }
+            MAGIQUE_ASSERT(written >= 0, "Failed to format");
+            vsnprintf(FORMAT_CACHE + written, FMT_CACHE_SIZE - written, msg, args);
+
 
             if (CALL_BACK != nullptr)
             {
-                CALL_BACK(level, msg);
+                CALL_BACK(level, FORMAT_CACHE);
             }
 
-            vfprintf(out, msg, args);
+            fprintf(out, FORMAT_CACHE);
+            AddConsoleString(FORMAT_CACHE);
             fputc('\n', out);
 
             if (level >= LEVEL_ERROR) [[unlikely]]

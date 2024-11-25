@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef GRAPHICS_SHADERS_H
 #define GRAPHICS_SHADERS_H
 

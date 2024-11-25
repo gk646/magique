@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
@@ -44,7 +45,7 @@ namespace magique
         [[nodiscard]] const char* getExtension() const;
 
     private:
-        inline static char stringBuffer[64]{}; // Shared string buffer for string returns
+        inline static char stringBuffer[128]{}; // Shared string buffer for string returns
     };
 
 }

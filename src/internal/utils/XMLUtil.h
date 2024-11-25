@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_XML_UTIL_H
 #define MAGIQUE_XML_UTIL_H
 

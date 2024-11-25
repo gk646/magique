@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cstdio>
 #include <raylib/raylib.h>
 
@@ -219,6 +220,11 @@ namespace magique
     bool CollisionInfo::isColliding() const { return penDepth != 0.0F; }
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
+
+    const char* Parameter::getName() const
+    {
+        return name;
+    }
 
     const char* Parameter::getString() const
     {

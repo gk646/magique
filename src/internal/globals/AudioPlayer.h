@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef SOUNDDATA_H
 #define SOUNDDATA_H
 

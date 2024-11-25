@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef STATIC_COLLISION_DATA_H
 #define STATIC_COLLISION_DATA_H
 

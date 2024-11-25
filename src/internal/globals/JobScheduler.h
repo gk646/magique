@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_JOB_SCHEDULER_H
 #define MAGIQUE_JOB_SCHEDULER_H
 

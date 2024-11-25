@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/internal/Macros.h>
 #include <magique/util/Math.h>
 

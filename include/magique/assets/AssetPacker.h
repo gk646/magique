@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_ASSET_PACKER_H
 #define MAGIQUE_ASSET_PACKER_H
 

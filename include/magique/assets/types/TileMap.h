@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_TILEMAP_H
 #define MAGIQUE_TILEMAP_H
 

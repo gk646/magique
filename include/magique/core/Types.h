@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_TYPES_H
 #define MAGIQUE_TYPES_H
 
@@ -324,6 +325,9 @@ namespace magique
 
     struct Parameter final
     {
+        // Returns the parameter name
+        const char* getName()const;
+
         // Returns the parameter string values
         // Note: MUST not be stored by value - copy it instead if you want to save it
         const char* getString() const;
@@ -337,6 +341,7 @@ namespace magique
         // Returns the parameters integer value
         int getInt() const;
 
+        // Returns the type of the parameter
         ParameterType getType() const;
 
     private:
@@ -347,6 +352,7 @@ namespace magique
             bool boolean;
             const char* string;
         };
+        const char* name;
         ParameterType type; // Type of the parameter
         friend ConsoleParameterParser;
     };

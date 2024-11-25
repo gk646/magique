@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <raylib/raylib.h>
 
 #include <magique/util/RayUtils.h>

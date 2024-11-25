@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef LOADERS_H
 #define LOADERS_H
 

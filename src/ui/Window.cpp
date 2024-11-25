@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/controls/Window.h>
 #include <magique/ui/UI.h>
 

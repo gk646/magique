@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_LOCAL_SOCKETS_H
 #define MAGIQUE_LOCAL_SOCKETS_H
 

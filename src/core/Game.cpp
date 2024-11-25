@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <random> // Needed for non-deterministic hardware randomness
 #include <cxstructs/SmallVector.h>

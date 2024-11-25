@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_CORE_H
 #define MAGIQUE_CORE_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_ENGINE_CONFIG_H
 #define MAGIQUE_ENGINE_CONFIG_H
 

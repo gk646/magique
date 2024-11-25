@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_STEAMDATA_H
 #define MAGIQUE_STEAMDATA_H
 

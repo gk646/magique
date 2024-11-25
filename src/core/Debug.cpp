@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Debug.h>
 #include <magique/core/Types.h>
 #include <magique/core/Core.h>

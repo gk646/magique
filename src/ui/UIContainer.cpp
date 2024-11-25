@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/types/UIContainer.h>
 #include <magique/util/Logging.h>
 

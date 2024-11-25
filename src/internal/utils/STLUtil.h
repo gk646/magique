@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef STL_UTIL_H
 #define STL_UTIL_H
 

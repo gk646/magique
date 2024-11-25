@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/controls/TextField.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>

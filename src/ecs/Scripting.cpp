@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ecs/Scripting.h>
 
 #include "internal/globals/ScriptData.h"

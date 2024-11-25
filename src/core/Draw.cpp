@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
 
 #include <magique/core/Core.h>

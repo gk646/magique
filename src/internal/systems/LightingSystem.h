@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef LIGHTINGSYSTEM_H
 #define LIGHTINGSYSTEM_H
 

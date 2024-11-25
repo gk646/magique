@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef STRINGHASHMAP_H
 #define STRINGHASHMAP_H
 

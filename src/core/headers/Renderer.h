@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_RENDERER_H
 #define MAGIQUE_RENDERER_H
 

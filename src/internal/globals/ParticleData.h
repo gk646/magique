@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_PARTICLEDATA_H
 #define MAGIQUE_PARTICLEDATA_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_PLATFORM_INCLUDES_H
 #define MAGIQUE_PLATFORM_INCLUDES_H
 

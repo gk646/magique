@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
 #include <utility> // Needed for std::move() in STLUtil.h
 

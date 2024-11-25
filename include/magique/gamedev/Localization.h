@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_LOCALIZATION_H
 #define MAGIQUE_LOCALIZATION_H
 

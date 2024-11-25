@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_DATATABLE_H
 #define MAGIQUE_DATATABLE_H
 

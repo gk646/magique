@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_AI_AGENT_H
 #define MAGIQUE_AI_AGENT_H
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_WINDOW_H
 #define MAGIQUE_WINDOW_H
 

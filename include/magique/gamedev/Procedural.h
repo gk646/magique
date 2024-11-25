@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_PROCEDURAL_H
 #define MAGIQUE_PROCEDURAL_H
 

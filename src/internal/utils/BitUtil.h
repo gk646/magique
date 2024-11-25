@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_BITUTIL_H
 #define MAGIQUE_BITUTIL_H
 

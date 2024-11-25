@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_HASHMAPTYPE_H
 #define MAGIQUE_HASHMAPTYPE_H
 

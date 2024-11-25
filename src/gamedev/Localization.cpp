@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/gamedev/Localization.h>
 #include <magique/internal/Macros.h>
 #include <magique/assets/types/Asset.h>
