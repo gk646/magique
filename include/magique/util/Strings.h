@@ -53,6 +53,14 @@ namespace magique
     // Removes any leading whitespace in-place and returns the string
     std::string& TrimLeadingWhitespace(std::string& s);
 
+    // Returns true if the given strings match regardless of case
+    // string-compare-no-case
+    bool strcmpnc(const char* s1, const char* s2);
+
+    // Returns true if the given strings match up to n characters regardless of case
+    // string-compare-n-no-case
+    bool strncmpnc(const char* s1, const char* s2,int n);
+
     //================= ENCODING =================//
 
     // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it

@@ -221,10 +221,21 @@ namespace magique
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
 
-    const char* Parameter::getName() const
+    Parameter::Parameter(const char* name, float val) : name(strdup(name)), type(ParameterType::NUMBER) { number = val; }
+
+    Parameter::Parameter(const char* name, int val) : name(strdup(name)), type(ParameterType::NUMBER)
     {
-        return name;
+        number = (float)val;
     }
+
+    Parameter::Parameter(const char* name, bool val) : name(strdup(name)), type(ParameterType::BOOL) { boolean = val; }
+
+    Parameter::Parameter(const char* name, const char* val) : name(strdup(name)), type(ParameterType::STRING)
+    {
+        string = strdup(val);
+    }
+
+    const char* Parameter::getName() const { return name; }
 
     const char* Parameter::getString() const
     {
@@ -237,6 +248,7 @@ namespace magique
         MAGIQUE_ASSERT(type == ParameterType::BOOL, "Accessing wrong type");
         return boolean;
     }
+
     float Parameter::getFloat() const
     {
         MAGIQUE_ASSERT(type == ParameterType::NUMBER, "Accessing wrong type");

@@ -40,7 +40,7 @@ namespace magique
     //================= FORMAT =================//
 
     // Formats and draws the given text with the current placeholder state
-    // Note: Acts as a drop in replacement for DrawTextEx()
+    // Note: This function tries to format the given txt! If you already have a formatted text use DrawText...()
     void DrawTextFmt(const Font& font, const char* txt, Vector2 pos, float size, float spacing = 1, Color color = WHITE);
 
     // Formats and returns the given text with the current placeholder state

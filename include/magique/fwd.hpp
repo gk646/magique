@@ -84,7 +84,7 @@ namespace magique
     struct ShareCodeProperty;
     struct Command;
     struct ConsoleData;
-    struct ConsoleParameterParser;
+    struct ParamParser;
     struct ConsoleHandler;
 
     //================= Multiplayer =================//

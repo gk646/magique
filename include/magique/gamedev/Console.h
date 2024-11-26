@@ -54,7 +54,26 @@ namespace magique
     // Adds a formatted string to the console in a new line - same as printf()
     void AddConsoleStringF(const char* format, ...);
 
+    // Manually adds an environment variable with the given name and value
+    void AddEnvVariable(const char* name, float value);
+    void AddEnvVariable(const char* name, const char* value);
+    void AddEnvVariable(const char* name, bool value);
+
+    // Retrieves a
+    Parameter& GetEnvVariable(const char* name);
+
     //================= COMMANDS =================//
+    // Builtin commands:
+    //      - help: no args
+    //           - Shows a quick help note
+    //      - print: [ (STRING | BOOL | NUMBER) ... ]
+    //           - print: Takes any amount of variables of any type and prints each to a new line to the console
+    //      - clear: no args
+    //           - clears the terminal
+    //      - def: STRING (STRING | BOOL | NUMBER)
+    //           - sets or creates a new environment variable with the given type with AddEnvVariable()
+    //      - undef: STRING
+    //           - removes the environment variable with the given name
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)
@@ -93,7 +112,8 @@ namespace magique
         std::vector<internal::ParameterData> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ConsoleParameterParser, ConsoleHandler, bool UnRegisterCommand(const std::string&))
+        befriend(ConsoleData, ParamParser, ConsoleHandler, bool UnRegisterCommand(const std::string&),
+                 void RegisterConsoleCommand(const Command& command));
     };
 
 

@@ -183,6 +183,8 @@ namespace magique
         return emptyAsset;
     }
 
+    const std::vector<Asset>& AssetContainer::getAllAssets() const { return assets; }
+
     int AssetContainer::getSize() const { return static_cast<int>(assets.size()); }
 
 } // namespace magique

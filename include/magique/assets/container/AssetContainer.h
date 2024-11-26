@@ -38,8 +38,11 @@ namespace magique
         // This is slower than ByPath - O (n)
         const Asset& getAsset(const char* name) const;
 
-        // Returns the total amount of assets
-        [[nodiscard]] int getSize() const;
+        // Returns a reference to the asset vector containing all loaded assets
+        const std::vector<Asset>& getAllAssets() const;
+
+        // Returns the total amount of assets loaded
+        int getSize() const;
 
         ~AssetContainer();
 

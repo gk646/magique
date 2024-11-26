@@ -278,6 +278,34 @@ namespace magique
         return s;
     }
 
+    bool strcmpnc(const char* s1, const char* s2)
+    {
+        if ((s1 == nullptr) || (s2 == nullptr))
+            return false;
+        while ((*s1 != 0) && (*s2 != 0))
+        {
+            if (tolower(*s1) != tolower(*s2))
+                return false;
+            ++s1;
+            ++s2;
+        }
+        return *s1 == *s2; // Ensure strings are of the same length
+    }
+
+    bool strncmpnc( const char* s1, const char* s2,int n)
+    {
+        if ((s1 == nullptr) || (s2 == nullptr) || n <= 0)
+            return false;
+        while (n-- > 0 && (*s1 != 0) && (*s2 != 0))
+        {
+            if (tolower(*s1) != tolower(*s2))
+                return false;
+            ++s1;
+            ++s2;
+        }
+        return n < 0 || *s1 == *s2;
+    }
+
     int GetBase64EncodedLength(const int bytes) { return 4 * ((bytes + 2) / 3); }
 
     constexpr char BASE64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

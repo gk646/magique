@@ -27,12 +27,14 @@ namespace magique::renderer
     inline double EndTick(const double starTime)
     {
         const auto& config = global::ENGINE_CONFIG;
+        const auto& cmdData = global::CONSOLE_DATA;
         auto& perfData = global::PERF_DATA;
         global::UI_DATA.inputConsumed = false; // End of render ticks vs start of update tick is the same
         if (config.showPerformanceOverlay)
         {
             perfData.draw();
         }
+        cmdData.draw();
         EndDrawing();
         SwapScreenBuffer();
         const double frameTime = GetTime() - starTime;
@@ -44,7 +46,6 @@ namespace magique::renderer
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
-        auto& cmdData = global::CONSOLE_DATA;
 
         auto& camera = data.camera;
         const auto gameState = GetGameState();
@@ -61,7 +62,6 @@ namespace magique::renderer
                 RenderHitboxes();
             RenderLighting(registry);
             game.drawUI(gameState);
-            cmdData.draw();
         }
         return EndTick(startTime);
     }

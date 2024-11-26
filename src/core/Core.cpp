@@ -4,7 +4,6 @@
 #include <magique/util/JobSystem.h>
 
 #include "internal/globals/EngineConfig.h"
-#include "internal/globals/TextureAtlas.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/ShaderData.h"
@@ -24,7 +23,6 @@ namespace magique
         global::SHADERS.init(); // Loads the shaders and buffers
         global::ENGINE_DATA.camera.zoom = 1.0F;
         InitJobSystem();
-
 
         LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
         return true;
