@@ -2,7 +2,7 @@
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
 ![Version Badge](https://img.shields.io/badge/Version:-0.8.0-blue)
-![License Badge](https://img.shields.io/github/license/gk646/magique)
+[![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 > _What if raylib was an engine? ..._
 
@@ -39,7 +39,8 @@ Most notable features:
     - Typesafe C++ scripting system allowing for custom methods and classes with native speed
     - Supports _**[Tiled](https://www.mapeditor.org/) tilemaps and tilset exports**_ (.tmx, .tsx)
     - Object-oriented UI framework with automatic scaling and intuitive anchoring and alignment tools
-    - _**Achievements, InGame-CommandLine, Localization, 2DSound, AIAgent, VirtualClock, and many more!**_
+    - Powerful in-game console with custom commands and interaction with the game
+    - _**Achievements, Localization, 2DSound, AIAgent, VirtualClock, and many more!**_
 - **Multiplayer support**
     - Seamless transition between local and global networking with a unified API
 - **Steam integration**

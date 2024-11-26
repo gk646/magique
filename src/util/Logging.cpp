@@ -8,7 +8,6 @@ namespace magique
 {
     static LogCallbackFunc CALL_BACK = nullptr;
     static constexpr int FMT_CACHE_SIZE = 128;
-    static char FORMAT_CACHE[FMT_CACHE_SIZE]{};
 
     namespace internal
     {
@@ -40,6 +39,7 @@ namespace magique
             }
 
             FILE* out = level >= LEVEL_ERROR ? stderr : stdout;
+            char FORMAT_CACHE[FMT_CACHE_SIZE]{};
 
             int written = 0;
             if (level >= LEVEL_ERROR)

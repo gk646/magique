@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/gamedev/Console.h>
 
-#include <raylib/config.h>
 #include "internal/globals/ConsoleData.h"
 #include "internal/utils/STLUtil.h"
 
 namespace magique
 {
-    void RegisterConsoleCommand(const Command& command) { global::CONSOLE_DATA.commands.push_back(command); }
+    void RegisterConsoleCommand(const Command& command)
+    {
+        MAGIQUE_ASSERT(command.cmdFunc, "Command is without function!");
+        global::CONSOLE_DATA.commands.push_back(command);
+    }
 
     bool UnRegisterCommand(const std::string& name)
     {
@@ -69,7 +72,7 @@ namespace magique
         return *this;
     }
 
-    Command& Command::addOptionalNumber(const char* name, float value)
+    Command& Command::addOptionalNumber(const char* name, const float value)
     {
         MAGIQUE_ASSERT(parameters.empty() || !parameters.back().variadic, "A variadic parameter must be the last one!");
         internal::ParameterData data;
@@ -90,12 +93,12 @@ namespace magique
         data.name = strdup(name); // Freed in console data
 
         data.types[0] = ParameterType::STRING;
-        data.string = strdup(value);
+        data.string = strdup(value); // Freed in console data
         parameters.push_back(data);
         return *this;
     }
 
-    Command& Command::addOptionalBool(const char* name, bool value)
+    Command& Command::addOptionalBool(const char* name, const bool value)
     {
         MAGIQUE_ASSERT(parameters.empty() || !parameters.back().variadic, "A variadic parameter must be the last one!");
         internal::ParameterData data;
