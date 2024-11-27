@@ -93,9 +93,6 @@ namespace magique
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
-#if !defined(MAGIQUE_DEBUG) && MAGIQUE_LOGGING == 1
-        LOG_WARNING("Full Logging enabled in Release mode. To disable set MAGIQUE_LOGGING 0 in config.h");
-#endif
     }
 
     Game::~Game()

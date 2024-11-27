@@ -25,12 +25,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             $<$<CONFIG:Debug>:
             -Og -g >
             $<$<CONFIG:Release>:
-            -Ofast -DNDEBUG >
+            -Ofast -DNDEBUG -flto>
     )
 
     target_link_options(magique-${MODULE_NAME} PRIVATE
-            $<$<CONFIG:Debug>:  >
-            $<$<CONFIG:Release>:>
+            $<$<CONFIG:Debug>: >
+            $<$<CONFIG:Release>: -flto>
     )
 
     if (MAGIQUE_SANITIZER)

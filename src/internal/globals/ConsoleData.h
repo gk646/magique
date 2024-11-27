@@ -661,7 +661,7 @@ namespace magique
             return CountMismatchError(data, *command);
         }
         // No params only allowed if all are optionals or a variadic
-        if (parsedParams.empty() && (!hasVariadic && optionals != definedParams.size()))
+        if (parsedParams.empty() && (!hasVariadic && optionals != (int)definedParams.size()))
         {
             return CountMismatchError(data, *command);
         }
@@ -698,7 +698,7 @@ namespace magique
             }
             else if (paramDef.optional)
             {
-                if (parsedParams.empty() || i == parsedParams.size())
+                if (parsedParams.empty() || i == (int)parsedParams.size())
                 {
                     for (int j = i; j < static_cast<int>(definedParams.size()); j++)
                     {

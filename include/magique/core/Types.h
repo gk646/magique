@@ -325,11 +325,6 @@ namespace magique
 
     struct Parameter final
     {
-        Parameter(const char* name, float val);
-        Parameter(const char* name, int val);
-        Parameter(const char* name, bool val);
-        Parameter(const char* name, const char* val);
-
         // Returns the parameter name
         const char* getName()const;
 

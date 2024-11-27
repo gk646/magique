@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <string>
 #include <raylib/raylib.h>
 
+#include <magique/config.h>
 #include <magique/ui/TextFormat.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-#include <magique/config.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/StringHashMap.h"
@@ -55,16 +54,16 @@ namespace magique
 
     //----------------- STATE DATA -----------------//
 
-    StringHashMap<ValueInfo> VALUES;       // Placeholder to value mapping - transparent lookup enabled!
-    ValueStorage VALUE_STORAGE;            // All values stored by the placeholders
-    char FMT_PREFIX = '$';                 // The format prefix to each for#
-    char FMT_ENCAP_START = '{';            // Format encapsulator start
-    char FMT_ENCAP_END = '}';              // Format encapsulator end
-    std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
-    std::string STRING_BUILDER(512, '\0'); // Cache for the final formatted string
+    static StringHashMap<ValueInfo> VALUES{};     // Placeholder to value mapping - transparent lookup enabled!
+    static ValueStorage VALUE_STORAGE{};          // All values stored by the placeholders
+    static char FMT_PREFIX = '$';                 // The format prefix to each for#
+    static char FMT_ENCAP_START = '{';            // Format encapsulator start
+    static char FMT_ENCAP_END = '}';              // Format encapsulator end
+    static std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
+    static std::string STRING_BUILDER(512, '\0'); // Cache for the final formatted string
 
     template <typename T>
-    constexpr ValueType getValueType() // Function to get the ValueType for a given type T
+    static constexpr ValueType getValueType() // Function to get the ValueType for a given type T
     {
         if constexpr (std::is_same_v<T, float>)
         {
@@ -85,7 +84,7 @@ namespace magique
         return INT;
     }
 
-    void eraseValue(const ValueInfo info)
+    static void eraseValue(const ValueInfo info)
     {
         const auto erase = []<typename T>(const ValueInfo info)
         {
@@ -101,7 +100,7 @@ namespace magique
             }
 
             // The info to the value which we have to move
-            const ValueInfo replaceMent{getValueType<T>(), static_cast<uint8_t>(vec.size() - 1)};
+            const ValueInfo replacement{getValueType<T>(), static_cast<uint8_t>(vec.size() - 1)};
 
             // Move and pop
             vec[info.index] = vec.back();
@@ -110,7 +109,7 @@ namespace magique
             // Find the info to the moved value and set its index to where we just moved it
             for (auto& pair : VALUES)
             {
-                if (pair.second.index == replaceMent.index && pair.second.type == replaceMent.type)
+                if (pair.second.index == replacement.index && pair.second.type == replacement.type)
                 {
                     pair.second.index = info.index;
                     break;
@@ -132,9 +131,9 @@ namespace magique
     }
 
     template <typename T>
-    void SetFormatValueImpl(const char* key, const auto& val)
+    static void SetFormatValueImpl(const char* key, const auto& val)
     {
-        MAGIQUE_ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placholder is larger than configured max!");
+        MAGIQUE_ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placeholder is larger than configured max!");
         if constexpr (std::is_same_v<T, const char*>)
         {
             MAGIQUE_ASSERT(strlen(val) < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
@@ -166,7 +165,7 @@ namespace magique
         }
     }
 
-    const char* GetValueText(const ValueInfo info)
+    static const char* GetValueText(const ValueInfo info)
     {
         switch (info.type)
         {
@@ -262,18 +261,19 @@ namespace magique
     void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
     template <typename T>
-    T& GetFormatValue(const char* placeholder)
+    T* GetFormatValue(const char* placeholder)
     {
         const auto it = VALUES.find(placeholder);
         if (it == VALUES.end())
         {
-            LOG_FATAL("Value for given placholder does not exist: %s", placeholder);
+            return nullptr;
         }
-        return VALUE_STORAGE.getValueVec<T>()[it->second.index];
+        if constexpr (std::is_same_v<T, const char*>)
+        return &VALUE_STORAGE.getValueVec<T>()[it->second.index];
     }
 
-    template float& GetFormatValue(const char*);
-    template std::string& GetFormatValue(const char*);
-    template int& GetFormatValue(const char*);
+    template float* GetFormatValue(const char*);
+    template const char* GetFormatValue(const char*);
+    template int* GetFormatValue(const char*);
 
 } // namespace magique

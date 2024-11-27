@@ -1,3 +1,13 @@
-add_executable(magique-test main.cpp)
+enable_testing()
 
-target_link_libraries(magique-test PRIVATE magique)
+# Parse files
+file(GLOB_RECURSE TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+add_executable(magique-tests ${TEST_FILES})
+
+target_link_libraries(magique-tests PRIVATE magique)
+target_include_directories(magique-tests PRIVATE catch2)
+target_compile_definitions(magique-tests PRIVATE MAGIQUE_TEST_MODE) # makes internal things public
+
+include(catch_cmake/Catch.cmake)
+
+catch_discover_tests(magique-tests)

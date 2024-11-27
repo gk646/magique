@@ -11,13 +11,13 @@
 //===============================================
 // .....................................................................
 // This module allows to register custom command that can be executed in game.
-// It's drawn on top of the game and consumes all input if opened.
+// It's drawn on top of the game and consumes all input if opened. It also features autocomplete and sorted suggestions
 // Controls:
 //      - PAGE_UP:    opens/closes the command window
 //      - ENTER:      submits the current input text
 //      - TAB:        autocomplete the current selection
 //      - ARROW_UP:   insert previous submitted text or move autocomplete selection up (if shown)
-//      - ARROW_DOWN: insert next submitted text or move autocomplete selection down (if shown)
+//      - ARROW_DOWN: insert next submitted text (or clear if at last position) or move autocomplete selection down (if shown)
 //
 // Allows to register custom commands. Commands are executed with its name followed by a variable amount of parameters.
 // All parameters are separated by at least 1 whitespace:
@@ -54,14 +54,6 @@ namespace magique
     // Adds a formatted string to the console in a new line - same as printf()
     void AddConsoleStringF(const char* format, ...);
 
-    // Manually adds an environment variable with the given name and value
-    void AddEnvVariable(const char* name, float value);
-    void AddEnvVariable(const char* name, const char* value);
-    void AddEnvVariable(const char* name, bool value);
-
-    // Retrieves a
-    Parameter& GetEnvVariable(const char* name);
-
     //================= COMMANDS =================//
     // Builtin commands:
     //      - help: no args
@@ -71,7 +63,7 @@ namespace magique
     //      - clear: no args
     //           - clears the terminal
     //      - def: STRING (STRING | BOOL | NUMBER)
-    //           - sets or creates a new environment variable with the given type with AddEnvVariable()
+    //           - sets or creates a new environment variable with the given type with SetEnvParam()
     //      - undef: STRING
     //           - removes the environment variable with the given name
 
@@ -82,7 +74,7 @@ namespace magique
     // Returns true if the command with the given name is successfully removed
     bool UnRegisterCommand(const std::string& name);
 
-    // Function is passed the parsed parameters
+    // Function is passed the parsed parameters - function is only called if the parsed parameters match the definition
     using CommandFunction = std::function<void(const std::vector<Parameter>& params)>;
 
     struct Command final
