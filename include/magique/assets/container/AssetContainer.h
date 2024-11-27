@@ -5,6 +5,7 @@
 #include <vector>
 #include <magique/fwd.hpp>
 #include <magique/assets/types/Asset.h>
+#include <magique/internal/Macros.h>
 #include <magique/internal/PlatformIncludes.h>
 
 //===============================================
@@ -12,18 +13,18 @@
 //===============================================
 // ................................................................................
 // This class stores assets and allows structured access to them
+// Example :
+// The texture:       resources/textures/player.png
+// Compile Image:     assets::CompileImage("../resources");
+// While loading:     RegisterTexture(assets.getAsset("textures/player.png");
+//
+// IMPORTANT: All assets are named with their path from the asset content root
 // ................................................................................
 
 namespace magique
 {
     struct AssetContainer final
     {
-        // IMPORTANT: All assets are named with their path from the asset content root
-        // Example :
-        // The texture:       resources/textures/player.png
-        // Compile Image:     assets::CompileImage("../resources");
-        // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
-
         // Iterates the given directory and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
@@ -47,7 +48,7 @@ namespace magique
         ~AssetContainer();
 
     private:
-        AssetContainer() = default;
+        PUB(AssetContainer() = default);
         void sort();
         const char* nativeData = nullptr; // Pointer to all the file data
         std::vector<Asset> assets;        // Internal file list

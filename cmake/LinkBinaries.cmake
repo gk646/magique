@@ -52,7 +52,7 @@ if (WIN32)
         target_compile_options(magique PUBLIC /Zc:preprocessor)
     endif ()
 elseif (UNIX)
-    target_compile_options(magique PUBLIC -fno-rtti) #
+    target_compile_options(magique PUBLIC -flto -fno-rtti) # Needs to be inherited by targets to not get build errors
 else ()
     #
 endif ()

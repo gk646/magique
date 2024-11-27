@@ -402,6 +402,7 @@ namespace cxstructs
         }
         return hash;
     }
+
     // Hash operator for a const char* for e.g. std::unordered_map
     struct Fnv1aHash
     {

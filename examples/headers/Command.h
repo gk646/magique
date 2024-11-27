@@ -117,6 +117,11 @@ STRING: not a BOOL or NUMBER
 
 Default commands:
 print (NUMBER | BOOL | STRING) ...
+clear
+
+Look at the commands defined in the example and try to invoke them!
+	- "greet User Morning"
+	- "broadcast
         )";
         DrawText(helpText, 10, 500, 18, BLACK);
     }

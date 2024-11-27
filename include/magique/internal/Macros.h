@@ -90,17 +90,21 @@ namespace magique::internal
 
 //================= BUILDING =================//
 
+#ifdef MAGIQUE_TEST_MODE
+#define PUB(mod)                                                                                                        \
+public:                                                                                                                 \
+    mod
+#else
+#define PUB(decl) decl
+#endif
+
 
 #ifdef _MSC_VER
-
 #define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
 #define UNIGNORE_WARNING() __pragma(warning(pop))
-
 #else
-
 #define IGNORE_WARNING(num)
 #define UNIGNORE_WARNING()
-
 #endif
 
 

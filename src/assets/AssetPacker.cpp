@@ -9,11 +9,10 @@
 #include <magique/assets/AssetPacker.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
+#include <magique/internal/Macros.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/EncryptionUtil.h"
-
-#include <magique/internal/Macros.h>
 
 namespace fs = std::filesystem;
 using namespace std::chrono;
@@ -473,7 +472,6 @@ namespace magique
             return checksum;
         }
 
-
         checksum.first = 0x67452301;
         checksum.second = 0xefcdab89;
         checksum.third = 0x98badcfe;
@@ -482,9 +480,9 @@ namespace magique
         auto processChunk = [](uint32_t(&M)[16], Checksum& checksum)
         {
             static constexpr unsigned int s[] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-                                          5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20,
-                                          4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-                                          6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
+                                                 5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20,
+                                                 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+                                                 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
 
             static constexpr unsigned int K[] = {
                 0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee, 0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,

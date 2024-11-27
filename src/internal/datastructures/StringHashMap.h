@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef STRINGHASHMAP_H
-#define STRINGHASHMAP_H
+#ifndef MAGIQUE_STRINGHASHMAP_H
+#define MAGIQUE_STRINGHASHMAP_H
 
 #include <string>
 #include <cxutil/cxstring.h>
 #include "internal/datastructures/HashTypes.h"
+
+// Transparent lookup enabled string hashmap
 
 namespace magique
 {
@@ -12,4 +14,4 @@ namespace magique
     using StringHashMap = HashMapEx<std::string, Value, cxstructs::StringCharHash, cxstructs::StringCharEquals>;
 }
 
-#endif //STRINGHASHMAP_H
+#endif //MAGIQUE_STRINGHASHMAP_H
