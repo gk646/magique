@@ -159,7 +159,7 @@ namespace magique
             i += 4;
 
             // Sanity check
-            if (size > 1'000'000 || size <= 0) // Bigger than 1mb
+            if (size > 1'000'000 || size < 0) // Bigger than 1mb
             {
                 delete[] data;
                 LOG_ERROR("Failed to parse game save. Invalid entry!");

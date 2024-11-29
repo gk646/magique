@@ -33,6 +33,8 @@ namespace magique
         double targetTime = 0;
         double sleepTime = 0;
 
+        ~Scheduler() { close(); } // Added for safety
+
         void addWorkedJob(const IJob* job)
         {
             // allows for time tracking later on

@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_MAIN_THREAD_UTIL_H
 #define MAGIQUE_MAIN_THREAD_UTIL_H
 
+extern "C" {
 void SetTargetFPS(const int fps) // raylib function implemented here
 {
     auto& config = magique::global::ENGINE_CONFIG.timing;
@@ -53,6 +54,7 @@ float GetFrameTime()
 {
     const auto& perf = magique::global::PERF_DATA;
     return static_cast<float>(perf.drawTickTime + perf.logicTickTime) / 1'000'000'000.0F;
+}
 }
 
 namespace magique
@@ -263,7 +265,7 @@ namespace magique
 
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
-        global::CONSOLE_DATA.update();      // First in case needs to block input
+        global::CONSOLE_DATA.update();  // First in case needs to block input
         InputSystem(registry);          // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
         LogicSystem(registry);          // Before gametick cause essential

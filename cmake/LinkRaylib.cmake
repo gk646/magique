@@ -10,8 +10,11 @@ set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
 
 if (UNIX)
-    set(GLFW_BUILD_X11 ON) # Use wayland per default
-    set(GLFW_BUILD_WAYLAND ON) # Use wayland per default
+    set(GLFW_BUILD_X11 ON)
+    # Weird bug where key repeats are not detected if this is enabled
+    # Only happens in raylib not when the official examples are built with the same packaged GLFW...?
+    set(GLFW_BUILD_WAYLAND OFF)
+
 endif (UNIX)
 
 message(STATUS "\n-- ------------- raylib ------------------")
@@ -25,7 +28,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >
-            $<$<CONFIG:Release>:-Ofast -funroll-loops -DNDEBUG -flto>
+            $<$<CONFIG:Release>:-Ofast -funroll-loops -DNDEBUG>
     )
     target_link_options(raylib PRIVATE)
 elseif (MSVC)

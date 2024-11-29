@@ -32,14 +32,14 @@ namespace magique
     {
         // Registers a new task - this is for more complex task requiring its own class -> subclass magique::ITask{};
         // task     - a new instance of a subclass of ITask, takes ownership
-        // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
+        // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
         void registerTask(ITask<AssetContainer>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
         // Registers a simple loading function - for smaller and less complex loading
         // func     - a loading func (lambda)
-        // thread   - the thread where the task is loaded - ALL GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
+        // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
         // Example: registerTask([](magique::AssetContainer &assets) {}, magique::MAIN_THREAD);

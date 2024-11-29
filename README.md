@@ -56,10 +56,18 @@ Most notable features:
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
 
-#### Minimal Example
+### 1. Quickstart
+
+Checkout the [video guide]() for a step by step explanation!
+
+1. Download or clone `magique`
+2. Set up an emtpy new project folder and create files:
+
+- **_main.cpp_**
 
 ```c++
-using namespace magique;
+#include <magique/magique.hpp>
+using namespace magique; // Recommended and officially supported
 struct MyGame final : Game
 {
     void updateGame(GameState gameState) override { printf("Hello World!\n"); }
@@ -73,7 +81,32 @@ int main()
 }
 ```
 
-### 1. Is magique for you?
+- _**CMakeLists.txt**_
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(MyGame)
+
+add_executable(MyGame main.cpp) # Add your executable
+
+add_subdirectory(path/to/magique/dir magique) # Set the path to directory you downloaded or clones magique into
+
+target_link_libraries(MyGame PUBLIC magique) # Link your project against magique - automatically sets up include paths and dependencies
+```
+
+3. To build your game executable inside a build folder call this via a terminal in the new folder:
+
+```shell
+mkdir build && cd build
+cmake ..
+make
+```
+
+**With these simple steps you created your first project with `magique`!**
+
+_Note: You need to have cmake and a valid C++20 compiler installed_
+
+### 2. Is magique for you?
 
 `magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project
 and meant to be **extended by user written code**!
@@ -92,36 +125,6 @@ user code with _no overhead_.
 
 **_Even if you don't want to use the whole engine there are plenty of interesting concepts within `magique` that you can
 use or learn from.**_
-
-### 2. Installation
-
-`magique` is using CMake as its build system hence it's recommended for projects to use it as well.
-Configuration of the library happens inside `include/magique/config.h` (documented in source).
-
-#### CMake (recommended)
-
-When using CMake just download or clone this repository and add it as subdirectory with the path:
-
-```cmake
-add_subdirectory(path/to/magique)
-# Your project add_executable(MyGame main.cpp)
-target_link_libraries(MyGame PRIVATE magique)
-```
-
-This will automatically build magique (including all dependencies) with your project and set up the include path. Don't
-forget to link your project against `magique`! This approach will automatically build for the platform your using.
-Inside the `CMakeLists.txt` you can configure the build setup e.g. enabling Steam, sanitizer...
-
-#### Custom or prebuilt binaries
-
-Doing a custom build even without CMake should be very straightforward:  
-_Compile all files in src into a single library with /include as include path._ _(conditionally exclude steam or
-multiplayer if you're not using it)_
-
-If released you can download the latest binaries, link against them and just copy the include folder into your project.
-
-_**Feel free to copy single headers, implementations or modules in any combination, as the license allows. A lot of the
-modules can easily be made into standalone units.**_
 
 ### 3. Documentation
 
@@ -187,3 +190,5 @@ hierarchies in the past, and it almost always turns out to be a mess and there's
 the very nice typesafety of EnTT makes it a joy to use in C++.
 
 ### 5. Further Resources
+
+rayl
