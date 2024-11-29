@@ -64,7 +64,7 @@ static bool CreatePathList(const char* directory, magique::vector<fs::path>& pat
 namespace magique
 {
     // Dangerous method - but just switches out pointers - outside memory management is (should be) sound
-    void UnCompressImage(char*& imageData, int& imageSize)
+    static void UnCompressImage(char*& imageData, int& imageSize)
     {
         const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
         auto data = DeCompress(start, imageSize);
@@ -74,7 +74,7 @@ namespace magique
         data.pointer = nullptr; // we switch out the pointer
     }
 
-    bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
+    static bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
         int totalSize = 0;
         int filePointer = 0;
@@ -160,7 +160,7 @@ namespace magique
 
         // read file
         FILE* file = fopen(path, "rb");
-        if (file)
+        if (file != nullptr)
         {
             // Get size
             fseek(file, 0, SEEK_END);
@@ -200,7 +200,7 @@ namespace magique
         return false;
     }
 
-    bool IsImageOutdated(const char* directory)
+    static bool IsImageOutdated(const char* directory)
     {
         const auto path = fs::path(directory);
         if (fs::exists(path) && fs::is_directory(path)) // needs to exist and be a directory
@@ -279,7 +279,7 @@ namespace magique
         return true;
     }
 
-    void CreateIndexFile(const char* directory, int asset, const int totalSize)
+    static void CreateIndexFile(const char* directory, int asset, const int totalSize)
     {
         char filePath[512] = {0};
         snprintf(filePath, sizeof(filePath), "%s/index.magique", directory);
@@ -308,8 +308,8 @@ namespace magique
         fclose(file);
     }
 
-    void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
-                    const fs::path& rootPath, FILE* imageFile, vector<char> data)
+    static void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
+                           const fs::path& rootPath, FILE* imageFile, vector<char> data)
     {
         std::string relativePathStr;
         int totalFileSize = 0; // Only raw file size

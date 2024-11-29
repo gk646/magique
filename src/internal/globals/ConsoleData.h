@@ -56,9 +56,9 @@ namespace magique
         std::string line;                      // Current input line
 
         // Command data
+        std::vector<Parameter> parameters;    // Command parameters
         vector<Command> commands;             // All registered commands
         vector<const Command*> suggestions;   // Command suggestions
-        std::vector<Parameter> parameters;    // Command parameters
         vector<std::string> stringParameters; // Storage for the string parameters
 
         // State data
@@ -184,7 +184,11 @@ namespace magique
 
         void draw() const { ConsoleHandler::draw(*this); }
 
-        void update() { ConsoleHandler::update(*this); }
+        void update()
+        {
+            fontSize = global::ENGINE_CONFIG.fontSize;
+            ConsoleHandler::update(*this);
+        }
 
         void submit()
         {
@@ -225,7 +229,7 @@ namespace magique
 
     namespace global
     {
-        inline ConsoleData CONSOLE_DATA{};
+        static inline ConsoleData CONSOLE_DATA{};
     }
 
     //================= HANDLER =================//

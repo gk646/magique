@@ -46,13 +46,21 @@ elseif (MAGIQUE_LAN)
 endif ()
 
 
+# Compile the definition that need to be inherited by targets to not get build errors
+
+if (MAGIQUE_STEAM)
+    target_compile_definitions(magique PUBLIC MAGIQUE_STEAM)
+elseif (MAGIQUE_LAN)
+    target_compile_definitions(magique PUBLIC MAGIQUE_LAN)
+endif ()
+
 if (WIN32)
     target_link_libraries(magique PRIVATE ws2_32.lib)
     if (MSVC)
         target_compile_options(magique PUBLIC /Zc:preprocessor)
     endif ()
 elseif (UNIX)
-    target_compile_options(magique PUBLIC -flto -fno-rtti) # Needs to be inherited by targets to not get build errors
+    target_compile_options(magique PUBLIC -flto=auto -fno-rtti)
 else ()
     #
 endif ()

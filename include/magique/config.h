@@ -33,14 +33,14 @@
 #define MAGIQUE_EXPECTED_MAPS 32
 
 // The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldn't be bigger than that)
-// Should be chosen as SMALL as possible, 75% of objects should fit within the given size
-// If the size of the bounding box of the object is bigger than 2*cellSize it gets slow
+// Should be chosen as SMALL as possible, such that most objects fit within the given size
+// If the size of the bounding box of objects is bigger than 2*cellSize it gets "slow"
 #define MAGIQUE_COLLISION_CELL_SIZE 64
 
-// Maximum amount of entities allowed per cell (less is better)
+// Maximum amount of entities allowed per cell (less is better) - if more they are not collision checked anymore
 #define MAGIQUE_MAX_ENTITIES_CELL 31
 
-// Sets the coarseness of the pathfinding grid
+// Sets the coarseness/size of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
 #define MAGIQUE_PATHFINDING_CELL_SIZE 32
 
@@ -102,7 +102,7 @@
 
 //================= UTIL =================//
 
-// Enables logging - error and fatal messages are always enabled
+// Enables logging of message with level below error - error and fatal messages are always enabled
 #define MAGIQUE_LOGGING 1
 
 // Enables profiling - generates average times for update and render ticks

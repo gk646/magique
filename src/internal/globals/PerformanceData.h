@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef PERFDATA_H
-#define PERFDATA_H
-
+#ifndef MAGIQUE_PERFDATA_H
+#define MAGIQUE_PERFDATA_H
 
 #include "internal/datastructures/VectorType.h"
 #include "external/raylib-compat/rlgl_compat.h"
@@ -13,7 +12,6 @@ namespace magique
         float width = 0;
         char text[20]{};
     };
-
 
     enum TickType
     {
@@ -58,7 +56,7 @@ namespace magique
                 return w;
             };
 
-            Vector2 position = {15, 0};
+            Vector2 position = {10, 0};
             const auto& font = global::ENGINE_CONFIG.font;
             for (const auto& block : blocks)
             {
@@ -99,7 +97,7 @@ namespace magique
             snprintf(blocks[block].text, 32, "Draw Calls: %.1d", calls);
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
-#if MAGIQUE_MULITPLAYER_SUPPORT == 1
+#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
             if (Glob::GDT.mp.session)
             {
                 float inBytes, outBytes;
@@ -145,7 +143,7 @@ namespace magique
             }
         }
 
-        // Dont even let it be there
+        // Don't even let it be there
 #if MAGIQUE_PROFILING == 1
         [[nodiscard]] float getAverageTime(const TickType t)
         {
@@ -186,4 +184,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //PERFDATA_H
+#endif //MAGIQUE_PERFDATA_H

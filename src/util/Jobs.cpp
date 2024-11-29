@@ -10,25 +10,6 @@
 
 namespace magique
 {
-    bool InitJobSystem()
-    {
-        static bool initCalled = false;
-        if (initCalled)
-        {
-            LOG_WARNING("Init called twice. Skipping...");
-            return false;
-        }
-        initCalled = true;
-        auto& scd = global::SCHEDULER;
-        scd.shutDown = false;
-        scd.isHibernate = true;
-        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 3 Worker Threads + 1 Main Thread = 4
-        {
-            scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
-        }
-        return true;
-    }
-
     jobHandle AddJob(IJob* job)
     {
         auto& scd = global::SCHEDULER;
@@ -89,7 +70,6 @@ namespace magique
     {
         auto& scd = global::SCHEDULER;
         scd.isHibernate = false;
-
     }
 
     void HibernateJobs(const double target, const double sleepTime)
@@ -100,9 +80,31 @@ namespace magique
         scd.isHibernate = true;
     }
 
-    void* internal::GetJobMemory(const size_t bytes)
+    bool internal::InitJobSystem()
     {
-        return global::SCHEDULER.jobAllocator.allocate(bytes);
+        static bool initCalled = false;
+        if (initCalled)
+        {
+            LOG_WARNING("Init called twice. Skipping...");
+            return false;
+        }
+        initCalled = true;
+        auto& scd = global::SCHEDULER;
+        scd.shutDown = false;
+        scd.isHibernate = true;
+        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 3 Worker Threads + 1 Main Thread = 4
+        {
+            scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
+        }
+        return true;
     }
+
+    bool internal::CloseJobSystem()
+    {
+        global::SCHEDULER.close();
+        return true;
+    }
+
+    void* internal::GetJobMemory(const size_t bytes) { return global::SCHEDULER.jobAllocator.allocate(bytes); }
 
 } // namespace magique

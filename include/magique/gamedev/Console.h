@@ -62,10 +62,6 @@ namespace magique
     //           - print: Takes any amount of variables of any type and prints each to a new line to the console
     //      - clear: no args
     //           - clears the terminal
-    //      - def: STRING (STRING | BOOL | NUMBER)
-    //           - sets or creates a new environment variable with the given type with SetEnvParam()
-    //      - undef: STRING
-    //           - removes the environment variable with the given name
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)

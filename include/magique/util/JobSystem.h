@@ -25,10 +25,6 @@ namespace magique
         null = UINT16_MAX, // The null handle
     };
 
-    // Initializes the job system
-    // Note: Does not have to be called manually when using the game template
-    bool InitJobSystem();
-
     //================= JOBS =================//
 
     // Creates a new job from a lambda or function
@@ -109,10 +105,19 @@ namespace magique
 
 //================= IMPLEMENTATION =================//
 
+
 namespace magique
 {
     namespace internal
     {
+        // Initializes the job system
+        // Note: Does not have to be called manually when using the game template
+        bool InitJobSystem();
+
+        // Closes the job system
+        // Note: Does not have to be called manually when using the game template
+        bool CloseJobSystem();
+
         void* GetJobMemory(size_t bytes);
     } // namespace internal
     template <typename Callable>

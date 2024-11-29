@@ -17,7 +17,7 @@ namespace magique::mainthread
     inline void Close()
     {
         renderer::Close();
-        global::SCHEDULER.close();
+        global::SCHEDULER.close(); // Needs to be called explicitly so
     }
 
     inline void Run(Game& game)

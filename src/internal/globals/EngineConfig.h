@@ -5,8 +5,8 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
-#include <magique/util/Logging.h>
 #include <magique/ui/LoadingScreen.h>
+#include <magique/util/Logging.h>
 
 namespace magique
 {
@@ -27,6 +27,7 @@ namespace magique
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
         float entityUpdateDistance = 1000;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
+        float fontSize = 20;                        // Font size of engine UI elements - scales automatically
         float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range

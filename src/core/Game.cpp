@@ -93,6 +93,10 @@ namespace magique
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);
+
+#if !defined(MAGIQUE_DEBUG) && MAGIQUE_PROFILING == 1
+        LOG_WARNING("Profiling enabled in Release mode. Disable for production build");
+#endif
     }
 
     Game::~Game()

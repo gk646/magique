@@ -137,5 +137,4 @@ namespace magique
         return *this;
     }
 
-
 } // namespace magique

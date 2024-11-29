@@ -12,13 +12,14 @@
 // Asset Container
 //===============================================
 // ................................................................................
-// This class stores assets and allows structured access to them
+// This class stores assets and allows structured or direct access to them.
+// You interact with it by registering a task in Game::onStartup() where its passed as argument.
+//
+// IMPORTANT: All assets are named with their path from the asset content root
 // Example :
 // The texture:       resources/textures/player.png
 // Compile Image:     assets::CompileImage("../resources");
 // While loading:     RegisterTexture(assets.getAsset("textures/player.png");
-//
-// IMPORTANT: All assets are named with their path from the asset content root
 // ................................................................................
 
 namespace magique
@@ -31,12 +32,14 @@ namespace magique
         // Relative to the compiled image root e.g. res/player/idle - compile("./res") - iterate("player/idle");
         void iterateDirectory(const char* directory, const std::function<void(Asset asset)>& func) const;
 
-        // Retrieves the first asset that matches the given path
+        // Retrieves the first asset that matches the given path - use getAsset() to do a easier name search
+        // Note: This should be a path to a file - otherwise will return the first file that matches the given path
+        //       e.g. music/Sound - can return - music/Sound/ambient/Animals.wav
         // This is a fast operation  - O (log n)
         const Asset& getAssetByPath(const char* path) const;
 
         // Retrieves the first asset that matches the given name
-        // This is slower than ByPath - O (n)
+        // This is slower than getAssetByPath() - O (n)
         const Asset& getAsset(const char* name) const;
 
         // Returns a reference to the asset vector containing all loaded assets
