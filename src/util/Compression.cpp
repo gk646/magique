@@ -38,7 +38,7 @@ namespace magique
         return {result, compressedSize};
     }
 
-    DataPointer<const unsigned char> DeCompress(const unsigned char* data, const int size)
+    DataPointer<const unsigned char> Decompress(const unsigned char* data, const int size)
     {
         if (!data || size <= 0)
         {

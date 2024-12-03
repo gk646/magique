@@ -10,7 +10,7 @@
 
 int main()
 {
-    magique::CompileImage("../res");
+    magique::CompileAssetImage("../res");
     WizardQuest game{};
     return game.run();
 

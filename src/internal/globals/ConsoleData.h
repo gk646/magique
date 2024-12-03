@@ -157,11 +157,6 @@ namespace magique
             for (const auto& cmd : commands)
             {
                 const char* cmdStr = cmd.name.c_str();
-                if (strcmp(cmdStr, lineStr) == 0)
-                {
-                    // suggestions.clear();
-                    // return;
-                }
                 if (strncmpnc(cmdStr, lineStr, inputLen))
                 {
                     suggestions.push_back(&cmd);
@@ -229,7 +224,7 @@ namespace magique
 
     namespace global
     {
-        static inline ConsoleData CONSOLE_DATA{};
+        inline ConsoleData CONSOLE_DATA{};
     }
 
     //================= HANDLER =================//
@@ -283,6 +278,7 @@ namespace magique
     {
         if (data.showConsole) [[unlikely]]
         {
+            const auto& theme = global::ENGINE_CONFIG.theme;
             const auto& font = global::ENGINE_CONFIG.font;
             const auto fsize = data.fontSize;
             const auto lineHeight = fsize * 1.3F;
@@ -294,19 +290,19 @@ namespace magique
             const Rectangle inputBox = {0, cHeight - lineHeight, cWidth, lineHeight};
 
             // Draw shape
-            DrawRectangleRec(cRect, ColorAlpha(DARKGRAY, 0.75F));
-            DrawRectangleLinesEx(cRect, 2.0F, ColorAlpha(DARKGRAY, 0.85F));
-            DrawRectangleRec(inputBox, ColorAlpha(LIGHTGRAY, 0.35F));
+            DrawRectangleRec(cRect, ColorAlpha(theme.backDark, 0.85F));
+            DrawRectangleLinesEx(cRect, 2.0F, ColorAlpha(theme.backDark, 0.85F));
+            DrawRectangleRec(inputBox, ColorAlpha(theme.backLight, 0.35F));
 
             // Draw input text
             Vector2 textPos = {5, cHeight - lineHeight};
 
-            DrawTextEx(font, "> ", textPos, fsize, SPACING, LIGHTGRAY);
-            DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, LIGHTGRAY);
+            DrawTextEx(font, "> ", textPos, fsize, SPACING, theme.txtPassive);
+            DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.txtActive);
             if (data.showCursor)
             {
                 const float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, SPACING);
-                DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, DARKGRAY);
+                DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.txtPassive);
             }
 
             // Draw console text
@@ -315,7 +311,7 @@ namespace magique
             {
                 if (textPos.y < 0)
                     break;
-                DrawTextEx(font, line.c_str(), textPos, fsize, SPACING, LIGHTGRAY);
+                DrawTextEx(font, line.c_str(), textPos, fsize, SPACING, theme.txtPassive);
                 textPos.y -= lineHeight;
             }
 
@@ -326,14 +322,16 @@ namespace magique
                 for (int i = 0; i < suggestions; ++i) // Iterate from front - sorted descending in quality
                 {
                     const Rectangle sBox = {textPos.x, textPos.y, data.maxSuggestionLen, lineHeight};
-                    DrawRectangleRec(sBox, i == data.suggestionPos ? GRAY : DARKGRAY);
+                    const auto isSelected = i == data.suggestionPos;
+                    const auto& textCol = isSelected ? theme.txtActive : theme.txtPassive;
+                    DrawRectangleRec(sBox, isSelected ? theme.backLight : theme.backDark);
                     const auto& cmd = *data.suggestions[i];
                     const char* name = cmd.name.c_str();
                     const char* desc = cmd.description.empty() ? "..." : cmd.description.c_str();
-                    DrawTextEx(font, name, textPos, fsize, 1.0F, LIGHTGRAY);
+                    DrawTextEx(font, name, textPos, fsize, 1.0F, textCol);
                     const float nOff = MeasureTextEx(font, name, fsize, SPACING).x;
-                    DrawTextEx(font, "  -  ", {textPos.x + nOff, textPos.y}, fsize, SPACING, LIGHTGRAY);
-                    DrawTextEx(font, desc, {textPos.x + nOff + (fsize * 1.5F), textPos.y}, fsize, SPACING, LIGHTGRAY);
+                    DrawTextEx(font, "  -  ", {textPos.x + nOff, textPos.y}, fsize, SPACING, textCol);
+                    DrawTextEx(font, desc, {textPos.x + nOff + (fsize * 1.5F), textPos.y}, fsize, SPACING, textCol);
                     textPos.y -= lineHeight;
                 }
             }

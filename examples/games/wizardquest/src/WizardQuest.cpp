@@ -18,7 +18,7 @@ void WizardQuest::onStartup(AssetLoader& loader)
     SetShowHitboxes(true);
 
     // Init steam
-    InitSteam(true);
+    InitMagique(true);
     InitLocalMultiplayer();
 
     SetStaticWorldBounds({0, 0, 1280, 1000});

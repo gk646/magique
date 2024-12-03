@@ -45,24 +45,26 @@ namespace magique
         {
             const auto drawBlock = [](const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
             {
+                const auto& theme = global::ENGINE_CONFIG.theme;
                 const float blockHeight = fs * 1.15F;
                 const float borderWidth = fs * 0.1F;
                 const Vector2 textPosition = {pos.x + w * 0.07F, pos.y + (blockHeight - fs) / 2};
 
                 const Rectangle container = {pos.x, pos.y, w, blockHeight};
-                DrawRectangleRec(container, GRAY);
-                DrawRectangleLinesEx(container, borderWidth, LIGHTGRAY);
-                DrawTextEx(f, text, textPosition, fs, 0.5F, LIGHTGRAY);
+                DrawRectangleRec(container, theme.backLight);
+                DrawRectangleLinesEx(container, borderWidth, theme.backDark);
+                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.txtActive);
                 return w;
             };
 
             Vector2 position = {10, 0};
             const auto& font = global::ENGINE_CONFIG.font;
+            const auto fs = global::ENGINE_CONFIG.fontSize;
+
             for (const auto& block : blocks)
             {
                 if (block.width == 0)
                     continue;
-                constexpr auto fs = 20;
                 position.x += drawBlock(block.text, font, fs, position, block.width);
             }
         }
@@ -74,8 +76,8 @@ namespace magique
             if (tickCounter != updateDelayTicks) [[likely]]
                 return;
 
-            auto& font = global::ENGINE_CONFIG.font;
-            constexpr auto fs = 20;
+            const auto& font = global::ENGINE_CONFIG.font;
+            const auto fs = global::ENGINE_CONFIG.fontSize;
 
             int block = 0;
             const int fps = GetFPS();

@@ -28,15 +28,15 @@ namespace magique
         [[nodiscard]] int getDay() const;
 
         // Returns the hours of the day in 24-hour format
-        // Range: 0 - 24
+        // Range: 0 - 23
         [[nodiscard]] int getHour() const;
 
         // Returns the minute of the hour
-        // Range: 0 - 60
+        // Range: 0 - 59
         [[nodiscard]] int getMinute() const;
 
         // Returns the second of the minute
-        // Range: 0 - 60
+        // Range: 0 - 59
         [[nodiscard]] int getSecond() const;
 
         // Gets the TOTAL amount of virtual seconds this clock has run
@@ -52,7 +52,7 @@ namespace magique
         void setRealMinutes(int realMinutes);
         [[nodiscard]] int getRealMinutes() const;
 
-        // Set the paused status - the paused clock does not
+        // Set the paused status - if paused does not tick
         void setPaused(bool isPaused);
         [[nodiscard]] bool getIsPaused() const;
 

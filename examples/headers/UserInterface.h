@@ -1,6 +1,5 @@
 #ifndef MAGIQUE_USER_INTERFACE_EXAMPLE_H
 #define MAGIQUE_USER_INTERFACE_EXAMPLE_H
-#define MAGIQUE_EXAMPLE
 
 #include <magique/core/Game.h>
 #include <magique/ui/controls/Button.h>

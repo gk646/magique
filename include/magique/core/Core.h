@@ -130,11 +130,18 @@ namespace magique
     //================= UTILS =================//
 
     // Sets the engine font for performance-overlay and console
-    void SetEngineFont(const Font& font);
+    void SetFont(const Font& font);
 
-    // Initializes the engine - does not need to be called when using the game template (Game class)
-    // Needs to be called after InitWindow();
-    bool InitMagique();
+    const Font& GetFont();
+
+    namespace internal
+    {
+        // Initializes the engine - does not need to be called when using the game template (Game class)
+        // Needs to be called after InitWindow();
+        bool InitMagique();
+    } // namespace internal
 
 } // namespace magique
+
+
 #endif //MAGIQUE_CORE_H

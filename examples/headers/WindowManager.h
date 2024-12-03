@@ -1,6 +1,5 @@
 #ifndef MAGIQUE_MULTIPLE_WINDOWS_H
 #define MAGIQUE_MULTIPLE_WINDOWS_H
-#define MAGIQUE_EXAMPLE
 
 #include <magique/core/Game.h>
 #include <magique/ui/WindowManager.h>
@@ -50,7 +49,7 @@ inline void DrawWindow(Window& window, Color color)
 
     for (auto* child : window.getChildren())
     {
-        child->align(AnchorPosition::TOP_RIGHT, window);
+        child->align(Anchor::TOP_RIGHT, window);
         child->draw();
     }
 }
