@@ -1,6 +1,5 @@
 #ifndef MAGIQUE_PATHFINDING_EXAMPLE_H
 #define MAGIQUE_PATHFINDING_EXAMPLE_H
-#define MAGIQUE_EXAMPLE
 
 #include <raylib/raylib.h>
 

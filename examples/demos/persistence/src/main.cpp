@@ -1,4 +1,3 @@
-
 #include "PersistenceDemo.h"
 
 int main()

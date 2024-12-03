@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
-#include <chrono>
+#include <ctime>
 #include <cmath>
 
 #include <magique/gamedev/VirtualClock.h>

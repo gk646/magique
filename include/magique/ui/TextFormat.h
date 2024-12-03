@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef MAGIQUE_TEXT_H
-#define MAGIQUE_TEXT_H
+#ifndef MAGIQUE_TEXT_FORMAT_H
+#define MAGIQUE_TEXT_FORMAT_H
 
 #include <string>
 #include <raylib/raylib.h>
@@ -42,7 +42,7 @@ namespace magique
 
     // Formats and draws the given text with the current placeholder state
     // Note: This function tries to format the given txt! If you already have a formatted text use DrawText...()
-    void DrawTextFmt(const Font& font, const char* txt, Vector2 pos, float size, float spacing = 1, Color color = WHITE);
+    void DrawTextFmt(const Font& font, const char* fmt, Vector2 pos, float size, float spacing = 1, Color color = WHITE);
 
     // Formats and returns the given text with the current placeholder state
     // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again
@@ -56,4 +56,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_TEXT_H
+#endif //MAGIQUE_TEXT_FORMAT_H

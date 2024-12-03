@@ -89,7 +89,7 @@ namespace magique
         SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
 
         // Setup magique
-        InitMagique();
+        internal::InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized Game: %s", gameName);

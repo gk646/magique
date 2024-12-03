@@ -1,6 +1,6 @@
 #ifndef MAGIQUE_LIGHTING_EXAMPLE
 #define MAGIQUE_LIGHTING_EXAMPLE
-#define MAGIQUE_EXAMPLE
+
 
 #include <raylib/raylib.h>
 

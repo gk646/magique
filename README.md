@@ -56,7 +56,7 @@ Most notable features:
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
 
-### 1. Quickstart
+### Quickstart
 
 Checkout the [video guide]() for a step by step explanation!
 
@@ -64,35 +64,34 @@ Checkout the [video guide]() for a step by step explanation!
 2. Set up an emtpy new project folder and create files:
 
 - **_main.cpp_**
-
-```c++
-#include <magique/magique.hpp>
-using namespace magique; // Recommended and officially supported
-struct MyGame final : Game
-{
-    void updateGame(GameState gameState) override { printf("Hello World!\n"); }
-    void drawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
-};
-
-int main()
-{
-    MyGame game{};
-    return game.run();
-}
-```
+  ```c++
+  #include <magique/magique.hpp>
+  using namespace magique; // Recommended and officially supported
+  struct MyGame final : Game
+  {
+      void updateGame(GameState gameState) override { printf("Hello World!\n"); }
+      void drawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
+  };
+  
+  int main()
+  {
+      MyGame game{};
+      return game.run();
+  }
+  ```
 
 - _**CMakeLists.txt**_
 
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(MyGame)
-
-add_executable(MyGame main.cpp) # Add your executable
-
-add_subdirectory(path/to/magique/dir magique) # Set the path to directory you downloaded or clones magique into
-
-target_link_libraries(MyGame PUBLIC magique) # Link your project against magique - automatically sets up include paths and dependencies
-```
+  ```cmake
+  cmake_minimum_required(VERSION 3.20)
+  project(MyGame)
+  
+  add_executable(MyGame main.cpp) # Add your executable
+  
+  add_subdirectory(path/to/magique/dir magique) # Set the path to directory you downloaded or clones magique into
+  
+  target_link_libraries(MyGame PUBLIC magique) # Link your project against magique - automatically sets up include paths and dependencies
+  ```
 
 3. To build your game executable inside a build folder call this via a terminal in the new folder:
 
@@ -106,7 +105,7 @@ make
 
 _Note: You need to have cmake and a valid C++20 compiler installed_
 
-### 2. Is magique for you?
+### Is magique for you?
 
 `magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project
 and meant to be **extended by user written code**!
@@ -123,12 +122,12 @@ that you have to follow when using magique:
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
 user code with _no overhead_.
 
-**_Even if you don't want to use the whole engine there are plenty of interesting concepts within `magique` that you can
+_**Even if you don't want to use the whole engine there are plenty of interesting concepts within `magique` that you can
 use or learn from.**_
 
-### 3. Documentation
+### Documentation
 
-There are 2 ways `magique` is documented:
+There are 3 ways `magique` is documented:
 
 - **In-Header Documentation**
     - Each public module, function and struct comes with a comment or description
@@ -140,11 +139,16 @@ There are 2 ways `magique` is documented:
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
 - **[YouTube Channel](https://www.youtube.com/@gk646-yt)**
     - Contains tutorials, showcase and development videos
+- **Examples**
+    - There are many examples in `examples/` which come in 3 categories:
+        - _****games****_: complete games from resources to gameplay showcasing many features
+        - _**demos**_: showcase individual functionality that need their own resources
+        - _**headers**_: a single header meant to be included in an empty project (see [QuickStart](#QuickStart))
 
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
-### 4. Paradigms and design philosophy of `magique`
+### Paradigms and design philosophy of `magique`
 
 > *Software has no functionality if it cannot be used!*
 
@@ -157,7 +161,14 @@ internally to achieve that.
 
 #### API Design
 
-To address the
+`magique` follows the API design of raylib (hence the question at the top). For me this means a clear camel case naming
+scheme with descriptive names and baked in namespacing: e.g. SetFormat(), GetFormat(). Similarly, every public method
+struct or
+enum is documented and each module has a documentation header as well. Often this documentation is also enriched with
+tips or warnings about pitfalls.
+But sometimes having just methods is not enough, you need to expose types to the users that are instantiated and managed
+by the user. Generally you want to avoid this as a library as you do not have as much control over their usage location
+and pattern.
 
 #### Threading
 
@@ -185,10 +196,11 @@ But for the kind of games this engine is for this approach should be very good.
 #### Entity Component System (ECS)
 
 `magique` uses the concept of an ecs. Handling game objects as entities with components should in almost all cases be
-better over other approach as it nudges you to design modular systems and diverse interactions. If made object-oriented
+better over other approach as it nudges you to design modular systems and diverse interactions. I have made
+object-oriented
 hierarchies in the past, and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also,
-the very nice typesafety of EnTT makes it a joy to use in C++.
+the very nice typesafety and compile-time features of EnTT makes it a joy to use in C++.
 
 ### 5. Further Resources
 
-rayl
+- [raylib wiki](https://github.com/raysan5/raylib/wiki)

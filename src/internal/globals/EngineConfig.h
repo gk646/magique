@@ -18,8 +18,17 @@ namespace magique
         int frameCounter = 0;      // Current frames counter
     };
 
+    struct Theme final
+    {
+        Color txtActive;
+        Color txtPassive;
+        Color backLight;
+        Color backDark;
+    };
+
     struct Configuration final
     {
+        Theme theme;
         Font font{};                                // Font
         Timing timing;                              // Thread timing information
         Vector2 cameraViewOff{};                    // Manual camera view offset
@@ -27,7 +36,7 @@ namespace magique
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
         float entityUpdateDistance = 1000;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
-        float fontSize = 20;                        // Font size of engine UI elements - scales automatically
+        float fontSize = 15;                        // Font size of engine UI elements - scales automatically
         float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
@@ -40,12 +49,14 @@ namespace magique
 
         void init()
         {
-            font = GetFontDefault();
-            if (font.texture.id == 0)
-            {
-                LOG_ERROR("Failed to load default font");
-            }
             loadingScreen = new LoadingScreen();
+            // adwaita based colors
+            Theme adwaita{};
+            adwaita.txtActive = WHITE;
+            adwaita.txtPassive = Color(163,163,163,255);
+            adwaita.backLight = Color(48, 48, 48, 255);
+            adwaita.backDark = Color(30, 30, 30, 255);
+            theme = adwaita;
         }
     };
 

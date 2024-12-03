@@ -7,26 +7,10 @@
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/ShaderData.h"
+#include "internal/headers/CascadiaCode.h"
 
 namespace magique
 {
-    bool InitMagique()
-    {
-        static bool initCalled = false;
-        if (initCalled)
-        {
-            LOG_WARNING("Init called twice. Skipping...");
-            return false;
-        }
-        initCalled = true;
-        global::ENGINE_CONFIG.init();
-        global::SHADERS.init(); // Loads the shaders and buffers
-        global::ENGINE_DATA.camera.zoom = 1.0F;
-        internal::InitJobSystem();
-
-        LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
-        return true;
-    }
 
     GameState GetGameState() { return global::ENGINE_DATA.gameState; }
 
@@ -85,7 +69,9 @@ namespace magique
 
     void SetEnableCollisionHandling(bool value) { global::ENGINE_CONFIG.handleCollisions = value; }
 
-    void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
+    void SetFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
+
+    const Font& GetFont() { return global::ENGINE_CONFIG.font; }
 
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
@@ -105,7 +91,7 @@ namespace magique
     MapID GetCameraMap()
     {
 #ifdef MAGIQUE_DEBUG
-        if (global::ENGINE_DATA.cameraMap == MapID(UINT8_MAX))
+        if (global::ENGINE_DATA.cameraMap == static_cast<MapID>(UINT8_MAX))
         {
             LOG_WARNING("No camera exists!");
         }
@@ -151,5 +137,28 @@ namespace magique
                        "Config has not been loaded yet! Accessible earliest inside Game::onStartup()");
         return global::ENGINE_DATA.gameConfig;
     }
+
+    namespace internal
+    {
+        bool InitMagique()
+        {
+            static bool initCalled = false;
+            if (initCalled)
+            {
+                LOG_WARNING("Init called twice. Skipping...");
+                return false;
+            }
+            initCalled = true;
+            global::ENGINE_CONFIG.init();
+            global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
+            global::SHADERS.init(); // Loads the shaders and buffers
+            global::ENGINE_DATA.camera.zoom = 1.0F;
+            InitJobSystem();
+
+            LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
+            return true;
+        }
+    } // namespace internal
+
 
 } // namespace magique

@@ -5,7 +5,7 @@
 int main()
 {
     // Compiles the asset images
-    magique::CompileImage("../res");
+    CompileAssetImage("../res");
     Asteroids game{};
     return game.run();
 }

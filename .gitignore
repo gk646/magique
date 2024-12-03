@@ -19,3 +19,5 @@ examples/**/*.clang-format
 
 # Private files
 TODO
+examples/headers/main.cpp
+examples/headers/CMakeLists.txt

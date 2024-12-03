@@ -67,7 +67,7 @@ namespace magique
     static void UnCompressImage(char*& imageData, int& imageSize)
     {
         const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
-        auto data = DeCompress(start, imageSize);
+        auto data = Decompress(start, imageSize);
         delete[] imageData;
         imageSize = data.getSize();
         imageData = (char*)data.getData();
