@@ -276,7 +276,18 @@ namespace magique
 
     Playlist& GetPlaylist(const handle handle) { return global::ASSET_MANAGER.getResource<Playlist>(handle); }
 
+
     //----------------- DIRECT GET -----------------//
+
+    TextureRegion GetTexture(const HandleID id)
+    {
+        return global::ASSET_MANAGER.getResource<TextureRegion>(GetHandle(id));
+
+    }
+    TextureRegion GetTexture(const uint32_t hash)
+    {
+        return global::ASSET_MANAGER.getResource<TextureRegion>(GetHandle(hash));
+    }
 
     TileMap& GetTileMap(const HandleID id) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(id)); }
     TileMap& GetTileMap(const uint32_t hash) { return global::ASSET_MANAGER.getResource<TileMap>(GetHandle(hash)); }

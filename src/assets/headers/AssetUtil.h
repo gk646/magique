@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_ASSET_UTIL_H
 #define MAGIQUE_ASSET_UTIL_H
 
+#include <raylib/config.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
 

@@ -26,7 +26,7 @@ namespace magique
 {
     struct AssetContainer final
     {
-        // Iterates the given directory and calls 'func' for all entries with the current asset
+        // Iterates the given directory recursively and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
         // Relative to the compiled image root e.g. res/player/idle - compile("./res") - iterate("player/idle");

@@ -12,11 +12,12 @@ Everything besides new features will likely be merged instantly after review.
 
 ### Contributing New Features
 
-If you want to contribute a new feature the following points can help you shape it into magique:
+If you want to contribute a new feature check the [roadmap](https://github.com/gk646/magique/blob/main/ROADMAP.md) first.
+If you cant find it in the roadmap consider the following points before adding it:
 
 - Is the new feature highly usable
     - This means intuitive, logical and clearly formulated
-    - Can be more complex if it's optional and not central
+    - It can be more complex if it's optional and not essential
 - Does the new feature solve a new problem
     - Make sure it's not already solved
 - Is the new feature in a state that it won't be replaced soon

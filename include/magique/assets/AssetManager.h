@@ -9,17 +9,25 @@
 // Asset Management Module
 //===============================================
 // ................................................................................
-// All Register__ methods load and store the resource internally
-// The returned handle is used by Get__ methods to retrieve the resource again
-// Per default all methods are made to load from memory to work with the asset image
+// This modules allows to register as resources to the asset management system
+// This means both loading the raw asset into its correct type (e.g. RegisterTexture() asset -> Texture) AND storing it
+// internally so it can be retrieved at any point.
+// It uses a handle system, which means you get a number that identifies this resource from the Register method
+// This might seem cumbersome (the handle has to be stored and accessed aswell) but has some advantages:
+//     - All access to the resource use the same thing -> To change all usages you just need to change 1 handle
+//     -
+
 // Textures are automatically stitched into the default atlas or the specified one
 // Try to group all textures that are drawn together into the same atlas
-// Uses a handle system, which means you get a number that identifies this resource
+// Note: If you load many texture you have to specify custom AtlasID's or else the default one will be full -> error
 // However this handle is only unique for its type, so don't use a handle from a SpriteSheet for a texture or a sound
 // In practice this doesn't mean anything as you organize handles anyway
 // This handle system is very fast - all items from a resource type (Sound, TextureRegion) are stored in a contiguous vector
 // The handles are direct indices for lookups in those vectors O(1)
-// All methods return handle::null if there are errors!
+//
+// IMPORTANT: All methods return handle::null if there are errors!
+// Note: Most method also take the finished resources e.g. RegisterTexture(asset) and RegisterTexture(texture)
+//       This allows you have control over loading resources but still register them to the asset manager
 // ................................................................................
 
 enum class AtlasID : int; // User implemented - per default all textures will be loaded into atlas 0
@@ -99,7 +107,6 @@ namespace magique
     // This is useful if you have split images instead of a single TileSheet - Use with iterateDirectory()
     handle RegisterTileSheet(const std::vector<Asset>& assets, int tileSize, float scale = 1);
 
-    //================= REGISTER  =================//
 
     //================= GET =================//
 
@@ -116,6 +123,9 @@ namespace magique
     //================= DIRECT GET =================//
     // Note: These methods assume you registered the handle with RegisterHandle() (see assets/HandleRegistry.h for info)
     // They call GetHandle() internally thus skipping the manual call
+
+    TextureRegion GetTexture(HandleID hash);
+    TextureRegion GetTexture(uint32_t hash);
 
     TileMap& GetTileMap(HandleID id);
     TileMap& GetTileMap(uint32_t hash);

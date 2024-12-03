@@ -27,7 +27,7 @@ namespace magique
     // Stores a handle by the given name - hashed
     void RegisterHandle(handle handle, const char* name);
 
-    // Saves an unnamed handle directly by number
+    // Saves an unnamed handle directly by number - other methods should be preferred
     void RegisterDirectHandle(handle handle, int id);
 
     //================= GET =================//

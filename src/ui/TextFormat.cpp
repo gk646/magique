@@ -268,12 +268,34 @@ namespace magique
         {
             return nullptr;
         }
-        if constexpr (std::is_same_v<T, const char*>)
+
+        if constexpr (std::is_same_v<T, std::string>)
+        {
+            if (it->second.type != STRING)
+            {
+                return nullptr;
+            }
+            return &VALUE_STORAGE.getValueVec<std::string>()[it->second.index];
+        }
+        else if constexpr (std::is_same_v<T, int>)
+        {
+            if (it->second.type != INT)
+            {
+                return nullptr;
+            }
+        }
+        else if constexpr (std::is_same_v<T, float>)
+        {
+            if (it->second.type != FLOAT)
+            {
+                return nullptr;
+            }
+        }
         return &VALUE_STORAGE.getValueVec<T>()[it->second.index];
     }
 
     template float* GetFormatValue(const char*);
-    template const char* GetFormatValue(const char*);
+    template std::string* GetFormatValue(const char*);
     template int* GetFormatValue(const char*);
 
 } // namespace magique
