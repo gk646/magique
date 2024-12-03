@@ -53,7 +53,6 @@ struct ObjectScript final : EntityScript
     {
         auto& test = GetComponent<TestCompC>(self);
         auto& pos = GetComponent<PositionC>(self);
-
     }
 };
 

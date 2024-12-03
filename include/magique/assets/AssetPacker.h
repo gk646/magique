@@ -30,7 +30,7 @@ namespace magique
     //      - key: key used to encrypt the data (0 = no encryption)
     // Note: Creates an index file at the root of the directory and skips recompiling if no files have changed!
     // Failure: Returns false
-    bool CompileAssetImage(const char* dir, const char* path = "data.bin", uint64_t key = 0, bool compress = false);
+    bool CompileAssetImage(const char* dir, const char* name = "data.bin", uint64_t key = 0, bool compress = false);
 
     // Returns the checksum (hash) of the image (using MD5)
     // Note: This should not be used in the final shipped game - The intended workflow:

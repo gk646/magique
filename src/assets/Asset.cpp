@@ -51,6 +51,8 @@ namespace magique
         return found != nullptr;
     }
 
+    bool Asset::isValid() const { return data != nullptr; }
+
     const char* Asset::getFileName(const bool extension) const
     {
         const char* lastSep = nullptr;
