@@ -36,21 +36,21 @@ namespace magique
         const int size = global::ENGINE_DATA.collisionVec.size(); // Multithreading over certain amount
         if (size > 1)
         {
-            std::array<jobHandle, WORK_PARTS> handles{};
-            constexpr float mainThreadPart = 1.0F / WORK_PARTS * 1.25F; // 25% more work for main thread
-            constexpr float workerPart = (1.0F - mainThreadPart) / (WORK_PARTS - 1);
+            std::array<jobHandle, COL_WORK_PARTS> handles{};
+            constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.25F; // 25% more work for main thread
+            constexpr float workerPart = (1.0F - mainThreadPart) / (COL_WORK_PARTS - 1);
             float beginPercent = 0.0F;
-            for (int j = 0; j < WORK_PARTS - 1; ++j)
+            for (int j = 0; j < COL_WORK_PARTS - 1; ++j)
             {
                 handles[j] = AddJob(CreateExplicitJob(CheckHashGridCells, beginPercent, beginPercent + workerPart, j));
                 beginPercent += workerPart;
             }
-            CheckHashGridCells(beginPercent, 1.0F, WORK_PARTS - 1);
+            CheckHashGridCells(beginPercent, 1.0F, COL_WORK_PARTS - 1);
             AwaitJobs(handles);
         }
         else
         {
-            CheckHashGridCells(0.0F, 1.0F, WORK_PARTS - 1);
+            CheckHashGridCells(0.0F, 1.0F, COL_WORK_PARTS - 1);
         }
         HandleCollisionPairs();
     }
@@ -68,7 +68,7 @@ namespace magique
         {
             const auto& hashGrid = dynamic.mapEntityGrids[loadedMap];
             const int size = static_cast<int>(hashGrid.cellMap.size());
-            if (size < WORK_PARTS && thread != WORK_PARTS - 1) // If cant be split into parts let main thread do it alone
+            if (size < COL_WORK_PARTS && thread != COL_WORK_PARTS - 1) // If cant be split into parts let main thread do it alone
                 continue;
 
             const int startIdx = static_cast<int>(beginP * static_cast<float>(size));

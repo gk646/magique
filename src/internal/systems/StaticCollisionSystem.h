@@ -26,16 +26,16 @@ namespace magique
         }
         else
         {
-            std::array<jobHandle, WORK_PARTS> handles{};
+            std::array<jobHandle, COL_WORK_PARTS> handles{};
             int end = 0;
-            const int partSize = static_cast<int>(static_cast<float>(size) * 0.81F) / WORK_PARTS;
-            for (int j = 0; j < WORK_PARTS - 1; ++j) // Gives more work to main thread cause its faster
+            const int partSize = static_cast<int>(static_cast<float>(size) * 0.81F) / COL_WORK_PARTS;
+            for (int j = 0; j < COL_WORK_PARTS - 1; ++j) // Gives more work to main thread cause its faster
             {
                 const int start = end;
                 end = start + partSize;
                 handles[j] = AddJob(CreateExplicitJob(CheckStaticCollisionRange, j, start, end));
             }
-            CheckStaticCollisionRange(WORK_PARTS - 1, end, size);
+            CheckStaticCollisionRange(COL_WORK_PARTS - 1, end, size);
             AwaitJobs(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
         // Handle unique pairs

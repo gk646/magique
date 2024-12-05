@@ -28,7 +28,7 @@ namespace magique
 
     struct Configuration final
     {
-        Theme theme;
+        Theme theme{};
         Font font{};                                // Font
         Timing timing;                              // Thread timing information
         Vector2 cameraViewOff{};                    // Manual camera view offset

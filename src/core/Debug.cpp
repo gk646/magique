@@ -18,12 +18,15 @@ namespace magique
 #if MAGIQUE_PROFILING == 1
         global::PERF_DATA.drawTimes.clear();
         global::PERF_DATA.logicTimes.clear();
+#else
+        LOG_WARNING("Calling BenchmarkFunction without profiling enabled. see config.h::MAGIQUE_PROFILING")
 #endif
     }
 
     void DrawHashGridDebug(const MapID map)
     {
         const auto& dynamic = global::DY_COLL_DATA;
+        const auto& config = global::ENGINE_CONFIG;
         if (!dynamic.mapEntityGrids.contains(map)) // Could be called before any entity is created
             return;
         const auto& grid = dynamic.mapEntityGrids[map];
@@ -51,7 +54,8 @@ namespace magique
                 {
                     const auto count = static_cast<int>(grid.dataBlocks[it->second].count);
                     const auto color = count > grid.getBlockSize() ? RED : GREEN; // Over the limit
-                    DrawText(std::to_string(count).c_str(), x + half, y + half, 20, color);
+                    const Vector2 pos = {(float)x + half, (float)y + half};
+                    DrawTextEx(config.font, std::to_string(count).c_str(), pos, 20, 1, color);
                 }
                 DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, BLACK);
             }
@@ -70,8 +74,8 @@ namespace magique
         const int width = static_cast<int>(bounds.width) / MARKER_GAP;
         const int height = static_cast<int>(bounds.height) / MARKER_GAP;
 
-        DrawLineEx({-DISTANCE, 0}, {DISTANCE, 0},2, color);
-        DrawLineEx({0, -DISTANCE}, {0, DISTANCE},2, color);
+        DrawLineEx({-DISTANCE, 0}, {DISTANCE, 0}, 2, color);
+        DrawLineEx({0, -DISTANCE}, {0, DISTANCE}, 2, color);
 
         for (int i = 0; i < width; ++i)
         {

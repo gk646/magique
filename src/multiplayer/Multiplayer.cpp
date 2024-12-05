@@ -12,7 +12,7 @@ namespace magique
 
     void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
 
-    bool IsInClientMode() { return global::ENGINE_CONFIG.isClientMode; }
+    bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
     Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
 

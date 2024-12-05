@@ -4,7 +4,7 @@
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>
 
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {

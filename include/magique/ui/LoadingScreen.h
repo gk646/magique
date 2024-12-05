@@ -29,7 +29,7 @@ namespace magique
         virtual ~LoadingScreen() = default;
 
         // Draws the loading screen
-        // isStartup        - true if it's the startup loading screen (e.g. showing logos and credits)
+        // isStartup        - true if it's the startup loading screen (e.g. should show lgos and credits)
         // progressPercent  - number in % how much loading is already done
         // IMPORTANT: MUST return true in order to end the loading screen
         virtual bool draw(bool isStartup, float progressPercent)

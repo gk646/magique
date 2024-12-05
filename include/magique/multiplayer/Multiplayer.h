@@ -44,7 +44,7 @@ namespace magique
     void ExitClientMode();
 
     // Returns true if this game is currently in client mode
-    bool IsInClientMode();
+    bool GetIsClientMode();
 
     //================= MESSAGES =================//
 
@@ -91,13 +91,13 @@ namespace magique
     void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func);
 
     // Returns true if currently hosting or connected to a host
-    bool IsInMultiplayerSession();
+    bool GetIsInMultiplayerSession();
 
     // Returns true if currently in a session as the host
-    bool IsHost();
+    bool GetIsHost();
 
     // Returns true if currently in a session as a client
-    bool IsClient();
+    bool GetIsClient();
 
 } // namespace magique
 

@@ -6,7 +6,7 @@
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
 
 #include <cstring>

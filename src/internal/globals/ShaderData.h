@@ -5,7 +5,7 @@
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
 
-#include "internal/headers/Shaders.h"
+#include "internal/misc/Shaders.h"
 
 namespace magique
 {

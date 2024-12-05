@@ -5,7 +5,7 @@
 
 #include "internal/utils/STLUtil.h"
 #include "internal/globals/UIData.h"
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {

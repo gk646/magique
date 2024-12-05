@@ -17,6 +17,7 @@
 
 namespace magique
 {
+    using ParamList = std::vector<Parameter>;
     static const char* GetTypeString(ParameterType type);
     inline const char* GetTypesString(const ParameterType (&types)[3]);
     inline bool GetTypeMatches(ParameterType actual, const ParameterType (&types)[3]);
@@ -69,6 +70,7 @@ namespace magique
         float maxSuggestionLen = 0; // Maximum length of the longest suggestion text
         bool showConsole = false;
         bool showCursor = false;
+        bool foundCommand = false; // Command is specified and user is typing parameters currently
 
         // Config data
         float fontSize = 15.0F;
@@ -77,13 +79,13 @@ namespace magique
         int terminalHistoryLen = 20;
 
         // Register default commands
-        ConsoleData()
+        void init()
         {
             RegisterConsoleCommand(
                 Command{"print", "Prints all given parameters in a new line to the console"}
                     .addVariadicParam({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
                     .setFunction(
-                        [](const std::vector<Parameter>& params)
+                        [](const ParamList& params)
                         {
                             auto printParam = [](const Parameter& param)
                             {
@@ -120,15 +122,29 @@ namespace magique
                             }
                         }));
 
-            RegisterConsoleCommand(Command{"clear", "Clears the console"}.setFunction(
-                [&](const std::vector<Parameter>& params) { consoleLines.clear(); }));
+            RegisterConsoleCommand(
+                Command{"clear", "Clears the console"}.setFunction([&](const ParamList&) { consoleLines.clear(); }));
 
             RegisterConsoleCommand(Command{"help", "Shows help text"}.setFunction(
-                [&](const std::vector<Parameter>& params)
+                [&](const ParamList& params)
                 { AddConsoleString("Type in a command and press ENTER. See gamedev/Console.h for more info"); }));
+            RegisterConsoleCommand(Command{"all", "Lists all registered commands"}.setFunction(
+                [&](const ParamList& params)
+                {
+                    for (const auto& cmd : commands)
+                    {
+                        const char* desc = cmd.description.c_str() ? cmd.description.c_str() : "...";
+                        AddConsoleStringF("%s - %s", cmd.name.c_str(), desc);
+                    }
+                }));
             RegisterConsoleCommand(
                 Command{"def", "Creates a new or sets an existing environment with the given type"}.setFunction(
-                    [&](const std::vector<Parameter>& params) { AddConsoleString(""); }));
+                    [&](const ParamList& params) { AddConsoleString(""); }));
+
+            RegisterConsoleCommand(Command{"shutdown","Calls Game::shutdown() to close the game"}.setFunction([](const ParamList&)
+            {
+                //
+            }));
         }
 
         ~ConsoleData()
@@ -319,19 +335,22 @@ namespace magique
             const auto suggestions = data.suggestions.size();
             if (suggestions > 0)
             {
+                const auto gap = fsize * 0.5F;
+                const auto dashOff = MeasureTextEx(font, "-", fsize, SPACING).x + gap * 2;
                 for (int i = 0; i < suggestions; ++i) // Iterate from front - sorted descending in quality
                 {
                     const Rectangle sBox = {textPos.x, textPos.y, data.maxSuggestionLen, lineHeight};
                     const auto isSelected = i == data.suggestionPos;
-                    const auto& textCol = isSelected ? theme.txtActive : theme.txtPassive;
-                    DrawRectangleRec(sBox, isSelected ? theme.backLight : theme.backDark);
+                    const auto& color = isSelected ? theme.txtActive : theme.txtPassive;
                     const auto& cmd = *data.suggestions[i];
                     const char* name = cmd.name.c_str();
                     const char* desc = cmd.description.empty() ? "..." : cmd.description.c_str();
-                    DrawTextEx(font, name, textPos, fsize, 1.0F, textCol);
                     const float nOff = MeasureTextEx(font, name, fsize, SPACING).x;
-                    DrawTextEx(font, "  -  ", {textPos.x + nOff, textPos.y}, fsize, SPACING, textCol);
-                    DrawTextEx(font, desc, {textPos.x + nOff + (fsize * 1.5F), textPos.y}, fsize, SPACING, textCol);
+
+                    DrawRectangleRec(sBox, isSelected ? theme.backLight : theme.backDark);
+                    DrawTextEx(font, name, textPos, fsize, SPACING, color);
+                    DrawTextEx(font, "-", {textPos.x + nOff + gap, textPos.y}, fsize, SPACING, color);
+                    DrawTextEx(font, desc, {textPos.x + nOff + dashOff, textPos.y}, fsize, SPACING, color);
                     textPos.y -= lineHeight;
                 }
             }

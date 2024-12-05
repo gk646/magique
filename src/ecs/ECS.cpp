@@ -69,7 +69,8 @@ namespace magique
             registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (!config.isClientMode && registry.all_of<ScriptC>(entity)) [[likely]]
+
+        if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
@@ -96,6 +97,8 @@ namespace magique
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
+        const auto& data = global::ENGINE_DATA;
+
         auto& ecs = global::ECS_DATA;
         auto& registry = internal::REGISTRY;
 
@@ -109,7 +112,7 @@ namespace magique
             registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
             it->second(entity, type);
         }
-        if (!config.isClientMode && registry.all_of<ScriptC>(entity)) [[likely]]
+        if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
             InvokeEvent<onCreate>(entity);
         }
@@ -126,7 +129,7 @@ namespace magique
         if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (registry.all_of<ScriptC>(entity)) [[likely]]
+            if (data.isEntityScripted(entity)) [[likely]]
             {
                 InvokeEvent<onDestroy>(entity);
             }
@@ -157,7 +160,7 @@ namespace magique
         {
             for (const auto e : view)
             {
-                if (!config.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
+                if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[view.get<PositionC>(e).type], e);
                 }
@@ -179,7 +182,7 @@ namespace magique
             {
                 if (pos.type == id)
                 {
-                    if (!config.isClientMode && reg.all_of<ScriptC>(e)) [[likely]]
+                    if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                     {
                         InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                     }
@@ -252,8 +255,6 @@ namespace magique
     }
 
     void GiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
-
-    void GiveScript(const entt::entity e) { internal::REGISTRY.emplace<ScriptC>(e); }
 
     //----------------- CORE -----------------//
 

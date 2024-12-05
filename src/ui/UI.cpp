@@ -76,6 +76,6 @@ namespace magique
 
     void UIInput::Consume() { global::UI_DATA.inputConsumed = true; }
 
-    bool UIInput::IsConsumed() { return global::UI_DATA.inputConsumed; }
+    bool UIInput::GetIsConsumed() { return global::UI_DATA.inputConsumed; }
 
 } // namespace magique

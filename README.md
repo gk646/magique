@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.8.0-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.5.0-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 > _What if raylib was an engine? ..._
@@ -200,6 +200,14 @@ better over other approach as it nudges you to design modular systems and divers
 object-oriented
 hierarchies in the past, and it almost always turns out to be a mess and there's nothing you cant do with an ECS. Also,
 the very nice typesafety and compile-time features of EnTT makes it a joy to use in C++.
+
+#### Scripting
+
+I initially started with Lua as a scripting language. But the main problem I encountered is that by allowing users to
+create their own components and functions it's very hard to create a good scripting interface. You would then have to
+auto export those types possibly with a macro. This problem doesn't
+occur in other engines as they know ALL their components upfront and don't expose a lot of internal workings.
+This approach allows for any custom type inside C++, while keeping the configuration manageable and type safe! 
 
 ### 5. Further Resources
 

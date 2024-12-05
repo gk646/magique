@@ -5,7 +5,7 @@
 #include <magique/util/Math.h>
 
 #include "external/raylib-compat/rcore_compat.h"
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {

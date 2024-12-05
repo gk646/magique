@@ -17,22 +17,8 @@
 
 namespace magique
 {
-    // Denotes an actor
-    struct ActorC final
-    {
-    };
-
-    // Denotes the camera holder - can only be 1!
-    struct CameraC final
-    {
-    };
-
-    // Denotes that the entity is scripted - will receive script updates
-    struct ScriptC final
-    {
-    };
-
-    // Position
+    // Implicitly added to each entity
+    // MUST NOT be removed
     struct PositionC final
     {
         float x, y;        // Position of the top left corner!
@@ -47,6 +33,16 @@ namespace magique
 
         // Returns the middle point by factoring in the collision shape
         [[nodiscard]] Point getMiddle(const CollisionC& collisionC) const;
+    };
+
+    // Denotes an actor
+    struct ActorC final
+    {
+    };
+
+    // Denotes the camera holder - can only be 1!
+    struct CameraC final
+    {
     };
 
     struct CollisionC final

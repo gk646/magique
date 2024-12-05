@@ -107,10 +107,6 @@ namespace magique
     // Adds components such that the given entity is an actor
     void GiveActor(entt::entity entity);
 
-    // Makes the entity react to its script
-    // IMPORTANT: Entity type needs to have a script set! Use SetScript(type,new MyScript());
-    void GiveScript(entt::entity entity);
-
 } // namespace magique
 
 

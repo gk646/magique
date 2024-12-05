@@ -9,7 +9,7 @@
 
 #include <raylib/rlgl.h> // Has to be here
 
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);

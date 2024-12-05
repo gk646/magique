@@ -41,8 +41,8 @@
 #elif MAGIQUE_LAN
 #include "internal/globals/MultiplayerData.h"
 #endif
-#include "internal/headers/CollisionPrimitives.h"
-#include "internal/headers/IncludeWindows.h"
+#include "internal/utils/CollisionPrimitives.h"
+#include "internal/misc/IncludeWindows.h"
 #include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
@@ -59,22 +59,47 @@
 #include "core/headers/Updater.h"
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"
+#include "internal/misc/CascadiaCode.h"
 
 // Note: All includes are pulled out topside for clarity
 // Here the whole render and update loops happen
 
 namespace magique
 {
+    namespace internal
+    {
+        bool InitMagique()
+        {
+            static bool initCalled = false;
+            if (initCalled)
+            {
+                LOG_WARNING("Init called twice. Skipping...");
+                return false;
+            }
+            initCalled = true;
+
+            // Setup raylib callback
+            SetTraceLogCallback(
+                [](int logLevel, const char* text, va_list args)
+                {
+                    logLevel = std::max(logLevel - 2, 1);
+                    LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
+                });
+
+            global::ENGINE_CONFIG.init();
+            global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
+            global::SHADERS.init();      // Loads the shaders and buffers
+            global::CONSOLE_DATA.init(); // Create default commands
+            global::ENGINE_DATA.camera.zoom = 1.0F;
+            InitJobSystem();
+
+            LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
+            return true;
+        }
+    } // namespace internal
+
     Game::Game(const char* name) : isRunning(true), gameName(name)
     {
-        // Setup raylib
-        SetTraceLogCallback(
-            [](int logLevel, const char* text, va_list args)
-            {
-                logLevel = std::max(logLevel - 2, 1);
-                internal::LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
-            });
-
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -98,6 +123,7 @@ namespace magique
         LOG_WARNING("Profiling enabled in Release mode. Disable for production build");
 #endif
     }
+
 
     Game::~Game()
     {

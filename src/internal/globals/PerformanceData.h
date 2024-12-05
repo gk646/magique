@@ -53,11 +53,11 @@ namespace magique
                 const Rectangle container = {pos.x, pos.y, w, blockHeight};
                 DrawRectangleRec(container, theme.backLight);
                 DrawRectangleLinesEx(container, borderWidth, theme.backDark);
-                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.txtActive);
+                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.txtPassive);
                 return w;
             };
 
-            Vector2 position = {10, 0};
+            Vector2 position = {0, 0};
             const auto& font = global::ENGINE_CONFIG.font;
             const auto fs = global::ENGINE_CONFIG.fontSize;
 

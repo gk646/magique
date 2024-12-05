@@ -8,7 +8,7 @@
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/StaticCollisionData.h"
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 //-----------------------------------------------
 // Pathfinding Data

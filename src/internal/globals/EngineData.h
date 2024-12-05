@@ -18,7 +18,7 @@
 
 namespace magique
 {
-    static constexpr int WORK_PARTS = MAGIQUE_WORKER_THREADS + 1; // Amount of parts to split work into
+    static constexpr int COL_WORK_PARTS = MAGIQUE_WORKER_THREADS + 1; // Amount of parts to split collision work into
 
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using StateCallback = std::function<void(GameState, GameState)>;
@@ -40,6 +40,7 @@ namespace magique
     {
         StateCallback stateCallback{};             // Callback function for gamestate changes
         EntityCache entityUpdateCache;             // Caches entities not in update range anymore
+        HashSet<entt::entity> entityNScriptedSet;  // Contains all entities NOT scripted
         std::vector<entt::entity> entityUpdateVec; // Vector containing the entities to update for this tick
         std::vector<entt::entity> drawVec;         // Vector containing all entities to be drawn this tick
         vector<entt::entity> collisionVec;         // Vector containing the entities to check for collision
@@ -51,7 +52,7 @@ namespace magique
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls
 
-        EngineData()
+        void init()
         {
             entityUpdateCache.reserve(1000);
             drawVec.reserve(1000);
@@ -59,6 +60,8 @@ namespace magique
             collisionVec.reserve(500);
             nearbyQueryData.cache.reserve(100);
         }
+
+        [[nodiscard]] bool isEntityScripted(const entt::entity e) const { return !entityNScriptedSet.contains(e); }
     };
 
     namespace global
