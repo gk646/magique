@@ -91,7 +91,7 @@ namespace magique
     void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func);
 
     // Returns true if currently hosting or connected to a host
-    bool GetIsInMultiplayerSession();
+    bool GetInMultiplayerSession();
 
     // Returns true if currently in a session as the host
     bool GetIsHost();

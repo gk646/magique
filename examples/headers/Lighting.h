@@ -41,7 +41,7 @@ struct PlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript // Moving platform
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& test = GetComponent<MoveCompC>(self);
         auto& pos = GetComponent<PositionC>(self);

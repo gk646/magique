@@ -113,7 +113,7 @@ struct NetPlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript // Moving platform
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;

@@ -43,10 +43,11 @@ namespace magique
         HashSet<entt::entity> entityNScriptedSet;  // Contains all entities NOT scripted
         std::vector<entt::entity> entityUpdateVec; // Vector containing the entities to update for this tick
         std::vector<entt::entity> drawVec;         // Vector containing all entities to be drawn this tick
-        vector<entt::entity> collisionVec;         // Vector containing the entities to check for collision
         std::vector<MapID> loadedMaps{};           // Currently loaded zones
+        vector<entt::entity> collisionVec;         // Vector containing the entities to check for collision
         GameConfig gameConfig{};                   // Global game config instance
         Camera2D camera{};                         // Current camera
+        Game* gameInstance;                        // The game instance created by the user
         entt::entity cameraEntity{UINT32_MAX};     // Entity id of the camera
         GameState gameState{};                     // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in

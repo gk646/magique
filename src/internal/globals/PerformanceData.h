@@ -3,6 +3,7 @@
 #define MAGIQUE_PERFDATA_H
 
 #include "internal/datastructures/VectorType.h"
+#include "internal/globals/MultiplayerData.h"
 #include "external/raylib-compat/rlgl_compat.h"
 
 namespace magique
@@ -100,10 +101,30 @@ namespace magique
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
-            if (Glob::GDT.mp.session)
+            const auto& mp = global::MP_DATA;
+            if (mp.isInSession)
             {
-                float inBytes, outBytes;
-                AssignConnectionInfo(Glob::GDT.mp.session->isHost, inBytes, outBytes);
+                float inBytes = 0;
+                float outBytes = 0;
+                if (!mp.isHost)
+                {
+                    const auto conn = static_cast<HSteamNetConnection>(mp.connections[0]);
+                    SteamNetConnectionRealTimeStatus_t info{};
+                    SteamNetworkingSockets()->GetConnectionRealTimeStatus(conn, &info, 0, nullptr);
+                    inBytes = info.m_flInBytesPerSec;
+                    outBytes = info.m_flOutBytesPerSec;
+                }
+                else
+                {
+                    for (const auto conn : mp.connections) // Only contains valid connections
+                    {
+                        SteamNetConnectionRealTimeStatus_t info{};
+                        SteamNetworkingSockets()->GetConnectionRealTimeStatus(static_cast<HSteamNetConnection>(conn),
+                                                                              &info, 0, nullptr);
+                        inBytes += info.m_flInBytesPerSec;
+                        outBytes += info.m_flOutBytesPerSec;
+                    }
+                }
 
                 block++;
                 val = inBytes;

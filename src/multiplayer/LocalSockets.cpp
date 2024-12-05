@@ -93,12 +93,11 @@ namespace magique
 
     //----------------- CLIENT -----------------//
 
-    Connection ConnectToLocalSocket(const char* ip, const int port)
+    Connection ConnectToLocalSocket(const char* ip, const uint16_t port)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
         MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
-        MAGIQUE_ASSERT(port >= 0 && port <= UINT16_MAX, "passed nullptr");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
         char fullAddress[64]{};

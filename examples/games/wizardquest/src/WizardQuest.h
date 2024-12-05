@@ -74,6 +74,7 @@ struct WizardQuestUI final
 struct WizardQuest final : Game
 {
     WizardQuestUI gameUI{};
+    WizardQuest() : Game("WizardQuest") {}
     void onStartup(AssetLoader& loader) override;
     void onLoadingFinished() override;
     void updateGame(GameState gameState) override;

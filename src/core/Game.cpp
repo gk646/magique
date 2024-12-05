@@ -100,6 +100,7 @@ namespace magique
 
     Game::Game(const char* name) : isRunning(true), gameName(name)
     {
+        global::ENGINE_DATA.gameInstance = this; // Assign global game instance
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -123,7 +124,6 @@ namespace magique
         LOG_WARNING("Profiling enabled in Release mode. Disable for production build");
 #endif
     }
-
 
     Game::~Game()
     {
@@ -157,6 +157,9 @@ namespace magique
         // Run main thread
         mainthread::Setup();
         mainthread::Run(*this);
+        //
+        // ----------- Game Runs --------------
+        //
         onShutDown();
         mainthread::Close();
 

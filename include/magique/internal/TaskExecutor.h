@@ -10,7 +10,6 @@
 #include <magique/core/Types.h>
 #include <magique/util/JobSystem.h>
 
-
 //===============================================
 // Task Executor
 //===============================================
@@ -231,7 +230,7 @@ namespace magique::internal
             {
                 return;
             }
-            LOG_INFO("Loaded Task: Impact: %d | Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
+            LOG_INFO("Loaded Task: Impact: %d |  Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }
 

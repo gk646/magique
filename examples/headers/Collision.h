@@ -41,6 +41,12 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
+
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo &info) override
+    {
+        info.penDepth *= 0.5F;
+        AccumulateCollision(info);
+    }
 };
 
 struct ObjectScript final : EntityScript // Moving platform
@@ -48,29 +54,30 @@ struct ObjectScript final : EntityScript // Moving platform
     void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = false;
-        auto& test = GetComponent<TestCompC>(self);
+        myComp.isColliding = false; // Reset collision flag
         auto& pos = GetComponent<PositionC>(self);
-        if (test.counter > 100)
+        if (myComp.counter > 100)
         {
             pos.x++;
-            if (test.counter >= 200)
+            if (myComp.counter >= 200)
             {
-                test.counter = 0;
+                myComp.counter = 0;
             }
         }
-        else if (test.counter < 100)
+        else if (myComp.counter < 100)
         {
             pos.x--;
         }
 
-        test.counter++;
+        myComp.counter++;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo&) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
+        AccumulateCollision(info);
+
     }
 };
 

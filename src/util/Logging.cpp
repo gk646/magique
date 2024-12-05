@@ -50,16 +50,17 @@ namespace magique
             {
                 written = snprintf(FORMAT_CACHE, FMT_CACHE_SIZE, "[%s]: ", level_str);
             }
-            MAGIQUE_ASSERT(written >= 0, "Failed to format");
-            vsnprintf(FORMAT_CACHE + written, FMT_CACHE_SIZE - written, msg, args);
 
+            MAGIQUE_ASSERT(written >= 0, "Failed to format");
+            written += vsnprintf(FORMAT_CACHE + written, FMT_CACHE_SIZE - written, msg, args);
+            MAGIQUE_ASSERT(written < FMT_CACHE_SIZE, "Log message too long!");
 
             if (CALL_BACK != nullptr)
             {
                 CALL_BACK(level, FORMAT_CACHE);
             }
 
-            fprintf(out, FORMAT_CACHE);
+            fputs(FORMAT_CACHE,out);
             AddConsoleString(FORMAT_CACHE);
             fputc('\n', out);
 

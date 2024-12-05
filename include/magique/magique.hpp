@@ -60,6 +60,8 @@
 #include "steam/Steam.h"
 #include "steam/Lobbies.h"
 #include "steam/GlobalSockets.h"
+#include "multiplayer/Multiplayer.h"
+#include "multiplayer/LocalSockets.h"
 #endif
 
 // UI

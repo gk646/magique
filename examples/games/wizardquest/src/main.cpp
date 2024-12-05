@@ -6,11 +6,10 @@
 #include <magique/assets/AssetPacker.h>
 #include <magique/gamedev/AIAgent.h>
 #include <magique/gamedev/ShareCode.h>
-#include <magique/gamedev/VirtualClock.h>
 
 int main()
 {
-    magique::CompileAssetImage("../res");
+    CompileAssetImage("../res");
     WizardQuest game{};
     return game.run();
 

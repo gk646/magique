@@ -52,19 +52,19 @@ struct Asteroids final : Game
 struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override;
-    void onTick(entt::entity self) override;
+    void onTick(entt::entity self, bool updated) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
 };
 
 struct BulletScript final : EntityScript
 {
-    void onTick(entt::entity self) override;
+    void onTick(entt::entity self, bool updated) override;
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
 
 struct RockScript final : EntityScript
 {
-    void onTick(entt::entity self) override;
+    void onTick(entt::entity self, bool updated) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };

@@ -524,7 +524,7 @@ STBIRDEF float * stbir_resize_float_linear( const float *input_pixels , int inpu
 // This extends the easy-to-use API as follows:
 //
 //     * Can specify the datatype - U8, U8_SRGB, U16, FLOAT, HALF_FLOAT
-//     * Edge wrap can selected explicitly
+//     * Edge wrap can be selected explicitly
 //     * Filter can be selected explicitly
 //--------------------------------
 
@@ -880,7 +880,7 @@ STBIRDEF void stbir_resize_split_profile_info( STBIR_PROFILE_INFO * out_info, ST
 
 
 #ifndef STBIR_DEFAULT_FILTER_UPSAMPLE
-#define STBIR_DEFAULT_FILTER_UPSAMPLE    STBIR_FILTER_CATMULLROM
+#define STBIR_DEFAULT_FILTER_UPSAMPLE    STBIR_FILTER_POINT_SAMPLE
 #endif
 
 #ifndef STBIR_DEFAULT_FILTER_DOWNSAMPLE

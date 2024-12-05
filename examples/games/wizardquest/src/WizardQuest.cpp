@@ -18,7 +18,7 @@ void WizardQuest::onStartup(AssetLoader& loader)
     SetShowHitboxes(true);
 
     // Init steam
-    InitMagique(true);
+    InitSteam();
     InitLocalMultiplayer();
 
     SetStaticWorldBounds({0, 0, 1280, 1000});
@@ -91,7 +91,7 @@ void WizardQuest::drawUI(GameState gameState)
     case GameState::GAME:
         gameUI.playerHUD.draw();
         gameUI.playerHotbar.draw();
-        gameUI.lobbyBrowser.draw();
+        //gameUI.lobbyBrowser.draw();
         break;
     case GameState::GAME_OVER:
         break;
@@ -130,5 +130,5 @@ void WizardQuest::onShutDown()
     GameSave save;
     auto data = GetAchievementsData();
     save.saveData(StorageID::ACHIEVEMENTS, data.getData(), data.getSize());
-    GameSave::Save(save, "MySave.save");
+    SaveToDisk(save, "MySave.save");
 }

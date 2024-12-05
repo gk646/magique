@@ -9,7 +9,6 @@
 #include <magique/core/Animations.h>
 #include <magique/core/Types.h>
 
-
 struct TileLoader final : ITask<AssetContainer>
 {
     void execute(AssetContainer& res) override
@@ -42,6 +41,7 @@ struct TextureLoader final : ITask<AssetContainer>
             std::vector<Asset> idle;
             std::vector<Asset> jump;
             std::vector<Asset> run;
+            // Iterate all basic animation directory and sort them into vectors
             auto func = [&](Asset asset)
             {
                 if (asset.contains("jump"))
@@ -59,6 +59,7 @@ struct TextureLoader final : ITask<AssetContainer>
             };
             assets.iterateDirectory("characters/basic/basic/", func);
 
+            // Register the animations
             const Point offset = {-5, -6};
             handle = RegisterSpriteSheetVec(idle, AtlasID::ENTITIES, 3);
             playerAnim.addAnimation(AnimationState::IDLE, GetSpriteSheet(handle), 12, offset);
@@ -129,7 +130,6 @@ struct EntityLoader final : ITask<AssetContainer>
                            GiveCamera(e);
                            GiveCollisionRect(e, 20, 30);
                            GiveComponent<EntityStatsC>(e);
-                           GiveScript(e);
                            GiveComponent<MovementC>(e);
                            GiveAnimation(e, type, AnimationState::IDLE);
                        });
@@ -140,7 +140,6 @@ struct EntityLoader final : ITask<AssetContainer>
                        {
                            GiveCollisionRect(e, 20, 30);
                            GiveComponent<EntityStatsC>(e);
-                           GiveScript(e);
                            GiveComponent<MovementC>(e);
                            GiveAnimation(e, type, AnimationState::IDLE);
                        });
