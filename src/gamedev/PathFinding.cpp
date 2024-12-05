@@ -5,7 +5,7 @@
 #include <magique/core/Core.h>
 
 #include "internal/globals/PathFindingData.h"
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {

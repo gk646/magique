@@ -1,6 +1,7 @@
-#ifndef MAGIQUE_COMMAND_EXAMPLE_H
-#define MAGIQUE_COMMAND_EXAMPLE_H
+#ifndef MAGIQUE_CONSOLE_EXAMPLE_H
+#define MAGIQUE_CONSOLE_EXAMPLE_H
 
+#include <magique/core/Core.h>
 #include <raylib/raylib.h>
 #include <magique/core/Game.h>
 #include <magique/gamedev/Console.h>
@@ -13,36 +14,37 @@ struct Example final : Game
     {
         // printName Command
         Command printHello{"printHello"};
-        printHello.addParam("name", {ParameterType::STRING})
-            .setFunction([](const std::vector<Parameter>& params)
-                         { AddConsoleStringF("Hello %s!", params.front().getString()); });
+        printHello.addParam("name", {ParameterType::STRING});
+        printHello.setFunction([](const std::vector<Parameter>& params)
+                               { AddConsoleStringF("Hello %s!", params.front().getString()); });
 
         // likes Command
         Command likes{"likes"};
-        likes.addParam("person1", {ParameterType::STRING})
-            .addParam("person2", {ParameterType::STRING})
-            .addParam("amount", {ParameterType::NUMBER})
-            .setFunction(
-                [](const std::vector<Parameter>& params)
+        likes.addParam("person1", {ParameterType::STRING});
+        likes.addParam("person2", {ParameterType::STRING});
+        likes.addParam("amount", {ParameterType::NUMBER});
+        likes.setFunction(
+            [](const std::vector<Parameter>& params)
+            {
+                if (params.size() > 2) // Last parameter is present
                 {
-                    if (params.size() > 2) // Last parameter is present
-                    {
-                        AddConsoleStringF("%s likes %s %d many times!", params[0].getString(), params[1].getString(),
-                                          params[2].getInt());
-                    }
-                    else // Not present
-                    {
-                        AddConsoleStringF("%s likes %s; but we don't know how much :(", params[0].getString(),
-                                          params[1].getString());
-                    }
-                });
-        Command greet{"greet", "Greets a user with a friendly message"};
-        greet.addParam("name", {ParameterType::STRING})
-            .addParam("timeOfDay", {ParameterType::STRING})
-            .setFunction([](const std::vector<Parameter>& params)
-                         { AddConsoleStringF("Good %s, %s!", params[1].getString(), params[0].getString()); });
+                    AddConsoleStringF("%s likes %s %d many times!", params[0].getString(), params[1].getString(),
+                                      params[2].getInt());
+                }
+                else // Not present
+                {
+                    AddConsoleStringF("%s likes %s; but we don't know how much :(", params[0].getString(),
+                                      params[1].getString());
+                }
+            });
 
-        // addNumbers Command (Normal + Optional Parameters)
+        Command greet{"greet", "Greets a user with a friendly message"};
+        greet.addParam("name", {ParameterType::STRING});
+        greet.addParam("timeOfDay", {ParameterType::STRING});
+        greet.setFunction([](const std::vector<Parameter>& params)
+                          { AddConsoleStringF("Good %s, %s!", params[1].getString(), params[0].getString()); });
+
+        // addNumbers Command
         Command addNumbers{"addNumbers", "Adds two numbers, with the second number being optional"};
         addNumbers.addParam("num1", {ParameterType::NUMBER})
             .addOptionalNumber("num2", 0.0f)
@@ -53,19 +55,19 @@ struct Example final : Game
                     AddConsoleStringF("The sum is: %.2f", sum);
                 });
 
-        // logMessages Command (Normal + Variadic Parameters)
+        // logMessages Command
         Command logMessages{"logMessages", "Logs a series of messages"};
-        logMessages.addParam("prefix", {ParameterType::STRING})
-            .addVariadicParam({ParameterType::STRING})
-            .setFunction(
-                [](const std::vector<Parameter>& params)
+        logMessages.addParam("prefix", {ParameterType::STRING});
+        logMessages.addVariadicParam({ParameterType::STRING});
+        logMessages.setFunction(
+            [](const std::vector<Parameter>& params)
+            {
+                AddConsoleStringF("Messages prefixed by '%s':", params[0].getString());
+                for (size_t i = 1; i < params.size(); ++i)
                 {
-                    AddConsoleStringF("Messages prefixed by '%s':", params[0].getString());
-                    for (size_t i = 1; i < params.size(); ++i)
-                    {
-                        AddConsoleStringF("- %s", params[i].getString());
-                    }
-                });
+                    AddConsoleStringF("- %s", params[i].getString());
+                }
+            });
 
         // setDefaults Command (Only Optional Parameters)
         Command setDefaults{"setDefaults", "Sets default configuration values"};
@@ -121,8 +123,8 @@ Look at the commands defined in the example and try to invoke them!
 	- "greet User Morning"
 	- "broadcast
         )";
-        DrawText(helpText, 10, 500, 18, BLACK);
+        DrawTextEx(GetFont(), helpText, {10, 250}, 18, 1, BLACK);
     }
 };
 
-#endif // MAGIQUE_COMMAND_EXAMPLE_H
+#endif // MAGIQUE_CONSOLE_EXAMPLE_H

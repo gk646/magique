@@ -60,7 +60,7 @@ namespace magique
 
         // Consume the input for this tick - all input methods after this will return false
         static void Consume();
-        static bool IsConsumed();
+        static bool GetIsConsumed();
     };
 
 } // namespace magique

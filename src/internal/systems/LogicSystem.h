@@ -32,8 +32,8 @@ namespace magique
     };
 
 
-    inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col, EntityHashGrid& grid,
-                               vector<entt::entity>& cVec)
+    inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col,
+                                      EntityHashGrid& grid, vector<entt::entity>& cVec)
     {
         auto& pathData = global::PATH_DATA;
         auto& dynamicGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - checked in CreateEntity()
@@ -173,16 +173,16 @@ namespace magique
         const auto view = registry.view<PositionC>();
         for (const auto e : view)
         {
-
             const auto& pos = group.get<const PositionC>(e);
             const auto map = pos.map;
 
             loadedMapsTable[static_cast<int>(map)] = true;
-            // Sadly have to check that - could be that an entity just switches layer
-            if(!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
+
+            // Sadly have to check that - could be that an entity just switched layer
+            if (!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
                 dynamicData.mapEntityGrids.add(map);
 
-            if(!pathData.mapsDynamicGrids.contains(map)) [[unlikely]]
+            if (!pathData.mapsDynamicGrids.contains(map)) [[unlikely]]
                 pathData.mapsDynamicGrids.add(map);
 
             auto& hashGrid = dynamicData.mapEntityGrids[map];
@@ -278,12 +278,10 @@ namespace magique
         if (config.isClientMode) // Skip script method in client mode
             return;
 
-        for (const auto e : updateVec) // Needs to be called later to allow removing entities!
+        for (const auto pair : data.entityUpdateCache)
         {
-            if (registry.all_of<ScriptC>(e))
-            {
-                InvokeEvent<onTick>(e); // Invoke tick event on all entities that are in this tick
-            }
+            // Invoke tick event on all entities that are in this tick
+            InvokeEvent<onTick>(pair.first, data.isEntityScripted(pair.first));
         }
     }
 

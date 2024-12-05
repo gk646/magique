@@ -38,4 +38,18 @@ namespace magique
         return scData.scripts[entity];
     }
 
+
+    void SetIsEntityScripted(const entt::entity entity, const bool val)
+    {
+        if (val)
+        {
+            global::ENGINE_DATA.entityNScriptedSet.insert(entity);
+        }
+        else
+        {
+            global::ENGINE_DATA.entityNScriptedSet.erase(entity);
+        }
+    }
+    bool GetIsEntityScripted(const entt::entity entity) { return global::ENGINE_DATA.entityNScriptedSet.contains(entity); }
+
 } // namespace magique

@@ -46,7 +46,7 @@ namespace magique
         {
             for (const auto e : data.entityUpdateVec)
             {
-                if (registry.all_of<ScriptC>(e)) [[likely]]
+                if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onKeyEvent>(e);
                     InvokeEvent<onMouseEvent>(e);
@@ -57,7 +57,7 @@ namespace magique
         {
             for (const auto e : data.entityUpdateVec)
             {
-                if (registry.all_of<ScriptC>(e)) [[likely]]
+                if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onKeyEvent>(e);
                 }
@@ -67,7 +67,7 @@ namespace magique
         {
             for (const auto e : data.entityUpdateVec)
             {
-                if (registry.all_of<ScriptC>(e)) [[likely]]
+                if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onMouseEvent>(e);
                 }

@@ -5,7 +5,7 @@
 #include <magique/ecs/Components.h>
 #include <magique/internal/Macros.h>
 
-#include "internal/headers/CollisionPrimitives.h"
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {

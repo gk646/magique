@@ -48,12 +48,12 @@ namespace magique
         return true;
     }
 
-    bool IsInLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }
+    bool GetIsInLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }
 
-    bool IsLobbyOwner()
+    bool GetIsLobbyOwner()
     {
         const auto& steamData = global::STEAM_DATA;
-        if (IsInLobby())
+        if (GetIsInLobby())
         {
             const auto owner = SteamMatchmaking()->GetLobbyOwner(steamData.lobbyID);
             return owner == steamData.userID;
@@ -65,7 +65,7 @@ namespace magique
 
     SteamID GetLobbyOwner()
     {
-        MAGIQUE_ASSERT(IsInLobby(), "Cant get the lobby owner when not in a lobby");
+        MAGIQUE_ASSERT(GetIsInLobby(), "Cant get the lobby owner when not in a lobby");
         return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(global::STEAM_DATA.lobbyID).ConvertToUint64());
     }
 
@@ -78,7 +78,7 @@ namespace magique
     bool OpenLobbyInviteDialogue()
     {
         auto& steam = global::STEAM_DATA;
-        if (IsInLobby())
+        if (GetIsInLobby())
         {
             SteamFriends()->ActivateGameOverlayInviteDialog(steam.lobbyID);
             return true;
@@ -88,13 +88,13 @@ namespace magique
 
     bool InviteUserToLobby(SteamID userID)
     {
-        MAGIQUE_ASSERT(IsInLobby(), "Cant invite others to lobby if not in a lobby");
+        MAGIQUE_ASSERT(GetIsInLobby(), "Cant invite others to lobby if not in a lobby");
         return SteamMatchmaking()->InviteUserToLobby(global::STEAM_DATA.lobbyID, SteamIDFromMagique(userID));
     }
 
     void SendLobbyChatMessage(const char* message)
     {
-        MAGIQUE_ASSERT(IsInLobby(), "Cant send a chat message when not in a lobby");
+        MAGIQUE_ASSERT(GetIsInLobby(), "Cant send a chat message when not in a lobby");
         MAGIQUE_ASSERT(message != nullptr, "passed null msg");
         const int messageLength = static_cast<int>(strlen(message));
         SteamMatchmaking()->SendLobbyChatMsg(global::STEAM_DATA.lobbyID, message, messageLength);

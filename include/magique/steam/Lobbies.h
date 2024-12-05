@@ -54,10 +54,10 @@ namespace magique
     //================= INFO =================//
 
     // Returns true if your currently in a lobby
-    bool IsInLobby();
+    bool GetIsInLobby();
 
     // Returns true if your currently in a lobby AND the owner of the lobby
-    bool IsLobbyOwner();
+    bool GetIsLobbyOwner();
 
     // Returns the LobbyID of your current lobby
     LobbyID GetLobbyID();

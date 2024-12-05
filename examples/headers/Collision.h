@@ -1,7 +1,5 @@
-#ifndef COLLISIONTEST_H
-#define COLLISIONTEST_H
-
-#include <raylib/raylib.h>
+#ifndef MAGIQUE_COLLISION_EXAMPLE_H
+#define MAGIQUE_COLLISION_EXAMPLE_H
 
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
@@ -10,25 +8,30 @@
 #include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
 
+// Recommended
 using namespace magique;
 
+// Define the types of entities used in this game
 enum EntityType : uint16_t
 {
     PLAYER,
     OBJECT,
 };
 
+// Helper entity component to save some data
 struct TestCompC final
 {
     int counter = 0;
     bool isColliding = false;
 };
 
+// Custom Script to enable WASD movement
 struct PlayerScript final : EntityScript
 {
+    // Called if any keystate changed
     void onKeyEvent(entt::entity self) override
     {
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = GetComponent<PositionC>(self); // Retrieve the position component - implicit for each entity
         if (IsKeyDown(KEY_W))
             pos.y -= 2.5F;
         if (IsKeyDown(KEY_S))
@@ -38,16 +41,11 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-
-    void onDynamicCollision(entt::entity self, entt::entity other,  CollisionInfo& info) override
-    {
-       AccumulateCollision(info);
-    }
 };
 
 struct ObjectScript final : EntityScript // Moving platform
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
@@ -76,25 +74,27 @@ struct ObjectScript final : EntityScript // Moving platform
     }
 };
 
-struct Test final : Game
+struct Example final : Game
 {
-    Test() : Game("magique - CollisionTest") {}
+    Example() : Game("magique - CollisionTest") {}
+
     void onStartup(AssetLoader& loader) override
     {
-        SetShowHitboxes(true);
+        SetShowHitboxes(true); // Show all collision hitboxes
+        // Create the player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
             GiveCamera(e);
-            GiveCollisionCircle(e, 75);
+            GiveCollisionCircle(e, 30);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
+
+        // Create moving objects
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            GiveScript(e);
-            const auto val = GetRandomValue(0,100);
+            const auto val = GetRandomValue(0, 100);
             if (val < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -125,11 +125,15 @@ struct Test final : Game
             CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
     }
+
     void drawGame(GameState /**/, Camera2D& camera2D) override
     {
-        BeginMode2D(camera2D);
+        BeginMode2D(camera2D); // Start drawing in respect to the camera
 
-        DrawRectangle(250, 250, 50, 50, RED);
+        DrawRectangle(250, 250, 250, 75, RED);
+        DrawTextEx(GetFont(), "This is stationary object\n for reference", {250, 250}, 17, 1, WHITE);
+        DrawTextEx(GetFont(), "Shape and Position of all objects is random", {0, -25}, 17, 1, BLACK);
+
         for (const auto e : GetDrawEntities())
         {
             const auto& pos = GetComponent<const PositionC>(e);
@@ -153,9 +157,10 @@ struct Test final : Game
                 break;
             }
         }
-        DrawHashGridDebug(GetCameraMap());
 
-        EndMode2D();
+        DrawHashGridDebug(GetCameraMap()); // Draws the debug grid and entity count for the internal hashgrid
+
+        EndMode2D(); // End drawing with the camera
     }
     void updateGame(GameState gameState) override
     {
@@ -166,4 +171,5 @@ struct Test final : Game
     }
 };
 
-#endif //COLLISIONTEST_H
+
+#endif // MAGIQUE_COLLISION_EXAMPLE_H
