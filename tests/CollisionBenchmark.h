@@ -41,7 +41,6 @@
 
 using namespace magique;
 
-
 enum EntityType : uint16_t
 {
     PLAYER,
@@ -55,7 +54,7 @@ struct TestCompC final
 
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;
@@ -82,7 +81,7 @@ struct PlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;

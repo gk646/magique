@@ -21,11 +21,11 @@
 // .....................................................................
 // This is a simple multiplayer test.
 // It's not optimized and uses the easiest implementation possible to showcase the functionality
-// magique only gives you the facilities to send and receive message.
+// magique only gives you the facilities to send and receive data, what and how this is done is up to you.
 // For a smooth experience you should look into:
 //     - delta compression
 //     - message interpolation
-//     - message buffering
+//     - game state buffering
 //     - ...
 // .....................................................................
 
@@ -105,7 +105,7 @@ struct NetPlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript // Moving platform
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false;

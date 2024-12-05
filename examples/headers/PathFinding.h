@@ -43,7 +43,7 @@ struct PlayerScript final : EntityScript
 
 struct Hunter final : EntityScript
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& pos = GetComponent<PositionC>(self);
         auto& tarPos = GetComponent<PositionC>(GetCameraEntity()); // Player is the camera holder here

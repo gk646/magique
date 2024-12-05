@@ -36,7 +36,7 @@ namespace magique
         // Note: The encryption key is applied to both assets and config - make sure they match
         int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
-        // Stops the game
+        // Stops the game gracefully - calls onShutDown()
         void shutDown();
 
         //================= LIFE CYCLE =================//
@@ -53,7 +53,7 @@ namespace magique
         // IMPORTANT: When overridden, shutDown() has to be called manually to stop the game!
         virtual void onCloseEvent() { shutDown(); }
 
-        // Called once when the game closes
+        // Called once before the game closes
         virtual void onShutDown() {}
 
         //================= CORE =================//

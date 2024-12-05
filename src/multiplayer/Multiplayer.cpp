@@ -184,10 +184,10 @@ namespace magique
         global::MP_DATA.callback = func;
     }
 
-    bool IsInMultiplayerSession() { return global::MP_DATA.isInSession; }
+    bool GetInMultiplayerSession() { return global::MP_DATA.isInSession; }
 
-    bool IsHost() { return global::MP_DATA.isInSession && global::MP_DATA.isHost; }
+    bool GetIsHost() { return global::MP_DATA.isInSession && global::MP_DATA.isHost; }
 
-    bool IsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
+    bool GetIsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
 } // namespace magiqueä

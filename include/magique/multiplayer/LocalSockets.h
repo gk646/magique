@@ -35,7 +35,7 @@ namespace magique
     // Connects to an open local socket at the given ip and port
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
     //      - port: a number between 0 and 65536
-    Connection ConnectToLocalSocket(const char* ip, int port);
+    Connection ConnectToLocalSocket(const char* ip, uint16_t port);
 
     // Disconnects from the socket (if any)
     // Optionally specify a close code or string that can be read on the receiver

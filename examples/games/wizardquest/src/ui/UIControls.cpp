@@ -40,9 +40,9 @@ void HotbarSlot::onDraw(const Rectangle& bounds)
     DrawRectangleLinesEx(bounds, 1, DARKGRAY);
 }
 
-PlayerHotbar::PlayerHotbar() : UIContainer(AnchorPosition::BOTTOM_CENTER, 960, 180, ScalingMode::KEEP_RATIO)
+PlayerHotbar::PlayerHotbar() : UIContainer( slots * HotbarSlot::size, 180, Anchor::BOTTOM_CENTER, ScalingMode::KEEP_RATIO)
 {
-    setDimensions(480, 900, slots * HotbarSlot::size, 180);
+    setPosition(480, 900);
     for (int i = 0; i < slots; ++i)
     {
         addChild(new HotbarSlot());
@@ -59,7 +59,7 @@ void PlayerHotbar::onDraw(const Rectangle& bounds)
     {
         if (prevChild == nullptr)
         {
-            child->align(AnchorPosition::TOP_LEFT, *this);
+            child->align(Anchor::TOP_LEFT, *this);
         }
         else
         {

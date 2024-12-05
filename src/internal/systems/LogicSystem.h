@@ -31,7 +31,6 @@ namespace magique
         }
     };
 
-
     inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col,
                                       EntityHashGrid& grid, vector<entt::entity>& cVec)
     {
@@ -278,7 +277,7 @@ namespace magique
         if (config.isClientMode) // Skip script method in client mode
             return;
 
-        for (const auto pair : data.entityUpdateCache)
+        for (const auto& pair : data.entityUpdateCache)
         {
             // Invoke tick event on all entities that are in this tick
             InvokeEvent<onTick>(pair.first, data.isEntityScripted(pair.first));

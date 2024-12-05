@@ -7,7 +7,7 @@
 
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         auto& anim = GetComponent<AnimationC>(self);
         if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
@@ -28,7 +28,7 @@ struct PlayerScript final : EntityScript
             return;
         }
 
-        if (IsClient())
+        if (GetIsClient())
         {
             const auto* myString = "Hello World!\0";
             auto payload = CreatePayload(myString, 13, MessageType::STRING);
@@ -87,7 +87,7 @@ struct NetPlayer final : EntityScript
 
 struct TrollScript final : EntityScript
 {
-    void onTick(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
         return;
         auto& pos = GetComponent<PositionC>(self);

@@ -5,6 +5,7 @@
 #include <deque>
 #include <raylib/config.h>
 
+#include <magique/core/Game.h>
 #include <magique/gamedev/Console.h>
 #include <magique/util/RayUtils.h>
 #include <magique/util/Math.h>
@@ -12,6 +13,7 @@
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/globals/EngineConfig.h"
+#include "internal/globals/EngineData.h"
 #include "internal/utils/STLUtil.h"
 #include "external/raylib-compat/rcore_compat.h"
 
@@ -141,10 +143,8 @@ namespace magique
                 Command{"def", "Creates a new or sets an existing environment with the given type"}.setFunction(
                     [&](const ParamList& params) { AddConsoleString(""); }));
 
-            RegisterConsoleCommand(Command{"shutdown","Calls Game::shutdown() to close the game"}.setFunction([](const ParamList&)
-            {
-                //
-            }));
+            RegisterConsoleCommand(Command{"shutdown", "Calls Game::shutdown() to close the game"}.setFunction(
+                [](const ParamList&) { global::ENGINE_DATA.gameInstance->shutDown(); }));
         }
 
         ~ConsoleData()
