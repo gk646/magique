@@ -22,8 +22,10 @@ namespace magique
             scData.scripts.resize(entity + 1, ScriptData::defaultScript);
         }
         // Dont delete the default script
+        IGNORE_WARNING_GCC("-Wdelete-non-virtual-dtor")
         if ((scData.scripts[entity] != nullptr) && scData.scripts[entity] != ScriptData::defaultScript)
-            delete scData.scripts[entity]; // deletion of object with no polymorphic destructor - but object has no data
+            delete scData.scripts[entity];
+        UNIGNORE_WARNING_GCC();
         scData.scripts[entity] = script;
     }
 
@@ -50,6 +52,9 @@ namespace magique
             global::ENGINE_DATA.entityNScriptedSet.erase(entity);
         }
     }
-    bool GetIsEntityScripted(const entt::entity entity) { return global::ENGINE_DATA.entityNScriptedSet.contains(entity); }
+    bool GetIsEntityScripted(const entt::entity entity)
+    {
+        return global::ENGINE_DATA.entityNScriptedSet.contains(entity);
+    }
 
 } // namespace magique

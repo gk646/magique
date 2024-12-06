@@ -59,7 +59,9 @@
 #include "core/headers/Updater.h"
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"
+#if MAGIQUE_INCLUDE_FONT == 1
 #include "internal/misc/CascadiaCode.h"
+#endif
 
 // Note: All includes are pulled out topside for clarity
 // Here the whole render and update loops happen
@@ -85,14 +87,16 @@ namespace magique
                     logLevel = std::max(logLevel - 2, 1);
                     LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
                 });
-
             global::ENGINE_CONFIG.init();
+#if MAGIQUE_INCLUDE_FONT == 1
             global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
+#else
+            global::ENGINE_CONFIG.font = GetFontDefault();
+#endif
             global::SHADERS.init();      // Loads the shaders and buffers
             global::CONSOLE_DATA.init(); // Create default commands
             global::ENGINE_DATA.camera.zoom = 1.0F;
             InitJobSystem();
-
             LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
             return true;
         }

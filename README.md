@@ -58,7 +58,7 @@ Most notable features:
 
 ### Quickstart
 
-Checkout the [video guide]() for a step by step explanation!
+Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a step by step explanation!
 
 1. Download or clone `magique`
 2. Set up an emtpy new project folder and create files:
@@ -80,7 +80,7 @@ Checkout the [video guide]() for a step by step explanation!
   }
   ```
 
-- _**CMakeLists.txt**_
+- _**CMakeLists.txt**_ (You need to set an actual path to the magique directory)
 
   ```cmake
   cmake_minimum_required(VERSION 3.20)
@@ -148,7 +148,7 @@ There are 3 ways `magique` is documented:
 If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
 Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
 
-### Paradigms and design philosophy of `magique`
+### Paradigms and design philosophy
 
 > *Software has no functionality if it cannot be used!*
 

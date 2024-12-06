@@ -112,18 +112,18 @@ namespace magique
         static constexpr Point crossMove[4] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 
         // Grid data for each map - if cell is usable for pathfinding or not
-        MapHolder<PathFindingGrid> mapsStaticGrids;
-        MapHolder<PathFindingGrid> mapsDynamicGrids;
+        MapHolder<PathFindingGrid> mapsStaticGrids{};
+        MapHolder<PathFindingGrid> mapsDynamicGrids{};
 
         // A star cache
-        std::vector<Point> pathCache;
-        PathFindingGrid visited;
+        std::vector<Point> pathCache{};
+        PathFindingGrid visited{};
         cxstructs::PriorityQueue<GridNode> frontier{};
-        GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
+        GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY]{};
 
         // Lookup table for entity types and entities
-        HashSet<entt::entity> solidEntities;
-        HashSet<EntityType> solidTypes;
+        HashSet<entt::entity> solidEntities{};
+        HashSet<EntityType> solidTypes{};
 
         //----------------- METHODS -----------------//
 

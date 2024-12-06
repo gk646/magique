@@ -3,8 +3,10 @@
 #define MAGIQUE_PERFDATA_H
 
 #include "internal/datastructures/VectorType.h"
-#include "internal/globals/MultiplayerData.h"
 #include "external/raylib-compat/rlgl_compat.h"
+#if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
+#include "internal/globals/MultiplayerData.h"
+#endif
 
 namespace magique
 {
@@ -144,7 +146,6 @@ namespace magique
                 block++;
                 blocks[block].width = 0;
             }
-
             tickCounter = 0;
         }
 

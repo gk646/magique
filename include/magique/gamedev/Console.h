@@ -96,6 +96,7 @@ namespace magique
         Command& setFunction(const CommandFunction& func);
 
     private:
+        PUB()
         CommandFunction cmdFunc;
         std::vector<internal::ParameterData> parameters;
         std::string name;

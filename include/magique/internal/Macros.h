@@ -85,7 +85,6 @@ namespace magique::internal
     }
 
 #define M_FRIEND(type) friend type;
-
 #define befriend(...) FOR_EACH(M_FRIEND, __VA_ARGS__)
 
 //================= BUILDING =================//
@@ -107,5 +106,17 @@ public:                                                                         
 #define UNIGNORE_WARNING()
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define STRINGIFY(x) #x
+#define IGNORE_WARNING_GCC(warning) \
+_Pragma("GCC diagnostic push")  \
+_Pragma(STRINGIFY(GCC diagnostic ignored warning))
+#define UNIGNORE_WARNING_GCC() \
+_Pragma("GCC diagnostic pop")
+#else
+#define IGNORE_WARNING_GCC(warning)
+#define UNIGNORE_WARNING_GCC()
+
+#endif
 
 #endif //MAGIQUE_MACROS_H

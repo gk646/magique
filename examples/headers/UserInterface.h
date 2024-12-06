@@ -29,7 +29,6 @@ struct TextFieldWindow final : Window
     }
 };
 
-
 struct PrintButton final : Button
 {
     PrintButton() : Button(50, 150, 75, 75) {}
@@ -55,6 +54,5 @@ struct Example final : Game
         button.draw();
     }
 };
-
 
 #endif //MAGIQUE_USER_INTERFACE_EXAMPLE_H
