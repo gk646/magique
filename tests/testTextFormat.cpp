@@ -6,11 +6,9 @@ using namespace magique;
 
 TEST_CASE("TextFormattingModule Value Management")
 {
-
     const char* intPlaceholder = "INT_VALUE";
     const char* floatPlaceholder = "FLOAT_VALUE";
     const char* stringPlaceholder = "STRING_VALUE";
-
 
     SECTION("Set and Get int values")
     {
@@ -22,7 +20,6 @@ TEST_CASE("TextFormattingModule Value Management")
         REQUIRE(*retrievedValue == inputValue);
     }
 
-
     SECTION("Set and Get float values")
     {
         float inputValue = 3.14f;
@@ -32,7 +29,6 @@ TEST_CASE("TextFormattingModule Value Management")
         REQUIRE(retrievedValue != nullptr);
         REQUIRE(*retrievedValue == inputValue);
     }
-
 
     SECTION("Set and Get string values")
     {
@@ -52,7 +48,6 @@ TEST_CASE("TextFormattingModule Text Formatting")
     std::string value = "Jespar";
 
     SetFormatValue(placeholder, value);
-
 
     SECTION("Formats text with current placeholder state")
     {

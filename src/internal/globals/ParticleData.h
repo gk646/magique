@@ -28,7 +28,7 @@ namespace magique
                 rectangles.push_back(sp);
                 break;
             case Shape::CIRCLE:
-                circles.push_back(sp);
+                LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
                 triangles.push_back(sp);
@@ -70,11 +70,6 @@ namespace magique
                 rlVertex2f(p.x, p.y);
                 rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
                 rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
-            }
-
-            for (const auto& p : circles)
-            {
-                LOG_FATAL("Method not implemented");
             }
 
             rlEnd();

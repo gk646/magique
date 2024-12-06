@@ -73,7 +73,7 @@ namespace magique
 
         const int totalSize = payload.size + 1;
         char* buffer = MESSAGE_BUFFER;
-        if (sizeof(MESSAGE_BUFFER) < totalSize)
+        if ((int)sizeof(MESSAGE_BUFFER) < totalSize)
         {
             buffer = new char[totalSize];
         }
@@ -190,4 +190,4 @@ namespace magique
 
     bool GetIsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
-} // namespace magiqueä
+} // namespace magique

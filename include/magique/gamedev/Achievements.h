@@ -10,6 +10,7 @@
 //===============================================
 // .....................................................................
 // This helps to create dynamic and flexible achievements that are automatically managed
+// Note: Use the persistence function together with the GameSave to persist the state
 // .....................................................................
 
 namespace magique
@@ -34,7 +35,7 @@ namespace magique
     void SetAchievementCallback(AchievementCallback callback);
 
     // Checks for completion of any achievements
-    // Note: This is called automatically every 30 ticks - but may want to be invoked manually
+    // Note: This is called automatically every 30 ticks - but may want to be invoked manually at certain points
     void CheckAchievements();
 
     //================= PERSISTENCE =================//

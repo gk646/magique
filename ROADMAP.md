@@ -53,21 +53,30 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
     - Shadows:
     - Collision Detection:
 
+**Fix/Improve collision detection**
+- Add velocity as implicit variable and use it in collision detection/resolving
+
+**More Performance Stats**
+- Implement more basic performance stats
+  - Longest frame-to-frame, 99% percentile ...
+- Look at performance debug tools
+  - Time measurement with macros? for user space functions?
+
 ### UI
 
 **More Controls**
-
 - ScrollPane
 - DropDown
 
 **Better Default Style**
+- Use engine theme for all ui elements
 
-- Make a consistent default color palette
+**Default Multiplayer Chat**
+- Implement reusable chat for multiplayer with default style
 
 ### Assets
 
 **Better change detection for asset image**
-
 - Use file hashing instead of size and name check
     - Already implemented in ValidateImage()
 
@@ -84,6 +93,5 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
     - Make internal handling easier and cleaner
 
 **Test**
-
 - add tests persistence, compression and encryption
 - collision detection (check against cute.h)

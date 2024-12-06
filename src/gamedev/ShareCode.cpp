@@ -54,7 +54,7 @@ namespace magique
         }
 
         const auto len = static_cast<int>(strlen(str));
-        if (len < (int)sizeof(CHECKSUM_TYPE) +  (int)sizeof(VERSION))
+        if (len < (int)sizeof(CHECKSUM_TYPE) + (int)sizeof(VERSION))
         {
             LOG_WARNING("Passed string is not a ShareCode: %s", str);
             return;
@@ -134,7 +134,9 @@ namespace magique
 
     ShareCode::~ShareCode()
     {
+        IGNORE_WARNING_GCC("-Wfree-nonheap-object")
         delete[] binaryCode; // Compiler warning is not correct - pointer is replaced before deletion
+        UNIGNORE_WARNING_GCC();
         binaryCode = nullptr;
         delete[] base64;
         base64 = nullptr;

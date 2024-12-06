@@ -15,8 +15,8 @@ namespace magique
         bool isFinished = false;
     };
 
-    vector<Achievement> ACHIEVEMENTS;
-    AchievementCallback CALL_BACK = nullptr;
+    static vector<Achievement> ACHIEVEMENTS{};
+    static AchievementCallback CALL_BACK = nullptr;
 
     Achievement* GetAchievement(const std::string& name)
     {

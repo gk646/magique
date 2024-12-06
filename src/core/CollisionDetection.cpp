@@ -35,7 +35,7 @@ namespace magique
                         const float p1ys[4] = {pA.y, pA.y, pA.y + cA.p2, pA.y + cA.p2};           // Rect a
                         return SAT(pxs, pys, p1xs, p1ys, i);
                     }
-                    if (pB.rotation == 0) [[likely]] // Only a is rotated
+                    if (pB.rotation == 0) [[likely]] // Only A is rotated
                     {
                         float pxs[4] = {0, cA.p1, cA.p1, 0};                                      // rect a
                         float pys[4] = {0, 0, cA.p2, cA.p2};                                      // rect a
@@ -247,7 +247,7 @@ namespace magique
                     return CapsuleToQuadrilateral(pB.x, pB.y, cB.p1, cB.p2, txs, tys, i);
                 }
             case Shape::TRIANGLE:
-                if (pA.rotation == 0) // For triangles we dont assume as they are likely rotated
+                if (pA.rotation == 0) // For triangles, we don't assume as they are likely rotated
                 {
                     if (pB.rotation == 0)
                     {
