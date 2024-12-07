@@ -22,7 +22,7 @@ Most notable features:
 - **Easy to learn and use**
     - _**No external dependencies!**_ (all dependencies in the source)
     - All `raylib` functionalities are the same allowing for an easy transition
-    - _**_Fully documented headers_**_ and GitHub wiki
+    - _**Fully documented headers**_, many **_examples_** and **_video guides_**!
     - _**Many examples**_ from single headers to whole games! (see _examples/_)
     - Intuitive public API optimized for maximum usability
     - Extensive logging and error detection with asserts and debugger support
