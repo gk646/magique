@@ -65,7 +65,7 @@ struct Example final : Game
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e); // Don't forget to give your player the actor component!
-            GiveScript(e);
+
             GiveCamera(e);
             GiveCollisionRect(e, 25, 25);
         };
@@ -73,7 +73,7 @@ struct Example final : Game
 
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            GiveScript(e);
+
             GiveCollisionRect(e, 25, 25);
         };
         RegisterEntity(HUNTER, objFunc);

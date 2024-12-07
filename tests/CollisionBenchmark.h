@@ -106,7 +106,7 @@ struct Test final : Game
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
+
             GiveCamera(e);
             GiveCollisionRect(e, 15, 25);
             GiveComponent<TestCompC>(e);
@@ -114,7 +114,7 @@ struct Test final : Game
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            GiveScript(e);
+
             const auto val = GetRandomValue(0, 100);
             if (val < 25)
             {

@@ -7,7 +7,7 @@
 namespace magique
 {
     static LogCallbackFunc CALL_BACK = nullptr;
-    static constexpr int FMT_CACHE_SIZE = 128;
+    static constexpr int FMT_CACHE_SIZE = 255;
 
     namespace internal
     {
@@ -53,7 +53,6 @@ namespace magique
 
             MAGIQUE_ASSERT(written >= 0, "Failed to format");
             written += vsnprintf(FORMAT_CACHE + written, FMT_CACHE_SIZE - written, msg, args);
-            MAGIQUE_ASSERT(written < FMT_CACHE_SIZE, "Log message too long!");
 
             if (CALL_BACK != nullptr)
             {

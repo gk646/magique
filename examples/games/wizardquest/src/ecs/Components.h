@@ -24,13 +24,13 @@ struct MovementC final
 {
     static constexpr float DECAY_FACTOR = 0.9;
     static constexpr float STOP_THRESHOLD = 0.01F;
-    float baseVelocX, baseVelocY; // Movement velocity - reset each frame
-    float extVelocX, extVelocY;   // External velocity (forces)  - decays slowly
-
-    bool movedLeft = false;
-
-    int teleportCooldownCounter = 30;
     static constexpr int TELEPORT_COOLDOWN = 60; // 1 second
+
+    float baseVelocX, baseVelocY;     // Movement velocity - reset each frame
+    float extVelocX, extVelocY;       // External velocity (forces)  - decays slowly
+    bool movedLeft = false;           // For animation flipping
+    int teleportCooldownCounter = 30; // So you don't get stuck on the teleporter
+
     Point getVelocity()
     {
         const float totalDx = baseVelocX + extVelocX;

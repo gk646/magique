@@ -1,5 +1,4 @@
-This is a simple example how to use magique to make a simple game. 
-
+This is a simple example how to use magique to make a simple game.
 
 Features used and showcased in this example:
 

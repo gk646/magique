@@ -7,6 +7,8 @@
 
 void PlayerHUD::onDraw(const Rectangle& bounds)
 {
+    if (GetCameraEntity() == entt::entity(UINT32_MAX))
+        return;
     const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity()); // Player is always the camera in this example
 
     const auto healthWidth = bounds.width * stats.getHealthPercent();
@@ -26,7 +28,7 @@ void PlayerHUD::onDraw(const Rectangle& bounds)
 
 void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
 {
-    if (!isDrawn) // No need for update
+    if (!isDrawn || GetCameraEntity() == entt::entity(UINT32_MAX)) // No need for update or no camera
         return;
     const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity());
     SetFormatValue("P_HEALTH", (int)stats.health);
@@ -35,14 +37,10 @@ void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
     SetFormatValue("P_MAX_MANA", (int)stats.maxMana);
 }
 
-void HotbarSlot::onDraw(const Rectangle& bounds)
-{
-    DrawRectangleLinesEx(bounds, 1, DARKGRAY);
-}
+void HotbarSlot::onDraw(const Rectangle& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
 
-PlayerHotbar::PlayerHotbar() : UIContainer( slots * HotbarSlot::size, 180, Anchor::BOTTOM_CENTER, ScalingMode::KEEP_RATIO)
+PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor::BOTTOM_CENTER, ScalingMode::KEEP_RATIO)
 {
-    setPosition(480, 900);
     for (int i = 0; i < slots; ++i)
     {
         addChild(new HotbarSlot());

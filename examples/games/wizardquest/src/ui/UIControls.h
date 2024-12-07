@@ -23,7 +23,7 @@ struct HotbarSlot final : UIObject
 
 struct PlayerHotbar final : UIContainer
 {
-    int slots = 4;
+    inline static int slots = 4;
     PlayerHotbar();
     void onDraw(const Rectangle& bounds) override;
 };

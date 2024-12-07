@@ -15,13 +15,16 @@ enum class GameState
 
 enum class MessageType : uint8_t
 {
-    STRING,
+    POSITION_UPDATE,
+    INPUT_UPDATE,
+    SPAWN_UPDATE,
 };
 
 enum EntityType : uint16_t
 {
     PLAYER,
-    TROLL,
+    TROLL,      // Enemy
+    NET_PLAYER, // Other players connected over network
 };
 
 enum class MapID : uint8_t
@@ -34,7 +37,7 @@ enum class MapID : uint8_t
 
 enum class StorageID
 {
-    ACHIEVEMENTS,
+    ACHIEVEMENTS, // Storage slot for the achievements
 };
 
 enum class HandleID
@@ -78,6 +81,7 @@ struct WizardQuest final : Game
     void onStartup(AssetLoader& loader) override;
     void onLoadingFinished() override;
     void updateGame(GameState gameState) override;
+    void postTickUpdate(GameState gameState) override;
     void drawGame(GameState gameState, Camera2D& camera) override;
     void drawUI(GameState gameState) override;
     void onShutDown() override;

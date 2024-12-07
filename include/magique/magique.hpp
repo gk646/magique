@@ -36,12 +36,13 @@
 
 // Gamedev
 #include "gamedev/Achievements.h"
-#include "gamedev/PathFinding.h"
-#include "gamedev/Console.h"
-#include "gamedev/Procedural.h"
-#include "gamedev/Localization.h"
-#include "gamedev/VirtualClock.h"
 #include "gamedev/AIAgent.h"
+#include "gamedev/Console.h"
+#include "gamedev/Localization.h"
+#include "gamedev/PathFinding.h"
+#include "gamedev/Procedural.h"
+#include "gamedev/ShareCode.h"
+#include "gamedev/VirtualClock.h"
 
 // Multiplayer
 #ifdef MAGIQUE_LAN
@@ -77,5 +78,7 @@
 #include "util/Strings.h"
 #include "util/JobSystem.h"
 #include "util/Compression.h"
+#include "util/RayUtils.h"
+#include "util/Math.h"
 
 #endif // MAGIQUE_H

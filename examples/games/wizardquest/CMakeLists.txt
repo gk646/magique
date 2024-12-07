@@ -6,9 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE GAME_FILES "src/*.cpp")
 add_executable(wizardquest ${GAME_FILES})
 
-set(STEAM_PATH "/home/gk646/devlibs/steamworks_sdk_161/sdk")
-set(MAGIQUE_STEAM ON) #- Use this to enable steam support
-
+set(MAGIQUE_LAN ON)
 # Set the path to the magique directory
 add_subdirectory(../../.. magique)
 

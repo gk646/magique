@@ -27,6 +27,8 @@ namespace magique
 {
     struct Game
     {
+        // Constructs a game instance - sets the window title to the passed name
+        // Note: This must only be called once per program
         explicit Game(const char* name = "MyGame");
         virtual ~Game();
 
