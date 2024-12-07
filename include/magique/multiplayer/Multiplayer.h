@@ -15,6 +15,7 @@
 //      - Peer-To-Peer where 1 peer is an authoritative host
 //          PROS:
 //              - Works without external servers!
+//              - Code for both sides is in the same project (could be a con)
 //              - Allows to develop host and client code in the same project
 //              - Easier network architecture (no server)
 //              - The whole gamestate is only simulated on the hosts computer (single point of truth)
@@ -30,21 +31,14 @@
 //              - Send position updates, used abilities... to the clients and update their gamestate
 //              - Send the inputs from the client to the host (so the host can simulate the clients character)
 //
+// You can however make a dedicated server program with magique as well.
 // Note: Packets should not be bigger than 1200 bytes to avoid fragmentation (To still have overhead towards the MTU)
 //       But for optimal performance try to merge smaller packets into a single bigger one that is close to this limit.
+//
 // .....................................................................
 
 namespace magique
 {
-    // Puts this game into client mode - all game simulation is skipped except rendering
-    // Comprehensive list of things that are SKIPPED in ClientMode:
-    //      - Dynamic and Static collisions
-    //      - ALL scripting event methods
-    void EnterClientMode();
-    void ExitClientMode();
-
-    // Returns true if this game is currently in client mode
-    bool GetIsClientMode();
 
     //================= MESSAGES =================//
 
@@ -83,7 +77,6 @@ namespace magique
     //================= UTIL =================//
 
     // Returns the vector that contains all current valid connections
-    // Note: When you're a client the hosts connection is always at index 0 (e.g. GetCurrentConnections()[0];)
     const std::vector<Connection>& GetCurrentConnections();
 
     // Sets the callback function that is called on various multiplayer events
@@ -98,6 +91,26 @@ namespace magique
 
     // Returns true if currently in a session as a client
     bool GetIsClient();
+
+    //================= CLIENT-MODE =================//
+
+    // Puts this game into client mode - all game simulation is skipped except rendering
+    // Comprehensive list of things that are SKIPPED in ClientMode:
+    //      - Dynamic and Static collisions
+    //      - ALL scripting event methods
+    void EnterClientMode();
+    void ExitClientMode();
+
+    // Returns true if this game is currently in client mode
+    bool GetIsClientMode();
+
+    //================= UTIL =================//
+
+    // Returns true if magique was built with steam
+    bool GetSteamLoaded();
+
+    // Returns true if magique was built with GameNetworkingSockets
+    bool GetNetworkingSocketsLoaded();
 
 } // namespace magique
 

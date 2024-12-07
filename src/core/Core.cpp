@@ -92,6 +92,7 @@ namespace magique
         if (global::ENGINE_DATA.cameraMap == static_cast<MapID>(UINT8_MAX))
         {
             LOG_WARNING("No camera exists!");
+            return static_cast<MapID>(UINT8_MAX);
         }
 #endif
         return global::ENGINE_DATA.cameraMap;

@@ -190,4 +190,24 @@ namespace magique
 
     bool GetIsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
+
+    bool GetSteamLoaded()
+    {
+#ifdef MAGIQUE_STEAM
+        return true;
+#else
+        return false;
+#endif
+    }
+
+    bool GetNetworkingSocketsLoaded()
+    {
+#ifdef MAGIQUE_LAN
+        return true;
+#else
+        return false;
+#endif
+    }
+
+
 } // namespace magique

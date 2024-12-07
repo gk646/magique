@@ -97,18 +97,12 @@ struct PlayerScript final : EntityScript
             pos.x += 2.5F;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
-    {
-        AccumulateCollision(info);
-    }
+
 };
 
 struct NetPlayerScript final : EntityScript
 {
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
-    {
-        AccumulateCollision(info);
-    }
+
 };
 
 struct ObjectScript final : EntityScript // Moving platform
@@ -159,7 +153,7 @@ struct Test final : Game
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
+
             GiveCamera(e);
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
@@ -170,7 +164,7 @@ struct Test final : Game
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
+
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
@@ -179,7 +173,7 @@ struct Test final : Game
         // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
-            GiveScript(e);
+
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
@@ -241,7 +235,7 @@ struct Test final : Game
             }
             else if (event == LobbyEvent::ON_LOBBY_INVITE)
             {
-                if (IsInLobby()) // Just leave the lobby - we don't have to clean anything up
+                if (GetInLobby()) // Just leave the lobby - we don't have to clean anything up
                     LeaveSteamLobby();
                 JoinSteamLobby(lobbyId);        // Connect to the new lobby
                 ConnectToGlobalSocket(steamID); // Connect to the inviters socket
@@ -256,9 +250,9 @@ struct Test final : Game
 
     void drawGame(GameState /*gameState*/, Camera2D& camera2D) override
     {
-        if (IsClient())
+        if (GetIsClient())
             DrawText("You are a client", 50, 100, 25, BLACK);
-        else if (IsHost())
+        else if (GetIsHost())
             DrawText("You are the host", 50, 100, 25, BLACK);
         else
         {
@@ -297,7 +291,7 @@ struct Test final : Game
     void updateGame(GameState /*gameState*/) override
     {
         // Enter a session
-        if (!IsInMultiplayerSession())
+        if (!GetInMultiplayerSession())
         {
             if (IsKeyPressed(KEY_H))
             {
@@ -313,10 +307,10 @@ struct Test final : Game
         }
 
         // Here we receive incoming messages and update the gamestate
-        if (IsInMultiplayerSession())
+        if (GetInMultiplayerSession())
         {
             // The host gets the client inputs
-            if (IsHost())
+            if (GetIsHost())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
@@ -351,7 +345,7 @@ struct Test final : Game
             }
 
             // The client gets the gamestate updates
-            if (IsClient())
+            if (GetIsClient())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
@@ -386,12 +380,12 @@ struct Test final : Game
     void postTickUpdate(GameState /*gameState*/) override
     {
         // Here we send out the data for this tick
-        if (IsInMultiplayerSession())
+        if (GetInMultiplayerSession())
         {
             // The host sends out the current gamestate to all clients
             // Note: Usually you want to optimize this to send as little as possible
             //      -> instead of position send the position delta - pack multiple single updates together...
-            if (IsHost())
+            if (GetIsHost())
             {
                 for (const auto e : GetUpdateEntities())
                 {
@@ -412,7 +406,7 @@ struct Test final : Game
             }
 
             // Send inputs - in client mode all script event methods are skipped!
-            if (IsClient())
+            if (GetIsClient())
             {
                 const auto host = GetCurrentConnections()[0];
                 constexpr KeyboardKey keyArr[] = {KEY_W, KEY_A, KEY_S, KEY_D};

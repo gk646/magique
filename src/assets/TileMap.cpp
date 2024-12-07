@@ -200,7 +200,7 @@ namespace magique
                 break;
             }
         }
-        const auto* msg = "Successfully loaded TileMap: %s | Layers: %d | Width/Height: %d / %d ";
+        const auto* msg = "Successfully loaded TileMap: %s | Layers: %d | Width/Height: %d/%d ";
         LOG_INFO(msg, asset.path, layers, width, height);
     }
 

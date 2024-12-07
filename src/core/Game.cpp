@@ -139,6 +139,7 @@ namespace magique
 #endif
         CloseAudioDevice();
         CloseWindow();
+        LOG_INFO("Successfully shutdown magique");
     }
 
     int Game::run(const char* assetPath, const char* configPath, const uint64_t encryptionKey)

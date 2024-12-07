@@ -40,9 +40,9 @@ enum EntityType : uint16_t
 
 enum class MessageType : uint8_t
 {
-    POSITION_UPDATE,
-    INPUT_UPDATE,
-    SPAWN_UPDATE,
+    POSITION_UPDATE, // Host sends the clients a entity position update
+    SPAWN_UPDATE, // Host sends the clients data of a entity spawn
+    INPUT_UPDATE, // Client sends the host its current input(s)
 };
 
 struct TestCompC final
@@ -88,19 +88,11 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
-    {
-        AccumulateCollision(info);
-    }
 };
 
 struct NetPlayerScript final : EntityScript
 {
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
-    {
-        AccumulateCollision(info);
-    }
+   
 };
 
 struct ObjectScript final : EntityScript // Moving platform
@@ -148,7 +140,6 @@ struct Example final : Game
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
             GiveCamera(e);
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
@@ -159,7 +150,6 @@ struct Example final : Game
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);
-            GiveScript(e);
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
@@ -168,7 +158,6 @@ struct Example final : Game
         // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
-            GiveScript(e);
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
@@ -217,15 +206,20 @@ struct Example final : Game
 
                         BatchMessage(lastConnection, payload);
                     }
-                }
+                } else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
+            {
+                EnterClientMode();
+                DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
+
+            }
             });
     }
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
-        if (IsClient())
+        if (GetIsClient())
             DrawText("You are a client", 50, 100, 25, BLACK);
-        else if (IsHost())
+        else if (GetIsHost())
             DrawText("You are the host", 50, 100, 25, BLACK);
         else
         {
@@ -264,7 +258,7 @@ struct Example final : Game
     void updateGame(GameState gameState) override
     {
         // Enter a session
-        if (!IsInMultiplayerSession())
+        if (!GetInMultiplayerSession())
         {
             const int port = 15000;
             if (IsKeyPressed(KEY_H))
@@ -274,16 +268,14 @@ struct Example final : Game
             if (IsKeyPressed(KEY_J))
             {
                 ConnectToLocalSocket(GetLocalIP(), port);
-                EnterClientMode();
-                DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
-            }
+                         }
         }
 
         // Here we receive incoming messages and update the gamestate
-        if (IsInMultiplayerSession())
+        if (GetInMultiplayerSession())
         {
             // The host gets the client inputs
-            if (IsHost())
+            if (GetIsHost())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
@@ -318,7 +310,7 @@ struct Example final : Game
             }
 
             // The client gets the gamestate updates
-            if (IsClient())
+            if (GetIsClient())
             {
                 const auto& msgs = ReceiveIncomingMessages();
                 for (const auto& msg : msgs)
@@ -335,7 +327,7 @@ struct Example final : Game
                         }
                         break;
                     case MessageType::INPUT_UPDATE:
-                        LOG_WARNING("Received wrong message");
+                                        LOG_WARNING("Received wrong message"); // Only host gets inputs
                         break;
                     case MessageType::SPAWN_UPDATE:
                         {
@@ -353,12 +345,12 @@ struct Example final : Game
     void postTickUpdate(GameState gameState) override
     {
         // Here we send out the data for this tick
-        if (IsInMultiplayerSession())
+        if (GetInMultiplayerSession())
         {
             // The host sends out the current gamestate to all clients
             // Note: Usually you want to optimize this to send as little as possible
             //      -> instead of position send the position delta - pack multiple single updates together...
-            if (IsHost())
+            if (GetIsHost())
             {
                 for (const auto e : GetUpdateEntities())
                 {
@@ -379,7 +371,7 @@ struct Example final : Game
             }
 
             // Send inputs - in client mode all script event methods are skipped!
-            if (IsClient())
+            if (GetIsClient())
             {
                 const auto host = GetCurrentConnections()[0];
                 constexpr KeyboardKey keyArr[] = {KEY_W, KEY_A, KEY_S, KEY_D};

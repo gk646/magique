@@ -8,7 +8,6 @@
 
 namespace magique
 {
-
     UIObject::UIObject(const float x, const float y, const float w, const float h, const ScalingMode scaling)
     {
         px = x / MAGIQUE_UI_RESOLUTION_X;
@@ -167,10 +166,7 @@ namespace magique
         return PointToRect(mx, my, rx, ry, rw, rh);
     }
 
-    bool UIObject::getIsClicked(const int button) const
-    {
-        return IsMouseButtonPressed(button) && getIsHovered();
-    }
+    bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
     Anchor UIObject::getAnchor() const { return anchor; }
 
