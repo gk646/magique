@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef MAGIQUE_GAMESAVE_H
-#define MAGIQUE_GAMESAVE_H
+#ifndef MAGIQUE_GAMESAVE_DATA_H
+#define MAGIQUE_GAMESAVE_DATA_H
 
 #include <string>
 #include <vector>
@@ -27,15 +27,14 @@ namespace magique
 
     // Persists the given save to disk
     // Failure: Returns false
-    bool SaveToDisk(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+    bool SaveToDisk(GameSaveData& save, const char* filePath, uint64_t encryptionKey = 0);
 
     // Loads an existing save from disk or creates a one at the given path
     // Failure: Returns false
-    bool LoadFromDisk(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+    bool LoadFromDisk(GameSaveData& save, const char* filePath, uint64_t encryptionKey = 0);
 
-    struct GameSave final
+    struct GameSaveData final
     {
-
         //================= SAVING =================//
         // Note: All data is copied on call
 
@@ -83,20 +82,20 @@ namespace magique
         // Failure: if the storage doesn't exist or is empty returns StorageType::EMPTY
         StorageType getStorageInfo(StorageID id);
 
-        GameSave() = default;
-        GameSave(const GameSave& other) = delete;            // Involves potentially copying a lot of data
-        GameSave& operator=(const GameSave& other) = delete; // Involves potentially copying a lot of data
-        GameSave(GameSave&& other) noexcept;
-        GameSave& operator=(GameSave&& other) noexcept;
-        ~GameSave(); // Will clean itself up automatically
+        GameSaveData() = default;
+        GameSaveData(const GameSaveData& other) = delete;            // Involves potentially copying a lot of data
+        GameSaveData& operator=(const GameSaveData& other) = delete; // Involves potentially copying a lot of data
+        GameSaveData(GameSaveData&& other) noexcept;
+        GameSaveData& operator=(GameSaveData&& other) noexcept;
+        ~GameSaveData(); // Will clean itself up automatically
 
     private:
         [[nodiscard]] internal::GameSaveStorageCell* getCell(StorageID id);
         void assignDataImpl(StorageID id, const void* data, int bytes, StorageType type);
         std::vector<internal::GameSaveStorageCell> storage; // Internal data holder
         bool isPersisted = false;                           // If the game save has been saved to disk
-        friend bool SaveToDisk(GameSave&, const char*, uint64_t);
-        friend bool LoadFromDisk(GameSave&, const char*, uint64_t);
+        friend bool SaveToDisk(GameSaveData&, const char*, uint64_t);
+        friend bool LoadFromDisk(GameSaveData&, const char*, uint64_t);
     };
 
 } // namespace magique
@@ -106,12 +105,12 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    void GameSave::saveVector(const StorageID id, const std::vector<T>& vector)
+    void GameSaveData::saveVector(const StorageID id, const std::vector<T>& vector)
     {
         assignDataImpl(id, vector.data(), static_cast<int>(vector.size() * sizeof(T)), StorageType::VECTOR);
     }
     template <typename T>
-    DataPointer<T> GameSave::getData(const StorageID id)
+    DataPointer<T> GameSaveData::getData(const StorageID id)
     {
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]
@@ -149,7 +148,7 @@ namespace magique
         }
     }
     template <typename T>
-    std::vector<T> GameSave::getVector(const StorageID id)
+    std::vector<T> GameSaveData::getVector(const StorageID id)
     {
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]

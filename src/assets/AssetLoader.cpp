@@ -9,7 +9,7 @@ namespace magique
     {
 
         addLambdaTask([=](AssetContainer& assets) { LoadAssetImage(assets, assetPath, encryptionKey); }, INTERNAL,
-                      BACKGROUND_THREAD, 0, true);
+                      THREAD_ANY, 0, true);
     }
 
     bool AssetLoader::step() { return stepMixed(assets); }

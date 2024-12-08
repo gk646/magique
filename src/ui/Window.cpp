@@ -3,6 +3,7 @@
 #include <magique/ui/UI.h>
 
 #include "internal/globals/UIData.h"
+#include "internal/globals/EngineConfig.h"
 #include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
@@ -48,7 +49,7 @@ namespace magique
 
     Rectangle Window::getBodyBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getScreenDims();
+        const auto [sx, sy] = UIData::getScreenDims();
         Rectangle bounds{px, py + moverHeightP, pw, ph - moverHeightP};
         switch (scaleMode)
         {
@@ -82,7 +83,7 @@ namespace magique
 
     Rectangle Window::getTopBarBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getScreenDims();
+        const auto [sx, sy] = UIData::getScreenDims();
         Rectangle bounds{px, py, pw, moverHeightP};
         switch (scaleMode)
         {
@@ -118,15 +119,19 @@ namespace magique
 
     void Window::drawDefault(const Rectangle& bounds) const
     {
+        const auto& theme = global::ENGINE_CONFIG.theme;
+
         // Body
-        DrawRectangleRounded(bounds, 0.1F, 30, LIGHTGRAY);
-        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, GRAY);
+        DrawRectangleRounded(bounds, 0.1F, 30, theme.backLight);
+        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, theme.backDark);
+
+        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
         // Top bar
         const auto topBar = getTopBarBounds();
-        const auto hovered = CheckCollisionPointRec(GetMousePosition(), topBar);
-        const Color body = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? DARKGRAY : hovered ? GRAY : LIGHTGRAY;
-        const Color outline = hovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? GRAY : hovered ? DARKGRAY : GRAY;
+        const auto isHovered = CheckCollisionPointRec(GetMousePosition(), topBar);
+        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
+        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ?  theme.backDark :  theme.backDark;
         DrawRectangleRounded(topBar, 0.2F, 30, body);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }

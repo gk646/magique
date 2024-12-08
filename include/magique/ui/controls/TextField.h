@@ -3,7 +3,7 @@
 #define MAGIQUE_TEXTFIELD_H
 
 #include <string>
-#include <raylib/raylib.h>
+#include <magique/core/Core.h>
 #include <magique/ui/UIObject.h>
 IGNORE_WARNING(4100)
 
@@ -43,10 +43,10 @@ namespace magique
         void updateInputs();
 
         // Draws the text
-        void drawText(float size, Color txt, Color cursor, const Font& font = GetFontDefault(), float spacing = 1);
+        void drawText(float size, Color txt, Color cursor, const Font& font = GetFont(), float spacing = 1) const;
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rectangle& bounds);
+        void drawDefault(const Rectangle& bounds) const;
 
         // Called everytime the textfield is focused and enter is pressed
         // Return true: signals enter action was consumed and should NOT be treated as newline
@@ -55,7 +55,6 @@ namespace magique
 
     public:
         // Returns the current text of the textfield
-        [[nodiscard]] const char* getCText() const;
         [[nodiscard]] const std::string& getText() const;
 
         // Sets the field text to the provided string

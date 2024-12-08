@@ -51,11 +51,17 @@ namespace magique
         static Command* CountMismatchError(const ConsoleData& data, const Command& cmd);
     };
 
+    struct ConsoleLine final
+    {
+        std::string text;
+        Color color;
+    };
+
     struct ConsoleData final
     {
         // Terminal data
         std::deque<std::string> submitHistory; // Submitted text
-        std::deque<std::string> consoleLines;  // Past lines
+        std::deque<ConsoleLine> consoleLines;  // Past lines
         std::string line;                      // Current input line
 
         // Command data
@@ -212,15 +218,17 @@ namespace magique
             suggestions.clear();
         }
 
-        void addString(const char* string) { consoleLines.emplace_front(string); }
+        void addString(const char* string, Color color = global::ENGINE_CONFIG.theme.txtPassive)
+        {
+            consoleLines.emplace_front(string, color);
+        }
 
-        void addStringF(const char* fmt, va_list va_args)
+        void addStringF(const char* fmt, va_list va_args, Color color = global::ENGINE_CONFIG.theme.txtPassive)
         {
             constexpr int MAX_LEN = 128;
             char buf[MAX_LEN]{};
-            auto& string = consoleLines.emplace_front();
             vsnprintf(buf, MAX_LEN, fmt, va_args);
-            string.assign(buf);
+            consoleLines.emplace_front(buf, color);
         }
 
         // Saves allocations by reusing the string
@@ -327,7 +335,7 @@ namespace magique
             {
                 if (textPos.y < 0)
                     break;
-                DrawTextEx(font, line.c_str(), textPos, fsize, SPACING, theme.txtPassive);
+                DrawTextEx(font, line.text.c_str(), textPos, fsize, SPACING, line.color);
                 textPos.y -= lineHeight;
             }
 

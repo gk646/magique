@@ -24,6 +24,9 @@ namespace magique
         Color txtPassive;
         Color backLight;
         Color backDark;
+        Color backSelected;
+        Color error;
+        Color warning;
     };
 
     struct Configuration final
@@ -53,9 +56,12 @@ namespace magique
             // adwaita based colors
             Theme adwaita{};
             adwaita.txtActive = WHITE;
-            adwaita.txtPassive = Color(163,163,163,255);
+            adwaita.txtPassive = Color(163, 163, 163, 255);
+            adwaita.backSelected = Color(68, 68, 68, 255);
             adwaita.backLight = Color(48, 48, 48, 255);
             adwaita.backDark = Color(30, 30, 30, 255);
+            adwaita.error = Color(230, 97, 0, 255);
+            adwaita.warning = Color(255, 163, 72, 255);
             theme = adwaita;
         }
     };

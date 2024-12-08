@@ -10,7 +10,7 @@
 //===============================================
 // .....................................................................
 // This helps to create dynamic and flexible achievements that are automatically managed
-// Note: Use the persistence function together with the GameSave to persist the state
+// Note: Use the persistence function together with the GameSaveData to persist the state
 // .....................................................................
 
 namespace magique
@@ -40,7 +40,7 @@ namespace magique
 
     //================= PERSISTENCE =================//
 
-    // Returns an allocated pointer and size to save the current achievements state - use e.g. GameSave::saveData()
+    // Returns an allocated pointer and size to save the current achievements state - use e.g. GameSaveData::saveData()
     // Note: Only name and completion state is saved not the constraint - achievements have to be added each time
     // IMPORTANT: allocates memory on each call
     [[nodiscard("Allocates")]] DataPointer<const unsigned char> GetAchievementsData();

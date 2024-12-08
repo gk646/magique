@@ -45,7 +45,7 @@ TEST_CASE("execution order")
 
                 //printf("Task executed: %s\n", name.c_str());
 
-                if (thread == MAIN_THREAD)
+                if (thread == THREAD_MAIN)
                 {
                     assert(std::this_thread::get_id() == mainThreadId && "Main thread task not running on main thread!");
                 }
@@ -53,12 +53,12 @@ TEST_CASE("execution order")
             thread, priority);
     };
 
-    registerTestTask("Task A", MAIN_THREAD, CRITICAL);
-    registerTestTask("Task B", BACKGROUND_THREAD, HIGH);
-    registerTestTask("Task C", MAIN_THREAD, MEDIUM);
-    registerTestTask("Task D", BACKGROUND_THREAD, MEDIUM);
-    registerTestTask("Task E", BACKGROUND_THREAD, LOW);
-    registerTestTask("Task F", MAIN_THREAD, LOW);
+    registerTestTask("Task A", THREAD_MAIN, CRITICAL);
+    registerTestTask("Task B", THREAD_ANY, HIGH);
+    registerTestTask("Task C", THREAD_MAIN, MEDIUM);
+    registerTestTask("Task D", THREAD_ANY, MEDIUM);
+    registerTestTask("Task E", THREAD_ANY, LOW);
+    registerTestTask("Task F", THREAD_MAIN, LOW);
 
     while (!loader.step())
     {

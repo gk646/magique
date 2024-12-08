@@ -155,7 +155,7 @@ namespace magique
 
         // Load atlas to gpu - needs to be the last task
         const auto loadAtlasGPU = [](AssetContainer&) { global::ATLAS_DATA.loadToGPU(); };
-        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, MAIN_THREAD, LOW, 1);
+        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, THREAD_MAIN, LOW, 1);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;
 

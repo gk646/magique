@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <raylib/raylib.h>
 #include <magique/ui/controls/TextField.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
@@ -6,6 +7,7 @@
 
 #include "external/raylib-compat/rcore_compat.h"
 #include "internal/utils/CollisionPrimitives.h"
+#include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
@@ -20,8 +22,6 @@ namespace magique
     TextField::TextField(float x, float y, float w, float h, ScalingMode scaling) : UIObject(x, y, w, h, scaling) {}
 
     TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, scaling) {}
-
-    const char* TextField::getCText() const { return text.c_str(); }
 
     const std::string& TextField::getText() const { return text; }
 
@@ -77,29 +77,29 @@ namespace magique
     }
 
     void TextField::drawText(const float fontSize, const Color color, const Color cursor, const Font& font,
-                             const float spacing)
+                             const float spacing) const
     {
         const auto bounds = getBounds();
         const Vector2 tPos = {bounds.x, bounds.y};
-        DrawTextEx(font, getCText(), tPos, fontSize, spacing, color);
+        DrawTextEx(font, getText().c_str(), tPos, fontSize, spacing, color);
 
         if (!isFocused || blinkCounter > blinkDelay)
             return;
 
-        auto* lineStart = text.data() + currLineStart;
+        const auto* lineStart = text.data() + currLineStart;
         const auto cursorOffX = MeasureTextUpTo(lineStart, cursorPos - currLineStart, font, fontSize, spacing);
         const auto cursorOffY = (fontSize + static_cast<float>(GetTextLineSpacing())) * static_cast<float>(cursorLine);
         DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
-    void TextField::drawDefault(const Rectangle& bounds)
+    void TextField::drawDefault(const Rectangle& bounds) const
     {
-        const auto isHovered = getIsHovered();
-        const Color body = getIsFocused() ? LIGHTGRAY : isHovered ? LIGHTGRAY : GRAY;
-        const Color outline = DARKGRAY;
+        const auto& theme = global::ENGINE_CONFIG.theme;
+        const Color body = getIsFocused() ? theme.backSelected : getIsHovered() ? theme.backLight : theme.backDark;
+        const Color outline = theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawText(15, getIsFocused() ? GRAY : DARKGRAY, BLACK);
+        drawText(14, getIsFocused() ? theme.txtActive : theme.txtPassive, theme.txtPassive);
     }
 
     void TextField::updateControls()

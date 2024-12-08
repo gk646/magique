@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef MAGIQUE_GAMELOADER_H
-#define MAGIQUE_GAMELOADER_H
+#ifndef MAGIQUE_TASK_INTERFACE_H
+#define MAGIQUE_TASK_INTERFACE_H
 
 #include <magique/internal/TaskExecutor.h>
-#include <magique/persistence/container/GameSave.h>
+#include <magique/persistence/container/GameSaveData.h>
 
 //===============================================
-// Game Loader
+// Task Interface
 //===============================================
 // ................................................................................
-// This interface is meant as a helpful abstraction to structure potentially complex loading tasks.
-// It is intended that create a single GameLoader where you define and register all tasks needed to load once.
-// Like this its possible to reuse the loader by passing in loaded GameSaves (e.g. from LoadFromDisk(save, path)
-// It will call all your loading task that extract data from the save and initialize your gameplay systems
+// This interface is meant as a helpful abstraction to structure complex persistence tasks.
+// It allows you to describe complex loading/saving work in independent and stateless tasks that operate only on the given data.
+// It is intended that this interface is created once (for each purpose) and initialized with the tasks.
 // This makes it very trivial to manage different saves as each is loaded with the same stored routine
 //
-// Note: see assets/AssetLoader.h for a detailed description (same interface)
+// Note: see assets/AssetLoader.h for a detailed description of the interface guarantees
+// Note: see examples/demos/persistence to see potential usage
 // Note: If 'mainOnly' is NOT specified, tasks can run on any available thread
 // ................................................................................
 
@@ -23,19 +23,19 @@ namespace magique
 {
     // For simple tasks not requiring variables
     // Called with the gamesave
-    using GameLoadFunc = std::function<void(GameSave& save)>;
+    using GameLoadFunc = std::function<void(GameSaveData& save)>;
 
-    struct GameLoader final : internal::TaskExecutor<GameSave>
+    struct TaskInterface final : internal::TaskExecutor<GameSaveData>
     {
         // Creates an empty gameloader
         //      - mainOnly: if true only uses the main thread to execute the tasks
-        explicit GameLoader(bool mainOnly = false);
+        explicit TaskInterface(bool mainOnly = false);
 
         // Returns true if the loading task was successfully registered
         // task     - a new instance of a subclass of ITask, takes ownership
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        bool registerTask(ITask<GameSave>* task, PriorityLevel pl = MEDIUM, int impact = 1);
+        bool registerTask(ITask<GameSaveData>* task, PriorityLevel pl = MEDIUM, int impact = 1);
 
         // Returns true if the loading task was successfully registered
         // func     - a loading func (lambda)
@@ -45,7 +45,7 @@ namespace magique
 
         // Has to be called after all tasks are registered - this call blocks until all tasks are finished
         //      - save:     the save to load from
-        void load(GameSave& save);
+        void invoke(GameSaveData& save);
 
     private:
         bool step() override;
@@ -55,4 +55,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_GAMELOADER_H
+#endif //MAGIQUE_TASK_INTERFACE_H

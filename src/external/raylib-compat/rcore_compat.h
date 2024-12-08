@@ -5,6 +5,7 @@
 extern "C" {
 
 int GetCharPressedQueueCount();
+int GetKeyPressedQueueCount();
 
 int* GetCharPressedQueue();
 

@@ -25,7 +25,7 @@ namespace magique
         return memcmp(GetCurrentButtonState(), GetPreviousButtonState(), MAX_MOUSE_BUTTONS) != 0;
     }
 
-    inline void InputSystem(const entt::registry& registry)
+    inline void InputSystem()
     {
         // Should be a subtle optimization
         // Do some initial checks to avoid calling event functions every tick
@@ -36,8 +36,8 @@ namespace magique
         if (config.isClientMode)
             return;
 
-        const bool invokeKey = GetKeyPressed() != 0 || GetCharPressed() != 0 || HasKeyEventHappened();
-
+        const bool invokeKey =
+            GetKeyPressedQueueCount() != 0 || GetCharPressedQueueCount() != 0 || HasKeyEventHappened();
 
         const bool invokeMouse = GetPreviousMousePositionX() != GetCurrentMousePositionX() ||
             GetPreviousMousePositionY() != GetCurrentMousePositionY() || HasMouseEventHappened();
