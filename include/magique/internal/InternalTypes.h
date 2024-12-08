@@ -21,7 +21,7 @@ namespace magique::internal
         return sizeof(T);
     }
 
-    // Stores information used in the GameSave
+    // Stores information used in the GameSaveData
     struct GameSaveStorageCell final
     {
         char* data = nullptr;

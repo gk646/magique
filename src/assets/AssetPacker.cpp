@@ -153,7 +153,7 @@ namespace magique
     {
         if (!fs::exists(path)) // User cant use AssetContainer -> its empty
         {
-            LOG_WARNING("No asset image at path: %s", path);
+            LOG_WARNING("No asset image at path:%s", path);
             return false;
         }
         const auto startTime = GetTime();
@@ -468,7 +468,7 @@ namespace magique
         Checksum checksum{};
         if (!fs::exists(path))
         {
-            LOG_WARNING("No asset image at path: %s/%s", GetWorkingDirectory(), path);
+            LOG_WARNING("No asset image at path:%s/%s", GetWorkingDirectory(), path);
             return checksum;
         }
 

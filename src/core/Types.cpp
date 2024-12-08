@@ -13,33 +13,47 @@
 
 namespace magique
 {
-    bool Point::operator==(const Point other) const { return x == other.x && y == other.y; }
+    bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
-    bool Point::operator!=(const Point other) const { return x != other.x || y != other.y; }
+    bool Point::operator!=(const Point& other) const { return x != other.x || y != other.y; }
 
-    Point Point::operator+(const Point other) const { return {x + other.x, y + other.y}; }
+    Point Point::operator+(const Point& other) const { return {x + other.x, y + other.y}; }
 
     Point Point::operator/(const float divisor) const { return {x / divisor, y / divisor}; }
 
-    Point& Point::operator+=(const Point other)
+    Point& Point::operator+=(const Point& other)
     {
         x += other.x;
         y += other.y;
         return *this;
     }
 
-    Point Point::operator*(const Point other) const { return {x * other.x, y * other.y}; }
+    Point& Point::operator*=(const float f)
+    {
+        x *= f;
+        y *= f;
+        return *this;
+    }
 
-    float Point::manhattan(const Point p) const { return abs(x - p.x) + abs(y - p.y); }
+    Point& Point::operator-=(const Point& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
 
-    float Point::euclidean(const Point p) const
+    Point Point::operator*(const Point& other) const { return {x * other.x, y * other.y}; }
+
+    float Point::manhattan(const Point& p) const { return abs(x - p.x) + abs(y - p.y); }
+
+    float Point::euclidean(const Point& p) const
     {
         float distSqr = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
         SquareRoot(distSqr);
         return distSqr;
     }
 
-    float Point::chebyshev(Point p) const
+    float Point::chebyshev(const Point& p) const
     {
         constexpr auto D = 1.0F;
         constexpr auto D2 = 1.0F;
@@ -48,7 +62,7 @@ namespace magique
         return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
 
-    float Point::octile(Point p) const
+    float Point::octile(const Point& p) const
     {
         constexpr auto D = 1.0F;
         constexpr auto D2 = 1.41421356237F;

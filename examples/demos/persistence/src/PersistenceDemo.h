@@ -5,9 +5,8 @@
 #include <utility>
 
 #include <magique/core/Game.h>
-#include <magique/persistence/GameLoader.h>
-#include <magique/persistence/GameSaver.h>
-#include <magique/persistence/container/GameSave.h>
+#include <magique/persistence/TaskInterface.h>
+#include <magique/persistence/container/GameSaveData.h>
 #include <magique/ui/controls/TextField.h>
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>
@@ -15,8 +14,8 @@
 using namespace magique;
 
 // Initialize interfaces
-GameSaver GAME_SAVER{};
-GameLoader GAME_LOADER{};
+TaskInterface GAME_SAVER{};
+TaskInterface GAME_LOADER{};
 const char* SAVE_PATH = "./mySave.save";
 
 // Define storage ID's
@@ -42,18 +41,18 @@ struct TextButton final : Button
 // Variables
 TextField inputField{250, 250, Anchor::MID_CENTER};
 
-struct SaveClass final : ITask<GameSave>
+struct SaveClass final : ITask<GameSaveData>
 {
-    void execute(GameSave& res) override
+    void execute(GameSaveData& res) override
     {
         printf("Saving text:%s\n", inputField.getText().c_str());
         res.saveString(StorageID::TEXT_FIELD_STRING, inputField.getText());
     }
 };
 
-struct LoadClass final : ITask<GameSave>
+struct LoadClass final : ITask<GameSaveData>
 {
-    void execute(GameSave& res) override
+    void execute(GameSaveData& res) override
     {
         const std::string savedText = res.getStringOrElse(StorageID::TEXT_FIELD_STRING, "Not found");
         printf("Loading text:%s\n", savedText.c_str());
@@ -79,16 +78,16 @@ struct PersistenceDemo final : Game
     {
         if (saveButton.getIsClicked())
         {
-            GameSave save; // Cleaned up automatically
-            GAME_SAVER.save(save);
+            GameSaveData save; // Cleaned up automatically
+            GAME_SAVER.invoke(save);
             SaveToDisk(save, SAVE_PATH);
         }
 
         if (loadButton.getIsClicked())
         {
-            GameSave save; // Cleaned up automatically
+            GameSaveData save; // Cleaned up automatically
             LoadFromDisk(save, SAVE_PATH);
-            GAME_LOADER.load(save);
+            GAME_LOADER.invoke(save);
         }
     }
 

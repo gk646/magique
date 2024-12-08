@@ -157,7 +157,8 @@ namespace magique::internal
             }
             task->impact = impact;
             totalImpact += impact;
-            if (d == MAIN_THREAD)
+            totalTasks++;
+            if (d == THREAD_MAIN)
             {
                 gpuTasks[pl].push_back(task);
             }
@@ -202,6 +203,7 @@ namespace magique::internal
         std::vector<ITask<T>*> cpuTasks[INTERNAL + 1]{};
         std::vector<ITask<T>*> gpuTasks[INTERNAL + 1]{};
         int totalImpact = 0;
+        int totalTasks = 0;
         std::atomic<int> loadedImpact = 0;
         PriorityLevel currentLevel = INTERNAL;
         bool cpuDone = false;

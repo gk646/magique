@@ -5,18 +5,13 @@
 #include <magique/ui/UI.h>
 
 #include "internal/utils/CollisionPrimitives.h"
+#include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
-    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h)
-    {
+    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
 
-    }
-
-    Button::Button(const float w,const float h,const Anchor anchor) : UIObject(w, h, anchor)
-    {
-
-    }
+    Button::Button(const float w, const float h, const Anchor anchor) : UIObject(w, h, anchor) {}
 
     void Button::updateButtonActions(const Rectangle& bounds)
     {
@@ -49,8 +44,10 @@ namespace magique
 
     void Button::drawDefault(const Rectangle& bounds) const
     {
-        const Color body = isHovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? DARKGRAY : isHovered ? GRAY : LIGHTGRAY;
-        const Color outline = isHovered && IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? GRAY : isHovered ? DARKGRAY : GRAY;
+        const auto& theme = global::ENGINE_CONFIG.theme;
+        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
+        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ?  theme.backDark :  theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
     }

@@ -32,9 +32,9 @@ namespace magique
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
-    struct GameLoader; // Handles loading individual world state and player save - MainMenu -> Game
+    struct TaskInterface; // Handles loading individual world state and player save - MainMenu -> Game
     struct GameSaver;  // Handles saving the session and resetting the state  - Game -> MainMenu
-    struct GameSave;   // The game save object
+    struct GameSaveData;   // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config
@@ -49,7 +49,6 @@ namespace magique
 
     template <typename... Columns>
     struct DataTable;         // Type-safe database-like interface to save game data
-    using float16 = uint16_t; // Used to optimize memory usage
 
     //=================ECS=================//
     struct EntityScript;

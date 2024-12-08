@@ -30,14 +30,11 @@ namespace magique
     // Logs a message in a simpler interface
     void Log(LogLevel level, const char* msg, ...);
 
-    // Logs a message with extended parameters - use the macros for easier access
-    void LogEx(LogLevel level, const char* file, int line, const char* msg, ...);
-
-#define LOG_ALLOC(msg, ...) magique::LogEx(magique::LEVEL_ALLOCATION, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOG_ALLOC(msg, ...) magique::Log(magique::LEVEL_ALLOCATION, msg, ##__VA_ARGS__)
+#define LOG_INFO(msg, ...) magique::Log(magique::LEVEL_INFO, msg, ##__VA_ARGS__)
+#define LOG_WARNING(msg, ...) magique::Log(magique::LEVEL_WARNING, msg, ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...) magique::Log(magique::LEVEL_ERROR, msg, ##__VA_ARGS__)
+#define LOG_FATAL(msg, ...) magique::Log(magique::LEVEL_FATAL, msg, ##__VA_ARGS__)
 
     //================= CONTROL =================//
 

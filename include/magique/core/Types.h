@@ -19,19 +19,21 @@ namespace magique
         float x;
         float y;
 
-        bool operator==(Point other) const;
-        bool operator!=(Point other) const;
-        Point operator+(Point other) const;
+        bool operator==(const Point& p) const;
+        bool operator!=(const Point& p) const;
+        Point operator+(const Point& p) const;
         Point operator/(float divisor) const;
-        Point& operator+=(Point other);
-        Point operator*(Point other) const;
+        Point& operator+=(const Point& p);
+        Point& operator-=(const Point& p);
+        Point& operator*=(float f);
+        Point operator*(const Point& other) const;
         [[nodiscard]] Point operator*(float i) const;
 
         // Distance functions
-        [[nodiscard]] float manhattan(Point p) const;
-        [[nodiscard]] float euclidean(Point p) const;
-        [[nodiscard]] float chebyshev(Point p) const;
-        [[nodiscard]] float octile(Point p) const;
+        [[nodiscard]] float manhattan(const Point& p) const;
+        [[nodiscard]] float euclidean(const Point& p) const;
+        [[nodiscard]] float chebyshev(const Point& p) const;
+        [[nodiscard]] float octile(const Point& p) const;
     };
 
     //================= CORE =================//
@@ -58,8 +60,8 @@ namespace magique
 
     enum ThreadType
     {
-        MAIN_THREAD,
-        BACKGROUND_THREAD,
+        THREAD_MAIN,
+        THREAD_ANY,
     };
 
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
@@ -302,14 +304,14 @@ namespace magique
         // Parsing rules:
         //      - 0: False false FALSE OFF off
         //      - 1: True true TRUE ON on
-        BOOL= 1,
+        BOOL = 1,
         // [Number type]
         // Parsing rules:
         // All numeric characters [0,1,2,3,4,5,6,7,8,9] optionally separated only by a single "."
         //      - 123.333 -> single valid number
         //      - 123 333 -> two valid numbers
         //      - 3a3     -> parsed as string
-        NUMBER ,
+        NUMBER,
 
         // [String type]
         // Only ASCII characters supported
@@ -326,7 +328,7 @@ namespace magique
     struct Parameter final
     {
         // Returns the parameter name
-        const char* getName()const;
+        const char* getName() const;
 
         // Returns the parameter string values
         // Note: MUST not be stored by value - copy it instead if you want to save it
@@ -544,7 +546,7 @@ namespace magique
         void setColor(const Color& color);
     };
 
-    // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSave...)
+    // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSaveData...)
     template <typename T>
     struct ITask
     {

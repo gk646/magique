@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 int GetCharPressedQueueCount() { return CORE.Input.Keyboard.charPressedQueueCount; }
+int GetKeyPressedQueueCount() { return CORE.Input.Keyboard.keyPressedQueueCount; }
 
 int* GetCharPressedQueue() { return CORE.Input.Keyboard.charPressedQueue; }
 

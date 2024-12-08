@@ -104,6 +104,8 @@ struct fast_vector
     void resize(size_type count) noexcept;
     void resize(size_type count, const T& val) noexcept;
 
+    bool contains(const T& val) const noexcept;
+
     static constexpr size_type grow_factor = 2;
 
 private:
@@ -654,5 +656,18 @@ void fast_vector<T>::resize(const size_type count, const T& val) noexcept
     }
 
     m_size = count;
+}
+
+template <class T>
+bool fast_vector<T>::contains(const T& val) const noexcept
+{
+    for (size_type i = 0; i < m_size; ++i)
+    {
+        if (m_data[i] == val)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 #endif //FAST_VECTOR_H

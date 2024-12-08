@@ -114,7 +114,7 @@ void WizardQuest::postTickUpdate(GameState gameState) { Multiplayer::postUpdate(
 // Runs once on shutdown - save our game data
 void WizardQuest::onShutDown()
 {
-    GameSave save;
+    GameSaveData save;
     auto data = GetAchievementsData();
     save.saveData(StorageID::ACHIEVEMENTS, data.getData(), data.getSize());
     SaveToDisk(save, "MySave.save");

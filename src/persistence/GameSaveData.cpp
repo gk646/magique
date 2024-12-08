@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <magique/persistence/container/GameSave.h>
+#include <magique/persistence/container/GameSaveData.h>
 #include <magique/util/Logging.h>
 
 #include "internal/utils/EncryptionUtil.h"
@@ -12,9 +12,9 @@ namespace magique
 {
     constexpr auto* FILE_HEADER = "MAGIQUE_SAVE_FILE";
 
-    GameSave::GameSave(GameSave&& other) noexcept : storage(std::move(other.storage)), isPersisted(other.isPersisted) {}
+    GameSaveData::GameSaveData(GameSaveData&& other) noexcept : storage(std::move(other.storage)), isPersisted(other.isPersisted) {}
 
-    GameSave& GameSave::operator=(GameSave&& other) noexcept
+    GameSaveData& GameSaveData::operator=(GameSaveData&& other) noexcept
     {
         if (this == &other)
         {
@@ -32,11 +32,11 @@ namespace magique
         return *this;
     }
 
-    GameSave::~GameSave()
+    GameSaveData::~GameSaveData()
     {
         if (!isPersisted && !storage.empty())
         {
-            LOG_WARNING("GameSave is deleted without being saved!");
+            LOG_WARNING("GameSaveData is deleted without being saved!");
         }
 
         for (auto& cell : storage)
@@ -45,7 +45,7 @@ namespace magique
         }
     }
 
-    StorageType GameSave::getStorageInfo(const StorageID id)
+    StorageType GameSaveData::getStorageInfo(const StorageID id)
     {
         const auto* cell = getCell(id);
         if (cell == nullptr)
@@ -57,7 +57,7 @@ namespace magique
 
     //----------------- PERSISTENCE -----------------//
 
-    bool SaveToDisk(GameSave& save, const char* filePath, const uint64_t encryptionKey)
+    bool SaveToDisk(GameSaveData& save, const char* filePath, const uint64_t encryptionKey)
     {
         int totalSize = 0;
         for (const auto& cell : save.storage)
@@ -109,7 +109,7 @@ namespace magique
         return true;
     }
 
-    bool LoadFromDisk(GameSave& save, const char* filePath, const uint64_t encryptionKey)
+    bool LoadFromDisk(GameSaveData& save, const char* filePath, const uint64_t encryptionKey)
     {
         MAGIQUE_ASSERT(save.isPersisted == false, "Can only load from empty save!");
         MAGIQUE_ASSERT(save.storage.empty(), "Can only load from empty save!");
@@ -180,19 +180,19 @@ namespace magique
 
     //----------------- SAVING -----------------//
 
-    void GameSave::saveString(const StorageID id, const std::string& string)
+    void GameSaveData::saveString(const StorageID id, const std::string& string)
     {
         assignDataImpl(id, string.data(), static_cast<int>(string.size()), StorageType::STRING);
     }
 
-    void GameSave::saveData(const StorageID id, const void* data, const int bytes)
+    void GameSaveData::saveData(const StorageID id, const void* data, const int bytes)
     {
         assignDataImpl(id, data, bytes, StorageType::DATA);
     }
 
     //----------------- GETTING -----------------//
 
-    std::string GameSave::getStringOrElse(const StorageID id, const std::string& defaultVal)
+    std::string GameSaveData::getStringOrElse(const StorageID id, const std::string& defaultVal)
     {
         const auto* const cell = getCell(id);
         if (cell == nullptr) [[unlikely]]
@@ -210,7 +210,7 @@ namespace magique
 
     //----------------- PRIVATE -----------------//
 
-    StorageCell* GameSave::getCell(const StorageID id)
+    StorageCell* GameSaveData::getCell(const StorageID id)
     {
         for (auto& cell : storage)
         {
@@ -222,7 +222,7 @@ namespace magique
         return nullptr;
     }
 
-    void GameSave::assignDataImpl(const StorageID id, const void* data, const int bytes, const StorageType type)
+    void GameSaveData::assignDataImpl(const StorageID id, const void* data, const int bytes, const StorageType type)
     {
         auto* cell = getCell(id);
         if (cell == nullptr)

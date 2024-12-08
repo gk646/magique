@@ -3,6 +3,7 @@
 #include <magique/gamedev/Console.h>
 
 #include "internal/globals/EngineConfig.h"
+#include "internal/globals/ConsoleData.h"
 
 namespace magique
 {
@@ -18,20 +19,26 @@ namespace magique
                 return;
             }
 
+            const auto& theme = global::ENGINE_CONFIG.theme;
+            Color consoleColor = theme.txtPassive;
+
             const auto* level_str = "";
             switch (level)
             {
             case LEVEL_INFO:
-                level_str = "INFO";
+                level_str = "INF";
                 break;
             case LEVEL_WARNING:
-                level_str = "WARNING";
+                level_str = "WARN";
+                consoleColor = theme.warning;
                 break;
             case LEVEL_ERROR:
-                level_str = "ERROR";
+                level_str = "ERR";
+                consoleColor = theme.error;
                 break;
             case LEVEL_FATAL:
                 level_str = "FATAL";
+                consoleColor = theme.error;
                 break;
             case LEVEL_ALLOCATION:
                 level_str = "ALLOC";
@@ -59,9 +66,11 @@ namespace magique
                 CALL_BACK(level, FORMAT_CACHE);
             }
 
-            fputs(FORMAT_CACHE,out);
-            AddConsoleString(FORMAT_CACHE);
+            fputs(FORMAT_CACHE, out);
             fputc('\n', out);
+
+            // Add to console
+            global::CONSOLE_DATA.addString(FORMAT_CACHE, consoleColor);
 
             if (level >= LEVEL_ERROR) [[unlikely]]
             {
