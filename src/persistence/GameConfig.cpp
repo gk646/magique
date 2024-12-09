@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include <magique/util/Logging.h>
-#include <magique/persistence/container/GameConfig.h>
+#include <magique/core/GameConfig.h>
 
 #include "internal/utils/EncryptionUtil.h"
 

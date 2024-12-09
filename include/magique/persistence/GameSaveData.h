@@ -7,16 +7,16 @@
 #include <magique/persistence/types/DataTable.h>
 
 //===============================================
-// Game Save
+// GameSaveData
 //===============================================
 // .....................................................................
-// This is a manual interface to manage game saves (compared to the automatic game config and assets)
+// This is a MANUAL interface to manage game save data.
 // It works by saving plain bytes from the given data which has some limitations for cross-platform saves
 // Check the wiki for more infos: https://github.com/gk646/magique/wiki/Persistence
 // POD means Plain Old Data which means that all data is stored directly in the struct.
 // For example if your class contains a pointer to something (e.g a vector) this data is stored outside your class!
 // If you save non-POD types you have to manually handles the data that is stored outside the struct!
-// Note: All save calls copy the passed data on call. The total data is only persisted when you call SaveGameSave()!
+// Note: All save calls copy the passed data on call. The total data is only persisted when you call SaveToDisk()!
 // Note: All save calls overwrite the existing data of the slot. They are NOT additive.
 // .....................................................................
 
@@ -24,19 +24,17 @@ enum class StorageID : int; // User implemented to identify stored information
 
 namespace magique
 {
-
     // Persists the given save to disk
     // Failure: Returns false
     bool SaveToDisk(GameSaveData& save, const char* filePath, uint64_t encryptionKey = 0);
 
-    // Loads an existing save from disk or creates a one at the given path
+    // Loads an existing save from disk or creates one at the given path
     // Failure: Returns false
     bool LoadFromDisk(GameSaveData& save, const char* filePath, uint64_t encryptionKey = 0);
 
     struct GameSaveData final
     {
         //================= SAVING =================//
-        // Note: All data is copied on call
 
         // Saves a string value to the specified slot
         void saveString(StorageID id, const std::string& string);
@@ -94,8 +92,8 @@ namespace magique
         void assignDataImpl(StorageID id, const void* data, int bytes, StorageType type);
         std::vector<internal::GameSaveStorageCell> storage; // Internal data holder
         bool isPersisted = false;                           // If the game save has been saved to disk
-        friend bool SaveToDisk(GameSaveData&, const char*, uint64_t);
-        friend bool LoadFromDisk(GameSaveData&, const char*, uint64_t);
+        befriend(bool SaveToDisk(GameSaveData&, const char*, uint64_t),
+                 bool LoadFromDisk(GameSaveData&, const char*, uint64_t));
     };
 
 } // namespace magique
@@ -165,7 +163,19 @@ namespace magique
         memcpy(ret.data(), cell->data, cell->size);
         return ret;
     }
+    template <typename... Types>
+    DataTable<Types...> GameSaveData::getDataTable(StorageID id)
+    {
+        LOG_FATAL("Not implemented");
+        return {};
+    }
+    template <typename... Types>
+    void GameSaveData::saveDataTable(StorageID id, const DataTable<Types...>& table)
+    {
+        LOG_FATAL("Not implemented");
+    }
+
 
 } // namespace magique
 
-#endif //MAGIQUE_GAMESAVE_H
+#endif //MAGIQUE_GAMESAVE_DATA_H

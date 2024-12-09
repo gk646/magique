@@ -1,19 +1,11 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/internal/Macros.h>
-
-#include <cstdio>
+#include <magique/util/Logging.h>
 
 namespace magique
 {
     void internal::AssertHandler(const char* expr, const char* file, const int line, const char* message)
     {
-        fprintf(stderr, "Assert failed: %s\nAt: %s:%d\nMessage: %s\n", expr, file, line, message);
-#if defined(_MSC_VER)
-        __debugbreak();
-#elif defined(__GNUC__)
-        __builtin_trap();
-#else
-        std::abort();
-#endif
+        LOG_FATAL("Assert failed: %s\nAt: %s:%d\nMessage: %s\n", expr, file, line, message);
     }
 } // namespace magique

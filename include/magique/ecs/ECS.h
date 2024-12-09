@@ -4,12 +4,15 @@
 
 #include <entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
+#include <magique/internal/Macros.h>
 
 //===============================
 // ECS Module
 //===============================
 // ................................................................................
-// All entities have the PositionC auto assigned per default!
+// This modules servers as an abstraction over the native enTT interface.
+// For more info see its documentation: https://github.com/skypjack/entt/wiki
+// Note: All entities have the PositionC auto assigned per default!
 // ................................................................................
 
 enum EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
@@ -33,6 +36,7 @@ namespace magique
     //================= INTERACTION =================//
 
     // Retrieves the specified component from the public registry
+    // Note: When using views to iterate over entities it's faster to access components over the view
     template <typename T>
     T& GetComponent(entt::entity entity);
 
@@ -124,6 +128,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
+        MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {
             return internal::POSITION_GROUP.get<T>(entity);

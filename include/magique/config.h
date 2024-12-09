@@ -11,7 +11,6 @@
 // 0: to disable an option
 // .....................................................................
 
-
 //================= CORE =================//
 
 // Logic ticks per second
@@ -78,7 +77,7 @@
 #define MAGIQUE_ESTIMATED_MESSAGES 150
 
 // Maximum length of a chat message sent in a lobby
-#define MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH 512
+#define MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH 256
 
 //================= GRAPHICS =================//
 
@@ -102,8 +101,8 @@
 
 //================= UTIL =================//
 
-// Enables logging of message with level below error - error and fatal messages are always enabled
-#define MAGIQUE_LOGGING 1
+// Enables writing all logs to a file called magique.log - created next to the executable
+#define MAGIQUE_LOG_FILE 1
 
 // Enables profiling - generates average times for update and render ticks
 #define MAGIQUE_PROFILING 1
@@ -113,6 +112,7 @@
 
 // Maximum amount of timers supported at the same time
 #define MAGIQUE_MAX_SUPPORTED_TIMERS 4
+
 
 //================= COMPILATION =================//
 

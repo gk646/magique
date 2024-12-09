@@ -10,7 +10,6 @@
 // GameConfig
 //===============================================
 // .....................................................................
-// Use the global accessor: core/Core.h::GetGameConfig()
 // The GameConfig is a container for information that's consistent across saves like:
 //   - Settings (Video, Gameplay, Accessibility...)
 //   - Keybinds (if they are not game-save specific)

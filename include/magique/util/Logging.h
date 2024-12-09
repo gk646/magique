@@ -16,25 +16,27 @@ namespace magique
 {
     enum LogLevel : int
     {
-        LEVEL_ALLOCATION, // Logs every allocation and deallocation
-        LEVEL_INFO,       // Something happened
-        LEVEL_WARNING,    // Something went wrong but it's okay
-        LEVEL_ERROR,      // Something went wrong but it's NOT okay
-        LEVEL_FATAL       // We have to shut down...
+        LEVEL_INFO,    // Something happened
+        LEVEL_WARNING, // Something went wrong but it's okay
+        LEVEL_ERROR,   // Something went wrong but it's NOT okay
+        LEVEL_FATAL    // We have to shut down...
     };
 
     using LogCallbackFunc = void (*)(LogLevel level, const char* msg);
 
     //================= LOGGING =================//
 
-    // Logs a message in a simpler interface
+    // Logs a message with the given level and message
     void Log(LogLevel level, const char* msg, ...);
 
-#define LOG_ALLOC(msg, ...) magique::Log(magique::LEVEL_ALLOCATION, msg, ##__VA_ARGS__)
-#define LOG_INFO(msg, ...) magique::Log(magique::LEVEL_INFO, msg, ##__VA_ARGS__)
-#define LOG_WARNING(msg, ...) magique::Log(magique::LEVEL_WARNING, msg, ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) magique::Log(magique::LEVEL_ERROR, msg, ##__VA_ARGS__)
-#define LOG_FATAL(msg, ...) magique::Log(magique::LEVEL_FATAL, msg, ##__VA_ARGS__)
+    // Logs a message with extended parameters - use the macros for easier access
+    void LogEx(LogLevel level, const char* file, int line, const char* msg, ...);
+
+    // Macros that call LogEx internally with the given level
+#define LOG_INFO(msg, ...)
+#define LOG_WARNING(msg, ...)
+#define LOG_ERROR(msg, ...)
+#define LOG_FATAL(msg, ...)
 
     //================= CONTROL =================//
 
@@ -49,18 +51,20 @@ namespace magique
 
 //================= IMPLEMENTATION =================//
 
-#if MAGIQUE_LOGGING == 0
-#undef LOG_ALLOC
-#undef LOG_INFO
-#undef LOG_WARNING
-#define LOG_ALLOC(msg, ...) ((void)0)
-#define LOG_INFO(msg, ...) ((void)0)
-#define LOG_WARNING(msg, ...) ((void)0)
-#endif
-#endif //MAGIQUE_LOGGING_H
 
 namespace magique::internal
 {
     // Internal log function
     void LogInternal(LogLevel level, const char* file, int line, const char* msg, va_list args);
 } // namespace magique::internal
+
+#undef LOG_INFO
+#undef LOG_WARNING
+#undef LOG_ERROR
+#undef LOG_FATAL
+#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+
+#endif //MAGIQUE_LOGGING_H

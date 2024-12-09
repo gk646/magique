@@ -24,6 +24,7 @@
 #include "core/Debug.h"
 #include "core/Draw.h"
 #include "core/Game.h"
+#include "core/GameConfig.h"
 #include "core/Particles.h"
 #include "core/Sound.h"
 #include "core/StaticCollision.h"
@@ -51,10 +52,8 @@
 #endif
 
 // Persistence
-#include "persistence/GameLoader.h"
-#include "persistence/GameSaver.h"
-#include "persistence/container/GameConfig.h"
-#include "persistence/container/GameSaveData.h"
+#include "persistence/TaskInterface.h"
+#include "persistence/GameSaveData.h"
 
 // Steam
 #ifdef MAGIQUE_STEAM

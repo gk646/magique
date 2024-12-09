@@ -22,9 +22,9 @@ void WizardQuest::onStartup(AssetLoader& loader)
     SetStaticWorldBounds({0, 0, 1280, 1000});
 
     // Register loaders
-    loader.registerTask(new EntityLoader(), BACKGROUND_THREAD, MEDIUM, 1);
-    loader.registerTask(new TileLoader(), BACKGROUND_THREAD, MEDIUM, 3);
-    loader.registerTask(new TextureLoader(), MAIN_THREAD, MEDIUM, 5);
+    loader.registerTask(new EntityLoader(), THREAD_ANY, MEDIUM, 1);
+    loader.registerTask(new TileLoader(), THREAD_ANY, MEDIUM, 3);
+    loader.registerTask(new TextureLoader(), THREAD_MAIN, MEDIUM, 5);
 }
 
 void WizardQuest::onLoadingFinished()

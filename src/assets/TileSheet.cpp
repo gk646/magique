@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
-#include <cstring>
 #include <raylib/raylib.h>
 
 #include <magique/assets/types/TileSheet.h>
@@ -56,7 +55,10 @@ namespace magique
         UnloadImage(img);
     }
 
-    TileSheet::TileSheet(const std::vector<Asset>& assets, const int textureSize, const float scale) {}
+    TileSheet::TileSheet(const std::vector<Asset>& assets, const int textureSize, const float scale)
+    {
+        LOG_FATAL("Not implemented");
+    }
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
     {
