@@ -58,10 +58,6 @@ namespace magique
     // Default: true
     void SetEnableCollisionHandling(bool value);
 
-    // Returns the global GameConfig instance
-    // Note: Only valid to call inside and after Game::onStartup() - will crash earlier
-    GameConfig& GetGameConfig();
-
     //================= DATA ACCESS =================//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!

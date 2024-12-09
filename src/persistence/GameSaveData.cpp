@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <magique/persistence/container/GameSaveData.h>
+#include <magique/persistence/GameSaveData.h>
 #include <magique/util/Logging.h>
 
 #include "internal/utils/EncryptionUtil.h"

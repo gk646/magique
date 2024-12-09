@@ -4,7 +4,7 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/persistence/container/GameConfig.h>
+#include <magique/core/GameConfig.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"

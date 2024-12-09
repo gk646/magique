@@ -17,7 +17,7 @@
 #include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/JobSystem.h>
-#include <magique/persistence/container/GameConfig.h>
+#include <magique/core/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
 
@@ -84,7 +84,7 @@ namespace magique
             SetTraceLogCallback(
                 [](int logLevel, const char* text, va_list args)
                 {
-                    logLevel = std::max(logLevel - 2, 1);
+                    logLevel = std::max(logLevel - 3, 0);
                     LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
                 });
             global::ENGINE_CONFIG.init();

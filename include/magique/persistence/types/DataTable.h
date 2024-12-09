@@ -102,10 +102,10 @@ namespace magique
         template <typename T>
         T& getTupleColumn(int column, std::tuple<Types...>& t);
 
-        OffsetArray offsets;                                         // Accumulative offset for the columns
+        OffsetArray offsets;                                      // Accumulative offset for the columns
         char names[sizeof...(Types)][MAGIQUE_MAX_NAMES_LENGTH]{}; // Column names
-        std::vector<ColumnsTuple> data;                              // Data storage row-wise
-        int columns = sizeof...(Types);                              // Amount of columns
+        std::vector<ColumnsTuple> data;                           // Data storage row-wise
+        int columns = sizeof...(Types);                           // Amount of columns
     };
 } // namespace magique
 
@@ -274,7 +274,8 @@ namespace magique
     constexpr std::array<int, sizeof...(Types)> DataTable<Types...>::calculateOffsets(std::index_sequence<Indices...>)
     {
         OffsetArray ret = {0};
-        ((ret[Indices + 1] = ret[Indices] + internal::SizeOf<std::tuple_element_t<Indices, std::tuple<Types...>>>()), ...);
+        ((ret[Indices + 1] = ret[Indices] + internal::SizeOf<std::tuple_element_t<Indices, std::tuple<Types...>>>()),
+         ...);
         return ret;
     }
 

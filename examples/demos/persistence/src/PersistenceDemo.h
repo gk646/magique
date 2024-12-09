@@ -6,7 +6,7 @@
 
 #include <magique/core/Game.h>
 #include <magique/persistence/TaskInterface.h>
-#include <magique/persistence/container/GameSaveData.h>
+#include <magique/persistence/GameSaveData.h>
 #include <magique/ui/controls/TextField.h>
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>

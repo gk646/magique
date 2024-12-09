@@ -1,14 +1,39 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <cstdio>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/Console.h>
+#include <magique/config.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
 
 namespace magique
 {
-    static LogCallbackFunc CALL_BACK = nullptr;
-    static constexpr int FMT_CACHE_SIZE = 255;
+    struct LogData final
+    {
+        static constexpr int cacheSize = 255;
+        static constexpr const char* fileName = "magique.log";
+        FILE* file = nullptr;
+        LogCallbackFunc callback = nullptr;
+
+        LogData()
+        {
+#if MAGIQUE_LOG_FILE == 1
+            file = fopen(fileName, "wb");
+            if (!file)
+            {
+                LOG_ERROR("Failed to open log file");
+            }
+#endif
+        }
+        ~LogData()
+        {
+            if (file)
+                fclose(file);
+        }
+    };
+
+    static LogData LOG_DATA{};
 
     namespace internal
     {
@@ -40,41 +65,48 @@ namespace magique
                 level_str = "FATAL";
                 consoleColor = theme.error;
                 break;
-            case LEVEL_ALLOCATION:
-                level_str = "ALLOC";
-                break;
             }
 
             FILE* out = level >= LEVEL_ERROR ? stderr : stdout;
-            char FORMAT_CACHE[FMT_CACHE_SIZE]{};
+            constexpr int cacheSize = LOG_DATA.cacheSize;
+            char FMT_CACHE[cacheSize]{};
 
             int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                written = snprintf(FORMAT_CACHE, FMT_CACHE_SIZE, "[%s]: %s:%d ", level_str, file, line);
+                written = snprintf(FMT_CACHE, cacheSize, "[%s]: %s:%d ", level_str, file, line);
             }
             else
             {
-                written = snprintf(FORMAT_CACHE, FMT_CACHE_SIZE, "[%s]: ", level_str);
+                written = snprintf(FMT_CACHE, cacheSize, "[%s]: ", level_str);
             }
 
             MAGIQUE_ASSERT(written >= 0, "Failed to format");
-            written += vsnprintf(FORMAT_CACHE + written, FMT_CACHE_SIZE - written, msg, args);
+            written += vsnprintf(FMT_CACHE + written, cacheSize - written, msg, args);
 
-            if (CALL_BACK != nullptr)
+            if (LOG_DATA.callback != nullptr)
             {
-                CALL_BACK(level, FORMAT_CACHE);
+                LOG_DATA.callback(level, FMT_CACHE);
             }
 
-            fputs(FORMAT_CACHE, out);
+            // Write to stdout
+            fputs(FMT_CACHE, out);
             fputc('\n', out);
 
-            // Add to console
-            global::CONSOLE_DATA.addString(FORMAT_CACHE, consoleColor);
+            // Write to console
+            global::CONSOLE_DATA.addString(FMT_CACHE, consoleColor);
+
+            // Write to log file
+            if (LOG_DATA.file)
+            {
+                fwrite(FMT_CACHE, written, 1, LOG_DATA.file);
+                fputc('\n', LOG_DATA.file);
+            }
 
             if (level >= LEVEL_ERROR) [[unlikely]]
             {
 #ifdef MAGIQUE_DEBUG
+                fclose(LOG_DATA.file);
 #if defined(_MSC_VER)
                 __debugbreak();
 #elif defined(__GNUC__)
@@ -85,6 +117,7 @@ namespace magique
 #endif
                 if (level == LEVEL_FATAL) [[unlikely]]
                 {
+                    fclose(LOG_DATA.file);
                     std::exit(EXIT_FAILURE);
                 }
             }
@@ -110,6 +143,6 @@ namespace magique
         va_end(args);
     }
 
-    void SetLogCallback(const LogCallbackFunc func) { CALL_BACK = func; }
+    void SetLogCallback(const LogCallbackFunc func) { LOG_DATA.callback = func; }
 
 } // namespace magique
