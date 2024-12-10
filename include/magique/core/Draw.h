@@ -12,6 +12,7 @@
 // Here are all the magique drawing function that take its custom types
 // Generally you cant really use raylib types anymore as texture are stored into atlases
 // Rotation is always a value in degree clockwise starting from the top with 0
+// Note: Take a look at the raylib cheatsheet for all draw functions: https://www.raylib.com/cheatsheet/cheatsheet.html
 // .............................................................
 
 namespace magique

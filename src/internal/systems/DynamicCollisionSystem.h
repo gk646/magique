@@ -33,8 +33,8 @@ namespace magique
 
     inline void DynamicCollisionSystem()
     {
-        const int size = global::ENGINE_DATA.collisionVec.size(); // Multithreading over certain amount
-        if (size > 1)
+        const int size = global::ENGINE_DATA.collisionVec.size();
+        if (size > 500)// Multithreading over certain amount
         {
             std::array<jobHandle, COL_WORK_PARTS> handles{};
             constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.25F; // 25% more work for main thread

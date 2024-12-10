@@ -108,16 +108,19 @@ _Note: You need to have cmake and a valid C++20 compiler installed_
 ### Is magique for you?
 
 `magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project
-and meant to be **extended by user written code**!
-As such it does not have all solutions for any game! Instead, it tries to offer many optional general purpose
-modules that find usage in a multitude of projects. However, there are some **fundamental principles and restrictions**
-that you have to follow when using magique:
+and meant to be **extended by user written code**! As such it does not have all solutions for any game! Instead, it
+tries to offer many optional general purpose modules that find usage in a multitude of projects. However, there are some
+**fundamental principles and restrictions** that you have to follow when using magique:
 
 - Game template
     - You have to overwrite the core/Game.h class and implement your game logic in its virtual methods
 - ECS (entity component system)
     - Every game object is supposed to be an entity with components
     - The PositionC component is implicit for every object! (look at _ecs/Components.h_)
+- Physics
+    - There is no builtin physics system apart from your reaction to a collision
+        - To add a custom physics system you can disable the collision SetEnableCollisionHandling(false); and integrate
+          a physics engine
 
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
 user code with _no overhead_.
@@ -161,14 +164,13 @@ internally to achieve that.
 
 #### API Design
 
-`magique` follows the API design of raylib (hence the question at the top). For me this means a clear camel case naming
+`magique` follows the API design of raylib (hence the question at the top). For me this means a clear pascal case naming
 scheme with descriptive names and baked in namespacing: e.g. SetFormat(), GetFormat(). Similarly, every public method
-struct or
-enum is documented and each module has a documentation header as well. Often this documentation is also enriched with
-tips or warnings about pitfalls.
-But sometimes having just methods is not enough, you need to expose types to the users that are instantiated and managed
-by the user. Generally you want to avoid this as a library as you do not have as much control over their usage location
-and pattern.
+struct or enum is documented and each module has a documentation header as well. Often this documentation is also
+enriched with tips or warnings about pitfalls. The API also specifically only uses the most common types like std::
+vector and std::string and avoids the use of templates. If explicitly needed magique exposes types that are completely
+used managed or defined (e.g. EntityType, AtlasID, ...). This is done with care as the library has less control over
+their usage behavior, and it might not be clear in what way this type is intended to be used.
 
 #### Threading
 
@@ -207,8 +209,10 @@ I initially started with Lua as a scripting language. But the main problem I enc
 create their own components and functions it's very hard to create a good scripting interface. You would then have to
 auto export those types possibly with a macro. This problem doesn't
 occur in other engines as they know ALL their components upfront and don't expose a lot of internal workings.
-This approach allows for any custom type inside C++, while keeping the configuration manageable and type safe! 
+This approach allows for any custom type inside C++, while keeping the configuration manageable and type safe!
 
 ### 5. Further Resources
 
 - [raylib wiki](https://github.com/raysan5/raylib/wiki)
+- [raylib cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html) *(all methods)*
+- [entt wiki](https://github.com/skypjack/entt/wiki)

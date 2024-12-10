@@ -26,6 +26,8 @@ IGNORE_WARNING(4100)
 // Step 2: Add a new EventType enum with the name of your function
 // Step 3: Add your new enum value to the REGISTER_EVENTS macro
 // Step 4: Done! You can now invoke your event with: InvokeEvent<myEvent,MyEventScript>(self, args,...);
+//
+// Note: You can also create your own event system and only use the integrated events (or reroute them into your custom system)
 // ................................................................................
 
 namespace magique
