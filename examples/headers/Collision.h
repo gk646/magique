@@ -42,7 +42,7 @@ struct PlayerScript final : EntityScript
             pos.x += 2.5F;
     }
 
-    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo &info) override
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         info.penDepth *= 0.5F;
         AccumulateCollision(info);
@@ -51,6 +51,7 @@ struct PlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript // Moving platform
 {
+    // Called at the beginning of each tick
     void onTick(entt::entity self, bool updated) override
     {
         auto& myComp = GetComponent<TestCompC>(self);
@@ -72,12 +73,12 @@ struct ObjectScript final : EntityScript // Moving platform
         myComp.counter++;
     }
 
+    // Called if this any entity of this type collides with any other entity
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
-        myComp.isColliding = true;
-        AccumulateCollision(info);
-
+        GetComponent<TestCompC>(self).isColliding = true; // Set the collide flag to color the entity
+        info.penDepth *= 0.5F;
+        AccumulateCollision(info); // Accumulates the collision info to resolve the collision
     }
 };
 
@@ -93,7 +94,7 @@ struct Example final : Game
         {
             GiveActor(e);
             GiveCamera(e);
-            GiveCollisionCircle(e, 30);
+            GiveCollisionRect(e, 20, 20);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
@@ -129,7 +130,7 @@ struct Example final : Game
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
+            CreateEntity(OBJECT, GetRandomValue(-500, 500), GetRandomValue(-500, 500), MapID(0));
         }
     }
 
@@ -139,7 +140,7 @@ struct Example final : Game
 
         DrawRectangle(250, 250, 250, 75, RED);
         DrawTextEx(GetFont(), "This is stationary object\n for reference", {250, 250}, 17, 1, WHITE);
-        DrawTextEx(GetFont(), "Shape and Position of all objects is random", {0, -25}, 17, 1, BLACK);
+        DrawTextEx(GetFont(), "Shape and Rotation of all objects is random", {0, -25}, 17, 1, BLACK);
 
         for (const auto e : GetDrawEntities())
         {
@@ -169,6 +170,7 @@ struct Example final : Game
 
         EndMode2D(); // End drawing with the camera
     }
+
     void updateGame(GameState gameState) override
     {
         for (const auto e : GetUpdateEntities())

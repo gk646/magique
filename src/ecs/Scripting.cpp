@@ -11,7 +11,10 @@ namespace magique
         info.isAccumulated = true;
     }
 
-    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
+    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo)
+    {
+        SetIsAccumulated(collisionInfo);
+    }
 
     void SetEntityScript(const EntityType entity, EntityScript* script)
     {
@@ -23,7 +26,7 @@ namespace magique
         }
         // Dont delete the default script
         IGNORE_WARNING_GCC("-Wdelete-non-virtual-dtor")
-        if ((scData.scripts[entity] != nullptr) && scData.scripts[entity] != ScriptData::defaultScript)
+        if (scData.scripts[entity] != ScriptData::defaultScript)
             delete scData.scripts[entity];
         UNIGNORE_WARNING_GCC();
         scData.scripts[entity] = script;

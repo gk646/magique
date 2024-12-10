@@ -35,7 +35,7 @@ namespace magique
                                       EntityHashGrid& grid, vector<entt::entity>& cVec)
     {
         auto& pathData = global::PATH_DATA;
-        auto& dynamicGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - checked in CreateEntity()
+        auto& pathGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - checked in CreateEntity()
         const auto isPathSolid = pathData.getIsPathSolid(e, pos.type);
 
         cVec.push_back(e);
@@ -45,9 +45,9 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    grid.insert(e, pos.x, pos.y, col.p1, col.p2);
+                    grid.insert(e, pos.x - 1, pos.y - 1, col.p1 + 1, col.p2 + 1); // Fixes hitches on cell borders
                     if (isPathSolid) [[unlikely]]
-                        dynamicGrid.insert(pos.x, pos.y, col.p1, col.p2);
+                        pathGrid.insert(pos.x - 1, pos.y - 1, col.p1 + 1, col.p2 + 1);
                     break;
                 }
                 float pxs[4] = {0, col.p1, col.p1, 0};
@@ -56,18 +56,18 @@ namespace magique
                 const auto bb = GetBBQuadrilateral(pxs, pys);
                 grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                 if (isPathSolid) [[unlikely]]
-                    dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
+                    pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
             }
             break;
         case Shape::CIRCLE:
             grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
             if (isPathSolid) [[unlikely]]
-                dynamicGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F);
+                pathGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F);
             break;
         case Shape::CAPSULE:
             grid.insert(e, pos.x, pos.y, col.p1 * 2.0F, col.p2); // Top left and height as height / diameter as w
             if (isPathSolid) [[unlikely]]
-                dynamicGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p2);
+                pathGrid.insert(pos.x, pos.y, col.p1 * 2.0F, col.p2);
             break;
         case Shape::TRIANGLE:
             {
@@ -77,7 +77,7 @@ namespace magique
                         GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
                     grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                     if (isPathSolid) [[unlikely]]
-                        dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
+                        pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
                     break;
                 }
                 float txs[4] = {0, col.p1, col.p3, 0};
@@ -86,7 +86,7 @@ namespace magique
                 const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
                 grid.insert(e, bb.x, bb.y, bb.width, bb.height);
                 if (isPathSolid) [[unlikely]]
-                    dynamicGrid.insert(bb.x, bb.y, bb.width, bb.height);
+                    pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
             }
             break;
         }

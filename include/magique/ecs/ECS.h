@@ -128,7 +128,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
-        MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on entity!");
+        MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {
             return internal::POSITION_GROUP.get<T>(entity);
