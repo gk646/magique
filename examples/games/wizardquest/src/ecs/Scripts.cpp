@@ -52,7 +52,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
     }
 }
 
-inline void TrollScript::onTick(entt::entity self, bool updated)
+void TrollScript::onTick(entt::entity self, bool updated)
 {
     auto& pos = GetComponent<PositionC>(self);
     auto& col = GetComponent<CollisionC>(self);

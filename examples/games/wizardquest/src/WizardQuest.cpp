@@ -11,7 +11,6 @@
 void WizardQuest::onStartup(AssetLoader& loader)
 {
     // Configure raylib
-    SetWindowSize(1920, 1080);
     SetTargetFPS(100);
     SetWindowState(FLAG_WINDOW_RESIZABLE);
 

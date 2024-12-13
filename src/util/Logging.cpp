@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/Console.h>

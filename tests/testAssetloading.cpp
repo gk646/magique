@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 
 #include <catch_amalgamated.hpp>
+#include <mutex>
 #include <thread>
 
 #include <magique/assets/AssetLoader.h>

@@ -37,7 +37,7 @@ void Asteroids::onStartup(AssetLoader& loader)
         auto& playList = GetPlaylist(RegisterPlaylist({asset}));
         PlayPlaylist(playList, 0.6F); // Start playlist
     };
-    loader.registerTask(loadSound, BACKGROUND_THREAD); // Add the task
+    loader.registerTask(loadSound, THREAD_ANY); // Add the task
 
     // Load the texture on the main thread as they require gpu access
     auto loadTextures = [](AssetContainer& assets)
@@ -50,7 +50,7 @@ void Asteroids::onStartup(AssetLoader& loader)
                                     RegisterHandle(handle, asset.getFileName(false));
                                 });
     };
-    loader.registerTask(loadTextures, MAIN_THREAD);
+    loader.registerTask(loadTextures, THREAD_MAIN);
 
     // Set the entity scripts
     SetEntityScript(PLAYER, new PlayerScript());
@@ -63,7 +63,6 @@ void Asteroids::onStartup(AssetLoader& loader)
                    [](entt::entity entity, EntityType type)
                    {
                        GiveActor(entity);
-                       GiveScript(entity);
                        GiveComponent<PlayerStatsC>(entity);
                        // Texture dimensions scaled with 3 - and rotate around the middle
                        GiveCollisionRect(entity, 36, 36, 18, 18);
@@ -73,7 +72,6 @@ void Asteroids::onStartup(AssetLoader& loader)
     RegisterEntity(BULLET,
                    [](entt::entity entity, EntityType type)
                    {
-                       GiveScript(entity); // Make it scriptable
                        // Texture dimensions scaled with 3 - and rotate around the middle
                        GiveCollisionRect(entity, 18, 18, 9, 9);
                    });
@@ -90,18 +88,23 @@ void Asteroids::onStartup(AssetLoader& loader)
     RegisterEntity(ROCK,
                    [](entt::entity entity, EntityType type)
                    {
-                       GiveScript(entity); // Make it scriptable
                        // Texture dimensions scaled with 3 - and rotate around the middle
                        GiveCollisionRect(entity, 60, 60, 30, 30);
                    });
 
     // Register the invisible static camera
-    RegisterEntity(STATIC_CAMERA, [](entt::entity entity, EntityType type) { GiveCamera(entity); });
+    RegisterEntity(STATIC_CAMERA,
+                   [](entt::entity entity, EntityType type)
+                   {
+                       SetIsEntityScripted(entity, false); // Make it non scripted
+                       GiveCamera(entity);
+                   });
 
     PLAYER_ID = CreateEntity(PLAYER, 640, 480, MapID::LEVEL_1); // Create a player
 
     // Create the static camera in the middle of the screen
-    CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
+    auto entity = CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
+    SetIsEntityScripted(entity, false); // Camera is not a scripted entity
 
     // Create houses
     auto y = (float)GetScreenHeight() - 45;
@@ -210,7 +213,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
     }
 }
 
-void PlayerScript::onTick(entt::entity self)
+void PlayerScript::onTick(entt::entity self, bool updated)
 {
     auto& stats = GetComponent<PlayerStatsC>(self);
     if (stats.shootCounter > 0)
@@ -233,7 +236,7 @@ void PlayerScript::onDynamicCollision(entt::entity self, entt::entity other, Col
         AccumulateCollision(info);
 }
 
-void BulletScript::onTick(entt::entity self)
+void BulletScript::onTick(entt::entity self, bool updated)
 {
     auto& pos = GetComponent<PositionC>(self);
     pos.y -= 8; // Bullets only fly straight up
@@ -246,6 +249,8 @@ void BulletScript::onStaticCollision(entt::entity self, ColliderInfo collider, C
 
 void RockScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
 {
+    if (!EntityExists(other))
+        return;
     auto& pos = GetComponent<PositionC>(self);
     auto& col = GetComponent<CollisionC>(self);
     auto& oPos = GetComponent<PositionC>(other);
@@ -275,7 +280,7 @@ void RockScript::onStaticCollision(entt::entity self, ColliderInfo collider, Col
     DestroyEntity(self); // Destroy rock on static collision
 }
 
-void RockScript::onTick(entt::entity self)
+void RockScript::onTick(entt::entity self, bool updated)
 {
     auto& pos = GetComponent<PositionC>(self);
     pos.rotation++;
@@ -310,7 +315,7 @@ void GameOverUI::onDraw(const Rectangle& bounds)
 {
     drawDefault(bounds);
     const char* gameOver = "Game Over";
-    const Point topCenter = GetUIAnchor(Anchor::TOP_CENTER, MeasureText(gameOver, FONT_SIZE),50);
+    const Point topCenter = GetUIAnchor(Anchor::TOP_CENTER, MeasureText(gameOver, FONT_SIZE), 50);
     DrawText("Game Over", topCenter.x, topCenter.y, FONT_SIZE, WHITE);
     const char* restart = "Restart";
     // Make the text centered inside the element bounds

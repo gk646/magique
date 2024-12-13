@@ -274,13 +274,17 @@ namespace magique
             }
         }
 
-        if (config.isClientMode) // Skip script method in client mode
+        if (config.isClientMode) // Skip script methods in client mode
             return;
 
         for (const auto& pair : data.entityUpdateCache)
         {
-            // Invoke tick event on all entities that are in this tick
-            InvokeEvent<onTick>(pair.first, data.isEntityScripted(pair.first));
+            // Invoke tick event on all entities that are in this tick and are scripted
+            if (data.isEntityScripted(pair.first))
+            {
+                // Pass a boolean whether the entity is updated - if the cache ticks are max, means its just updated
+                InvokeEvent<onTick>(pair.first, pair.second == config.entityCacheDuration);
+            }
         }
     }
 

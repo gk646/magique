@@ -35,7 +35,7 @@ static void testImpl(const uint64_t key, const bool compress)
             continue;
         }
 
-        std::string relativePath = entry.path().relative_path();
+        std::string relativePath = entry.path().relative_path().generic_string();
         relativePath.erase(relativePath.begin());
         relativePath.erase(relativePath.begin());
         const int fileSize = static_cast<int>(fs::file_size(entry.path()));

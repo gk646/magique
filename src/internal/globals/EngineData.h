@@ -39,7 +39,7 @@ namespace magique
     struct EngineData final
     {
         StateCallback stateCallback{};             // Callback function for gamestate changes
-        EntityCache entityUpdateCache;             // Caches entities not in update range anymore
+        EntityCache entityUpdateCache;             // Caches all entities for a set amount of ticks
         HashSet<entt::entity> entityNScriptedSet;  // Contains all entities NOT scripted
         std::vector<entt::entity> entityUpdateVec; // Vector containing the entities to update for this tick
         std::vector<entt::entity> drawVec;         // Vector containing all entities to be drawn this tick

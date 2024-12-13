@@ -46,15 +46,11 @@ TEST_CASE("TextFormattingModule Text Formatting")
     const char* templateText = "Hello, ${PLAYER_NAME}!";
     const char* placeholder = "PLAYER_NAME";
     std::string value = "Jespar";
-
     SetFormatValue(placeholder, value);
 
-    SECTION("Formats text with current placeholder state")
-    {
-        const char* formattedText = GetFormattedText(templateText);
-        REQUIRE(formattedText != nullptr);
-        REQUIRE(std::string(formattedText) == "Hello, Jespar!");
-    }
+    const char* formattedText = GetFormattedText(templateText);
+    REQUIRE(formattedText != nullptr);
+    REQUIRE(std::string(formattedText) == "Hello, Jespar!");
 }
 
 TEST_CASE("TextFormattingModule Customization")
@@ -71,6 +67,7 @@ TEST_CASE("TextFormattingModule Customization")
     const char* formattedText = GetFormattedText(templateText);
     REQUIRE(formattedText != nullptr);
     REQUIRE(std::string(formattedText) == "Hello, Jespar!");
+    SetFormatPrefix('$'); // Set back as other tests rely on it
 }
 
 TEST_CASE("Dynamic placeholder value management")
