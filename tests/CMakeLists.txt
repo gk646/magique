@@ -10,4 +10,4 @@ target_compile_definitions(magique-tests PRIVATE MAGIQUE_TEST_MODE) # makes inte
 
 include(CTest)
 include(catch_cmake/Catch.cmake)
-catch_discover_tests(magique-tests TEST_PREFIX "Magique.")
+catch_discover_tests(magique-tests)

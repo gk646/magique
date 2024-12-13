@@ -62,13 +62,13 @@ namespace magique
         const auto it = ecs.typeMap.find(type);
         if (it == ecs.typeMap.end())
         {
+            LOG_ERROR("No method create method registered for that entity type!");
             return entt::null; // EntityType not registered
         }
         const auto entity = registry.create(static_cast<entt::entity>(ecs.entityID++));
-        {
-            registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(entity, type);
-        }
+
+        registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
+        it->second(entity, type);
 
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {

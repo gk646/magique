@@ -37,7 +37,7 @@ struct SpawnUpdate final // Entity spawned in the host world
     MapID map;
 };
 
-HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
+HashMap<Connection, entt::entity> networkPlayerMap{}; // Maps outgoing connections to a player in our world (for host)
 
 void Multiplayer::init()
 {

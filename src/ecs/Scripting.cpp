@@ -11,10 +11,7 @@ namespace magique
         info.isAccumulated = true;
     }
 
-    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo)
-    {
-        SetIsAccumulated(collisionInfo);
-    }
+    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
 
     void SetEntityScript(const EntityType entity, EntityScript* script)
     {
@@ -43,16 +40,15 @@ namespace magique
         return scData.scripts[entity];
     }
 
-
     void SetIsEntityScripted(const entt::entity entity, const bool val)
     {
         if (val)
         {
-            global::ENGINE_DATA.entityNScriptedSet.insert(entity);
+            global::ENGINE_DATA.entityNScriptedSet.erase(entity);
         }
         else
         {
-            global::ENGINE_DATA.entityNScriptedSet.erase(entity);
+            global::ENGINE_DATA.entityNScriptedSet.insert(entity);
         }
     }
     bool GetIsEntityScripted(const entt::entity entity)

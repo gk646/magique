@@ -15,14 +15,14 @@
 #include "internal/utils/EncryptionUtil.h"
 
 namespace fs = std::filesystem;
-using namespace std::chrono;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
 
 static void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
 {
-    for (const auto& entry : fs::directory_iterator(directory))
+    const auto iter = fs::directory_iterator(directory);
+    for (const auto& entry : iter)
     {
         if (entry.is_directory())
         {
@@ -40,7 +40,6 @@ static bool CreatePathList(const char* directory, magique::vector<fs::path>& pat
     fs::path dirPath(directory);
     std::error_code ec;
     const fs::file_status status = fs::status(dirPath, ec);
-
     if (ec)
     {
         LOG_ERROR("Error: Cannot access path: %s", directory);
@@ -49,7 +48,7 @@ static bool CreatePathList(const char* directory, magique::vector<fs::path>& pat
 
     if (fs::is_directory(status))
     {
-        ScanDirectory(fs::directory_entry(dirPath), pathList);
+        ScanDirectory(dirPath, pathList);
         return true;
     }
     if (fs::is_regular_file(status))
@@ -178,7 +177,7 @@ namespace magique
             assets.sort();
             if (res)
             {
-                const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F));
+                const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
                 if (original == imageSize)
                 {
                     auto* logText =
@@ -371,7 +370,7 @@ namespace magique
     {
         if (!IsImageOutdated(directory))
             return true;
-        const auto startTime = high_resolution_clock::now();
+        const auto startTime = GetTime();
         vector<fs::path> pathList;
         pathList.reserve(100);
 
@@ -445,17 +444,18 @@ namespace magique
             fwrite(comp.getData(), comp.getSize(), 1, compFile);
             comp.free();
             fclose(compFile);
-            auto* logText = "Successfully compiled %s into %s | Took %lld millis | Compressed: %.2f mb -> %.2f mb "
+
+            const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
+            auto* logText = "Successfully compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
                             "(%.0f%%) | Assets: %d";
-            const auto time = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
                      static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
         }
         else
         {
             fclose(imageFile);
-            auto* logText = "Successfully compiled %s into %s | Took %lld millis | Total Size: %.2f mb | Assets: %d";
-            const auto time = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+            const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
+            auto* logText = "Successfully compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
         return true;

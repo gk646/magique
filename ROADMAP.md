@@ -73,10 +73,11 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 **More Performance Stats**
 
 - Implement more basic performance stats
-    - Longest frame-to-frame, 99% percentile ...
+    - Longest frame-to-frame, 99% percentile, ...
 - Look at performance debug tools
     - Time measurement with macros? for user space functions?
-
+- Memory stats
+  - amount of allocations, biggest allocations, ...
 ### UI
 
 **More Controls**

@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/AssetLoader.h>
-#include <magique/util/Logging.h>
 
 namespace magique
 {
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
-
         addLambdaTask([=](AssetContainer& assets) { LoadAssetImage(assets, assetPath, encryptionKey); }, INTERNAL,
                       THREAD_ANY, 0, true);
     }

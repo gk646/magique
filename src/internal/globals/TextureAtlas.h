@@ -156,12 +156,13 @@ namespace magique
             const auto img = GenImageColor(width, height, BLANK);
             imageData = img.data;
 
-            const auto tex = LoadTextureFromImage(getImg());
+            const auto tex = LoadTextureFromImage(img);
             if (tex.id == 0)
             {
                 LOG_ERROR("Failed to load texture atlas texture! No textures will work");
                 UnloadImage(getImg());
             }
+
             id = static_cast<uint16_t>(tex.id);
         }
 
@@ -218,7 +219,7 @@ namespace magique
 
     namespace global
     {
-        inline AtlasData ATLAS_DATA;
+        inline AtlasData ATLAS_DATA{};
     }
 } // namespace magique
 #endif //TEXTURE_ATLAS_H

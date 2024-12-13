@@ -24,7 +24,7 @@ struct TeleportSystem final
         MapID origin;
         MapID destination;
     };
-    inline static std::vector<Teleporter> teleporters; // Should be a hashmap but vector is easier
+    inline static std::vector<Teleporter> teleporters{}; // Should be a hashmap but vector is easier
 
     static void setup();
     static void update();
@@ -34,7 +34,7 @@ struct TeleportSystem final
 struct MultiplayerSystem final
 {
     // Maps outgoing connections to a player in our world (for host)
-    inline static HashMap<Connection, entt::entity> networkPlayerMap;
+    inline static HashMap<Connection, entt::entity> networkPlayerMap{};
 
     static void init();
     static void update();

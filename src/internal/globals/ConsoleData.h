@@ -161,8 +161,9 @@ namespace magique
                 {
                     free(param.name);
                     if (param.types[0] == ParameterType::STRING)
-                        ;
-                    // free(param.string); error?
+                    {
+                        // free(param.string); error?
+                    }
                 }
             }
         }

@@ -11,9 +11,9 @@ namespace magique
 {
     struct WindowManagerData final
     {
-        std::vector<Window*> windows;
-        std::vector<internal::WindowManagerMapping> nameMapping;
-        HashSet<const Window*> shownSet;
+        std::vector<Window*> windows{};
+        std::vector<internal::WindowManagerMapping> nameMapping{};
+        HashSet<const Window*> shownSet{};
         Window* hoveredWindow = nullptr;
 
         void removeWindow(const Window* window)

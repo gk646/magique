@@ -171,22 +171,15 @@ namespace magique
         {
         case FLOAT:
             snprintf(FORMAT_CACHE.data(), 64, "%.3g", VALUE_STORAGE.getValueVec<float>()[info.index]);
-            break;
         case STRING:
             {
                 const std::string& str = VALUE_STORAGE.getValueVec<std::string>()[info.index];
                 std::memcpy(FORMAT_CACHE.data(), str.c_str(), str.size() + 1);
-                break;
             }
         case INT:
             {
-                // Due to small buffer optimization doesn't cause allocation below 15 digits - and it's faster than snprintf
-                const std::string intStr = std::to_string(VALUE_STORAGE.getValueVec<int>()[info.index]);
-                std::memcpy(FORMAT_CACHE.data(), intStr.c_str(), intStr.size() + 1);
-                break;
+                snprintf(FORMAT_CACHE.data(), 64, "%d", VALUE_STORAGE.getValueVec<int>()[info.index]);
             }
-        default:
-            return nullptr;
         }
         return FORMAT_CACHE.c_str();
     }

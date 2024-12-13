@@ -11,7 +11,7 @@
 
 #include <magique/core/Animations.h>
 
-inline void TileLoader::execute(AssetContainer& res)
+void TileLoader::execute(AssetContainer& res)
 {
     auto handle = RegisterTileMap(res.getAsset("Level1.tmx"));
     RegisterHandle(handle, HandleID::LEVEL_1);
@@ -27,7 +27,7 @@ inline void TileLoader::execute(AssetContainer& res)
     RegisterHandle(handle, HandleID::TILE_SET);
 }
 
-inline void EntityLoader::execute(AssetContainer& res)
+void EntityLoader::execute(AssetContainer& res)
 {
     SetEntityScript(PLAYER, new PlayerScript());
     RegisterEntity(PLAYER,
@@ -63,7 +63,7 @@ inline void EntityLoader::execute(AssetContainer& res)
                    });
 }
 
-inline void TextureLoader::execute(AssetContainer& assets)
+void TextureLoader::execute(AssetContainer& assets)
 {
     auto handle = RegisterTileSheet(assets.getAsset("topdown.png"), 8, 3);
     RegisterHandle(handle, HandleID::TILESHEET);
