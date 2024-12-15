@@ -27,6 +27,7 @@ namespace magique
         map[type] = createFunc;
 
         global::SCRIPT_DATA.padUpToEntity(type); // This assures it's always valid to index with type
+        // Iterates all entities
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode

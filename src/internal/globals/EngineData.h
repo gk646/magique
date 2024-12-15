@@ -49,7 +49,7 @@ namespace magique
         Camera2D camera{};                         // Current camera
         Game* gameInstance;                        // The game instance created by the user
         entt::entity cameraEntity{UINT32_MAX};     // Entity id of the camera
-        GameState gameState{};                     // Global gamestate
+        GameState gameState{INT32_MAX};            // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls
 

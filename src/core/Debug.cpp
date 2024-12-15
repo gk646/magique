@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Debug.h>
 #include <magique/core/Types.h>
-#include <magique/core/Core.h>
+#include <magique/core/Camera.h>
 
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/EngineConfig.h"
@@ -9,6 +9,8 @@
 
 namespace magique
 {
+    void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
+
     void SetShowHitboxes(const bool val) { global::ENGINE_CONFIG.showHitboxes = val; }
 
     void SetBenchmarkTicks(const int ticks) { global::ENGINE_CONFIG.benchmarkTicks = ticks; }

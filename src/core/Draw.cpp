@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
 
-#include <magique/core/Core.h>
+#include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
 #include <magique/internal/Macros.h>
 #include <magique/assets/types/TileMap.h>

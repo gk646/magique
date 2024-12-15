@@ -8,6 +8,7 @@
 
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
+#include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
 #include <magique/core/Debug.h>
 #include <magique/core/CollisionDetection.h>
@@ -42,7 +43,6 @@
 #include "internal/globals/MultiplayerData.h"
 #endif
 #include "internal/utils/CollisionPrimitives.h"
-#include "internal/misc/IncludeWindows.h"
 #include "internal/utils/OSUtil.h"
 #include "internal/globals/JobScheduler.h"
 
@@ -170,10 +170,7 @@ namespace magique
 
         GameConfig::SaveToFile(config, configPath, encryptionKey);
 
-#if MAGIQUE_PROFILING == 1
-        LOG_INFO("Average DrawTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(DRAW) / 1'000);
-        LOG_INFO("Average LogicTick: %dk nanos", (int)global::PERF_DATA.getAverageTime(UPDATE) / 1'000);
-#endif
+        global::PERF_DATA.printPerformanceStats();
         return 0;
     }
 

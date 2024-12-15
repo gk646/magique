@@ -2,61 +2,16 @@
 #ifndef MAGIQUE_OSUTIL_H
 #define MAGIQUE_OSUTIL_H
 
-inline void WaitTime(const double destinationTime, double sleepSeconds)
-{
-    if (sleepSeconds < 0) [[unlikely]]
-        return; // Security check
+// Waits by sleeping the specified length and then busy waits until destinationTime
+void WaitTime(double destinationTime, double sleepSeconds);
 
-        // System halt functions
-#if defined(_WIN32)
-    Sleep(static_cast<unsigned long>(sleepSeconds * 1000.0));
-#endif
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
-    timespec req;
-    req.tv_sec = static_cast<time_t>(sleepSeconds);                     // Seconds portion
-    req.tv_nsec = static_cast<long>((sleepSeconds - (float)(int)req.tv_sec) * 1e9); // Nanoseconds portion
-    while (nanosleep(&req, &req) == -1)
-        continue;
-#endif
-#if defined(__APPLE__)
-    usleep(sleepSeconds * 1000000.0);
-#endif
-    while (GetTime() < destinationTime)
-    {
-    }
-}
+// Sets given threads priority
+void SetupThreadPriority(int thread, bool high = true);
 
-inline void SetupThreadPriority(const int thread, bool high = true)
-{
-#if defined(WIN32)
-    //printf("Setting up: %d\n", GetCurrentThreadId());
-    HANDLE hThread = GetCurrentThread();
-    SetThreadPriority(hThread, high ? THREAD_PRIORITY_HIGHEST : THREAD_PRIORITY_ABOVE_NORMAL);
-    DWORD_PTR affinityMask = static_cast<DWORD_PTR>(1) << thread;
-    auto res = SetThreadAffinityMask(hThread, affinityMask);
-    //printf("Affinity: %d\n",affinityMask);
-    if (res == 0)
-    {
-        LOG_ERROR("Failed to setup thread affinity for thread: %d", thread);
-    }
-#endif
-}
+// Sets the current process priority to high
+void SetupProcessPriority();
 
-inline void SetupProcessPriority()
-{
-#if defined(WIN32)
-    HANDLE hProcess = GetCurrentProcess();
-    SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-    return;
-    // Generally dont wanna thread pin (at least not like this?)
-    // Performance is generally a bit less on average but no lags or hitches in high intensive workload
-    DWORD_PTR processAffinityMask = 0xF;
-    if (!SetProcessAffinityMask(hProcess, processAffinityMask))
-    {
-        LOG_ERROR("Failed to setup process priority");
-    }
-#endif
-}
-
+// Returns the amount of bytes in this process memory working set
+uint64_t GetMemoryWorkingSet();
 
 #endif //MAGIQUE_OSUTIL_H

@@ -7,10 +7,19 @@
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
 
+#include <magique/fwd.hpp>
+
 namespace magique
 {
-
-    GameState GetGameState() { return global::ENGINE_DATA.gameState; }
+    GameState GetGameState()
+    {
+        if (global::ENGINE_DATA.gameState == GameState{INT32_MAX})
+        {
+            LOG_WARNING("Calling GetGameState() but game state is not set");
+            return GameState{INT32_MAX};
+        }
+        return global::ENGINE_DATA.gameState;
+    }
 
     void SetGameState(const GameState newGameState)
     {
@@ -31,8 +40,6 @@ namespace magique
 
     //----------------- SET -----------------//
 
-    void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
-
     // implemented in ECS.cpp cause of includes
     // void SetCameraEntity(entt::entity entity) { }
     // bool NearbyEntitiesContain(Point origin, float radius, entt::entity target) {}
@@ -41,17 +48,6 @@ namespace magique
     {
         global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
     }
-
-    void SetCameraCullPadding(const int distance)
-    {
-        global::ENGINE_CONFIG.cameraCullPadding = static_cast<float>(distance);
-    }
-
-    void SetCameraViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
-
-    void SetCameraPositionOffset(float x, float y) { global::ENGINE_CONFIG.cameraPositionOff = {x, y}; }
-
-    void SetCameraSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
     void SetEntityCacheDuration(const int ticks)
     {
@@ -82,61 +78,7 @@ namespace magique
     // implemented in ECS.cpp cause of includes
     // const std::vector<entt::entity>& GetNearbyEntities(entt::entity entity, float radius){}
 
-    Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
-
     const std::vector<entt::entity>& GetDrawEntities() { return global::ENGINE_DATA.drawVec; }
-
-    MapID GetCameraMap()
-    {
-#ifdef MAGIQUE_DEBUG
-        if (global::ENGINE_DATA.cameraMap == static_cast<MapID>(UINT8_MAX))
-        {
-            LOG_WARNING("No camera exists!");
-            return static_cast<MapID>(UINT8_MAX);
-        }
-#endif
-        return global::ENGINE_DATA.cameraMap;
-    }
-
-    Vector2 GetCameraPosition() { return global::ENGINE_DATA.camera.target; }
-
-    Rectangle GetCameraBounds()
-    {
-        const auto pad = global::ENGINE_CONFIG.cameraCullPadding;
-        const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
-
-        const float halfWidth = offset.x / zoom;
-        const float halfHeight = offset.y / zoom;
-
-        const float camLeft = target.x - halfWidth - pad;
-        const float camTop = target.y - halfHeight - pad;
-        const float camWidth = 2 * halfWidth + (pad * 2);
-        const float camHeight = 2 * halfHeight + (pad * 2);
-
-        return {camLeft, camTop, camWidth, camHeight};
-    }
-
-    Rectangle GetCameraNativeBounds()
-    {
-        const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
-
-        const float camLeft = target.x - offset.x / zoom;
-        const float camTop = target.y - offset.y / zoom;
-        const float camWidth = offset.x * 2 / zoom;
-        const float camHeight = offset.y * 2 / zoom;
-
-        return {camLeft, camTop, camWidth, camHeight};
-    }
-
-    entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
-
-    GameConfig& GetGameConfig()
-    {
-        MAGIQUE_ASSERT(global::ENGINE_DATA.gameConfig.loaded,
-                       "Config has not been loaded yet! Accessible earliest inside Game::onStartup()");
-        return global::ENGINE_DATA.gameConfig;
-    }
-
 
 
 } // namespace magique

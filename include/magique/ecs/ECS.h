@@ -128,6 +128,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
+        static_assert(sizeof(T) > 1 && "Trying to get empty component - those are not instantiated by EnTT");
         MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {

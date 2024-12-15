@@ -55,11 +55,9 @@ TEST_CASE("TextFormattingModule Text Formatting")
 
 TEST_CASE("TextFormattingModule Customization")
 {
-
     const char* templateText = "Hello, @{PLAYER_NAME}!";
     const char* placeholder = "PLAYER_NAME";
     std::string value = "Jespar";
-
 
     SetFormatPrefix('@');
     SetFormatValue(placeholder, value);

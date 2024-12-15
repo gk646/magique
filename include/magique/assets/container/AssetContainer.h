@@ -51,7 +51,8 @@ namespace magique
         ~AssetContainer();
 
     private:
-        PUB(AssetContainer() = default);
+        M_TEST_PUB()
+        AssetContainer() = default;
         void sort();
         const char* nativeData = nullptr; // Pointer to all the file data
         std::vector<Asset> assets;        // Internal file list

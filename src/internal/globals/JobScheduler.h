@@ -14,7 +14,7 @@
 #include "internal/datastructures/VectorType.h"
 #include "external/cxstructs/cxallocator/SlotAllocator.h"
 
-IGNORE_WARNING(4324) // structure was padded due to alignment specifier
+M_IGNORE_WARNING(4324) // structure was padded due to alignment specifier
 
 namespace magique
 {
@@ -118,6 +118,6 @@ namespace magique
     }
 } // namespace magique
 
-UNIGNORE_WARNING()
+M_UNIGNORE_WARNING()
 
 #endif //MAGIQUE_JOB_SCHEDULER_H

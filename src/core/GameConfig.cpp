@@ -1,16 +1,24 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
-#include <cstring>
 
 #include <magique/util/Logging.h>
 #include <magique/core/GameConfig.h>
 
 #include "internal/utils/EncryptionUtil.h"
+#include "internal/globals/EngineData.h"
 
 static constexpr auto FILE_HEADER = "CONFIG";
 
 namespace magique
 {
+
+    GameConfig& GetGameConfig()
+    {
+        MAGIQUE_ASSERT(global::ENGINE_DATA.gameConfig.loaded,
+                       "Config has not been loaded yet! Accessible earliest inside Game::onStartup()");
+        return global::ENGINE_DATA.gameConfig;
+    }
+
     void GameConfig::SaveToFile(const GameConfig& config, const char* filePath, const uint64_t key)
     {
         int totalSize = 0;

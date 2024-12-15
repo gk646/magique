@@ -4,7 +4,7 @@
 
 #include <magique/fwd.hpp>
 #include <magique/internal/Macros.h>
-IGNORE_WARNING(4100) // unreferenced formal parameter
+M_IGNORE_WARNING(4100) // unreferenced formal parameter
 
 //===============================================
 // Game module
@@ -90,5 +90,5 @@ namespace magique
 
 } // namespace magique
 
-UNIGNORE_WARNING()
+M_UNIGNORE_WARNING()
 #endif // MAGIQUE_GAME_H

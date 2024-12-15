@@ -5,7 +5,6 @@
 #include <magique/util/JobSystem.h>
 #include <magique/util/Logging.h>
 
-#include "internal/misc/IncludeWindows.h"
 #include "internal/globals/JobScheduler.h"
 
 namespace magique

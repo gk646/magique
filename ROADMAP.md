@@ -3,6 +3,10 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 ### Game Dev
 
+**Camera**
+- added interface for camera shake
+- ueses impulse forces
+
 **Pathfinding**
 
 - Add strategy API or some kind of customization of the pathfinding based on inputs
@@ -101,7 +105,6 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
     - Already implemented in ValidateImage()
 
 **Add type checking to asset handles**
-
 - By using ranges (e.g. 0 - 100k for textures) the engine can type check given handles for more security
 
 **CSVReader**
@@ -115,17 +118,14 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 **Pong**
 
 - Add pong example
-- Add multiplayer via Steam aswell
+- Add local multiplayer as well
 
 ### Misc
 
 **Modernize**
-
 - Review TaskExecutor and clean it up
     - Spit up tasks to all threads
     - Make internal handling easier and cleaner
 
 **Test**
-
-- add tests persistence, compression and encryption
-- collision detection (check against cute.h)
+- collision detection (check against cute2d.h)

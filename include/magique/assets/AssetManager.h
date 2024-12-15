@@ -107,7 +107,6 @@ namespace magique
     // This is useful if you have split images instead of a single TileSheet - Use with iterateDirectory()
     handle RegisterTileSheet(const std::vector<Asset>& assets, int tileSize, float scale = 1);
 
-
     //================= GET =================//
 
     // Returns the resources identified by this handle
