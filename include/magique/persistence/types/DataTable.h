@@ -15,6 +15,7 @@
 // .....................................................................
 // This is made for accessing data in a database like fashion
 // Compared to databases its statically typed which makes it easier to work with
+// Note: the data is stored sequentially row-wise
 // .....................................................................
 
 namespace magique
@@ -24,6 +25,9 @@ namespace magique
     {
         using ColumnsTuple = std::tuple<Types...>;
         //================= TABLE =================//
+
+        // Constructs an EMPTY data table without columns names (name features not available!)
+        DataTable();
 
         // Constructs an EMPTY data table - specify the column names
         // Example:     DataTable table{"age", "height"};
@@ -86,6 +90,7 @@ namespace magique
 
         //================= ITERATORS =================//
         // iterators for rows - use with structured bindings for a very nice syntax
+        // e.g. auto& [myInt, myString] = table[5];
 
         Iterator<ColumnsTuple> begin();
         Iterator<ColumnsTuple> end();
@@ -114,6 +119,11 @@ namespace magique
 
 namespace magique
 {
+    template <typename... Types>
+    DataTable<Types...>::DataTable() : offsets(calculateOffsets(std::make_index_sequence<sizeof...(Types) - 1>{}))
+    {
+    }
+
     template <typename... Types>
     DataTable<Types...>::DataTable(const std::initializer_list<const char*>& args) :
         offsets(calculateOffsets(std::make_index_sequence<sizeof...(Types) - 1>{}))
@@ -265,7 +275,7 @@ namespace magique
     template <typename T>
     T& DataTable<Types...>::getTupleColumn(int column, std::tuple<Types...>& t)
     {
-        static_MAGIQUE_ASSERT((std::is_same_v<T, Types> || ...), "Given type does not exist in the table!");
+        static_assert((std::is_same_v<T, Types> || ...), "Given type does not exist in the table!");
         MAGIQUE_ASSERT(column >= 0 && column < columns, "Given column out of bounds");
         return getTupleColumnImpl<T>(column, t, std::index_sequence_for<Types...>{});
     }

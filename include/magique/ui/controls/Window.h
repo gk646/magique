@@ -4,7 +4,7 @@
 
 #include <raylib/raylib.h>
 #include <magique/ui/types/UIContainer.h>
-IGNORE_WARNING(4100)
+M_IGNORE_WARNING(4100)
 
 //===============================================
 // Window
@@ -72,6 +72,6 @@ namespace magique
 
 } // namespace magique
 
-UNIGNORE_WARNING()
+M_UNIGNORE_WARNING()
 
 #endif //MAGIQUE_WINDOW_H

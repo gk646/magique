@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <memory>
 #include <raylib/raylib.h>
 
 #include <magique/gamedev/PathFinding.h>
-#include <magique/core/Core.h>
+#include <magique/core/Camera.h>
 
 #include "internal/globals/PathFindingData.h"
 #include "internal/utils/CollisionPrimitives.h"
@@ -28,7 +29,7 @@ namespace magique
 
     // Same as FindPath() but allows to specify the dimensions of the searching entity
     // The pathfinding tries to find a path that fits the entity
-    void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
+    static void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
 
     bool GetPathRayCast(const Point start, const Point end, const MapID map)
     {

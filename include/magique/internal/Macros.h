@@ -90,29 +90,23 @@ namespace magique::internal
 //================= BUILDING =================//
 
 #ifdef MAGIQUE_TEST_MODE
-#define PUB(mod)                                                                                                        \
-public:                                                                                                                 \
-    mod
+#define M_TEST_PUB() public:
 #else
-#define PUB(decl) decl
+#define M_TEST_PUB()
 #endif
 
-
 #ifdef _MSC_VER
-#define IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
-#define UNIGNORE_WARNING() __pragma(warning(pop))
+#define M_IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
+#define M_UNIGNORE_WARNING() __pragma(warning(pop))
 #else
-#define IGNORE_WARNING(num)
-#define UNIGNORE_WARNING()
+#define M_IGNORE_WARNING(num)
+#define M_UNIGNORE_WARNING()
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
 #define STRINGIFY(x) #x
-#define IGNORE_WARNING_GCC(warning) \
-_Pragma("GCC diagnostic push")  \
-_Pragma(STRINGIFY(GCC diagnostic ignored warning))
-#define UNIGNORE_WARNING_GCC() \
-_Pragma("GCC diagnostic pop")
+#define IGNORE_WARNING_GCC(warning) _Pragma("GCC diagnostic push") _Pragma(STRINGIFY(GCC diagnostic ignored warning))
+#define UNIGNORE_WARNING_GCC() _Pragma("GCC diagnostic pop")
 #else
 #define IGNORE_WARNING_GCC(warning)
 #define UNIGNORE_WARNING_GCC()

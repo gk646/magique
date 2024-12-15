@@ -14,7 +14,7 @@
 namespace magique
 {
     // If enabled display performance metrics on the top left
-    // Default: false
+    // Default: true
     void SetShowPerformanceOverlay(bool val);
 
     // If true shows red hitboxes for collideable entities - can get very expensive

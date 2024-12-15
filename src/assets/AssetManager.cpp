@@ -128,7 +128,7 @@ namespace magique
 
     handle RegisterSound(const Sound& sound)
     {
-        if(!IsSoundValid(sound))
+        if (!IsSoundValid(sound))
         {
             LOG_WARNING("Trying to register invalid sound");
             return handle::null;
@@ -211,7 +211,11 @@ namespace magique
         return global::ASSET_MANAGER.addResource(std::move(tileMap));
     }
 
-    handle RegisterTileMap(const std::vector<std::vector<std::vector<uint16_t>>>& layerData) { return handle::null; }
+    handle RegisterTileMap(const std::vector<std::vector<std::vector<uint16_t>>>& layerData)
+    {
+        LOG_FATAL("Not implemented");
+        return handle::null;
+    }
 
     handle RegisterTileSet(Asset asset)
     {
@@ -282,7 +286,6 @@ namespace magique
     TextureRegion GetTexture(const HandleID id)
     {
         return global::ASSET_MANAGER.getResource<TextureRegion>(GetHandle(id));
-
     }
     TextureRegion GetTexture(const uint32_t hash)
     {

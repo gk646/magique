@@ -65,3 +65,8 @@ elseif (UNIX)
 else ()
     #
 endif ()
+
+# Make internal things public
+if (MAGIQUE_IS_MAIN)
+    target_compile_definitions(magique PUBLIC MAGIQUE_TEST_MODE)
+endif ()

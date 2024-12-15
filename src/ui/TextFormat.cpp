@@ -171,14 +171,17 @@ namespace magique
         {
         case FLOAT:
             snprintf(FORMAT_CACHE.data(), 64, "%.3g", VALUE_STORAGE.getValueVec<float>()[info.index]);
+            break;
         case STRING:
             {
                 const std::string& str = VALUE_STORAGE.getValueVec<std::string>()[info.index];
                 std::memcpy(FORMAT_CACHE.data(), str.c_str(), str.size() + 1);
+                break;
             }
         case INT:
             {
                 snprintf(FORMAT_CACHE.data(), 64, "%d", VALUE_STORAGE.getValueVec<int>()[info.index]);
+                break;
             }
         }
         return FORMAT_CACHE.c_str();

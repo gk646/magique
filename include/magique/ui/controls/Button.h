@@ -3,7 +3,7 @@
 #define MAGIQUE_BUTTON_H
 
 #include <magique/ui/UIObject.h>
-IGNORE_WARNING(4100)
+M_IGNORE_WARNING(4100)
 
 //===============================================
 // Button
@@ -45,6 +45,6 @@ namespace magique
     };
 } // namespace magique
 
-UNIGNORE_WARNING()
+M_UNIGNORE_WARNING()
 
 #endif //MAGIQUE_BUTTON_H

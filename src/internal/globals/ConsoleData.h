@@ -5,6 +5,7 @@
 #include <deque>
 #include <raylib/config.h>
 
+#include <magique/core/Debug.h>
 #include <magique/core/Game.h>
 #include <magique/gamedev/Console.h>
 #include <magique/util/RayUtils.h>
@@ -132,12 +133,11 @@ namespace magique
 
             RegisterConsoleCommand(
                 Command{"clear", "Clears the console"}.setFunction([&](const ParamList&) { consoleLines.clear(); }));
-
             RegisterConsoleCommand(Command{"help", "Shows help text"}.setFunction(
-                [&](const ParamList& params)
+                [&](const ParamList& /**/)
                 { AddConsoleString("Type in a command and press ENTER. See gamedev/Console.h for more info"); }));
             RegisterConsoleCommand(Command{"all", "Lists all registered commands"}.setFunction(
-                [&](const ParamList& params)
+                [&](const ParamList& /**/)
                 {
                     for (const auto& cmd : commands)
                     {
@@ -147,10 +147,15 @@ namespace magique
                 }));
             RegisterConsoleCommand(
                 Command{"def", "Creates a new or sets an existing environment with the given type"}.setFunction(
-                    [&](const ParamList& params) { AddConsoleString(""); }));
+                    [&](const ParamList& /**/) { AddConsoleString(""); }));
 
             RegisterConsoleCommand(Command{"shutdown", "Calls Game::shutdown() to close the game"}.setFunction(
-                [](const ParamList&) { global::ENGINE_DATA.gameInstance->shutDown(); }));
+                [](const ParamList& /**/) { global::ENGINE_DATA.gameInstance->shutDown(); }));
+
+            RegisterConsoleCommand(
+                Command{"magique.showHitboxes", "Turns visible hitboxes on/off"}
+                    .addParam("value", {ParameterType::BOOL})
+                    .setFunction([](const ParamList& params) { SetShowHitboxes(params.back().getBool()); }));
         }
 
         ~ConsoleData()

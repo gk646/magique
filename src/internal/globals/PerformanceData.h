@@ -4,6 +4,8 @@
 
 #include "internal/datastructures/VectorType.h"
 #include "external/raylib-compat/rlgl_compat.h"
+
+#include "internal/utils/OSUtil.h"
 #if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
 #include "internal/globals/MultiplayerData.h"
 #endif
@@ -28,11 +30,12 @@ namespace magique
         uint32_t drawTickTime = 0;
         int tickCounter = 0;
         int updateDelayTicks = 15;
-        PerformanceBlock blocks[6]{}; // 5 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
+        PerformanceBlock blocks[6]{}; // 6 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
 
 #if MAGIQUE_PROFILING == 1
         vector<uint32_t> logicTimes;
         vector<uint32_t> drawTimes;
+        uint64_t maxMemoryBytes = 0;
 #endif
 
         PerformanceData()
@@ -147,6 +150,12 @@ namespace magique
                 blocks[block].width = 0;
             }
             tickCounter = 0;
+
+#if MAGIQUE_PROFILING == 1
+            const auto currentMemory = GetMemoryWorkingSet();
+            if (currentMemory > maxMemoryBytes)
+                maxMemoryBytes = currentMemory;
+#endif
         }
 
         void saveTickTime(const TickType t, const uint32_t time)
@@ -167,8 +176,16 @@ namespace magique
             }
         }
 
-        // Don't even let it be there
-#if MAGIQUE_PROFILING == 1
+        void printPerformanceStats()
+        {
+#if MAGIQUE_PROFILING == 0
+            return;
+#endif
+            LOG_INFO("Average DrawTick: %.2f millis", getAverageTime(DRAW));
+            LOG_INFO("Average LogicTick: %.2f millis",getAverageTime(UPDATE));
+        }
+
+    private:
         [[nodiscard]] float getAverageTime(const TickType t)
         {
             vector<uint32_t>* times;
@@ -198,7 +215,6 @@ namespace magique
             }
             return static_cast<float>(sum) / static_cast<float>(times->size());
         }
-#endif
     };
 
     namespace global

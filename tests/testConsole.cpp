@@ -1,7 +1,5 @@
 #include <catch_amalgamated.hpp>
 
-#define MAGIQUE_TEST_MODE
-
 #include <magique/gamedev/Console.h>
 #include <raylib/raylib.h>
 

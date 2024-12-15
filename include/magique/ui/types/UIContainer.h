@@ -5,7 +5,7 @@
 #include <vector>
 #include <magique/ui/UIObject.h>
 #include <magique/internal/InternalTypes.h>
-IGNORE_WARNING(4100)
+M_IGNORE_WARNING(4100)
 
 //===============================================
 // UIContainer
@@ -55,6 +55,6 @@ namespace magique
     };
 } // namespace magique
 
-UNIGNORE_WARNING()
+M_UNIGNORE_WARNING()
 
 #endif //MAGIQUE_UI_CONTAINER_H
