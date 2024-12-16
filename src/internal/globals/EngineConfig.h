@@ -20,13 +20,13 @@ namespace magique
 
     struct Theme final
     {
-        Color txtActive;
-        Color txtPassive;
-        Color backLight;
-        Color backDark;
-        Color backSelected;
-        Color error;
-        Color warning;
+        Color textActive;   // Color of primary text (selected, foreground)
+        Color textPassive;  // Color of passive text (unselected, background)
+        Color backLight;    // Light background color for elements
+        Color backDark;     // Dark background color for elements
+        Color backSelected; // Color for elements that are selected
+        Color error;        // Color of errors
+        Color warning;      // Color of warnings
     };
 
     struct Configuration final
@@ -45,18 +45,23 @@ namespace magique
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
         LogLevel logLevel = LEVEL_INFO;             // All above info are visible
         LightingMode lighting = LightingMode::NONE; // Current selected lighting mode
-        bool showPerformanceOverlay = true;         // Toggles the performance overlay
+        bool showPerformanceOverlay = true;         // Status of the performance overlay
+        bool showPerformanceOverlayExt = true;      // Status of the extended performance overlay
+        bool showEntityOverlay = false;             // Status of the entity overlay
+        bool showPathFindingOverlay = false;        // Status of the pathfinding overlay
+        bool showCompassOverlay = false;            // Status of the compass overlay
         bool showHitboxes = false;                  // Shows red outlines for the hitboxes
-        bool handleCollisions = true;               // Enables collision checking by magique
+        bool enableCollisionSystem = true;          // Enables the static and dynamic collision systems
+        bool enableLightingSystem = true;           // Enables the lighting system
         bool isClientMode = false;                  // Flag to disable certain engine tasks on multiplayer clients
 
         void init()
         {
             loadingScreen = new LoadingScreen();
-            // adwaita based colors
+            // adwaita (Linux GNOME desktop) based colors
             Theme adwaita{};
-            adwaita.txtActive = WHITE;
-            adwaita.txtPassive = Color(163, 163, 163, 255);
+            adwaita.textActive = WHITE;
+            adwaita.textPassive = Color(163, 163, 163, 255);
             adwaita.backSelected = Color(68, 68, 68, 255);
             adwaita.backLight = Color(48, 48, 48, 255);
             adwaita.backDark = Color(30, 30, 30, 255);

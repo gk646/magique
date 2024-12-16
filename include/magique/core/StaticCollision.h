@@ -12,7 +12,7 @@
 // This module is for defining and controlling static collision elements
 // There are multiple supported ways for adding static collision:
 //      - World Bounds: Makes everything outside the given rectangle solid (has to be big enough for all loaded maps)
-//      - Tile Objects: Manually place colliders in the tile editor - they are imported automatically and can be loaded in
+//      - Tile Objects: Manually place colliders in the tile editor - load them as colliders with the TileMap getters
 //      - TileSet     : Allows to define certain tile-indices as collidable  (you then also need to load the maps)
 //      - Groups      : User managed groups that can be added and removed manually
 // Note: The methods can be used in any combination, they all work together and do NOT have runtime overhead when ignored
@@ -82,7 +82,7 @@ namespace magique
     void AddColliderGroup(MapID map, const ManualColliderGroup& group);
 
     // Removes all colliders of the given group from the specified map (if exists)
-    void RemoveColliderGroup(MapID map,const ManualColliderGroup& group);
+    void RemoveColliderGroup(MapID map, const ManualColliderGroup& group);
 
 } // namespace magique
 

@@ -122,7 +122,7 @@ namespace magique
         //----------------- STORAGE-----------------//
 
         ColliderStorage colliderStorage;          // Holds all objects - uses a free list to preserve indices
-        ObjectReferenceHolder colliderReferences; // Saves data so that inserted objects can automatically be unloaded
+        ObjectReferenceHolder colliderReferences; // Saves data about the static collision object so they can be removed
 
         //----------------- HASHGRIDS -----------------//
 

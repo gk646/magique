@@ -40,9 +40,6 @@ namespace magique
     // Default: None (others don't work yet)
     void SetLightingMode(LightingMode model);
 
-    // Sets the new camera holder - removes the component from the current and adds it to the new holder
-    void SetCameraEntity(entt::entity entity);
-
     // When entities leave the update range they are still updated for the cache duration
     // Default: 300 Ticks
     void SetEntityCacheDuration(int ticks);
@@ -53,10 +50,15 @@ namespace magique
     // Manually clears the entity cache in this tick
     void ClearEntityCache();
 
-    // Allows to turn off collision handling by magique if you want to do it on your own
-    // Note: This means onStaticCollision() and onDynamicCollision() event method will NOT be called anymore
+    // Allows to turn off the built-in lighting system - useful if you want to do it on your own
+    // Note: if disabled you will have to iterate the lighting components and render it with your own shader
     // Default: true
-    void SetEnableCollisionHandling(bool value);
+    void SetEnableLightingSystem(bool val);
+
+    // Allows to turn off built-in collision handling - useful if you want to do it on your own
+    // Note: if disabled onStaticCollision() and onDynamicCollision() event method will NOT be called anymore
+    // Default: true
+    void SetEnableCollisionSystem(bool value);
 
     //================= DATA ACCESS =================//
 

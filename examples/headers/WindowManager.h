@@ -75,7 +75,7 @@ inline void UpdateWindow(Window* window)
     }
 }
 
-float topBarHeight = 25;
+constexpr float topBarHeight = 25;
 
 struct CloseButton final : UIObject
 {

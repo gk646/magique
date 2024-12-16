@@ -90,49 +90,52 @@ namespace magique
         // Register default commands
         void init()
         {
-            RegisterConsoleCommand(
-                Command{"print", "Prints all given parameters in a new line to the console"}
-                    .addVariadicParam({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
-                    .setFunction(
-                        [](const ParamList& params)
+            Command print{"print", "Prints all given parameters in a new line to the console"};
+            print.addVariadicParam({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
+                .setFunction(
+                    [](const ParamList& params)
+                    {
+                        auto printParam = [](const Parameter& param)
                         {
-                            auto printParam = [](const Parameter& param)
+                            switch (param.getType())
                             {
-                                switch (param.getType())
+                            case ParameterType::NUMBER:
+                                if (IsWholeNumber(param.getFloat()))
                                 {
-                                case ParameterType::NUMBER:
-                                    if (IsWholeNumber(param.getFloat()))
-                                    {
-                                        AddConsoleStringF("%d", param.getInt());
-                                    }
-                                    else
-                                    {
-                                        AddConsoleStringF("%.3f", param.getFloat());
-                                    }
-                                    break;
-                                case ParameterType::BOOL:
-                                    if (param.getBool())
-                                    {
-                                        AddConsoleString("true");
-                                    }
-                                    else
-                                    {
-                                        AddConsoleString("false");
-                                    }
-                                    break;
-                                case ParameterType::STRING:
-                                    AddConsoleStringF("%s", param.getString());
-                                    break;
+                                    AddConsoleStringF("%d", param.getInt());
                                 }
-                            };
-                            for (const auto& param : params)
-                            {
-                                printParam(param);
+                                else
+                                {
+                                    AddConsoleStringF("%.3f", param.getFloat());
+                                }
+                                break;
+                            case ParameterType::BOOL:
+                                if (param.getBool())
+                                {
+                                    AddConsoleString("true");
+                                }
+                                else
+                                {
+                                    AddConsoleString("false");
+                                }
+                                break;
+                            case ParameterType::STRING:
+                                AddConsoleStringF("%s", param.getString());
+                                break;
                             }
-                        }));
+                        };
+                        for (const auto& param : params)
+                        {
+                            printParam(param);
+                        }
+                    });
+            RegisterConsoleCommand(print);
 
-            RegisterConsoleCommand(
-                Command{"clear", "Clears the console"}.setFunction([&](const ParamList&) { consoleLines.clear(); }));
+            Command clear{"clear", "Clears the console"};
+            clear.setFunction([&](const ParamList&) { consoleLines.clear(); });
+            RegisterConsoleCommand(clear);
+
+
             RegisterConsoleCommand(Command{"help", "Shows help text"}.setFunction(
                 [&](const ParamList& /**/)
                 { AddConsoleString("Type in a command and press ENTER. See gamedev/Console.h for more info"); }));
@@ -145,17 +148,29 @@ namespace magique
                         AddConsoleStringF("%s - %s", cmd.name.c_str(), desc);
                     }
                 }));
-            RegisterConsoleCommand(
-                Command{"def", "Creates a new or sets an existing environment with the given type"}.setFunction(
-                    [&](const ParamList& /**/) { AddConsoleString(""); }));
 
-            RegisterConsoleCommand(Command{"shutdown", "Calls Game::shutdown() to close the game"}.setFunction(
-                [](const ParamList& /**/) { global::ENGINE_DATA.gameInstance->shutDown(); }));
+            Command def{"def", "Creates a new or sets an existing environment with the given type"};
+            def.setFunction([&](const ParamList& /**/) { AddConsoleString(""); });
+            // RegisterConsoleCommand(def);
 
-            RegisterConsoleCommand(
-                Command{"magique.showHitboxes", "Turns visible hitboxes on/off"}
-                    .addParam("value", {ParameterType::BOOL})
-                    .setFunction([](const ParamList& params) { SetShowHitboxes(params.back().getBool()); }));
+            Command shutdown{"shutdown", "Calls Game::shutdown() to close the game"};
+            shutdown.setFunction([](const ParamList& /**/) { global::ENGINE_DATA.gameInstance->shutDown(); });
+            RegisterConsoleCommand(shutdown);
+
+            Command showHitboxes{"m.setHitboxesOverlay", "Turns visible hitboxes on/off"};
+            showHitboxes.addParam("value", {ParameterType::BOOL})
+                .setFunction([](const ParamList& params) { SetShowHitboxes(params.back().getBool()); });
+            RegisterConsoleCommand(showHitboxes);
+
+            Command showEntityGrid{"m.setEntityOverlay", "Turns the debug entity overlay on/off"};
+            showEntityGrid.addParam("value", {ParameterType::BOOL})
+                .setFunction([](const ParamList& params) { SetShowEntityGridOverlay(params.back().getBool()); });
+            RegisterConsoleCommand(showEntityGrid);
+
+            Command showPathGrid{"m.setPathfindingOverlay", "Turns the debug pathfinding overlay on/off"};
+            showPathGrid.addParam("value", {ParameterType::BOOL})
+                .setFunction([](const ParamList& params) { SetShowPathFindingOverlay(params.back().getBool()); });
+            RegisterConsoleCommand(showPathGrid);
         }
 
         ~ConsoleData()
@@ -224,12 +239,12 @@ namespace magique
             suggestions.clear();
         }
 
-        void addString(const char* string, Color color = global::ENGINE_CONFIG.theme.txtPassive)
+        void addString(const char* string, Color color = global::ENGINE_CONFIG.theme.textPassive)
         {
             consoleLines.emplace_front(string, color);
         }
 
-        void addStringF(const char* fmt, va_list va_args, Color color = global::ENGINE_CONFIG.theme.txtPassive)
+        void addStringF(const char* fmt, va_list va_args, Color color = global::ENGINE_CONFIG.theme.textPassive)
         {
             constexpr int MAX_LEN = 128;
             char buf[MAX_LEN]{};
@@ -327,12 +342,12 @@ namespace magique
             // Draw input text
             Vector2 textPos = {5, cHeight - lineHeight};
 
-            DrawTextEx(font, "> ", textPos, fsize, SPACING, theme.txtPassive);
-            DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.txtActive);
+            DrawTextEx(font, "> ", textPos, fsize, SPACING, theme.textPassive);
+            DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.textActive);
             if (data.showCursor)
             {
                 const float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, SPACING);
-                DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.txtPassive);
+                DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.textPassive);
             }
 
             // Draw console text
@@ -355,7 +370,7 @@ namespace magique
                 {
                     const Rectangle sBox = {textPos.x, textPos.y, data.maxSuggestionLen, lineHeight};
                     const auto isSelected = i == data.suggestionPos;
-                    const auto& color = isSelected ? theme.txtActive : theme.txtPassive;
+                    const auto& color = isSelected ? theme.textActive : theme.textPassive;
                     const auto& cmd = *data.suggestions[i];
                     const char* name = cmd.name.c_str();
                     const char* desc = cmd.description.empty() ? "..." : cmd.description.c_str();

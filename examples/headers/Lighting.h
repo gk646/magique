@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_LIGHTING_EXAMPLE
 #define MAGIQUE_LIGHTING_EXAMPLE
 
-
 #include <raylib/raylib.h>
 
 #include <magique/core/Game.h>
@@ -67,6 +66,7 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
+        SetGameState({});                              // Set empty gamestate - needs to be set in a real game
         SetLightingMode(LightingMode::STATIC_SHADOWS); // Sets the lighting mode
         SetShowHitboxes(true);
 
@@ -84,7 +84,6 @@ struct Example final : Game
 
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-
             GiveCollisionRect(e, 25, 25);
             GiveOccluder(e, 25, 25);
             GiveComponent<MoveCompC>(e);

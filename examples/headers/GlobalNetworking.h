@@ -96,13 +96,10 @@ struct PlayerScript final : EntityScript
         if (IsKeyDown(KEY_D))
             pos.x += 2.5F;
     }
-
-
 };
 
 struct NetPlayerScript final : EntityScript
 {
-
 };
 
 struct ObjectScript final : EntityScript // Moving platform
@@ -145,10 +142,9 @@ struct Test final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        // Initialize steam
-        InitSteam();
-
-        SetShowHitboxes(true);
+        SetGameState({});      // Set empty gamestate - needs to be set in a real game
+        InitSteam();           // Initialize steam
+        SetShowHitboxes(true); // Draws a RED outline around the collision shape of all entities
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -173,7 +169,6 @@ struct Test final : Game
         // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
-
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };

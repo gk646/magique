@@ -160,7 +160,10 @@ namespace magique
 
     inline void RenderLighting(const entt::registry& registry)
     {
-        const auto model = global::ENGINE_CONFIG.lighting;
+        const auto& config = global::ENGINE_CONFIG;
+        if (config.enableLightingSystem == false)
+            return;
+        const auto model = config.lighting;
         if (model == LightingMode::STATIC_SHADOWS)
         {
             RenderHardShadows(registry);
