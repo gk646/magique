@@ -46,7 +46,7 @@ namespace magique
             }
 
             const auto& theme = global::ENGINE_CONFIG.theme;
-            Color consoleColor = theme.txtPassive;
+            Color consoleColor = theme.textPassive;
 
             const auto* level_str = "";
             switch (level)

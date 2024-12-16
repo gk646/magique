@@ -40,9 +40,9 @@ namespace magique
 
     enum class LightingMode
     {
-        STATIC_SHADOWS,
-        RAY_TRACING,
-        NONE, // Default
+        NONE,           // Default
+        STATIC_SHADOWS, // Fast but only hard shadows - max of 1k+ objects
+        RAY_TRACING,    // Slow but provides global illumination - max of ~50 object
     };
 
     //================= ASSETS  =================//

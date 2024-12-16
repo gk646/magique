@@ -8,7 +8,6 @@
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
-#include "external/raylib-compat/rcore_compat.h"
 #include "internal/utils/STLUtil.h"
 
 inline bool initialized = false;

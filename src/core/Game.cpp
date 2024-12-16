@@ -56,6 +56,8 @@
 #include "internal/systems/LightingSystem.h"
 
 #include "core/headers/MainThreadUtil.h"
+#include "core/headers/UpdateUtil.h"
+#include "core/headers/RenderUtil.h"
 #include "core/headers/Updater.h"
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"

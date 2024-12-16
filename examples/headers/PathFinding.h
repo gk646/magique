@@ -61,6 +61,7 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
+        SetGameState({}); // Set empty gamestate - needs to be set in a real game
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -71,11 +72,7 @@ struct Example final : Game
         };
         RegisterEntity(PLAYER, playerFunc);
 
-        const auto objFunc = [](entt::entity e, EntityType type)
-        {
-
-            GiveCollisionRect(e, 25, 25);
-        };
+        const auto objFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 25, 25); };
         RegisterEntity(HUNTER, objFunc);
 
         // Set the scripts
@@ -124,7 +121,6 @@ struct Example final : Game
             Draw2DCompass(DARKGREEN);
         }
         EndMode2D();
-
     }
 };
 

@@ -49,6 +49,10 @@ namespace magique
 
         void draw()
         {
+            const auto& config = global::ENGINE_CONFIG;
+            if (!config.showPerformanceOverlay)
+                return;
+
             const auto drawBlock = [](const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
             {
                 const auto& theme = global::ENGINE_CONFIG.theme;
@@ -59,19 +63,22 @@ namespace magique
                 const Rectangle container = {pos.x, pos.y, w, blockHeight};
                 DrawRectangleRec(container, theme.backLight);
                 DrawRectangleLinesEx(container, borderWidth, theme.backDark);
-                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.txtPassive);
+                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.textPassive);
                 return w;
             };
 
             Vector2 position = {0, 0};
-            const auto& font = global::ENGINE_CONFIG.font;
-            const auto fs = global::ENGINE_CONFIG.fontSize;
+            const auto& font = config.font;
+            const auto fs = config.fontSize;
 
             for (const auto& block : blocks)
             {
                 if (block.width == 0)
                     continue;
                 position.x += drawBlock(block.text, font, fs, position, block.width);
+
+                if (!config.showPerformanceOverlayExt) // Only draw FPS in simple mode
+                    break;
             }
         }
 
@@ -181,8 +188,10 @@ namespace magique
 #if MAGIQUE_PROFILING == 0
             return;
 #endif
-            LOG_INFO("Average DrawTick: %.2f millis", getAverageTime(DRAW));
-            LOG_INFO("Average LogicTick: %.2f millis",getAverageTime(UPDATE));
+            LOG_INFO("Performance Stats:");
+            LOG_INFO("%-10s: CPU: %.2f ms | GPU: %.2f ms", "Avg Ticks", getAverageTime(DRAW) / 1'000'000,
+                     getAverageTime(UPDATE) / 1'000'000);
+            LOG_INFO("%-10s: Max: %llu bytes", "Memory", maxMemoryBytes);
         }
 
     private:

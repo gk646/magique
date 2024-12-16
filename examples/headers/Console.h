@@ -12,6 +12,7 @@ struct Example final : Game
 {
     void onStartup(AssetLoader& loader) override
     {
+        SetGameState({}); // Set empty gamestate - needs to be set in a real game
         // printName Command
         Command printHello{"printHello"};
         printHello.addParam("name", {ParameterType::STRING});

@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Core.h>
 #include <magique/assets/AssetManager.h>
-#include <magique/util/JobSystem.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/DynamicCollisionData.h"
-
-#include <magique/fwd.hpp>
 
 namespace magique
 {
@@ -38,12 +35,6 @@ namespace magique
         global::ENGINE_DATA.stateCallback = func;
     }
 
-    //----------------- SET -----------------//
-
-    // implemented in ECS.cpp cause of includes
-    // void SetCameraEntity(entt::entity entity) { }
-    // bool NearbyEntitiesContain(Point origin, float radius, entt::entity target) {}
-
     void SetUpdateDistance(const int distance)
     {
         global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
@@ -61,13 +52,15 @@ namespace magique
 
     void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
-    void SetEnableCollisionHandling(bool value) { global::ENGINE_CONFIG.handleCollisions = value; }
+    void SetEnableCollisionSystem(const bool value) { global::ENGINE_CONFIG.enableCollisionSystem = value; }
 
     void SetFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
 
     const Font& GetFont() { return global::ENGINE_CONFIG.font; }
 
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
+
+    void SetEnableLightingSystem(const bool val) { global::ENGINE_CONFIG.enableLightingSystem = val; }
 
     //----------------- GET -----------------//
 

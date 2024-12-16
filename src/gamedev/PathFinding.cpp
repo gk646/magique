@@ -108,38 +108,6 @@ namespace magique
         return {0.0f, 0.0f};
     }
 
-    void DrawPathFindingGrid(const MapID map)
-    {
-        const auto& path = global::PATH_DATA;
-        if (!path.mapsDynamicGrids.contains(map)) // Could be called before any entity is created
-            return;
-        const auto& staticGrid = path.mapsStaticGrids[map];
-        const auto& dynamicGrid = path.mapsDynamicGrids[map];
-
-        const auto bounds = GetCameraBounds();
-        constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
-        const int startX = static_cast<int>(bounds.x) / cellSize;
-        const int startY = static_cast<int>(bounds.y) / cellSize;
-        const int width = static_cast<int>(bounds.width) / cellSize;
-        const int height = static_cast<int>(bounds.height) / cellSize;
-
-        for (int i = 0; i < height; ++i)
-        {
-            const int currY = startY + i;
-            for (int j = 0; j < width; ++j)
-            {
-                const int currX = startX + j;
-                const Rectangle rect = {(float)currX * cellSize, (float)currY * cellSize, cellSize, cellSize};
-                const bool isSolid = PathFindingData::IsCellSolid(rect.x, rect.y, staticGrid, dynamicGrid);
-                if (isSolid)
-                {
-                    DrawRectangleRec(rect, ColorAlpha(RED, 0.4F));
-                }
-                DrawRectangleLinesEx(rect, 1, BLACK);
-            }
-        }
-    }
-
     void DrawPath(const std::vector<Point>& path)
     {
         constexpr int halfSize = MAGIQUE_PATHFINDING_CELL_SIZE / 2;

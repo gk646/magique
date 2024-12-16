@@ -135,6 +135,7 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
+SetGameState({}); // Set empty gamestate - needs to be set in a real game
         SetShowHitboxes(true);
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)

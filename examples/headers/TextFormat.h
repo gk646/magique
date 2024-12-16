@@ -15,6 +15,7 @@ struct Example final : Game
     // Override onStartup() to trigger custom logic at the beginning
     void onStartup(AssetLoader& loader) override
     {
+        SetGameState({}); // Set empty gamestate - needs to be set in a real game
         SetFormatValue("PLAYER_NAME", "Geralt");
         SetFormatValue("PLAYER_AGE", 97);
     }

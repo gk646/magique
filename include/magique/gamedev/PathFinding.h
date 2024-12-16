@@ -54,11 +54,7 @@ namespace magique
 
     //================= DEBUG =================//
 
-    // Draws the current state of the pathfinding grid
-    // Transparent (not solid), grey (solid from static source), black (solid from dynamic source)
-    void DrawPathFindingGrid(MapID map);
-
-    // Visually draws the tiles
+    // Draws the tiles along the given path in the pathfinding grid
     void DrawPath(const std::vector<Point>& path);
 
 } // namespace magique

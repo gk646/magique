@@ -1,12 +1,14 @@
 #ifndef MAGIQUE_COLLISION_EXAMPLE_H
 #define MAGIQUE_COLLISION_EXAMPLE_H
 
+#include <magique/core/Camera.h>
 #include <magique/core/Game.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
+#include <magique/util/RayUtils.h>
 
 // Recommended
 using namespace magique;
@@ -88,7 +90,9 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetShowHitboxes(true); // Show all collision hitboxes
+        SetGameState({});               // Set empty gamestate - needs to be set in a real game
+        SetShowHitboxes(true);          // Show all collision hitboxes
+        SetShowEntityGridOverlay(true); // Shows the size and entity count of each cell in the entity collision grid
         // Create the player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -102,16 +106,16 @@ struct Example final : Game
         // Create moving objects
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            const auto val = GetRandomValue(0, 100);
-            if (val < 25)
+            const int shapeNum = GetRandomValue(0, 100);
+            if (shapeNum < 25)
             {
                 GiveCollisionRect(e, 25, 25);
             }
-            else if (val < 50)
+            else if (shapeNum < 50)
             {
                 GiveCollisionTri(e, {-33, 33}, {33, 33});
             }
-            else if (val < 75)
+            else if (shapeNum < 75)
             {
                 GiveCollisionCircle(e, 25);
             }
@@ -130,7 +134,7 @@ struct Example final : Game
         CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(-500, 500), GetRandomValue(-500, 500), MapID(0));
+            CreateEntity(OBJECT, GetRandomFloat(-500, 500), GetRandomFloat(-500, 500), MapID(0));
         }
     }
 
@@ -165,8 +169,6 @@ struct Example final : Game
                 break;
             }
         }
-
-        DrawHashGridDebug(GetCameraMap()); // Draws the debug grid and entity count for the internal hashgrid
 
         EndMode2D(); // End drawing with the camera
     }

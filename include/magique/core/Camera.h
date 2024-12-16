@@ -3,6 +3,14 @@
 
 #include <magique/fwd.hpp>
 
+//===============================================
+// Camera Module
+//===============================================
+// ................................................................................
+// This module contains methods to access and manipulate the internal engine camera.
+// Note: You can use a custom camera, but then you have to update the internal camera each tick (used for culling, and more)
+// ................................................................................
+
 namespace magique
 {
     //================= CAMERA =================//
@@ -27,7 +35,10 @@ namespace magique
     // Default: 0.9
     void SetCameraSmoothing(float smoothing);
 
-    // Returns the global camera
+    // Removes the CameraC component from the current holder and adds it to the specified entity (making it the new holder)
+    void SetCameraEntity(entt::entity entity);
+
+    // Returns the engine internal camera - used for all getter methods, culling visible entities and drawing debug visuals
     Camera2D& GetCamera();
 
     // Returns the map of the camera - you should probably draw this map

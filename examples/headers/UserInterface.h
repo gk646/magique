@@ -33,10 +33,7 @@ struct PrintButton final : Button
 {
     PrintButton() : Button(50, 150, 75, 75) {}
 
-    void onClick(const Rectangle& bounds, int button) override
-    {
-        printf("Button clicked!\n");
-    }
+    void onClick(const Rectangle& bounds, int button) override { printf("Button clicked!\n"); }
 };
 
 struct Example final : Game

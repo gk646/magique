@@ -99,7 +99,7 @@ namespace magique
         const Color outline = theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawText(14, getIsFocused() ? theme.txtActive : theme.txtPassive, theme.txtPassive);
+        drawText(14, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
     }
 
     void TextField::updateControls()

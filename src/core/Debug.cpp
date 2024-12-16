@@ -9,13 +9,23 @@
 
 namespace magique
 {
-    void SetShowPerformanceOverlay(const bool val) { global::ENGINE_CONFIG.showPerformanceOverlay = val; }
+    void SetShowPerformanceOverlay(const bool val, const bool extended)
+    {
+        global::ENGINE_CONFIG.showPerformanceOverlay = val;
+        global::ENGINE_CONFIG.showPerformanceOverlayExt = extended;
+    }
 
     void SetShowHitboxes(const bool val) { global::ENGINE_CONFIG.showHitboxes = val; }
 
+    void SetShowEntityGridOverlay(const bool val) { global::ENGINE_CONFIG.showEntityOverlay = val; }
+
+    void SetShowPathFindingOverlay(const bool val) { global::ENGINE_CONFIG.showPathFindingOverlay = val; }
+
+    void SetShowCompassOverlay(const bool val) { global::ENGINE_CONFIG.showCompassOverlay = val; }
+
     void SetBenchmarkTicks(const int ticks) { global::ENGINE_CONFIG.benchmarkTicks = ticks; }
 
-    void ResetBenchmarkTimes()
+    void ResetPerformanceData()
     {
 #if MAGIQUE_PROFILING == 1
         global::PERF_DATA.drawTimes.clear();
@@ -23,74 +33,6 @@ namespace magique
 #else
         LOG_WARNING("Calling BenchmarkFunction without profiling enabled. see config.h::MAGIQUE_PROFILING")
 #endif
-    }
-
-    void DrawHashGridDebug(const MapID map)
-    {
-        const auto& dynamic = global::DY_COLL_DATA;
-        const auto& config = global::ENGINE_CONFIG;
-        if (!dynamic.mapEntityGrids.contains(map)) // Could be called before any entity is created
-            return;
-        const auto& grid = dynamic.mapEntityGrids[map];
-
-        const auto bounds = GetCameraBounds();
-        constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
-        const int startX = static_cast<int>(bounds.x) / cellSize;
-        const int startY = static_cast<int>(bounds.y) / cellSize;
-        const int width = static_cast<int>(bounds.width) / cellSize;
-        const int height = static_cast<int>(bounds.height) / cellSize;
-
-        const int half = MAGIQUE_COLLISION_CELL_SIZE / 2;
-        for (int i = 0; i < height; ++i)
-        {
-            const int currY = startY + i;
-            for (int j = 0; j < width; ++j)
-            {
-                const int currX = startX + j;
-                const int x = currX * MAGIQUE_COLLISION_CELL_SIZE;
-                const int y = currY * MAGIQUE_COLLISION_CELL_SIZE;
-
-                const auto id = GetCellID(currX, currY);
-                const auto it = grid.cellMap.find(id);
-                if (it != grid.cellMap.end())
-                {
-                    const auto count = static_cast<int>(grid.dataBlocks[it->second].count);
-                    const auto color = count > grid.getBlockSize() ? RED : GREEN; // Over the limit
-                    const Vector2 pos = {(float)x + half, (float)y + half};
-                    DrawTextEx(config.font, std::to_string(count).c_str(), pos, 20, 1, color);
-                }
-                DrawRectangleLines(x, y, MAGIQUE_COLLISION_CELL_SIZE, MAGIQUE_COLLISION_CELL_SIZE, BLACK);
-            }
-        }
-    }
-
-    void Draw2DCompass(const Color& color)
-    {
-        constexpr float DISTANCE = 10'000;
-        constexpr int MARKER_GAP = 500; // Pixels between each marker
-        constexpr int MARKER_SIZE = 30; // Pixels between each marker
-
-        const auto bounds = GetCameraBounds();
-        const int startX = static_cast<int>(bounds.x) / MARKER_GAP;
-        const int startY = static_cast<int>(bounds.y) / MARKER_GAP;
-        const int width = static_cast<int>(bounds.width) / MARKER_GAP;
-        const int height = static_cast<int>(bounds.height) / MARKER_GAP;
-
-        DrawLineEx({-DISTANCE, 0}, {DISTANCE, 0}, 2, color);
-        DrawLineEx({0, -DISTANCE}, {0, DISTANCE}, 2, color);
-
-        for (int i = 0; i < width; ++i)
-        {
-            const int currX = startX + i;
-            const int x = currX * MARKER_GAP;
-            DrawLine(x, -MARKER_SIZE, x, MARKER_SIZE, color);
-        }
-        for (int i = 0; i < height; ++i)
-        {
-            const int currY = startY + i;
-            const int y = currY * MARKER_GAP;
-            DrawLine(-MARKER_SIZE, y, MARKER_SIZE, y, color);
-        }
     }
 
     inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};

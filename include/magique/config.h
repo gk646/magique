@@ -28,7 +28,7 @@
 // Enables usage of SIMD (faster)
 #define MAGIQUE_SIMD 1
 
-// Estimated number of unique maps
+// Estimated number of unique maps - used as static buffer size (if above allocation happens)
 #define MAGIQUE_EXPECTED_MAPS 32
 
 // The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldn't be bigger than that)

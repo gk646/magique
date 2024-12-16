@@ -18,23 +18,21 @@ namespace magique::renderer
     {
         rlLoadIdentity();
         rlMultMatrixf(MatrixToFloat(GetScreenScale()));
-
-        ResetDrawCallCount();
         AssignCameraPosition();
         global::UI_DATA.updateDrawTick();
+        ResetDrawCallCount();
     }
 
     inline double EndTick(const double starTime)
     {
-        const auto& config = global::ENGINE_CONFIG;
         const auto& cmdData = global::CONSOLE_DATA;
         auto& perfData = global::PERF_DATA;
+
         global::UI_DATA.inputConsumed = false; // End of render ticks vs start of update tick is the same
-        if (config.showPerformanceOverlay)
-        {
-            perfData.draw();
-        }
+
+        perfData.draw();
         cmdData.draw();
+
         EndDrawing();
         SwapScreenBuffer();
         const double frameTime = GetTime() - starTime;
@@ -44,24 +42,18 @@ namespace magique::renderer
 
     inline double Tick(const double startTime, Game& game, const entt::registry& registry)
     {
-        const auto& config = global::ENGINE_CONFIG;
-        auto& data = global::ENGINE_DATA;
-
-        auto& camera = data.camera;
         const auto gameState = GetGameState();
         StartTick();
         {
-            ClearBackground(Color(163, 163, 163, 255)); // Thanks ray
+            ClearBackground(Color(163, 163, 163, 255));
             if (game.getIsLoading()) [[unlikely]]
             {
                 HandleLoadingScreen(game); // Loading screen
                 return EndTick(startTime);
             }
-            game.drawGame(gameState, camera); // Draw game
-            if (config.showHitboxes) [[unlikely]]
-                RenderHitboxes();
-            RenderLighting(registry);
-            game.drawUI(gameState);
+            game.drawGame(gameState, GetCamera()); // User draw tick
+            InternalRenderPost();                  // Post user tick render tasks
+            game.drawUI(gameState);                // User UI raw tick
         }
         return EndTick(startTime);
     }

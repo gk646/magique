@@ -21,6 +21,7 @@
 #include "core/Animations.h"
 #include "core/CollisionDetection.h"
 #include "core/Core.h"
+#include "core/Camera.h"
 #include "core/Debug.h"
 #include "core/Draw.h"
 #include "core/Game.h"
