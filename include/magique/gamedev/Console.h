@@ -25,12 +25,15 @@
 //     - setLighting on
 //     - setPlayerPos 512 1024
 // The parameters are parsed and validated automatically. See the ParameterType enum for parsing rules.
-// If the number of parameters and theirs types do not match that of the command, it is not executed!
-// Default commands:
-//      - print (NUMBER | BOOL | STRING) ...  / prints all given parameters
-//      - shutdown                            / closes the program via Game::shutdown
+// If the number of parameters or their types do not match that of the command, it is not executed!
+// For the list of default commands look at the commands section.
 //
-// Note: All logged messages are automatically displayed in the terminal as well (from util/Logging.h)
+// Environmental params are parameters (with a type) identified by a string. To get/add/remove them see the Command section.
+// They can be referenced and used as input parameters to commands with a prefix (default: $) e.g:
+//      - print $GAME_NAME $M_VERSION $$
+// If the first char of any argument is the prefix (unless there's two) its interpreted as environment param automatically.
+//
+// Note: All logged messages are automatically displayed in the console as well (from util/Logging.h)
 // Note: See examples/headers/CommandExample.h on how to build and execute commands
 // .....................................................................
 
@@ -60,19 +63,28 @@ namespace magique
     //      - help: no args
     //           - Shows a quick help note
     //      - print: [ (STRING | BOOL | NUMBER) ... ]
-    //           - print: Takes any amount of variables of any type and prints each to a new line to the console
+    //           - Takes any amount of variables of any type and prints each to a new line to the console
     //      - clear: no args
     //           - clears the terminal
+    //      - shutdown: no args
+    //           - shuts down the game by calling Game::shutDown()
+    //      - define: STRING (STRING | BOOL | NUMBER)
+    //           - creates/sets an environment param with the given name to the given value (and type)
+    //      - undef: STRING
+    //           - removes the environment param with the given name
+    //   namespaces:
+    //      - m.: < same as the called magique API function >
+    //         - contains various functions that call magique API functions of the same (similar) name
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)
     void RegisterConsoleCommand(const Command& command);
 
     // Returns true if the command with the given name is successfully removed
-    bool UnRegisterCommand(const std::string& name);
+    bool UnRegisterCommand(const char* name);
 
     // Function is passed the parsed parameters - function is only called if the parsed parameters match the definition
-    using CommandFunction = std::function<void(const std::vector<Parameter>& params)>;
+    using CommandFunction = std::function<void(const std::vector<Param>& params)>;
 
     struct Command final
     {
@@ -81,7 +93,7 @@ namespace magique
         explicit Command(const char* cmdName, const char* description = nullptr);
 
         // Adds a new parameters that accepts any of the specified types
-        Command& addParam(const char* name, std::initializer_list<ParameterType> types);
+        Command& addParam(const char* name, std::initializer_list<ParamType> types);
 
         // Adds a new optional parameter - if not specified will have the provided value
         // Note: optional params have to be last, but can be followed by other optional params (exclusive with variadic)
@@ -91,21 +103,44 @@ namespace magique
 
         // Adds a parameter that matches a variable amount of parsed params - parsed params must have any of the given types
         // Note: MUST be the last parameter added to this command (exclusive with optionals)
-        Command& addVariadicParam(std::initializer_list<ParameterType> types);
+        Command& addVariadicParam(std::initializer_list<ParamType> types);
 
         // Specifies the function that's executed with the parsed parameters if match the type and count specified
         Command& setFunction(const CommandFunction& func);
 
     private:
-        M_TEST_PUB()
         CommandFunction cmdFunc;
-        std::vector<internal::ParameterData> parameters;
+        std::vector<internal::ParamData> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ParamParser, ConsoleHandler, bool UnRegisterCommand(const std::string&),
-                 void RegisterConsoleCommand(const Command& command));
+        befriend(ConsoleData, ParamParser, ConsoleHandler);
+        befriend(bool UnRegisterCommand(const char*), void RegisterConsoleCommand(const Command&));
     };
 
+    //================= Environmental Parameters =================//
+    // Builtin environmental parameters:
+    //      - M_NAME: STRING | name of the game as specified in the Game constructor
+
+    // Sets (or creates) the environment param with the given name to the given value
+    // Note: you can dynamically switch the type of the same param - float stands for the NUMBER type
+    void SetEnvironmentParam(const char* name, const char* value);
+    void SetEnvironmentParam(const char* name, float value);
+    void SetEnvironmentParam(const char* name, bool value);
+
+    // Returns true if the environment param with the given name was successfully removed
+    bool RemoveEnvironmentParam(const char* name);
+
+    // Returns the environment param with the given name
+    // Note: returned pointer might become invalid (don't save it)
+    // Failure: returns nullptr
+    const Param* GetEnvironmentParam(const char* name);
+
+    // Sets the callback called after any environment param was changed with the changed param
+    void SetEnvironmentSetCallback(const std::function<void(const Param& param)>& func);
+
+    // Sets the prefix used to denote a environment param
+    // Default: $
+    void SetEnvironmentParamPrefix(char prefix = '$');
 
 } // namespace magique
 

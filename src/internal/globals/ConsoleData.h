@@ -13,6 +13,7 @@
 #include <magique/util/Strings.h>
 
 #include "internal/datastructures/VectorType.h"
+#include "internal/datastructures/StringHashMap.h"
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
 #include "internal/utils/STLUtil.h"
@@ -20,10 +21,10 @@
 
 namespace magique
 {
-    using ParamList = std::vector<Parameter>;
-    static const char* GetTypeString(ParameterType type);
-    inline const char* GetTypesString(const ParameterType (&types)[3]);
-    inline bool GetTypeMatches(ParameterType actual, const ParameterType (&types)[3]);
+    using ParamList = std::vector<Param>;
+    static const char* GetTypeString(ParamType type);
+    inline const char* GetTypesString(const ParamType (&types)[3]);
+    inline bool GetTypeMatches(ParamType actual, const ParamType (&types)[3]);
 
     struct ConsoleHandler final
     {
@@ -45,10 +46,10 @@ namespace magique
         static const Command* parse(ConsoleData& data);
 
     private:
-        static bool ParseNextParam(ConsoleData& data, int& off, int& paramCount, Parameter& param);
+        static bool ParseNextParam(ConsoleData& data, int& off, int& paramCount, Param& param);
 
         // Errors
-        static Command* TypeMismatchError(ConsoleData& d, Parameter& p, const internal::ParameterData& e, int idx);
+        static Command* TypeMismatchError(ConsoleData& d, Param& p, const internal::ParamData& e, int idx);
         static Command* CountMismatchError(const ConsoleData& data, const Command& cmd);
     };
 
@@ -60,13 +61,17 @@ namespace magique
 
     struct ConsoleData final
     {
-        // Terminal data
+        // Environment data
+        StringHashMap<Param> environParams{25};                          // Environment parameters
+        std::function<void(const Param& param)> environChangeCallback{}; // Called every time any param changes
+
+        // Console data
         std::deque<std::string> submitHistory; // Submitted text
         std::deque<ConsoleLine> consoleLines;  // Past lines
         std::string line;                      // Current input line
 
         // Command data
-        std::vector<Parameter> parameters;    // Command parameters
+        std::vector<Param> parameters;        // Command parameters
         vector<Command> commands;             // All registered commands
         vector<const Command*> suggestions;   // Command suggestions
         vector<std::string> stringParameters; // Storage for the string parameters
@@ -85,21 +90,22 @@ namespace magique
         float fontSize = 15.0F;
         int openKey = KEY_PAGE_UP;
         int commandHistoryLen = 15;
-        int terminalHistoryLen = 20;
+        int consoleHistoryLen = 20;
+        char envPrefix = '$';
 
         // Register default commands
         void init()
         {
-            Command print{"print", "Prints all given parameters in a new line to the console"};
-            print.addVariadicParam({ParameterType::BOOL, ParameterType::STRING, ParameterType::NUMBER})
+            Command print{"print", "Prints each given parameters in a new line to the console"};
+            print.addVariadicParam({ParamType::BOOL, ParamType::STRING, ParamType::NUMBER})
                 .setFunction(
                     [](const ParamList& params)
                     {
-                        auto printParam = [](const Parameter& param)
+                        auto printParam = [](const Param& param)
                         {
                             switch (param.getType())
                             {
-                            case ParameterType::NUMBER:
+                            case ParamType::NUMBER:
                                 if (IsWholeNumber(param.getFloat()))
                                 {
                                     AddConsoleStringF("%d", param.getInt());
@@ -109,7 +115,7 @@ namespace magique
                                     AddConsoleStringF("%.3f", param.getFloat());
                                 }
                                 break;
-                            case ParameterType::BOOL:
+                            case ParamType::BOOL:
                                 if (param.getBool())
                                 {
                                     AddConsoleString("true");
@@ -119,7 +125,7 @@ namespace magique
                                     AddConsoleString("false");
                                 }
                                 break;
-                            case ParameterType::STRING:
+                            case ParamType::STRING:
                                 AddConsoleStringF("%s", param.getString());
                                 break;
                             }
@@ -135,10 +141,12 @@ namespace magique
             clear.setFunction([&](const ParamList&) { consoleLines.clear(); });
             RegisterConsoleCommand(clear);
 
-
-            RegisterConsoleCommand(Command{"help", "Shows help text"}.setFunction(
+            Command help{"help", "Shows help text"};
+            help.setFunction(
                 [&](const ParamList& /**/)
-                { AddConsoleString("Type in a command and press ENTER. See gamedev/Console.h for more info"); }));
+                { AddConsoleString("Type in a command and press ENTER. See gamedev/Console.h for more info"); });
+            RegisterConsoleCommand(help);
+
             RegisterConsoleCommand(Command{"all", "Lists all registered commands"}.setFunction(
                 [&](const ParamList& /**/)
                 {
@@ -149,28 +157,78 @@ namespace magique
                     }
                 }));
 
-            Command def{"def", "Creates a new or sets an existing environment with the given type"};
-            def.setFunction([&](const ParamList& /**/) { AddConsoleString(""); });
-            // RegisterConsoleCommand(def);
+            Command define{"define", "Creates/sets an environment param to the given value (and type)"};
+            define.addParam("name", {ParamType::STRING})
+                .addParam("value", {ParamType::STRING, ParamType::BOOL, ParamType::NUMBER})
+                .setFunction(
+                    [&](const ParamList& params)
+                    {
+                        const auto name = params.front().getString();
+                        const auto typeStr = GetTypeString(params.back().getType());
+                        switch (params.back().getType())
+                        {
+                        case ParamType::BOOL:
+                            {
+                                const auto val = params.back().getBool();
+                                SetEnvironmentParam(name, val);
+                                LOG_INFO("Set environmental param:%s to %s | %s", name, val ? "true" : "false", typeStr);
+                            }
+                            break;
+                        case ParamType::NUMBER:
+                            {
+                                const auto val = params.back().getFloat();
+                                SetEnvironmentParam(name, val);
+                                if (IsWholeNumber(val))
+                                    LOG_INFO("Set environmental param:%s to %df | %s", name, (int)val, typeStr);
+                                else
+                                    LOG_INFO("Set environmental param:%s to %.3f | %s", name, val, typeStr);
+                            }
+                            break;
+                        case ParamType::STRING:
+                            {
+                                const auto val = params.back().getString();
+                                SetEnvironmentParam(name, val);
+                                LOG_INFO("Set environmental param:%s to %s | %s", name, val, typeStr);
+                            }
+                            break;
+                        }
+                    });
+            RegisterConsoleCommand(define);
+
+            Command undef{"undef", "Removes the environment param with the given name"};
+            undef.addParam("name", {ParamType::STRING})
+                .setFunction(
+                    [&](const ParamList& params)
+                    {
+                        if (!RemoveEnvironmentParam(params.front().getString()))
+                        {
+                            LOG_WARNING("Given environment param does not exist");
+                            return;
+                        }
+                        LOG_INFO("Removed environment param:%s", params.front().getString());
+                    });
+            RegisterConsoleCommand(undef);
 
             Command shutdown{"shutdown", "Calls Game::shutdown() to close the game"};
             shutdown.setFunction([](const ParamList& /**/) { global::ENGINE_DATA.gameInstance->shutDown(); });
             RegisterConsoleCommand(shutdown);
 
-            Command showHitboxes{"m.setHitboxesOverlay", "Turns visible hitboxes on/off"};
-            showHitboxes.addParam("value", {ParameterType::BOOL})
+            Command showHitboxes{"m.setHitboxesOverlay", "Turns entity hitboxes on/off"};
+            showHitboxes.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { SetShowHitboxes(params.back().getBool()); });
             RegisterConsoleCommand(showHitboxes);
 
             Command showEntityGrid{"m.setEntityOverlay", "Turns the debug entity overlay on/off"};
-            showEntityGrid.addParam("value", {ParameterType::BOOL})
+            showEntityGrid.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { SetShowEntityGridOverlay(params.back().getBool()); });
             RegisterConsoleCommand(showEntityGrid);
 
             Command showPathGrid{"m.setPathfindingOverlay", "Turns the debug pathfinding overlay on/off"};
-            showPathGrid.addParam("value", {ParameterType::BOOL})
+            showPathGrid.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { SetShowPathFindingOverlay(params.back().getBool()); });
             RegisterConsoleCommand(showPathGrid);
+
+            SetEnvironmentParam("M_NAME", global::ENGINE_DATA.gameInstance->getName());
         }
 
         ~ConsoleData()
@@ -180,7 +238,7 @@ namespace magique
                 for (auto& param : cmd.parameters)
                 {
                     free(param.name);
-                    if (param.types[0] == ParameterType::STRING)
+                    if (param.types[0] == ParamType::STRING)
                     {
                         // free(param.string); error?
                     }
@@ -274,40 +332,40 @@ namespace magique
 
     //================= HANDLER =================//
 
-    inline const char* GetTypeString(const ParameterType type)
+    inline const char* GetTypeString(const ParamType type)
     {
         switch (type)
         {
-        case ParameterType::BOOL:
+        case ParamType::BOOL:
             return "BOOL";
-        case ParameterType::NUMBER:
+        case ParamType::NUMBER:
             return "NUMBER";
-        case ParameterType::STRING:
+        case ParamType::STRING:
             return "STRING";
         }
         return "(unknown)";
     }
 
-    inline const char* GetTypesString(const ParameterType (&types)[3])
+    inline const char* GetTypesString(const ParamType (&types)[3])
     {
-        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::NUMBER && types[2] == ParameterType::STRING)
+        if (types[0] == ParamType::BOOL && types[1] == ParamType::NUMBER && types[2] == ParamType::STRING)
             return "(BOOL | NUMBER | STRING)";
-        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::NUMBER)
+        if (types[0] == ParamType::BOOL && types[1] == ParamType::NUMBER)
             return "(BOOL | NUMBER)";
-        if (types[0] == ParameterType::BOOL && types[1] == ParameterType::STRING)
+        if (types[0] == ParamType::BOOL && types[1] == ParamType::STRING)
             return "(BOOL | STRING)";
-        if (types[0] == ParameterType::NUMBER && types[1] == ParameterType::STRING)
+        if (types[0] == ParamType::NUMBER && types[1] == ParamType::STRING)
             return "(NUMBER | STRING)";
-        if (types[0] == ParameterType::BOOL)
+        if (types[0] == ParamType::BOOL)
             return "BOOL";
-        if (types[0] == ParameterType::NUMBER)
+        if (types[0] == ParamType::NUMBER)
             return "NUMBER";
-        if (types[0] == ParameterType::STRING)
+        if (types[0] == ParamType::STRING)
             return "STRING";
         return "(unknown)";
     }
 
-    inline bool GetTypeMatches(const ParameterType actual, const ParameterType (&types)[3])
+    inline bool GetTypeMatches(const ParamType actual, const ParamType (&types)[3])
     {
         for (const auto type : types)
         {
@@ -351,7 +409,7 @@ namespace magique
             }
 
             // Draw console text
-            textPos.y -= lineHeight; // Start one line up for terminal strings
+            textPos.y -= lineHeight; // Start one line up for console strings
             for (const auto& line : data.consoleLines)
             {
                 if (textPos.y < 0)
@@ -528,8 +586,7 @@ namespace magique
         return false;
     }
 
-    inline Command* ParamParser::TypeMismatchError(ConsoleData& d, Parameter& p, const internal::ParameterData& e,
-                                                   int idx)
+    inline Command* ParamParser::TypeMismatchError(ConsoleData& d, Param& p, const internal::ParamData& e, int idx)
     {
         const auto* paramString = d.stringParameters[idx].c_str();
         const auto* expected = GetTypesString(e.types);
@@ -574,7 +631,7 @@ namespace magique
         return nullptr;
     }
 
-    inline bool ParamParser::ParseNextParam(ConsoleData& data, int& off, int& paramCount, Parameter& param)
+    inline bool ParamParser::ParseNextParam(ConsoleData& data, int& off, int& paramCount, Param& param)
     {
         const char* ptr = data.line.c_str();
         MAGIQUE_ASSERT(isblank(ptr[off]) == 0, "Internal parse error");
@@ -585,10 +642,23 @@ namespace magique
             off++;
         }
         const int paramEnd = off;
-        MAGIQUE_ASSERT(paramStart < paramEnd, "Internal parse error");
+        MAGIQUE_ASSERT(paramStart <= paramEnd, "Internal parse error");
 
         std::string& paramString = data.getParsedParamString(paramCount);
         paramString.assign(ptr + paramStart, paramEnd - paramStart);
+
+        if (paramString[0] == data.envPrefix && (paramString.size() == 1 || paramString[1] != data.envPrefix))
+        {
+            const auto it = data.environParams.find(paramString.c_str() + 1);
+            if (it == data.environParams.end())
+            {
+                LOG_WARNING("Environment param not found:%s", paramString.c_str() + 1);
+                return false; // Not found but specified
+            }
+            param.type = it->second.type;
+            param.string = it->second.string;
+            return true;
+        }
 
         const char* paramPtr = paramString.c_str();
         // Bool cases
@@ -596,13 +666,13 @@ namespace magique
             strcmp(paramPtr, "OFF") == 0 || strcmp(paramPtr, "off") == 0)
         {
             param.boolean = false;
-            param.type = ParameterType::BOOL;
+            param.type = ParamType::BOOL;
         }
         else if (strcmp(paramPtr, "True") == 0 || strcmp(paramPtr, "true") == 0 || strcmp(paramPtr, "TRUE") == 0 ||
                  strcmp(paramPtr, "ON") == 0 || strcmp(paramPtr, "on") == 0)
         {
             param.boolean = true;
-            param.type = ParameterType::BOOL;
+            param.type = ParamType::BOOL;
         }
         else // Either number or string
         {
@@ -629,12 +699,12 @@ namespace magique
             if (isNum)
             {
                 param.number = TextToFloat(paramPtr);
-                param.type = ParameterType::NUMBER;
+                param.type = ParamType::NUMBER;
             }
             else
             {
                 param.string = paramPtr;
-                param.type = ParameterType::STRING;
+                param.type = ParamType::STRING;
             }
         }
         paramCount++;
@@ -682,10 +752,9 @@ namespace magique
         int paramCount = 0; // Count of the parameters parsed
         while (ParseHasNext(data, off))
         {
-            Parameter param{};
+            Param param{};
             if (!ParseNextParam(data, off, paramCount, param))
             {
-                MAGIQUE_ASSERT(false, "Internal error");
                 return nullptr;
             }
             parsedParams.push_back(param);
@@ -753,18 +822,18 @@ namespace magique
                     for (int j = i; j < static_cast<int>(definedParams.size()); j++)
                     {
                         const auto& paramDefI = definedParams[j];
-                        Parameter param{};
+                        Param param{};
                         param.type = paramDefI.types[0]; // Optionals have the type at 0
                         param.name = paramDefI.name;
                         switch (param.type)
                         {
-                        case ParameterType::BOOL:
+                        case ParamType::BOOL:
                             param.boolean = paramDefI.boolean;
                             break;
-                        case ParameterType::NUMBER:
+                        case ParamType::NUMBER:
                             param.number = paramDefI.number;
                             break;
-                        case ParameterType::STRING:
+                        case ParamType::STRING:
                             param.string = paramDefI.string;
                             break;
                         }

@@ -22,7 +22,7 @@ namespace magique
 #endif
         cxstructs::str_skip_char(data, '\n', 1);
 
-        const auto tilesPerLayer = static_cast<const size_t>(tileMap.width * tileMap.height);
+        const auto tilesPerLayer = static_cast<size_t>(tileMap.width * tileMap.height);
         const auto startIdx = tileMap.layers * tilesPerLayer;
 
         const size_t newDataSize = startIdx + tilesPerLayer;
@@ -149,8 +149,8 @@ namespace magique
         auto* data = const_cast<char*>(asset.data); // keep user api const
         cxstructs::str_skip_char(data, '\n', 1);    // Skip xml tag
 
-        width = XMLGetValueInLine<uint16_t>(data, "width", UINT16_MAX);
-        height = XMLGetValueInLine<uint16_t>(data, "height", UINT16_MAX);
+        width = XMLGetValueInLine<int>(data, "width", -1);
+        height = XMLGetValueInLine<int>(data, "height", -1);
 
         if (width == -1 || height == -1)
         {

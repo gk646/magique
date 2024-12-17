@@ -26,6 +26,7 @@ namespace magique
                 LOG_ERROR("Failed to open log file");
             }
 #endif
+
         }
         ~LogData()
         {
