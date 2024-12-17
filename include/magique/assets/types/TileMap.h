@@ -52,8 +52,7 @@ namespace magique
         explicit TileMap(const Asset& asset);
         std::vector<TileObject> objectData[MAGIQUE_MAX_OBJECT_LAYERS];
         uint16_t* tileData = nullptr; // Contiguous array for map data
-        uint16_t width = 0;
-        uint16_t height = 0;
+        int width = 0, height = 0;
         uint8_t objectLayers = 0;
         uint8_t layers = 0;
         friend handle RegisterTileMap(Asset);

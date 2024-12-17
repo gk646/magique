@@ -191,7 +191,7 @@ namespace magique
             LOG_INFO("Performance Stats:");
             LOG_INFO("%-10s: CPU: %.2f ms | GPU: %.2f ms", "Avg Ticks", getAverageTime(DRAW) / 1'000'000,
                      getAverageTime(UPDATE) / 1'000'000);
-            LOG_INFO("%-10s: Max: %llu bytes", "Memory", maxMemoryBytes);
+            LOG_INFO("%-10s: Max: %.2f mb bytes", "Memory", maxMemoryBytes / 1'000'000.0F);
         }
 
     private:

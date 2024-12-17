@@ -263,9 +263,9 @@ namespace magique::internal
         Window* window = nullptr;
     };
 
-    struct ParameterData final
+    struct ParamData final
     {
-        ParameterType types[3]{}; // Allowed types
+        ParamType types[3]{}; // Allowed types
         char* name = nullptr;     // Name
         bool optional = false;    // If param is optional
         bool variadic = false;    // Stands for a variable amount of parameters

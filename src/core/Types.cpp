@@ -235,35 +235,35 @@ namespace magique
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
 
-    const char* Parameter::getName() const { return name; }
+    const char* Param::getName() const { return name; }
 
-    const char* Parameter::getString() const
+    const char* Param::getString() const
     {
-        MAGIQUE_ASSERT(type == ParameterType::STRING, "Accessing wrong type");
+        MAGIQUE_ASSERT(type == ParamType::STRING, "Accessing wrong type");
         return string;
     }
 
-    bool Parameter::getBool() const
+    bool Param::getBool() const
     {
-        MAGIQUE_ASSERT(type == ParameterType::BOOL, "Accessing wrong type");
+        MAGIQUE_ASSERT(type == ParamType::BOOL, "Accessing wrong type");
         return boolean;
     }
 
-    float Parameter::getFloat() const
+    float Param::getFloat() const
     {
-        MAGIQUE_ASSERT(type == ParameterType::NUMBER, "Accessing wrong type");
+        MAGIQUE_ASSERT(type == ParamType::NUMBER, "Accessing wrong type");
         return number;
     }
 
-    int Parameter::getInt() const
+    int Param::getInt() const
     {
-        MAGIQUE_ASSERT(type == ParameterType::NUMBER, "Accessing wrong type");
+        MAGIQUE_ASSERT(type == ParamType::NUMBER, "Accessing wrong type");
         return (int)number;
     }
 
     //----------------- GAMEDEV -----------------/
 
-    ParameterType Parameter::getType() const { return type; }
+    ParamType Param::getType() const { return type; }
 
     //----------------- KEYBIND -----------------//
 

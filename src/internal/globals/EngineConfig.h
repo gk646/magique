@@ -21,12 +21,13 @@ namespace magique
     struct Theme final
     {
         Color textActive;   // Color of primary text (selected, foreground)
+        Color textSubject;  // Color of subject text (selected, category, special)
         Color textPassive;  // Color of passive text (unselected, background)
         Color backLight;    // Light background color for elements
         Color backDark;     // Dark background color for elements
         Color backSelected; // Color for elements that are selected
-        Color error;        // Color of errors
         Color warning;      // Color of warnings
+        Color error;        // Color of errors
     };
 
     struct Configuration final
@@ -62,6 +63,7 @@ namespace magique
             Theme adwaita{};
             adwaita.textActive = WHITE;
             adwaita.textPassive = Color(163, 163, 163, 255);
+            adwaita.textSubject = Color(81,171,250,255);
             adwaita.backSelected = Color(68, 68, 68, 255);
             adwaita.backLight = Color(48, 48, 48, 255);
             adwaita.backDark = Color(30, 30, 30, 255);

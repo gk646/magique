@@ -8,7 +8,10 @@
 // Logging Module
 //===============================================
 // ................................................................................
-// Use the provided macros for easier logging
+// This module allows to log messages. All logged message are automatically prefixed with their level string.
+// Use the provided macros for easier cleaner logging.
+// All collected logs are automatically saved to a file called: magique.log - disabled by unsetting MAGIQUE_LOG_FILE
+// Note: All logged messaged are automatically added to the console as well!
 // Note: Uses stdout and stderr for writing strings
 // ................................................................................
 

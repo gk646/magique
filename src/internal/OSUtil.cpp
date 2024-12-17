@@ -1,10 +1,5 @@
 #include <cstdint>
-
-
-#include <raylib/raylib.h>
-#include <magique/util/Logging.h>
-
-#if defined(_WIN32)
+#ifdef _WIN32
 #define NOGDICAPMASKS     // CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 #define NOVIRTUALKEYCODES // VK_*
 #define NOWINMESSAGES     // WM_*, EM_*, LB_*, CB_*
@@ -47,10 +42,20 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <processthreadsapi.h>
-#else
-#include <ctime>
-#include <bits/types/struct_timespec.h>
+#elif __linux__
+#include <unistd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <cstdlib>
+#include <cstring>
+#elif __APPLE__
+#include <mach/mach.h>
 #endif
+#include <raylib/raylib.h>
+
+#include <magique/util/Logging.h>
+
+#include "internal/utils/OSUtil.h"
 
 
 void WaitTime(const double destinationTime, double sleepSeconds)
@@ -77,8 +82,7 @@ void WaitTime(const double destinationTime, double sleepSeconds)
     }
 }
 
-
-void SetupThreadPriority(const int thread, bool high = true)
+void SetupThreadPriority(const int thread, bool high)
 {
 #if defined(WIN32)
     //printf("Setting up: %d\n", GetCurrentThreadId());
@@ -93,7 +97,6 @@ void SetupThreadPriority(const int thread, bool high = true)
     }
 #endif
 }
-
 
 void SetupProcessPriority()
 {
@@ -111,4 +114,49 @@ void SetupProcessPriority()
 #endif
 }
 
-uint64_t GetMemoryWorkingSet() { return 0; }
+uint64_t GetMemoryWorkingSet()
+{
+#ifdef _WIN32
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+    {
+        return static_cast<uint64_t>(pmc.WorkingSetSize);
+    }
+    return 0;
+#elif __linux__
+    constexpr size_t bufferSize = 128;
+    char buffer[bufferSize];
+    int fd = open("/proc/self/statm", O_RDONLY);
+    if (fd == -1)
+    {
+        return 0;
+    }
+    ssize_t bytesRead = read(fd, buffer, bufferSize - 1);
+    close(fd);
+    if (bytesRead <= 0)
+    {
+        return 0;
+    }
+    buffer[bytesRead] = '\0';
+    const char* rssStart = strchr(buffer, ' ');
+    if (!rssStart)
+    {
+        return 0;
+    }
+    rssStart++;
+    long rss = atol(rssStart);
+    return static_cast<uint64_t>(rss) * sysconf(_SC_PAGESIZE);
+#elif __APPLE__
+    mach_task_basic_info info;
+    mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+    if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &infoCount) ==
+        KERN_SUCCESS)
+    {
+        return static_cast<uint64_t>(info.resident_size);
+    }
+    return 0;
+
+#else
+    return 0; // Unsupported platform
+#endif
+}

@@ -15,17 +15,17 @@ struct Example final : Game
         SetGameState({}); // Set empty gamestate - needs to be set in a real game
         // printName Command
         Command printHello{"printHello"};
-        printHello.addParam("name", {ParameterType::STRING});
-        printHello.setFunction([](const std::vector<Parameter>& params)
+        printHello.addParam("name", {ParamType::STRING});
+        printHello.setFunction([](const std::vector<Param>& params)
                                { AddConsoleStringF("Hello %s!", params.front().getString()); });
 
         // likes Command
         Command likes{"likes"};
-        likes.addParam("person1", {ParameterType::STRING});
-        likes.addParam("person2", {ParameterType::STRING});
-        likes.addParam("amount", {ParameterType::NUMBER});
+        likes.addParam("person1", {ParamType::STRING});
+        likes.addParam("person2", {ParamType::STRING});
+        likes.addParam("amount", {ParamType::NUMBER});
         likes.setFunction(
-            [](const std::vector<Parameter>& params)
+            [](const std::vector<Param>& params)
             {
                 if (params.size() > 2) // Last parameter is present
                 {
@@ -40,17 +40,17 @@ struct Example final : Game
             });
 
         Command greet{"greet", "Greets a user with a friendly message"};
-        greet.addParam("name", {ParameterType::STRING});
-        greet.addParam("timeOfDay", {ParameterType::STRING});
-        greet.setFunction([](const std::vector<Parameter>& params)
+        greet.addParam("name", {ParamType::STRING});
+        greet.addParam("timeOfDay", {ParamType::STRING});
+        greet.setFunction([](const std::vector<Param>& params)
                           { AddConsoleStringF("Good %s, %s!", params[1].getString(), params[0].getString()); });
 
         // addNumbers Command
         Command addNumbers{"addNumbers", "Adds two numbers, with the second number being optional"};
-        addNumbers.addParam("num1", {ParameterType::NUMBER})
+        addNumbers.addParam("num1", {ParamType::NUMBER})
             .addOptionalNumber("num2", 0.0f)
             .setFunction(
-                [](const std::vector<Parameter>& params)
+                [](const std::vector<Param>& params)
                 {
                     float sum = params[0].getFloat() + (params.size() > 1 ? params[1].getFloat() : 0.0f);
                     AddConsoleStringF("The sum is: %.2f", sum);
@@ -58,10 +58,10 @@ struct Example final : Game
 
         // logMessages Command
         Command logMessages{"logMessages", "Logs a series of messages"};
-        logMessages.addParam("prefix", {ParameterType::STRING});
-        logMessages.addVariadicParam({ParameterType::STRING});
+        logMessages.addParam("prefix", {ParamType::STRING});
+        logMessages.addVariadicParam({ParamType::STRING});
         logMessages.setFunction(
-            [](const std::vector<Parameter>& params)
+            [](const std::vector<Param>& params)
             {
                 AddConsoleStringF("Messages prefixed by '%s':", params[0].getString());
                 for (size_t i = 1; i < params.size(); ++i)
@@ -76,7 +76,7 @@ struct Example final : Game
             .addOptionalNumber("value", 42.0f)
             .addOptionalBool("isEnabled", true)
             .setFunction(
-                [](const std::vector<Parameter>& params)
+                [](const std::vector<Param>& params)
                 {
                     AddConsoleStringF("Setting config '%s' to value %.2f, enabled: %s", params[0].getString(),
                                       params[1].getFloat(), params[2].getBool() ? "true" : "false");
@@ -84,10 +84,10 @@ struct Example final : Game
 
         // broadcast Command (Only Variadic Parameters)
         Command broadcast{"broadcast", "Broadcasts messages to all users"};
-        broadcast.addParam("what", {ParameterType::STRING})
-            .addVariadicParam({ParameterType::STRING})
+        broadcast.addParam("what", {ParamType::STRING})
+            .addVariadicParam({ParamType::STRING})
             .setFunction(
-                [](const std::vector<Parameter>& params)
+                [](const std::vector<Param>& params)
                 {
                     for (const auto& param : params)
                     {

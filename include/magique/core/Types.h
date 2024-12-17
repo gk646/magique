@@ -297,7 +297,7 @@ namespace magique
         VALUE,
     };
 
-    enum class ParameterType
+    enum class ParamType
     {
         // [Boolean type]
         // Can either be 0 or 1
@@ -325,8 +325,12 @@ namespace magique
         //      - 123a abc 1.4  -> STRING STRING NUMBER
     };
 
-    struct Parameter final
+    struct Param final
     {
+        Param(const char* name, float value);
+        Param(const char* name, const char* value);
+        Param(const char* name, bool value);
+
         // Returns the parameter name
         const char* getName() const;
 
@@ -344,10 +348,11 @@ namespace magique
         int getInt() const;
 
         // Returns the type of the parameter
-        ParameterType getType() const;
+        ParamType getType() const;
+
+        Param() = default;
 
     private:
-        Parameter() = default;
         union
         {
             float number;
@@ -355,8 +360,12 @@ namespace magique
             const char* string;
         };
         const char* name;
-        ParameterType type; // Type of the parameter
+        ParamType type; // Type of the parameter
         friend ParamParser;
+        friend void SetEnvironmentParam(const char*, const char*);
+        friend void SetEnvironmentParam(const char*, float);
+        friend void SetEnvironmentParam(const char*, bool);
+        friend bool RemoveEnvironmentParam(const char*);
     };
 
     //================= MULTIPLAYER =================//
