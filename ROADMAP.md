@@ -4,6 +4,7 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 ### Game Dev
 
 **Camera**
+
 - added interface for camera shake
 - ueses impulse forces
 
@@ -40,10 +41,6 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - Connections are managed by the engine
 - Similar to how you know it from many games e.g. PoE
 
-**Console**
-
-- add more interaction from console to the engine
-
 **Plugins**
 
 - make a new header that helps with creating plugins for the game
@@ -59,6 +56,11 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 - Implemented on top of virtual clock
 - Has support for simulating years, weeks, seasons, lunar seasons...
+
+**Console**
+
+- add tooltip when typing in commands that displays parameters names and the accepted types
+    - dynamically highlights the current parameters attributes (like the clion method call tooltip)
 
 ### Core
 
@@ -81,7 +83,8 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - Look at performance debug tools
     - Time measurement with macros? for user space functions?
 - Memory stats
-  - amount of allocations, biggest allocations, ...
+    - amount of allocations, biggest allocations, ...
+
 ### UI
 
 **More Controls**
@@ -105,6 +108,7 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
     - Already implemented in ValidateImage()
 
 **Add type checking to asset handles**
+
 - By using ranges (e.g. 0 - 100k for textures) the engine can type check given handles for more security
 
 **CSVReader**
@@ -123,9 +127,11 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 ### Misc
 
 **Modernize**
+
 - Review TaskExecutor and clean it up
     - Spit up tasks to all threads
     - Make internal handling easier and cleaner
 
 **Test**
+
 - collision detection (check against cute2d.h)

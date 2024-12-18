@@ -65,4 +65,9 @@ namespace magique
 
     entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
 
+    void AddCameraShakeImpulse(Point direction, float maxDistance, float acceleration, float decay)
+    {
+        LOG_FATAL("Not implemented");
+    }
+
 } // namespace magique

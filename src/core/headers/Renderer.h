@@ -42,7 +42,7 @@ namespace magique::renderer
 
     inline double Tick(const double startTime, Game& game, const entt::registry& registry)
     {
-        const auto gameState = GetGameState();
+        const auto gameState = global::ENGINE_DATA.gameState;
         StartTick();
         {
             ClearBackground(Color(163, 163, 163, 255));

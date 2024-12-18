@@ -18,12 +18,13 @@ namespace magique::updater
 
     inline double Tick(const double startTime, const entt::registry& reg, Game& game)
     {
+        const auto& gameState = global::ENGINE_DATA.gameState;
         StartTick();
         {
             InternalUpdatePre(reg, game); // Internal update upfront
-            game.updateGame(GetGameState());
+            game.updateGame(gameState);
             InternalUpdatePost();
-            game.postTickUpdate(GetGameState());
+            game.postTickUpdate(gameState);
         }
         return EndTick(startTime);
     }

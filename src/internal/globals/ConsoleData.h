@@ -228,7 +228,7 @@ namespace magique
                 .setFunction([](const ParamList& params) { SetShowPathFindingOverlay(params.back().getBool()); });
             RegisterConsoleCommand(showPathGrid);
 
-            SetEnvironmentParam("M_NAME", global::ENGINE_DATA.gameInstance->getName());
+            SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
         }
 
         ~ConsoleData()

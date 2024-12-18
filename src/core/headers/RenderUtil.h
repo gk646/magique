@@ -185,7 +185,7 @@ namespace magique
         const auto& dynamic = global::DY_COLL_DATA;
         const auto& path = global::PATH_DATA;
         const auto& config = global::ENGINE_CONFIG;
-        const auto currentMap = GetCameraMap();
+        const auto currentMap = global::ENGINE_DATA.cameraMap;
 
         auto drawEntityGrid = [&]()
         {
@@ -227,7 +227,7 @@ namespace magique
         auto drawCompass = [&](Color color)
         {
             constexpr float DISTANCE = 10'000;
-            constexpr int MARKER_GAP = 500; // Pixels between each marker
+            constexpr int MARKER_GAP = 250; // Pixels between each marker
             constexpr int MARKER_SIZE = 30; // Pixels between each marker
 
             const auto bounds = GetCameraBounds();
@@ -250,7 +250,6 @@ namespace magique
                 DrawLine(-MARKER_SIZE, y, MARKER_SIZE, y, color);
             }
         };
-
 
         auto drawPathFindingGrid = [&]()
         {

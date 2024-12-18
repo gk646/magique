@@ -34,7 +34,7 @@ namespace magique
     // Note: draws the state of the map returned by GetCameraMap() (needs an active camera)
     void SetShowPathFindingOverlay(bool val);
 
-    // If enabled, draws a cartesian coordinate system with markings every 500 pixels - drawn before user content
+    // If enabled, draws a cartesian coordinate system with markings every 250 pixels - drawn before user content
     void SetShowCompassOverlay(bool val);
 
     // Sets the amount of logic ticks until the game closes automatically - this ensures the same run length for benchmarks
