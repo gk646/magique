@@ -12,7 +12,7 @@ namespace magique
     {
         if (global::ENGINE_DATA.gameState == GameState{INT32_MAX})
         {
-            LOG_WARNING("Calling GetGameState() but game state is not set");
+            LOG_WARNING("Gamestate has no been set by the user yet! Use SetGameState() to set one");
             return GameState{INT32_MAX};
         }
         return global::ENGINE_DATA.gameState;

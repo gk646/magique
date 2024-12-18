@@ -119,7 +119,7 @@ namespace magique
 
     //================= Environmental Parameters =================//
     // Builtin environmental parameters:
-    //      - M_NAME: STRING | name of the game as specified in the Game constructor
+    //      - GAME_NAME: STRING | name of the game as specified in the Game constructor
 
     // Sets (or creates) the environment param with the given name to the given value
     // Note: you can dynamically switch the type of the same param - float stands for the NUMBER type

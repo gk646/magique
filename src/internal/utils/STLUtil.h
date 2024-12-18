@@ -50,6 +50,7 @@ void UnorderedDelete(Container& container, const T& value, Pred pred)
     }
 }
 
+// Used cause std::min is in <algorithm> (heavy include)
 template <typename T>
 T minValue(const T& t1, const T& t2)
 {

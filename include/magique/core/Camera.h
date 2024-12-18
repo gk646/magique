@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_CAMERA_H
 #define MAGIQUE_CAMERA_H
 
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 
 //===============================================
 // Camera Module
@@ -13,8 +13,6 @@
 
 namespace magique
 {
-    //================= CAMERA =================//
-
     // Adds additional padding to the sides of the normal camera rectangle to be used to cull entities inside visible space
     // Entities are checked with their topleft to be inside the enlarged rectangle (so necessary when you have large entities)
     // Default: 250
@@ -57,6 +55,16 @@ namespace magique
     // Returns the current camera holder
     // Failure: returns UINT32_MAX if there is no camera currently
     entt::entity GetCameraEntity();
+
+    //================= SHAKE =================//
+
+    // Adds a camera shake impulse which cause the camera to oscillate around the origin in configured given way
+    //      - direction: direction vector in which to apply the impulse (see gamedev/Particle.h direction)
+    //      - maxDistance: maximum distance the camera will go in the given direction from the origin
+    //      - acceleration: how fast and wide the oscillation goes
+    //      - decay: how fast and wide the oscillation goes
+    void AddCameraShakeImpulse(Point direction, float maxDistance = 25, float acceleration = 5, float decay = 5);
+
 
 } // namespace magique
 
