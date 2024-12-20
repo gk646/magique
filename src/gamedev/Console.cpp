@@ -141,44 +141,59 @@ namespace magique
 
     void SetEnvironmentParam(const char* name, const char* value)
     {
+        auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(name != nullptr, "Passed null");
-        MAGIQUE_ASSERT(name[0] != global::CONSOLE_DATA.envPrefix, "Prefix as first char of name not allowed!");
-        auto& param = global::CONSOLE_DATA.environParams[name];
-        param.name = global::CONSOLE_DATA.environParams.find(name)->first.c_str();
+        MAGIQUE_ASSERT(name[0] != console.envPrefix, "Prefix as first char of name not allowed!");
+        auto& param = console.environParams[name];
+        param.name = console.environParams.find(name)->first.c_str();
         if (param.type == ParamType::STRING)
         {
             free((void*)param.string);
         }
         param.type = ParamType::STRING;
         param.string = strdup(value);
+        if (console.environChangeCallback)
+        {
+            console.environChangeCallback(param);
+        }
     }
 
     void SetEnvironmentParam(const char* name, const float value)
     {
+        auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(name != nullptr, "Passed null");
-        MAGIQUE_ASSERT(name[0] != global::CONSOLE_DATA.envPrefix, "Prefix as first char of name not allowed!");
-        auto& param = global::CONSOLE_DATA.environParams[name];
-        param.name = global::CONSOLE_DATA.environParams.find(name)->first.c_str();
+        MAGIQUE_ASSERT(name[0] != console.envPrefix, "Prefix as first char of name not allowed!");
+        auto& param = console.environParams[name];
+        param.name = console.environParams.find(name)->first.c_str();
         if (param.type == ParamType::STRING)
         {
             free((void*)param.string);
         }
         param.type = ParamType::NUMBER;
         param.number = value;
+        if (console.environChangeCallback)
+        {
+            console.environChangeCallback(param);
+        }
     }
 
     void SetEnvironmentParam(const char* name, const bool value)
     {
+        auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(name != nullptr, "Passed null");
-        MAGIQUE_ASSERT(name[0] != global::CONSOLE_DATA.envPrefix, "Prefix as first char of name not allowed!");
-        auto& param = global::CONSOLE_DATA.environParams[name];
-        param.name = global::CONSOLE_DATA.environParams.find(name)->first.c_str();
+        MAGIQUE_ASSERT(name[0] != console.envPrefix, "Prefix as first char of name not allowed!");
+        auto& param = console.environParams[name];
+        param.name = console.environParams.find(name)->first.c_str();
         if (param.type == ParamType::STRING)
         {
             free((void*)param.string);
         }
         param.type = ParamType::BOOL;
         param.boolean = value;
+        if (console.environChangeCallback)
+        {
+            console.environChangeCallback(param);
+        }
     }
 
     bool RemoveEnvironmentParam(const char* name)

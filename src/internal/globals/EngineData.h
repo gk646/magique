@@ -36,6 +36,14 @@ namespace magique
         }
     };
 
+    struct CameraShakeData final
+    {
+        Point direction;
+        float maxDist;
+        float decay;
+        float velocity;
+    };
+
     struct EngineData final
     {
         StateCallback stateCallback{};             // Callback function for gamestate changes

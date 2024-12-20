@@ -422,7 +422,7 @@ namespace cxstructs
     {
         bool operator()(const char* s1, const char* s2) const { return std::strcmp(s1, s2) == 0; }
     };
-#if defined(_STRING_) || defined(_GLIBCXX_STRING)
+#if defined(_STRING_) || defined(_GLIBCXX_STRING) || defined(_LIBCPP_STRING) || defined(_FREEBSD_STRING_)
     // Replaces the string with the string representation of the given number
     inline void str_embed_num(std::string& s, float num)
     {
