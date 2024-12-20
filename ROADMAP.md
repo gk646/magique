@@ -92,12 +92,7 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - ScrollPane
 - DropDown
 
-**Better Default Style**
-
-- Use engine theme for all ui elements
-
 **Default Multiplayer Chat**
-
 - Implement reusable chat for multiplayer with default style
 
 ### Assets
