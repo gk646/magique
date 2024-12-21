@@ -47,7 +47,7 @@ namespace magique
         const auto tex = LoadTextureFromImage(texImage);
         if (tex.id == 0)
         {
-            LOG_ERROR("Failed to load TileSheet to GPU: %s", asset.path);
+            LOG_ERROR("Failed to load TileSheet to GPU: %s", asset.getPath());
         }
         textureID = static_cast<uint16_t>(tex.id);
 
@@ -55,9 +55,47 @@ namespace magique
         UnloadImage(img);
     }
 
-    TileSheet::TileSheet(const std::vector<Asset>& /**/, const int /**/, const float /**/)
+    TileSheet::TileSheet(const std::vector<Asset>& assets, const float scale)
     {
-        LOG_FATAL("Not implemented");
+        auto texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_SIZE, MAGIQUE_TEXTURE_ATLAS_SIZE, BLANK);
+        const auto firstImg = LoadImage(assets[0]); // empty case is filtered out
+        texSize = static_cast<int16_t>(std::floor(firstImg.width * scale));
+        texPerRow = static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE / texSize);
+
+        Rectangle src{0, 0, static_cast<float>(firstImg.width), static_cast<float>(firstImg.height)};
+        Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
+
+        for (const auto& asset : assets)
+        {
+            const auto img = LoadImage(asset);
+            if (img.width != firstImg.width || img.height != firstImg.height)
+            {
+                LOG_ERROR("Image has different dimensions", asset.getPath());
+                UnloadImage(img);
+                break;
+            }
+
+            ImageDraw(&texImage, img, src, dst, WHITE);
+            dst.x += src.width;
+            if (dst.x >= texImage.width)
+            {
+                dst.x = 0;
+                dst.y += dst.height;
+                if (dst.y >= texImage.height)
+                {
+                    LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.getPath());
+                }
+            }
+            UnloadImage(img);
+        }
+        const auto tex = LoadTextureFromImage(texImage);
+        if (tex.id == 0)
+        {
+            LOG_ERROR("Failed to load TileSheet to GPU");
+        }
+        textureID = static_cast<uint16_t>(tex.id);
+        UnloadImage(firstImg);
+        UnloadImage(texImage);
     }
 
     TextureRegion TileSheet::getRegion(const uint16_t tileNum) const

@@ -56,7 +56,10 @@ namespace magique::internal
         return handle::null;
 #define ASSET_IS_SUPPORTED_IMAGE_TYPE(asset)                                                                            \
     if (!IsSupportedImageFormat(asset.getExtension()))                                                                  \
-        return handle::null;
+    {                                                                                                                   \
+        LOG_WARNING("Asset has unsupported extension: %s", asset.getExtension());                                       \
+        return handle::null;                                                                                            \
+    }
 
 #define ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(width)                                                                     \
     if (width > MAGIQUE_TEXTURE_ATLAS_SIZE)                                                                             \
@@ -95,7 +98,6 @@ namespace magique::internal
 #define M_TEST_PUB()
 #endif
 
-
 #ifdef _MSC_VER
 #define M_IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
 #define M_UNIGNORE_WARNING() __pragma(warning(pop))
@@ -111,6 +113,7 @@ namespace magique::internal
 #else
 #define IGNORE_WARNING_GCC(warning)
 #define UNIGNORE_WARNING_GCC()
+
 #endif
 
 #endif //MAGIQUE_MACROS_H

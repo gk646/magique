@@ -10,6 +10,7 @@
 #include "assets/AssetPacker.h"
 #include "assets/AssetManager.h"
 #include "assets/AssetLoader.h"
+#include "assets/FileImports.h"
 #include "assets/HandleRegistry.h"
 #include "assets/container/AssetContainer.h"
 #include "assets/types/Playlist.h"

@@ -69,7 +69,7 @@ void WaitTime(const double destinationTime, double sleepSeconds)
     Sleep(static_cast<unsigned long>(sleepSeconds * 1000.0));
 #endif
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__EMSCRIPTEN__)
-    timespec req{};
+    struct timespec req{};
     req.tv_sec = static_cast<time_t>(sleepSeconds);                                 // Seconds portion
     req.tv_nsec = static_cast<long>((sleepSeconds - (float)(int)req.tv_sec) * 1e9); // Nanoseconds portion
     while (nanosleep(&req, &req) == -1)

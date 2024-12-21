@@ -3,7 +3,7 @@
 #define MAGIQUE_STRINGHASHMAP_H
 
 #include <string>
-#include <cxutil/cxstring.h>
+#include "external/cxstructs/cxutil/cxstring.h"
 #include "internal/datastructures/HashTypes.h"
 
 // Transparent lookup enabled string hashmap

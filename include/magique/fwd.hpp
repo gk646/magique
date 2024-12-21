@@ -68,6 +68,7 @@ namespace magique
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
     struct Playlist;              // Stores multiple music objects to easily play and loop them
     struct TileObject;            // TileObject imported from the Tile Editor
+    struct CSVImport;             // CSV file import data
 
     //================= GAMEDEV =================//
     template <typename CustomData = int>

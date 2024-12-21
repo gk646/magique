@@ -65,6 +65,9 @@
 // Maximum amount of custom tile properties for each tile object (inside Tiled)
 #define MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2
 
+// Maximum amount of columns supported for a imported csv file
+#define MAGIQUE_MAX_CSV_COLUMNS 16
+
 //================= GAMEDEV =================//
 
 

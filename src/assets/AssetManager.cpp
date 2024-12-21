@@ -233,11 +233,7 @@ namespace magique
     {
         ASSET_CHECK(asset);
         const auto sheet = TileSheet(asset, tileSize, scale);
-        if (strcmp(asset.getExtension(), ".png") != 0)
-        {
-            LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset.getFileName(true));
-            return handle::null;
-        }
+        ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
         if (sheet.getTextureID() == 0)
         {
             return handle::null;
@@ -245,19 +241,20 @@ namespace magique
         return global::ASSET_MANAGER.addResource(sheet);
     }
 
-    handle RegisterTileSheet(const std::vector<Asset>& assets, const int tileSize, const float scale)
+    handle RegisterTileSheet(const std::vector<Asset>& assets, const float scale)
     {
+        if (assets.empty())
+        {
+            LOG_WARNING("Passed empty asset vector");
+            return handle::null;
+        }
         for (const auto asset : assets)
         {
             ASSET_CHECK(asset);
-            if (strcmp(asset.getExtension(), ".png") != 0)
-            {
-                LOG_WARNING("Invalid extensions for a TileSheet: %s | Supported: .png", asset.getFileName(true));
-                return handle::null;
-            }
+            ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
         }
-        const auto sheet = TileSheet(assets, tileSize, scale);
-        if (sheet.textureID == 0)
+        const auto sheet = TileSheet(assets,  scale);
+        if (sheet.getTextureID() == 0)
         {
             return handle::null;
         }

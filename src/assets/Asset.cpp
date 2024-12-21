@@ -9,6 +9,12 @@
 
 namespace magique
 {
+    const char* Asset::getPath() const { return path; }
+
+    const char* Asset::getData() const { return data; }
+
+    int Asset::getSize() const { return size; }
+
     bool Asset::hasExtension(const char* extension) const
     {
         MAGIQUE_ASSERT(extension != nullptr, "Passing nullptr");
@@ -91,6 +97,7 @@ namespace magique
 
     const char* Asset::getExtension() const
     {
+        MAGIQUE_ASSERT(path != nullptr, "No path");
         const char* workPtr = path;
         const char* lastDot = nullptr;
 

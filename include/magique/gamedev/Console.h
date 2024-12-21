@@ -108,6 +108,8 @@ namespace magique
         // Specifies the function that's executed with the parsed parameters if match the type and count specified
         Command& setFunction(const CommandFunction& func);
 
+        // Returns the name of the command
+        const char* getName() const;
     private:
         CommandFunction cmdFunc;
         std::vector<internal::ParamData> parameters;
