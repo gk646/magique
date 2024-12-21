@@ -48,6 +48,7 @@
 #include <fcntl.h>
 #include <ctime>
 #include <cstdlib>
+#include <sys/time.h>
 #include <cstring>
 #elif __APPLE__
 #include <mach/mach.h>
@@ -121,9 +122,8 @@ uint64_t GetMemoryWorkingSet()
     PROCESS_MEMORY_COUNTERS pmc;
     if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
     {
-        return static_cast<uint64_t>(pmc.WorkingSetSize);
+        return pmc.WorkingSetSize;
     }
-    return 0;
 #elif __linux__
     constexpr size_t bufferSize = 128;
     char buffer[bufferSize];

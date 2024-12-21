@@ -6,9 +6,15 @@
 
 namespace magique
 {
-    CSVImport FileImportCSV(Asset asset, char delimiter, bool firstRowNames)
+    CSVImport FileImportCSV(Asset asset, const char delimiter, const bool firstRowNames)
     {
         CSVImport csv{};
+        if (asset.getSize() == 0)
+        {
+            LOG_ERROR("Passed empty asset:%s", asset.getFileName());
+            return csv;
+        }
+
         if (strcmp(".csv", asset.getExtension()) != 0)
         {
             LOG_ERROR("Invalid extension for a .csv file: %s", asset.getExtension());
@@ -26,25 +32,38 @@ namespace magique
         csv.data = content;
         csv.len = asset.getSize() + 1;
 
-        auto parseLine = [&](int& pos, char* line)
+        auto parseLine = [&](int& pos, char* line, int row)
         {
             int lineColumns = 0;
             while (pos < csv.len)
             {
-                if (line[pos] == delimiter || line[pos] == '\n' || line[pos] == '\0')
+                if (line[pos] == delimiter)
+                {
+                    MAGIQUE_ASSERT(lineColumns < MAGIQUE_MAX_CSV_COLUMNS, "Too many cells in CSV file");
+                    line[pos] = '\0'; // 0-terminate the data here so we can return a string from the start
+                    lineColumns++;
+                    if (content[pos + 1] == '\n' || content[pos + 1] == '\0')
+                    {
+                        LOG_WARNING("Detected trailing delimiter:%s | Row:%d", asset.getFileName(), row);
+                        pos+=2; // Skip both the terminator and the end marker and
+                        return lineColumns;
+                    }
+                }
+                else if (line[pos] == '\n' || line[pos] == '\0')
                 {
                     MAGIQUE_ASSERT(lineColumns < MAGIQUE_MAX_CSV_COLUMNS, "Too many cells in CSV file");
                     lineColumns++;
-                    if (line[pos] == '\n' || line[pos] == '\0')
+                    line[pos] = '\0';
+                    pos++;
+                    if (firstRowNames && row == 0)
                     {
-                        line[pos] = '\0'; // 0-terminate the data here so we can return a string from the start
-                        pos++;
-                        return lineColumns;
+                        csv.nameLen = pos;
                     }
-                    line[pos] = '\0'; // 0-terminate the data here so we can return a string from the start
+                    return lineColumns;
                 }
                 pos++;
             }
+            LOG_FATAL("Failed to parse CSV file: %s", asset.getFileName());
             return -1;
         };
 
@@ -52,34 +71,12 @@ namespace magique
         int rows = 0;
         int columns = 0;
 
-        if (firstRowNames)
-        {
-            while (pos < csv.len)
-            {
-                if (content[pos] == delimiter)
-                {
-                    content[pos] = '\0';
-                    columns++;
-                }
-                else if (content[pos] == '\n' || content[pos] == '\0')
-                {
-                    content[pos] = '\0';
-                    rows++;
-                    pos++;
-                    columns++;
-                    break;
-                }
-                pos++;
-            }
-            csv.nameLen = pos;
-        }
-
         while (pos < csv.len)
         {
-            const int lineColumns = parseLine(pos, content);
+            const int lineColumns = parseLine(pos, content, rows);
             if (columns != 0 && columns != lineColumns)
             {
-                LOG_ERROR("CSV file is not well-formed: Row %d has inconsistent amount of columns", rows);
+                LOG_ERROR("CSV file is not well-formed: Row %d  amount of columns", rows);
                 return csv;
             }
             columns = lineColumns;
@@ -88,7 +85,10 @@ namespace magique
 
         csv.columns = columns;
         csv.rows = rows;
-
+        if (strlen(csv.data) + 1 == csv.len)
+        {
+            LOG_WARNING("Mismatch between used and specified delimiter detected, Used \"%c\"", delimiter);
+        }
         return csv;
     }
 } // namespace magique

@@ -40,6 +40,8 @@ namespace magique
 
     int CSVImport::getRows() const { return rows; }
 
+    bool CSVImport::hasColumnNames() const { return nameLen != -1; }
+
     CSVImport::~CSVImport()
     {
         delete[] data;
@@ -48,8 +50,8 @@ namespace magique
 
     const char* CSVImport::getCellImpl(const int row, const int column) const
     {
-        MAGIQUE_ASSERT(row < rows, "Invalid row index");
-        MAGIQUE_ASSERT(column < columns, "Invalid column index");
+        MAGIQUE_ASSERT(row < rows && row >= 0, "Invalid row index");
+        MAGIQUE_ASSERT(column < columns && column >= 0, "Invalid column index");
         if (row == 0 && column == 0)
             return data;
         int pos = 0;

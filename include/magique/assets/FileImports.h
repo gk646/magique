@@ -15,8 +15,8 @@ namespace magique
 {
 
     // Imports the given asset as CSV file - if specified the first row will be loaded as column names
-    // Supported filetypes: .csv
-    // Failure: Returns an import
+    // Supported filetypes: ".csv"
+    // Failure: Returns an empty import
     CSVImport FileImportCSV(Asset asset, char delimiter = ';', bool firstRowNames = true);
 
 } // namespace magique
