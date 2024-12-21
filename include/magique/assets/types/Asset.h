@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
+#include <magique/internal/Macros.h>
+
 //===============================================
 // Asset
 //===============================================
@@ -15,9 +17,14 @@ namespace magique
 {
     struct Asset final
     {
-        const char* path; // Full path of the file - from the compile root
-        int size;         // File size
-        const char* data; // File data
+        // Returns the path of this asset relative to the root directory the image was compiled from
+        const char* getPath() const;
+
+        // Returns the data pointer of this asset
+        const char* getData() const;
+
+        // Returns the valid size of the data pointer
+        int getSize() const;
 
         // Checks if the assets extension matches the given one e.g '.png' myTexture.png
         // Includes the dot
@@ -35,7 +42,7 @@ namespace magique
         // Returns true if this asset is valid and can be used
         bool isValid() const;
 
-        //================= GETTERS =================//
+        //================= STRING GETTERS =================//
         // IMPORTANT: The string returned by these methods is only valid until any of these methods are called again
 
         // Returns the direct file name without the asset - This means all characters after the last separator ("/")
@@ -48,6 +55,10 @@ namespace magique
         [[nodiscard]] const char* getExtension() const;
 
     private:
+        M_TEST_PUB();
+        const char* path;                       // Full path of the file - from the compile root
+        int size;                               // File size
+        const char* data;                       // File data
         inline static char stringBuffer[128]{}; // Shared string buffer for string returns
     };
 

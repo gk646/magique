@@ -20,6 +20,9 @@ namespace magique
 {
     struct TileSheet final
     {
+        explicit TileSheet(const Asset& asset, int size, float scale);
+        explicit TileSheet(const std::vector<Asset>& assets,  float scale);
+
         // Returns the region for the given tileNum
         [[nodiscard]] TextureRegion getRegion(uint16_t tileNum) const;
 
@@ -33,14 +36,9 @@ namespace magique
         [[nodiscard]] unsigned int getTextureID() const;
 
     private:
-        explicit TileSheet(const Asset& asset, int size, float scale);
-        explicit TileSheet(const std::vector<Asset>& assets, int size, float scale);
-
         int16_t texSize;        // Size of each texture
         uint16_t texPerRow = 0; // Textures per row
         uint16_t textureID = 0; // id of the underlying texture#
-        friend handle RegisterTileSheet(Asset, int, float);
-        friend handle RegisterTileSheet(const std::vector<Asset>&, int, float);
     };
 } // namespace magique
 

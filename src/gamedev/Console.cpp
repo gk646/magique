@@ -137,6 +137,8 @@ namespace magique
         return *this;
     }
 
+    const char* Command::getName() const { return name.c_str(); }
+
     //================= Environmental Parameters =================//
 
     void SetEnvironmentParam(const char* name, const char* value)

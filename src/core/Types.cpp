@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
+#include <utility>
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
