@@ -35,7 +35,11 @@ namespace magique
         ++achieveCounter;
 
         // Reset nearby query
-        global::ENGINE_DATA.nearbyQueryData.lastRadius = 0;
+        auto& data = global::ENGINE_DATA;
+        data.nearbyQueryData.lastRadius = 0;
+
+        data.updateCameraShake();
+
         // Before user tick so it gets new information
 #ifdef MAGIQUE_STEAM
         global::MP_DATA.update();

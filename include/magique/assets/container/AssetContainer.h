@@ -51,7 +51,7 @@ namespace magique
         ~AssetContainer();
 
     private:
-        M_TEST_PUB()
+        M_MAKE_PUB()
         AssetContainer() = default;
         void sort();
         const char* nativeData = nullptr; // Pointer to all the file data

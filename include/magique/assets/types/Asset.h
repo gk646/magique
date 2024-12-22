@@ -55,7 +55,7 @@ namespace magique
         [[nodiscard]] const char* getExtension() const;
 
     private:
-        M_TEST_PUB();
+        M_MAKE_PUB();
         const char* path;                       // Full path of the file - from the compile root
         int size;                               // File size
         const char* data;                       // File data

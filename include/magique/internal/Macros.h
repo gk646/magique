@@ -92,10 +92,10 @@ namespace magique::internal
 
 //================= BUILDING =================//
 
-#ifdef MAGIQUE_TEST_MODE
-#define M_TEST_PUB() public:
+#if defined(MAGIQUE_TEST_MODE) || defined(MAGIQUE_IMPLEMENTATION)
+#define M_MAKE_PUB() public:
 #else
-#define M_TEST_PUB()
+#define M_MAKE_PUB()
 #endif
 
 #ifdef _MSC_VER

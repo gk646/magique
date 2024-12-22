@@ -194,12 +194,12 @@ namespace magique
             const auto& grid = dynamic.mapEntityGrids[currentMap];
             const auto bounds = GetCameraBounds();
             constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
-            const int fontSize = config.fontSize;
+            const float fontSize = config.fontSize;
+            const float textOff = MAGIQUE_COLLISION_CELL_SIZE / 2.0F - fontSize / 2.0F;
             const int startX = static_cast<int>(bounds.x) / cellSize;
             const int startY = static_cast<int>(bounds.y) / cellSize;
             const int width = static_cast<int>(bounds.width) / cellSize;
             const int height = static_cast<int>(bounds.height) / cellSize;
-            const int textOff = MAGIQUE_COLLISION_CELL_SIZE / 2 - fontSize / 2;
 
             for (int i = 0; i < height; ++i)
             {

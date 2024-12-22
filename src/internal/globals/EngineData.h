@@ -39,9 +39,10 @@ namespace magique
     struct CameraShakeData final
     {
         Point direction;
+        Point veloc;
         float maxDist;
         float decay;
-        float velocity;
+        bool up;
     };
 
     struct EngineData final
@@ -53,6 +54,7 @@ namespace magique
         std::vector<entt::entity> drawVec;         // Vector containing all entities to be drawn this tick
         std::vector<MapID> loadedMaps{};           // Currently loaded zones
         vector<entt::entity> collisionVec;         // Vector containing the entities to check for collision
+        CameraShakeData cameraShake{};             // Data about the current camera shake
         GameConfig gameConfig{};                   // Global game config instance
         Camera2D camera{};                         // Current camera
         Game* gameInstance;                        // The game instance created by the user
@@ -71,6 +73,38 @@ namespace magique
         }
 
         [[nodiscard]] bool isEntityScripted(const entt::entity e) const { return !entityNScriptedSet.contains(e); }
+
+        void updateCameraShake()
+        {
+            auto& shake = cameraShake;
+            auto& target = camera.target;
+
+            if (target.x >= shake.direction.x * shake.maxDist || target.y >= shake.direction.y * shake.maxDist)
+            {
+               shake.up = false;
+            }else if (target.x <= shake.direction.x * -shake.maxDist || target.y <= shake.direction.y * -shake.maxDist)
+            {
+                shake.up = true;
+            }
+
+            if (shake.up)
+            {
+                target.x = std::min(shake.maxDist, target.x + shake.veloc.x);
+                target.y = std::min(shake.maxDist, target.y + shake.veloc.y);
+            }
+            else
+            {
+                target.x = std::max(-shake.maxDist, target.x - shake.veloc.x);
+                target.y = std::max(-shake.maxDist, target.y - shake.veloc.y);
+            }
+            shake.maxDist = std::max(shake.maxDist - (shake.decay / MAGIQUE_LOGIC_TICKS), 0.0F);
+            if (shake.maxDist <= 0.1F  && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
+            {
+                shake.veloc = {0,0};
+                camera.target.x = 0;
+                camera.target.y = 0;
+            }
+        }
     };
 
     namespace global

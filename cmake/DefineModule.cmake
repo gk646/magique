@@ -69,7 +69,5 @@ elseif (MAGIQUE_LAN)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)
 endif ()
 
-# Make internal things public
-if (MAGIQUE_IS_MAIN)
-    target_compile_definitions(magique-${MODULE_NAME} PRIVATE MAGIQUE_TEST_MODE)
-endif ()
+# Make the private members in public headers, public to the implementation (to avoid excessive friend...)
+target_compile_definitions(magique-${MODULE_NAME} PRIVATE MAGIQUE_IMPLEMENTATION)

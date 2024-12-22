@@ -66,7 +66,7 @@ else ()
     #
 endif ()
 
-# Make internal things public
+# Make internal things public in the header
 if (MAGIQUE_IS_MAIN)
     target_compile_definitions(magique PUBLIC MAGIQUE_TEST_MODE)
 endif ()
