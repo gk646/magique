@@ -1,5 +1,6 @@
-#include <raylib/raylib.h>
+#include <cmath>
 
+#include <raylib/raylib.h>
 #include <magique/core/Camera.h>
 
 #include "internal/globals/EngineConfig.h"
@@ -70,7 +71,7 @@ namespace magique
         auto& shake = global::ENGINE_DATA.cameraShake;
         shake.decay = decay;
         shake.direction = shake.direction + direction;
-        float magnitude = sqrtf(shake.direction.x * shake.direction.x + shake.direction.y * shake.direction.y);
+        float magnitude = sqrt(shake.direction.x * shake.direction.x + shake.direction.y * shake.direction.y);
         shake.direction.x /= magnitude;
         shake.direction.y /= magnitude;
         shake.maxDist = maxDistance;

@@ -312,13 +312,11 @@ namespace magique
         //      - 123 333 -> two valid numbers
         //      - 3a3     -> parsed as string
         NUMBER,
-
         // [String type]
         // Only ASCII characters supported
         // Parsing rules:
         //      - Everything that is not a NUMBER or BOOL is a string
         STRING,
-
         // Examples:
         //      - 123 ON false  -> NUMBER BOOL BOOL
         //      - 123 abc 1.4   -> NUMBER STRING NUMBER

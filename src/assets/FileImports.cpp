@@ -1,5 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include <string>
+#include <cstring>
 
 #include <magique/assets/FileImports.h>
 #include <magique/util/Logging.h>
@@ -85,7 +85,7 @@ namespace magique
 
         csv.columns = columns;
         csv.rows = rows;
-        if (strlen(csv.data) + 1 == csv.len)
+        if (static_cast<int>(strlen(csv.data)) + 1 == csv.len)
         {
             LOG_WARNING("Mismatch between used and specified delimiter detected, Used \"%c\"", delimiter);
         }

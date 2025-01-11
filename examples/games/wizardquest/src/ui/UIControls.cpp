@@ -1,6 +1,7 @@
 #include <magique/ecs/ECS.h>
 #include <magique/ui/TextFormat.h>
 #include <magique/core/Core.h>
+#include <magique/core/Camera.h>
 
 #include "ui/UIControls.h"
 #include "ecs/Components.h"
