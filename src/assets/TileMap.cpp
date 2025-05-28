@@ -25,8 +25,8 @@ namespace magique
         const auto tilesPerLayer = static_cast<size_t>(tileMap.width * tileMap.height);
         const auto startIdx = tileMap.layers * tilesPerLayer;
 
-        const size_t newDataSize = startIdx + tilesPerLayer;
-        auto* newData = new uint16_t[newDataSize];
+        tileMap.tileDataSize = startIdx + tilesPerLayer;
+        auto* newData = new uint16_t[tileMap.tileDataSize];
         if (tileMap.tileData != nullptr)
         {
             std::memcpy(newData, tileMap.tileData, startIdx * sizeof(uint16_t));
@@ -36,7 +36,7 @@ namespace magique
         tileMap.tileData = newData;
 
         auto* layerData = &tileMap.tileData[startIdx];
-        const auto layerSize = tileMap.width * tileMap.height - 1;
+        const auto layerSize = (tileMap.width * tileMap.height) - 1;
 
         // right-down parsing
         for (int i = 0; i < layerSize; ++i)
@@ -105,7 +105,7 @@ namespace magique
             if (propType == nullptr)
             {
                 prop.type = TileObjectPropertyType::STRING;
-                const auto stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
+                const auto* stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
                 if (stringValue != nullptr)
                     prop.string = copyStringFromXML(stringValue);
             }
@@ -117,7 +117,7 @@ namespace magique
             else if (strncmp(propType, "bool", sizeof("bool") - 1) == 0)
             {
                 prop.type = TileObjectPropertyType::BOOL;
-                const auto stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
+                const auto* stringValue = XMLGetValueInLine<const char*>(data, "value", nullptr);
                 prop.boolean = stringValue != nullptr && strncmp(stringValue, "true", sizeof("true") - 1) == 0;
             }
             else if (strncmp(propType, "int", sizeof("int") - 1) == 0)

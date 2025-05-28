@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_XML_UTIL_H
 #define MAGIQUE_XML_UTIL_H
 
+#include <limits>
 #include <cassert>
 #include <cxutil/cxstring.h>
 

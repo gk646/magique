@@ -10,7 +10,7 @@
 // ECS Module
 //===============================
 // ................................................................................
-// This modules servers as an abstraction over the native enTT interface.
+// This modules serves as an abstraction over the native enTT interface.
 // For more info see its documentation: https://github.com/skypjack/entt/wiki
 // Note: All entities have the PositionC auto assigned per default!
 // ................................................................................

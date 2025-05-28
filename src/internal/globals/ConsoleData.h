@@ -490,7 +490,7 @@ namespace magique
             cursorPos = 0;
             data.submit();
         }
-        else if (IsKeyPressed(KEY_TAB) && suggestionPos >= 0)
+        else if (IsKeyPressed(KEY_TAB) && suggestionPos >= 0 && suggestionSize > 0)
         {
             MAGIQUE_ASSERT(suggestionPos < suggestionSize, "Out of bounds");
             data.line = data.suggestions[suggestionPos]->name;

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_CAMERA_H
 #define MAGIQUE_CAMERA_H
 

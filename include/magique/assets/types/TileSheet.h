@@ -38,7 +38,7 @@ namespace magique
     private:
         int16_t texSize;        // Size of each texture
         uint16_t texPerRow = 0; // Textures per row
-        uint16_t textureID = 0; // id of the underlying texture#
+        uint16_t textureID = 0; // id of the underlying texture
     };
 } // namespace magique
 

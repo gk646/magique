@@ -31,13 +31,14 @@ namespace magique
 
     EntityScript* GetEntityScript(const EntityType entity)
     {
-        auto& scData = global::SCRIPT_DATA;
-        MAGIQUE_ASSERT(scData.scripts.size() > entity, "No script registered for this type! Did you call SetScript()?");
+        auto& scriptData = global::SCRIPT_DATA;
+        MAGIQUE_ASSERT(scriptData.scripts.size() > entity,
+                       "No script registered for this type! Did you call SetScript()?");
         MAGIQUE_ASSERT(
-            scData.scripts[entity] != scData.defaultScript,
-            "No valid script exists for this entity! Did you call SetScript() and pass a new Instance of your "
+            scriptData.scripts[entity] != scriptData.defaultScript,
+            "No valid script exists for this entity! Did you call SetEntityScript() and pass a new Instance of your "
             "ScriptClass?");
-        return scData.scripts[entity];
+        return scriptData.scripts[entity];
     }
 
     void SetIsEntityScripted(const entt::entity entity, const bool val)
@@ -51,6 +52,7 @@ namespace magique
             global::ENGINE_DATA.entityNScriptedSet.insert(entity);
         }
     }
+
     bool GetIsEntityScripted(const entt::entity entity)
     {
         return global::ENGINE_DATA.entityNScriptedSet.contains(entity);

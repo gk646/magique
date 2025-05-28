@@ -207,8 +207,7 @@ namespace magique
             LOG_WARNING("Invalid extensions for a TileMap: %s | Supported: .tmx", asset.getFileName(true));
             return handle::null;
         }
-        auto tileMap = TileMap(asset);
-        return global::ASSET_MANAGER.addResource(std::move(tileMap));
+        return global::ASSET_MANAGER.addResource(std::move(TileMap(asset)));
     }
 
     handle RegisterTileMap(const std::vector<std::vector<std::vector<uint16_t>>>& layerData)
@@ -270,6 +269,8 @@ namespace magique
     SpriteSheet GetSpriteSheet(const handle handle) { return global::ASSET_MANAGER.getResource<SpriteSheet>(handle); }
 
     TileMap& GetTileMap(const handle handle) { return global::ASSET_MANAGER.getResource<TileMap>(handle); }
+
+    TileSet& GetTileSet(const handle handle) {return global::ASSET_MANAGER.getResource<TileSet>(handle); }
 
     TileSheet& GetTileSheet(const handle handle) { return global::ASSET_MANAGER.getResource<TileSheet>(handle); }
 

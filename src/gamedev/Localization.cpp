@@ -28,7 +28,7 @@ namespace magique
         }
     };
 
-    LocalizationData DATA{};
+    static LocalizationData DATA{};
 
     const char* Localize(const char* keyword)
     {
@@ -161,7 +161,9 @@ namespace magique
             translation = cacheString;
             ++keywordPairs;
             if (reachedEnd)
+            {
                 break;
+            }
         }
 
         const auto* msg = "Successfully loaded Localization: Language: %s | keywords: %d";

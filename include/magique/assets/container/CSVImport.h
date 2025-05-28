@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_CSVIMPORT_H
 #define MAGIQUE_CSVIMPORT_H
 

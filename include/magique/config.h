@@ -37,15 +37,15 @@
 #define MAGIQUE_COLLISION_CELL_SIZE 64
 
 // Maximum amount of entities allowed per cell (less is better) - if more they are not collision checked anymore
-#define MAGIQUE_MAX_ENTITIES_CELL 31
+#define MAGIQUE_MAX_ENTITIES_CELL 16
 
 // Sets the coarseness/size of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
-#define MAGIQUE_PATHFINDING_CELL_SIZE 32
+#define MAGIQUE_PATHFINDING_CELL_SIZE 16
 
 // Controls the maximum amount of tile that can be evaluated in a single search
 // Note: This is the global maximum, a specific maximum can be set on each query
-#define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 1024
+#define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 2048
 
 // Checks if the entity still exists before calling the collision method
 // This incurs some overhead but makes it easier to avoid accessing deleted entities

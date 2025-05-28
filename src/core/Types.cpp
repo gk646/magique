@@ -151,7 +151,7 @@ namespace magique
 
     //----------------- TILE INFO -----------------//
 
-    int TileInfo::getClass() const { return clazz; }
+    int TileInfo::getClass() const { return tileClass; }
 
     static uint32_t ReverseBytes(const uint32_t value)
     {

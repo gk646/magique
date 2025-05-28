@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <limits>
 #include <cxutil/cxstring.h>
 
 #include <magique/assets/types/TileSet.h>
@@ -39,7 +38,7 @@ namespace magique
         {
             TileInfo info;
             info.tileID = static_cast<uint16_t>(XMLGetValueInLine<int>(work, "id", UINT16_MAX));
-            info.clazz = XMLGetValueInLine<int>(work, "type", INT32_MAX);
+            info.tileClass = XMLGetValueInLine<int>(work, "type", INT32_MAX);
             if (!XMLLineContainsCloseTag(work)) // Contains collision info
             {
                 cxstructs::str_skip_char(work, '\n', 1); // Skip tile tag
@@ -60,7 +59,7 @@ namespace magique
             }
             cxstructs::str_skip_char(work, '\n', 1); // Skip tile tag open
 #ifdef MAGIQUE_DEBUG
-            if (info.tileID == UINT16_MAX || info.clazz == INT32_MAX)
+            if (info.tileID == UINT16_MAX || info.tileClass == INT32_MAX)
             {
                 LOG_WARNING("Failed to parse tile info: %s", asset.getFileName(true));
             }

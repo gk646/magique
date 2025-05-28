@@ -165,7 +165,7 @@ namespace magique
         [[nodiscard]] int getClass() const;
 
     private:
-        int clazz = INT32_MAX; // class attribute
+        int tileClass = INT32_MAX; // class attribute
         friend struct TileSet;
     };
 

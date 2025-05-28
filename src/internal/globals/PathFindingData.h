@@ -236,8 +236,11 @@ namespace magique
         {
             // Setup and get grids
             path.clear();
+            path.reserve(maxLen);
+
             frontier.clear();
             visited.clear();
+
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
 

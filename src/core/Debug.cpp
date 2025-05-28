@@ -38,6 +38,8 @@ namespace magique
     inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
     inline static int id[MAGIQUE_MAX_SUPPORTED_TIMERS]{};
 
+    using Clock = std::chrono::high_resolution_clock;
+
     void StartTimer(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
@@ -45,36 +47,35 @@ namespace magique
             if (id[i] == 0)
             {
                 id[i] = num;
-                START_TIMERS[i] = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+                START_TIMERS[i] = Clock::now().time_since_epoch().count();
                 return;
             }
         }
         LOG_WARNING("No available timer slots!");
     }
 
-    int GetTimerTime(const int num)
+    uint64_t GetTimerTime(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
         {
             if (id[i] == num)
             {
-                const uint64_t endTime = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                const int elapsedTime = static_cast<int>(endTime - START_TIMERS[i]);
-                return elapsedTime;
+                const uint64_t endTime = Clock::now().time_since_epoch().count();
+                return endTime - START_TIMERS[i];
             }
         }
         LOG_WARNING("Timer with ID %d not found!", num);
         return -1;
     }
 
-    int StopTimer(const int num)
+    uint64_t StopTimer(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
         {
             if (id[i] == num)
             {
-                const uint64_t endTime = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-                const int elapsedTime = static_cast<int>(endTime - START_TIMERS[i]);
+                const uint64_t endTime = Clock::now().time_since_epoch().count();
+                const auto elapsedTime = endTime - START_TIMERS[i];
                 id[i] = 0;
                 return elapsedTime;
             }

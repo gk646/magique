@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_DEBUG_H
 #define MAGIQUE_DEBUG_H
 
+#include <magique/fwd.hpp>
+
 //===============================================
 // Debug Module
 //===============================================
@@ -50,10 +52,10 @@ namespace magique
     void StartTimer(int num);
 
     // Returns the current time passed since the timer was started in nanoseconds
-    int GetTimerTime(int num);
+    uint64_t GetTimerTime(int num);
 
     // Stops the timer with the given id and returns elapsed nanos since starting
-    int StopTimer(int num);
+    uint64_t StopTimer(int num);
 
 } // namespace magique
 

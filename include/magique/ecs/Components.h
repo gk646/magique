@@ -21,7 +21,7 @@ namespace magique
     // MUST NOT be removed
     struct PositionC final
     {
-        float x, y;        // Position of the top left corner!
+        float x, y;        // Position of the top left corner (care when using circles)!
         MapID map;         // The current map id of the entity
         EntityType type;   // Type of the entity
         uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
