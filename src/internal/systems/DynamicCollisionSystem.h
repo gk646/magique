@@ -34,7 +34,7 @@ namespace magique
     inline void DynamicCollisionSystem()
     {
         const int size = global::ENGINE_DATA.collisionVec.size();
-        if (size > 500)// Multithreading over certain amount
+        if (size > 500) // Multithreading over certain amount
         {
             std::array<jobHandle, COL_WORK_PARTS> handles{};
             constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.25F; // 25% more work for main thread
@@ -68,8 +68,11 @@ namespace magique
         {
             const auto& hashGrid = dynamic.mapEntityGrids[loadedMap];
             const int size = static_cast<int>(hashGrid.cellMap.size());
-            if (size < COL_WORK_PARTS && thread != COL_WORK_PARTS - 1) // If cant be split into parts let main thread do it alone
+            if (size < COL_WORK_PARTS && thread != COL_WORK_PARTS - 1)
+            {
+                // If cant be split into parts let main thread do it alone
                 continue;
+            }
 
             const int startIdx = static_cast<int>(beginP * static_cast<float>(size));
             const int endIdx = static_cast<int>(endP * static_cast<float>(size));
@@ -135,7 +138,9 @@ namespace magique
                     InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
 
                 if (info.getIsAccumulated())
+                {
                     AccumulateInfo(*col1, info);
+                }
 
                 // Call for second entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
@@ -144,7 +149,9 @@ namespace magique
                     InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
 
                 if (secondInfo.getIsAccumulated())
+                {
                     AccumulateInfo(*col2, secondInfo);
+                }
             }
             vec.clear();
         }

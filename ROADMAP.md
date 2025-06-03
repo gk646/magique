@@ -13,8 +13,9 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 - Add strategy API or some kind of customization of the pathfinding based on inputs
     - idea is to allow different profiles: ranged, aggressive melee, skittering, fleeing, ...
 - Optimize pathfinding by searching both directions: front->end AND end->front
-- for this we need to figure out when a path is found and how to connect the results of both
-- this makes pathfinding generally faster and A LOT faster around obstacles
+  - for this we need to figure out when a path is found and how to connect the results of both
+  - this makes pathfinding generally faster and A LOT faster around obstacles
+- Add API to access raw pathfinding grid to do custom algorithms
 
 **Quest System**
 

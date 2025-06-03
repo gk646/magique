@@ -141,7 +141,9 @@ namespace magique
             registry.destroy(entity);
             data.entityUpdateCache.erase(entity);
             if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
+            {
                 dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
+            }
             UnorderedDelete(data.drawVec, entity);
             UnorderedDelete(data.entityUpdateVec, entity);
             return true;

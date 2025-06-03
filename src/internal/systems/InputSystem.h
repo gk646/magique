@@ -44,8 +44,9 @@ namespace magique
 
         if (invokeKey && invokeMouse)
         {
-            for (const auto e : data.entityUpdateVec)
+            for (size_t i = 0; i < data.entityUpdateVec.size(); ++i)
             {
+                const auto e = data.entityUpdateVec[i];
                 if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onKeyEvent>(e);
@@ -55,8 +56,9 @@ namespace magique
         }
         else if (invokeKey)
         {
-            for (const auto e : data.entityUpdateVec)
+            for (size_t i = 0; i < data.entityUpdateVec.size(); ++i)
             {
+                const auto e = data.entityUpdateVec[i];
                 if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onKeyEvent>(e);
@@ -65,8 +67,9 @@ namespace magique
         }
         else if (invokeMouse)
         {
-            for (const auto e : data.entityUpdateVec)
+            for (size_t i = 0; i < data.entityUpdateVec.size(); ++i)
             {
+                const auto e = data.entityUpdateVec[i];
                 if (data.isEntityScripted(e)) [[likely]]
                 {
                     InvokeEvent<onMouseEvent>(e);
