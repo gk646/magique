@@ -15,16 +15,21 @@ namespace magique
         return addLambdaTask(func, pl, mainOnly ? THREAD_MAIN : THREAD_ANY, impact);
     }
 
-    void TaskInterface::invoke(GameSaveData& save)
+    void TaskInterface::invoke(GameSaveData& save, const char* name)
     {
         if (totalTasks == 0)
         {
-            LOG_WARNING("Trying to load with an empty interface");
+            LOG_WARNING("Trying to load an empty interface: %s", name);
+        }
+        else
+        {
+            LOG_INFO("Loading interface: %s", name);
         }
 
         // Load as long as there are tasks
         while (!stepMixed(save))
-            ;
+        {
+        }
 
         reset(); // Reset the loader so it can be reused
     }

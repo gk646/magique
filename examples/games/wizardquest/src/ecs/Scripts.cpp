@@ -2,6 +2,7 @@
 
 #include <magique/core/Core.h>
 #include <magique/gamedev/PathFinding.h>
+#include <magique/util/Math.h>
 
 #include "WizardQuest.h"
 #include "ecs/Components.h"

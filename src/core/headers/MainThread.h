@@ -54,6 +54,7 @@ namespace magique::mainthread
             PollInputEvents(); // Somehow needed to prevent crash on wayland
             game.onCloseEvent();
         }
+        WakeUpJobs(); // To finish all saving tasks
     }
 
 } // namespace magique::mainthread

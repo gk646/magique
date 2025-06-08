@@ -68,7 +68,7 @@ namespace magique
     // Returns a list of all entities that should be drawn - culled with the current camera
     const std::vector<entt::entity>& GetDrawEntities();
 
-    // Returns the currently loaded maps - a map is loaded if it contains at least 1 entity
+    // Returns the currently loaded maps - a map is loaded if it contains at least 1 actor
     const std::vector<MapID>& GetLoadedMaps();
 
     //================= QUERY DYNAMIC ENTITIES =================//

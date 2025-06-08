@@ -48,10 +48,6 @@ namespace magique
     void SetEntityPathSolid(entt::entity entity, bool value);
     bool GetIsEntityPathSolid(entt::entity entity);
 
-    // Returns a normalized direction vector that points from the current to the target position
-    // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
-    Point GetDirectionVector(Point current, Point target);
-
     //================= DEBUG =================//
 
     // Draws the tiles along the given path in the pathfinding grid

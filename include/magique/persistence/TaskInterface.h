@@ -45,7 +45,7 @@ namespace magique
 
         // Has to be called after all tasks are registered - this call blocks until all tasks are finished
         //      - save:     the save to load from
-        void invoke(GameSaveData& save);
+        void invoke(GameSaveData& save, const char* name);
 
     private:
         bool step() override;

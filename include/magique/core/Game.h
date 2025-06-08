@@ -73,6 +73,7 @@ namespace magique
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
 
         // Called each render tick after drawGame()
+        // EndDrawing() will be called after this method internally
         virtual void drawUI(GameState gameState) {}
 
         //================= VARIABLES =================//

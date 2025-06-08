@@ -29,6 +29,16 @@ namespace magique
     // Failure: Returns false
     bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
 
+    // Creates a new entity by calling the registered function for that type
+    // Note: All entities have the PositionC auto assigned per default!
+    //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
+    // Failure: Returns entt::null
+    entt::entity CreateEntity(EntityType type, float x, float y, MapID map, bool withFunc = true);
+
+    // Creates a new entity with the given id
+    // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
+    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, float x, float y, MapID map);
+
     // Unregisters an entity
     // Failure: Returns false
     bool UnRegisterEntity(EntityType type);
@@ -56,26 +66,21 @@ namespace magique
     // Returns true if the given entity is an actor - has the actor component
     bool EntityIsActor(entt::entity entity);
 
+    // Returns the first entity with the given type
+    // Failure: Returns entt::null if none with that type could be found
+    entt::entity GetEntity(EntityType type);
+
     //============== LIFE CYCLE ==============//
 
-    // Creates a new entity by calling the registered function for that type
-    // Note: All entities have the PositionC auto assigned per default!
-    // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type, float x, float y, MapID map);
-
-    // Creates a new entity with the given id
-    // Note: Should only be called in a networking context with a valid id
-    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, float x, float y, MapID map);
-
-    // Immediately tries destroys the entity
-    // Note: it's up to the user to make sure invalid entities are not accessed (destroying in event functions...)
+    // Immediately tries to destroy this entity
+    // Note: It's up to the user to make sure invalid entities are not accessed (destroying in event functions...)
     // Failure: Returns false if entity is invalid or doesn't exist
     bool DestroyEntity(entt::entity entity);
 
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
     void DestroyEntities(const std::initializer_list<EntityType>& ids);
 
-    //==============Creating==============//
+    //============== COMPONENTS ==============//
 
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
@@ -128,7 +133,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
-        static_assert(sizeof(T) > 1 && "Trying to get empty component - those are not instantiated by EnTT");
+        static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
         MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {

@@ -72,7 +72,10 @@ namespace magique
             jobAllocator.destroy();
         }
 
-        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
+        jobHandle getNextHandle()
+        {
+            return static_cast<jobHandle>(handleID++);
+        }
 
         friend void WorkerThreadFunc(Scheduler* scheduler, int threadNumber);
     };

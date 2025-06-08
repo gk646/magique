@@ -229,7 +229,9 @@ namespace magique
         for (int i = 0; i < UINT8_MAX; ++i)
         {
             if (loadedMapsTable[i])
+            {
                 loadedMaps.push_back(static_cast<MapID>(i));
+            }
         }
     }
 
@@ -275,15 +277,18 @@ namespace magique
         }
 
         if (config.isClientMode) // Skip script methods in client mode
+        {
             return;
+        }
 
-        for (const auto& pair : data.entityUpdateCache)
+        // Iterates all entities
+        for (const auto entity : GetRegistry().view<entt::entity>())
         {
             // Invoke tick event on all entities that are in this tick and are scripted
-            if (data.isEntityScripted(pair.first))
+            if (data.isEntityScripted(entity)) [[likely]]
             {
-                // Pass a boolean whether the entity is updated - if the cache ticks are max, means its just updated
-                InvokeEvent<onTick>(pair.first, pair.second == config.entityCacheDuration);
+                // Pass a boolean whether the entity is updated => if its in the cache
+                InvokeEvent<onTick>(entity, cache.contains(entity));
             }
         }
     }

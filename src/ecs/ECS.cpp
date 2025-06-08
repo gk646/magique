@@ -52,7 +52,20 @@ namespace magique
 
     bool EntityIsActor(const entt::entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
 
-    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map)
+    entt::entity GetEntity(const EntityType type)
+    {
+        for (const auto entity : internal::REGISTRY.view<entt::entity>())
+        {
+            const auto& pos = internal::REGISTRY.get<const PositionC>(entity);
+            if (pos.type == type)
+            {
+                return entity;
+            }
+        }
+        return entt::null;
+    }
+
+    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -60,16 +73,19 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& registry = internal::REGISTRY;
 
-        const auto it = ecs.typeMap.find(type);
-        if (it == ecs.typeMap.end())
-        {
-            LOG_ERROR("No method create method registered for that entity type!");
-            return entt::null; // EntityType not registered
-        }
         const auto entity = registry.create(static_cast<entt::entity>(ecs.entityID++));
-
         registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-        it->second(entity, type);
+
+        if (withFunc) [[likely]]
+        {
+            const auto it = ecs.typeMap.find(type);
+            if (it == ecs.typeMap.end())
+            {
+                LOG_ERROR("No method create method registered for that entity type!");
+                return entt::null; // EntityType not registered
+            }
+            it->second(entity, type);
+        }
 
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
@@ -84,12 +100,17 @@ namespace magique
         // Creating entities shouldn't happen that often - like this we can avoid the checks in tighter methods
         auto& pathData = global::PATH_DATA;
         if (!pathData.mapsStaticGrids.contains(map))
+        {
             pathData.mapsStaticGrids.add(map);
+        }
         if (!pathData.mapsDynamicGrids.contains(map))
+        {
             pathData.mapsDynamicGrids.add(map);
-
+        }
         if (!global::DY_COLL_DATA.mapEntityGrids.contains(map))
+        {
             global::DY_COLL_DATA.mapEntityGrids.add(map);
+        }
 
         return entity;
     }
@@ -218,7 +239,7 @@ namespace magique
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(0),
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CIRCLE);
     }
 
@@ -243,7 +264,11 @@ namespace magique
         return internal::REGISTRY.emplace<AnimationC>(entity, animation, startState);
     }
 
-    void GiveCamera(const entt::entity entity) { internal::REGISTRY.emplace<CameraC>(entity); }
+    void GiveCamera(const entt::entity entity)
+    {
+        internal::REGISTRY.emplace<CameraC>(entity);
+        global::ENGINE_DATA.cameraMap = GetComponent<const PositionC>(entity).map;
+    }
 
     OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, const Shape shape)
     {

@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/internal/Macros.h>
 #include <magique/util/Math.h>
+#include <raylib/raylib.h>
+
+#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -36,6 +39,32 @@ namespace magique
         constexpr float EPSILON = 0.00001F;
         const float fractionalPart = num - static_cast<float>(static_cast<int>(num));
         return (fractionalPart < EPSILON) || (1.0F - fractionalPart < EPSILON);
+    }
+
+    Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, const float radius, const float angle)
+    {
+        const auto direction = GetDirectionFromAngle(angle);
+        return {middle.x + direction.x * radius, middle.y + direction.y * radius};
+    }
+
+    Point GetDirectionFromAngle(const float angle)
+    {
+        const float radians = angle * DEG2RAD;
+        return {sinf(radians), cosf(radians)};
+    }
+
+    Point GetDirectionVector(const Point current, const Point target)
+    {
+        const float diffX = target.x - current.x;
+        const float diffY = target.y - current.y;
+        float lenSquared = (diffX * diffX) + (diffY * diffY);
+        if (lenSquared != 0.0f)
+        {
+            SquareRoot(lenSquared);
+            const float invLen = 1.0f / lenSquared;
+            return {diffX * invLen, diffY * invLen};
+        }
+        return {0.0f, 0.0f};
     }
 
 

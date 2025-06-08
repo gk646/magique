@@ -6,7 +6,6 @@
 #include <magique/core/Camera.h>
 
 #include "internal/globals/PathFindingData.h"
-#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -93,20 +92,6 @@ namespace magique
     }
 
     bool GetIsEntityPathSolid(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
-
-    Point GetDirectionVector(const Point current, const Point target)
-    {
-        const float diffX = target.x - current.x;
-        const float diffY = target.y - current.y;
-        float lenSquared = (diffX * diffX) + (diffY * diffY);
-        if (lenSquared != 0.0f)
-        {
-            SquareRoot(lenSquared);
-            const float invLen = 1.0f / lenSquared;
-            return {diffX * invLen, diffY * invLen};
-        }
-        return {0.0f, 0.0f};
-    }
 
     void DrawPath(const std::vector<Point>& path)
     {

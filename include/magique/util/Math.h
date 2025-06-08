@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_MATH_H
 #define MAGIQUE_MATH_H
 
+#include "magique/core/Types.h"
+
 //===============================
 // Math Module
 //===============================
@@ -37,6 +39,19 @@ namespace magique
 
     // Returns true of the given float is a whole number (e.g. 3.0F)
     bool IsWholeNumber(float num);
+
+    // Returns the point on the given circle that intersects the given angle
+    //      - angle: 0-360 starting from the top clockwise
+    Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, float radius, float angle);
+
+    // Returns the direction vector of the given angle
+    //      - angle: 0-360 starting from the top clockwise
+    Point GetDirectionFromAngle(float angle);
+
+    // Returns a normalized direction vector that points from the current to the target position
+    // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
+    Point GetDirectionVector(Point current, Point target);
+
 
 } // namespace magique
 

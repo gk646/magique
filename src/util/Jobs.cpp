@@ -95,6 +95,7 @@ namespace magique
         {
             scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
         }
+        LOG_INFO("Initialized JobSystem with %d threads", MAGIQUE_WORKER_THREADS);
         return true;
     }
 

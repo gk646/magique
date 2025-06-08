@@ -48,7 +48,7 @@ namespace magique
     struct CollisionC final
     {
         float p1 = 0.0F;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
+        float p2 = 0.0F;                   // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
         float p3 = 0.0F;                   //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F;                   //                                                   / TRIANGLE: offsetY2
         int16_t anchorX = 0;               // Rotation anchor point for the hitbox

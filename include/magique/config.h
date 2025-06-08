@@ -16,6 +16,8 @@
 // Logic ticks per second
 #define MAGIQUE_LOGIC_TICKS 60
 
+#define MAGIQUE_TICK_TIME (1.0F / MAGIQUE_LOGIC_TICKS)
+
 // Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 physical cores
 #define MAGIQUE_WORKER_THREADS 3
 
