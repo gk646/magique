@@ -269,15 +269,22 @@ namespace magique
 
     //----------------- KEYBIND -----------------//
 
-    Keybind::Keybind(const int keyCode, const bool shiftDown, const bool CTRLDown, const bool altDown)
+    Keybind::Keybind(const int keyCode, bool UIinput, const bool shift, const bool ctrl, const bool alt)
     {
-        data = static_cast<uint16_t>(keyCode & 0x1FFF);
-        if (shiftDown)
-            data |= (1 << 13);
-        if (CTRLDown)
-            data |= (1 << 14);
-        if (altDown)
-            data |= (1 << 15);
+        key = static_cast<uint16_t>(keyCode);
+
+        if (shift)
+        {
+            modifier.shift = 1;
+        }
+        if (ctrl)
+        {
+            modifier.ctrl = 1;
+        }
+        if (alt)
+        {
+            modifier.alt = 1;
+        }
     }
 
     bool Keybind::isPressed() const
@@ -324,13 +331,13 @@ namespace magique
 
     bool Keybind::isReleased() const { return IsKeyReleased(getKey()); }
 
-    int Keybind::getKey() const { return data & 0x1FFF; }
+    int Keybind::getKey() const { return key; }
 
-    auto Keybind::hasShift() const -> bool { return data & 1 << 13; }
+    auto Keybind::hasShift() const -> bool { return modifier.shift == 1; }
 
-    auto Keybind::hasCtrl() const -> bool { return data & 1 << 14; }
+    auto Keybind::hasCtrl() const -> bool { return modifier.ctrl == 1; }
 
-    auto Keybind::hasAlt() const -> bool { return data & 1 << 15; }
+    auto Keybind::hasAlt() const -> bool { return modifier.alt == 1; }
 
     //----------------- PARTICLE -----------------//
 

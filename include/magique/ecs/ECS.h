@@ -33,7 +33,7 @@ namespace magique
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type, float x, float y, MapID map, bool withFunc = true);
+    entt::entity CreateEntity(EntityType type, float x, float y, MapID map, int rotation = 0, bool withFunc = true);
 
     // Creates a new entity with the given id
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
@@ -45,10 +45,16 @@ namespace magique
 
     //================= INTERACTION =================//
 
-    // Retrieves the specified component from the public registry
+    // Retrieves the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view
     template <typename T>
     T& GetComponent(entt::entity entity);
+
+    // Tries to retrieve the specified component from the global registry
+    // Note: When using views to iterate over entities it's faster to access components over the view
+    // Failure: Returns nullptr if the component is not present on the given entity
+    template <typename T>
+    T* TryGetComponent(entt::entity entity);
 
     // Uses emplace_back to add the component to the given entity
     // Args are the constructor arguments (if any)
@@ -143,6 +149,12 @@ namespace magique
         {
             return internal::REGISTRY.get<T>(entity);
         }
+    }
+    template <typename T>
+    T* TryGetComponent(const entt::entity entity)
+    {
+        static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
+        return internal::REGISTRY.try_get<T>(entity);
     }
     template <class Component, typename... Args>
     void GiveComponent(entt::entity entity, Args... args)

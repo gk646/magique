@@ -21,7 +21,7 @@ namespace magique
 
     TextField::TextField(float x, float y, float w, float h, ScalingMode scaling) : UIObject(x, y, w, h, scaling) {}
 
-    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, scaling) {}
+    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, 0.0F, scaling) {}
 
     const std::string& TextField::getText() const { return text; }
 

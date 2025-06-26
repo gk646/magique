@@ -86,10 +86,10 @@ namespace magique
     //================= UTILS =================//
 
     // Sets the engine font for performance-overlay and console
-    void SetFont(const Font& font);
+    void SetEngineFont(const Font& font);
 
     // Returns the default font used by the engine
-    const Font& GetFont();
+    const Font& GetEngineFont();
 
     namespace internal
     {

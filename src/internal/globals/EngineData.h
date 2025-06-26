@@ -76,6 +76,7 @@ namespace magique
 
         void updateCameraShake()
         {
+            return;
             auto& shake = cameraShake;
             auto& target = camera.target;
 
@@ -101,8 +102,8 @@ namespace magique
             if (shake.maxDist <= 0.1F  && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
             {
                 shake.veloc = {0,0};
-                camera.target.x = 0;
-                camera.target.y = 0;
+                //camera.target.x = 0;
+                //camera.target.y = 0;
             }
         }
     };

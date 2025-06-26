@@ -52,6 +52,8 @@ namespace magique
     // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
     Point GetDirectionVector(Point current, Point target);
 
+    // Returns the angle that spans from the current to target point
+    float GetAngleFromPoints(Point current, Point target);
 
 } // namespace magique
 

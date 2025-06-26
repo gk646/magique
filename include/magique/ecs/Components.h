@@ -115,7 +115,7 @@ namespace magique
     // If added entity will emit light
     struct EmitterC final
     {
-       // float radius = 50.0F; // Radius of the light
+        // float radius = 50.0F; // Radius of the light
         uint8_t r, g, b, a; // 0 - 255, a = transparency
         uint16_t intensity; // Style dependant - the size of the light
         LightStyle style;

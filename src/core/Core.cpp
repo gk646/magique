@@ -54,9 +54,9 @@ namespace magique
 
     void SetEnableCollisionSystem(const bool value) { global::ENGINE_CONFIG.enableCollisionSystem = value; }
 
-    void SetFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
+    void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }
 
-    const Font& GetFont() { return global::ENGINE_CONFIG.font; }
+    const Font& GetEngineFont() { return global::ENGINE_CONFIG.font; }
 
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 

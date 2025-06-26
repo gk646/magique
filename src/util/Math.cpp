@@ -67,5 +67,22 @@ namespace magique
         return {0.0f, 0.0f};
     }
 
+    float GetAngleFromPoints(const Point current, const Point target)
+    {
+        const float dx = target.x - current.x;
+        const float dy = target.y - current.y;
+        if (dx == 0 && dy == 0)
+        {
+            return 0.0f;
+        }
+        const float angle = std::atan2f(dy, dx);
+        const float angleDegrees = angle * RAD2DEG;
+        float gameAngleDegrees = 90.0F + angleDegrees;
+        if (gameAngleDegrees < 0)
+        {
+            gameAngleDegrees += 360.0f;
+        }
+        return gameAngleDegrees;
+    }
 
 } // namespace magique

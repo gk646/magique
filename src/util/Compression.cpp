@@ -30,7 +30,7 @@ namespace magique
             return {nullptr, 0};
         }
 
-        // Allocate exacty data
+        // Allocate exact data
         auto* result = new unsigned char[compressedSize];
         std::memcpy(result, compressedData, compressedSize);
 
@@ -58,7 +58,8 @@ namespace magique
             LOG_ERROR("Failed to decompress data");
             return {nullptr, 0};
         }
-        // Allocate exacty data
+
+        // Allocate exact data
         auto* result = new unsigned char[decompressedSize];
         std::memcpy(result, decompressedData, decompressedSize);
 

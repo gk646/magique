@@ -30,7 +30,8 @@ namespace magique
         // Creates the object from absolute dimensions in the logical UI resolution (see ui/UI.h)
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIObject(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIObject(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
+        UIObject(float w, float h, Anchor anchor = Anchor::NONE, float inset = 0,
+                 ScalingMode scaling = ScalingMode::FULL);
 
         //================= CORE =================//
 
@@ -81,8 +82,9 @@ namespace magique
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
         // Note: Anchoring is updated each tick automatically
         // Default: NONE
-        void setAnchor(Anchor anchor);
+        void setAnchor(Anchor anchor, float inset = 0.0F);
         [[nodiscard]] Anchor getAnchor() const;
+        [[nodiscard]] float getInset() const;
 
         // Controls the scaling mode of the object
         // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
@@ -96,7 +98,8 @@ namespace magique
         virtual ~UIObject();
 
     private:
-        float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        float px = 0, py = 0, pw = 0, ph = 0; // Percent values for the dimensions
+        float inset = 0.0F;
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;

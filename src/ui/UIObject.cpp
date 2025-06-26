@@ -20,10 +20,10 @@ namespace magique
         global::UI_DATA.registerObject(this);
     }
 
-    UIObject::UIObject(const float w, const float h, const Anchor anchor, const ScalingMode scaling) :
+    UIObject::UIObject(const float w, const float h, const Anchor anchor, const float inset, const ScalingMode scaling) :
         UIObject(0, 0, w, h, scaling)
     {
-        setAnchor(anchor);
+        setAnchor(anchor, inset);
     }
 
     void UIObject::draw()
@@ -136,7 +136,8 @@ namespace magique
 
         if (anchor != Anchor::NONE)
         {
-            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height);
+            auto val = GetScaled(inset);
+            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height,val );
             bounds.x = pos.x;
             bounds.y = pos.y;
         }
@@ -170,7 +171,13 @@ namespace magique
 
     Anchor UIObject::getAnchor() const { return anchor; }
 
-    void UIObject::setAnchor(const Anchor newAnchor) { anchor = newAnchor; }
+    float UIObject::getInset() const { return inset; }
+
+    void UIObject::setAnchor(const Anchor newAnchor, const float inset)
+    {
+        anchor = newAnchor;
+        this->inset = inset;
+    }
 
     void UIObject::setScalingMode(const ScalingMode newScaling) { scaleMode = newScaling; }
 

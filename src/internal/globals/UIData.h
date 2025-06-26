@@ -19,7 +19,7 @@ namespace magique
         vector<UIObject*> objects;
         vector<UIObject*> containers;
         HashSet<UIObject*> objectsSet;
-        Point dragStart;
+        Point dragStart{-1, -1};
         float scaleX = 1.0F;
         float scaleY = 1.0F;
         float mouseX = 0.0F;
@@ -30,14 +30,14 @@ namespace magique
         // Called at the end of the update tick
         void update()
         {
-            scaleX = MAGIQUE_UI_RESOLUTION_X / static_cast<float>(GetScreenWidth());
-            scaleY = MAGIQUE_UI_RESOLUTION_Y / static_cast<float>(GetScreenHeight());
+            scaleX = static_cast<float>(GetScreenWidth()) / MAGIQUE_UI_RESOLUTION_X;
+            scaleY = static_cast<float>(GetScreenHeight()) / MAGIQUE_UI_RESOLUTION_Y;
             const auto [mx, my] = GetMousePosition();
             mouseX = mx;
             mouseY = my;
             inputConsumed = false;
 
-            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
             {
                 dragStart = {mx, my};
             }

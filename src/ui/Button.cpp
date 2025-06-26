@@ -13,7 +13,7 @@ namespace magique
 
     Button::Button(const float w, const float h, const Anchor anchor) : UIObject(w, h, anchor) {}
 
-    void Button::updateButtonActions(const Rectangle& bounds)
+    void Button::updateActions(const Rectangle& bounds)
     {
         const auto mouse = GetMousePos();
         const auto dragStart = GetDragStartPosition();

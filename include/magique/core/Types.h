@@ -45,7 +45,7 @@ namespace magique
         RAY_TRACING,    // Slow but provides global illumination - max of ~50 object
     };
 
-    //================= ASSETS  =================//
+    //================= ASSETS =================//
 
     // Used in any of the loader interfaces
     // Priority is handled based on semantic meaning e.g. MEDIUM is before LOW
@@ -507,13 +507,19 @@ namespace magique
         NONE,
     };
 
+    enum class SliderMode : uint8_t
+    {
+        BALANCED,
+        IMBALANCED,
+    };
+
     //================= HELPER TYPES =================//
 
     // Efficient representation of a keybind with optional modifiers
     struct Keybind final
     {
         Keybind() = default;
-        explicit Keybind(int keyCode, bool shiftDown = false, bool CTRLDown = false, bool altDown = false);
+        explicit Keybind(int keyCode, bool UIinput = true, bool shift = false, bool ctrl = false, bool alt = false);
 
         // Returns true if the keybind is pressed
         [[nodiscard]] bool isPressed() const;
@@ -531,7 +537,13 @@ namespace magique
         [[nodiscard]] bool hasAlt() const;
 
     private:
-        uint16_t data = 0;
+        uint16_t key = 0;
+        struct Modifiers
+        {
+            uint8_t shift : 1, ctrl : 1, alt : 1;
+
+        } modifier{};
+        bool uiInput = false;
     };
 
     struct ScreenParticle final

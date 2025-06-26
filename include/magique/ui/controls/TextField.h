@@ -43,7 +43,7 @@ namespace magique
         void updateInputs();
 
         // Draws the text
-        void drawText(float size, Color txt, Color cursor, const Font& font = GetFont(), float spacing = 1) const;
+        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1) const;
 
         // Draws the default graphical representation of this textfield
         void drawDefault(const Rectangle& bounds) const;

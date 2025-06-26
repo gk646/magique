@@ -1,7 +1,6 @@
 #ifndef RENDERUTIL_H
 #define RENDERUTIL_H
 
-
 namespace magique
 {
     inline void HandleLoadingScreen(Game& game)
@@ -44,13 +43,13 @@ namespace magique
             targetPosition = internal::REGISTRY.get<PositionC>(cameraEntity).getPosition();
         }
 
-        // Center the camera on the collision shape if provided
+        // Apply manual offset if specified
         if (config.cameraPositionOff.x != 0.0F || config.cameraPositionOff.y != 0.0F)
         {
             targetPosition.x += config.cameraPositionOff.x;
             targetPosition.y += config.cameraPositionOff.y;
         }
-        else
+        else // Center the camera on the collision shape if provided
         {
             CollisionC* coll = internal::REGISTRY.try_get<CollisionC>(cameraEntity);
             if (coll != nullptr)

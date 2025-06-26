@@ -109,6 +109,7 @@ namespace magique
 
     inline void HandleCollisionPairs()
     {
+        // TODO if descturction is allowed references to componets can invalidate!! so we cant really cache them...
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
         const auto& colVec = global::ENGINE_DATA.collisionVec;
         const auto& group = internal::POSITION_GROUP;
@@ -123,7 +124,10 @@ namespace magique
                 auto num = static_cast<uint64_t>(e1) << sizeof(uint32_t) | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
+                {
                     continue;
+                }
+
                 pairSet.insert(it, num);
 
                 auto secondInfo = info; // Prepare second info
@@ -132,7 +136,7 @@ namespace magique
 
                 // Call for first entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                const bool invokeEvent = group.contains(e1) && group.contains(e2);
+                bool invokeEvent = group.contains(e1) && group.contains(e2);
                 if (invokeEvent)
 #endif
                     InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
@@ -144,6 +148,7 @@ namespace magique
 
                 // Call for second entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
+                invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
                 if (invokeEvent)
 #endif
                     InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);

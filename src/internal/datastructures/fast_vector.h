@@ -91,8 +91,8 @@ struct fast_vector
     template <class... Args>
     void emplace_back(Args&&... args) noexcept;
 
-    void insert(T* pos, T&& object);
-    void insert(T* pos, const T& object);
+    void insert(const T* pos, T&& object);
+    void insert(const T* pos, const T& object);
 
     // Keeps order
     bool erase(const T& val);
@@ -437,7 +437,7 @@ void fast_vector<T>::emplace_back(Args&&... args) noexcept
 }
 
 template <class T>
-void fast_vector<T>::insert(T* pos, T&& object)
+void fast_vector<T>::insert(const T* pos, T&& object)
 {
     assert(pos >= m_data && pos <= m_data + m_size && "Iterator out of bounds");
 
@@ -466,7 +466,7 @@ void fast_vector<T>::insert(T* pos, T&& object)
 }
 
 template <class T>
-void fast_vector<T>::insert(T* pos, const T& object)
+void fast_vector<T>::insert(const T* pos, const T& object)
 {
     assert(pos >= m_data && pos <= m_data + m_size && "Iterator out of bounds");
 

@@ -65,7 +65,8 @@ namespace magique
         return entt::null;
     }
 
-    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, const bool withFunc)
+    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, int rotation,
+                              const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -74,7 +75,7 @@ namespace magique
         auto& registry = internal::REGISTRY;
 
         const auto entity = registry.create(static_cast<entt::entity>(ecs.entityID++));
-        registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
+        registry.emplace<PositionC>(entity, x, y, map, type, static_cast<uint16_t>(rotation)); // PositionC is default
 
         if (withFunc) [[likely]]
         {
@@ -147,7 +148,6 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;
         auto& registry = internal::REGISTRY;
-
         if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
