@@ -11,7 +11,11 @@ namespace magique
 {
     Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
 
-    Button::Button(const float w, const float h, const Anchor anchor) : UIObject(w, h, anchor) {}
+    Button::Button(const float w, const float h, const Anchor anchor, const float inset) : UIObject(w, h, anchor, inset)
+    {
+    }
+
+    void Button::wireOnClick(ClickFunc func) { clickFunc = func; }
 
     void Button::updateActions(const Rectangle& bounds)
     {
@@ -27,6 +31,10 @@ namespace magique
                     if (IsMouseButtonReleased(i))
                     {
                         onClick(bounds, i);
+                        if (clickFunc)
+                        {
+                            clickFunc(bounds, i);
+                        }
                     }
                 }
             }
@@ -47,7 +55,7 @@ namespace magique
         const auto& theme = global::ENGINE_CONFIG.theme;
         const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
         const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
-        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ?  theme.backDark :  theme.backDark;
+        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
     }

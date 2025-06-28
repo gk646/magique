@@ -24,9 +24,15 @@ namespace magique
         return val / ACCURACY;
     }
 
-    Vector2 GetCenteredPos(const Rectangle within, const float width, const float height)
+    Vector2 GetCenteredPos(const Rectangle& within, const float width, const float height)
     {
         return Vector2{within.x + ((within.width - width) / 2), within.y + ((within.height - height) / 2)};
     }
+
+    Vector2 GetRectCenter(const Rectangle& rect)
+    {
+        return Vector2{rect.x + rect.width / 2.0F, rect.y + rect.height / 2.0F};
+    }
+
 
 } // namespace magique

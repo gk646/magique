@@ -21,7 +21,9 @@ namespace magique
     float GetRandomFloat(float min, float max);
 
     // Returns the top left point to center something with the given width and height within the rectangle 'within'
-    Vector2 GetCenteredPos(Rectangle within, float width, float height);
+    Vector2 GetCenteredPos(const Rectangle& within, float width, float height);
+
+    Vector2 GetRectCenter(const Rectangle& rect);
 
 } // namespace magique
 

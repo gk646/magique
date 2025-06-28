@@ -66,7 +66,6 @@ namespace magique
             const auto radius = GetScaled(15);
             const auto knobVec = Vector2{sliderKnob.x, sliderKnob.y};
             const auto dragStarted = CheckCollisionPointCircle(Vector2{dragStart.x, dragStart.y}, knobVec, radius);
-            const auto mouseInKnob = CheckCollisionPointCircle(Vector2{mouse.x, mouse.y}, knobVec, radius);
 
             // Ensure click started within knob
             if (dragStarted)
@@ -93,7 +92,7 @@ namespace magique
             isHovered = false;
         }
 
-        if (isDragged&& IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        if (isDragged && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             const auto delta = GetMouseDelta();
             sliderPos = clamp(sliderPos + delta.x / bounds.width, 0.0F, 1.0F);
@@ -102,7 +101,6 @@ namespace magique
         {
             isDragged = false;
         }
-
     }
 
     void Slider::drawDefault(const Rectangle& bounds) const
@@ -127,7 +125,7 @@ namespace magique
     Point Slider::getKnobPosition() const
     {
         const auto bounds = getBounds();
-        return magique::Point{bounds.x + sliderPos * bounds.width, bounds.y + bounds.height / 2.0F};
+        return Point{bounds.x + sliderPos * bounds.width, bounds.y + bounds.height / 2.0F};
     }
 
 

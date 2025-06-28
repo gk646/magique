@@ -513,6 +513,8 @@ namespace magique
         IMBALANCED,
     };
 
+    using ClickFunc = void (*)(const Rectangle& bounds, int mouseButton);
+
     //================= HELPER TYPES =================//
 
     // Efficient representation of a keybind with optional modifiers

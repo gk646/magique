@@ -26,12 +26,6 @@ int APPLE_DELAY = 90;
 bool GAMEOVER = false;
 magique::Slider SPEED_SLIDER{150, 50, magique::Anchor::TOP_RIGHT, 50};
 
-struct SnakeC final
-{
-    Direction direction = UP;
-    entt::entity next = entt::null;
-};
-
 void resetGame()
 {
     SCORE = 0;
@@ -39,9 +33,29 @@ void resetGame()
     GAMEOVER = false;
     SPEED_SLIDER.setSliderPercent(0.5);
     magique::DestroyEntities({SNAKE_TAIL, SNAKE_HEAD, APPLE});
-    auto head = magique::CreateEntity(SNAKE_HEAD, GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE,
-                                      GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE, {});
+    magique::CreateEntity(SNAKE_HEAD, GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE,
+                          GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE, {});
 }
+
+struct RestartButton : magique::Button
+{
+    RestartButton() : Button(100, 100, magique::Anchor::MID_CENTER) {}
+    void onDraw(const Rectangle& bounds) override
+    {
+        drawDefault(bounds);
+        magique::DrawCenteredText(magique::GetEngineFont(), "Restart", magique::GetRectCenter(bounds), 20);
+    }
+    void onClick(const Rectangle& bounds, int button) override { resetGame(); }
+};
+
+RestartButton RESTART_BUTTON{};
+
+struct SnakeC final
+{
+    Direction direction = UP;
+    entt::entity next = entt::null;
+};
+
 
 struct SnakeScript : magique::EntityScript
 {
@@ -218,7 +232,7 @@ struct Snake final : magique::Game
     {
         if (GAMEOVER)
         {
-            //shutDown();
+            return;
         }
 
         static int appleCounter = 0;
@@ -270,7 +284,7 @@ struct Snake final : magique::Game
         magique::DrawCenteredText(magique::GetEngineFont(), text, Vector2{GetScreenWidth() / 2.0F, 75}, 20);
 
         text = std::string{std::string("Speed: ") + std::to_string(SPEED_SLIDER.getSliderValue())}.c_str();
-        const auto textPos = magique::GetUIAnchor(magique::Anchor::TOP_RIGHT, 0, 0,100);
+        const auto textPos = magique::GetUIAnchor(magique::Anchor::TOP_RIGHT, 0, 0, 100);
         magique::DrawCenteredText(magique::GetEngineFont(), text, Vector2{textPos.x, textPos.y}, 20);
 
 
@@ -281,7 +295,6 @@ struct Snake final : magique::Game
         for (const auto e : magique::GetDrawEntities())
         {
             const auto& pos = magique::GetComponent<const magique::PositionC>(e);
-            auto color = PURPLE;
             if (pos.type == SNAKE_HEAD)
             {
                 DrawRectangle((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, BLUE);
@@ -299,7 +312,14 @@ struct Snake final : magique::Game
         EndMode2D();
     }
 
-    void drawUI(GameState gameState) override { SPEED_SLIDER.draw(); }
+    void drawUI(GameState gameState) override
+    {
+        SPEED_SLIDER.draw();
+        if (GAMEOVER)
+        {
+            RESTART_BUTTON.draw();
+        }
+    }
 };
 
 
