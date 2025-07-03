@@ -66,12 +66,12 @@ namespace magique
 
     entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
 
-    void AddCameraShakeImpulse(Point direction, float maxDistance, float velocity, float decay)
+    void AddCameraShakeImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
     {
         auto& shake = global::ENGINE_DATA.cameraShake;
         shake.decay = decay;
         shake.direction = shake.direction + direction;
-        float magnitude = sqrt(shake.direction.x * shake.direction.x + shake.direction.y * shake.direction.y);
+        float const magnitude = sqrtf(shake.direction.x * shake.direction.x + shake.direction.y * shake.direction.y);
         shake.direction.x /= magnitude;
         shake.direction.y /= magnitude;
         shake.maxDist = maxDistance;

@@ -225,7 +225,7 @@ namespace magique
 
         auto drawCompass = [&](Color color)
         {
-            constexpr float DISTANCE = 10'000;
+            constexpr float DISTANCE = 100'000;
             constexpr int MARKER_GAP = 250; // Pixels between each marker
             constexpr int MARKER_SIZE = 30; // Pixels between each marker
 
@@ -270,13 +270,33 @@ namespace magique
                 {
                     const float cellX = static_cast<float>(currX) * cellSize;
                     const float cellY = static_cast<float>(currY) * cellSize;
-                    const Rectangle rect = {cellX, cellY, (float)cellSize, (float)cellSize};
                     const bool isSolid = PathFindingData::IsCellSolid(cellX, cellY, staticGrid, dynamicGrid);
                     if (isSolid)
+                    {
+                        const Rectangle rect = {cellX, cellY, (float)cellSize, (float)cellSize};
                         DrawRectangleRec(rect, ColorAlpha(RED, 0.4F));
-                    DrawRectangleLinesEx(rect, 1, BLACK);
+                    }
                 }
             }
+
+            // Draw vertical lines
+            const float cellY = static_cast<float>(startY) * cellSize;
+            const float cellYBottom = static_cast<float>(startY + height) * cellSize;
+            for (int currX = startX; currX < startX + width; ++currX)
+            {
+                const float cellX = static_cast<float>(currX) * cellSize;
+                DrawLineEx({cellX, cellY}, {cellX, cellYBottom}, 1, BLACK);
+            }
+
+            // Draw horizontal lines
+            const float cellX = static_cast<float>(startX) * cellSize;
+            const float cellXRight = static_cast<float>(startX + width) * cellSize;
+            for (int currY = startY; currY < startY + height; ++currY)
+            {
+                const float cellY = static_cast<float>(currY) * cellSize;
+                DrawLineEx({cellX, cellY}, {cellXRight, cellY}, 1, BLACK);
+            }
+
         };
 
         BeginMode2D(GetCamera());

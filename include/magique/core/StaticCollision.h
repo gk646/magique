@@ -64,14 +64,18 @@ namespace magique
     {
         ManualColliderGroup();
 
-        // Adds a rect collider to the given with the given dimensions
-        void addRectCollider(float x, float y, float width, float height);
+        // Adds a rect collider with the given dimensions (topleft and dimensions)
+        void addRect(float x, float y, float width, float height);
+
+        // Adds a rect collider centered on the given position
+        void addRectCentered(float x, float y, float width, float height);
 
         // Returns the id of the collider group
         [[nodiscard]] int getID() const;
 
         // Returns the current colliders part of the group
         [[nodiscard]] const std::vector<StaticCollider>& getColliders() const;
+
 
     private:
         std::vector<StaticCollider> colliders;

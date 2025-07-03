@@ -220,9 +220,14 @@ namespace magique
 
     ManualColliderGroup::ManualColliderGroup() : id(MANUAL_GROUP_ID++) {}
 
-    void ManualColliderGroup::addRectCollider(const float x, const float y, const float width, const float height)
+    void ManualColliderGroup::addRect(const float x, const float y, const float width, const float height)
     {
         colliders.push_back({x, y, width, height});
+    }
+
+    void ManualColliderGroup::addRectCentered(const float x, const float y, const float width, const float height)
+    {
+        colliders.push_back({x - width / 2, y - height / 2, width, height});
     }
 
     int ManualColliderGroup::getID() const { return id; }
