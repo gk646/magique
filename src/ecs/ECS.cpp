@@ -116,7 +116,7 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, const float x, const float y, MapID map)
+    entt::entity CreateEntityNetwork(const entt::entity id, EntityType type, const float x, const float y, MapID map)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -167,6 +167,7 @@ namespace magique
             }
             UnorderedDelete(data.drawVec, entity);
             UnorderedDelete(data.entityUpdateVec, entity);
+            global::PATH_DATA.solidEntities.erase(entity);
             return true;
         }
         return false;
@@ -196,6 +197,7 @@ namespace magique
             dyCollData.mapEntityGrids.clear();
             internal::REGISTRY.clear();
             data.cameraEntity = entt::entity{UINT32_MAX};
+            global::PATH_DATA.solidEntities.clear();
             return;
         }
 

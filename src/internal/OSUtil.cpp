@@ -66,6 +66,10 @@ void WaitTime(const double destinationTime, double sleepSeconds)
     if (sleepSeconds < 0) [[unlikely]]
         return; // Security check
 
+    if (destinationTime < GetTime()) [[unlikely]]
+    {
+        return;
+    }
     // System halt functions
 #if defined(_WIN32)
     Sleep(static_cast<unsigned long>(sleepSeconds * 1000.0));

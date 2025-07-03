@@ -22,7 +22,7 @@
 //              - The clients are basically only remote controlling their character in the hosts simulation
 //         CONS:
 //              - Doesn't work well with large amounts of people (host has to simulate game and incoming messages)
-//              - The host has no latency (as the simulates the gamestate)
+//              - The host has no latency (as it simulates the gamestate)
 //              - It's easier for the host to cheat compared to the server model
 //
 //      How to use it:
@@ -44,7 +44,7 @@ namespace magique
 
     // Returns a network message object to be sent via the network - should be used directly and not stored
     // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
-    // Note: The passed data will be copied when batching or sending so you should pass it directly (stack and heap memory)
+    // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)
     Payload CreatePayload(const void* data, int size, MessageType type);
 
     // Starts a new batch or appends to an existing one - batches until SendLocalBatch() is called
@@ -71,7 +71,7 @@ namespace magique
 
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
-    // IMPORTANT: Each call cleans up the previously returned messages
+    // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna its information)
     const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = 100);
 
     //================= UTIL =================//

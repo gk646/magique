@@ -1,9 +1,14 @@
 #ifndef MAGIQUE_PATHFINDING_EXAMPLE_H
 #define MAGIQUE_PATHFINDING_EXAMPLE_H
 
+#include "magique/core/Camera.h"
+#include "magique/util/Math.h"
+
+
 #include <raylib/raylib.h>
 
 #include <magique/core/Game.h>
+#include <magique/util/Logging.h>
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
 #include <magique/core/StaticCollision.h>
@@ -23,7 +28,10 @@ enum EntityType : uint16_t
     HUNTER,
 };
 
-constexpr float MOVE_SPEED = 2.5F;
+constexpr float MOVE_SPEED = 2.5;
+std::vector<Point> PATH{};
+std::vector<Point> PATH2{};
+ManualColliderGroup COLLIDERS;
 
 struct PlayerScript final : EntityScript
 {
@@ -46,14 +54,34 @@ struct Hunter final : EntityScript
     void onTick(entt::entity self, bool updated) override
     {
         auto& pos = GetComponent<PositionC>(self);
-        auto& tarPos = GetComponent<PositionC>(GetCameraEntity()); // Player is the camera holder here
+        const auto targetEntity = GetCameraEntity();
+        auto& tarPos = GetComponent<PositionC>(targetEntity); // Player is the camera holder here
 
-        Point nextPoint = GetNextOnPath(pos.getPosition(), tarPos.getPosition(), pos.map);
-        Point moveVec = GetDirectionVector(pos.getPosition(), nextPoint);
+        auto mid = pos.getMiddle(GetComponent<CollisionC>(self));
+        auto target = tarPos.getMiddle(GetComponent<CollisionC>(targetEntity));
+
+
+        if (mid.euclidean(target) < 27)
+            return;
+
+        StartTimer(0);
+        for (int i = 0; i < 100; ++i)
+        {
+            if (!FindPath(PATH, mid, target, pos.map, 1'000))
+            {
+                LOG_WARNING("Could not find path!");
+                return;
+            }
+        }
+
+        Point nextPoint = PATH[PATH.size() - 1];
+        Point moveVec = GetDirectionVector(mid, nextPoint);
+
         pos.x += moveVec.x * MOVE_SPEED;
-        pos.y += moveVec.y * MOVE_SPEED;
+       pos.y += moveVec.y * MOVE_SPEED;
     }
 };
+
 
 struct Example final : Game
 {
@@ -61,12 +89,13 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetGameState({}); // Set empty gamestate - needs to be set in a real game
+        SetTargetFPS(100);
+        //SetBenchmarkTicks(300);
+        SetWindowState(FLAG_WINDOW_RESIZABLE);
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e); // Don't forget to give your player the actor component!
-
             GiveCamera(e);
             GiveCollisionRect(e, 25, 25);
         };
@@ -81,18 +110,30 @@ struct Example final : Game
 
         // Create some objects - hunter is randomly positioned
         const MapID map = MapID::DEFAULT;
-        CreateEntity(PLAYER, 0, 0, map);
-        CreateEntity(HUNTER, GetRandomValue(250, 1000), GetRandomValue(250, 1000), map);
+        CreateEntity(PLAYER, 50, 500, map);
+        CreateEntity(HUNTER, 50, 50, map);
 
-        ManualColliderGroup myGroup;
 
-        // Create pillars around the origin - offset the negative elements cause you specify the top left point
-        myGroup.addRectCollider(150, 150, 50, 50);
-        myGroup.addRectCollider(-200, 150, 50, 50);
-        myGroup.addRectCollider(150, -200, 50, 50);
-        myGroup.addRectCollider(-200, -200, 50, 50);
+        float size = 48;
+        // #######
+        // #     #
+        // ##### #
+        // #     #
+        // # #####
+        // #     #
+        // ##### #
+        // #     #
+        // # #####
+        // Row 0: #######
 
-        AddColliderGroup(MapID::DEFAULT, myGroup);
+
+
+
+
+        AddColliderGroup(MapID::DEFAULT, COLLIDERS);
+
+        SetShowCompassOverlay(true);
+        SetShowPathFindingOverlay(true);
     }
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
@@ -109,16 +150,14 @@ struct Example final : Game
             const auto& pos = GetComponent<const PositionC>(GetCameraEntity());
             const auto& tarPos = GetComponent<const PositionC>(entt::entity(1)); // Unsafe
 
-            // Draws the pathfinding grid
-            DrawPathFindingGrid(MapID::DEFAULT);
+            // Solid objects
+            for (const auto& col : COLLIDERS.getColliders())
+            {
+                DrawRectangleRec({col.x, col.y, col.p1, col.p2}, DARKGRAY);
+            }
 
-            // Solid Objects -
-            DrawRectangle(150, 150, 50, 50, GRAY);
-            DrawRectangle(-200, 150, 50, 50, GRAY);
-            DrawRectangle(150, -200, 50, 50, GRAY);
-            DrawRectangle(-200, -200, 50, 50, GRAY);
-
-            Draw2DCompass(DARKGREEN);
+            DrawPath(PATH, BLUE);
+            DrawPath(PATH2, GREEN);
         }
         EndMode2D();
     }

@@ -51,5 +51,4 @@ namespace magique
 
 } // namespace magique
 
-
 #endif //MAGIQUE_LOCAL_SOCKETS_H

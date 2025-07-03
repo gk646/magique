@@ -9,21 +9,24 @@
 
 namespace magique
 {
-    void FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int searchLen)
+    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int searchLen)
     {
         auto& path = global::PATH_DATA;
         constexpr int capacity = MAGIQUE_PATHFINDING_SEARCH_CAPACITY;
         const int maxLen = std::min(searchLen == 0 ? capacity : searchLen, capacity);
-        path.findPath(pathVec, start, end, map, maxLen);
+        return path.findPath(pathVec, start, end, map, maxLen);
     }
 
-    Point GetNextOnPath(const Point start, const Point end, const MapID map, const int searchLen)
+    bool GetNextOnPath(Point& next, const Point start, const Point end, const MapID map, const int searchLen)
     {
         auto& path = global::PATH_DATA;
         FindPath(path.pathCache, start, end, map, searchLen);
         if (path.pathCache.empty())
-            return {0, 0};
-        return path.pathCache[path.pathCache.size() - 1];
+        {
+            return false;
+        }
+        next = path.pathCache[path.pathCache.size() - 1];
+        return true;
     }
 
     // Same as FindPath() but allows to specify the dimensions of the searching entity
@@ -93,14 +96,14 @@ namespace magique
 
     bool GetIsEntityPathSolid(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
 
-    void DrawPath(const std::vector<Point>& path)
+    void DrawPath(const std::vector<Point>& path, Color color)
     {
         constexpr int halfSize = MAGIQUE_PATHFINDING_CELL_SIZE / 2;
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
         for (const auto p : path)
         {
             const Rectangle rect = {p.x - halfSize, p.y - halfSize, cellSize, cellSize};
-            DrawRectangleRec(rect, RED);
+            DrawRectangleRec(rect, color);
         }
     }
 

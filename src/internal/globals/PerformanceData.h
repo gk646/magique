@@ -189,8 +189,8 @@ namespace magique
             return;
 #endif
             LOG_INFO("Performance Stats:");
-            LOG_INFO("%-10s: CPU: %.2f ms | GPU: %.2f ms", "Avg Ticks", getAverageTime(DRAW) / 1'000'000,
-                     getAverageTime(UPDATE) / 1'000'000);
+            LOG_INFO("%-10s: CPU: %.2f ms | GPU: %.2f ms", "Avg Ticks", getAverageTime(UPDATE) / 1'000'000,
+                     getAverageTime(DRAW) / 1'000'000);
             LOG_INFO("%-10s: Max: %.2f mb", "Memory", maxMemoryBytes / 1'000'000.0F);
         }
 

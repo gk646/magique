@@ -3,8 +3,7 @@
 #define MAGIQUE_PATHFINDING_DATA_H
 
 #include <bitset>
-
-#include <magique/util/Logging.h>
+#include <magique/core/Camera.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/StaticCollisionData.h"
@@ -103,6 +102,50 @@ namespace magique
         void clear() { visited.clear(); }
     };
 
+    template <int size>
+    struct StaticDenseLookupGrid final
+    {
+        std::array<bool, size> rows[size]{};
+        int midX;
+        int midY;
+
+        void setMid(const Point& mid)
+        {
+            midX = (int)mid.x;
+            midY = (int)mid.y;
+        }
+
+        [[nodiscard]] bool getIsMarked(const float x, const float y) const
+        {
+            auto relX = (int)x - midX + size / 2;
+            auto relY = (int)y - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size)
+            {
+                return rows[relY][relX];
+            }
+            return true;
+        }
+
+        void setMarked(const float x, const float y)
+        {
+            auto relX = (int)x - midX + size / 2;
+            auto relY = (int)y - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size)
+            {
+                rows[relY][relX] = true;
+            }
+        }
+
+        void clear()
+        {
+            for (auto& arr: rows)
+            {
+                memset(&arr, 0, size);
+            }
+
+        }
+    };
+
     using PathFindingGrid = DenseLookupGrid<MAGIQUE_PATHFINDING_CELL_SIZE>;
 
     struct PathFindingData final
@@ -112,18 +155,18 @@ namespace magique
         static constexpr Point crossMove[4] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 
         // Grid data for each map - if cell is usable for pathfinding or not
-        MapHolder<PathFindingGrid> mapsStaticGrids{};
-        MapHolder<PathFindingGrid> mapsDynamicGrids{};
+        MapHolder<PathFindingGrid> mapsStaticGrids;
+        MapHolder<PathFindingGrid> mapsDynamicGrids;
 
         // A star cache
-        std::vector<Point> pathCache{};
-        PathFindingGrid visited{};
-        cxstructs::PriorityQueue<GridNode> frontier{};
+        std::vector<Point> pathCache;
+        StaticDenseLookupGrid<150> visited{};
+        cxstructs::PriorityQueue<GridNode> frontier;
         GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY]{};
 
         // Lookup table for entity types and entities
-        HashSet<entt::entity> solidEntities{};
-        HashSet<EntityType> solidTypes{};
+        HashSet<entt::entity> solidEntities;
+        HashSet<EntityType> solidTypes;
 
         //----------------- METHODS -----------------//
 
@@ -232,7 +275,9 @@ namespace magique
             }
         }
 
-        void findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen)
+        //TODO can be optimized by using bidirectional search
+        // Can be optimized by using static cell boolean matrix for visited instead of hashmap (why a hashmap...)
+        bool findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen)
         {
             // Setup and get grids
             path.clear();
@@ -240,6 +285,7 @@ namespace magique
 
             frontier.clear();
             visited.clear();
+            visited.setMid(startC);
 
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
@@ -250,8 +296,7 @@ namespace magique
             // Viability check
             if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid))
             {
-                LOG_WARNING("Cant search a path to a solid (or non existent) pathfinding cell!");
-                return;
+                return false;
             }
 
             frontier.emplace(start, 0.0F, start.octile(end), UINT16_MAX);
@@ -264,26 +309,35 @@ namespace magique
                 if (current.position == end)
                 {
                     constructPath(current, path);
-                    return;
+                    return true;
                 }
                 frontier.pop();
-                visited.setMarked(current.position.x * cellSize, current.position.y * cellSize);
-                for (const auto dir : crossMove)
+                visited.setMarked(current.position.x, current.position.y);
+
+                /*
+              auto cam = GetCamera();
+                DrawRectangleRec({current.position.x * cellSize - cam.target.x + cam.offset.x,
+                                  current.position.y * cellSize - cam.target.y + cam.offset.y, cellSize, cellSize},
+                                 PURPLE);
+*/
+                for (const auto& dir : crossMove)
                 {
                     Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
                     // Is not visited and not solid
-                    if (!visited.getIsMarked(newPosCoX, newPosCoY) &&
+                    if (!visited.getIsMarked(newPos.x, newPos.y) &&
                         !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid))
                     {
-                        const float moveCost = dir.x != 0 && dir.y != 0 ? 1.4142F : 1.0F;
+                        const float moveCost = 1;
                         const auto hCost = newPos.octile(end) * 1.01F;
                         frontier.push({newPos, current.gCost + moveCost, hCost, counter});
                     }
                 }
                 counter++;
             }
+
+            return false;
         }
 
     private:

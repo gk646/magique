@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <magique/core/Types.h>
+#include <raylib/raylib.h>
 
 //===============================================
 // Pathfinding Module
@@ -23,12 +24,12 @@ namespace magique
     //      - searchLen: stops searching for a better path after that many iterations
     // Note: The point list is in REVERSE order! (last element is the next point)
     // Failure: if no path can be found returns an empty vector
-    void FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 128);
+    // Returns: True if a path could be found, false if the target is a solid tile or cant be reached
+    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 1024);
 
-    // Finds the next position you should move to, in order to reach the end point the fastest
-    // Same as FindPath() but returns the next point
-    // Failure: returns {0,0} if no path can be found (search took too many iterations) or target is not traversable
-    Point GetNextOnPath(Point start, Point end, MapID map, int searchLen = 128);
+    // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
+    // Same as FindPath() but only assigns the next point
+    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int searchLen = 1024);
 
     //================= QUERY =================//
 
@@ -43,7 +44,7 @@ namespace magique
     void SetTypePathSolid(EntityType type, bool value);
     bool GetIsTypePathSolid(EntityType type);
 
-    // Marks the given entity as solid for pathfinding - automatically removed
+    // Marks the given entity as solid for pathfinding - automatically removed when the entity is deleted
     // IMPORTANT: Marked entity needs to have the CollisionC so collision can be calculated
     void SetEntityPathSolid(entt::entity entity, bool value);
     bool GetIsEntityPathSolid(entt::entity entity);
@@ -51,7 +52,7 @@ namespace magique
     //================= DEBUG =================//
 
     // Draws the tiles along the given path in the pathfinding grid
-    void DrawPath(const std::vector<Point>& path);
+    void DrawPath(const std::vector<Point>& path, Color color = RED);
 
 } // namespace magique
 
