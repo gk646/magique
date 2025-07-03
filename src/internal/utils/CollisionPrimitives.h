@@ -2,6 +2,11 @@
 #ifndef MAGIQUE_COLLISION_PRIMITIVES_H
 #define MAGIQUE_COLLISION_PRIMITIVES_H
 
+#if !defined(__i386__) || !defined(__x86_64__) // Only works for those right now
+#undef MAGIQUE_SIMD
+#define MAGIQUE_SIMD 0
+#endif
+
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
 #include <emmintrin.h>
@@ -9,6 +14,7 @@
 
 #include <cmath>
 #include <limits>
+#include <utility> // Needed with clang
 #include <internal/utils/STLUtil.h>
 
 //-----------------------------------------------
@@ -724,7 +730,6 @@ namespace magique
         }
 #endif
     }
-
 
 
 } // namespace magique

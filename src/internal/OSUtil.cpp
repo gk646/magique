@@ -52,6 +52,7 @@
 #include <cstring>
 #elif __APPLE__
 #include <mach/mach.h>
+#include <unistd.h>
 #endif
 #include <raylib/raylib.h>
 

@@ -513,7 +513,7 @@ namespace magique
         IMBALANCED,
     };
 
-    using ClickFunc = void (*)(const Rectangle& bounds, int mouseButton);
+    using ClickFunc = void (*)(const struct Rectangle& bounds, int mouseButton);
 
     //================= HELPER TYPES =================//
 

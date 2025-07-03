@@ -45,7 +45,7 @@ namespace magique::renderer
         const auto gameState = global::ENGINE_DATA.gameState;
         StartTick();
         {
-            ClearBackground(Color(163, 163, 163, 255));
+            ClearBackground(Color{163, 163, 163, 255});
             if (game.getIsLoading()) [[unlikely]]
             {
                 HandleLoadingScreen(game); // Loading screen

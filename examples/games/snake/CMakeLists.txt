@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 file(GLOB_RECURSE GAME_FILES "src/*.cpp")
 add_executable(snake ${GAME_FILES})
 
-set(MAGIQUE_LAN ON)
 # Set the path to the magique directory
 add_subdirectory(../../.. magique)
 

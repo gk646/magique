@@ -431,7 +431,7 @@ void fast_vector<T>::emplace_back(Args&&... args) noexcept
         reserve(m_capacity * grow_factor + 1);
     }
 
-    new (m_data + m_size) T(std::forward<Args>(args)...);
+    new (m_data + m_size) T{std::forward<Args>(args)...};
 
     m_size++;
 }

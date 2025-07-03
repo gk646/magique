@@ -5,7 +5,6 @@
 # Set build params
 set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
-set(OPENGL_VERSION "4.3")
 set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
 
