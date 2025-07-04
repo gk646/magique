@@ -4,7 +4,6 @@
 #include "magique/core/Camera.h"
 #include "magique/util/Math.h"
 
-
 #include <raylib/raylib.h>
 
 #include <magique/core/Game.h>
@@ -60,12 +59,10 @@ struct Hunter final : EntityScript
         auto mid = pos.getMiddle(GetComponent<CollisionC>(self));
         auto target = tarPos.getMiddle(GetComponent<CollisionC>(targetEntity));
 
-
         if (mid.euclidean(target) < 27)
             return;
 
-        StartTimer(0);
-        for (int i = 0; i < 100; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             if (!FindPath(PATH, mid, target, pos.map, 1'000))
             {
@@ -78,7 +75,7 @@ struct Hunter final : EntityScript
         Point moveVec = GetDirectionVector(mid, nextPoint);
 
         pos.x += moveVec.x * MOVE_SPEED;
-       pos.y += moveVec.y * MOVE_SPEED;
+        pos.y += moveVec.y * MOVE_SPEED;
     }
 };
 
@@ -108,13 +105,11 @@ struct Example final : Game
         SetEntityScript(PLAYER, new PlayerScript());
         SetEntityScript(HUNTER, new Hunter());
 
-        // Create some objects - hunter is randomly positioned
+        // Create some objects
         const MapID map = MapID::DEFAULT;
-        CreateEntity(PLAYER, 50, 500, map);
+        CreateEntity(PLAYER, 50, 300, map);
         CreateEntity(HUNTER, 50, 50, map);
 
-
-        float size = 48;
         // #######
         // #     #
         // ##### #
@@ -124,12 +119,6 @@ struct Example final : Game
         // ##### #
         // #     #
         // # #####
-        // Row 0: #######
-
-
-
-
-
         AddColliderGroup(MapID::DEFAULT, COLLIDERS);
 
         SetShowCompassOverlay(true);

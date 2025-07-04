@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Debug.h>
-#include <magique/core/Types.h>
-#include <magique/core/Camera.h>
 
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/EngineConfig.h"
@@ -65,7 +63,7 @@ namespace magique
             }
         }
         LOG_WARNING("Timer with ID %d not found!", num);
-        return -1;
+        return UINT64_MAX;
     }
 
     uint64_t StopTimer(const int num)

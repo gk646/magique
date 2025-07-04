@@ -13,7 +13,6 @@
 
 namespace magique
 {
-
     // Returns the length of the text up to the specified index
     float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
 
@@ -23,6 +22,7 @@ namespace magique
     // Returns the top left point to center something with the given width and height within the rectangle 'within'
     Vector2 GetCenteredPos(const Rectangle& within, float width, float height);
 
+    // Returns the center point of the given rect
     Vector2 GetRectCenter(const Rectangle& rect);
 
 } // namespace magique

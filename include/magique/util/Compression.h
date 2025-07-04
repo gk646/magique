@@ -20,7 +20,6 @@ namespace magique
     // Returns: A pointer (and size) to newly allocated memory containing the decompressed data - call .free() when done
     DataPointer<const unsigned char> Decompress(const unsigned char* data, int size);
 
-
 } // namespace magique
 
 

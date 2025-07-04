@@ -52,6 +52,7 @@ namespace magique
     void StartTimer(int num);
 
     // Returns the current time passed since the timer was started in nanoseconds
+    // Failure: Returns UINT64_MAX if no timer was started in this slot
     uint64_t GetTimerTime(int num);
 
     // Stops the timer with the given id and returns elapsed nanos since starting

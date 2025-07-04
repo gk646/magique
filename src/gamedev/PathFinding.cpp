@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <memory>
 #include <raylib/raylib.h>
 
 #include <magique/gamedev/PathFinding.h>
@@ -14,7 +13,7 @@ namespace magique
         auto& path = global::PATH_DATA;
         constexpr int capacity = MAGIQUE_PATHFINDING_SEARCH_CAPACITY;
         const int maxLen = std::min(searchLen == 0 ? capacity : searchLen, capacity);
-        return path.findPath(pathVec, start, end, map, maxLen);
+        return path.findPath(pathVec, start, end, map, static_cast<uint16_t>(maxLen));
     }
 
     bool GetNextOnPath(Point& next, const Point start, const Point end, const MapID map, const int searchLen)

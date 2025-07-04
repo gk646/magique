@@ -22,6 +22,7 @@
 #define CXSTRUCTS_SRC_CXSTRUCTS_PRIORITYQUEUE_H_
 
 #include <cassert>
+#include <memory>
 
 namespace cxstructs
 {
@@ -105,7 +106,7 @@ namespace cxstructs
         }
         void heapify() noexcept
         {
-            for (uint_fast32_t i = len_ - 1; i > -1; i--)
+            for (uint_fast32_t i = len_ - 1; i > -1; --i)
             {
                 sift_down(i);
             }

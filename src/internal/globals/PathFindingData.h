@@ -13,7 +13,8 @@
 // Pathfinding Data
 //-----------------------------------------------
 // .....................................................................
-// Uses a stateless A star implementation with custom hashset and priority queue and manhattan distance heuristic
+// Uses a stateless A* implementation with custom hashset and priority queue and octile distance heuristic
+// Also weights the heuristics in favor of closing in on the target
 // For collision lookups hashmaps are used with bitset to pack bit data
 // There are two classes of solid objects: static and dynamic
 //      - static : Static objects (TileObjects, TilSet, ...) see core/StaticCollision.h
@@ -24,10 +25,10 @@ namespace magique
 {
     struct GridNode final
     {
-        Point position;
-        float fCost;
-        float gCost;
-        uint16_t parent;
+        Point position{};
+        float fCost = 0.0F;
+        float gCost = 0.0F;
+        uint16_t parent = UINT16_MAX;
         GridNode() = default;
         GridNode(const Point position, const float gCost, const float hCost, const uint16_t parent) :
             position(position), fCost(gCost + hCost), gCost(gCost), parent(parent)
@@ -102,6 +103,9 @@ namespace magique
         void clear() { visited.clear(); }
     };
 
+    // Lookup grid that takes all given positions relative to its center
+    // This works good inside a single search - cleared between each search
+    // Allows very fast lookups without a hashmap
     template <int size>
     struct StaticDenseLookupGrid final
     {
@@ -111,15 +115,15 @@ namespace magique
 
         void setMid(const Point& mid)
         {
-            midX = (int)mid.x;
-            midY = (int)mid.y;
+            midX = static_cast<int>(mid.x);
+            midY = static_cast<int>(mid.y);
         }
 
         [[nodiscard]] bool getIsMarked(const float x, const float y) const
         {
-            auto relX = (int)x - midX + size / 2;
-            auto relY = (int)y - midY + size / 2;
-            if (relX >= 0 && relX < size && relY >= 0 && relY < size)
+            const auto relX = static_cast<int>(x) - midX + size / 2;
+            const auto relY = static_cast<int>(y) - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
             {
                 return rows[relY][relX];
             }
@@ -128,22 +132,15 @@ namespace magique
 
         void setMarked(const float x, const float y)
         {
-            auto relX = (int)x - midX + size / 2;
-            auto relY = (int)y - midY + size / 2;
-            if (relX >= 0 && relX < size && relY >= 0 && relY < size)
+            const auto relX = static_cast<int>(x) - midX + size / 2;
+            const auto relY = static_cast<int>(y) - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
             {
                 rows[relY][relX] = true;
             }
         }
 
-        void clear()
-        {
-            for (auto& arr: rows)
-            {
-                memset(&arr, 0, size);
-            }
-
-        }
+        void clear() { memset(rows, 0, size * size * sizeof(bool)); }
     };
 
     using PathFindingGrid = DenseLookupGrid<MAGIQUE_PATHFINDING_CELL_SIZE>;
@@ -160,9 +157,10 @@ namespace magique
 
         // A star cache
         std::vector<Point> pathCache;
-        StaticDenseLookupGrid<150> visited{};
-        cxstructs::PriorityQueue<GridNode> frontier;
-        GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY]{};
+        StaticDenseLookupGrid<200> visited{};
+        StaticDenseLookupGrid<200> added{};
+        cxstructs::PriorityQueue<GridNode> frontier{};
+        GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
 
         // Lookup table for entity types and entities
         HashSet<entt::entity> solidEntities;
@@ -276,22 +274,25 @@ namespace magique
         }
 
         //TODO can be optimized by using bidirectional search
-        // Can be optimized by using static cell boolean matrix for visited instead of hashmap (why a hashmap...)
-        bool findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map, const int maxLen)
+        bool findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map,
+                      const uint16_t maxLen)
         {
+            const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
+            const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
+
             // Setup and get grids
+            frontier.clear();
             path.clear();
             path.reserve(maxLen);
 
-            frontier.clear();
             visited.clear();
-            visited.setMid(startC);
+            visited.setMid(start);
+
+            added.clear();
+            added.setMid(start);
 
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
-
-            const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
-            const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
 
             // Viability check
             if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid))
@@ -299,7 +300,11 @@ namespace magique
                 return false;
             }
 
-            frontier.emplace(start, 0.0F, start.octile(end), UINT16_MAX);
+            // Weighted towards goal
+            auto targetHeuristic = [](const Point& curr, const Point& end) { return curr.octile(end) * 1.15F; };
+
+            frontier.emplace(start, 0.0F, targetHeuristic(start, end), UINT16_MAX);
+            added.setMarked(start.x, start.y);
             uint16_t counter = 0;
 
             while (!frontier.empty() && counter < maxLen)
@@ -315,28 +320,29 @@ namespace magique
                 visited.setMarked(current.position.x, current.position.y);
 
                 /*
-              auto cam = GetCamera();
+                auto cam = GetCamera();
                 DrawRectangleRec({current.position.x * cellSize - cam.target.x + cam.offset.x,
                                   current.position.y * cellSize - cam.target.y + cam.offset.y, cellSize, cellSize},
                                  PURPLE);
-*/
+                */
+
                 for (const auto& dir : crossMove)
                 {
                     Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
                     // Is not visited and not solid
-                    if (!visited.getIsMarked(newPos.x, newPos.y) &&
+                    if (!added.getIsMarked(newPos.x, newPos.y) && !visited.getIsMarked(newPos.x, newPos.y) &&
                         !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid))
                     {
-                        const float moveCost = 1;
-                        const auto hCost = newPos.octile(end) * 1.01F;
+                        const float moveCost = dir.x != 0 && dir.y != 0 ? 1.41F : 1.0F;
+                        const auto hCost = targetHeuristic(newPos, end);
                         frontier.push({newPos, current.gCost + moveCost, hCost, counter});
+                        added.setMarked(newPos.x, newPos.y);
                     }
                 }
                 counter++;
             }
-
             return false;
         }
 

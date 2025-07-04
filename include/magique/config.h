@@ -33,9 +33,10 @@
 // Estimated number of unique maps - used as static buffer size (if above allocation happens)
 #define MAGIQUE_EXPECTED_MAPS 32
 
-// The size of a grid cell (a square) - MUST be a power of two (32,64,128 -> shouldn't be bigger than that)
+// The size of a grid cell (a square)
 // Should be chosen as SMALL as possible, such that most objects fit within the given size
 // If the size of the bounding box of objects is bigger than 2*cellSize it gets "slow"
+// Note: Must be a power of two (32,64,128 -> shouldn't be bigger than that)
 #define MAGIQUE_COLLISION_CELL_SIZE 64
 
 // Maximum amount of entities allowed per cell (less is better) - if more they are not collision checked anymore
@@ -43,9 +44,10 @@
 
 // Sets the coarseness/size of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
+// Note: Must be a power of two (16,32,64 -> shouldn't be bigger than that)
 #define MAGIQUE_PATHFINDING_CELL_SIZE 16
 
-// Controls the maximum amount of tile that can be evaluated in a single search
+// Controls the maximum amount of tiles that can be evaluated in a single search
 // Note: This is the global maximum, a specific maximum can be set on each query
 #define MAGIQUE_PATHFINDING_SEARCH_CAPACITY 2048
 

@@ -117,7 +117,7 @@ struct DataBlock final
     static constexpr int NO_NEXT_BLOCK = UINT16_MAX;
     T data[size];                  // Fixed size data block
     uint16_t count = 0;            // Current number of elements
-    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if if its the end
+    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if it's the end
 
     [[nodiscard]] bool isFull() const { return count == size; }
 
