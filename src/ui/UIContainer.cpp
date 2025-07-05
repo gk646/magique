@@ -13,20 +13,20 @@ namespace magique
         global::UI_DATA.registerObject(this, true);
     }
 
-    UIContainer::UIContainer(const float w, const float h, const Anchor anchor, const ScalingMode scaling) :
-        UIObject(w, h, anchor, 0.0F, scaling)
+    UIContainer::UIContainer(const float w, const float h, const Anchor anchor, const float inset,
+                             const ScalingMode scaling) : UIObject(w, h, anchor, inset, scaling)
     {
         global::UI_DATA.registerObject(this, true);
     }
 
-    void UIContainer::addChild(UIObject* child, const char* name)
+    UIObject* UIContainer::addChild(UIObject* child, const char* name)
     {
         for (const auto oldChild : children)
         {
             if (oldChild == child)
             {
                 LOG_ERROR("Given child already exists");
-                return;
+                return nullptr;
             }
         }
         if (name != nullptr)
@@ -35,7 +35,7 @@ namespace magique
             if (len + 1 > MAGIQUE_MAX_NAMES_LENGTH)
             {
                 LOG_WARNING("Given name is longer than configured!: %s", name);
-                return;
+                return nullptr;
             }
 
             for (const auto& mapping : nameMapping)
@@ -43,16 +43,17 @@ namespace magique
                 if (strcmp(mapping.name, name) == 0)
                 {
                     LOG_ERROR("Given name already exists");
-                    return;
+                    return nullptr;
                 }
             }
             internal::UIContainerMapping mapping;
-            std::memcpy(mapping.name, name, len);
+            memcpy(mapping.name, name, len);
             mapping.name[MAGIQUE_MAX_NAMES_LENGTH - 1] = '\0';
             mapping.index = static_cast<int>(children.size());
             nameMapping.push_back(mapping);
         }
         children.push_back(child);
+        return child;
     }
 
     bool UIContainer::removeChild(const char* name)
@@ -95,6 +96,16 @@ namespace magique
         }
         LOG_WARNING("No child named '%s' in this container", name);
         return nullptr;
+    }
+
+    UIObject* UIContainer::getChild(const int index) const
+    {
+        if (index >= static_cast<int>(children.size()))
+        {
+            LOG_WARNING("Child with index %d is out of bounds", index);
+            return nullptr;
+        }
+        return children[index];
     }
 
     const std::vector<UIObject*>& UIContainer::getChildren() const { return children; }

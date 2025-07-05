@@ -8,12 +8,15 @@ set(BUILD_GAMES OFF)
 set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
 
+if (NOT APPLE)
+    set(OPENGL_VERSION "4.3")
+endif ()
+
 if (UNIX)
     set(GLFW_BUILD_X11 ON)
     # Weird bug where key repeats are not detected if this is enabled
     # Only happens in raylib not when the official examples are built with the same packaged GLFW...?
     set(GLFW_BUILD_WAYLAND OFF)
-
 endif (UNIX)
 
 message(STATUS "\n-- ------------- raylib ------------------")

@@ -324,7 +324,7 @@ namespace magique
         auto& data = global::ENGINE_DATA;
 
         // For security - user might call this before creating any entities
-        if (!dynamicData.mapEntityGrids.contains(map))
+        if (!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
             return data.nearbyQueryData.cache.values();
 
         if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
@@ -348,5 +348,6 @@ namespace magique
         GetNearbyEntities(map, origin, radius);
         return data.nearbyQueryData.cache.contains(target);
     }
+
 
 } // namespace magique

@@ -101,6 +101,7 @@ namespace magique
     struct Window;
     struct WindowManager;
     struct WindowButton;
+    struct SceneManager;
 
     //================= UTIL =================//
     enum LogLevel : int;

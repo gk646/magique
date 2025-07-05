@@ -112,7 +112,7 @@ namespace magique
 
             const auto srcRect = Rectangle{0, 0, drawRect.width, -drawRect.height};
             const auto origin = Vector2{0, 0};
-            DrawTexturePro(shader.shadowTexture.texture, srcRect, drawRect, origin, 0, ColorAlpha(WHITE, 0.8));
+            DrawTexturePro(shader.shadowTexture.texture, srcRect, drawRect, origin, 0.0F, ColorAlpha(WHITE, 0.8));
 
             EndBlendMode();
         }

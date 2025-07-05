@@ -37,6 +37,10 @@ namespace magique
     // Removes the CameraC component from the current holder and adds it to the specified entity (making it the new holder)
     void SetCameraEntity(entt::entity entity);
 
+    // Returns the current camera holder
+    // Failure: returns UINT32_MAX if there is no camera currently
+    entt::entity GetCameraEntity();
+
     // Returns the engine internal camera - used for all getter methods, culling visible entities and drawing debug visuals
     Camera2D& GetCamera();
 
@@ -53,20 +57,15 @@ namespace magique
     // Returns the bounds of the camera without padding
     Rectangle GetCameraNativeBounds();
 
-    // Returns the current camera holder
-    // Failure: returns UINT32_MAX if there is no camera currently
-    entt::entity GetCameraEntity();
-
     //================= SHAKE =================//
 
-    // Adds a camera shake impulse which cause the camera to oscillate around the origin in configured given way
+    // Adds a camera shake impulse which cause the camera to oscillate around the origin
     //      - direction: direction vector in which to apply the impulse (see gamedev/Particles.h for more info)
     //      - maxDistance: maximum distance in pixels from the origin the camera will go in either direction
     //      - velocity: how far the shake changes each tick in pixels/s
     //      - decay: how much the maxDistance is reduced in pixels/s
     // Note: the shake stops when maxDistance is 0 - the direction of multiple impulses adds up, the rest overwrites
     void AddCameraShakeImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
-
 
 } // namespace magique
 

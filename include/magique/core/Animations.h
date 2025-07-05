@@ -55,7 +55,7 @@ namespace magique
 
     // Returns the animation registered under the given type
     // Failure: returns an empty animation with warning
-    const EntityAnimation& GetEntityAnimation(EntityType type);
+    EntityAnimation& GetEntityAnimation(EntityType type);
 
 } // namespace magique
 

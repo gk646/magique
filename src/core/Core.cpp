@@ -73,5 +73,9 @@ namespace magique
 
     const std::vector<entt::entity>& GetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
+    void SetPlayerEntity(entt::entity entity) { global::ENGINE_DATA.playerEntity = entity; }
+
+    entt::entity GetPlayerEntity() { return global::ENGINE_DATA.playerEntity; }
+
 
 } // namespace magique

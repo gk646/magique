@@ -20,7 +20,6 @@
 
 namespace magique
 {
-
     // Returns true if global multiplayer was initialized successfully
     // Note: HAS to be called MANUALLY before any other global multiplayer methods
     bool InitGlobalMultiplayer();

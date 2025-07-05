@@ -11,7 +11,6 @@ static constexpr auto FILE_HEADER = "CONFIG";
 
 namespace magique
 {
-
     GameConfig& GetGameConfig()
     {
         MAGIQUE_ASSERT(global::ENGINE_DATA.gameConfig.loaded,
@@ -90,6 +89,7 @@ namespace magique
         if (file == nullptr)
         {
             LOG_WARNING("Config does not exist. Will be created on shutdown: %s", filePath);
+            config.loaded = true; // So it doesnt crash
             return config;
         }
         auto constexpr headerSize = static_cast<int>(std::char_traits<char>::length(FILE_HEADER));

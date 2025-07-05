@@ -20,10 +20,10 @@ namespace magique
             animations[typeNum].isSet = true;
         }
 
-        [[nodiscard]] const EntityAnimation& get(const EntityType type) const
+        [[nodiscard]] EntityAnimation& get(const EntityType type)
         {
             MAGIQUE_ASSERT(animations.size() > type, "No animation registered for that type!");
-            const auto& animation = animations[type];
+            auto& animation = animations[type];
             MAGIQUE_ASSERT(
                 animation.isSet,
                 "No animation was registered for that type. Use RegisterEntityAnimation() to register an animation");
@@ -52,7 +52,7 @@ namespace magique
     }
 
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration,
-                                         const Point offset, const Point anchor)
+                                       const Point offset, const Point anchor)
     {
         const int stateNum = static_cast<int>(state);
         if (stateNum >= static_cast<int>(animations.size()))
@@ -91,6 +91,6 @@ namespace magique
         ANIMATION_DATA.add(type, animation);
     }
 
-    const EntityAnimation& GetEntityAnimation(const EntityType type) { return ANIMATION_DATA.get(type); }
+    EntityAnimation& GetEntityAnimation(const EntityType type) { return ANIMATION_DATA.get(type); }
 
 } // namespace magique

@@ -18,7 +18,8 @@ namespace magique
     // Imports the given asset as CSV file - if specified the first row will be loaded as column names
     // Supported filetypes: ".csv"
     // Failure: Returns an empty import
-    CSVImport FileImportCSV(Asset asset, char delimiter = ';', bool firstRowNames = true);
+    // IMPORTANT: Only supports \n or \r as line feeds (not the windows \r\n)
+    CSVImport ImportCSV(Asset asset, char delimiter = ';', bool firstRowNames = true);
 
 } // namespace magique
 

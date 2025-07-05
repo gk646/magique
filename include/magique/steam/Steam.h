@@ -14,7 +14,6 @@
 
 namespace magique
 {
-
     // Returns true if the initialization of steam was successful
     // If specified creates a test steam_appid.txt file with the id 480 (test project)
     bool InitSteam(bool createAppIDFile = true);

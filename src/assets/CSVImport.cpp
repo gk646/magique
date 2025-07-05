@@ -34,7 +34,10 @@ namespace magique
         return -1;
     }
 
-    const char* CSVImport::getCell(const int row, const int column) const { return getCellImpl(row, column); }
+    const char* CSVImport::getCell(const int row, const int column) const
+    {
+        return getCellImpl(row, column);
+    }
 
     int CSVImport::getColumns() const { return columns; }
 

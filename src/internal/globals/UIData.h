@@ -112,7 +112,7 @@ namespace magique
             // [3]              -> assign temporary
             // [0][1][2][4][5]  -> copy everything before 1 back
             // [3][1][2][4][5]
-            // or using std:: iterators ... :(
+            // or using std::iterators ... :(
 
             auto sortUpfront = [](vector<UIObject*>& objects, UIObject* obj)
             {

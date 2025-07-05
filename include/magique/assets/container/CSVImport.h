@@ -16,9 +16,13 @@
 
 namespace magique
 {
+    // look at assets/FileImports.h
+    CSVImport ImportCSV(Asset asset, char delimiter, bool firstRowNames);
+
     struct CSVImport final
     {
         // Returns the string value of the given cell - 0-based indexing
+        // Returns: nullptr if invalid
         [[nodiscard]] const char* getCell(int row, int column) const;
 
         // Returns the column index identified by the given name - only works if it was loaded with column names
@@ -45,7 +49,7 @@ namespace magique
         int nameLen = -1;
         int columns = 0;
         int rows = 0;
-        befriend(CSVImport FileImportCSV(Asset, char, bool));
+        befriend(CSVImport ImportCSV(Asset, char, bool));
     };
 } // namespace magique
 

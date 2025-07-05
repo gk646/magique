@@ -5,6 +5,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/GameConfig.h>
+#include <entt/entity/entity.hpp>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
@@ -62,6 +63,7 @@ namespace magique
         GameState gameState{INT32_MAX};            // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls
+        entt::entity playerEntity = entt::null;
 
         void init()
         {
@@ -82,8 +84,9 @@ namespace magique
 
             if (target.x >= shake.direction.x * shake.maxDist || target.y >= shake.direction.y * shake.maxDist)
             {
-               shake.up = false;
-            }else if (target.x <= shake.direction.x * -shake.maxDist || target.y <= shake.direction.y * -shake.maxDist)
+                shake.up = false;
+            }
+            else if (target.x <= shake.direction.x * -shake.maxDist || target.y <= shake.direction.y * -shake.maxDist)
             {
                 shake.up = true;
             }
@@ -99,9 +102,9 @@ namespace magique
                 target.y = std::max(-shake.maxDist, target.y - shake.veloc.y);
             }
             shake.maxDist = std::max(shake.maxDist - (shake.decay / MAGIQUE_LOGIC_TICKS), 0.0F);
-            if (shake.maxDist <= 0.1F  && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
+            if (shake.maxDist <= 0.1F && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
             {
-                shake.veloc = {0,0};
+                shake.veloc = {0, 0};
                 //camera.target.x = 0;
                 //camera.target.y = 0;
             }

@@ -34,7 +34,7 @@
 // Note: This example is almost equal to the Local example. Because with the unified Networking interface
 //        you just have to switch the underlying connection.
 // IMPORTANT: Due to the nature of steam you need 2 steam accounts to test it!
-//            You should friend the two accounts and then send an game invitation
+//            You should friend the two accounts and then send a game invitation
 // .....................................................................
 
 using namespace magique;

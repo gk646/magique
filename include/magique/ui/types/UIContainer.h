@@ -22,7 +22,8 @@ namespace magique
         // Creates the container from absolute dimensions in the logical UI resolution
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIContainer(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIContainer(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
+        UIContainer(float w, float h, Anchor anchor = Anchor::NONE, float inset = 0,
+                    ScalingMode scaling = ScalingMode::FULL);
 
     protected:
         // Controls how the container including all of its children are visualized!
@@ -33,7 +34,8 @@ namespace magique
         // Adds a new child to the container with an optional name identifier
         // Pass a new instance of your class new MyClass() - the name will be copied if specified
         // Note: the container takes ownership of the child pointer
-        void addChild(UIObject* child, const char* name = nullptr);
+        // Returns: the added child if successful, otherwise nullptr
+        UIObject* addChild(UIObject* child, const char* name = nullptr);
 
         // Returns true the child associated with the given name or index was removed
         // Failure: returns wrong if no child with the given name or index exists
@@ -43,6 +45,7 @@ namespace magique
         // Returns a pointer to the child associated with the given name (if any)
         // Failure: returns nullptr if the name doesn't exist
         [[nodiscard]] UIObject* getChild(const char* name) const;
+        [[nodiscard]] UIObject* getChild(int index) const;
 
         // Returns a vector that contains all current children
         [[nodiscard]] const std::vector<UIObject*>& getChildren() const;

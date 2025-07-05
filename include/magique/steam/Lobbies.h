@@ -17,7 +17,6 @@
 
 namespace magique
 {
-
     //================= SETUP =================//
 
     // Returns true if the async call trying to create a lobby was successful

@@ -80,10 +80,18 @@ namespace magique
     const std::vector<entt::entity>& GetNearbyEntities(MapID map, Point origin, float radius);
 
     // Returns true if the nearby entities contain the given target entity
-    // Note: This is a hash lookup O(1) (after querying the hashgrid)
+    // Note: This is a hash lookup O(1) (after querying the entity grid)
     bool NearbyEntitiesContain(MapID map, Point origin, float radius, entt::entity target);
 
     //================= UTILS =================//
+
+    // Allows to set and retrieve a player entity (the controlled entity)
+    // This is useful, as the camera could be different from the controlled character
+    // With this you have a single point of truth which is the currently controlled character
+    // e.g. What abilities to draw (hotbar)? Show the health of what entity? Which entity receives inputs?
+    // Failure: Returns entt::null if not set - assignment is fully MANUAL!
+    void SetPlayerEntity(entt::entity entity);
+    entt::entity GetPlayerEntity();
 
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);

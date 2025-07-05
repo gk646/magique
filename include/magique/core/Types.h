@@ -466,6 +466,7 @@ namespace magique
     //================= UI =================//
 
     // Anchor position used in the UI module to position objects
+    // Note: Look at ui/UI.h for more info on positioning of anchor points
     enum class Anchor : uint8_t
     {
         NONE,          // No anchoring - for UIObject

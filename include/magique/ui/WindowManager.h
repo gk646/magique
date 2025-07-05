@@ -63,7 +63,7 @@ namespace magique
 
         //================= UTIL =================//
 
-        // Returns true if given window covered any other another window at the given position
+        // Returns true if the given window is covered by any other another window at the given position
         bool getIsCovered(Window* window, Point pos = GetMousePos());
         bool getIsCovered(const char* window, Point pos = GetMousePos());
 
@@ -71,7 +71,7 @@ namespace magique
         void makeTopMost(Window* window);
         void makeTopMost(const char* name);
 
-        // Returns the first window "below" the mouse cursor - check for layering
+        // Returns the first window "below" the mouse cursor - checks for layering
         // Failure: returns nullptr if no window area intersects the mouse position
         Window* getHoveredWindow();
 

@@ -17,7 +17,7 @@
 //              - Maximum length of string values is 64
 //              - Maximum length of any placeholder is 64
 //
-// Note: Per default uses CMake/Bash syntax: "Hello, ${PLAYER_NAME}!" -> "Hello, Jespar!" to specify placeholders
+// Note: Per default uses CMake/Bash syntax: "Hello, ${PLAYER_NAME}!" -> "Hello, Jespar!"
 // .....................................................................
 
 namespace magique
@@ -41,7 +41,7 @@ namespace magique
     //================= FORMAT =================//
 
     // Formats and draws the given text with the current placeholder state
-    // Note: This function tries to format the given txt! If you already have a formatted text use DrawText...()
+    // Note: This function tries to format the given text! If you already have a formatted text use DrawText...()
     void DrawTextFmt(const Font& font, const char* fmt, Vector2 pos, float size, float spacing = 1, Color color = WHITE);
 
     // Formats and returns the given text with the current placeholder state

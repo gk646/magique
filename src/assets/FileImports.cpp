@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    CSVImport FileImportCSV(Asset asset, const char delimiter, const bool firstRowNames)
+    CSVImport ImportCSV(Asset asset, const char delimiter, const bool firstRowNames)
     {
         CSVImport csv{};
         if (asset.getSize() == 0)
@@ -45,7 +45,7 @@ namespace magique
                     if (content[pos + 1] == '\n' || content[pos + 1] == '\0')
                     {
                         LOG_WARNING("Detected trailing delimiter:%s | Row:%d", asset.getFileName(), row);
-                        pos+=2; // Skip both the terminator and the end marker and
+                        pos += 2; // Skip both the terminator and the end marker and
                         return lineColumns;
                     }
                 }
@@ -76,7 +76,8 @@ namespace magique
             const int lineColumns = parseLine(pos, content, rows);
             if (columns != 0 && columns != lineColumns)
             {
-                LOG_ERROR("CSV file is not well-formed: Row %d  amount of columns", rows);
+                LOG_ERROR("CSV file is not well-formed: Row %d has %d columns and the rest %d", rows, lineColumns,
+                          columns);
                 return csv;
             }
             columns = lineColumns;
