@@ -171,7 +171,6 @@ namespace magique
         mainthread::Close();
 
         GameConfig::SaveToFile(config, configPath, encryptionKey);
-
         global::PERF_DATA.printPerformanceStats();
         return 0;
     }

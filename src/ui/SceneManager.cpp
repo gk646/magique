@@ -13,13 +13,19 @@ namespace magique
 
     void Scene::draw()
     {
-        for (size_t i = objects.size() - 1; i <= 0; --i)
+        const auto size = (int)objects.size() -1;
+        for (int i = size; i >= 0; --i)
         {
             objects[i]->draw();
         }
     }
 
-    void Scene::addObject(UIObject* obj) { objects.push_back(obj); }
+    UIObject* Scene::addObject(UIObject* obj)
+    {
+        MAGIQUE_ASSERT(obj != nullptr, "Passed nullptr");
+        objects.push_back(obj);
+        return obj;
+    }
 
     bool Scene::removeObject(UIObject* obj) { return std::erase(objects, obj) > 0; }
 

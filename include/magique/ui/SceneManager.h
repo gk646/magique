@@ -19,11 +19,12 @@ namespace magique
 
     struct Scene final
     {
-        // Draws all objects in the reverse order they were added (first one added = last drawn = drawn on top)
+        // Draws all objects such that they appear in the order they were added (added first => last drawn => appears on top)
         void draw();
 
         // Adds or removes an object
-        void addObject(UIObject* obj);
+        // Returns: The given objects
+        UIObject* addObject(UIObject* obj);
 
         // Returns true if the object was removed
         bool removeObject(UIObject* obj);
