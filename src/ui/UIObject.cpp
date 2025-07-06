@@ -36,11 +36,12 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, const float inset)
+    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, float inset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
+        inset = GetScaled(inset);
         switch (alignAnchor)
         {
         case Anchor::TOP_LEFT:
@@ -85,11 +86,12 @@ namespace magique
         setPosition(pos.x, pos.y);
     }
 
-    void UIObject::align(const Direction direction, const UIObject& relativeTo, const float offset)
+    void UIObject::align(const Direction direction, const UIObject& relativeTo, float offset)
     {
         const auto otherBounds = relativeTo.getBounds();
         const auto bounds = getBounds();
         Point pos = {otherBounds.x, otherBounds.y};
+        offset = GetScaled(offset);
         switch (direction)
         {
         case Direction::LEFT:
@@ -137,7 +139,7 @@ namespace magique
         if (anchor != Anchor::NONE)
         {
             auto val = GetScaled(inset);
-            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height,val );
+            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, val);
             bounds.x = pos.x;
             bounds.y = pos.y;
         }

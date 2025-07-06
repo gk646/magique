@@ -53,7 +53,7 @@ namespace magique
         return point;
     }
 
-    float GetScaled(const float val) { return global::UI_DATA.scaleX * val; }
+    float GetScaled(const float val) { return global::UI_DATA.scaleY * val; }
 
     Point GetUIScaling() { return global::UI_DATA.getScaling(); }
 

@@ -110,4 +110,12 @@ namespace magique
 
     const std::vector<UIObject*>& UIContainer::getChildren() const { return children; }
 
+    void UIContainer::setScalingAll(const ScalingMode scaling) const
+    {
+        for (auto obj : children)
+        {
+            obj->setScalingMode(scaling);
+        }
+    }
+
 } // namespace magique

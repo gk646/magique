@@ -74,6 +74,8 @@
 
 //================= GAMEDEV =================//
 
+// Maximum key event that can be saved in the abstract input class
+#define MAGIQUE_ABSTRACT_INPUT_MAX_EVENTS 5
 
 //================= MULTIPLAYER =================//
 

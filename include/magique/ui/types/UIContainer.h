@@ -50,6 +50,9 @@ namespace magique
         // Returns a vector that contains all current children
         [[nodiscard]] const std::vector<UIObject*>& getChildren() const;
 
+        // Changes the scaling of all children - doesn't change itself
+        void setScalingAll(ScalingMode scaling) const;
+
         ~UIContainer() override = default;
 
     private:

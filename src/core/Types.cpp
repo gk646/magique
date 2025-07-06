@@ -2,16 +2,18 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <utility>
+#include <cstring>
+
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
+#include <magique/gamedev/InputAction.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
 
-#include <cstring>
 
 namespace magique
 {

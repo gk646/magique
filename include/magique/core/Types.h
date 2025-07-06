@@ -524,12 +524,9 @@ namespace magique
         Keybind() = default;
         explicit Keybind(int keyCode, bool UIinput = true, bool shift = false, bool ctrl = false, bool alt = false);
 
-        // Returns true if the keybind is pressed
+        // Uses direct input polling (e.g. IsKeyDown())
         [[nodiscard]] bool isPressed() const;
-
-        // Returns true if the keybind is down
         [[nodiscard]] bool isDown() const;
-
         // Returns true if the base key OR any modifiers are released
         [[nodiscard]] bool isReleased() const;
 

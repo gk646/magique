@@ -30,7 +30,7 @@ namespace magique
     // Passing width and height aligns the anchor to fit them - inset applies an offset on the border points inwards
     Point GetUIAnchor(Anchor anchor, float width = 0, float height = 0, float inset = 0);
 
-    // Accepts a value in the logical resolution and returns the value in the current resolution (scaled horizontally)
+    // Accepts a value in the logical resolution and returns the value in the current resolution (scaled vertically)
     // Note: This is useful when needing static offsets that automatically scale
     float GetScaled(float val);
 
