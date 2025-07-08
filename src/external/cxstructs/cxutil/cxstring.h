@@ -319,7 +319,7 @@ namespace cxstructs
         buffer[count] = '\0';
     }
     // Advances the given string pointer until the given amount of the given character is found
-    inline void str_skip_char(char*& ptr, const char c, int count) noexcept
+    inline void str_skip_char(char*& ptr, const char c, int count = 1) noexcept
     {
         while (*ptr != '\0' && count > 0)
         {

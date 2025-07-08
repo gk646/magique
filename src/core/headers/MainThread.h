@@ -25,6 +25,7 @@ namespace magique::mainthread
     {
         auto& registry = internal::REGISTRY;
         auto& config = global::ENGINE_CONFIG.timing;
+        auto& data = global::ENGINE_DATA;
 
         // Double loop to catch the close event
         while (game.getIsRunning()) [[likely]]
@@ -32,6 +33,8 @@ namespace magique::mainthread
             while (!WindowShouldClose() && game.getIsRunning()) [[likely]]
             {
                 auto time = GetTime();
+                data.engineTime = static_cast<float>(time);
+
                 WakeUpJobs();
 
                 if (UPDATE_WORK >= 1.0)

@@ -60,7 +60,7 @@ namespace magique
         // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
         // Failure: returns {nullptr,0} if the storage doesn't exist or type doesn't match
-        template <typename T = void>
+        template <typename T = unsigned char>
         DataPointer<T> getData(StorageID id);
 
         // Returns a copy of the vector stored at this slot
@@ -123,11 +123,11 @@ namespace magique
         }
 
         const auto size = cell->size;
-        if constexpr (std::is_same_v<T, void>)
+        if constexpr (std::is_same_v<T, unsigned char>)
         {
             auto* copy = new unsigned char[size];
             memcpy(copy, cell->data, size);
-            return {reinterpret_cast<T*>(copy), size};
+            return DataPointer{copy, size};
         }
         else
         {

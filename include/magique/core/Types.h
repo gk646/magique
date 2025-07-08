@@ -172,13 +172,16 @@ namespace magique
     // Checksum (hash) for a file
     struct Checksum final
     {
-        // Initializes the checksum - should be the output of print() or another MD5 implementation
+        // Initializes the checksum - should be the output of print() or format() or another MD5 implementation
         explicit Checksum(const char* hexadecimalHash);
 
         bool operator==(const Checksum& other) const;
 
         // Prints the checksum in hexadecimal digits to stdout
         void print() const;
+
+        // Formats the checksum into the given buffer
+        void format(char* buffer, int size) const;
 
     private:
         Checksum() = default;

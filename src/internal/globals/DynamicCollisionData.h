@@ -13,10 +13,6 @@ namespace magique
     struct PairInfo final // Saves entity id and type
     {
         CollisionInfo info;
-        CollisionC* col1;
-        CollisionC* col2;
-        PositionC* pos1;
-        PositionC* pos2;
         entt::entity e1;
         entt::entity e2;
     };

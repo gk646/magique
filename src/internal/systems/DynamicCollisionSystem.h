@@ -99,7 +99,7 @@ namespace magique
                         CheckCollisionEntities(posA, colA, posB, colB, info);
                         if (info.isColliding())
                         {
-                            pairs.push_back(PairInfo{info, &colA, &colB, &posA, &posB, first, second});
+                            pairs.push_back(PairInfo{info, first, second});
                         }
                     }
                 }
@@ -119,8 +119,17 @@ namespace magique
         auto& pairSet = dynamic.pairSet;
         for (auto& [vec] : colPairs)
         {
-            for (auto& [info, col1, col2, p1, p2, e1, e2] : vec)
+            for (auto& [info, e1, e2] : vec)
             {
+                const auto p1 = TryGetComponent<const PositionC>(e1);
+                const auto p2 = TryGetComponent<const PositionC>(e2);
+                if (p1 == nullptr || p2 == nullptr) [[unlikely]]
+                {
+                    continue;
+                }
+                auto& col1 = GetComponent<CollisionC>(e1);
+                auto& col2 = GetComponent<CollisionC>(e2);
+
                 auto num = static_cast<uint64_t>(e1) << sizeof(uint32_t) | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
@@ -134,28 +143,24 @@ namespace magique
                 secondInfo.normalVector.x *= -1;
                 secondInfo.normalVector.y *= -1;
 
-                // Call for first entity
-#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                bool invokeEvent = group.contains(e1) && group.contains(e2);
-                if (invokeEvent)
-#endif
-                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
+                // Already checked if both entities exist
+                InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
 
                 if (info.getIsAccumulated())
                 {
-                    AccumulateInfo(*col1, info);
+                    AccumulateInfo(col1, info);
                 }
 
                 // Call for second entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
+                bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
                 if (invokeEvent)
 #endif
                     InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
 
                 if (secondInfo.getIsAccumulated())
                 {
-                    AccumulateInfo(*col2, secondInfo);
+                    AccumulateInfo(col2, secondInfo);
                 }
             }
             vec.clear();

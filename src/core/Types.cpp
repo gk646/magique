@@ -199,6 +199,17 @@ namespace magique
                ReverseBytes(fourth));
     }
 
+    void Checksum::format(char* buffer, const int size) const
+    {
+        if (size < 33)
+        {
+            LOG_WARNING("Need 32 bytes for checksum");
+            return;
+        }
+        snprintf(buffer, size, "%08x%08x%08x%08x", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
+                 ReverseBytes(fourth));
+    }
+
     //----------------- COLLIDER INFO -----------------//
 
     int ColliderInfo::getColliderClass() const

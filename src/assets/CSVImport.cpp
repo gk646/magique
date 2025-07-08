@@ -34,14 +34,11 @@ namespace magique
         return -1;
     }
 
-    const char* CSVImport::getCell(const int row, const int column) const
-    {
-        return getCellImpl(row, column);
-    }
+    const char* CSVImport::getCell(const int row, const int column) const { return getCellImpl(row, column); }
 
     int CSVImport::getColumns() const { return columns; }
 
-    int CSVImport::getRows() const { return rows; }
+    int CSVImport::getRows() const { return nameLen != -1 ? rows - 1 : rows; }
 
     bool CSVImport::hasColumnNames() const { return nameLen != -1; }
 
@@ -51,8 +48,13 @@ namespace magique
         data = nullptr;
     }
 
-    const char* CSVImport::getCellImpl(const int row, const int column) const
+    const char* CSVImport::getCellImpl(int row, const int column) const
     {
+        if (nameLen != -1)
+        {
+            row += 1;
+        }
+
         MAGIQUE_ASSERT(row < rows && row >= 0, "Invalid row index");
         MAGIQUE_ASSERT(column < columns && column >= 0, "Invalid column index");
         if (row == 0 && column == 0)

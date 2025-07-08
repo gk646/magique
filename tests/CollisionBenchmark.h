@@ -37,6 +37,9 @@
 // Time: 9.2 ms | Removed hashmap in favor of caching data and saving it inside the collision component
 // Time: 7.4 ms | Switched to Linux + GCC 14.2 + all optimizations
 // Time: 7.1 ms | Upgrade to entt 3.14
+// Some months later
+// Time: 4.7 ms | Fedora 42 + GCC 15.1 + performance mode + ?
+// Time: 4.9 ms | Fixing the pointer invalidation - need to refetch the components
 // .....................................................................
 
 using namespace magique;
@@ -114,7 +117,6 @@ struct Test final : Game
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-
             const auto val = GetRandomValue(0, 100);
             if (val < 25)
             {
@@ -173,9 +175,10 @@ struct Test final : Game
         }
         EndMode2D();
     }
+
     void updateGame(GameState gameState) override
     {
-        // printf("Loaded Objects: %d\n",GetUpdateEntities().size());
+        //printf("Loaded Objects: %d\n", GetUpdateEntities().size());
     }
 };
 

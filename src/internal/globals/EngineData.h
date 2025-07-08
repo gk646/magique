@@ -63,7 +63,8 @@ namespace magique
         GameState gameState{INT32_MAX};            // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);        // Map the camera is in
         NearbyQueryData nearbyQueryData;           // Caches the parameters of the last query to skip similar calls
-        entt::entity playerEntity = entt::null;
+        entt::entity playerEntity = entt::null;    // Manually set player entity
+        float engineTime = 0.0F;                   // Time since engine start
 
         void init()
         {

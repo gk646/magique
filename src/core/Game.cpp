@@ -81,6 +81,9 @@ namespace magique
                 return false;
             }
             initCalled = true;
+            // Apparently this is necessary for shaders to work with shapes
+            Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+            SetShapesTexture(texture, Rectangle{0, 0, 1, 1});
 
             // Setup raylib callback
             SetTraceLogCallback(

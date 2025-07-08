@@ -99,6 +99,9 @@ namespace magique
     // Returns the default font used by the engine
     const Font& GetEngineFont();
 
+    // Returns the time since startup - updated each tick
+    float GetEngineTime();
+
     namespace internal
     {
         // Initializes the engine - does not need to be called when using the game template (Game class)

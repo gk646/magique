@@ -28,7 +28,7 @@ namespace magique
     // Compiles an asset image from all files inside the given directory as root and saves it to disk (recursively)
     // Given name is relative to the current working directory - enable compression to make the image smaller
     //      - key: key used to encrypt the data (0 = no encryption)
-    // Note: Creates an index file at the root of the directory and skips recompiling if no files have changed!
+    // Note: Creates an index file in the working dir and skips recompiling if no files (sizes) have changed!
     // Failure: Returns false
     bool CompileAssetImage(const char* dir, const char* name = "data.bin", uint64_t key = 0, bool compress = false);
 
@@ -39,7 +39,6 @@ namespace magique
     //       - 3. Declare a variable in the main.cpp file with the copied string: Checksum{"copied-string"} CHECK_SUM;
     //       - 4. Use this now to verify the integrity of the asset image (detect tampering or corrupted download)
     //          -  if( !ValidateAssetImage(CHECK_SUM)) ... LOG_ERROR("Corrupted asset image");
-    // IMPORTANT: AssetImage can
     Checksum GetAssetImageChecksum(const char* path = "data.bin");
 
     // Returns true if the asset image at the specified path has the same checksum

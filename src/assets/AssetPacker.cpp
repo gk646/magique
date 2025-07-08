@@ -204,10 +204,10 @@ namespace magique
         const auto path = fs::path(directory);
         if (fs::exists(path) && fs::is_directory(path)) // needs to exist and be a directory
         {
-            const auto filePath = path / "index.magique";
+            const auto filePath = "index.magique";
             if (fs::exists(filePath))
             {
-                FILE* file = fopen(filePath.generic_string().c_str(), "rb");
+                FILE* file = fopen(filePath, "rb");
                 if (!file)
                 {
                     LOG_WARNING("Failed to read asset image index file");
@@ -215,8 +215,8 @@ namespace magique
                 }
 
                 // Read file
-                char buff[64]{};
-                fread(buff, 64, 1, file);
+                char buff[128]{};
+                fread(buff, sizeof(buff), 1, file);
                 fclose(file);
 
                 // Detect format
@@ -271,18 +271,22 @@ namespace magique
                 {
                     totalSize += static_cast<int>(fs::file_size(assetPath));
                 }
-                // Now only if the size is equal we dont regenerate it!
-                return totalSize != size;
+                //TODO to also check for hash here we would need to basically compile the asset image
+                // so i guess we skip it?
+                if (totalSize == size)
+                {
+                    LOG_INFO("Skipped compiling asset image: No changes detected (Only checks size not content!)");
+                    return false;
+                }
             }
         }
+        LOG_INFO("Recompiling asset image: Changes detected");
         return true;
     }
 
-    static void CreateIndexFile(const char* directory, int asset, const int totalSize)
+    static void CreateIndexFile(const char* imageName, int asset, const int totalSize)
     {
-        char filePath[512] = {0};
-        snprintf(filePath, sizeof(filePath), "%s/index.magique", directory);
-
+        const char* filePath = "./index.magique";
         FILE* file = fopen(filePath, "wb");
         if (!file)
         {
@@ -292,12 +296,16 @@ namespace magique
         if (asset == 0)
             asset = -1; // empty
 
+        char checksumBuf[33]{};
+        const auto checksum = GetAssetImageChecksum(imageName);
+        checksum.format(checksumBuf, sizeof(checksumBuf));
+
         char buffer[128] = {0}; // Buffer to hold the content
-        const auto* fmt = "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\nRelease:%d\n";
+        const auto* fmt = "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\nRelease:%d\nChecksum:%s";
 #ifdef NDEBUG // Release mode
-        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 1);
+        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 1, checksumBuf);
 #else
-        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 0);
+        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 0, checksumBuf);
 #endif
         const size_t bytesWritten = fwrite(buffer, sizeof(char), strlen(buffer), file);
         if (bytesWritten != strlen(buffer))
@@ -308,7 +316,7 @@ namespace magique
     }
 
     static void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
-                           const fs::path& rootPath, FILE* imageFile, vector<char> data)
+                           const fs::path& rootPath, FILE* imageFile, vector<char>& data, const char* imageName)
     {
         std::string relativePathStr;
         int totalFileSize = 0; // Only raw file size
@@ -325,7 +333,7 @@ namespace magique
 
             // Read the file size
             fseek(file, 0, SEEK_END);
-            const int fileSize = ftell(file);
+            const int fileSize = (int)ftell(file); // File size per file limited to 2GB
             totalFileSize += fileSize;
             if (fileSize > data.size())
                 data.resize(fileSize, 0);
@@ -362,7 +370,7 @@ namespace magique
             // Close the input file
             fclose(file);
         }
-        CreateIndexFile(rootPath.string().c_str(), pathList.size(), totalFileSize);
+        CreateIndexFile(imageName, pathList.size(), totalFileSize);
     }
 
     bool CompileAssetImage(const char* directory, const char* fileName, const uint64_t encryptionKey,
@@ -414,7 +422,7 @@ namespace magique
         data.reserve(10000);
 
         // Write the image data
-        WriteImage(encryptionKey, pathList, writtenSize, rootPath, imageFile, data);
+        WriteImage(encryptionKey, pathList, writtenSize, rootPath, imageFile, data, fileName);
 
         // Update the total written size in the file header
         fseek(imageFile, 5, SEEK_SET);
@@ -452,6 +460,7 @@ namespace magique
                             "(%.0f%%) | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
                      static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
+            writtenSize = comp.getSize();
         }
         else
         {
@@ -460,6 +469,7 @@ namespace magique
             auto* logText = "Successfully compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
+
         return true;
     }
 
@@ -589,7 +599,6 @@ namespace magique
         }
 
         fclose(file);
-
         return checksum;
     }
 

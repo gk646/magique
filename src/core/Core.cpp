@@ -58,6 +58,8 @@ namespace magique
 
     const Font& GetEngineFont() { return global::ENGINE_CONFIG.font; }
 
+    float GetEngineTime() { return global::ENGINE_DATA.engineTime; }
+
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
     void SetEnableLightingSystem(const bool val) { global::ENGINE_CONFIG.enableLightingSystem = val; }

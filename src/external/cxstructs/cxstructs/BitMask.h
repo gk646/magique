@@ -23,102 +23,134 @@
 
 #include <initializer_list>
 
-namespace cxstructs {
+namespace cxstructs
+{
 
-template <size_t N>
-struct SuitableStorageType {
-  // Default to uint64_t for N <= 64
-  using type =
-      std::conditional_t<N <= 8, uint8_t,
-                         std::conditional_t<N <= 16, uint16_t, std::conditional_t<N <= 32, uint32_t, uint64_t>>>;
-};
+    template <size_t N>
+    struct SuitableStorageType
+    {
+        // Default to uint64_t for N <= 64
+        using type =
+            std::conditional_t<N <= 8, uint8_t,
+                               std::conditional_t<N <= 16, uint16_t, std::conditional_t<N <= 32, uint32_t, uint64_t>>>;
+    };
 
-/**
+    /**
  * BitMask for a given enum type
  *
  * Enum constant have to be power of 2:
  * enum Test { ONE = 1, TWO = 2, THREE = 4 };
  * @tparam E the enum
- * @tparam MAX_FLAGS maximum amount of expected flags (can be different from enum type)
  */
-template <class E>
-class EnumMask {
-  E data_ = 0;
+    template <class E>
+    struct EnumMask
+    {
+        using StoreType = typename SuitableStorageType<sizeof(E)>::type;
 
- public:
-  void set(E flag) noexcept { data_ |= static_cast<E>(flag); }
+        EnumMask(E data) : data_(static_cast<StoreType>(data)) {}
 
-  void unset(E flag) noexcept { data_ &= ~static_cast<E>(flag); }
+        void assign(E flag, const bool value)
+        {
+            if (value)
+            {
+                set(flag);
+            }
+            else
+            {
+                unset(flag);
+            }
+        }
 
-  void toggle(E flag) noexcept { data_ ^= static_cast<E>(flag); }
+        void set(E flag) noexcept { data_ |= static_cast<StoreType>(flag); }
 
-  [[nodiscard]] bool isSet(E flag) const noexcept { return (data_ & static_cast<E>(flag)) != 0; }
+        void unset(E flag) noexcept { data_ &= ~static_cast<StoreType>(flag); }
 
-  void clear() noexcept { data_ = 0; }
+        void toggle(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
 
-  [[nodiscard]] bool any() const noexcept { return data_ != 0x0; }
+        [[nodiscard]] bool isSet(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
 
-  //Compile time check(unfolding)
-  template <E... Flags>
-  [[nodiscard]] constexpr bool any_of() const noexcept {
-    E compositeFlag = (0 | ... | static_cast<E>(Flags));
-    return (data_ & compositeFlag) != 0;
-  }
+        void clear() noexcept { data_ = 0; }
 
-  //Compile time check(unfolding)
-  template <E... Flags>
-  [[nodiscard]] constexpr bool all_of() const noexcept {
-    E compositeFlag = (0 | ... | static_cast<E>(Flags));
-    return (data_ & compositeFlag) == compositeFlag;
-  }
+        [[nodiscard]] bool any() const noexcept { return data_ != 0x0; }
 
-  //Runtime check
-  [[nodiscard]] bool any_of(std::initializer_list<E> flags) const noexcept {
-    for (auto flag : flags) {
-      if ((data_ & static_cast<E>(flag)) != 0) {
-        return true;
-      }
-    }
-    return false;
-  }
+        //Compile time check(unfolding)
+        template <E... Flags>
+        [[nodiscard]] constexpr bool any_of() const noexcept
+        {
+            E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
+            return (data_ & compositeFlag) != 0;
+        }
 
-  //Runtime check
-  [[nodiscard]] bool all_of(std::initializer_list<E> flags) const noexcept {
-    for (auto flag : flags) {
-      if ((data_ & static_cast<E>(flag)) == 0) {
-        return false;
-      }
-    }
-    return true;
-  }
-};
+        //Compile time check(unfolding)
+        template <E... Flags>
+        [[nodiscard]] constexpr bool all_of() const noexcept
+        {
+            E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
+            return (data_ & compositeFlag) == compositeFlag;
+        }
+
+        //Runtime check
+        [[nodiscard]] bool any_of(std::initializer_list<E> flags) const noexcept
+        {
+            for (auto flag : flags)
+            {
+                if ((data_ & static_cast<StoreType>(flag)) != 0)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //Runtime check
+        [[nodiscard]] bool all_of(std::initializer_list<E> flags) const noexcept
+        {
+            for (auto flag : flags)
+            {
+                if ((data_ & static_cast<E>(flag)) == 0)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+    private:
+        StoreType data_ = 0;
+    };
 
 #ifdef CX_INCLUDE_TESTS
-static void TEST_FLAG_CONTAINERS() {
+    static void TEST_FLAG_CONTAINERS()
+    {
 
-  enum Test { ONE = 1, TWO = 2, THREE = 4 };
-  EnumMask<Test, 1> flag;
-  flag.set(ONE);
-  CX_ASSERT(flag.isSet(ONE), "");
-  flag.clear();
-  CX_ASSERT(!flag.isSet(ONE), "");
+        enum Test
+        {
+            ONE = 1,
+            TWO = 2,
+            THREE = 4
+        };
+        EnumMask<Test, 1> flag;
+        flag.set(ONE);
+        CX_ASSERT(flag.isSet(ONE), "");
+        flag.clear();
+        CX_ASSERT(!flag.isSet(ONE), "");
 
-  auto res = !flag.any_of<ONE, TWO>();
-  CX_ASSERT(res, "");
+        auto res = !flag.any_of<ONE, TWO>();
+        CX_ASSERT(res, "");
 
-  flag.set(THREE);
-  CX_ASSERT(flag.any(), "");
-  res = flag.any_of<THREE, TWO>();
-  CX_ASSERT(res, "");
+        flag.set(THREE);
+        CX_ASSERT(flag.any(), "");
+        res = flag.any_of<THREE, TWO>();
+        CX_ASSERT(res, "");
 
-  flag.set(TWO);
-  res = flag.all_of<THREE, TWO>();
-  CX_ASSERT(res, "");
-}
+        flag.set(TWO);
+        res = flag.all_of<THREE, TWO>();
+        CX_ASSERT(res, "");
+    }
 #endif
 
-//-----------BLUEPRINT-----------//
-/*
+    //-----------BLUEPRINT-----------//
+    /*
 enum class MyFlags : uint32_t {
 Flag1 = 1 << 0,
 Flag2 = 1 << 1,
@@ -154,5 +186,5 @@ Flag31 = 1 << 30,
 Flag32 = 1U << 31,
 };
  */
-}  // namespace cxstructs
-#endif  //CXSTRUCTS_SRC_CXSTRUCTS_BITFLAG_H_
+} // namespace cxstructs
+#endif //CXSTRUCTS_SRC_CXSTRUCTS_BITFLAG_H_
