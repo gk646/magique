@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef MAGIQUE_INPUT_ACTION_H
-#define MAGIQUE_INPUT_ACTION_H
+#ifndef MAGIQUE_ACTION_INPUT_H
+#define MAGIQUE_ACTION_INPUT_H
 
 #include <magique/core/Types.h>
 #include <raylib/raylib.h>
@@ -35,22 +35,22 @@ namespace magique
     // You only pass the state of the action, not which key caused it
     // Can be created from many sources
     // Note: Only updated once in the constructor => create new each tick
-    struct InputAction final
+    struct ActionInput final
     {
         // From keybind using direct polling
-        static InputAction FromKeybind(const Keybind& bind);
+        static ActionInput FromKeybind(const Keybind& bind);
 
         // From a key using direct polling
-        static InputAction FromKey(KeyboardKey key);
-        static InputAction FromKey(MouseButton button);
+        static ActionInput FromKey(KeyboardKey key);
+        static ActionInput FromKey(MouseButton button);
 
         // Creates the action from the given values
-        static InputAction FromVirtual(bool pressed, bool down = false, bool released = false);
+        static ActionInput FromVirtual(bool pressed, bool down = false, bool released = false);
 
         // Returns the state of the action
-        bool getIsDown() const;
-        bool getIsPressed() const;
-        bool getIsReleased() const;
+        [[nodiscard]] bool getIsDown() const;
+        [[nodiscard]] bool getIsPressed() const;
+        [[nodiscard]] bool getIsReleased() const;
 
     private:
         bool isPressed = false;
@@ -60,4 +60,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_INPUT_ACTION_H
+#endif //MAGIQUE_ACTION_INPUT_H

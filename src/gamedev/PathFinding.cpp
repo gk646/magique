@@ -43,9 +43,9 @@ namespace magique
         int const x1 = static_cast<int>(end.x / MAGIQUE_PATHFINDING_CELL_SIZE);
         int const y1 = static_cast<int>(end.y / MAGIQUE_PATHFINDING_CELL_SIZE);
 
-        int const dx = abs(x1 - x0);
+        int const dx = std::abs(x1 - x0);
         int const sx = x0 < x1 ? 1 : -1;
-        int const dy = -abs(y1 - y0);
+        int const dy = -std::abs(y1 - y0);
         int const sy = y0 < y1 ? 1 : -1;
         int error = dx + dy;
 

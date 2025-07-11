@@ -35,9 +35,10 @@ namespace magique
     // Failure: Returns entt::null
     entt::entity CreateEntity(EntityType type, float x, float y, MapID map, int rotation = 0, bool withFunc = true);
 
-    // Creates a new entity with the given id
+    // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
-    entt::entity CreateEntityNetwork(entt::entity id, EntityType type, float x, float y, MapID map);
+    // Note: You shouldnt use  this information - but entity ids start with 0 and go up until UINT32_MAX
+    entt::entity CreateEntityEx(entt::entity id, EntityType type, float x, float y, MapID map, int rot, bool withFunc);
 
     // Unregisters an entity
     // Failure: Returns false
@@ -86,6 +87,10 @@ namespace magique
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
     void DestroyEntities(const std::initializer_list<EntityType>& ids);
 
+    // Sets a function that is called each time a entity is destroyed
+    // See core/Types.h for more info on the functino
+    void SetDestroyEntityCallback(DestroyEntityCallback callback);
+
     //============== COMPONENTS ==============//
 
     // Makes the entity collidable with others - Shape: RECT
@@ -131,7 +136,7 @@ namespace magique
 {
     namespace internal
     {
-        inline entt::registry REGISTRY;                                       // The used registry
+        inline entt::registry REGISTRY{};                                     // The used registry
         inline auto POSITION_GROUP = REGISTRY.group<PositionC, CollisionC>(); // Pos + Collision group
 
     } // namespace internal
@@ -140,6 +145,7 @@ namespace magique
     T& GetComponent(const entt::entity entity)
     {
         static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
+        MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
         MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {

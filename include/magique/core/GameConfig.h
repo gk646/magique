@@ -75,7 +75,7 @@ namespace magique
         internal::GameConfigStorageCell* getCell(ConfigID id);
         std::vector<internal::GameConfigStorageCell> storage; // Saves all types except string
         bool loaded = false;
-        befriend(Game, GameConfig& GetGameConfig());
+        befriend(Game, GameConfig& GetGameConfig())
     };
 } // namespace magique
 

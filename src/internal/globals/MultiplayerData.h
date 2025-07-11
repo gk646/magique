@@ -2,9 +2,8 @@
 #ifndef MAGIQUE_MULTIPLAYER_DATA_H
 #define MAGIQUE_MULTIPLAYER_DATA_H
 
-#include <functional>
-
 #include <magique/util/Logging.h>
+#include <magique/multiplayer/Multiplayer.h>
 #include <magique/internal/Macros.h>
 
 #include "internal/datastructures/VectorType.h"
@@ -21,19 +20,42 @@
 
 inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
-    LOG_INFO(pszMsg);
-    if (eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
+    if (eType == k_ESteamNetworkingSocketsDebugOutputType_Msg)
+    {
+        LOG_INFO(pszMsg);
+    }
+    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Warning)
+    {
+        LOG_WARNING(pszMsg);
+    }
+    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Important)
+    {
+        LOG_WARNING(pszMsg);
+    }
+    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Error ||
+             eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
     {
         LOG_ERROR(pszMsg);
     }
 }
 
+
 namespace magique
 {
+    struct ConnMapping final
+    {
+        Connection conn;
+        entt::entity entity;
+
+        static bool DeleteFunc(const ConnMapping& m1, const ConnMapping& m2) { return m1.conn == m2.conn; }
+    };
+
+
     struct MultiplayerData final
     {
-        std::function<void(MultiplayerEvent)> callback;                 // Callback
+        MultiplayerCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
+        std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mapping
         std::vector<Message> msgVec;                                    // Message buffer
         vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
         SteamNetworkingMessage_t** msgBuffer = nullptr;                 // Incoming message data buffer
@@ -50,6 +72,8 @@ namespace magique
             batchedMsgs.reserve(MAGIQUE_ESTIMATED_MESSAGES);
             msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_ESTIMATED_MESSAGES];
             buffCap = MAGIQUE_ESTIMATED_MESSAGES;
+            connections.reserve(MAGIQUE_MAX_PLAYERS + 1);
+            connectionMapping.reserve(MAGIQUE_MAX_PLAYERS + 1);
         }
 
         void close()
@@ -91,6 +115,7 @@ namespace magique
         {
             MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
             connections.clear();
+            connectionMapping.clear();
             isHost = false;
             isInSession = false;
             msgVec.clear();
@@ -113,6 +138,7 @@ namespace magique
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
         {
+            const auto conn = static_cast<Connection>(pParam->m_hConn);
             if (isHost)
             {
                 // New connection arriving at a listen socket
@@ -129,9 +155,11 @@ namespace magique
                         }
                         else
                         {
-                            connections.push_back(static_cast<Connection>(pParam->m_hConn));
+                            connections.push_back(conn);
                             if (callback)
-                                callback(MultiplayerEvent::HOST_NEW_CONNECTION);
+                            {
+                                callback(MultiplayerEvent::HOST_NEW_CONNECTION, conn);
+                            }
                             LOG_INFO("Host accepted a new client connection");
                         }
                     }
@@ -150,7 +178,9 @@ namespace magique
                 {
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
-                        callback(MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED);
+                    {
+                        callback(MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED, static_cast<Connection>(pParam->m_hConn));
+                    }
                 }
             }
 
@@ -164,15 +194,20 @@ namespace magique
                 {
                     UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
                     if (callback)
-                        callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED);
+                    {
+                        callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED, conn);
+                    }
+                    UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
                 }
                 else // If you're a client and the host disconnects
                 {
                     if (callback)
-                        callback(MultiplayerEvent::CLIENT_CONNECTION_CLOSED);
-                    LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
+                    {
+                        callback(MultiplayerEvent::CLIENT_CONNECTION_CLOSED, conn);
+                    }
                     goOffline();
+                    LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
                 }
             }
 
@@ -186,12 +221,21 @@ namespace magique
                 if (isHost)
                 {
                     UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
-                    LOG_INFO("(Host) Local problem with connection. Disconnected client from session: %s", errStr);
+                    if (callback)
+                    {
+                        callback(MultiplayerEvent::HOST_LOCAL_PROBLEM, conn);
+                    }
+                    UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
+                    LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
                 }
                 else
                 {
+                    if (callback)
+                    {
+                        callback(MultiplayerEvent::CLIENT_LOCAL_PROBLEM, conn);
+                    }
                     goOffline();
-                    LOG_INFO("(Client) Local problem with connection. Closed session: %s", errStr);
+                    LOG_INFO("Local problem with connection. Closed session: %s", errStr);
                 }
             }
         }

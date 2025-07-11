@@ -49,6 +49,6 @@ namespace magique
     // Note: only sets the completion state of existing achievements and only if the name matches with the saved data
     bool LoadAchievements(const unsigned char* data, int size);
 
-}; // namespace magique
+} // namespace magique
 
 #endif //MAGIQUE_ACHIEVEMENTS_H

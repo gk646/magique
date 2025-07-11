@@ -288,6 +288,9 @@ namespace magique
         friend void SetIsAccumulated(CollisionInfo& info);
     };
 
+    // Called BEFORE the entity is destroyed with its info
+    using DestroyEntityCallback = void (*)(entt::entity entity, const PositionC& position);
+
     //================= GAMEDEV =================//
 
     enum class NoiseType
@@ -391,12 +394,20 @@ namespace magique
     enum class MultiplayerEvent : uint8_t
     {
         //================= HOST =================//
-        HOST_NEW_CONNECTION,      // Posted after we accept a new client connection
-        HOST_CLIENT_DISCONNECTED, // Posted after the client closed the connection
+        // Posted after we accept a new client connection
+        HOST_NEW_CONNECTION,
+        // Posted after the client closed the connection
+        HOST_CLIENT_DISCONNECTED,
+        // Posted if a local problem terminated a client connection (usually because client leaves not gracefully)
+        HOST_LOCAL_PROBLEM,
 
         //================= CLIENT =================//
-        CLIENT_CONNECTION_ACCEPTED, // Posted after the host accepted our connection
-        CLIENT_CONNECTION_CLOSED,   // Posted after the host closed our connection
+        // Posted after the host accepted our connection
+        CLIENT_CONNECTION_ACCEPTED,
+        // Posted after the host closed our connection
+        CLIENT_CONNECTION_CLOSED,
+        // Posted if a local problem terminated the connection to the host (usually because host leaves not gracefully)
+        CLIENT_LOCAL_PROBLEM,
     };
 
     struct Payload final

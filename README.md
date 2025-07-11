@@ -54,7 +54,7 @@ Most notable features:
 `magique` is using the following popular libraries:
 
 - **[raylib](https://github.com/raysan5/raylib)** _(5.5-dev)_: rendering, resource loading, sound,...
-- **[EnTT](https://github.com/skypjack/entt)** _(3.14)_: fast and modern entity-component system
+- **[EnTT](https://github.com/skypjack/entt)** _(3.15)_: fast and modern entity-component system
 - **[ankerl](https://github.com/martinus/unordered_dense)** _(4.4.0)_: optimized dense hashmap and hashset
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via

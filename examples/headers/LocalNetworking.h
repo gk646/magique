@@ -41,8 +41,8 @@ enum EntityType : uint16_t
 enum class MessageType : uint8_t
 {
     POSITION_UPDATE, // Host sends the clients a entity position update
-    SPAWN_UPDATE, // Host sends the clients data of a entity spawn
-    INPUT_UPDATE, // Client sends the host its current input(s)
+    SPAWN_UPDATE,    // Host sends the clients data of a entity spawn
+    INPUT_UPDATE,    // Client sends the host its current input(s)
 };
 
 struct TestCompC final
@@ -92,7 +92,6 @@ struct PlayerScript final : EntityScript
 
 struct NetPlayerScript final : EntityScript
 {
-   
 };
 
 struct ObjectScript final : EntityScript // Moving platform
@@ -135,7 +134,7 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-SetGameState({}); // Set empty gamestate - needs to be set in a real game
+        SetGameState({}); // Set empty gamestate - needs to be set in a real game
         SetShowHitboxes(true);
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
@@ -207,12 +206,12 @@ SetGameState({}); // Set empty gamestate - needs to be set in a real game
 
                         BatchMessage(lastConnection, payload);
                     }
-                } else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
-            {
-                EnterClientMode();
-                DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
-
-            }
+                }
+                else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
+                {
+                    EnterClientMode();
+                    DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
+                }
             });
     }
 
@@ -269,7 +268,7 @@ SetGameState({}); // Set empty gamestate - needs to be set in a real game
             if (IsKeyPressed(KEY_J))
             {
                 ConnectToLocalSocket(GetLocalIP(), port);
-                         }
+            }
         }
 
         // Here we receive incoming messages and update the gamestate
@@ -328,7 +327,7 @@ SetGameState({}); // Set empty gamestate - needs to be set in a real game
                         }
                         break;
                     case MessageType::INPUT_UPDATE:
-                                        LOG_WARNING("Received wrong message"); // Only host gets inputs
+                        LOG_WARNING("Received wrong message"); // Only host gets inputs
                         break;
                     case MessageType::SPAWN_UPDATE:
                         {

@@ -130,7 +130,7 @@ namespace magique
                 auto& col1 = GetComponent<CollisionC>(e1);
                 auto& col2 = GetComponent<CollisionC>(e2);
 
-                auto num = static_cast<uint64_t>(e1) << sizeof(uint32_t) | static_cast<uint32_t>(e2);
+                auto num = (static_cast<uint64_t>(e1) << 32) | static_cast<uint32_t>(e2);
                 const auto it = pairSet.find(num);
                 if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
                 {

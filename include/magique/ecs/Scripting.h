@@ -72,7 +72,7 @@ namespace magique
     };
 
     // Add ALL event types here
-    REGISTER_EVENTS(onCreate, onDestroy, onTick, onDynamicCollision, onStaticCollision, onKeyEvent, onMouseEvent);
+    REGISTER_EVENTS(onCreate, onDestroy, onTick, onDynamicCollision, onStaticCollision, onKeyEvent, onMouseEvent)
 
     struct EntityScript
     {

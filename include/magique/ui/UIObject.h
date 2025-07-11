@@ -104,7 +104,7 @@ namespace magique
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
         bool isContainer = false;
-        befriend(UIData, Window);
+        befriend(UIData, Window)
     };
 
 } // namespace magique

@@ -65,8 +65,8 @@ namespace magique
         return entt::null;
     }
 
-    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, int rotation,
-                              const bool withFunc)
+    static entt::entity CreateEntityInternal(entt::entity id, EntityType type, float x, float y, MapID map, int rotation,
+                                             bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -74,7 +74,7 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& registry = internal::REGISTRY;
 
-        const auto entity = registry.create(static_cast<entt::entity>(ecs.entityID++));
+        const auto entity = registry.create(id != entt::null ? id : entt::entity{ecs.entityID++});
         registry.emplace<PositionC>(entity, x, y, map, type, static_cast<uint16_t>(rotation)); // PositionC is default
 
         if (withFunc) [[likely]]
@@ -116,30 +116,17 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntityNetwork(const entt::entity id, EntityType type, const float x, const float y, MapID map)
+    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, int rotation,
+                              const bool withFunc)
     {
-        MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
-        const auto& config = global::ENGINE_CONFIG;
-        const auto& data = global::ENGINE_DATA;
+        return CreateEntityInternal(entt::null, type, x, y, map, rotation, withFunc);
+    }
 
-        auto& ecs = global::ECS_DATA;
-        auto& registry = internal::REGISTRY;
+    entt::entity CreateEntityEx(const entt::entity id, const EntityType type, const float x, const float y,
+                                const MapID map, const int rot, const bool withFunc)
+    {
 
-        const auto it = ecs.typeMap.find(type);
-        if (it == ecs.typeMap.end())
-        {
-            return entt::null; // EntityType not registered
-        }
-        const auto entity = registry.create(id);
-        {
-            registry.emplace<PositionC>(entity, x, y, map, type); // PositionC is default
-            it->second(entity, type);
-        }
-        if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
-        {
-            InvokeEvent<onCreate>(entity);
-        }
-        return entity;
+        return CreateEntityInternal(id, type, x, y, map, rot, withFunc);
     }
 
     bool DestroyEntity(const entt::entity entity)
@@ -151,23 +138,30 @@ namespace magique
         if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (data.isEntityScripted(entity)) [[likely]]
+            if (data.destroyEntityCallback)
             {
-                InvokeEvent<onDestroy>(entity);
+                data.destroyEntityCallback(entity, pos);
             }
-            if (!config.isClientMode && registry.all_of<CollisionC>(entity)) [[likely]]
+            if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
             {
-                UnorderedDelete(data.collisionVec, entity);
+                InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
             }
+
             registry.destroy(entity);
             data.entityUpdateCache.erase(entity);
+            UnorderedDelete(data.drawVec, entity);
+            UnorderedDelete(data.entityUpdateVec, entity);
+            UnorderedDelete(data.collisionVec, entity);
+            data.entityNScriptedSet.erase(entity);
             if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
             {
                 dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
             }
-            UnorderedDelete(data.drawVec, entity);
-            UnorderedDelete(data.entityUpdateVec, entity);
             global::PATH_DATA.solidEntities.erase(entity);
+            if (entity == GetCameraEntity())
+            {
+                data.cameraEntity = entt::entity{UINT32_MAX};
+            }
             return true;
         }
         return false;
@@ -176,59 +170,55 @@ namespace magique
     void DestroyEntities(const std::initializer_list<EntityType>& ids)
     {
         const auto& config = global::ENGINE_CONFIG;
-        auto& reg = internal::REGISTRY;
         auto& data = global::ENGINE_DATA;
         auto& dyCollData = global::DY_COLL_DATA;
 
-        const auto view = reg.view<PositionC>(); // Get all entities
+        const auto& group = internal::POSITION_GROUP; // Get all entities
         if (ids.size() == 0)
         {
-            for (const auto e : view)
+            for (const auto e : group)
             {
+                const auto& pos = group.get<PositionC>(e);
+                if (data.destroyEntityCallback)
+                {
+                    data.destroyEntityCallback(e, pos);
+                }
                 if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
-                    InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[view.get<PositionC>(e).type], e);
+                    InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                 }
             }
+
+            internal::REGISTRY.clear();
             data.entityUpdateCache.clear();
             data.drawVec.clear();
             data.entityUpdateVec.clear();
             data.collisionVec.clear();
+            data.entityNScriptedSet.clear();
             dyCollData.mapEntityGrids.clear();
-            internal::REGISTRY.clear();
             data.cameraEntity = entt::entity{UINT32_MAX};
             global::PATH_DATA.solidEntities.clear();
             return;
         }
 
-        for (const auto e : view)
+        for (const auto e : group)
         {
-            const auto& pos = view.get<PositionC>(e);
+            const auto& pos = group.get<PositionC>(e);
             for (const auto id : ids)
             {
                 if (pos.type == id)
                 {
-                    if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
-                    {
-                        InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
-                    }
-                    if (reg.all_of<CollisionC>(e)) [[likely]]
-                    {
-                        UnorderedDelete(data.collisionVec, e);
-                    }
-                    internal::REGISTRY.destroy(e);
-                    data.entityUpdateCache.erase(e);
-                    UnorderedDelete(data.drawVec, e);
-                    UnorderedDelete(data.entityUpdateVec, e);
-                    if (dyCollData.mapEntityGrids.contains(pos.map)) [[likely]]
-                    {
-                        dyCollData.mapEntityGrids[pos.map].removeWithHoles(e);
-                    }
+                    DestroyEntity(e);
                     break;
                 }
             }
         }
         // Don't need to patch as its cleared each tick
+    }
+
+    void SetDestroyEntityCallback(const DestroyEntityCallback callback)
+    {
+        global::ENGINE_DATA.destroyEntityCallback = callback;
     }
 
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,

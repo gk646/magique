@@ -20,18 +20,56 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             -std=c++20 -march=native -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
             -Wall
+            -Wc++20-compat
+            -Wc++20-extensions
+            -Wcomma-subscript
+            -Wdeprecated-declarations
+            -Wextra-semi
+            -Wnon-virtual-dtor
+            -Wuseless-cast
+            -Wvla
+            -Wno-virtual-dtor
+            -Wno-useless-cast
     )
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             $<$<CONFIG:Debug>:
-            -Og -g >
+            -Og
+            -g
+            -fstack-protector-strong
+            -D_DEBUG
+            -D_GLIBCXX_ASSERTIONS
+            -D_DEBUG_ASSERT
+            >
             $<$<CONFIG:Release>:
-            -Ofast -DNDEBUG>
+            -Ofast
+            -DNDEBUG
+            -fuse-linker-plugin
+            -fomit-frame-pointer
+            -ffunction-sections
+            -fdata-sections
+            -fno-strict-aliasing
+            -funroll-loops
+            -fno-semantic-interposition
+            >
     )
 
     target_link_options(magique-${MODULE_NAME} PRIVATE
-            $<$<CONFIG:Debug>: >
-            $<$<CONFIG:Release>: >
+            $<$<CONFIG:Debug>:
+            -Wl,--as-needed
+            -Wl,--no-undefined
+            -Wl,--warn-common
+            >
+
+            $<$<CONFIG:Release>:
+            -Wl,--gc-sections
+            -Wl,--as-needed
+            -Wl,--build-id
+            -Wl,--no-undefined
+            -Wl,--strip-all
+            -Wl,--icf=all
+            -Wl,--sort-section=alignment
+            >
     )
 
     if (MAGIQUE_SANITIZER)

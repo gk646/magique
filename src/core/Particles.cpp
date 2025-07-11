@@ -30,9 +30,9 @@ namespace magique
             case Shape::CIRCLE:
                 {
                     const float angle = static_cast<float>(GetRandomValue(0, 360)) * (PI / 180.0f);
-                    const float dist = data.emp1 * sqrt(static_cast<float>(GetRandomValue(0, 100)) / 100.0F);
-                    particle.x = dist * cos(angle);
-                    particle.y = dist * sin(angle);
+                    const float dist = data.emp1 * std::sqrt(static_cast<float>(GetRandomValue(0, 100)) / 100.0F);
+                    particle.x = dist *std::cos(angle);
+                    particle.y = dist * std::sin(angle);
                 }
                 break;
             case Shape::CAPSULE: // Acts as point type
@@ -44,6 +44,7 @@ namespace magique
                 break;
             }
             // Higher quality randomness should be worth it - and the random is pretty fast
+            // So we call GetRandomValue() often instead of once
 
             // Scale
             particle.scale = data.minScale;
@@ -74,10 +75,10 @@ namespace magique
             {
                 const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
                 const float spreadAngle = (-data.spreadAngle / 2.0F + data.spreadAngle * p) * DEG2RAD;
-                const float currentAngle = atan2(data.dirY, data.dirX);
+                const float currentAngle = std::atan2(data.dirY, data.dirX);
                 const float newAngle = currentAngle + spreadAngle;
-                dirX = cos(newAngle);
-                dirY = sin(newAngle);
+                dirX = std::cos(newAngle);
+                dirY = std::sin(newAngle);
             }
 
             // vx,vy - velocity

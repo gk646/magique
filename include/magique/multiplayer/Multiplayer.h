@@ -47,9 +47,8 @@ namespace magique
     // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)
     Payload CreatePayload(const void* data, int size, MessageType type);
 
-    // Starts a new batch or appends to an existing one - batches until SendLocalBatch() is called
+    // Batches (stores) the payload internally - batch is sent (and cleared) when SendBatch() is called
     // Each message can be sent to a different connection (as specified by the connection)
-    // Note: There is only be single batch at a time!
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
     bool BatchMessage(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
@@ -79,9 +78,13 @@ namespace magique
     // Returns the vector that contains all current valid connections
     const std::vector<Connection>& GetCurrentConnections();
 
+    // Called with the current even and the affected connection
+    // ClientEntity mappings will be deleted after the callback (on disconnect)
+    using MultiplayerCallback = std::function<void(MultiplayerEvent event, Connection conn)>;
+
     // Sets the callback function that is called on various multiplayer events
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered
-    void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func);
+    void SetMultiplayerCallback(const MultiplayerCallback& func);
 
     // Returns true if currently hosting or connected to a host
     bool GetInMultiplayerSession();
@@ -89,8 +92,19 @@ namespace magique
     // Returns true if currently in a session as the host
     bool GetIsHost();
 
+    // Returns true if currently in a session as the host AND at least 1 client
+    bool GetIsActiveHost();
+
     // Returns true if currently in a session as a client
     bool GetIsClient();
+
+    // Sets the entity for the given connection - allows to create a mapping between the remote client and a local entity
+    // Note: Needs to be manually set BUT is automatically deleted AFTER the connection is disconnected or session is closed
+    // Note: An existing mapping can be updated with a new entity
+    void SetConnectionEntityMapping(Connection conn, entt::entity entity);
+
+    // Returns the entity mapped to this connection - entt::null if none was set
+    entt::entity GetConnectionEntityMapping(Connection conn);
 
     //================= CLIENT-MODE =================//
 
@@ -109,7 +123,7 @@ namespace magique
     // Returns true if magique was built with steam
     bool GetSteamLoaded();
 
-    // Returns true if magique was built with GameNetworkingSockets
+    // Returns true if magique was built with GameNetworkingSockets (local sockets)
     bool GetNetworkingSocketsLoaded();
 
 } // namespace magique

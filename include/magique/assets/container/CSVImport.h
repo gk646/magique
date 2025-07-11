@@ -49,7 +49,7 @@ namespace magique
         int nameLen = -1;
         int columns = 0;
         int rows = 0;
-        befriend(CSVImport ImportCSV(Asset, char, bool));
+        befriend(CSVImport ImportCSV(Asset, char, bool))
     };
 } // namespace magique
 

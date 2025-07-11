@@ -29,9 +29,10 @@ namespace magique
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg))
         {
-            LOG_FATAL("GameNetworkingSockets_Init failed.  %s", errMsg);
+            LOG_FATAL("Initializing local sockets failed.  %s", errMsg);
             return false;
         }
+        LOG_INFO("Successfully initialized local sockets");
         global::MP_DATA.isInitialized = true;
         return true;
 #else
@@ -68,6 +69,7 @@ namespace magique
             LOG_WARNING("Failed to create listen socket on port %d", port);
             return false;
         }
+        LOG_INFO("Successfully created listen socket on port %d", port);
         data.goOnline(true);
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }

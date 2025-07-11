@@ -93,7 +93,7 @@ namespace magique
         std::vector<internal::GameSaveStorageCell> storage; // Internal data holder
         bool isPersisted = false;                           // If the game save has been saved to disk
         befriend(bool SaveToDisk(GameSaveData&, const char*, uint64_t),
-                 bool LoadFromDisk(GameSaveData&, const char*, uint64_t));
+                 bool LoadFromDisk(GameSaveData&, const char*, uint64_t))
     };
 
 } // namespace magique

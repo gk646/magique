@@ -40,6 +40,7 @@
 // Some months later
 // Time: 4.7 ms | Fedora 42 + GCC 15.1 + performance mode + ?
 // Time: 4.9 ms | Fixing the pointer invalidation - need to refetch the components
+// Time: 4.5 ms | Re-enabled SIMD - accidentally had wrong define
 // .....................................................................
 
 using namespace magique;

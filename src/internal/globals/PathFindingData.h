@@ -76,8 +76,8 @@ namespace magique
             const auto it = visited.find(pathCell);
             if (it != visited.end()) // Get the position within the subgrid
             {
-                const int vCellX = abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-                const int vCellY = abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+                const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+                const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
                 return it->second[vCellX + (vCellY * subGridSize)];
             }
             return false;
@@ -87,8 +87,8 @@ namespace magique
         {
             const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
             const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
-            const int vCellX = abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-            const int vCellY = abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+            const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+            const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
             const auto cell = GetVisitedCell(cellX, cellY);
             visited[cell].set(vCellX + (vCellY * subGridSize), true);
         }

@@ -45,9 +45,9 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    grid.insert(e, pos.x - 1, pos.y - 1, col.p1 + 1, col.p2 + 1); // Fixes hitches on cell borders
+                    grid.insert(e, pos.x - 1.0F, pos.y - 1.0F, col.p1 + 1.0F, col.p2 + 1.0F); // Fixes hitches on cell borders
                     if (isPathSolid) [[unlikely]]
-                        pathGrid.insert(pos.x - 1, pos.y - 1, col.p1 + 1, col.p2 + 1);
+                        pathGrid.insert(pos.x - 1.0F, pos.y - 1.0F, col.p1 + 1.0F, col.p2 + 1.0F);
                     break;
                 }
                 float pxs[4] = {0, col.p1, col.p1, 0};

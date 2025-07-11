@@ -33,8 +33,8 @@ namespace magique
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
     struct TaskInterface; // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSaver;  // Handles saving the session and resetting the state  - Game -> MainMenu
-    struct GameSaveData;   // The game save object
+    struct GameSaver;     // Handles saving the session and resetting the state  - Game -> MainMenu
+    struct GameSaveData;  // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config
@@ -48,7 +48,7 @@ namespace magique
     }
 
     template <typename... Columns>
-    struct DataTable;         // Type-safe database-like interface to save game data
+    struct DataTable; // Type-safe database-like interface to save game data
 
     //=================ECS=================//
     struct EntityScript;
@@ -89,6 +89,7 @@ namespace magique
 
     //================= Multiplayer =================//
 
+    enum class Connection : uint32_t;
 
     //================= UI =================//
     struct UIObject;

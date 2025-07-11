@@ -177,7 +177,7 @@ namespace magique
             assets.sort();
             if (res)
             {
-                const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
+                const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
                 if (original == imageSize)
                 {
                     auto* logText =
@@ -455,7 +455,7 @@ namespace magique
             comp.free();
             fclose(compFile);
 
-            const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
+            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
             auto* logText = "Successfully compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
                             "(%.0f%%) | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
@@ -465,7 +465,7 @@ namespace magique
         else
         {
             fclose(imageFile);
-            const auto time = static_cast<int>(round((GetTime() - startTime) * 1000.0F)); // Round to millis
+            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
             auto* logText = "Successfully compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
@@ -554,18 +554,18 @@ namespace magique
         };
 
 
-        FILE* file = fopen(path, "rb");
+        FILE* file = std::fopen(path, "rb");
         uint32_t chunk[16]{};
 
-        fseek(file, 0, SEEK_END);
+        std::fseek(file, 0, SEEK_END);
         const auto fileSize = static_cast<uint64_t>(ftell(file));
-        fseek(file, 0, SEEK_SET);
+        std::fseek(file, 0, SEEK_SET);
         uint64_t totalBytesRead = 0;
         uint64_t bytesRead = 0;
 
         while (true)
         {
-            bytesRead = fread(chunk, 1, 64, file);
+            bytesRead = std::fread(chunk, 1, 64, file);
             totalBytesRead += bytesRead;
 
             if (bytesRead == 64)
@@ -584,17 +584,17 @@ namespace magique
         if (bytesRead > 56) // Not enough space, need an extra block
         {
             // Zero pad the rest of the current block
-            memset(byteChunk + bytesRead, 0, 64 - bytesRead);
+            std::memset(byteChunk + bytesRead, 0, 64 - bytesRead);
             processChunk(chunk, checksum);
 
-            memset(chunk, 0, 64);
-            memcpy(byteChunk + 56, &bitLength, 8);
+            std::memset(chunk, 0, 64);
+            std::memcpy(byteChunk + 56, &bitLength, 8);
             processChunk(chunk, checksum);
         }
         else // Enough space to append the length
         {
-            memset(byteChunk + bytesRead, 0, 56 - bytesRead);
-            memcpy(byteChunk + 56, &bitLength, 8);
+            std::memset(byteChunk + bytesRead, 0, 56 - bytesRead);
+            std::memcpy(byteChunk + 56, &bitLength, 8);
             processChunk(chunk, checksum);
         }
 

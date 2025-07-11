@@ -114,8 +114,8 @@ namespace magique
         std::vector<internal::ParamData> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ParamParser, ConsoleHandler);
-        befriend(bool UnRegisterCommand(const char*), void RegisterConsoleCommand(const Command&));
+        befriend(ConsoleData, ParamParser, ConsoleHandler)
+        befriend(bool UnRegisterCommand(const char*), void RegisterConsoleCommand(const Command&))
     };
 
     //================= Environmental Parameters =================//

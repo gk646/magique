@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/internal/Macros.h>
 #include <magique/multiplayer/Multiplayer.h>
+#include <entt/entity/entity.hpp>
 
 #include "internal/globals/MultiplayerData.h"
 #include "internal/globals/EngineConfig.h"
@@ -14,7 +15,7 @@ namespace magique
 
     bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
-    Payload CreatePayload(const void* data, const int size, const MessageType type) { return {data, size, type}; }
+    Payload CreatePayload(const void* data, const int size, const MessageType type) { return Payload{data, size, type}; }
 
     bool BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
@@ -179,17 +180,52 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    void SetMultiplayerCallback(const std::function<void(MultiplayerEvent event)>& func)
-    {
-        global::MP_DATA.callback = func;
-    }
+    void SetMultiplayerCallback(const MultiplayerCallback& func) { global::MP_DATA.callback = func; }
 
     bool GetInMultiplayerSession() { return global::MP_DATA.isInSession; }
 
     bool GetIsHost() { return global::MP_DATA.isInSession && global::MP_DATA.isHost; }
 
+    bool GetIsActiveHost() { return GetIsHost() && !global::MP_DATA.connections.empty(); }
+
     bool GetIsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
 
+    void SetConnectionEntityMapping(Connection conn, entt::entity entity)
+    {
+        auto& data = global::MP_DATA;
+        if (!GetInMultiplayerSession())
+        {
+            LOG_WARNING("Cant set mapping - not in multiplayer session");
+            return;
+        }
+        for (auto& mapping : data.connectionMapping)
+        {
+            if (mapping.conn == conn)
+            {
+                mapping.entity = entity;
+                return;
+            }
+        }
+        if (data.connectionMapping.size() >= MAGIQUE_MAX_PLAYERS)
+        {
+            LOG_WARNING("Too many mapped connections. Limit %d", MAGIQUE_MAX_PLAYERS);
+            return;
+        }
+        data.connectionMapping.push_back(ConnMapping{conn, entity});
+    }
+
+    entt::entity GetConnectionEntityMapping(Connection conn)
+    {
+        auto& data = global::MP_DATA;
+        for (auto& mapping : data.connectionMapping)
+        {
+            if (mapping.conn == conn)
+            {
+                return mapping.entity;
+            }
+        }
+        return entt::null;
+    }
 
     bool GetSteamLoaded()
     {

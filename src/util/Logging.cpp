@@ -28,6 +28,7 @@ namespace magique
 #endif
 
         }
+
         ~LogData()
         {
             if (file)

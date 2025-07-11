@@ -9,7 +9,6 @@
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-#include <magique/gamedev/InputAction.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
@@ -48,7 +47,7 @@ namespace magique
 
     Point Point::operator*(const Point& other) const { return {x * other.x, y * other.y}; }
 
-    float Point::manhattan(const Point& p) const { return abs(x - p.x) + abs(y - p.y); }
+    float Point::manhattan(const Point& p) const { return std::abs(x - p.x) + std::abs(y - p.y); }
 
     float Point::euclidean(const Point& p) const
     {
@@ -61,8 +60,8 @@ namespace magique
     {
         constexpr auto D = 1.0F;
         constexpr auto D2 = 1.0F;
-        const auto dx = abs(x - p.x);
-        const auto dy = abs(y - p.y);
+        const auto dx = std::abs(x - p.x);
+        const auto dy = std::abs(y - p.y);
         return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
 

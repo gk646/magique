@@ -26,7 +26,7 @@ namespace magique
         // But in the csv format each cell is terminated by the delimiter (or a newline)
 
         char* content = new char[asset.getSize() + 1];
-        memcpy(content, asset.getData(), asset.getSize());
+        std::memcpy(content, asset.getData(), asset.getSize());
         content[asset.getSize()] = '\0';
 
         csv.data = content;
