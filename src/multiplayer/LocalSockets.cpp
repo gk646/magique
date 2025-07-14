@@ -22,6 +22,7 @@
 
 namespace magique
 {
+
     bool InitLocalMultiplayer()
     {
 #ifndef MAGIQUE_STEAM
@@ -32,11 +33,17 @@ namespace magique
             LOG_FATAL("Initializing local sockets failed.  %s", errMsg);
             return false;
         }
+        SteamNetworkingUtils()->SetGlobalConfigValuePtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
+                                                        (void*)OnConnectionStatusChange);
         LOG_INFO("Successfully initialized local sockets");
         global::MP_DATA.isInitialized = true;
         return true;
 #else
-        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized!");
+        if (!global::STEAM_DATA.isInitialized)
+        {
+            LOG_WARNING("Cannot initialize local multiplayer: Steam not initialized call InitSteam()");
+            return false;
+        }
         const auto res = SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
         global::MP_DATA.isInitialized = true;
@@ -51,19 +58,16 @@ namespace magique
 
     //----------------- HOST -----------------//
 
-    bool CreateLocalSocket(const int port)
+    bool CreateLocalSocket(const uint16_t port)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
         MAGIQUE_ASSERT(port < UINT16_MAX, "Port has to be smaller than 65536");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
-        SteamNetworkingConfigValue_t opt{}; // Register callback
-        opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
-
         SteamNetworkingIPAddr ip{};
-        ip.SetIPv4(0, static_cast<uint16>(port));
-        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 1, &opt);
+        ip.SetIPv4(0, port);
+        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, nullptr);
         if (data.listenSocket == k_HSteamListenSocket_Invalid)
         {
             LOG_WARNING("Failed to create listen socket on port %d", port);
@@ -116,10 +120,8 @@ namespace magique
             LOG_WARNING("Given ip is not valid!");
             return Connection::INVALID_CONNECTION;
         }
-        SteamNetworkingConfigValue_t opt{}; // Set callback
-        opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
 
-        const auto conn = SteamNetworkingSockets()->ConnectByIPAddress(addr, 1, &opt);
+        const auto conn = SteamNetworkingSockets()->ConnectByIPAddress(addr, 0, nullptr);
         if (conn == k_HSteamNetConnection_Invalid)
         {
             char buffer[128];

@@ -228,6 +228,10 @@ namespace magique
                 .setFunction([](const ParamList& params) { SetShowPathFindingOverlay(params.back().getBool()); });
             RegisterConsoleCommand(showPathGrid);
 
+            Command setFps{"m.setFps", "Sets the FPS limit - 0 for unlimited"};
+            setFps.addParam("fpsLimit", {ParamType::NUMBER});
+            setFps.setFunction([](const ParamList& params) { SetTargetFPS(params.front().getInt()); });
+            RegisterConsoleCommand(setFps);
 #ifndef MAGIQUE_TEST_MODE
             SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
 #endif

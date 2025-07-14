@@ -110,8 +110,8 @@ namespace magique
                 float tys[4] = {0, cB.p2, cB.p4, 0};
                 RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
                 SAT(pxs, pys, txs, tys, i);
-                return;
             }
+            break;
         case Shape::CIRCLE:
             switch (cB.shape)
             {
@@ -148,9 +148,9 @@ namespace magique
                     float tys[4] = {0, cB.p2, cB.p4, 0};
                     RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
                     CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
-                    return;
                 }
             }
+            break;
         case Shape::CAPSULE:
             switch (cB.shape)
             {
@@ -181,6 +181,7 @@ namespace magique
                 RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
                 return CapsuleToQuadrilateral(pA.x, pA.y, cA.p1, cA.p2, txs, tys, i);
             }
+            break;
         case Shape::TRIANGLE:
             switch (cB.shape)
             {

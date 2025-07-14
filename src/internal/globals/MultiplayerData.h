@@ -4,10 +4,12 @@
 
 #include <magique/util/Logging.h>
 #include <magique/multiplayer/Multiplayer.h>
+#include <magique/multiplayer/Lobby.h>
 #include <magique/internal/Macros.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/STLUtil.h"
+#include "internal/datastructures/StringHashMap.h"
 
 #ifdef MAGIQUE_LAN
 #include "external/networkingsockets/steamnetworkingsockets.h"
@@ -39,9 +41,71 @@ inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, cons
     }
 }
 
-
 namespace magique
 {
+
+    enum class LobbyPacketType : char
+    {
+        CHAT,
+        METADATA,
+        START_SIGNAL
+    };
+
+    struct LobbyData final
+    {
+        LobbyChatCallback chatCallback;         // callback for chat
+        LobbyMetadataCallback metadataCallback; // Callback for metadata
+        StringHashMap<std::string> metadata;    // meta data map
+        bool startSignal = false;
+
+        void handleLobbyPacket(const Message& msg)
+        {
+            const auto type = LobbyPacketType{((const int8_t*)msg.payload.data)[0]};
+            const auto data = ((const char*)msg.payload.data) + 1;
+
+            if (type == LobbyPacketType::CHAT)
+            {
+                MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH, "Missing null terminator");
+                if (chatCallback)
+                {
+                    chatCallback(msg.connection, data);
+                }
+            }
+            else if (type == LobbyPacketType::METADATA)
+            {
+                auto key = data;
+                auto value = data + strlen(key) + 1;
+                if (metadataCallback)
+                {
+                    metadataCallback(msg.connection, key, value);
+                }
+                if (GetIsClient())
+                {
+                    metadata[key] = value;
+                }
+            }
+            else if (type == LobbyPacketType::START_SIGNAL)
+            {
+                startSignal = (bool)data[1] == true;
+            }
+            else
+            {
+                LOG_WARNING("MessageType=255 is reserved for lobby packet!");
+            }
+        }
+
+        void closeLobby()
+        {
+            startSignal = false;
+            metadata.clear();
+        }
+    };
+
+    namespace global
+    {
+        inline LobbyData LOBBY_DATA{};
+    } // namespace global
+
     struct ConnMapping final
     {
         Connection conn;
@@ -50,41 +114,30 @@ namespace magique
         static bool DeleteFunc(const ConnMapping& m1, const ConnMapping& m2) { return m1.conn == m2.conn; }
     };
 
-
     struct MultiplayerData final
     {
         MultiplayerCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mapping
-        std::vector<Message> msgVec;                                    // Message buffer
-        vector<SteamNetworkingMessage_t*> batchedMsgs;                  // Outgoing message buffer
-        SteamNetworkingMessage_t** msgBuffer = nullptr;                 // Incoming message data buffer
+        std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
+        vector<SteamNetworkingMessage_t*> outMsgBuffer;                 // Outgoing message buffer
+        vector<SteamNetworkingMessage_t*> incMsgBuffer;                 // Incoming message buffer
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
-        int buffSize = 0;                                               // Buffer size
-        int buffCap = 0;                                                // Buffer capacity
         bool isHost = false;                                            // If the program is host or client
         bool isInSession = false;                                       // If program is part of multiplayer activity
         bool isInitialized = false;                                     // Manual flag to give clean error msg
 
         MultiplayerData()
         {
-            msgVec.reserve(101);
-            batchedMsgs.reserve(MAGIQUE_ESTIMATED_MESSAGES);
-            msgBuffer = new SteamNetworkingMessage_t*[MAGIQUE_ESTIMATED_MESSAGES];
-            buffCap = MAGIQUE_ESTIMATED_MESSAGES;
+            incMsgVec.reserve(MAGIQUE_ESTIMATED_MESSAGES);
+            outMsgBuffer.reserve(MAGIQUE_ESTIMATED_MESSAGES);
+            incMsgBuffer.reserve(MAGIQUE_ESTIMATED_MESSAGES);
             connections.reserve(MAGIQUE_MAX_PLAYERS + 1);
             connectionMapping.reserve(MAGIQUE_MAX_PLAYERS + 1);
         }
 
         void close()
         {
-            delete[] msgBuffer;
-            isInSession = false;
-            for (auto* const msg : batchedMsgs)
-            {
-                msg->Release();
-            }
-            batchedMsgs.clear();
 #ifdef MAGIQUE_LAN
             GameNetworkingSockets_Kill();
 #else
@@ -92,16 +145,15 @@ namespace magique
             {
                 const char* msg = nullptr;
                 if (isHost)
-                    msg = "Host closed application";
+                    msg = "Host closed application abruptly";
                 else
-                    msg = "Client closed application";
+                    msg = "Client closed application abruptly";
                 const auto steamConn = static_cast<HSteamNetConnection>(conn);
                 SteamNetworkingSockets()->CloseConnection(steamConn, 0, msg, false);
+                // Second time to flush?
+                SteamNetworkingSockets()->CloseConnection(steamConn, 0, nullptr, false);
             }
-            if (listenSocket != k_HSteamListenSocket_Invalid)
-                SteamNetworkingSockets()->CloseListenSocket(listenSocket);
-            if (isInitialized)
-                SteamNetworkingSockets()->RunCallbacks();
+            goOffline();
 #endif
         }
 
@@ -113,26 +165,38 @@ namespace magique
 
         void goOffline()
         {
+            if (listenSocket != k_HSteamListenSocket_Invalid)
+            {
+                SteamNetworkingSockets()->CloseListenSocket(listenSocket);
+                listenSocket = k_HSteamListenSocket_Invalid;
+            }
             MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
+            // Release the batch if exists
+            for (const auto msg : outMsgBuffer)
+            {
+                msg->Release();
+            }
+            outMsgBuffer.clear();
+            for (const auto msg : incMsgBuffer)
+            {
+                msg->Release();
+            }
+            incMsgVec.clear();
+            incMsgBuffer.clear();
             connections.clear();
             connectionMapping.clear();
             isHost = false;
             isInSession = false;
-            msgVec.clear();
-            buffSize = 0;
-            // Release the batch if exists
-            for (const auto msg : batchedMsgs)
-            {
-                msg->Release();
-            }
-            batchedMsgs.clear();
+            global::LOBBY_DATA.closeLobby();
         }
 
         void update() const
         {
             if (isInSession)
             {
+#ifndef MAGIQUE_STEAM
                 SteamNetworkingSockets()->RunCallbacks();
+#endif
             }
         }
 
@@ -241,10 +305,11 @@ namespace magique
         }
     };
 
+
     namespace global
     {
         inline MultiplayerData MP_DATA{};
-    }
+    } // namespace global
 
     inline void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
     {

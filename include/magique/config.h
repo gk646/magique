@@ -18,8 +18,8 @@
 
 #define MAGIQUE_TICK_TIME (1.0F / MAGIQUE_LOGIC_TICKS)
 
-// Main Thread + 3 (Worker) = 4 total threads / 95% of steam users have 4 physical cores
-#define MAGIQUE_WORKER_THREADS 3
+// Main Thread + 2 (Worker) = 3 total threads / 95% of steam users have 4 physical cores
+#define MAGIQUE_WORKER_THREADS 2
 
 // Controls the maximum length of names for various things:
 // window names in the WindowManager, column names in the DataTable, children names in the UIContainer

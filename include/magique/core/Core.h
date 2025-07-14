@@ -17,6 +17,11 @@
 
 namespace magique
 {
+
+    // Returns the global game instance
+    // IMPORTANT: only valid after the game constructor finished (so before game.run(), ... so pretty early)
+    Game& GetGame();
+
     // Returns the current gamestate
     // Default: if unset returns GameState(INT32_MAX)
     GameState GetGameState();

@@ -290,11 +290,10 @@ struct Test final : Game
         {
             if (IsKeyPressed(KEY_H))
             {
-                // Doesnt need a socket
                 CreateGlobalSocket();
 
                 // In order for other players to join us we need to create a lobby
-                if (!CreateSteamLobby(LobbyType::FRIENDS_ONLY, 4))
+                if (!CreateSteamLobby(SteamLobbyType::FRIENDS_ONLY, 4))
                 {
                     LOG_WARNING("Could not create lobby");
                 }

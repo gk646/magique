@@ -376,14 +376,21 @@ namespace magique
 
     enum class SendFlag : uint8_t
     {
+        // No guarantees - the message is not resent if its dropped or part of it goes missing
+        // This uses less bandwidth than reliable messages - if there's a stable connection it's very similar to reliable
+        UNRELIABLE = 0,
+        // Same as UNRELIABLE but bypasses the nagle timer
+        UNRELIABLE_NO_NAGLE = 1,
+        // Same as UNRELIABLE_NO_NAGLE but if message cant be sent immediately dont queue it and just discard it
+        UNRELIABLE_NO_DELAY = 5,
         // There are TWO guarantees when using reliable message:
         //      1. They are guaranteed to arrive (if its possible) -> a confirmation is sent back from the client if it was received
         //      2. Reliable messages retain order, they arrive at the client in the same order they were sent from the host
         // Use this for vital game updates and messages that MUST arrive or arrive in a certain order
         RELIABLE = 8,
-        // No guarantees - the message is not resent if its dropped or part of it goes missing
-        // This uses less bandwidth than reliable messages - if there's a stable connection it's very similar to reliable
-        UN_RELIABLE = 0,
+        // Same as RELIABLE but will not wait for other message with the nagle timer
+        RELIABLE_NO_NAGLE = 9,
+
     };
 
     enum class Connection : uint32_t
@@ -443,20 +450,20 @@ namespace magique
 
     //================= STEAM =================//
 
-    enum class LobbyID : uint64_t; // Steam lobby ID - internally is just a SteamID
+    enum class SteamLobbyID : uint64_t; // Steam lobby ID - internally is just a SteamID
 
     enum class SteamID : uint64_t; // SteamID
 
     using SteamOverlayCallback = void (*)(bool isOpening);
 
-    enum class LobbyType
+    enum class SteamLobbyType
     {
         PRIVATE,
         FRIENDS_ONLY,
         PUBLIC,
     };
 
-    enum class LobbyEvent
+    enum class SteamLobbyEvent
     {
         // Called only when you created a lobby - called with your id
         ON_LOBBY_CREATED,

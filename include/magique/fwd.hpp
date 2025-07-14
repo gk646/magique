@@ -7,13 +7,15 @@
 
 //================= USER DEFINED =================//
 
-enum class GameState : int;          // Identifies different game states
-enum EntityType : uint16_t;          // Identifies entity types       - uses uint16_t to be small for networking
-enum class MapID : uint8_t;          // Identifies maps               - uses uint8_t  to be small for networking
-enum class HandleID : int;           // Identifies handles
-enum class ConfigID : int;           // Identifies stored config data
-enum class StorageID : int;          // Identifies stored game save data
-enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t  to be small for networking
+enum class GameState : int; // Identifies different game states
+enum EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
+enum class MapID : uint8_t; // Identifies maps               - uses uint8_t  to be small for networking
+enum class HandleID : int;  // Identifies handles
+enum class ConfigID : int;  // Identifies stored config data
+enum class StorageID : int; // Identifies stored game save data
+
+// IMPORTANT: MessageType = 255 is reserved for LANLobby messages
+enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
 enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS
 enum class AtlasID : int;            // Identifies different texture atlas
 
@@ -90,6 +92,7 @@ namespace magique
     //================= Multiplayer =================//
 
     enum class Connection : uint32_t;
+    struct Lobby;
 
     //================= UI =================//
     struct UIObject;

@@ -83,6 +83,8 @@ struct fast_vector
 
     // Modifiers
 
+    // Sets a new size - only use if you manually copied into the vector (and reserver before)
+    void set_size(size_type new_size);
     void clear() noexcept;
 
     void push_back(const T& value) noexcept;
@@ -363,6 +365,12 @@ void fast_vector<T>::shrink_to_fit()
             m_data = new_data_location;
         }
     }
+}
+
+template <class T>
+void fast_vector<T>::set_size(size_type new_size)
+{
+    m_size = new_size;
 }
 
 // Modifiers

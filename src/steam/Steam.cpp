@@ -10,6 +10,19 @@
 
 namespace magique
 {
+
+    static void SteamDebugCallback(int isWarning, const char* text)
+    {
+        if (isWarning == 1)
+        {
+            LOG_WARNING("Steam: %s", text);
+        }
+        else
+        {
+            LOG_INFO("Steam: %s", text);
+        }
+    }
+
     bool InitSteam(const bool createFile)
     {
         auto& steamData = global::STEAM_DATA;
@@ -40,8 +53,12 @@ namespace magique
         if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
         {
             LOG_ERROR(errMsg);
+            SteamAPI_Shutdown();
             return false;
         }
+
+        SteamUtils()->SetWarningMessageHook(SteamDebugCallback);
+        steamData.init();
 
         // Cache the steam id - will stay the same
         const auto id = SteamUser()->GetSteamID();

@@ -138,6 +138,8 @@ namespace magique
     {
 #ifdef MAGIQUE_STEAM
         global::MP_DATA.close();
+        // Give some time to steam thread and callbacks to cleanup?
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         global::STEAM_DATA.close();
 #elif MAGIQUE_LAN
         global::MP_DATA.close();

@@ -10,6 +10,8 @@
 // Multiplayer Module
 //===============================================
 // .....................................................................
+// Note: If you want to have more than just a pure data connection look at Lobby.h, a "wrapper" around this API
+
 // This module allows to send messages between applications and is works with both local and global sockets
 // Apart from creating your own networking model magique proposes a unique way:
 //      - Peer-To-Peer where 1 peer is an authoritative host
@@ -68,10 +70,16 @@ namespace magique
     // This is equal to calling SendMessage() for each connection from GetCurrentConnections()
     void SendMessageToAll(Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
+    // Flush any messages waiting on the nagle timer
+    void FlushConnection(Connection conn);
+
+    // Flushes all active connections
+    void FlushAllConnections();
+
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
     // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna its information)
-    const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = 100);
+    const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = MAGIQUE_ESTIMATED_MESSAGES);
 
     //================= UTIL =================//
 
@@ -106,6 +114,10 @@ namespace magique
     // Returns the entity mapped to this connection - entt::null if none was set
     entt::entity GetConnectionEntityMapping(Connection conn);
 
+    // Returns the (first) connection mapped to the given entity (if any)
+    // Failure: Returns INVALID_CONNECTION if mapping exists for the given entity
+    Connection GetConnectionEntityMapping(entt::entity entity);
+
     //================= CLIENT-MODE =================//
 
     // Puts this game into client mode - all game simulation is skipped except rendering
@@ -118,13 +130,6 @@ namespace magique
     // Returns true if this game is currently in client mode
     bool GetIsClientMode();
 
-    //================= UTIL =================//
-
-    // Returns true if magique was built with steam
-    bool GetSteamLoaded();
-
-    // Returns true if magique was built with GameNetworkingSockets (local sockets)
-    bool GetNetworkingSocketsLoaded();
 
 } // namespace magique
 

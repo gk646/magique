@@ -5,6 +5,7 @@
 #include <magique/steam/GlobalSockets.h>
 
 #include "internal/globals/MultiplayerData.h"
+#include "internal/globals/SteamData.h"
 
 namespace magique
 {
@@ -12,6 +13,11 @@ namespace magique
 
     bool InitGlobalMultiplayer()
     {
+        if (!global::STEAM_DATA.isInitialized)
+        {
+            LOG_WARNING("Cannot initialize global multiplayer: Steam not initialized call InitSteam()");
+            return false;
+        }
         const auto res = SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
         return res == k_ESteamNetworkingAvailability_Current;
@@ -22,10 +28,7 @@ namespace magique
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.isInSession, "Already in a session. Close any existing connections or sockets first!");
 
-        SteamNetworkingConfigValue_t opt{}; // Register callback
-        opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
-
-        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 1, &opt);
+        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
         if (data.listenSocket == k_HSteamListenSocket_Invalid)
         {
             LOG_WARNING("Failed to create global listen socket");
@@ -73,10 +76,7 @@ namespace magique
         SteamNetworkingIdentity sni{};
         sni.SetSteamID(steamID);
 
-        SteamNetworkingConfigValue_t opt{}; // Set callback
-        opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)OnConnectionStatusChange);
-
-        const auto conn = SteamNetworkingSockets()->ConnectP2P(sni, 0, 1, &opt);
+        const auto conn = SteamNetworkingSockets()->ConnectP2P(sni, 0, 0, nullptr);
         if (conn == k_HSteamNetConnection_Invalid)
         {
             LOG_WARNING("Failed to connect to global socket");

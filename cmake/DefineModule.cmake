@@ -20,16 +20,18 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             -std=c++20 -march=native -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
             -Wall
+            -Wextra
+            -Wpedantic
             -Wc++20-compat
             -Wc++20-extensions
             -Wcomma-subscript
             -Wdeprecated-declarations
-            -Wextra-semi
-            -Wnon-virtual-dtor
             -Wuseless-cast
             -Wvla
-            -Wno-virtual-dtor
             -Wno-useless-cast
+            -Wno-extra-semi
+            -Wno-missing-field-initializers
+            -Wno-unused-parameter
     )
 
     target_compile_options(magique-${MODULE_NAME} PRIVATE

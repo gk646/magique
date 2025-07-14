@@ -91,7 +91,7 @@ namespace magique
         auto& scd = global::SCHEDULER;
         scd.shutDown = false;
         scd.isHibernate = true;
-        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i) // 3 Worker Threads + 1 Main Thread = 4
+        for (int i = 0; i < MAGIQUE_WORKER_THREADS; ++i)
         {
             scd.threads.emplace_back(WorkerThreadFunc, &global::SCHEDULER, 2 + i);
         }

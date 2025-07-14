@@ -24,7 +24,7 @@ namespace magique
 
     // Creates a LAN-socket so others can connect to you on the given port - makes you the host
     // Returns true if it was successful
-    bool CreateLocalSocket(int port);
+    bool CreateLocalSocket(uint16_t port = 60000);
 
     // Closes the listening socket - optionally specify a close code or string that can be read on the receiver
     // Returns true if an existing connection was closed successfully
@@ -35,8 +35,8 @@ namespace magique
     // Connects to an open local socket at the given ip and port
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
     //      - port: a number between 0 and 65536
-    // Note: a valid connection is stored internally as well and get be accessed via GetCurrentConnections()
-    Connection ConnectToLocalSocket(const char* ip, uint16_t port);
+    // Note: a valid connection is stored internally as well and can be accessed via GetCurrentConnections()
+    Connection ConnectToLocalSocket(const char* ip, uint16_t port = 60000);
 
     // Disconnects from the socket (if any)
     // Optionally specify a close code or string that can be read on the receiver

@@ -8,6 +8,12 @@
 
 namespace magique
 {
+    Game& GetGame()
+    {
+        MAGIQUE_ASSERT(global::ENGINE_DATA.gameInstance != nullptr, "Called too early");
+        return *global::ENGINE_DATA.gameInstance;
+    }
+
     GameState GetGameState()
     {
         if (global::ENGINE_DATA.gameState == GameState{INT32_MAX})

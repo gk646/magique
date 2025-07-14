@@ -30,7 +30,7 @@ namespace magique
         uint32_t drawTickTime = 0;
         int tickCounter = 0;
         int updateDelayTicks = 15;
-        PerformanceBlock blocks[6]{}; // 6 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download
+        PerformanceBlock blocks[7]{}; // 7 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download, Ping
 
 #if MAGIQUE_PROFILING == 1
         vector<uint32_t> logicTimes;
@@ -118,6 +118,7 @@ namespace magique
             {
                 float inBytes = 0;
                 float outBytes = 0;
+                float ping = 0.0F;
                 if (!mp.isHost)
                 {
                     const auto conn = static_cast<HSteamNetConnection>(mp.connections[0]);
@@ -125,8 +126,9 @@ namespace magique
                     SteamNetworkingSockets()->GetConnectionRealTimeStatus(conn, &info, 0, nullptr);
                     inBytes = info.m_flInBytesPerSec;
                     outBytes = info.m_flOutBytesPerSec;
+                    ping = (float)info.m_nPing;
                 }
-                else
+                else if (GetIsActiveHost())
                 {
                     for (const auto conn : mp.connections) // Only contains valid connections
                     {
@@ -135,7 +137,9 @@ namespace magique
                                                                               &info, 0, nullptr);
                         inBytes += info.m_flInBytesPerSec;
                         outBytes += info.m_flOutBytesPerSec;
+                        ping += (float)info.m_nPing;
                     }
+                    ping /= (float)mp.connections.size();
                 }
 
                 block++;
@@ -147,10 +151,17 @@ namespace magique
                 val = outBytes;
                 snprintf(blocks[block].text, 32, "Out: %d", (int)val);
                 blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
+
+                block++;
+                val = ping;
+                snprintf(blocks[block].text, 32, "Ping: %d", (int)val);
+                blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
             }
             else
 #endif
             {
+                block++;
+                blocks[block].width = 0;
                 block++;
                 blocks[block].width = 0;
                 block++;

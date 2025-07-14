@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
-#include <cmath>
 
 #include <magique/internal/InternalTypes.h>
 #include <magique/internal/Macros.h>
