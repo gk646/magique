@@ -22,18 +22,32 @@ namespace magique
         bool operator==(const Point& p) const;
         bool operator!=(const Point& p) const;
         Point operator+(const Point& p) const;
-        Point operator/(float divisor) const;
         Point& operator+=(const Point& p);
         Point& operator-=(const Point& p);
-        Point& operator*=(float f);
         Point operator*(const Point& other) const;
+        Point& operator*=(float f);
+        Point& operator*=(const Point& p);
+        Point operator/(float divisor) const;
         [[nodiscard]] Point operator*(float i) const;
+        bool operator<(float num) const;
+        bool operator==(float num) const;
 
         // Distance functions
         [[nodiscard]] float manhattan(const Point& p) const;
         [[nodiscard]] float euclidean(const Point& p) const;
         [[nodiscard]] float chebyshev(const Point& p) const;
         [[nodiscard]] float octile(const Point& p) const;
+
+        Vector2 v() const;
+
+        // Vector normalization
+        Point& normalize();
+
+        // uses std::round() to round to the nearest whole number
+        Point& round();
+
+        // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
+        Point& floor();
     };
 
     //================= CORE =================//
@@ -225,8 +239,8 @@ namespace magique
         TRIANGLE, // Triangle
     };
 
-    // Feel free to rename those!
-    enum CollisionLayer : uint8_t
+    // Feel free to rename those! This is a bit mask!
+    enum class CollisionLayer : uint8_t
     {
         DEFAULT_LAYER = 1 << 0,
         LAYER_1 = 1 << 1,

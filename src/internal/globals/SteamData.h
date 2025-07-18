@@ -42,7 +42,6 @@ namespace magique
                 lobbyID.Clear();
             }
             SteamAPI_RunCallbacks(); // Run callbacks one more time - flushing
-            SteamAPI_RunCallbacks(); // Run callbacks one more time - flushing
             SteamAPI_Shutdown();
         }
 

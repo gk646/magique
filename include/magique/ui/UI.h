@@ -44,6 +44,10 @@ namespace magique
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
 
+    // Sets a custom resolution instead of the display resolution - if (0,0) display resolution is uses
+    // Note: This is useful if your using different rendertargets
+    void SetUITargetResolution(float width, float height);
+
     // Getters for input that allows for consumption - when consumed all methods return false
     // The consumed state is automatically reset at the beginning of each tick
     // Note: This is very useful when dealing with layered UI to prevent unwanted input propagation

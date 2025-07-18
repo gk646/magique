@@ -22,6 +22,7 @@ namespace magique
 
         // Returns the data pointer of this asset
         const char* getData() const;
+        const unsigned char* getUData() const;
 
         // Returns the valid size of the data pointer
         int getSize() const;

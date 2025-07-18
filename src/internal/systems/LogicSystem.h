@@ -101,7 +101,7 @@ namespace magique
 #endif
         const auto sWidth = static_cast<float>(GetScreenWidth());
         const auto sHeight = static_cast<float>(GetScreenHeight());
-        tickData.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
+        tickData.camera.offset = {std::round(sWidth / 2.0F), std::round(sHeight / 2.0F)};
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);

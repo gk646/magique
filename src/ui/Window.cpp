@@ -49,7 +49,7 @@ namespace magique
 
     Rectangle Window::getBodyBounds() const
     {
-        const auto [sx, sy] = UIData::getScreenDims();
+        const auto [sx, sy] = global::UI_DATA.getTargetResolution();
         Rectangle bounds{px, py + moverHeightP, pw, ph - moverHeightP};
         switch (scaleMode)
         {
@@ -83,7 +83,7 @@ namespace magique
 
     Rectangle Window::getTopBarBounds() const
     {
-        const auto [sx, sy] = UIData::getScreenDims();
+        const auto [sx, sy] = global::UI_DATA.getTargetResolution();
         Rectangle bounds{px, py, pw, moverHeightP};
         switch (scaleMode)
         {

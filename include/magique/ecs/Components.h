@@ -47,27 +47,34 @@ namespace magique
 
     struct CollisionC final
     {
-        float p1 = 0.0F;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F;                   // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F;                   //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F;                   //                                                   / TRIANGLE: offsetY2
-        int16_t anchorX = 0;               // Rotation anchor point for the hitbox
-        int16_t anchorY = 0;               // Rotation anchor point for the hitbox
-        uint8_t layerMask = DEFAULT_LAYER; // Entities only collide if they share any layer
-        Shape shape = Shape::RECT;         // Shape
+        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
+        float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
+        float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
+        float weight = 1.0F;       // Determines how the displacement is split between two colliding objects
+        int16_t anchorX = 0;       // Rotation anchor point for the hitbox
+        int16_t anchorY = 0;       // Rotation anchor point for the hitbox
+        Shape shape = Shape::RECT; // Shape
+
+        // https://www.youtube.com/watch?v=9k8cMzv0ZNo - same as Godot's layers
+        CollisionLayer layer = CollisionLayer::DEFAULT_LAYER; // Which layers it occupies
+        CollisionLayer mask = CollisionLayer::DEFAULT_LAYER;  // Against which layers it collides
+
+        // Returns true if the mask of this object detect the other objects layers - so if the two collide
+        bool detects(const CollisionC& other) const;
 
         // Returns true if the entity has this layer is set
-        [[nodiscard]] bool getIsLayerSet(CollisionLayer layer) const;
-
-        // Sets the collision layer to the given value
+        [[nodiscard]] bool isLayerSet(CollisionLayer layer) const;
         void setLayer(CollisionLayer layer, bool enabled);
 
-        // Removes ALL collisions layers
-        void unsetAll();
+        // Returns true if the entity looks for collision on the given layer
+        [[nodiscard]] bool isLookingFor(CollisionLayer layer) const;
+        void setMask(CollisionLayer layer, bool enabled);
 
-        // Clears the accumulated collision data for the next tick
-        void clearCollisionData();
+        // Returns the offset from the position (top left) to the middle
+        Point getMidOffset() const;
 
+        // Should NOT be modified
         Point resolutionVec{}; // Accumulated normals * depth
         Point lastNormal{};    // Last normal - to avoid adding the same normal twice
     };

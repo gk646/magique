@@ -23,6 +23,25 @@
 // -> But doesn't change anything for user
 // .....................................................................
 
+// Problems:
+// - Sticky corners
+// - Double collisions
+// - Tunneling
+
+// Ouickfixes:
+// - Detect corner collisions and skip  => contributes to tunneling
+// - Negate same normal two times in a row
+
+// Bigger changes:
+// - Sort entities/collision after their distance of collision points
+// - Subticks
+
+// Plan:
+// - Keep the whole system
+// - Apply specialized solutions
+// - Sort rect to rect collision and apply them in correct order (and recheck if they are still needed)
+
+
 namespace magique
 {
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
@@ -93,7 +112,7 @@ namespace magique
                         if (first >= second)
                             continue;
                         auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
-                        if (posA.map != posB.map || (colA.layerMask & colB.layerMask) == 0)
+                        if (!colA.detects(colB) && !colB.detects(colA))
                             continue; // Not on the same map or not on the same collision layer
                         CollisionInfo info{};
                         CheckCollisionEntities(posA, colA, posB, colB, info);
@@ -107,9 +126,49 @@ namespace magique
         }
     }
 
+    // save when there is a rectangle collision in a direction
+
+    // When a corner collisions occurs
+    // - for vertical stick edge:
+    //      - when resolution happens horizontally right or left and vertically against the movement direction
+    //      - collision point x is the same
+    // - for horizontal sticky edge:
+    //      - when resolution happens vertically up or down and horizontally against the movement direction
+    //      - collision point y is the same
+    // Double collisions:
+    // - save in each direction only the greatest extent
+
+
+    struct Range
+    {
+    };
+
+    inline void DetectDoubleCollisions() {}
+
+    inline void ResolveCollisions(std::vector<PairInfo>& collisions)
+    {
+        std::vector<PairInfo> cache;
+        for (int i = 0; i < collisions.size(); ++i)
+        {
+            const auto e1 = collisions[i].e1;
+            auto& col = GetComponent<CollisionC>(e1);
+            auto& pos = GetComponent<PositionC>(e1);
+
+            for (int j = 0; j < collisions.size(); ++j)
+            {
+                if (i == j || collisions[j].e1 != e1)
+                    continue;
+
+                auto& col2 = GetComponent<CollisionC>(collisions[j].e2);
+                auto& pos2 = GetComponent<PositionC>(collisions[j].e2);
+                cache.push_back(collisions[j]);
+            }
+        }
+    }
+
+
     inline void HandleCollisionPairs()
     {
-        // TODO if descturction is allowed references to componets can invalidate!! so we cant really cache them...
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
         const auto& colVec = global::ENGINE_DATA.collisionVec;
         const auto& group = internal::POSITION_GROUP;
@@ -117,10 +176,24 @@ namespace magique
 
         auto& colPairs = dynamic.collisionPairs;
         auto& pairSet = dynamic.pairSet;
+
+        std::vector<PairInfo> pairs;
+
         for (auto& [vec] : colPairs)
         {
-            for (auto& [info, e1, e2] : vec)
+            for (auto& pairInfo : vec)
             {
+                const auto e1 = pairInfo.e1;
+                const auto e2 = pairInfo.e2;
+
+                auto num = (static_cast<uint64_t>(e1) << 32) | static_cast<uint32_t>(e2);
+                const auto it = pairSet.find(num);
+                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
+                {
+                    continue;
+                }
+                pairSet.insert(it, num);
+
                 const auto p1 = TryGetComponent<const PositionC>(e1);
                 const auto p2 = TryGetComponent<const PositionC>(e2);
                 if (p1 == nullptr || p2 == nullptr) [[unlikely]]
@@ -130,48 +203,50 @@ namespace magique
                 auto& col1 = GetComponent<CollisionC>(e1);
                 auto& col2 = GetComponent<CollisionC>(e2);
 
-                auto num = (static_cast<uint64_t>(e1) << 32) | static_cast<uint32_t>(e2);
-                const auto it = pairSet.find(num);
-                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
-                {
-                    continue;
-                }
-
-                pairSet.insert(it, num);
-
-                auto secondInfo = info; // Prepare second info
+                // Prepare second info - with the fresh data
+                auto secondInfo = pairInfo.info;
                 secondInfo.normalVector.x *= -1;
                 secondInfo.normalVector.y *= -1;
 
-                // Already checked if both entities exist
-                InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, info);
-
-                if (info.getIsAccumulated())
+                if (col1.detects(col2))
                 {
-                    AccumulateInfo(col1, info);
+                    // Already checked if both entities exist
+                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, pairInfo.info);
+
+                    if (pairInfo.info.getIsAccumulated())
+                    {
+                        AccumulateInfo(col1, pairInfo.info);
+                        pairs.push_back(pairInfo);
+                    }
                 }
 
-                // Call for second entity
-#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
-                if (invokeEvent)
-#endif
-                    InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
-
-                if (secondInfo.getIsAccumulated())
+                if (col2.detects(col1))
                 {
-                    AccumulateInfo(col2, secondInfo);
+                    // Call for second entity
+#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
+                    bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
+                    if (invokeEvent)
+#endif
+                        InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
+
+                    if (secondInfo.getIsAccumulated())
+                    {
+                        AccumulateInfo(col2, secondInfo);
+                        pairs.push_back(pairInfo);
+                    }
                 }
             }
             vec.clear();
         }
+
 
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
             pos.x += col.resolutionVec.x;
             pos.y += col.resolutionVec.y;
-            col.clearCollisionData();
+            col.lastNormal = {0, 0};
+            col.resolutionVec = {0, 0};
         }
         pairSet.clear();
     }

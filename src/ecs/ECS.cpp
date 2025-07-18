@@ -65,8 +65,8 @@ namespace magique
         return entt::null;
     }
 
-    static entt::entity CreateEntityInternal(entt::entity id, EntityType type, float x, float y, MapID map, int rotation,
-                                             bool withFunc)
+    static entt::entity CreateEntityInternal(const entt::entity id, EntityType type, float x, float y, const MapID map,
+                                             const int rotation, const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -224,30 +224,33 @@ namespace magique
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::RECT, Point{},
-                                                      Point{});
+        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(anchorX),
+                                                      static_cast<int16_t>(anchorY), Shape::RECT,
+                                                      CollisionLayer::DEFAULT_LAYER);
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CIRCLE);
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(0),
+                                                      static_cast<int16_t>(0), Shape::CIRCLE,
+                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
     }
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
     {
         MAGIQUE_ASSERT(height > 2 * radius,
                        "Given capsule is not well defined! Total height has to be greater than 2 * radius");
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), DEFAULT_LAYER, Shape::CAPSULE);
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(0),
+                                                      static_cast<int16_t>(0), Shape::CAPSULE,
+                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
     }
 
     CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, const int anchorX,
                                  const int anchorY)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), DEFAULT_LAYER, Shape::TRIANGLE);
+        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, 1.0F, static_cast<int16_t>(anchorX),
+                                                      static_cast<int16_t>(anchorY), Shape::TRIANGLE,
+                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
     }
 
     AnimationC& GiveAnimation(const entt::entity entity, const EntityType type, const AnimationState startState)

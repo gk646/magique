@@ -3,10 +3,10 @@
 #define MAGIQUE_COLLISION_PRIMITIVES_H
 
 #if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
-    #define MAGIQUE_SIMD 1
+#define MAGIQUE_SIMD 1
 #else
-    #undef MAGIQUE_SIMD
-    #define MAGIQUE_SIMD 0
+#undef MAGIQUE_SIMD
+#define MAGIQUE_SIMD 0
 #endif
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
@@ -161,6 +161,7 @@ namespace magique
         {
             return;
         }
+
         const float overlapX = minValue(x1 + w1, x2 + w2) - maxValue(x1, x2);
         const float overlapY = minValue(y1 + h1, y2 + h2) - maxValue(y1, y2);
 
@@ -176,6 +177,7 @@ namespace magique
             info.normalVector.y = y1 + h1 / 2 < y2 + h2 / 2 ? -1.0f : 1.0f;
             info.penDepth = overlapY;
         }
+
         info.collisionPoint.x = (maxValue(x1, x2) + minValue(x1 + w1, x2 + w2)) / 2.0f;
         info.collisionPoint.y = (maxValue(y1, y2) + minValue(y1 + h1, y2 + h2)) / 2.0f;
     }
@@ -213,8 +215,8 @@ namespace magique
         SquareRoot(distance);
         if (distance != 0.0f)
         {
-            info.normalVector.x = -dx / distance;
-            info.normalVector.y = -dy / distance;
+            info.normalVector.x = dx / distance;
+            info.normalVector.y = dy / distance;
         }
         else
         {
@@ -259,8 +261,8 @@ namespace magique
         {
             return; // Early bound check
         }
-        float minPenetration = 222222222.0F;
-        Point bestAxis;
+        float minPenetration = std::numeric_limits<float>::max();
+        Point bestAxis{};
 #if MAGIQUE_SIMD == 1 // TODO can be optimized a lot by using AVX2
         const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
                                       const float(&p1ys)[4], float& axisX, float& axisY, float& penetration)

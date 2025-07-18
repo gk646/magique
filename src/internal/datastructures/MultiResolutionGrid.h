@@ -329,6 +329,7 @@ private:
 
         if (block->isFull()) [[unlikely]] // Only happens once each block
         {
+            return;
             const auto nextIdx = static_cast<uint16_t>(dataBlocks.size());
             block->next = nextIdx;
             dataBlocks.push_back({});

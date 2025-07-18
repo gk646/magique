@@ -8,11 +8,11 @@
 
 namespace magique
 {
-    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int searchLen)
+    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int max)
     {
         auto& path = global::PATH_DATA;
-        constexpr int capacity = MAGIQUE_PATHFINDING_SEARCH_CAPACITY;
-        const int maxLen = std::min(searchLen == 0 ? capacity : searchLen, capacity);
+        constexpr int capacity = MAGIQUE_MAX_PATH_SEARCH_LEN;
+        const int maxLen = std::min(max == 0 ? capacity : max, capacity);
         return path.findPath(pathVec, start, end, map, static_cast<uint16_t>(maxLen));
     }
 
@@ -73,6 +73,12 @@ namespace magique
             }
         }
         return true;
+    }
+
+    bool GetExistsPath(const Point start, const Point end, const MapID map, const int max)
+    {
+        Point point;
+        return GetNextOnPath(point, start, end, map, max);
     }
 
     void SetTypePathSolid(const EntityType type, const bool value)

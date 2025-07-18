@@ -112,10 +112,13 @@ namespace magique
         global::ENGINE_DATA.gameInstance = this; // Assign global game instance
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
+        SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
         InitWindow(1280, 720, name);
         InitAudioDevice();
-        SetTargetFPS(GetMonitorRefreshRate(0));
+
+        auto curr = GetCurrentMonitor();
+        SetTargetFPS(GetMonitorRefreshRate(curr));
         SetExitKey(0);
 
         using namespace std;

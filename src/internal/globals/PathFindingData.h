@@ -160,7 +160,7 @@ namespace magique
         StaticDenseLookupGrid<200> visited{};
         StaticDenseLookupGrid<200> added{};
         cxstructs::PriorityQueue<GridNode> frontier{};
-        GridNode nodePool[MAGIQUE_PATHFINDING_SEARCH_CAPACITY];
+        GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_LEN];
 
         // Lookup table for entity types and entities
         HashSet<entt::entity> solidEntities;

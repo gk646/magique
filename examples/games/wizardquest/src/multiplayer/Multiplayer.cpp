@@ -45,7 +45,7 @@ void Multiplayer::init()
 
     // Setup event callback so we can react to multiplayer events
     SetMultiplayerCallback(
-        [&](MultiplayerEvent event)
+        [&](MultiplayerEvent event, Connection conn)
         {
             if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
             {
@@ -175,8 +175,8 @@ void Multiplayer::update()
             case MessageType::SPAWN_UPDATE:
                 {
                     auto [x, y, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
-                    assert(!EntityExists(entity));                // Entity MUST not exist already!
-                    CreateEntityNetwork(entity, type, x, y, map); // Create a new entity
+                    assert(!EntityExists(entity));                    // Entity MUST not exist already!
+                    CreateEntityEx(entity, type, x, y, map, 0, true); // Create a new entity
                 }
                 break;
             }

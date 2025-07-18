@@ -18,7 +18,7 @@ target_include_directories(magique-${MODULE_NAME} PRIVATE
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
-            -std=c++20 -march=native -ffast-math -fno-exceptions -fno-rtti -fvisibility=hidden
+            -std=c++20 -march=native -fno-exceptions -fno-rtti -fvisibility=hidden
             -Wall
             -Wextra
             -Wpedantic
@@ -104,7 +104,12 @@ endif ()
 # Compile the definition for the target and all consuming ones
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_STEAM)
-    target_include_directories(magique-${MODULE_NAME} PRIVATE ${STEAM_PATH}/public) # Include
+
+    set(FULL_STEAM_PATH "${STEAM_PATH}/public")
+    if(NOT IS_ABSOLUTE "${FULL_STEAM_PATH}")
+        set(FULL_STEAM_PATH "${CMAKE_SOURCE_DIR}/${FULL_STEAM_PATH}")
+    endif()
+    target_include_directories(magique-${MODULE_NAME} PRIVATE ${FULL_STEAM_PATH}) # Include
 elseif (MAGIQUE_LAN)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)
 endif ()

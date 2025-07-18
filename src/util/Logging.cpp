@@ -8,6 +8,10 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
 
+#if defined( __GNUC__)
+#include <signal.h>
+#endif
+
 namespace magique
 {
     struct LogData final
@@ -109,11 +113,10 @@ namespace magique
             if (level >= LEVEL_ERROR) [[unlikely]]
             {
 #ifdef MAGIQUE_DEBUG
-                fclose(LOG_DATA.file);
 #if defined(_MSC_VER)
                 __debugbreak();
 #elif defined(__GNUC__)
-                __builtin_trap();
+               raise(SIGTRAP);
 #else
                 std::abort();
 #endif

@@ -55,7 +55,7 @@ namespace magique
     //=================ECS=================//
     struct EntityScript;
     enum EventType : uint8_t;
-    enum CollisionLayer : uint8_t;
+    enum class CollisionLayer : uint8_t;
     enum class Shape : uint8_t;
     struct PositionC;  // Implicit position component
     struct CollisionC; // Built in collision component

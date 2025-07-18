@@ -48,6 +48,10 @@ namespace magique
     // Drop in replacement for DrawTextEx()
     void DrawRightBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
+    // Draws pixel perfect text - fsm is font size multiplier of the base font size
+    void DrawPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawCenteredPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+
     //================= SHAPES =================//
 
     // Draws a capsule given its top left coordinates and the radius of the two circles

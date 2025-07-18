@@ -95,6 +95,8 @@ struct fast_vector
 
     void insert(const T* pos, T&& object);
     void insert(const T* pos, const T& object);
+    void insert(size_type index, const T& object);
+
 
     // Keeps order
     bool erase(const T& val);
@@ -477,9 +479,13 @@ template <class T>
 void fast_vector<T>::insert(const T* pos, const T& object)
 {
     assert(pos >= m_data && pos <= m_data + m_size && "Iterator out of bounds");
-
     const auto index = pos - m_data;
+    insert(index, object);
+}
 
+template <class T>
+void fast_vector<T>::insert(const size_type index, const T& object)
+{
     if (m_size == m_capacity)
     {
         reserve(m_capacity == 0 ? 5 : 2 * m_capacity);

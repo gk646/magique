@@ -13,6 +13,8 @@ namespace magique
 
     const char* Asset::getData() const { return data; }
 
+    const unsigned char* Asset::getUData() const { return (const unsigned char*)data; }
+
     int Asset::getSize() const { return size; }
 
     bool Asset::hasExtension(const char* extension) const

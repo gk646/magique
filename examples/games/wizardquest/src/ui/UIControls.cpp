@@ -40,7 +40,7 @@ void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
 
 void HotbarSlot::onDraw(const Rectangle& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
 
-PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor::BOTTOM_CENTER, ScalingMode::KEEP_RATIO)
+PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor::BOTTOM_CENTER,0, ScalingMode::KEEP_RATIO)
 {
     for (int i = 0; i < slots; ++i)
     {

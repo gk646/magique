@@ -239,14 +239,28 @@ namespace magique
                           const Color c)
     {
         const auto width = MeasureTextEx(f, txt, fs, spc).x;
-        DrawTextEx(f, txt, {pos.x - width / 2.0F, pos.y}, fs, spc, c);
+        DrawTextEx(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
     }
 
     void DrawRightBoundText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
                             const Color c)
     {
         const auto width = MeasureTextEx(f, txt, fs, spc).x;
-        DrawTextEx(f, txt, {pos.x - width, pos.y}, fs, spc, c);
+        DrawTextEx(f, txt, {std::round(pos.x - width), std::round(pos.y)}, fs, spc, c);
+    }
+
+    void DrawPixelText(const Font& f, const char* txt, Vector2 pos, const int fsm, const Color tint)
+    {
+        pos.x = std::round(pos.x);
+        pos.y = std::round(pos.y);
+        DrawTextEx(f, txt, pos, f.baseSize * fsm, 1.0F, tint);
+    }
+
+    void DrawCenteredPixelText(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)
+    {
+        const auto fs = (float)f.baseSize * fsm;
+        const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
+        DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
     }
 
     void DrawCapsule2D(const float x, const float y, const float radius, const float height, const Color tint)

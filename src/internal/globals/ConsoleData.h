@@ -57,6 +57,8 @@ namespace magique
     {
         std::string text;
         Color color;
+
+        ConsoleLine(const std::string& text, const Color& color) : text(text), color(color) {}
     };
 
     struct ConsoleData final

@@ -15,7 +15,7 @@ namespace magique
     {
         if (!global::STEAM_DATA.isInitialized)
         {
-            LOG_WARNING("Cannot initialize global multiplayer: Steam not initialized call InitSteam()");
+            LOG_WARNING("Cannot initialize global multiplayer: Steam not initialized / call InitSteam()");
             return false;
         }
         const auto res = SteamNetworkingSockets()->InitAuthentication();

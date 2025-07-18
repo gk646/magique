@@ -20,14 +20,14 @@ namespace magique
     void SetCameraCullPadding(int distance);
 
     // Manually sets the camera view offset from the top left of the screen - automatically set to be half the screen dimensions
-    // Note: If any offset other than (0,0) is set there are no automatic adjustments
+    // Note: If any offset other than (0,0) is set there are no automatic adjustments - useful if for different render target
     // Default: (0,0)
     void SetCameraViewOffset(float x, float y);
 
     // Sets the cameras position offset - automatically centered within the camera entities collision shape (if it exists)
     // Note: If any offset other than (0,0) is set there are no automatic adjustments
     // Default: (0,0)
-    void SetCameraPositionOffset(float x, float y);
+    void SetCameraTargetOffset(float x, float y);
 
     // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the slowest
     // Controls how fast the camera position catches up to the position of the camera holder

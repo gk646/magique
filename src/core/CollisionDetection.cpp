@@ -44,7 +44,7 @@ namespace magique
                         const float p1xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p1, pB.x};           // Rect b
                         const float p1ys[4] = {pB.y, pB.y, pB.y + cB.p2, pB.y + cB.p2};           // Rect b
                         return SAT(pxs, pys, p1xs, p1ys, i);
-                    }                                     // Both are rotated
+                    } // Both are rotated
                     float pxs[4] = {0, cA.p1, cA.p1, 0};  // rect a
                     float pys[4] = {0, 0, cA.p2, cA.p2};  // rect a
                     float p1xs[4] = {0, cB.p1, cB.p1, 0}; // Rect b
@@ -110,6 +110,7 @@ namespace magique
                 float tys[4] = {0, cB.p2, cB.p4, 0};
                 RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
                 SAT(pxs, pys, txs, tys, i);
+                return;
             }
             break;
         case Shape::CIRCLE:
@@ -148,6 +149,7 @@ namespace magique
                     float tys[4] = {0, cB.p2, cB.p4, 0};
                     RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
                     CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
+                    return;
                 }
             }
             break;

@@ -18,6 +18,8 @@ namespace magique
 {
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
+    bool Point::operator==(float num) const { return x == num && y == num; }
+
     bool Point::operator!=(const Point& other) const { return x != other.x || y != other.y; }
 
     Point Point::operator+(const Point& other) const { return {x + other.x, y + other.y}; }
@@ -37,6 +39,15 @@ namespace magique
         y *= f;
         return *this;
     }
+
+    Point& Point::operator*=(const Point& p)
+    {
+        x *= p.x;
+        y *= p.y;
+        return *this;
+    }
+
+    bool Point::operator<(float num) const { return x < num && y < num; }
 
     Point& Point::operator-=(const Point& other)
     {
@@ -72,6 +83,30 @@ namespace magique
         const auto dx = abs(x - p.x);
         const auto dy = abs(y - p.y);
         return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
+    }
+
+    Vector2 Point::v() const { return Vector2{x, y}; }
+
+    Point& Point::normalize()
+    {
+        auto magnitude = x * x + y * y;
+        SquareRoot(magnitude);
+        x /= magnitude;
+        y /= magnitude;
+        return *this;
+    }
+
+    Point& Point::round()
+    {
+        x = std::round(x);
+        y = std::round(y);
+        return *this;
+    }
+    Point& Point::floor()
+    {
+        x = std::floor(x);
+        y = std::floor(y);
+        return *this;
     }
 
     Point Point::operator*(const float i) const { return {x * i, y * i}; }

@@ -8,7 +8,7 @@ namespace magique
     Point GetUIAnchor(const Anchor anchor, const float width, const float height, const float inset)
     {
         Point point{};
-        const auto res = UIData::getScreenDims();
+        const auto res = global::UI_DATA.getTargetResolution();
         switch (anchor)
         {
         case Anchor::TOP_LEFT:
@@ -60,6 +60,8 @@ namespace magique
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
     Point GetMousePos() { return global::UI_DATA.getMousePos(); }
+
+    void SetUITargetResolution(float width, float height) { global::UI_DATA.resolution = {width, height}; }
 
     bool UIInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
 

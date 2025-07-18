@@ -8,6 +8,13 @@
 // .....................................................................
 // World bounds is given as white list area -> check against the outer rectangles
 // Collidable tiles are treated as squares and inserted into the grid
+//
+// 1. Get all objects from the grid cells that intersect the entity bounding box
+// 2. Calculate all the collision and sort them after distance from collision point to entity middle
+// 3. Apply the resolution vec with the length of the pen depth
+//      3.1. Avoid the sticky edges by skipping collisions iff:
+//          - the entity has at least 1 other collision (before)
+//          - the collision has
 // .....................................................................
 
 namespace magique
@@ -160,8 +167,12 @@ namespace magique
         collector.clear();
     }
 
+    inline void Sort() {}
+
+
     inline void CheckStaticCollisionRange(const int thread, const int start, const int end) // Runs on each thread
     {
+
         const auto& data = global::ENGINE_DATA;
         const auto& group = internal::POSITION_GROUP;
         auto& staticData = global::STATIC_COLL_DATA; // non const - modifying the collectors
@@ -169,9 +180,10 @@ namespace magique
         const auto& collisionVec = data.collisionVec;
         const auto& colliderStorage = staticData.colliderStorage.colliders;
 
-        // Collectors
+        // Just use for the hash grid queries
         auto& idCollector = staticData.colliderCollector[thread].vec; // non const
-        auto& pairCollector = staticData.pairCollector[thread].vec;   // non const
+        // Used to store the info if a collision occurs
+        auto& pairCollector = staticData.pairCollector[thread].vec; // non const
 
         // Cache
         constexpr float depth = 250.0F;
@@ -257,6 +269,7 @@ namespace magique
             }
             vec.clear();
         }
+
         pairSet.clear();
     }
 } // namespace magique

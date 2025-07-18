@@ -4,6 +4,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/Game.h>
+#include <magique/util/Logging.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/core/Core.h>
@@ -79,7 +80,7 @@ struct PlayerScript final : EntityScript
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
-        AccumulateCollision(info);
+        //  AccumulateCollision(info);
     }
 };
 
@@ -94,17 +95,52 @@ struct ObjectScript final : EntityScript
     {
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = true;
-        info.penDepth = 0;
-        info.normalVector = {0, 0};
-        AccumulateCollision(info);
+        //info.penDepth = 0;
+        // info.normalVector = {0, 0};
+        // AccumulateCollision(info);
     }
 };
 
-struct Test final : Game
+int MAX_SHAPE = 100;
+float OBJECT_SIZE = 25;
+
+void benchmarkSetup()
 {
-    Test() : Game("magique - CollisionBenchmark") {}
+    for (int i = 0; i < 50'000; ++i)
+    {
+        CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
+    }
+    CreateEntity(PLAYER, 2500, 2500, MapID(0));
+    SetBenchmarkTicks(300);
+}
+
+void pyramid()
+{
+    MAX_SHAPE = 0;
+    OBJECT_SIZE = 10.0F;
+    int currWidth = 1;
+    int total = 0;
+    for (int i = 0; i < 150; ++i)
+    {
+        float start = 0 - int(currWidth / 2) * OBJECT_SIZE;
+        for (int j = 0; j < currWidth; ++j)
+        {
+            CreateEntity(OBJECT, start + OBJECT_SIZE * j, OBJECT_SIZE * i, MapID(0));
+            total++;
+        }
+        currWidth += 2;
+    }
+    CreateEntity(PLAYER, 0, -50, MapID(0));
+    LOG_INFO("Spawned %d boxes", total);
+}
+
+struct Example final : Game
+{
+    Example() : Game("magique - CollisionBenchmark") {}
+
     void onStartup(AssetLoader& loader) override
     {
+        SetWindowState(FLAG_WINDOW_RESIZABLE);
         SetRandomSeed(100);
         SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e, EntityType type)
@@ -118,10 +154,10 @@ struct Test final : Game
         RegisterEntity(PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            const auto val = GetRandomValue(0, 100);
+            const auto val = GetRandomValue(0, MAX_SHAPE);
             if (val < 25)
             {
-                GiveCollisionRect(e, 25, 25);
+                GiveCollisionRect(e, OBJECT_SIZE, OBJECT_SIZE);
             }
             else if (val < 50)
             {
@@ -141,13 +177,11 @@ struct Test final : Game
         RegisterEntity(OBJECT, objFunc);
         SetEntityScript(PLAYER, new PlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
-        CreateEntity(PLAYER, 2500, 2500, MapID(0));
-        for (int i = 0; i < 50'000; ++i)
-        {
-            CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
-        }
-        SetBenchmarkTicks(300);
+
+        benchmarkSetup();
+        //pyramid();
     }
+
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);

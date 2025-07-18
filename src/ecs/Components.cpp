@@ -10,28 +10,7 @@ namespace magique
 
     Point PositionC::getPosition() const { return {x, y}; }
 
-    Point PositionC::getMiddle(const CollisionC& collisionC) const
-    {
-        Point targetPosition{x, y};
-        switch (collisionC.shape)
-        {
-        case Shape::RECT:
-            targetPosition.x += collisionC.p1 / 2.0F;
-            targetPosition.y += collisionC.p2 / 2.0F;
-            break;
-        case Shape::CIRCLE:
-            targetPosition.x += collisionC.p1;
-            targetPosition.y += collisionC.p1;
-            break;
-        case Shape::CAPSULE:
-            targetPosition.x += collisionC.p1;
-            targetPosition.y += collisionC.p2 / 2.0F;
-            break;
-        case Shape::TRIANGLE:
-            break;
-        }
-        return targetPosition;
-    }
+    Point PositionC::getMiddle(const CollisionC& collisionC) const { return Point{x, y} + collisionC.getMidOffset(); }
 
     //----------------- ANIMATION -----------------//
 
@@ -81,7 +60,17 @@ namespace magique
 
     //----------------- COLLISION -----------------//
 
-    bool IsValidLayer(const CollisionLayer layer)
+    bool CollisionC::detects(const CollisionC& other) const
+    {
+        // We check if we search for a layer that the other has
+        // 1100  - our mask
+        // 0101  - other layers
+        //      &
+        // 0100  - at least one 1 => not 0 so true
+        return ((uint8_t)mask & (uint8_t)other.layer) != 0;
+    }
+
+    static bool IsValidLayer(const CollisionLayer layer)
     {
         const auto layerNum = static_cast<uint8_t>(layer);
         // Binary: 1000  (-1)-> 0111 (& operator)-> 1000
@@ -89,40 +78,55 @@ namespace magique
         return layerNum != 0 && (layerNum & (layerNum - 1)) == 0;
     }
 
-    void CollisionC::unsetAll() { layerMask = 0; }
-
-    void CollisionC::clearCollisionData()
+    static void SetBitflag(CollisionLayer& flag, const uint8_t mask, const bool set)
     {
-        lastNormal = {0, 0};
-        resolutionVec = {0, 0};
-    }
+        if (!IsValidLayer(flag)) [[unlikely]]
+            LOG_WARNING("Trying to assign invalid collision layer! Skipping");
 
-    void CollisionC::setLayer(const CollisionLayer layer, const bool enabled)
-    {
-        if (IsValidLayer(layer)) [[likely]]
+        if (set)
         {
-            if (enabled)
-            {
-                layerMask |= static_cast<uint8_t>(layer);
-            }
-            else
-            {
-                layerMask &= ~static_cast<uint8_t>(layer);
-            }
+            flag = CollisionLayer{((uint8_t)(flag)) | mask};
         }
         else
         {
-            LOG_WARNING("Trying to assign invalid collision layer! Skipping");
+            // 1010  layer
+            // 0111  flipped deletion layer (1000)
+            // 0010  only the deletion layer deleted
+            flag = CollisionLayer{(uint8_t)flag & ~mask};
         }
     }
 
-    bool CollisionC::getIsLayerSet(const CollisionLayer layer) const
+    void CollisionC::setMask(CollisionLayer newLayer, bool enabled) { SetBitflag(mask, (uint8_t)newLayer, enabled); }
+
+    Point CollisionC::getMidOffset() const
     {
-        if (IsValidLayer(layer))
+        switch (shape)
         {
-            return (layerMask & static_cast<uint8_t>(layer)) != 0;
+        case Shape::RECT:
+            return {p1 / 2.0F, p2 / 2.0F};
+        case Shape::CIRCLE:
+            return {p1, p1};
+        case Shape::CAPSULE:
+            return {p1, p2 / 2.0F};
+        case Shape::TRIANGLE:
+            break;
         }
-        LOG_WARNING("Trying to assign invalid collision layer! Skipping");
-        return false;
+        return {0, 0};
     }
+
+    void CollisionC::setLayer(const CollisionLayer newLayer, const bool enabled)
+    {
+        SetBitflag(layer, (uint8_t)newLayer, enabled);
+    }
+
+    bool CollisionC::isLookingFor(CollisionLayer newLayer) const
+    {
+        return ((uint8_t)mask & static_cast<uint8_t>(newLayer)) != 0;
+    }
+
+    bool CollisionC::isLayerSet(const CollisionLayer newLayer) const
+    {
+        return ((uint8_t)layer & static_cast<uint8_t>(newLayer)) != 0;
+    }
+
 } // namespace magique

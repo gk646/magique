@@ -25,16 +25,19 @@ namespace magique
     // Note: The point list is in REVERSE order! (last element is the next point)
     // Failure: if no path can be found returns an empty vector
     // Returns: True if a path could be found, false if the target is a solid tile or cant be reached
-    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int searchLen = 1024);
+    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
 
     // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
     // Same as FindPath() but only assigns the next point
-    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int searchLen = 1024);
+    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
 
     //================= QUERY =================//
 
     // Returns true if the ray cast through the pathfinding grid does not hit solid cells (in line of sight)
     bool GetPathRayCast(Point start, Point end, MapID map);
+
+    // Returns true if there exists a valid path from start to end
+    bool GetExistsPath(Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
 
     //================= UTIL =================//
 

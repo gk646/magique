@@ -159,7 +159,10 @@ namespace magique
 
         void goOnline(const bool asHost)
         {
-            isInSession = true;
+            if (asHost) // For client deferred until host actually accepts
+            {
+                isInSession = true;
+            }
             isHost = asHost;
         }
 
@@ -237,9 +240,11 @@ namespace magique
             if (!isHost)
             {
                 // Connection has been accepted by the remote host
-                if (pParam->m_eOldState == k_ESteamNetworkingConnectionState_Connecting &&
+                if ((pParam->m_eOldState == k_ESteamNetworkingConnectionState_Connecting ||
+                     pParam->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute) &&
                     pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
                 {
+                    isInSession = true; // Deferred until here - could be just connection build up
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
                     {

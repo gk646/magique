@@ -112,7 +112,7 @@ namespace magique
 
     Rectangle UIObject::getBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getScreenDims();
+        const auto [sx, sy] = global::UI_DATA.getTargetResolution();
         Rectangle bounds{px, py, pw, ph};
         switch (scaleMode)
         {
@@ -148,14 +148,14 @@ namespace magique
 
     void UIObject::setPosition(float x, float y)
     {
-        const auto dims = global::UI_DATA.getScreenDims();
+        const auto dims = global::UI_DATA.getTargetResolution();
         px = x / dims.x;
         py = y / dims.y;
     }
 
     void UIObject::setSize(float width, float height)
     {
-        const auto dims = global::UI_DATA.getScreenDims();
+        const auto dims = global::UI_DATA.getTargetResolution();
         if (width >= 0)
             pw = width / dims.x;
         if (height >= 0)
