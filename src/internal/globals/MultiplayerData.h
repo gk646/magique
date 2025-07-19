@@ -65,7 +65,7 @@ namespace magique
 
             if (type == LobbyPacketType::CHAT)
             {
-                MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH, "Missing null terminator");
+                MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LEN, "Missing null terminator");
                 if (chatCallback)
                 {
                     chatCallback(msg.connection, data);

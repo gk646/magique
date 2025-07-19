@@ -1,7 +1,7 @@
 #ifndef UICONTROLS_H
 #define UICONTROLS_H
 
-#include <magique/ui/types/UIContainer.h>
+#include <magique/ui/UIContainer.h>
 #include <magique/ui/UIObject.h>
 #include <magique/ui/controls/Window.h>
 

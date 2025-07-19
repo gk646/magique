@@ -3,7 +3,7 @@
 #define MAGIQUE_WINDOW_H
 
 #include <raylib/raylib.h>
-#include <magique/ui/types/UIContainer.h>
+#include <magique/ui/UIContainer.h>
 M_IGNORE_WARNING(4100)
 
 //===============================================

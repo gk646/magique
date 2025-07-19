@@ -24,11 +24,23 @@ namespace magique
 
     struct DynamicCollisionData final
     {
-        MapHolder<EntityHashGrid> mapEntityGrids; // Separate hashgrid for each map
-        HashSet<uint64_t> pairSet;                // Filters unique collision pairs
-        CollPairCollector collisionPairs{};       // Collision pair collectors
+        MapHolder<EntityHashGrid> mapEntityGrids{}; // Separate hashgrid for each map
+        HashSet<uint64_t> pairSet;                  // Filters unique collision pairs
+        CollPairCollector collisionPairs{};         // Collision pair collectors
 
         DynamicCollisionData() { pairSet.reserve(1000); }
+
+        bool isMarked(entt::entity e1, uint32_t e2)
+        {
+            const auto num = (static_cast<uint64_t>(e1) << 32) | e2;
+            const auto it = pairSet.find(num);
+            if (it == pairSet.end())
+            {
+                pairSet.insert(it, num);
+                return false;
+            }
+            return true;
+        }
     };
 
     namespace global

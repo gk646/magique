@@ -8,7 +8,7 @@
 // UI Module
 //===============================================
 // .....................................................................
-// All UI modules in magique uses a fixed logical resolution of 1920x1080. This means that you can define all dimensions,
+// All UI modules in magique uses a fixed resolution of 1920x1080 (default). This means that you can define all dimensions,
 // offsets and gaps in absolute numbers. These values are then automatically scaled to fit to the current resolution.
 // To fit different screen ratios (21:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
@@ -44,8 +44,8 @@ namespace magique
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
 
-    // Sets a custom resolution instead of the display resolution - if (0,0) display resolution is uses
-    // Note: This is useful if your using different rendertargets
+    // Sets the resolution the UI scales TO - if set to (0,0) display resolution is used
+    // Note: This is useful if your using different render targets
     void SetUITargetResolution(float width, float height);
 
     // Getters for input that allows for consumption - when consumed all methods return false
@@ -66,6 +66,10 @@ namespace magique
         static void Consume();
         static bool GetIsConsumed();
     };
+
+    // Sets the logcal ui resolution in which all numbers are interpreted
+    // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel are with fixed resolutions
+    void SetUISourceResolution(float width , float height);
 
 } // namespace magique
 

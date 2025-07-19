@@ -25,7 +25,7 @@ namespace magique
         TextureRegion addTexture(const Image& image, const int tarW, const int tarH)
         {
             lazyInit();
-            TextureRegion region = {};
+            TextureRegion region{};
             if (!isFullAndSkipToNextRowIfNeeded(tarW, tarH))
                 return region;
 
@@ -55,7 +55,7 @@ namespace magique
             const int frames = img.width / srcW * (img.height / srcH);
             const int totalWidth = frames * tarW;
 
-            SpriteSheet sheet = {};
+            SpriteSheet sheet{};
             if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
                 return sheet;
 
@@ -94,7 +94,7 @@ namespace magique
             const int tarH = static_cast<int>(static_cast<float>(srcH) * scale);
             const int totalWidth = frames * tarW;
 
-            SpriteSheet sheet = {};
+            SpriteSheet sheet{};
             if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
                 return sheet;
 

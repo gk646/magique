@@ -98,8 +98,8 @@ namespace magique
         virtual ~UIObject();
 
     private:
-        float px = 0, py = 0, pw = 0, ph = 0; // Percent values for the dimensions
-        float inset = 0.0F;
+        float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        float inset = 0.0F;                        // Inset - offset towards the middle of the screen
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;

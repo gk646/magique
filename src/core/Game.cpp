@@ -34,6 +34,7 @@
 #include "internal/globals/UIData.h"
 #include "internal/globals/ConsoleData.h"
 #include "internal/globals/ParticleData.h"
+#include "internal/utils/CollisionSystemUtil.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #ifdef MAGIQUE_STEAM
@@ -98,9 +99,9 @@ namespace magique
 #else
             global::ENGINE_CONFIG.font = GetFontDefault();
 #endif
-            global::SHADERS.init();      // Loads the shaders and buffers
+            global::SHADERS.init(); // Loads the shaders and buffers
+            global::ENGINE_DATA.init();
             global::CONSOLE_DATA.init(); // Create default commands
-            global::ENGINE_DATA.camera.zoom = 1.0F;
             InitJobSystem();
             LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
             return true;

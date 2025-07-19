@@ -19,18 +19,27 @@ namespace magique
         float x;
         float y;
 
+        Point() = default;
+        Point(const Vector2& vec);
+        constexpr Point(float x, float y) : x(x), y(y) {}
+
+        // With other points
         bool operator==(const Point& p) const;
         bool operator!=(const Point& p) const;
         Point operator+(const Point& p) const;
+        Point operator-(const Point& point) const;
         Point& operator+=(const Point& p);
         Point& operator-=(const Point& p);
         Point operator*(const Point& other) const;
-        Point& operator*=(float f);
         Point& operator*=(const Point& p);
-        Point operator/(float divisor) const;
+        Point operator/(const Point& p) const;
+
+        // With numbers
         [[nodiscard]] Point operator*(float i) const;
-        bool operator<(float num) const;
-        bool operator==(float num) const;
+        bool operator<(float num) const;  // Both must be smaller
+        bool operator==(float num) const; // Both must be equal
+        Point operator/(float divisor) const;
+        Point& operator*=(float f);
 
         // Distance functions
         [[nodiscard]] float manhattan(const Point& p) const;
@@ -38,7 +47,7 @@ namespace magique
         [[nodiscard]] float chebyshev(const Point& p) const;
         [[nodiscard]] float octile(const Point& p) const;
 
-        Vector2 v() const;
+        [[nodiscard]] Vector2 v() const;
 
         // Vector normalization
         Point& normalize();
@@ -274,7 +283,8 @@ namespace magique
         [[nodiscard]] int getTileNum() const;
 
         const ColliderType type; // The type of the collider
-        ColliderInfo(int, ColliderType);
+
+        ColliderInfo(int data, ColliderType type);
 
     private:
         int data;

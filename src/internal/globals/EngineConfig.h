@@ -38,7 +38,7 @@ namespace magique
         Vector2 cameraViewOff{};                    // Manual camera view offset
         Vector2 cameraPositionOff{};                // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
-        float entityUpdateDistance = 1000;          // Update distance
+        float entityUpdateDistance = 1500;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
         float fontSize = 15;                        // Font size of engine UI elements - scales automatically
         float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
@@ -53,7 +53,6 @@ namespace magique
         bool showCompassOverlay = false;            // Status of the compass overlay
         bool showHitboxes = false;                  // Shows red outlines for the hitboxes
         bool enableCollisionSystem = true;          // Enables the static and dynamic collision systems
-        bool enableLightingSystem = true;           // Enables the lighting system
         bool isClientMode = false;                  // Flag to disable certain engine tasks on multiplayer clients
 
         void init()

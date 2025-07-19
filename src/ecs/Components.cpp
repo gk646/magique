@@ -85,14 +85,14 @@ namespace magique
 
         if (set)
         {
-            flag = CollisionLayer{((uint8_t)(flag)) | mask};
+            flag = CollisionLayer{static_cast<uint32_t>(flag) | mask};
         }
         else
         {
             // 1010  layer
             // 0111  flipped deletion layer (1000)
             // 0010  only the deletion layer deleted
-            flag = CollisionLayer{(uint8_t)flag & ~mask};
+            flag = CollisionLayer{static_cast<uint32_t>(flag) & ~mask};
         }
     }
 

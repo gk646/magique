@@ -5,6 +5,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/ui/UIObject.h>
+#include <magique/util/Logging.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
@@ -20,34 +21,20 @@ namespace magique
         vector<UIObject*> containers;
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
-        Point resolution{0, 0};
-        float scaleX = 1.0F;
-        float scaleY = 1.0F;
-        float mouseX = 0.0F;
-        float mouseY = 0.0F;
-        int dataIndex = 0;
+        Point targetRes{1280, 720};
+        Point sourceRes{1920, 1080};
+        Point mouse{0, 0};
+        Point scaling{1.0F, 1.0F};
         bool inputConsumed = false;
+
+        UIData()
+        {
+            initialized = true;
+        }
 
         // Called at the end of the update tick
         void update()
         {
-            if (resolution == 0.0F)
-            {
-                resolution.x = static_cast<float>(GetScreenWidth());
-                resolution.x = static_cast<float>(GetScreenHeight());
-            }
-            scaleX = resolution.x / MAGIQUE_UI_RESOLUTION_X;
-            scaleY = resolution.y / MAGIQUE_UI_RESOLUTION_Y;
-            const auto [mx, my] = GetMousePosition();
-            mouseX = mx;
-            mouseY = my;
-            inputConsumed = false;
-
-            if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {mx, my};
-            }
-
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)
             {
@@ -60,15 +47,29 @@ namespace magique
                 auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
             }
-
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {-1, -1};
-            }
         }
 
         void updateDrawTick()
         {
+            if (targetRes == 0.0F)
+            {
+                targetRes.x = static_cast<float>(GetScreenWidth());
+                targetRes.x = static_cast<float>(GetScreenHeight());
+            }
+            scaling = targetRes / sourceRes;
+            const auto [mx, my] = GetMousePosition();
+            mouse = {mx, my};
+            inputConsumed = false;
+
+            if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {mx, my};
+            }
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {-1, -1};
+            }
+
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)
             {
@@ -136,22 +137,11 @@ namespace magique
                 sortUpfront(objects, object);
             }
         }
-
-        //----------------- UTIL -----------------//
-
-        [[nodiscard]] Point getScaling() const { return {scaleX, scaleY}; }
-
-        [[nodiscard]] Point getTargetResolution()
-        {
-            return resolution;
-        }
-
-        [[nodiscard]] Point getMousePos() const { return {mouseX, mouseY}; }
     };
 
     namespace global
     {
-        inline UIData UI_DATA;
+        inline UIData UI_DATA{};
     }
 } // namespace magique
 

@@ -35,18 +35,20 @@ namespace magique
 
     //================= CORE BEHAVIOR =================//
 
-    // Sets the size of the update square centered on the actors in each direction
+    // Sets the size of the update square centered on the actors
     // Entities in range will be collision checked and added to the update vector
-    // Default: 1000
-    void SetUpdateDistance(int distance);
+    // Note: Entities not in range can still be updated via the EntityScript::onTick function
+    // Default: 1500
+    void SetEntityUpdateRange(int distance);
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
-    // HardShadows (fast, looks nice) , RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
+    // HardShadows (fast, looks nice), RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
+    // Note: If disabled you can iterate the lighting components and render it with your own shader or co
     // Default: None (others don't work yet)
     void SetLightingMode(LightingMode model);
 
     // When entities leave the update range they are still updated for the cache duration
-    // Default: 300 Ticks
+    // Default: 300 Ticks - Max: 65535
     void SetEntityCacheDuration(int ticks);
 
     // Adds the entity to the update cache manually regardless of position

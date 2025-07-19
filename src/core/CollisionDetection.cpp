@@ -288,6 +288,50 @@ namespace magique
         }
     }
 
+    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info)
+    {
+        switch (col.shape)
+        {
+        case Shape::RECT:
+        {
+            if (pos.rotation == 0) [[likely]]
+            {
+                return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.width, r.height, info);
+            }
+            // Entity
+            float pxs[4] = {0, col.p1, col.p1, 0};
+            float pys[4] = {0, 0, col.p2, col.p2};
+            RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
+
+            // World rect
+            const float p1xs[4] = {r.x, r.x + r.width, r.x + r.width, r.x};
+            const float p1ys[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
+            return SAT(pxs, pys, p1xs, p1ys, info);
+        }
+        case Shape::CIRCLE:
+        {
+            return RectToCircle(r.x, r.y, r.width, r.height, pos.x + col.p1, pos.y + col.p1, col.p1, info);
+        }
+        case Shape::CAPSULE:
+        {
+            return RectToCapsule(r.x, r.y, r.width, r.height, pos.x, pos.y, col.p1, col.p2, info);
+        }
+        case Shape::TRIANGLE:
+            const float rectX[4] = {r.x, r.x + r.width, r.x + r.width, r.x}; // World rect
+            const float rectY[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
+            if (pos.rotation == 0) [[likely]]
+            {
+                const float triX[4] = {pos.x, pos.x + col.p1, pos.x + col.p3, pos.x};
+                const float triY[4] = {pos.y, pos.y + col.p2, pos.y + col.p4, pos.y};
+                return SAT(rectX, rectY, triX, triY, info);
+            }
+            float triX[4] = {0, col.p1, col.p3, 0};
+            float triY[4] = {0, col.p2, col.p4, 0};
+            RotatePoints4(pos.x, pos.y, triX, triY, pos.rotation, col.anchorX, col.anchorY);
+            return SAT(rectX, rectY, triX, triY, info);
+        }
+    }
+
     void CheckCollisionRecCapsule(const Rectangle& rect, const Point pos, const float r, const float h,
                                   CollisionInfo& info)
     {
@@ -353,4 +397,41 @@ namespace magique
         p4.x = pxs[3];
         p4.y = pys[3];
     }
+
+    Rectangle GetEntityBoundingBox(const PositionC& pos, const CollisionC& col)
+    {
+        switch (col.shape)
+        {
+        [[likely]] case Shape::RECT:
+            {
+                if (pos.rotation == 0) [[likely]]
+                {
+                    return {pos.x, pos.y, col.p1, col.p2};
+                }
+                float pxs[4] = {0, col.p1, col.p1, 0};
+                float pys[4] = {0, 0, col.p2, col.p2};
+                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
+                return GetBBQuadrilateral(pxs, pys);
+            }
+        case Shape::CIRCLE:
+            // Top left and diameter as w and h
+            return {pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F};
+        case Shape::CAPSULE:
+            // Top left and height as height / diameter as w
+            return {pos.x, pos.y, col.p1 * 2.0F, col.p2};
+        case Shape::TRIANGLE:
+            {
+                if (pos.rotation == 0)
+                {
+                    return GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
+                }
+                float txs[4] = {0, col.p1, col.p3, 0};
+                float tys[4] = {0, col.p2, col.p4, 0};
+                RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
+                return GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
+            }
+        }
+        return {};
+    }
+
 } // namespace magique

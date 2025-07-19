@@ -26,7 +26,6 @@ namespace magique
     struct StaticPair final // Caches information when the collision occurs to reuse later on
     {
         CollisionInfo info;    // Collision info
-        CollisionC* col;       // the entities collision component
         entt::entity entity;   // the entity
         uint32_t objectNum;    // objectnum (static collider number)
         int data;              // Collider data
@@ -117,7 +116,6 @@ namespace magique
         //----------------- COLLISION SYSTEM  -----------------//
         StaticPairCollector pairCollector;     // Collects pairs for all types entity + (world, object, tiles, custom)
         ColliderCollector colliderCollector{}; // Collects collider ids
-        HashSet<uint64_t> pairSet;             // Makes sure there are only unique collision paris (entity + object_id)
 
         //----------------- STORAGE-----------------//
 

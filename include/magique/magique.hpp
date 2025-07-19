@@ -69,7 +69,7 @@
 // UI
 #include "ui/UI.h"
 #include "ui/TextFormat.h"
-#include "ui/types/UIContainer.h"
+#include "ui/UIContainer.h"
 #include "ui/controls/Button.h"
 #include "ui/controls/Window.h"
 #include "ui/controls/TextField.h"

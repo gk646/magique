@@ -262,13 +262,18 @@ namespace magique::internal
         char name[MAGIQUE_MAX_NAMES_LENGTH]{};
         Window* window = nullptr;
     };
+    struct SceneManagerMapping final
+    {
+        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
+        UIObject* object = nullptr;
+    };
 
     struct ParamData final
     {
-        ParamType types[3]{}; // Allowed types
-        char* name = nullptr;     // Name
-        bool optional = false;    // If param is optional
-        bool variadic = false;    // Stands for a variable amount of parameters
+        ParamType types[3]{};  // Allowed types
+        char* name = nullptr;  // Name
+        bool optional = false; // If param is optional
+        bool variadic = false; // Stands for a variable amount of parameters
         union
         {
             float number;

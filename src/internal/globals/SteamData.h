@@ -120,10 +120,10 @@ namespace magique
         {
             CSteamID senderID;
             EChatEntryType chatEntryType;
-            char message[MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH];
+            char message[MAGIQUE_MAX_LOBBY_MESSAGE_LEN];
             const auto chatId = static_cast<int>(pCallback->m_iChatID);
             const int messageSize = SteamMatchmaking()->GetLobbyChatEntry(
-                steam.lobbyID, chatId, &senderID, message, MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH, &chatEntryType);
+                steam.lobbyID, chatId, &senderID, message, MAGIQUE_MAX_LOBBY_MESSAGE_LEN, &chatEntryType);
 
             if (messageSize > 0 && chatEntryType == k_EChatEntryTypeChatMsg)
             {

@@ -25,6 +25,9 @@ namespace magique
     // Returns the center point of the given rect
     Vector2 GetRectCenter(const Rectangle& rect);
 
+    // Returns a rect with the given dimensions centered on the given position
+    Rectangle GetCenteredRect(const Point& center, float width, float height);
+
 
 } // namespace magique
 

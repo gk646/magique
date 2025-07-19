@@ -29,6 +29,7 @@ namespace magique
     struct EntityAnimation;  // Shared animation data for a specific entity
     enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
+    struct Point;            // Floating point point
 
     //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu

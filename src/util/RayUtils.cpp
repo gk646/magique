@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+
 #include <raylib/raylib.h>
 
+#include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 
 namespace magique
@@ -32,6 +34,11 @@ namespace magique
     Vector2 GetRectCenter(const Rectangle& rect)
     {
         return Vector2{rect.x + rect.width / 2.0F, rect.y + rect.height / 2.0F};
+    }
+
+    Rectangle GetCenteredRect(const Point& center, const float width, const float height)
+    {
+        return Rectangle{center.x - width, center.y - height, center.x + width, center.y + height};
     }
 
 

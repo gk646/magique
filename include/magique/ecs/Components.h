@@ -76,7 +76,8 @@ namespace magique
 
         // Should NOT be modified
         Point resolutionVec{}; // Accumulated normals * depth
-        Point lastNormal{};    // Last normal - to avoid adding the same normal twice
+        Point move{};
+        float dirs[4]{};
     };
 
     // Animation component references an animation and saves its current state

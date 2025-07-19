@@ -8,7 +8,7 @@ namespace magique
     Point GetUIAnchor(const Anchor anchor, const float width, const float height, const float inset)
     {
         Point point{};
-        const auto res = global::UI_DATA.getTargetResolution();
+        const auto res = global::UI_DATA.targetRes;
         switch (anchor)
         {
         case Anchor::TOP_LEFT:
@@ -53,15 +53,15 @@ namespace magique
         return point;
     }
 
-    float GetScaled(const float val) { return global::UI_DATA.scaleY * val; }
+    float GetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
 
-    Point GetUIScaling() { return global::UI_DATA.getScaling(); }
+    Point GetUIScaling() { return global::UI_DATA.scaling; }
 
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
-    Point GetMousePos() { return global::UI_DATA.getMousePos(); }
+    Point GetMousePos() { return global::UI_DATA.mouse; }
 
-    void SetUITargetResolution(float width, float height) { global::UI_DATA.resolution = {width, height}; }
+    void SetUITargetResolution(float width, float height) { global::UI_DATA.targetRes = {width, height}; }
 
     bool UIInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
 
@@ -80,4 +80,8 @@ namespace magique
 
     bool UIInput::GetIsConsumed() { return global::UI_DATA.inputConsumed; }
 
+    void SetUISourceResolution(float width, float height)
+    {
+        global::UI_DATA.sourceRes = {width, height};
+    }
 } // namespace magique

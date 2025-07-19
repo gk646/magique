@@ -106,6 +106,12 @@ namespace magique
     // Returns true if currently in a session as a client
     bool GetIsClient();
 
+    // True if EITHER host or client in a local socket environment
+    bool InLocalSocketSession();
+
+    // True if either host or client in a global socket environment
+    bool InGlobalSocketSession();
+
     // Sets the entity for the given connection - allows to create a mapping between the remote client and a local entity
     // Note: Needs to be manually set BUT is automatically deleted AFTER the connection is disconnected or session is closed
     // Note: An existing mapping can be updated with a new entity

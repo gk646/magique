@@ -69,6 +69,7 @@ namespace magique
 
         void init()
         {
+            camera.zoom = 1.0F;
             destroyEntityCallback = nullptr;
             entityUpdateCache.reserve(1000);
             drawVec.reserve(1000);

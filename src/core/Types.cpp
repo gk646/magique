@@ -16,6 +16,8 @@
 
 namespace magique
 {
+    Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
+
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
     bool Point::operator==(float num) const { return x == num && y == num; }
@@ -23,6 +25,8 @@ namespace magique
     bool Point::operator!=(const Point& other) const { return x != other.x || y != other.y; }
 
     Point Point::operator+(const Point& other) const { return {x + other.x, y + other.y}; }
+
+    Point Point::operator-(const Point& point) const { return {x - point.x, y - point.y}; }
 
     Point Point::operator/(const float divisor) const { return {x / divisor, y / divisor}; }
 
@@ -46,6 +50,8 @@ namespace magique
         y *= p.y;
         return *this;
     }
+
+    Point Point::operator/(const Point& p) const { return {x / p.x, y / p.y}; }
 
     bool Point::operator<(float num) const { return x < num && y < num; }
 

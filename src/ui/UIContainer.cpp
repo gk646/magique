@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/ui/types/UIContainer.h>
+#include <magique/ui/UIContainer.h>
 #include <magique/util/Logging.h>
 
 #include "internal/globals/UIData.h"

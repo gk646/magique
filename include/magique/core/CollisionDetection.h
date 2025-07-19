@@ -33,6 +33,9 @@ namespace magique
     void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                 const CollisionC& colB, CollisionInfo& info);
 
+    // Performs a collision check between the entity and the given rectangle
+    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info);
+
     //================= RECTANGLES =================//
 
     // Performs a collision check between a rectangle and a capsule given by its top left position, radius and height
@@ -68,6 +71,9 @@ namespace magique
 
     // Rotates the given points by the angle (starting with 0 degrees at 12'o clock clockwise) around the given anchor
     void RotatePoints(float angle, Point anchor, Point& p1, Point& p2, Point& p3, Point& p4);
+
+    // Returns a rectangle that fully encloses the collision shape of the entity
+    Rectangle GetEntityBoundingBox(const PositionC& pos, const CollisionC& col);
 
 } // namespace magique
 

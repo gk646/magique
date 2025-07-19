@@ -12,19 +12,20 @@ namespace magique
     Window::Window(const float x, const float y, const float w, const float h, const float moverHeight) :
         UIContainer(x, y, w, h)
     {
+        const auto& ui = global::UI_DATA;
         if (moverHeight == 0.0F)
         {
-            moverHeightP = (h * 0.10F) / MAGIQUE_UI_RESOLUTION_Y;
+            moverHeightP = (h * 0.10F) / ui.sourceRes.y;
         }
         else
         {
-            moverHeightP = moverHeight / MAGIQUE_UI_RESOLUTION_Y;
+            moverHeightP = moverHeight / ui.sourceRes.y;
         }
     }
 
     bool Window::updateDrag(const Rectangle& area, const int mouseButton)
     {
-        const auto mouse = global::UI_DATA.getMousePos();
+        const auto mouse = global::UI_DATA.mouse;
         if (UIInput::IsMouseButtonDown(mouseButton))
         {
             if (isDragged)
@@ -47,9 +48,11 @@ namespace magique
         return false;
     }
 
+    // TODO can probably be simplified by reusing some methods
     Rectangle Window::getBodyBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getTargetResolution();
+        const auto& ui = global::UI_DATA;
+        const auto& [sx, sy] = ui.targetRes;
         Rectangle bounds{px, py + moverHeightP, pw, ph - moverHeightP};
         switch (scaleMode)
         {
@@ -62,14 +65,14 @@ namespace magique
         case ScalingMode::KEEP_RATIO:
             bounds.x *= sx;
             bounds.y *= sy;
-            bounds.width = pw * MAGIQUE_UI_RESOLUTION_X / MAGIQUE_UI_RESOLUTION_Y * sy;
+            bounds.width = pw * ui.sourceRes.x / ui.sourceRes.y * sy;
             bounds.height *= sy;
             break;
         case ScalingMode::NONE:
-            bounds.x *= MAGIQUE_UI_RESOLUTION_X;
-            bounds.y *= MAGIQUE_UI_RESOLUTION_Y;
-            bounds.width *= MAGIQUE_UI_RESOLUTION_X;
-            bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
+            bounds.x *= ui.sourceRes.x;
+            bounds.y *= ui.sourceRes.y;
+            bounds.width *= ui.sourceRes.x;
+            bounds.height *= ui.sourceRes.y;
             break;
         }
         if (anchor != Anchor::NONE)
@@ -83,7 +86,8 @@ namespace magique
 
     Rectangle Window::getTopBarBounds() const
     {
-        const auto [sx, sy] = global::UI_DATA.getTargetResolution();
+        const auto& ui = global::UI_DATA;
+        const auto& [sx, sy] = ui.targetRes;
         Rectangle bounds{px, py, pw, moverHeightP};
         switch (scaleMode)
         {
@@ -96,14 +100,14 @@ namespace magique
         case ScalingMode::KEEP_RATIO:
             bounds.x *= sx;
             bounds.y *= sy;
-            bounds.width = pw * MAGIQUE_UI_RESOLUTION_X / MAGIQUE_UI_RESOLUTION_Y * sy;
+            bounds.width = pw * ui.sourceRes.x / ui.sourceRes.y * sy;
             bounds.height *= sy;
             break;
         case ScalingMode::NONE:
-            bounds.x *= MAGIQUE_UI_RESOLUTION_X;
-            bounds.y *= MAGIQUE_UI_RESOLUTION_Y;
-            bounds.width *= MAGIQUE_UI_RESOLUTION_X;
-            bounds.height *= MAGIQUE_UI_RESOLUTION_Y;
+            bounds.x *= ui.sourceRes.x;
+            bounds.y *= ui.sourceRes.y;
+            bounds.width *= ui.sourceRes.x;
+            bounds.height *= ui.sourceRes.y;
             break;
         }
         if (anchor != Anchor::NONE)
@@ -131,7 +135,7 @@ namespace magique
         const auto topBar = getTopBarBounds();
         const auto isHovered = CheckCollisionPointRec(GetMousePosition(), topBar);
         const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
-        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ?  theme.backDark :  theme.backDark;
+        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(topBar, 0.2F, 30, body);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }

@@ -42,10 +42,10 @@ namespace magique
             return;
         }
 
-        const auto len = strnlen(message, MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH);
-        if (len > MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH)
+        const auto len = strnlen(message, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
+        if (len > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
-            LOG_WARNING("Sent message longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH);
+            LOG_WARNING("Sent message longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
 
@@ -54,13 +54,17 @@ namespace magique
             return;
         }
 
-        char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH + 2]; // Message + 1 null terminators + 1 type
+        char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 2]; // Message + 1 null terminators + 1 type
 
         buff[0] = (int8_t)LobbyPacketType::CHAT;
         std::memcpy(buff + 1, message, len);
         buff[len + 1] = '\0';
         const auto payload = CreatePayload(buff, 1 + len + 1, MessageType{UINT8_MAX});
         BatchMessageToAll(payload);
+        if (global::LOBBY_DATA.chatCallback)
+        {
+            global::LOBBY_DATA.chatCallback(Connection::INVALID_CONNECTION, message);
+        }
     }
 
     void Lobby::setMetadata(const char* key, const char* value)
@@ -69,11 +73,11 @@ namespace magique
         {
             return;
         }
-        const auto keyLen = strnlen(key, MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH);
-        const auto valLen = strnlen(value, MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH);
-        if ((keyLen + valLen) > MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH)
+        const auto keyLen = strnlen(key, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
+        const auto valLen = strnlen(value, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
+        if ((keyLen + valLen) > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
-            LOG_WARNING("Combined metadata longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH);
+            LOG_WARNING("Combined metadata longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
 
@@ -84,7 +88,7 @@ namespace magique
         }
         global::LOBBY_DATA.metadata[key] = value;
 
-        char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH + 3]; // Message + 2 null terminators + 1 type
+        char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 3]; // Message + 2 null terminators + 1 type
 
         buff[0] = (int8_t)LobbyPacketType::METADATA;
         std::memcpy(buff + 1, key, keyLen);

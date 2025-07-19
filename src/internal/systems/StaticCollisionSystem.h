@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_STATIC_COLLISION_SYSTEM_H
 #define MAGIQUE_STATIC_COLLISION_SYSTEM_H
+#include "magique/core/CollisionDetection.h"
 
 //-----------------------------------------------
 // Static Collision System
@@ -45,130 +46,45 @@ namespace magique
             CheckStaticCollisionRange(COL_WORK_PARTS - 1, end, size);
             AwaitJobs(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
-        // Handle unique pairs
-        HandleCollisionPairs(staticData.pairCollector, staticData.pairSet);
-    }
-
-    template <class TypeHashGrid>
-    void QueryHashGrid(vector<StaticID>& vec, const TypeHashGrid& grid, const PositionC& pos, const CollisionC& col)
-    {
-        switch (col.shape)
-        {
-        [[likely]] case Shape::RECT:
-            {
-                if (pos.rotation == 0) [[likely]]
-                {
-                    return grid.query(vec, pos.x, pos.y, col.p1, col.p2);
-                }
-                float pxs[4] = {0, col.p1, col.p1, 0};
-                float pys[4] = {0, 0, col.p2, col.p2};
-                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBQuadrilateral(pxs, pys);
-                return grid.query(vec, bb.x, bb.y, bb.width, bb.height);
-            }
-        case Shape::CIRCLE:
-            return grid.query(vec, pos.x, pos.y, col.p1 * 2.0F, col.p1 * 2.0F); // Top left and diameter as w and h
-        case Shape::CAPSULE:
-            // Top left and height as height / diameter as w
-            return grid.query(vec, pos.x, pos.y, col.p1 * 2.0F, col.p2);
-        case Shape::TRIANGLE:
-            {
-                if (pos.rotation == 0)
-                {
-                    const auto bb =
-                        GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
-                    return grid.query(vec, bb.x, bb.y, bb.width, bb.height);
-                }
-                float txs[4] = {0, col.p1, col.p3, 0};
-                float tys[4] = {0, col.p2, col.p4, 0};
-                RotatePoints4(pos.x, pos.y, txs, tys, pos.rotation, col.anchorX, col.anchorY);
-                const auto bb = GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
-                return grid.query(vec, bb.x, bb.y, bb.width, bb.height);
-            }
-        }
-    }
-
-    inline void CheckAgainstRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info)
-    {
-        switch (col.shape)
-        {
-        case Shape::RECT:
-            {
-                if (pos.rotation == 0) [[likely]]
-                {
-                    return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.width, r.height, info);
-                }
-                // Entity
-                float pxs[4] = {0, col.p1, col.p1, 0};
-                float pys[4] = {0, 0, col.p2, col.p2};
-                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
-
-                // World rect
-                const float p1xs[4] = {r.x, r.x + r.width, r.x + r.width, r.x};
-                const float p1ys[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
-                return SAT(pxs, pys, p1xs, p1ys, info);
-            }
-        case Shape::CIRCLE:
-            {
-                return RectToCircle(r.x, r.y, r.width, r.height, pos.x + col.p1, pos.y + col.p1, col.p1, info);
-            }
-        case Shape::CAPSULE:
-            {
-                return RectToCapsule(r.x, r.y, r.width, r.height, pos.x, pos.y, col.p1, col.p2, info);
-            }
-        case Shape::TRIANGLE:
-            const float rectX[4] = {r.x, r.x + r.width, r.x + r.width, r.x}; // World rect
-            const float rectY[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
-            if (pos.rotation == 0) [[likely]]
-            {
-                const float triX[4] = {pos.x, pos.x + col.p1, pos.x + col.p3, pos.x};
-                const float triY[4] = {pos.y, pos.y + col.p2, pos.y + col.p4, pos.y};
-                return SAT(rectX, rectY, triX, triY, info);
-            }
-            float triX[4] = {0, col.p1, col.p3, 0};
-            float triY[4] = {0, col.p2, col.p4, 0};
-            RotatePoints4(pos.x, pos.y, triX, triY, pos.rotation, col.anchorX, col.anchorY);
-            return SAT(rectX, rectY, triX, triY, info);
-        }
+        // Handle unique pairs - we can share the pair set with dynamic
+        HandleCollisionPairs(staticData.pairCollector, global::DY_COLL_DATA.pairSet);
     }
 
     inline void CheckAgainstWorldBounds(vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
-                                        CollisionC& col, const Rectangle& r, const uint32_t num)
+                                        const CollisionC& col, const Rectangle& r, const uint32_t num)
     {
         CollisionInfo info{};
-        CheckAgainstRect(pos, col, r, info);
+        CheckCollisionEntityRect(pos, col, r, info);
         if (info.isColliding())
         {
             // subtract 0-3 depending on the world bound
-            // We just need to have a unqiue object num so if a collision is found in multiple cells
-            // due to duplicate insertion its not processed
+            // We just need to have a unique object num so if a collision is found in multiple cells
+            // due to duplicate insertion it's not processed
             // UINT32_MAX will never be reached and subtracting will be never be negative
-            collector.push_back({info, &col, e, UINT32_MAX - num, 0, ColliderType::WORLD_BOUNDS, pos.type});
+            collector.push_back({info, e, UINT32_MAX - num, 0, ColliderType::WORLD_BOUNDS, pos.type});
         }
     }
 
     template <class TypeHashGrid>
     void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, vector<StaticID>& collector,
                        vector<StaticPair>& pairCollector, const ColliderType type,
-                       const vector<StaticCollider>& colliders, const PositionC& pos, CollisionC& col)
+                       const vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
     {
-        QueryHashGrid(collector, grid, pos, col); // Tilemap objects
+        const auto bb = GetEntityBoundingBox(pos, col);
+        grid.query(collector, bb.x, bb.y, bb.width, bb.height);
         for (const auto num : collector)
         {
             const auto objectNum = StaticIDHelper::GetObjectNum(num);
             const auto [x, y, p1, p2] = colliders[(int)objectNum]; // O(1) direct lookup
             CollisionInfo info{};
-            CheckAgainstRect(pos, col, {x, y, p1, p2}, info);
+            CheckCollisionEntityRect(pos, col, {x, y, p1, p2}, info);
             if (info.isColliding())
             {
-                pairCollector.push_back({info, &col, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
+                pairCollector.push_back({info, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
             }
         }
         collector.clear();
     }
-
-    inline void Sort() {}
-
 
     inline void CheckStaticCollisionRange(const int thread, const int start, const int end) // Runs on each thread
     {
@@ -200,7 +116,7 @@ namespace magique
         {
             const auto e = *it;
             const auto& pos = group.get<const PositionC>(e);
-            auto& col = group.get<CollisionC>(e); // Non cost for saving modifiable pointer
+            const auto& col = group.get<CollisionC>(e); // Non cost for saving modifiable pointer
 
             if (checkWorld) // Check if worldbounds active
             {
@@ -237,40 +153,39 @@ namespace magique
         }
     }
 
-    inline void AccumulateInfo(CollisionC& col, const CollisionInfo& info)
-    {
-        if (col.lastNormal.x == info.normalVector.x && col.lastNormal.y == info.normalVector.y) [[unlikely]]
-            return;
-        col.lastNormal = info.normalVector;
-        col.resolutionVec.x += info.normalVector.x * info.penDepth;
-        col.resolutionVec.y += info.normalVector.y * info.penDepth;
-    }
-
     inline void HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet)
     {
         const auto& scripts = global::SCRIPT_DATA.scripts;
+        auto& dynamic = global::DY_COLL_DATA;
         for (auto& [vec] : pairColl)
         {
-            for (auto& data : vec)
+            for (auto& [info, e, objNum, data, objType, entType] : vec)
             {
-                const auto uniqueNum = static_cast<uint64_t>(data.entity) << 32 | data.objectNum;
-                const auto it = pairSet.find(uniqueNum);
-                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
+                // This cannot be avoided as duplicates are inserted into the hashgrid
+                if (dynamic.isMarked(e, objNum))
+                {
                     continue;
-                pairSet.insert(it, uniqueNum);
+                }
+
+                // Also check existence
+                auto* col = TryGetComponent<CollisionC>(e);
+                if (col == nullptr)
+                {
+                    continue;
+                }
 
                 // Process the collision
-                const auto colliderInfo = ColliderInfo{data.data, data.type};
-                InvokeEventDirect<onStaticCollision>(scripts[data.entityType], data.entity, colliderInfo, data.info);
-                if (data.info.getIsAccumulated()) // Accumulate the data if specified
+                const auto colliderInfo = ColliderInfo{data, objType};
+                InvokeEventDirect<onStaticCollision>(scripts[entType], e, colliderInfo, info);
+
+                if (info.getIsAccumulated()) // Accumulate the data if specified
                 {
-                    AccumulateInfo(*data.col, data.info);
+                    AccumulateInfo(*col, Shape::RECT, info);
                 }
             }
             vec.clear();
         }
-
-        pairSet.clear();
+        dynamic.pairSet.clear();
     }
 } // namespace magique
 

@@ -86,7 +86,7 @@
 #define MAGIQUE_ESTIMATED_MESSAGES 150
 
 // Maximum length of a chat message sent in a lobby
-#define MAGIQUE_MAX_LOBBY_MESSAGE_LENGTH 256
+#define MAGIQUE_MAX_LOBBY_MESSAGE_LEN 256
 
 //================= GRAPHICS =================//
 
@@ -99,14 +99,7 @@
 
 //================= PERSISTENCE =================//
 
-
 //================= UI =================//
-
-// Logical width the UI system
-#define MAGIQUE_UI_RESOLUTION_X 1920.0F
-
-// Logical height the UI system
-#define MAGIQUE_UI_RESOLUTION_Y 1080.0F
 
 //================= UTIL =================//
 

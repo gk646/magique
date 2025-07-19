@@ -42,6 +42,19 @@
 // - Sort rect to rect collision and apply them in correct order (and recheck if they are still needed)
 
 
+// Solution:
+// save when there is a rectangle collision in a direction
+
+// When a corner collisions occurs
+// - for vertical stick edge:
+//      - when resolution happens horizontally right or left and vertically against the movement direction
+//      - collision point x is the same
+// - for horizontal sticky edge:
+//      - when resolution happens vertically up or down and horizontally against the movement direction
+//      - collision point y is the same
+// Double collisions:
+// - save in each direction only the greatest extent
+
 namespace magique
 {
     void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
@@ -113,7 +126,7 @@ namespace magique
                             continue;
                         auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
                         if (!colA.detects(colB) && !colB.detects(colA))
-                            continue; // Not on the same map or not on the same collision layer
+                            continue; // Not checking for each other
                         CollisionInfo info{};
                         CheckCollisionEntities(posA, colA, posB, colB, info);
                         if (info.isColliding())
@@ -126,51 +139,9 @@ namespace magique
         }
     }
 
-    // save when there is a rectangle collision in a direction
-
-    // When a corner collisions occurs
-    // - for vertical stick edge:
-    //      - when resolution happens horizontally right or left and vertically against the movement direction
-    //      - collision point x is the same
-    // - for horizontal sticky edge:
-    //      - when resolution happens vertically up or down and horizontally against the movement direction
-    //      - collision point y is the same
-    // Double collisions:
-    // - save in each direction only the greatest extent
-
-
-    struct Range
-    {
-    };
-
-    inline void DetectDoubleCollisions() {}
-
-    inline void ResolveCollisions(std::vector<PairInfo>& collisions)
-    {
-        std::vector<PairInfo> cache;
-        for (int i = 0; i < collisions.size(); ++i)
-        {
-            const auto e1 = collisions[i].e1;
-            auto& col = GetComponent<CollisionC>(e1);
-            auto& pos = GetComponent<PositionC>(e1);
-
-            for (int j = 0; j < collisions.size(); ++j)
-            {
-                if (i == j || collisions[j].e1 != e1)
-                    continue;
-
-                auto& col2 = GetComponent<CollisionC>(collisions[j].e2);
-                auto& pos2 = GetComponent<PositionC>(collisions[j].e2);
-                cache.push_back(collisions[j]);
-            }
-        }
-    }
-
-
     inline void HandleCollisionPairs()
     {
         const auto& scriptVec = global::SCRIPT_DATA.scripts;
-        const auto& colVec = global::ENGINE_DATA.collisionVec;
         const auto& group = internal::POSITION_GROUP;
         auto& dynamic = global::DY_COLL_DATA;
 
@@ -186,14 +157,13 @@ namespace magique
                 const auto e1 = pairInfo.e1;
                 const auto e2 = pairInfo.e2;
 
-                auto num = (static_cast<uint64_t>(e1) << 32) | static_cast<uint32_t>(e2);
-                const auto it = pairSet.find(num);
-                if (it != pairSet.end()) // This cannot be avoided as duplicates are inserted into the hashgrid
+                // This cannot be avoided as duplicates are inserted into the hashgrid
+                if (dynamic.isMarked(e1, static_cast<uint32_t>(e2)))
                 {
                     continue;
                 }
-                pairSet.insert(it, num);
 
+                // this checks existence as well - also needed cause deletion caused reference invalidation
                 const auto p1 = TryGetComponent<const PositionC>(e1);
                 const auto p2 = TryGetComponent<const PositionC>(e2);
                 if (p1 == nullptr || p2 == nullptr) [[unlikely]]
@@ -215,7 +185,7 @@ namespace magique
 
                     if (pairInfo.info.getIsAccumulated())
                     {
-                        AccumulateInfo(col1, pairInfo.info);
+                        AccumulateInfo(col1, col2.shape, pairInfo.info);
                         pairs.push_back(pairInfo);
                     }
                 }
@@ -231,22 +201,12 @@ namespace magique
 
                     if (secondInfo.getIsAccumulated())
                     {
-                        AccumulateInfo(col2, secondInfo);
+                        AccumulateInfo(col2, col2.shape, secondInfo);
                         pairs.push_back(pairInfo);
                     }
                 }
             }
             vec.clear();
-        }
-
-
-        for (const auto e : colVec)
-        {
-            auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            pos.x += col.resolutionVec.x;
-            pos.y += col.resolutionVec.y;
-            col.lastNormal = {0, 0};
-            col.resolutionVec = {0, 0};
         }
         pairSet.clear();
     }

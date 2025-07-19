@@ -61,7 +61,7 @@ namespace magique
 
     WindowManager& GetWindowManager()
     {
-        static WindowManager WINDOW_MANAGER = {};
+        static WindowManager WINDOW_MANAGER{};
         return WINDOW_MANAGER;
     }
 
@@ -256,7 +256,7 @@ namespace magique
     void WindowManager::update()
     {
         // Iterated in reverse - last drawn is the front most window - as soon as we find a hovered the ones behind cant be
-        const auto mouse = global::UI_DATA.getMousePos();
+        const auto mouse = global::UI_DATA.mouse;
         for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
         {
             if (WINDOW_DATA.shownSet.contains(*it))

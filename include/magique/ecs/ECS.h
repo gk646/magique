@@ -51,6 +51,10 @@ namespace magique
     template <typename T>
     T& GetComponent(entt::entity entity);
 
+    // Returns one or more of the specified components from the entity
+    template <typename... T>
+    auto GetComponents(entt::entity entity);
+
     // Tries to retrieve the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view
     // Failure: Returns nullptr if the component is not present on the given entity
@@ -156,6 +160,14 @@ namespace magique
             return internal::REGISTRY.get<T>(entity);
         }
     }
+
+    template <typename... T>
+    auto GetComponents(entt::entity entity)
+    {
+        MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
+        return internal::REGISTRY.get<T...>(entity);
+    }
+
     template <typename T>
     T* TryGetComponent(const entt::entity entity)
     {
