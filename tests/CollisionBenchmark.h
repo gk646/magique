@@ -42,6 +42,8 @@
 // Time: 4.7 ms | Fedora 42 + GCC 15.1 + performance mode + ?
 // Time: 4.9 ms | Fixing the pointer invalidation - need to refetch the components
 // Time: 4.5 ms | Re-enabled SIMD - accidentally had wrong define
+// Changed default hash size to be smaller & more max entities per cell -> actually all object are checked now
+// Time: 6.0 ms | Added sticky edge avoidance
 // .....................................................................
 
 using namespace magique;
@@ -142,7 +144,7 @@ struct Example final : Game
     {
         SetWindowState(FLAG_WINDOW_RESIZABLE);
         SetRandomSeed(100);
-        SetShowHitboxes(true);
+        // SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
             GiveActor(e);

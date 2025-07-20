@@ -34,6 +34,7 @@ namespace magique::mainthread
             {
                 auto time = GetTime();
                 data.engineTime = static_cast<float>(time);
+                data.engineTicks++;
 
                 WakeUpJobs();
 

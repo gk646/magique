@@ -70,29 +70,28 @@ namespace magique
         return ((uint8_t)mask & (uint8_t)other.layer) != 0;
     }
 
-    static bool IsValidLayer(const CollisionLayer layer)
+    static bool IsValidLayer(const uint8_t layer)
     {
-        const auto layerNum = static_cast<uint8_t>(layer);
         // Binary: 1000  (-1)-> 0111 (& operator)-> 1000
         //                                          0111   = 0 - Will never have any overlap if power of 2!
-        return layerNum != 0 && (layerNum & (layerNum - 1)) == 0;
+        return layer != 0 && (layer & (layer - 1)) == 0;
     }
 
     static void SetBitflag(CollisionLayer& flag, const uint8_t mask, const bool set)
     {
-        if (!IsValidLayer(flag)) [[unlikely]]
+        if (!IsValidLayer(mask)) [[unlikely]]
             LOG_WARNING("Trying to assign invalid collision layer! Skipping");
 
         if (set)
         {
-            flag = CollisionLayer{static_cast<uint32_t>(flag) | mask};
+            flag = CollisionLayer{static_cast<uint8_t>(static_cast<uint32_t>(flag) | mask)};
         }
         else
         {
             // 1010  layer
             // 0111  flipped deletion layer (1000)
             // 0010  only the deletion layer deleted
-            flag = CollisionLayer{static_cast<uint32_t>(flag) & ~mask};
+            flag = CollisionLayer{static_cast<uint8_t>(static_cast<uint32_t>(flag) & ~mask)};
         }
     }
 

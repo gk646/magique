@@ -106,8 +106,12 @@ namespace magique
     // Returns the default font used by the engine
     const Font& GetEngineFont();
 
-    // Returns the time since startup - updated each tick
+    // Returns the time since startup - updated at the start of each tick
     float GetEngineTime();
+
+    // Returns the ticks since startup - updated at the start of each tick
+    // Note: Can also be used to track if a tick passed
+    uint32_t GetEngineTick();
 
     namespace internal
     {

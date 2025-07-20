@@ -66,6 +66,8 @@ namespace magique
 
     float GetEngineTime() { return global::ENGINE_DATA.engineTime; }
 
+    uint32_t GetEngineTick() {return global::ENGINE_DATA.engineTicks;}
+
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
     //----------------- GET -----------------//

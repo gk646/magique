@@ -2,22 +2,6 @@
 #ifndef OPENGLUTIL_H
 #define OPENGLUTIL_H
 
-// Function to create a simple object buffer
-inline void createSimpleObjectBuffer(const Vector3* vertices, int vertexCount, unsigned int* vao, unsigned int* vbo)
-{
-    // Generate and bind a Vertex Array Object
-    *vao = rlLoadVertexArray();
-    rlEnableVertexArray(*vao);
-
-    // Generate and bind a Vertex Buffer Object
-    *vbo = rlLoadVertexBuffer(vertices, vertexCount * sizeof(Vector3), false);
-    rlSetVertexAttribute(0, 3, RL_FLOAT, 0, 0, 0);
-    rlEnableVertexAttribute(0);
-
-    // Unbind the VAO
-    rlDisableVertexArray();
-}
-
 inline void CreateShadowQuads(magique::vector<Vector3>& quads, Vector2 posA, Vector2 posB)
 {
     // Triangle 1

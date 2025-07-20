@@ -54,12 +54,12 @@ namespace magique
         const auto& config = global::ENGINE_CONFIG;
         if (!config.isClientMode && config.enableCollisionSystem) [[likely]]
         {
-            GetMovementDeltas();
+            // GetMovementDeltas();
             StaticCollisionSystem();  // After cause user systems can modify entity state
             DynamicCollisionSystem(); // After cause user systems can modify entity state
             ResolveCollisions();
         }
-        global::UI_DATA.update();      // After gametick so ui reflects current state
+        global::UI_DATA.update();      // After game tick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
         GetWindowManager().update();
     }

@@ -41,7 +41,6 @@
 // - Apply specialized solutions
 // - Sort rect to rect collision and apply them in correct order (and recheck if they are still needed)
 
-
 // Solution:
 // save when there is a rectangle collision in a direction
 
@@ -119,6 +118,7 @@ namespace magique
                 {
                     const auto first = *dIt1;
                     auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
+                    // TODO can be optimizeed by skiping to dIt1
                     for (const auto* dIt2 = dStart; dIt2 != dEnd; ++dIt2)
                     {
                         const auto second = *dIt2;

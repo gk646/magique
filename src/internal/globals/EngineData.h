@@ -65,6 +65,7 @@ namespace magique
         NearbyQueryData nearbyQueryData;             // Caches the parameters of the last query to skip similar calls
         entt::entity playerEntity = entt::null;      // Manually set player entity
         float engineTime = 0.0F;                     // Time since engine start
+        uint32_t engineTicks;                        // Ticks since engine start
         DestroyEntityCallback destroyEntityCallback; // Function to be called when any entity is destroyed
 
         void init()

@@ -13,8 +13,6 @@
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/util/Logging.h>
 
-#include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
-
 //-----------------------------------------------
 // Local Multiplayer Test
 //-----------------------------------------------
@@ -130,8 +128,6 @@ struct Example final : Game
 {
     Example() : Game("magique - Example: Local Multiplayer") {}
 
-    HashMap<Connection, entt::entity> networkPlayerMap; // Maps outgoing connections to a player in our world (for host)
-
     void onStartup(AssetLoader& loader) override
     {
         SetGameState({}); // Set empty gamestate - needs to be set in a real game
@@ -178,13 +174,12 @@ struct Example final : Game
 
         // Setup event callback so we can react to multiplayer events
         SetMultiplayerCallback(
-            [&](MultiplayerEvent event)
+            [&](MultiplayerEvent event, Connection conn)
             {
                 if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
                 {
                     const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
-                    const auto lastConnection = GetCurrentConnections().back();
-                    networkPlayerMap[lastConnection] = id; // Save the mapping
+                    SetConnectionEntityMapping(conn, id);
 
                     // Send the new client the current world state - iterate all entities
                     for (const auto e : GetRegistry().view<PositionC>())
@@ -204,7 +199,7 @@ struct Example final : Game
 
                         const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
 
-                        BatchMessage(lastConnection, payload);
+                        BatchMessage(conn, payload);
                     }
                 }
                 else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
@@ -286,8 +281,8 @@ struct Example final : Game
                     }
 
                     const auto inputUpdate = msg.payload.getDataAs<InputUpdate>();
-                    assert(networkPlayerMap.contains(msg.connection)); // Can only get updates from connected clients
-                    const auto entity = networkPlayerMap[msg.connection];
+                    const auto entity = GetConnectionEntityMapping(msg.connection);
+                    MAGIQUE_ASSERT(entity != entt::null, "Entity must be registered");
 
                     auto& pos = GetComponent<PositionC>(entity);
                     if (inputUpdate.key == KEY_W)
@@ -320,7 +315,7 @@ struct Example final : Game
                     case MessageType::POSITION_UPDATE:
                         {
                             // Get the data
-                            PositionUpdate positionUpdate = msg.payload.getDataAs<PositionUpdate>();
+                            auto positionUpdate = msg.payload.getDataAs<PositionUpdate>();
                             auto& pos = GetComponent<PositionC>(positionUpdate.entity);
                             pos.x = positionUpdate.x;
                             pos.y = positionUpdate.y;
@@ -332,9 +327,14 @@ struct Example final : Game
                     case MessageType::SPAWN_UPDATE:
                         {
                             auto [x, y, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
-                            assert(!EntityExists(entity));                // Entity MUST not exist already!
-                            CreateEntityNetwork(entity, type, x, y, map); // Create a new entity
+                            // Entity MUST not exist already!
+                            MAGIQUE_ASSERT(!EntityExists(entity), "Entity exists");
+                            // Create a new entity with a preset entity id
+                            CreateEntityEx(entity, type, x, y, map, 0, true);
                         }
+                        break;
+                    default:
+                        LOG_WARNING("Received wrong message");
                         break;
                     }
                 }
@@ -388,6 +388,7 @@ struct Example final : Game
 
             // Send the accumulated message for this tick
             SendBatch();
+            FlushMessages();
         }
     }
 };

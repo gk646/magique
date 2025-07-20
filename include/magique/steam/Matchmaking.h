@@ -23,7 +23,7 @@ namespace magique
 
     // Returns true if the async call trying to create a lobby was successful
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
-    bool CreateSteamLobby(SteamLobbyType type, int maxPlayers = MAGIQUE_MAX_PLAYERS);
+    bool CreateSteamLobby(SteamLobbyType type, int maxPlayers = MAGIQUE_MAX_PLAYERS - 1);
 
     // Tries to connect to the lobby specified by the given id
     void JoinSteamLobby(SteamLobbyID lobbyID);

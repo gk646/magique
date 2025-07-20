@@ -129,8 +129,7 @@ namespace magique
             LOG_WARNING("Failed to connect to local socket with ip", buffer);
             return Connection::INVALID_CONNECTION;
         }
-        data.connections.push_back(static_cast<Connection>(conn));
-        data.goOnline(false);
+        data.goOnline(false, static_cast<Connection>(conn));
         return data.connections[0];
     }
 

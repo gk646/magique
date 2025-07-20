@@ -47,11 +47,13 @@ namespace magique
 
     struct CollisionC final
     {
-        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
-        float weight = 1.0F;       // Determines how the displacement is split between two colliding objects
+        float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F; // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
+        float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
+        float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
+        // Determines how the displacement is split between two colliding (dynamic) objects
+        //
+        float weight = 1.0F;
         int16_t anchorX = 0;       // Rotation anchor point for the hitbox
         int16_t anchorY = 0;       // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape
@@ -61,23 +63,22 @@ namespace magique
         CollisionLayer mask = CollisionLayer::DEFAULT_LAYER;  // Against which layers it collides
 
         // Returns true if the mask of this object detect the other objects layers - so if the two collide
-        bool detects(const CollisionC& other) const;
+        [[nodiscard]] bool detects(const CollisionC& other) const;
 
         // Returns true if the entity has this layer is set
         [[nodiscard]] bool isLayerSet(CollisionLayer layer) const;
-        void setLayer(CollisionLayer layer, bool enabled);
+        void setLayer(CollisionLayer layer, bool enabled = true);
 
         // Returns true if the entity looks for collision on the given layer
         [[nodiscard]] bool isLookingFor(CollisionLayer layer) const;
-        void setMask(CollisionLayer layer, bool enabled);
+        void setMask(CollisionLayer layer, bool enabled = true);
 
         // Returns the offset from the position (top left) to the middle
-        Point getMidOffset() const;
+        [[nodiscard]] Point getMidOffset() const;
 
         // Should NOT be modified
         Point resolutionVec{}; // Accumulated normals * depth
-        Point move{};
-        float dirs[4]{};
+        float dirs[4]{};       // X coordinates of rectangle collision - to fix sticky edges bug
     };
 
     // Animation component references an animation and saves its current state

@@ -114,14 +114,66 @@ namespace magique
         static bool DeleteFunc(const ConnMapping& m1, const ConnMapping& m2) { return m1.conn == m2.conn; }
     };
 
+    struct ConnNumberMapping final
+    {
+        std::array<Connection, MAGIQUE_MAX_PLAYERS - 1> conns{}; // Not invalid
+
+        void addConnection(Connection conn)
+        {
+            for (auto& savedConn : conns)
+            {
+                if (savedConn == Connection::INVALID_CONNECTION)
+                {
+                    savedConn = conn;
+                    return;
+                }
+            }
+            LOG_ERROR("Too many connections");
+        }
+
+        void removeConnection(Connection conn)
+        {
+            for (auto& savedConn : conns)
+            {
+                if (savedConn == conn)
+                {
+                    savedConn = Connection::INVALID_CONNECTION;
+                    return;
+                }
+            }
+            LOG_ERROR("Connection could not be removed?!");
+        }
+
+        [[nodiscard]] int getNum(Connection conn) const
+        {
+            for (int i = 0; i < MAGIQUE_MAX_PLAYERS - 1; ++i)
+            {
+                if (conns[i] == conn)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        void clear()
+        {
+            for (auto& conn : conns)
+            {
+                conn = Connection::INVALID_CONNECTION;
+            }
+        }
+    };
+
     struct MultiplayerData final
     {
         MultiplayerCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
-        std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mapping
+        std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
         vector<SteamNetworkingMessage_t*> outMsgBuffer;                 // Outgoing message buffer
         vector<SteamNetworkingMessage_t*> incMsgBuffer;                 // Incoming message buffer
+        ConnNumberMapping numberMapping{};                              // Maps connection to a consistent number
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
         bool isInSession = false;                                       // If program is part of multiplayer activity
@@ -157,11 +209,16 @@ namespace magique
 #endif
         }
 
-        void goOnline(const bool asHost)
+        void goOnline(const bool asHost, Connection conn = Connection::INVALID_CONNECTION)
         {
             if (asHost) // For client deferred until host actually accepts
             {
                 isInSession = true;
+            }
+            else if (conn != Connection::INVALID_CONNECTION)
+            {
+                connections.push_back(conn);
+                numberMapping.addConnection(conn);
             }
             isHost = asHost;
         }
@@ -190,17 +247,15 @@ namespace magique
             connectionMapping.clear();
             isHost = false;
             isInSession = false;
+            numberMapping.clear();
             global::LOBBY_DATA.closeLobby();
         }
 
         void update() const
         {
-            if (isInSession)
-            {
 #ifndef MAGIQUE_STEAM
                 SteamNetworkingSockets()->RunCallbacks();
 #endif
-            }
         }
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
@@ -215,14 +270,15 @@ namespace magique
                 {
                     if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK)
                     {
-                        if (connections.size() == MAGIQUE_MAX_PLAYERS)
+                        if (connections.size() == MAGIQUE_MAX_PLAYERS - 1)
                         {
-                            LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d",
-                                        MAGIQUE_MAX_PLAYERS);
+                            LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS - 1: %d",
+                                        MAGIQUE_MAX_PLAYERS - 1);
                         }
                         else
                         {
                             connections.push_back(conn);
+                            numberMapping.addConnection(conn);
                             if (callback)
                             {
                                 callback(MultiplayerEvent::HOST_NEW_CONNECTION, conn);
@@ -248,7 +304,7 @@ namespace magique
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
                     {
-                        callback(MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED, static_cast<Connection>(pParam->m_hConn));
+                        callback(MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED, conn);
                     }
                 }
             }
@@ -261,11 +317,12 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
                 if (isHost)
                 {
-                    UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
+                    UnorderedDelete(connections, conn);
                     if (callback)
                     {
                         callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED, conn);
                     }
+                    numberMapping.removeConnection(conn);
                     UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
                 }
@@ -289,11 +346,12 @@ namespace magique
                 const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
-                    UnorderedDelete(connections, static_cast<Connection>(pParam->m_hConn));
+                    UnorderedDelete(connections, conn);
                     if (callback)
                     {
                         callback(MultiplayerEvent::HOST_LOCAL_PROBLEM, conn);
                     }
+                    numberMapping.removeConnection(conn);
                     UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
                     LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
                 }
@@ -309,7 +367,6 @@ namespace magique
             }
         }
     };
-
 
     namespace global
     {

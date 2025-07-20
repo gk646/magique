@@ -37,8 +37,7 @@
 //      5. Set the start signal to true
 //      6. Continuously send game updates
 //
-// IMPORTANT: The enum MessageType=255 is RESERVED for lobby messages
-// Note: The callbacks only work if you call ReceiveIncomingMessages() - lobby packets are filtered and handled automatically
+// Note: The lobby only works if you call ReceiveIncomingMessages() (each tick) - lobby packets are filtered and handled automatically
 // .....................................................................
 
 namespace magique

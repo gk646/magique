@@ -13,6 +13,9 @@
 // This modules serves as an abstraction over the native enTT interface.
 // For more info see its documentation: https://github.com/skypjack/entt/wiki
 // Note: All entities have the PositionC auto assigned per default!
+// Note: Creates entities are generally only "part of the system" in the next tick!
+//       Only the start of the tick, all entities are checked and marked
+//       => So adding entities mid-tick will not get them collision check this tick
 // ................................................................................
 
 enum EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
@@ -145,6 +148,7 @@ namespace magique
 
     } // namespace internal
     inline entt::registry& GetRegistry() { return internal::REGISTRY; }
+
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {

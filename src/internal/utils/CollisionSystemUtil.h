@@ -11,13 +11,11 @@ namespace magique
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            col.move = pos.getPosition() - col.move;
         }
     }
 
     inline void AccumulateInfo(CollisionC& col, Shape other, const CollisionInfo& info)
     {
-
         if (other == Shape::RECT)
         {
             // As we are resolving towards x overlap first (in case of a tie) we only have to handle vertical stickies
@@ -32,7 +30,6 @@ namespace magique
             {
                 col.resolutionVec.y = 0;
             }
-
 
             // Incoming Stick edge when moving top right
             if (info.normalVector.y == 1.0F && col.dirs[(int)Direction::LEFT] == info.collisionPoint.x)
@@ -127,7 +124,6 @@ namespace magique
             pos.x += col.resolutionVec.x;
             pos.y += col.resolutionVec.y;
             col.resolutionVec = {0, 0};
-            col.move = pos.getPosition();
             for (auto& p : col.dirs)
             {
                 p = 0.0F;

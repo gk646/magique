@@ -14,7 +14,7 @@ enum class HandleID : int;  // Identifies handles
 enum class ConfigID : int;  // Identifies stored config data
 enum class StorageID : int; // Identifies stored game save data
 
-// IMPORTANT: MessageType = 255 is reserved for LANLobby messages
+// IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
 enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
 enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS
 enum class AtlasID : int;            // Identifies different texture atlas

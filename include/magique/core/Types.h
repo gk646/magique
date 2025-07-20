@@ -251,6 +251,7 @@ namespace magique
     // Feel free to rename those! This is a bit mask!
     enum class CollisionLayer : uint8_t
     {
+        NONE = 0,
         DEFAULT_LAYER = 1 << 0,
         LAYER_1 = 1 << 1,
         LAYER_2 = 1 << 2,
@@ -258,7 +259,6 @@ namespace magique
         LAYER_4 = 1 << 4,
         LAYER_5 = 1 << 5,
         LAYER_6 = 1 << 6,
-        LAYER_7 = 1 << 7,
     };
 
     enum class ColliderType : uint8_t
@@ -403,17 +403,12 @@ namespace magique
         // No guarantees - the message is not resent if its dropped or part of it goes missing
         // This uses less bandwidth than reliable messages - if there's a stable connection it's very similar to reliable
         UNRELIABLE = 0,
-        // Same as UNRELIABLE but bypasses the nagle timer
-        UNRELIABLE_NO_NAGLE = 1,
-        // Same as UNRELIABLE_NO_NAGLE but if message cant be sent immediately dont queue it and just discard it
-        UNRELIABLE_NO_DELAY = 5,
         // There are TWO guarantees when using reliable message:
         //      1. They are guaranteed to arrive (if its possible) -> a confirmation is sent back from the client if it was received
         //      2. Reliable messages retain order, they arrive at the client in the same order they were sent from the host
         // Use this for vital game updates and messages that MUST arrive or arrive in a certain order
         RELIABLE = 8,
-        // Same as RELIABLE but will not wait for other message with the nagle timer
-        RELIABLE_NO_NAGLE = 9,
+
 
     };
 
@@ -447,7 +442,7 @@ namespace magique
         int size;         // Valid size of the data
         MessageType type; // Type of the message (very useful for handling messages on the receiver)
 
-        // Cast the payload data to an object of the given type and returns it - uses static_cast
+        // Cast the payload data to an object of the given type and returns it - uses *static_cast
         template <typename T>
         T getDataAs() const;
     };
