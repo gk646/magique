@@ -38,8 +38,11 @@ namespace magique
     // Sets the size of the update square centered on the actors
     // Entities in range will be collision checked and added to the update vector
     // Note: Entities not in range can still be updated via the EntityScript::onTick function
-    // Default: 1500
+    // Default: 2500
     void SetEntityUpdateRange(int distance);
+
+    // Returns the current update range
+    int GetEntityUpdateRange();
 
     // Sets the current lighting mode - Entities need the Occluder and Emitter components!
     // HardShadows (fast, looks nice), RayTracking (slow!,looks really nice) , None (very fast!, looks bland)

@@ -4,16 +4,6 @@
 namespace magique
 {
 
-    inline void GetMovementDeltas()
-    {
-        const auto& colVec = global::ENGINE_DATA.collisionVec;
-        auto& group = internal::POSITION_GROUP;
-        for (const auto e : colVec)
-        {
-            auto [pos, col] = group.get<PositionC, CollisionC>(e);
-        }
-    }
-
     inline void AccumulateInfo(CollisionC& col, Shape other, const CollisionInfo& info)
     {
         if (other == Shape::RECT)

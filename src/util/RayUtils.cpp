@@ -38,7 +38,7 @@ namespace magique
 
     Rectangle GetCenteredRect(const Point& center, const float width, const float height)
     {
-        return Rectangle{center.x - width, center.y - height, center.x + width, center.y + height};
+        return Rectangle{center.x - width / 2.0F, center.y - height / 2.0F, width, height};
     }
 
 

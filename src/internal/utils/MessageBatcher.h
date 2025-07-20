@@ -39,21 +39,22 @@ namespace magique
     {
         std::array<ConnectionBuffer, MAGIQUE_MAX_PLAYERS - 1> buffers{};
 
-        void batchMessage(Connection conn, const void* data, MessageType type, const int size, const SendFlag flag)
+        void batchMessage(MessageVec& vec, const Connection conn, const void* data, MessageType type, const int size,
+                          const SendFlag flag)
         {
             auto& connBuff = getConBuffer(conn);
             BatchBuffer* buffer = flag == SendFlag::RELIABLE ? &connBuff.reliable : &connBuff.unreliable;
             if (!buffer->canHold(size))
             {
-                sendConBuffer(connBuff, conn);
+                sendConBuffer(vec, connBuff, conn);
             }
             buffer->batch(data, type, size);
         }
 
-        void sendConBuffer(ConnectionBuffer& buffer, Connection conn)
+        void sendConBuffer(MessageVec& vec, ConnectionBuffer& buffer, Connection conn)
         {
-            sendBatch(buffer.reliable, conn, SendFlag::RELIABLE);
-            sendBatch(buffer.unreliable, conn, SendFlag::UNRELIABLE);
+            sendBatch(vec, buffer.reliable, conn, SendFlag::RELIABLE);
+            sendBatch(vec, buffer.unreliable, conn, SendFlag::UNRELIABLE);
         }
 
         void clearConBuffer(const Connection conn)
@@ -63,18 +64,26 @@ namespace magique
             buff.unreliable.clear();
         }
 
-        void sendAll()
+        void clear()
         {
-            for (const auto conn : GetCurrentConnections())
+            for (auto& buffer : buffers)
             {
-                sendConBuffer(getConBuffer(conn), conn);
+                buffer.reliable.clear();
+                buffer.unreliable.clear();
             }
         }
 
-        void handleBatchedPacket(const Message& message)
+        void sendAll(MessageVec& vec)
+        {
+            for (const auto conn : GetCurrentConnections())
+            {
+                sendConBuffer(vec, getConBuffer(conn), conn);
+            }
+        }
+
+        void handleBatchedPacket(std::vector<Message>& vec, const Message& message)
         {
             MAGIQUE_ASSERT(message.payload.size < BatchBuffer::BUFF_SIZE, "Invalid batched packet");
-            auto& vec = global::MP_DATA.incMsgVec;
             // already skipped the type
             const auto* data = static_cast<const unsigned char*>(message.payload.data);
             int off = 0;
@@ -104,10 +113,11 @@ namespace magique
             }
         }
 
+
     private:
         ConnectionBuffer& getConBuffer(const Connection conn) { return buffers[GetConnectionNum(conn)]; }
 
-        void sendBatch(BatchBuffer& buffer, Connection conn, SendFlag flag)
+        void sendBatch(MessageVec& outMsgBuf, BatchBuffer& buffer, Connection conn, SendFlag flag)
         {
             if (buffer.size == 0)
                 return;
@@ -122,7 +132,7 @@ namespace magique
             msg->m_conn = static_cast<HSteamNetConnection>(conn);
 
             // sent later
-            global::MP_DATA.outMsgBuffer.push_back(msg);
+            outMsgBuf.push_back(msg);
             buffer.clear();
         }
     };

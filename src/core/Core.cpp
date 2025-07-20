@@ -46,6 +46,8 @@ namespace magique
         global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
     }
 
+    int GetEntityUpdateRange() { return (int)global::ENGINE_CONFIG.entityUpdateDistance; }
+
     void SetEntityCacheDuration(const int ticks)
     {
         global::ENGINE_CONFIG.entityCacheDuration = static_cast<uint16_t>(ticks);
@@ -66,7 +68,7 @@ namespace magique
 
     float GetEngineTime() { return global::ENGINE_DATA.engineTime; }
 
-    uint32_t GetEngineTick() {return global::ENGINE_DATA.engineTicks;}
+    uint32_t GetEngineTick() { return global::ENGINE_DATA.engineTicks; }
 
     void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 

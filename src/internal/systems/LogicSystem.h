@@ -83,7 +83,7 @@ namespace magique
                            int& actorCount)
     {
         const auto& registry = internal::REGISTRY;
-        const auto& updateDist = global::ENGINE_CONFIG.entityUpdateDistance;
+        const auto updateDist = global::ENGINE_CONFIG.entityUpdateDistance;
         const auto view = registry.view<const ActorC, const PositionC>();
 
         for (const auto actor : view)

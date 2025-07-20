@@ -143,7 +143,7 @@ namespace magique
 
     //================= CLIENT-MODE =================//
 
-    // Puts this game into client mode - all game simulation is skipped except rendering
+    // Puts this game into client mode - all game simulation (should) is skipped except rendering
     // Comprehensive list of things that are SKIPPED in ClientMode:
     //      - Dynamic and Static collisions
     //      - ALL scripting event methods

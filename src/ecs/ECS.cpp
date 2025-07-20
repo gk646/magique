@@ -125,7 +125,7 @@ namespace magique
     entt::entity CreateEntityEx(const entt::entity id, const EntityType type, const float x, const float y,
                                 const MapID map, const int rot, const bool withFunc)
     {
-
+        MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
         return CreateEntityInternal(id, type, x, y, map, rot, withFunc);
     }
 

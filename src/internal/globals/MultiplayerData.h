@@ -20,6 +20,10 @@
 #error "Using Networking without enabling it in CMake! Set the networking status in CMakeLists.txt in the root!"
 #endif
 
+using MessageVec = magique::vector<SteamNetworkingMessage_t*>;
+
+#include "internal/utils/MessageBatcher.h"
+
 inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
     if (eType == k_ESteamNetworkingSocketsDebugOutputType_Msg)
@@ -165,14 +169,15 @@ namespace magique
         }
     };
 
+
     struct MultiplayerData final
     {
         MultiplayerCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
-        vector<SteamNetworkingMessage_t*> outMsgBuffer;                 // Outgoing message buffer
-        vector<SteamNetworkingMessage_t*> incMsgBuffer;                 // Incoming message buffer
+        MessageVec outMsgBuffer;                                        // Outgoing message buffer
+        MessageVec incMsgBuffer;                                        // Incoming message buffer
         ConnNumberMapping numberMapping{};                              // Maps connection to a consistent number
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
@@ -221,6 +226,7 @@ namespace magique
                 numberMapping.addConnection(conn);
             }
             isHost = asHost;
+            global::BATCHER.clear();
         }
 
         void goOffline()
@@ -249,13 +255,23 @@ namespace magique
             isInSession = false;
             numberMapping.clear();
             global::LOBBY_DATA.closeLobby();
+            global::BATCHER.clear();
         }
 
         void update() const
         {
 #ifndef MAGIQUE_STEAM
-                SteamNetworkingSockets()->RunCallbacks();
+            SteamNetworkingSockets()->RunCallbacks();
 #endif
+        }
+
+        // Called if host and a client disconnects or is removed
+        void onClientDisconnected(Connection client)
+        {
+            global::BATCHER.clearConBuffer(client);
+            numberMapping.removeConnection(client);
+            UnorderedDelete(connectionMapping, ConnMapping{client, entt::entity{0}}, ConnMapping::DeleteFunc);
+            UnorderedDelete(connections, client);
         }
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
@@ -317,13 +333,11 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
                 if (isHost)
                 {
-                    UnorderedDelete(connections, conn);
                     if (callback)
                     {
                         callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED, conn);
                     }
-                    numberMapping.removeConnection(conn);
-                    UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
+                    onClientDisconnected(conn);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
                 }
                 else // If you're a client and the host disconnects
@@ -346,13 +360,11 @@ namespace magique
                 const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
-                    UnorderedDelete(connections, conn);
                     if (callback)
                     {
                         callback(MultiplayerEvent::HOST_LOCAL_PROBLEM, conn);
                     }
-                    numberMapping.removeConnection(conn);
-                    UnorderedDelete(connectionMapping, ConnMapping{conn, entt::entity{0}}, ConnMapping::DeleteFunc);
+                    onClientDisconnected(conn);
                     LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
                 }
                 else

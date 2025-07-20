@@ -234,6 +234,32 @@ namespace magique
             setFps.addParam("fpsLimit", {ParamType::NUMBER});
             setFps.setFunction([](const ParamList& params) { SetTargetFPS(params.front().getInt()); });
             RegisterConsoleCommand(setFps);
+
+            Command fullscreen{"m.toggleFullscreen", "Toggles fullscreen on or off "};
+            fullscreen.setFunction([](const ParamList& params)
+            {
+                ToggleFullscreen();
+            });
+            RegisterConsoleCommand(fullscreen);
+
+            Command setWindowSize{"m.setWindowSize", "Sets the window size of the window"};
+            setWindowSize.addParam("x", {ParamType::NUMBER});
+            setWindowSize.addParam("y", {ParamType::NUMBER});
+            setWindowSize.setFunction([](const ParamList& params)
+            {
+                SetWindowSize(params.front().getInt(), params.back().getInt());
+            });
+            RegisterConsoleCommand(setWindowSize);
+
+            Command version{"m.version", "Prints the engine version"};
+            version.setFunction([](const ParamList& params)
+            {
+                AddConsoleString(MAGIQUE_VERSION);
+            });
+            RegisterConsoleCommand(version);
+
+
+
 #ifndef MAGIQUE_TEST_MODE
             SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
 #endif

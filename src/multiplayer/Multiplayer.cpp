@@ -6,15 +6,10 @@
 
 #include "internal/globals/MultiplayerData.h"
 #include "internal/globals/EngineConfig.h"
-#include "internal/utils/MessageBatcher.h"
 
 namespace magique
 {
-    void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
-    void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
-
-    bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
     Payload CreatePayload(const void* data, const int size, const MessageType type) { return Payload{data, size, type}; }
 
@@ -24,7 +19,8 @@ namespace magique
         MAGIQUE_ASSERT(payload.size > 0, "Passed invalid input parameters");
         MAGIQUE_ASSERT(flag == SendFlag::UNRELIABLE || flag == SendFlag::RELIABLE, "Passed invalid input parameters");
 
-        if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
+        // This can cause runtime crash
+        if (payload.data == nullptr || payload.size > BatchBuffer::BUFF_SIZE) [[unlikely]]
         {
             LOG_WARNING("Invalid payload data");
             return;
@@ -33,7 +29,8 @@ namespace magique
         {
             return;
         }
-        global::BATCHER.batchMessage(conn, payload.data, payload.type, payload.size, flag);
+        auto& data = global::MP_DATA;
+        global::BATCHER.batchMessage(data.outMsgBuffer, conn, payload.data, payload.type, payload.size, flag);
     }
 
     void BatchMessageToAll(const Payload payload, const SendFlag flag)
@@ -47,7 +44,7 @@ namespace magique
     void SendBatch()
     {
         auto& data = global::MP_DATA;
-        global::BATCHER.sendAll();
+        global::BATCHER.sendAll(data.outMsgBuffer);
         if (data.outMsgBuffer.empty()) [[unlikely]]
             return;
         const auto size = data.outMsgBuffer.size();
@@ -141,7 +138,7 @@ namespace magique
                 // Batched message
                 if (message.payload.type == MessageType{UINT8_MAX - 1}) [[likely]]
                 {
-                    global::BATCHER.handleBatchedPacket(message);
+                    global::BATCHER.handleBatchedPacket(data.incMsgVec, message);
                     continue;
                 }
                 // Lobby message handling - reserved message type
@@ -240,22 +237,10 @@ namespace magique
 
     int GetConnectionNum(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
 
-    bool GetSteamLoaded()
-    {
-#ifdef MAGIQUE_STEAM
-        return true;
-#else
-        return false;
-#endif
-    }
+    void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
-    bool GetNetworkingSocketsLoaded()
-    {
-#ifdef MAGIQUE_LAN
-        return true;
-#else
-        return false;
-#endif
-    }
+    void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
+
+    bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
 } // namespace magique
