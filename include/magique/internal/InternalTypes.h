@@ -59,24 +59,25 @@ namespace magique::internal
         void* tickFunc = nullptr;
 
         //================= EMISSION SHAPE =================//
-        float emX = 0, emY = 0;
-        float emp1 = 0; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float emp2 = 0; // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
+        mutable Point emissionPos{0, 0};  // RECT: width/height  / CIRCLE: radius
+        Point emissionDims{1, 1}; // RECT: width/height  / CIRCLE: radius
+        Point anchor;
 
         //================= PARTICLE =================//
-        float p1 = 5.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 5.0F; // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
+        float p1 = 5.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius
+        float p2 = 5.0F; // RECT: height                   / CAPSULE: height
 
-        int colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{-1}; // Color pool
-        float minScale = 1, maxScale = 1;                // Scale
-        float minInitVeloc = 1, maxInitVeloc = 1;        // Initial velocity
-        float dirX = 0, dirY = -1;                       // Direction
-        float spreadAngle = 0;                           // Spread angle around the direction
-        float gravX = 0, gravY = 0;                      // Gravity in x and y direction
-        uint16_t minLife = 100, maxLife = 100;           // Total lifetime
-        bool resolutionScaling = true;                   // resolution scaling
+        int colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{}; // Color pool
+        float minScale = 1, maxScale = 1;              // Scale
+        float minInitVeloc = 1, maxInitVeloc = 1;      // Initial velocity
+        Point direction{};                             // Direction
+        float rotation = 0;                            // Rotation around the anchor
+        float volume = 1;                              // How much of the body will be treated as spawnable area
+        float spreadAngle = 0;                         // Spread angle around the direction
+        float gravX = 0, gravY = 0;                    // Gravity in x and y direction
+        uint16_t minLife = 100, maxLife = 100;         // Total lifetime
+        bool resolutionScaling = true;                 // resolution scaling
+        uint8_t poolSize = 0;
         Shape shape = Shape::RECT;
         Shape emShape = Shape::CAPSULE;       // Default is point emission
         uint8_t r = 255, g = 0, b = 0, a = 1; // Color

@@ -61,7 +61,7 @@ if (WIN32)
         target_compile_options(magique PUBLIC /std:c++20 /Zc:preprocessor)
     endif ()
 elseif (UNIX)
-    target_compile_options(magique PUBLIC -std=c++20 -flto=auto -fno-rtti)
+    target_compile_options(magique PUBLIC -flto=auto -fno-rtti)
 else ()
     #
 endif ()

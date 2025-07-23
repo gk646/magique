@@ -112,7 +112,7 @@ namespace magique
     // Returns the time since startup - updated at the start of each tick
     float GetEngineTime();
 
-    // Returns the ticks since startup - updated at the start of each tick
+    // Returns the logic ticks since startup - updated at the start of each logic tick (MAGIQUE_LOGIC_TICKS)
     // Note: Can also be used to track if a tick passed
     uint32_t GetEngineTick();
 

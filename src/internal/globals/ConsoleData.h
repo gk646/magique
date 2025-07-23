@@ -7,6 +7,7 @@
 
 #include <magique/core/Debug.h>
 #include <magique/core/Game.h>
+#include <magique/core/Core.h>
 #include <magique/gamedev/Console.h>
 #include <magique/util/RayUtils.h>
 #include <magique/util/Math.h>
@@ -28,7 +29,7 @@ namespace magique
 
     struct ConsoleHandler final
     {
-        static constexpr float HEIGHT_P = 0.3F; // 30% of height is console - 100% of the width ...
+        static constexpr float HEIGHT_P = 0.4F; // 40% of height is console - 100% of the width ...
         static constexpr int CURSOR_BLINK_TICKS = 30;
         static constexpr float SPACING = 0.5F;
 
@@ -84,6 +85,7 @@ namespace magique
         int blinkCounter = 0;       //
         int suggestionPos = 0;      // which entry of suggestions to pick
         float maxSuggestionLen = 0; // Maximum length of the longest suggestion text
+        float renderOffset = 0;     // Render offset
         bool showConsole = false;
         bool showCursor = false;
         bool foundCommand = false; // Command is specified and user is typing parameters currently
@@ -236,29 +238,23 @@ namespace magique
             RegisterConsoleCommand(setFps);
 
             Command fullscreen{"m.toggleFullscreen", "Toggles fullscreen on or off "};
-            fullscreen.setFunction([](const ParamList& params)
-            {
-                ToggleFullscreen();
-            });
+            fullscreen.setFunction([](const ParamList& params) { ToggleFullscreen(); });
             RegisterConsoleCommand(fullscreen);
 
             Command setWindowSize{"m.setWindowSize", "Sets the window size of the window"};
             setWindowSize.addParam("x", {ParamType::NUMBER});
             setWindowSize.addParam("y", {ParamType::NUMBER});
             setWindowSize.setFunction([](const ParamList& params)
-            {
-                SetWindowSize(params.front().getInt(), params.back().getInt());
-            });
+                                      { SetWindowSize(params.front().getInt(), params.back().getInt()); });
             RegisterConsoleCommand(setWindowSize);
 
             Command version{"m.version", "Prints the engine version"};
-            version.setFunction([](const ParamList& params)
-            {
-                AddConsoleString(MAGIQUE_VERSION);
-            });
+            version.setFunction([](const ParamList& params) { AddConsoleString(MAGIQUE_VERSION); });
             RegisterConsoleCommand(version);
 
-
+            Command uptime{"m.uptime", "Prints the current uptime"};
+            uptime.setFunction([](const ParamList& params) { AddConsoleStringF("Uptime: %.2f sec", GetEngineTime()); });
+            RegisterConsoleCommand(uptime);
 
 #ifndef MAGIQUE_TEST_MODE
             SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
@@ -329,6 +325,7 @@ namespace magique
             }
             line.clear();
             suggestions.clear();
+            renderOffset = 0.0F;
         }
 
         void addString(const char* string, Color color = global::ENGINE_CONFIG.theme.textPassive)
@@ -341,7 +338,7 @@ namespace magique
             constexpr int MAX_LEN = 128;
             char buf[MAX_LEN]{};
             vsnprintf(buf, MAX_LEN, fmt, va_args);
-            consoleLines.emplace_front(buf, color);
+            addString(buf, color);
         }
 
         // Saves allocations by reusing the string
@@ -438,16 +435,15 @@ namespace magique
             DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.textActive);
             if (data.showCursor)
             {
-                const float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, SPACING);
+                float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, SPACING) - fsize * 0.2F;
                 DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.textPassive);
             }
 
+            BeginScissorMode(0, 0, (int)cWidth, (int)cHeight - (int)lineHeight);
             // Draw console text
-            textPos.y -= lineHeight; // Start one line up for console strings
+            textPos.y -= lineHeight - data.renderOffset; // Start one line up for console strings
             for (const auto& line : data.consoleLines)
             {
-                if (textPos.y < 0)
-                    break;
                 DrawTextEx(font, line.text.c_str(), textPos, fsize, SPACING, line.color);
                 textPos.y -= lineHeight;
             }
@@ -475,6 +471,7 @@ namespace magique
                     textPos.y -= lineHeight;
                 }
             }
+            EndScissorMode();
         }
     }
 
@@ -567,6 +564,13 @@ namespace magique
                 }
                 cursorPos = static_cast<int>(data.line.size());
             }
+        }
+        const auto cWidth = static_cast<float>(GetScreenWidth());
+        const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
+        const Rectangle cRect = {0, 0, cWidth, cHeight};
+        if (CheckCollisionPointRec(GetMousePosition(), cRect))
+        {
+            data.renderOffset = std::max(0.0F, data.renderOffset + GetMouseWheelMoveV().y * 10.0F);
         }
     }
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(asteroids)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 # Set the path to the magique directory
 # Note: This is used when the magique directory is outside your project root directory

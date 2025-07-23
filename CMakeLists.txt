@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique LANGUAGES CXX C)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE  ON)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(MAGIQUE_VERSION "0.6.2")
 
 # Set CMake modules directory - path searched when using include()

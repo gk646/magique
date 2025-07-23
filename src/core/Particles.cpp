@@ -7,14 +7,18 @@
 #include <magique/core/Core.h>
 
 #include "internal/globals/ParticleData.h"
+#include "magique/core/CollisionDetection.h"
+#include "magique/util/Math.h"
+#include "magique/util/RayUtils.h"
 
 namespace magique
 {
     void DrawParticles() { global::PARTICLE_DATA.render(); }
 
-    void CreateScreenParticle(const ScreenEmitter& emitter, const int amount)
+    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& pos, const int amount)
     {
         const auto& data = emitter.data;
+        data.emissionPos = pos;
         for (int i = 0; i < amount; ++i)
         {
             ScreenParticle particle;
@@ -24,20 +28,60 @@ namespace magique
             switch (data.emShape) //  No triangle emission shape
             {
             case Shape::RECT:
-                particle.x = static_cast<float>(GetRandomValue(static_cast<int>(data.emX), static_cast<int>(data.emp1)));
-                particle.y = static_cast<float>(GetRandomValue(static_cast<int>(data.emY), static_cast<int>(data.emp2)));
+                {
+                    const auto ran1 = GetRandomFloat(0.0F, 1.0F);
+                    const auto ran2 = GetRandomFloat(0.0F, 1.0F);
+                    if (data.volume == 1.0F)
+                    {
+                        particle.pos = {ran1 * data.emissionDims.x, ran2 * data.emissionDims.y};
+                    }
+                    else
+                    {
+                        const auto mult = data.volume; // Already calculated in the setter
+                        // Distributed by splitting up outer rectangle in 4 rectangles
+                        // Two long ones  above and bottom - and then the two sides (so they dont overlap)
+                        auto rect = GetRandomValue(0, 3);
+                        if (rect == 0) // top rect
+                        {
+                            particle.pos.x = data.emissionDims.x * ran1;
+                            particle.pos.y = (data.emissionDims.y - data.emissionDims.y * mult) * 0.5F * ran2;
+                        }
+                        else if (rect == 1) // bottom rect
+                        {
+                            particle.pos.x = data.emissionDims.x * ran1;
+                            particle.pos.y =
+                                data.emissionDims.y - ((data.emissionDims.y - data.emissionDims.y * mult) * 0.5F * ran2);
+                        }
+                        else if (rect == 2) // left
+                        {
+                            particle.pos.x = (data.emissionDims.x - data.emissionDims.x * mult) * 0.5F * ran1;
+                            particle.pos.y = data.emissionDims.y * ran2;
+                        }
+                        else // right
+                        {
+                            particle.pos.x =
+                                data.emissionDims.x - (data.emissionDims.x - data.emissionDims.x * mult) * 0.5F * ran1;
+                            particle.pos.y = data.emissionDims.y * ran2;
+                        }
+                    }
+                    particle.pos += pos;
+                    if (data.rotation != 0)
+                    {
+                        RotatePoints(data.rotation, data.anchor + pos, particle.pos, particle.pos, particle.pos,
+                                     particle.pos);
+                    }
+                }
                 break;
             case Shape::CIRCLE:
                 {
-                    const float angle = static_cast<float>(GetRandomValue(0, 360)) * (PI / 180.0f);
-                    const float dist = data.emp1 * std::sqrt(static_cast<float>(GetRandomValue(0, 100)) / 100.0F);
-                    particle.x = dist *std::cos(angle);
-                    particle.y = dist * std::sin(angle);
+                    const float angle = GetRandomFloat(0, 360) * (PI / 180.0f);
+                    const float dist =
+                        data.emissionDims.x - data.emissionDims.x * (1.0F - data.volume) * GetRandomFloat(0, 1.0F);
+                    particle.pos = {pos.x + dist * std::cos(angle), pos.y + dist * std::sin(angle)};
                 }
                 break;
             case Shape::CAPSULE: // Acts as point type
-                particle.x = data.emX;
-                particle.y = data.emY;
+                particle.pos = pos;
                 break;
             case Shape::TRIANGLE:
                 MAGIQUE_ASSERT(false, "Triangle not implemented");
@@ -50,51 +94,45 @@ namespace magique
             particle.scale = data.minScale;
             if (data.minScale != data.maxScale)
             {
-                const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                const float p = GetRandomFloat(0, 1.0F);
                 particle.scale = data.minScale + (data.maxScale - data.minScale) * p;
             }
 
             // p1,p2,p3,p4
             particle.p1 = static_cast<int16_t>(std::round(data.p1));
             particle.p2 = static_cast<int16_t>(std::round(data.p2));
-            particle.p3 = static_cast<int16_t>(std::round(data.p3));
-            particle.p4 = static_cast<int16_t>(std::round(data.p4));
 
             // Lifetime
             particle.lifeTime = data.minLife;
             if (data.minLife != data.maxLife)
             {
-                const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                const float p = GetRandomFloat(0, 1.0F);
                 particle.lifeTime = static_cast<uint16_t>((float)(data.minLife + (data.maxLife - data.minLife)) * p);
             }
 
             // Spread
-            float dirX = data.dirX;
-            float dirY = data.dirY;
+            Point direction = data.direction;
             if (data.spreadAngle > 0)
             {
-                const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
-                const float spreadAngle = (-data.spreadAngle / 2.0F + data.spreadAngle * p) * DEG2RAD;
-                const float currentAngle = std::atan2(data.dirY, data.dirX);
-                const float newAngle = currentAngle + spreadAngle;
-                dirX = std::cos(newAngle);
-                dirY = std::sin(newAngle);
+                float angleOff = GetRandomFloat(-0.5F, 0.5F) * data.spreadAngle;
+                float newAngle = GetAngleFromPoints({}, direction) + angleOff;
+                direction = GetDirectionFromAngle(newAngle);
             }
 
             // vx,vy - velocity
             float velo = data.minInitVeloc;
             if (data.minInitVeloc != data.maxInitVeloc)
             {
-                const float p = static_cast<float>(GetRandomValue(0, 100)) / 100.0F;
+                const float p = GetRandomFloat(0.0F, 1.0F);
                 velo = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
             }
-            particle.vx = velo * dirX;
-            particle.vy = velo * dirY;
+            particle.vx = velo * direction.x;
+            particle.vy = velo * direction.y;
 
             // Color
-            if (data.colors[0] != -1) // Use pool
+            if (data.poolSize > 0) // Use pool
             {
-                const int p = GetRandomValue(0, data.r - 1);
+                const int p = GetRandomValue(0, data.poolSize - 1);
                 const auto color = GetColor(data.colors[p]);
                 particle.r = color.r;
                 particle.g = color.g;
@@ -121,19 +159,12 @@ namespace magique
 
     //----------------- EMITTER -----------------//
 
-    EmitterBase& EmitterBase::setEmissionPosition(const float x, const float y)
-    {
-        data.emX = x;
-        data.emY = y;
-        return *this;
-    }
-
     EmitterBase& EmitterBase::setEmissionShape(const Shape shape, const float width, const float height,
                                                const float radius)
     {
         if (!(shape == Shape::RECT || shape == Shape::CIRCLE))
         {
-            LOG_ERROR("This emissionshape is not supported!");
+            LOG_ERROR("This emission shape is not supported!");
             return *this;
         }
 
@@ -146,17 +177,41 @@ namespace magique
         data.emShape = shape;
         if (shape == Shape::RECT)
         {
-            data.emp1 = width;
-            data.emp2 = height;
+            data.emissionDims = {width, height};
         }
         else
         {
-            data.emp1 = radius;
+            data.emissionDims = {radius, radius};
         }
         return *this;
     }
 
+    EmitterBase& EmitterBase::setEmissionRotation(const int angle)
+    {
+        data.rotation = angle % 360;
+        return *this;
+    }
+
     //----------------- PARTICLE -----------------//
+
+    EmitterBase& EmitterBase::setEmissionRotationAnchor(const Point& anchor)
+    {
+        data.anchor = anchor;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setEmissionShapeVolume(float percent)
+    {
+        if (percent < 0 || percent > 100)
+        {
+            LOG_ERROR("Invalid percent value!");
+            return *this;
+        }
+        if (percent == 0)
+            percent = 0.001;
+        data.volume = std::sqrt(1.0F - percent / 100.0F);
+        return *this;
+    }
 
     EmitterBase& EmitterBase::setParticleShapeRect(const float width, const float height)
     {
@@ -173,23 +228,13 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setParticleShapeTri(const Point p2, const Point p3)
-    {
-        data.shape = Shape::TRIANGLE;
-        data.p1 = p2.x;
-        data.p2 = p2.y;
-        data.p3 = p3.x;
-        data.p4 = p3.y;
-        return *this;
-    }
-
     EmitterBase& EmitterBase::setColor(const Color& color)
     {
         data.r = color.r;
         data.g = color.g;
         data.b = color.b;
         data.a = color.a;
-        data.colors[0] = -1; // Signal not using color pool
+        data.poolSize = 0; // Signal not using color pool
         return *this;
     }
 
@@ -209,13 +254,12 @@ namespace magique
         int i = 0;
         for (const auto c : colors)
         {
+            if (i >= 5)
+                break;
             data.colors[i] = ColorToInt(c);
             ++i;
-            if (i > 5)
-                break;
         }
-        data.r = static_cast<uint8_t>(colors.size()); // Save valid size in r
-
+        data.poolSize = static_cast<uint8_t>(colors.size());
         return *this;
     }
 
@@ -262,15 +306,14 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setDirection(const float x, const float y)
+    EmitterBase& EmitterBase::setDirection(const Point& direction)
     {
-        if (std::abs(x) + std::abs(y) != 1)
+        if (direction != 0 && std::abs(direction.x) + std::abs(direction.y) > 1.43F)
         {
-            LOG_ERROR("Given vector isnt not a normalized direction vector! (x and y has to add up to 1)");
+            LOG_ERROR("Given vector isnt not a normalized direction vector!");
             return *this;
         }
-        data.dirX = x;
-        data.dirY = y;
+        data.direction = direction;
         return *this;
     }
 
@@ -330,6 +373,6 @@ namespace magique
     {
         return [](const float scale, const float t) -> float { return scale * (t * t * (3 - 2 * t)); };
     }
-
+    const internal::EmitterData& EmitterBase::getData() const { return data; }
 
 } // namespace magique

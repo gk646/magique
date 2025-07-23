@@ -18,7 +18,6 @@ namespace magique
     {
         vector<ScreenParticle> rectangles;
         vector<ScreenParticle> circles;
-        vector<ScreenParticle> triangles;
 
         void addParticle(const ScreenParticle& sp)
         {
@@ -31,7 +30,7 @@ namespace magique
                 LOG_FATAL("Method not implemented");
                 break;
             case Shape::TRIANGLE:
-                triangles.push_back(sp);
+                LOG_ERROR("Shape not supported");
                 break;
             case Shape::CAPSULE:
                 LOG_ERROR("Shape not supported");
@@ -58,18 +57,10 @@ namespace magique
             for (const auto& p : rectangles)
             {
                 rlColor4ub(p.r, p.g, p.b, p.a);
-                rlVertex2f(p.x, p.y);
-                rlVertex2f(p.x, p.y + p.p2 * p.scale);
-                rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
-                rlVertex2f(p.x + p.p1 * p.scale, p.y);
-            }
-
-            for (const auto& p : triangles)
-            {
-                rlColor4ub(p.r, p.g, p.b, p.a);
-                rlVertex2f(p.x, p.y);
-                rlVertex2f(p.x + p.p1 * p.scale, p.y + p.p2 * p.scale);
-                rlVertex2f(p.x + p.p3 * p.scale, p.y + p.p4 * p.scale);
+                rlVertex2f(p.pos.x, p.pos.y);
+                rlVertex2f(p.pos.x, p.pos.y + p.p2 * p.scale);
+                rlVertex2f(p.pos.x + p.p1 * p.scale, p.pos.y + p.p2 * p.scale);
+                rlVertex2f(p.pos.x + p.p1 * p.scale, p.pos.y);
             }
 
             rlEnd();
@@ -93,8 +84,8 @@ namespace magique
                     {
                         const auto& emitter = p.emitter->data;
                         ++p.age;
-                        p.x += p.vx;
-                        p.y += p.vy;
+                        p.pos.x += p.vx;
+                        p.pos.y += p.vy;
 
                         p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
                         p.vy += emitter.gravY;
@@ -117,7 +108,6 @@ namespace magique
                 }
             };
             updateVec(rectangles);
-            updateVec(triangles);
             updateVec(circles);
         }
     };

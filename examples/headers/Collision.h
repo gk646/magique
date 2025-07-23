@@ -9,6 +9,7 @@
 #include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
 #include <magique/util/RayUtils.h>
+#include <magique/util/Logging.h>
 
 // Recommended
 using namespace magique;
@@ -27,26 +28,28 @@ struct TestCompC final
     bool isColliding = false;
 };
 
+bool DISABLE_MOVEMENT = false;
+
 // Custom Script to enable WASD movement
 struct PlayerScript final : EntityScript
 {
     // Called if any keystate changed
     void onKeyEvent(entt::entity self) override
     {
+        float speed = 2.0F;
         auto& pos = GetComponent<PositionC>(self); // Retrieve the position component - implicit for each entity
         if (IsKeyDown(KEY_W))
-            pos.y -= 2.5F;
+            pos.y -= speed;
         if (IsKeyDown(KEY_S))
-            pos.y += 2.5F;
+            pos.y += speed;
         if (IsKeyDown(KEY_A))
-            pos.x -= 2.5F;
+            pos.x -= speed;
         if (IsKeyDown(KEY_D))
-            pos.x += 2.5F;
+            pos.x += speed;
     }
 
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        info.penDepth *= 0.5F;
         AccumulateCollision(info);
     }
 };
@@ -59,6 +62,9 @@ struct ObjectScript final : EntityScript // Moving platform
         auto& myComp = GetComponent<TestCompC>(self);
         myComp.isColliding = false; // Reset collision flag
         auto& pos = GetComponent<PositionC>(self);
+
+        if (DISABLE_MOVEMENT)
+            return;
         if (myComp.counter > 100)
         {
             pos.x++;
@@ -79,8 +85,7 @@ struct ObjectScript final : EntityScript // Moving platform
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         GetComponent<TestCompC>(self).isColliding = true; // Set the collide flag to color the entity
-        info.penDepth *= 0.5F;
-        AccumulateCollision(info); // Accumulates the collision info to resolve the collision
+        // AccumulateCollision(info);                        // Accumulates the collision info to resolve the collision
     }
 };
 
@@ -98,7 +103,7 @@ struct Example final : Game
         {
             GiveActor(e);
             GiveCamera(e);
-            GiveCollisionRect(e, 20, 20);
+            GiveCollisionRect(e,25, 25);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(PLAYER, playerFunc);
@@ -106,7 +111,7 @@ struct Example final : Game
         // Create moving objects
         const auto objFunc = [](entt::entity e, EntityType type)
         {
-            const int shapeNum = GetRandomValue(0, 100);
+            const int shapeNum = GetRandomValue(0, 11);
             if (shapeNum < 25)
             {
                 GiveCollisionRect(e, 25, 25);
@@ -123,7 +128,7 @@ struct Example final : Game
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 360);
+            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 0);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
@@ -131,11 +136,21 @@ struct Example final : Game
         SetEntityScript(PLAYER, new PlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
 
-        CreateEntity(PLAYER, 0, 0, MapID(0));
+        auto player = CreateEntity(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomFloat(-500, 500), GetRandomFloat(-500, 500), MapID(0));
+            // CreateEntity(OBJECT, GetRandomFloat(-500, 500), GetRandomFloat(-500, 500), MapID(0));
         }
+
+        CreateEntity(OBJECT, 50, 0, MapID(0));
+        CreateEntity(OBJECT, 50, 25, MapID(0));
+        CreateEntity(OBJECT, 50, 50, MapID(0));
+        CreateEntity(OBJECT, 50, 75, MapID(0));
+        CreateEntity(OBJECT, 50, 100, MapID(0));
+
+        CreateEntity(OBJECT, 25, -55, MapID(0));
+        CreateEntity(OBJECT, 0, -100, MapID(0));
+        GetComponent<CollisionC>(player).weight = 100;
     }
 
     void drawGame(GameState /**/, Camera2D& camera2D) override
@@ -143,11 +158,14 @@ struct Example final : Game
         BeginMode2D(camera2D); // Start drawing in respect to the camera
 
         DrawRectangle(250, 250, 250, 75, RED);
-        DrawTextEx(GetFont(), "This is stationary object\n for reference", {250, 250}, 17, 1, WHITE);
-        DrawTextEx(GetFont(), "Shape and Rotation of all objects is random", {0, -25}, 17, 1, BLACK);
+        auto& font = GetEngineFont();
+        DrawTextEx(font, "This is stationary object\n for reference", {250, 250}, 17, 1, WHITE);
+        DrawTextEx(font, "Shape and Rotation of all objects is random", {0, -25}, 17, 1, BLACK);
+        DrawTextEx(font, "Press SPACE to toggle moving obstacles", {0, -50}, 17, 1, BLACK);
 
         for (const auto e : GetDrawEntities())
         {
+            continue;
             const auto& pos = GetComponent<const PositionC>(e);
             const auto& col = GetComponent<const CollisionC>(e);
             const auto& test = GetComponent<const TestCompC>(e);
@@ -175,9 +193,9 @@ struct Example final : Game
 
     void updateGame(GameState gameState) override
     {
-        for (const auto e : GetUpdateEntities())
+        if (IsKeyPressed(KEY_SPACE))
         {
-            auto& pos = GetComponent<PositionC>(e);
+            DISABLE_MOVEMENT = !DISABLE_MOVEMENT;
         }
     }
 };

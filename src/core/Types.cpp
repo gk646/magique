@@ -8,6 +8,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
+#include <magique/util/Math.h>
 #include <magique/internal/Macros.h>
 
 #include "internal/utils/CollisionPrimitives.h"
@@ -96,9 +97,23 @@ namespace magique
     Point& Point::normalize()
     {
         auto magnitude = x * x + y * y;
-        SquareRoot(magnitude);
-        x /= magnitude;
-        y /= magnitude;
+        if (magnitude != 0) [[likely]]
+        {
+            SquareRoot(magnitude);
+            x /= magnitude;
+            y /= magnitude;
+        }
+        return *this;
+    }
+
+    Point& Point::normalizeManhattan()
+    {
+        const auto magnitude = std::abs(x) + std::abs(y);
+        if (magnitude != 0) [[likely]]
+        {
+            x /= magnitude;
+            y /= magnitude;
+        }
         return *this;
     }
 
@@ -108,10 +123,18 @@ namespace magique
         y = std::round(y);
         return *this;
     }
+
     Point& Point::floor()
     {
         x = std::floor(x);
         y = std::floor(y);
+        return *this;
+    }
+
+    Point& Point::clamp(const float min, const float max)
+    {
+        x = magique::clamp(x, min, max);
+        y = magique::clamp(y, min, max);
         return *this;
     }
 

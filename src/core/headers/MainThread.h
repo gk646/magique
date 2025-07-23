@@ -34,12 +34,12 @@ namespace magique::mainthread
             {
                 auto time = GetTime();
                 data.engineTime = static_cast<float>(time);
-                data.engineTicks++;
 
                 WakeUpJobs();
 
                 if (UPDATE_WORK >= 1.0)
                 {
+                    data.engineTicks++;
                     UPDATE_WORK -= 1.0;
                     UPDATE_TIME = updater::Tick(time, registry, game);
                     time += UPDATE_TIME; // Avoids calling GetTime() multiple times

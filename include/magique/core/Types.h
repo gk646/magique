@@ -49,14 +49,20 @@ namespace magique
 
         [[nodiscard]] Vector2 v() const;
 
-        // Vector normalization
+        // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
+
+        // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
+        Point& normalizeManhattan();
 
         // uses std::round() to round to the nearest whole number
         Point& round();
 
         // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
         Point& floor();
+
+        // Clamps both values inside the given range - if outside the range will be set to the closes point in range
+        Point& clamp(float min, float max);
     };
 
     //================= CORE =================//
@@ -588,11 +594,9 @@ namespace magique
 
     struct ScreenParticle final
     {
-        float x, y;                   // Position
-        int16_t p1;                   // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        int16_t p2;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
-        int16_t p3;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
-        int16_t p4;                   // RECT: height                   / CAPSULE: height  / TRIANGLE: offsetY
+        Point pos;
+        int16_t p1;                   // RECT: width  / CIRCLE: radius
+        int16_t p2;                   // RECT: height
         float vx, vy;                 // Velocity
         float scale;                  // Current scale
         uint16_t age;                 // Current age

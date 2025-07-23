@@ -30,11 +30,13 @@ namespace magique
 
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
-    void CreateScreenParticle(const ScreenEmitter& emitter, int amount = 1);
+    // Sets the position of the emission shape - top left for rect, middle point for circle
+    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
 
     // Adds an entity particle to the ECS
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
-    entt::entity CreateEntityParticle(const EntityEmitter& emitter, int amount = 1);
+    // Sets the position of the emission shape - top left for rect, middle point for circle
+    entt::entity CreateEntityParticle(const EntityEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
 
     //================= EMITTERS =================//
 
@@ -59,16 +61,25 @@ namespace magique
         // Note: Emission shape determines where particles can spawn
         //       Particles can spawn anywhere inside the emission shape randomly!
 
-        // Sets the position of the emission shape
-        // Top left for rect, middle point for circle, first point for triangle
-        // Default: (0,0)
-        EmitterBase& setEmissionPosition(float x, float y);
-
         // Sets the emission shape - ONLY RECT and CIRCLE are supported!
         // Pass the width and height of the rectangle or the radius of the circle OR (0,0,0) to reset
         // A random point inside the emission shape is chosen for each particle
         // Default: None - is directly spawned on the emission point
         EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
+
+        // Sets the angle of rotation - rotates around the anchor point
+        // Note: only works for RECT - angle starts at 12 and clockwise until 360 degrees
+        // Default: 0
+        EmitterBase& setEmissionRotation(int angle);
+
+        // Sets the anchor point around which the rotation occurs
+        // Default: (0,0)
+        EmitterBase& setEmissionRotationAnchor(const Point& anchor);
+
+        // How much of the collision shape will be treated as spawnable area - 0% => only the outlines 100% full body
+        // Grows from the outside inwards - for the other way around just make the shape smaller
+        // Default: 100
+        EmitterBase& setEmissionShapeVolume(float percent);
 
         //================= PARTICLE =================//
         // Note: Default shape is Rect with dimensions (5,5)
@@ -80,10 +91,6 @@ namespace magique
         // ets the emission shape to be a rect
         // Pass the height and the radius of the capsule
         EmitterBase& setParticleShapeCircle(float radius);
-
-        // Makes the entity collidable with others
-        // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
-        EmitterBase& setParticleShapeTri(Point p2, Point p3);
 
         // Sets the color of emitted particles
         // Default: RED
@@ -119,9 +126,9 @@ namespace magique
         // |(0,1)   (1,1)|
         //  - - - - - - -
         // => Straight up (0,-1) => Top Right (0.5,-0.5) => Top Left (-0.5,-0.5) => Bottom Left (-0.5,0.5)
-        // Note: The (absolute) values have to add up to 1!
+        // Note: The (absolute) values have to add up to 1 (or 0)!
         // Default: (0,-1)
-        EmitterBase& setDirection(float dx, float dy);
+        EmitterBase& setDirection(const Point& direction);
 
         // Sets the angle for spread cone (centered on the direction)
         // A new direction is chosen randomly within the spread angle
@@ -155,10 +162,14 @@ namespace magique
         // Returns a smooth step scale function
         static ScaleFunction GetSmoothStep();
 
+        // Returns
+        const internal::EmitterData& getData() const;
+
     private:
         internal::EmitterData data{};
         friend struct ParticleData;
-        friend void CreateScreenParticle(const ScreenEmitter&, int);
+        friend void CreateScreenParticle(const ScreenEmitter&, const Point&, int);
+        friend TickFunction;
     };
 
 

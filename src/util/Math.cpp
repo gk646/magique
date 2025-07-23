@@ -2,6 +2,7 @@
 #include <magique/internal/Macros.h>
 #include <magique/util/Math.h>
 #include <raylib/raylib.h>
+#include <magique/util/Logging.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 
@@ -49,22 +50,14 @@ namespace magique
 
     Point GetDirectionFromAngle(const float angle)
     {
-        const float radians = angle * DEG2RAD;
-        return {sinf(radians), cosf(radians)};
+        const float radians = (angle+180) * DEG2RAD;
+        return {-sinf(radians), cosf(radians)};
     }
 
     Point GetDirectionVector(const Point current, const Point target)
     {
-        const float diffX = target.x - current.x;
-        const float diffY = target.y - current.y;
-        float lenSquared = (diffX * diffX) + (diffY * diffY);
-        if (lenSquared != 0.0f)
-        {
-            SquareRoot(lenSquared);
-            const float invLen = 1.0f / lenSquared;
-            return {diffX * invLen, diffY * invLen};
-        }
-        return {0.0f, 0.0f};
+        auto diff = target - current;
+        return diff.normalize();
     }
 
     float GetAngleFromPoints(const Point current, const Point target)

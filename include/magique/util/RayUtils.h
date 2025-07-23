@@ -28,7 +28,6 @@ namespace magique
     // Returns a rect with the given dimensions centered on the given position
     Rectangle GetCenteredRect(const Point& center, float width, float height);
 
-
 } // namespace magique
 
 #endif //MAGIQUE_RAYUTILS_H
