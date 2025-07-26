@@ -39,7 +39,9 @@ namespace magique
         bool operator<(float num) const;  // Both must be smaller
         bool operator==(float num) const; // Both must be equal
         Point operator/(float divisor) const;
+        Point operator-(float f) const;
         Point& operator*=(float f);
+        Point& operator=(float f); // Assign to both
 
         // Distance functions
         [[nodiscard]] float manhattan(const Point& p) const;
@@ -47,13 +49,20 @@ namespace magique
         [[nodiscard]] float chebyshev(const Point& p) const;
         [[nodiscard]] float octile(const Point& p) const;
 
-        [[nodiscard]] Vector2 v() const;
+        // Vector functions
+
+        float dot(const Point& p) const;
+
+        // Inverts the vectors direction
+        Point& invert();
 
         // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
 
         // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
         Point& normalizeManhattan();
+
+        [[nodiscard]] Vector2 v() const;
 
         // uses std::round() to round to the nearest whole number
         Point& round();
@@ -63,6 +72,9 @@ namespace magique
 
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
+
+        // Decreases the magnitude of the vector by the given scalar
+        Point& decreaseMagnitude(float f);
     };
 
     //================= CORE =================//

@@ -95,6 +95,10 @@ namespace magique
         // Returns true if the object was drawn in the last tick
         [[nodiscard]] bool getWasDrawn() const;
 
+        // Returns the UIObject cast to the given type
+        template <typename T>
+        T* getAs();
+
         virtual ~UIObject();
 
     private:
@@ -107,7 +111,21 @@ namespace magique
         befriend(UIData, Window)
     };
 
+
 } // namespace magique
+
+
+// IMPLEMENTATION
+
+namespace magique
+{
+    template <typename T>
+    T* UIObject::getAs()
+    {
+        return static_cast<T*>(this);
+    }
+} // namespace magique
+
 
 M_UNIGNORE_WARNING()
 

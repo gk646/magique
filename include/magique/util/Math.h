@@ -55,6 +55,9 @@ namespace magique
     // Returns the angle that spans from the current to target point
     float GetAngleFromPoints(Point current, Point target);
 
+    // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
+    float TowardsZero(float value, float change);
+
 } // namespace magique
 
 

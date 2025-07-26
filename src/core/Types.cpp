@@ -31,6 +31,8 @@ namespace magique
 
     Point Point::operator/(const float divisor) const { return {x / divisor, y / divisor}; }
 
+    Point Point::operator-(float f) const { return {x - f, y - f}; }
+
     Point& Point::operator+=(const Point& other)
     {
         x += other.x;
@@ -42,6 +44,13 @@ namespace magique
     {
         x *= f;
         y *= f;
+        return *this;
+    }
+
+    Point& Point::operator=(const float f)
+    {
+        x = f;
+        y = f;
         return *this;
     }
 
@@ -92,7 +101,14 @@ namespace magique
         return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
 
-    Vector2 Point::v() const { return Vector2{x, y}; }
+    float Point::dot(const Point& p) const { return x * p.x + y * p.y; }
+
+    Point& Point::invert()
+    {
+        x = -x;
+        y = -y;
+        return *this;
+    }
 
     Point& Point::normalize()
     {
@@ -117,6 +133,8 @@ namespace magique
         return *this;
     }
 
+    Vector2 Point::v() const { return Vector2{x, y}; }
+
     Point& Point::round()
     {
         x = std::round(x);
@@ -135,6 +153,22 @@ namespace magique
     {
         x = magique::clamp(x, min, max);
         y = magique::clamp(y, min, max);
+        return *this;
+    }
+
+    Point& Point::decreaseMagnitude(float f) {
+        float magnitude = std::sqrt(x * x + y * y);
+        if (magnitude <= f) {
+            x = 0.0f;
+            y = 0.0f;
+            return *this;
+        }
+
+        const float newMagnitude = magnitude - f;
+        const float scaleFactor = newMagnitude / magnitude;
+        x *= scaleFactor;
+        y *= scaleFactor;
+
         return *this;
     }
 

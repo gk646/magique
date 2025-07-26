@@ -50,7 +50,7 @@ namespace magique
 
     Point GetDirectionFromAngle(const float angle)
     {
-        const float radians = (angle+180) * DEG2RAD;
+        const float radians = (angle + 180) * DEG2RAD;
         return {-sinf(radians), cosf(radians)};
     }
 
@@ -76,6 +76,19 @@ namespace magique
             gameAngleDegrees += 360.0f;
         }
         return gameAngleDegrees;
+    }
+
+    float TowardsZero(float value, float change)
+    {
+        if (value < 0.0F)
+        {
+            return std::min(value + change, 0.0F);
+        }
+        if (value > 0.0F)
+        {
+            return std::max(value - change, 0.0F);
+        }
+        return value;
     }
 
 } // namespace magique

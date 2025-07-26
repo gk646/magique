@@ -72,7 +72,7 @@ namespace magique::internal
         float minInitVeloc = 1, maxInitVeloc = 1;      // Initial velocity
         Point direction{};                             // Direction
         float rotation = 0;                            // Rotation around the anchor
-        float volume = 1;                              // How much of the body will be treated as spawnable area
+        float volume = 1.0F;                              // How much of the body will be treated as spawnable area
         float spreadAngle = 0;                         // Spread angle around the direction
         float gravX = 0, gravY = 0;                    // Gravity in x and y direction
         uint16_t minLife = 100, maxLife = 100;         // Total lifetime

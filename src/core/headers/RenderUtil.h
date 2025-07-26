@@ -76,8 +76,8 @@ namespace magique
 
         data.camera.target.x += (targetPosition.x - data.camera.target.x) * smoothing;
         data.camera.target.y += (targetPosition.y - data.camera.target.y) * smoothing;
-        data.camera.target.x = std::round(data.camera.target.x);
-        data.camera.target.y = std::round(data.camera.target.y);
+        data.camera.target.x = std::floor(data.camera.target.x);
+        data.camera.target.y = std::floor(data.camera.target.y);
     }
 
     inline void RenderHitboxes()

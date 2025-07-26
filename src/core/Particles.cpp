@@ -37,7 +37,7 @@ namespace magique
                     }
                     else
                     {
-                        const auto mult = data.volume; // Already calculated in the setter
+                        const auto mult = std::sqrt(1.0F - data.volume); // Already calculated in the setter
                         // Distributed by splitting up outer rectangle in 4 rectangles
                         // Two long ones  above and bottom - and then the two sides (so they dont overlap)
                         auto rect = GetRandomValue(0, 3);
@@ -75,8 +75,7 @@ namespace magique
             case Shape::CIRCLE:
                 {
                     const float angle = GetRandomFloat(0, 360) * (PI / 180.0f);
-                    const float dist =
-                        data.emissionDims.x - data.emissionDims.x * (1.0F - data.volume) * GetRandomFloat(0, 1.0F);
+                    const float dist = data.emissionDims.x - data.emissionDims.x * data.volume * GetRandomFloat(0, 1.0F);
                     particle.pos = {pos.x + dist * std::cos(angle), pos.y + dist * std::sin(angle)};
                 }
                 break;
@@ -188,7 +187,7 @@ namespace magique
 
     EmitterBase& EmitterBase::setEmissionRotation(const int angle)
     {
-        data.rotation = angle % 360;
+        data.rotation = static_cast<float>(angle % 360);
         return *this;
     }
 
@@ -202,14 +201,14 @@ namespace magique
 
     EmitterBase& EmitterBase::setEmissionShapeVolume(float percent)
     {
-        if (percent < 0 || percent > 100)
+        if (percent < 0 || percent > 1)
         {
             LOG_ERROR("Invalid percent value!");
             return *this;
         }
         if (percent == 0)
-            percent = 0.001;
-        data.volume = std::sqrt(1.0F - percent / 100.0F);
+            percent = 0.001F;
+        data.volume = percent;
         return *this;
     }
 
@@ -373,6 +372,7 @@ namespace magique
     {
         return [](const float scale, const float t) -> float { return scale * (t * t * (3 - 2 * t)); };
     }
+
     const internal::EmitterData& EmitterBase::getData() const { return data; }
 
 } // namespace magique
