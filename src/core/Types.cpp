@@ -13,6 +13,7 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
+#include "magique/ui/UI.h"
 
 
 namespace magique
@@ -103,6 +104,8 @@ namespace magique
 
     float Point::dot(const Point& p) const { return x * p.x + y * p.y; }
 
+    float Point::cross(const Point& p) const { return x * p.x - y * p.y; }
+
     Point& Point::invert()
     {
         x = -x;
@@ -156,9 +159,11 @@ namespace magique
         return *this;
     }
 
-    Point& Point::decreaseMagnitude(float f) {
+    Point& Point::decreaseMagnitude(float f)
+    {
         float magnitude = std::sqrt(x * x + y * y);
-        if (magnitude <= f) {
+        if (magnitude <= f)
+        {
             x = 0.0f;
             y = 0.0f;
             return *this;
@@ -170,6 +175,34 @@ namespace magique
         y *= scaleFactor;
 
         return *this;
+    }
+
+    Point Point::perpendicular(const bool left) const
+    {
+        // 0/1 goes down (in raylib coordinates)
+        // left would be -1/0
+        if (left)
+        {
+            return {-y, x};
+        }
+        else // right would be 1/0
+        {
+            return {y, -x};
+        }
+    }
+
+    Point Point::PerpendicularTowardsPoint(const Point& linePoint, const Point& dirVector, const Point& point)
+    {
+        const auto diff = point - linePoint;
+        const float crossProduct = dirVector.cross(diff);
+        if (crossProduct > 0)
+        {
+            return dirVector.perpendicular(true);
+        }
+        else
+        {
+            return dirVector.perpendicular(false);
+        }
     }
 
     Point Point::operator*(const float i) const { return {x * i, y * i}; }
@@ -379,39 +412,67 @@ namespace magique
 
     //----------------- KEYBIND -----------------//
 
-    Keybind::Keybind(const int keyCode, bool UIinput, const bool shift, const bool ctrl, const bool alt)
+    Keybind::Keybind(const int keyCode, bool isUI, const bool isShift, const bool isCTRL, const bool isAlt)
     {
         key = static_cast<uint16_t>(keyCode);
-
-        if (shift)
+        if (isUI)
         {
-            modifier.shift = 1;
+            layered = true;
         }
-        if (ctrl)
+        if (isShift)
         {
-            modifier.ctrl = 1;
+            shift = true;
         }
-        if (alt)
+        if (isCTRL)
         {
-            modifier.alt = 1;
+            ctrl = true;
+        }
+        if (isAlt)
+        {
+            alt = true;
         }
     }
 
+#define KEY_MACRO(var, func, key, layered)                                                                              \
+    if (layered)                                                                                                        \
+        var = LayeredInput::func(key);                                                                                  \
+    else                                                                                                                \
+        var = func(key);
+
     bool Keybind::isPressed() const
     {
-        if (IsKeyPressed(getKey()))
+        bool keyPressed = false;
+        if (key < 3)
+        {
+            KEY_MACRO(keyPressed, IsMouseButtonPressed, key, layered);
+        }
+        else
+        {
+            KEY_MACRO(keyPressed, IsKeyPressed, key, layered);
+        }
+        if (keyPressed)
         {
             if (hasShift())
             {
-                return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+                bool shiftPressed = false;
+                KEY_MACRO(shiftPressed, IsKeyPressed, KEY_LEFT_SHIFT, layered);
+                if (!shiftPressed)
+                {
+                    KEY_MACRO(shiftPressed, IsKeyPressed, KEY_RIGHT_SHIFT, layered);
+                }
+                return shiftPressed;
             }
             if (hasCtrl())
             {
-                return IsKeyDown(KEY_LEFT_CONTROL);
+                bool ctrlPressed = false;
+                KEY_MACRO(ctrlPressed, IsKeyPressed, KEY_LEFT_CONTROL, layered);
+                return ctrlPressed;
             }
             if (hasAlt())
             {
-                return IsKeyDown(KEY_LEFT_ALT);
+                bool altPressed = false;
+                KEY_MACRO(altPressed, IsKeyPressed, KEY_LEFT_ALT, layered);
+                return altPressed;
             }
             return true;
         }
@@ -420,34 +481,93 @@ namespace magique
 
     bool Keybind::isDown() const
     {
-        if (IsKeyDown(getKey()))
+        bool keyPressed = false;
+        if (key < 3)
+        {
+            KEY_MACRO(keyPressed, IsMouseButtonDown, key, layered);
+        }
+        else
+        {
+            KEY_MACRO(keyPressed, IsKeyDown, key, layered);
+        }
+        if (keyPressed)
         {
             if (hasShift())
             {
-                return IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT);
+                bool shiftPressed = false;
+                KEY_MACRO(shiftPressed, IsKeyDown, KEY_LEFT_SHIFT, layered);
+                if (!shiftPressed)
+                {
+                    KEY_MACRO(shiftPressed, IsKeyDown, KEY_RIGHT_SHIFT, layered);
+                }
+                return shiftPressed;
             }
             if (hasCtrl())
             {
-                return IsKeyDown(KEY_LEFT_CONTROL);
+                bool ctrlPressed = false;
+                KEY_MACRO(ctrlPressed, IsKeyDown, KEY_LEFT_CONTROL, layered);
+                return ctrlPressed;
             }
             if (hasAlt())
             {
-                return IsKeyDown(KEY_LEFT_ALT);
+                bool altPressed = false;
+                KEY_MACRO(altPressed, IsKeyDown, KEY_LEFT_ALT, layered);
+                return altPressed;
             }
             return true;
         }
         return false;
     }
 
-    bool Keybind::isReleased() const { return IsKeyReleased(getKey()); }
+    bool Keybind::isReleased() const
+    {
+        bool keyPressed = false;
+        if (key < 3)
+        {
+            KEY_MACRO(keyPressed, IsMouseButtonReleased, key, layered);
+        }
+        else
+        {
+            KEY_MACRO(keyPressed, IsKeyReleased, key, layered);
+        }
+        if (keyPressed)
+        {
+            if (hasShift())
+            {
+                bool shiftPressed = false;
+                KEY_MACRO(shiftPressed, IsKeyReleased, KEY_LEFT_SHIFT, layered);
+                if (!shiftPressed)
+                {
+                    KEY_MACRO(shiftPressed, IsKeyReleased, KEY_RIGHT_SHIFT, layered);
+                }
+                return shiftPressed;
+            }
+            if (hasCtrl())
+            {
+                bool ctrlPressed = false;
+                KEY_MACRO(ctrlPressed, IsKeyReleased, KEY_LEFT_CONTROL, layered);
+                return ctrlPressed;
+            }
+            if (hasAlt())
+            {
+                bool altPressed = false;
+                KEY_MACRO(altPressed, IsKeyReleased, KEY_LEFT_ALT, layered);
+                return altPressed;
+            }
+            return true;
+        }
+        return false;
+    }
 
     int Keybind::getKey() const { return key; }
 
-    auto Keybind::hasShift() const -> bool { return modifier.shift == 1; }
+    auto Keybind::hasShift() const -> bool { return shift; }
 
-    auto Keybind::hasCtrl() const -> bool { return modifier.ctrl == 1; }
+    auto Keybind::hasCtrl() const -> bool { return ctrl; }
 
-    auto Keybind::hasAlt() const -> bool { return modifier.alt == 1; }
+    auto Keybind::hasAlt() const -> bool { return alt; }
+
+    bool Keybind::isUIInput() const { return layered; }
 
     //----------------- PARTICLE -----------------//
 

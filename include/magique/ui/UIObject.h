@@ -58,10 +58,10 @@ namespace magique
         // Returns the bounds of this object
         [[nodiscard]] Rectangle getBounds() const;
 
-        // Sets a new position for this object - values are scaled to the CURRENT resolution
+        // Sets a new position for this object - values are scaled to the CURRENT (target) resolution
         void setPosition(float x, float y);
 
-        // Sets new dimensions for this object - values are scaled to the CURRENT resolution
+        // Sets new dimensions for this object - values are scaled to the CURRENT (target) resolution
         // Note: Negative values will be ignored
         void setSize(float width, float height);
 
@@ -99,10 +99,20 @@ namespace magique
         template <typename T>
         T* getAs();
 
+        // Sets or gets the start position - set per default to the initial position
+        void setStartPosition(const Point& pos);
+        [[nodiscard]] const Point& getStartPosition() const;
+
+        // Sets or gets the start position - set per default to the initial position
+        void setStartDimensions(const Point& dims);
+        [[nodiscard]] const Point& getStartDimensions() const;
+
         virtual ~UIObject();
 
     private:
         float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        Point startPos{};                          // Default position
+        Point startDims{};                         // Default dimensions
         float inset = 0.0F;                        // Inset - offset towards the middle of the screen
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen

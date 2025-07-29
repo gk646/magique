@@ -99,12 +99,12 @@ namespace magique
 
             block++;
             auto val = static_cast<float>(logicTickTime) / 1'000'000.0F; // nanos
-            snprintf(blocks[block].text, 32, "CPU: %.1f", val);
+            snprintf(blocks[block].text, 32, "Tick: %.1f", val);
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
             block++;
             val = static_cast<float>(drawTickTime) / 1'000'000.0F;
-            snprintf(blocks[block].text, 32, "GPU: %.1f", val);
+            snprintf(blocks[block].text, 32, "Draw: %.1f", val);
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
             block++;

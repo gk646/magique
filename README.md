@@ -60,6 +60,7 @@ Most notable features:
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
+- **[glaze](https://github.com/stephenberry/glaze)** _(5.5.4)_: Fast JSON serialization with reflection support
 
 ### Quickstart
 

@@ -50,7 +50,7 @@ namespace magique
         virtual void onClick(const Rectangle& bounds, int button) {}
 
         // Updates the action state and calls onHover() and onClick() if necessary
-        // Note: You can conditionally NOT call this based on UIInput.isConsumed() to respect layers
+        // Note: You can conditionally NOT call this based on LayeredInput.isConsumed() to respect layers
         void updateActions(const Rectangle& bounds);
 
         // Draws a default graphical representation of this button

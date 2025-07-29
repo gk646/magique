@@ -154,6 +154,13 @@ namespace magique
 #endif
     }
 
+    inline void RectToSector(const float rx, const float ry, const float rw, const float rh, const float cx,
+                             const float cy, const float cr, const float startAngle, const float stopAngle,
+                             CollisionInfo& info)
+    {
+
+    }
+
     inline void RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
                            const float y2, const float w2, const float h2, CollisionInfo& info)
     {

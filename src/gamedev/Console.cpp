@@ -35,6 +35,27 @@ namespace magique
         return console.commands.size() == size;
     }
 
+    bool ExecuteCommand(const char* name)
+    {
+        auto& console = global::CONSOLE_DATA;
+        MAGIQUE_ASSERT(name != nullptr, "Command name is null!");
+        for (const auto& cmd : console.commands)
+        {
+            if (std::strcmp(cmd.getName(), name) == 0)
+            {
+                if (cmd.parameters.empty() && cmd.cmdFunc)
+                {
+                    cmd.cmdFunc({});
+                    return true;
+                }
+                LOG_WARNING("Cannot execute command:%s : Needs parameters", name);
+                return false;
+            }
+        }
+        LOG_WARNING("Cannot execute command:%s : No such command", name);
+        return false;
+    }
+
     void SetConsoleKey(const int key) { global::CONSOLE_DATA.openKey = key; }
 
     void SetCommandHistorySize(const int len) { global::CONSOLE_DATA.commandHistoryLen = len; }

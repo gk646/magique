@@ -49,9 +49,16 @@ namespace magique
         [[nodiscard]] float chebyshev(const Point& p) const;
         [[nodiscard]] float octile(const Point& p) const;
 
+        [[nodiscard]] Vector2 v() const; // Convert into raylib vector
+
         // Vector functions
 
+        // How much vectors point in the same direction - positive if less than 90 degrees - negative if more
         float dot(const Point& p) const;
+
+        // Returns the relative orientation of two vectors (and the area of the parallelogram)
+        // Positive if second vector is to the left, negative if to the right (from the first)
+        float cross(const Point& p) const;
 
         // Inverts the vectors direction
         Point& invert();
@@ -61,8 +68,6 @@ namespace magique
 
         // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
         Point& normalizeManhattan();
-
-        [[nodiscard]] Vector2 v() const;
 
         // uses std::round() to round to the nearest whole number
         Point& round();
@@ -75,6 +80,13 @@ namespace magique
 
         // Decreases the magnitude of the vector by the given scalar
         Point& decreaseMagnitude(float f);
+
+        // Returns the perpendicular vector to this one - either to the left or to the right
+        Point perpendicular(bool left) const;
+
+        // Given a point and a direction (a straight) returns a vector such that its perpendicular to the direction towards the point
+        // Useful when you want to knock things out of your way
+        static Point PerpendicularTowardsPoint(const Point& linePoint, const Point& dirVector, const Point& point);
     };
 
     //================= CORE =================//
@@ -263,7 +275,7 @@ namespace magique
         RECT,     // Rectangle
         CIRCLE,   // Circle - rotated around its middle point
         CAPSULE,  // Capsule (vertical - non rotated) - https://docs.unity3d.com/Manual/class-CapsuleCollider2D.html
-        TRIANGLE, // Triangle
+        TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
     };
 
     // Feel free to rename those! This is a bit mask!
@@ -577,10 +589,11 @@ namespace magique
     //================= HELPER TYPES =================//
 
     // Efficient representation of a keybind with optional modifiers
+    // Also works with mouse buttons e.g. enum MouseButton (left, right and middle)
     struct Keybind final
     {
         Keybind() = default;
-        explicit Keybind(int keyCode, bool UIinput = true, bool shift = false, bool ctrl = false, bool alt = false);
+        explicit Keybind(int key, bool UIinput = true, bool shift = false, bool ctrl = false, bool alt = false);
 
         // Uses direct input polling (e.g. IsKeyDown())
         [[nodiscard]] bool isPressed() const;
@@ -593,15 +606,14 @@ namespace magique
         [[nodiscard]] bool hasShift() const;
         [[nodiscard]] bool hasCtrl() const;
         [[nodiscard]] bool hasAlt() const;
+        [[nodiscard]] bool isUIInput() const;
 
     private:
         uint16_t key = 0;
-        struct Modifiers
-        {
-            uint8_t shift : 1, ctrl : 1, alt : 1;
-
-        } modifier{};
-        bool uiInput = false;
+        bool shift = false;
+        bool ctrl = false;
+        bool alt = false;
+        bool layered = false;
     };
 
     struct ScreenParticle final

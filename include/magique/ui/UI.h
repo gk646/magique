@@ -52,7 +52,7 @@ namespace magique
     // The consumed state is automatically reset at the beginning of each tick
     // Note: This is very useful when dealing with layered UI to prevent unwanted input propagation
     // Note: You can still use the raylib inputs methods if you need exceptions to this rule!
-    struct UIInput final
+    struct LayeredInput final
     {
         // Returns true only if input state AND not consumed
         static bool IsKeyPressed(int key);
@@ -61,6 +61,7 @@ namespace magique
 
         static bool IsMouseButtonPressed(int key);
         static bool IsMouseButtonDown(int key);
+        static bool IsMouseButtonReleased(int key);
 
         // Consume the input for this tick - all input methods after this will return false
         static void Consume();
@@ -69,7 +70,7 @@ namespace magique
 
     // Sets the logcal ui resolution in which all numbers are interpreted
     // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel are with fixed resolutions
-    void SetUISourceResolution(float width , float height);
+    void SetUISourceResolution(float width, float height);
 
 } // namespace magique
 

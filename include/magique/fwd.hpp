@@ -116,6 +116,7 @@ namespace magique
 
     //================= INTERNAL =================//
     struct AudioPlayer;
+    struct TweenData;
 
 } // namespace magique
 

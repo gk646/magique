@@ -18,6 +18,8 @@ namespace magique
         if (h >= 0)
             ph = h / ui.sourceRes.y;
         setScalingMode(scaling);
+        setStartPosition({px, py});
+        setStartDimensions({pw, ph});
         global::UI_DATA.registerObject(this);
     }
 
@@ -188,5 +190,13 @@ namespace magique
     ScalingMode UIObject::getScalingMode() const { return scaleMode; }
 
     bool UIObject::getWasDrawn() const { return wasDrawnLastTick; }
+
+    void UIObject::setStartPosition(const Point& pos) { startPos = pos; }
+
+    const Point& UIObject::getStartPosition() const { return startPos; }
+
+    void UIObject::setStartDimensions(const Point& dims) { startDims = dims; }
+
+    const Point& UIObject::getStartDimensions() const { return startDims; }
 
 } // namespace magique

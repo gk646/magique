@@ -22,6 +22,7 @@
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
 
+#include "internal/globals/TweenData.h"
 #include "internal/globals/EngineData.h"
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/LoadingData.h"

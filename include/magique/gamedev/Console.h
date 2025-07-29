@@ -82,6 +82,9 @@ namespace magique
     // Returns true if the command with the given name is successfully removed
     bool UnRegisterCommand(const char* name);
 
+    // Returns ture if a command with the given name was found and executed (must have no params)
+    bool ExecuteCommand(const char* name);
+
     // Function is passed the parsed parameters - function is only called if the parsed parameters match the definition
     using CommandFunction = std::function<void(const std::vector<Param>& params)>;
 
@@ -109,13 +112,15 @@ namespace magique
 
         // Returns the name of the command
         const char* getName() const;
+
     private:
         CommandFunction cmdFunc;
         std::vector<internal::ParamData> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ParamParser, ConsoleHandler)
+        befriend(ConsoleData, ParamParser, ConsoleHandler);
         befriend(bool UnRegisterCommand(const char*), void RegisterConsoleCommand(const Command&))
+        befriend(bool ExecuteCommand(const char* name))
     };
 
     //================= Environmental Parameters =================//

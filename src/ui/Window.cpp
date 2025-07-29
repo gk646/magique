@@ -26,7 +26,7 @@ namespace magique
     bool Window::updateDrag(const Rectangle& area, const int mouseButton)
     {
         const auto mouse = global::UI_DATA.mouse;
-        if (UIInput::IsMouseButtonDown(mouseButton))
+        if (LayeredInput::IsMouseButtonDown(mouseButton))
         {
             if (isDragged)
             {

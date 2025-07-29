@@ -63,25 +63,28 @@ namespace magique
 
     void SetUITargetResolution(float width, float height) { global::UI_DATA.targetRes = {width, height}; }
 
-    bool UIInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
+    bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
 
-    bool UIInput::IsKeyDown(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyDown(key); }
+    bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyDown(key); }
 
-    bool UIInput::IsKeyReleased(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyReleased(key); }
+    bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyReleased(key); }
 
-    bool UIInput::IsMouseButtonPressed(const int key)
+    bool LayeredInput::IsMouseButtonPressed(const int key)
     {
         return !global::UI_DATA.inputConsumed && ::IsMouseButtonPressed(key);
     }
-
-    bool UIInput::IsMouseButtonDown(const int key) { return !global::UI_DATA.inputConsumed && ::IsMouseButtonDown(key); }
-
-    void UIInput::Consume() { global::UI_DATA.inputConsumed = true; }
-
-    bool UIInput::GetIsConsumed() { return global::UI_DATA.inputConsumed; }
-
-    void SetUISourceResolution(float width, float height)
+    bool LayeredInput::IsMouseButtonDown(const int key)
     {
-        global::UI_DATA.sourceRes = {width, height};
+        return !global::UI_DATA.inputConsumed && ::IsMouseButtonDown(key);
     }
+    bool LayeredInput::IsMouseButtonReleased(int key)
+    {
+        return !global::UI_DATA.inputConsumed && ::IsMouseButtonReleased(key);
+    }
+
+    void LayeredInput::Consume() { global::UI_DATA.inputConsumed = true; }
+
+    bool LayeredInput::GetIsConsumed() { return global::UI_DATA.inputConsumed; }
+
+    void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 } // namespace magique

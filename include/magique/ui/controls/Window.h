@@ -61,7 +61,7 @@ namespace magique
 
         // Returns true if the window was clicked in the given area with the given mouse button
         // Does not check if anything is in front - use the ui/WindowManager.h
-        // Note: Uses UIInput to check for click - if true probably want to call UIInput::Consume()
+        // Note: Uses LayeredInput to check for click - if true probably want to call LayeredInput::Consume()
         bool updateDrag(const Rectangle& area, int mouseButton = MOUSE_BUTTON_LEFT);
 
     private:

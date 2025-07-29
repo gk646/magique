@@ -39,7 +39,6 @@
 // Plan:
 // - Keep the whole system
 // - Apply specialized solutions
-// - Sort rect to rect collision and apply them in correct order (and recheck if they are still needed)
 
 // Solution:
 // save when there is a rectangle collision in a direction
@@ -53,6 +52,10 @@
 //      - collision point y is the same
 // Double collisions:
 // - save in each direction only the greatest extent
+
+// i just sat there and thought for a day, no online solutions were really good
+// and then at some point i thought when this case actually happens,
+// and how you can detect it in O(1) time while preserving multithreading
 
 namespace magique
 {

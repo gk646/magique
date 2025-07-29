@@ -538,7 +538,7 @@ bool fast_vector<T>::erase(const T& val)
 template <class T>
 T* fast_vector<T>::erase(T* pos)
 {
-    assert(pos >= m_data && pos < m_data + m_size && "Iterator out of bounds");
+    assert(pos >= m_data && pos < m_data + m_size && "Position out of bounds");
 
     const auto index = pos - m_data; // Calculate index of the element to be erased
 
