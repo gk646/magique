@@ -8,11 +8,11 @@
 
 namespace magique
 {
-    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int max)
+    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int pathLen)
     {
         auto& path = global::PATH_DATA;
         constexpr int capacity = MAGIQUE_MAX_PATH_SEARCH_LEN;
-        const int maxLen = std::min(max == 0 ? capacity : max, capacity);
+        const int maxLen = std::min(pathLen == 0 ? capacity : pathLen, capacity);
         return path.findPath(pathVec, start, end, map, static_cast<uint16_t>(maxLen));
     }
 

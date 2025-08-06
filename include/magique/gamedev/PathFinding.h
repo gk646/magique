@@ -21,11 +21,11 @@ namespace magique
     //================= PATH =================//
 
     // Assigns the (middle points) cells along the shortest path to the given vector - excluding the start tile
-    //      - searchLen: stops searching for a better path after that many iterations
+    //      - pathLen: stops searching if the path length exceeds this
     // Note: The point list is in REVERSE order! (last element is the next point)
     // Failure: if no path can be found returns an empty vector
     // Returns: True if a path could be found, false if the target is a solid tile or cant be reached
-    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
+    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int pathLen);
 
     // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
     // Same as FindPath() but only assigns the next point

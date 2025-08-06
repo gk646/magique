@@ -191,17 +191,17 @@ namespace magique
         }
     }
 
-    Point Point::PerpendicularTowardsPoint(const Point& linePoint, const Point& dirVector, const Point& point)
+    Point Point::PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target)
     {
-        const auto diff = point - linePoint;
-        const float crossProduct = dirVector.cross(diff);
+        const auto diff = target - startPoint;
+        const float crossProduct = direction.cross(diff);
         if (crossProduct > 0)
         {
-            return dirVector.perpendicular(true);
+            return direction.perpendicular(true);
         }
         else
         {
-            return dirVector.perpendicular(false);
+            return direction.perpendicular(false);
         }
     }
 

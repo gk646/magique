@@ -169,7 +169,9 @@ namespace magique
         int replacements = 0;
 
         if (lenKeyword == 0)
+        {
             return 0;
+        }
 
         char* pos = strstr(buffer, keyword);
         while (pos != nullptr)
@@ -199,7 +201,7 @@ namespace magique
 
     int InsertNewlines(char* buffer, const int bufferSize, const float width, const Font& font, const float fontSize)
     {
-        if (!buffer || bufferSize == 0 || width <= 0)
+        if ((buffer == nullptr) || bufferSize == 0 || width <= 0)
             return 0;
 
         int lineBreaks = 0;
@@ -292,7 +294,7 @@ namespace magique
         return *s1 == *s2; // Ensure strings are of the same length
     }
 
-    bool strncmpnc( const char* s1, const char* s2,int n)
+    bool strncmpnc(const char* s1, const char* s2, int n)
     {
         if ((s1 == nullptr) || (s2 == nullptr) || n <= 0)
             return false;
@@ -442,19 +444,31 @@ namespace magique
             --size;
         }
         if (size > 0)
+        {
             input.resize(size);
+        }
         return input;
     }
 
     const char* GetTimeString(const int totalSeconds)
     {
-        static char buff[64]{};
         const int days = totalSeconds / 86400;
         const int hours = totalSeconds % 86400 / 3600;
         const int minutes = totalSeconds % 3600 / 60;
         const int seconds = totalSeconds % 60;
-        snprintf(buff, 64, "%id:%ih:%im:%is", days, hours, minutes, seconds);
-        return buff;
+        return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
+    }
+
+    const char* FormatFloat(float num, float cutoff, int justification)
+    {
+        if (num < cutoff)
+        {
+            return TextFormat("%*.1f", justification, num);
+        }
+        else
+        {
+            return TextFormat("%*d", justification, (int)std::round(num));
+        }
     }
 
 

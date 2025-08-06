@@ -84,9 +84,9 @@ namespace magique
         // Returns the perpendicular vector to this one - either to the left or to the right
         Point perpendicular(bool left) const;
 
-        // Given a point and a direction (a straight) returns a vector such that its perpendicular to the direction towards the point
+        // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
-        static Point PerpendicularTowardsPoint(const Point& linePoint, const Point& dirVector, const Point& point);
+        static Point PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target);
     };
 
     //================= CORE =================//

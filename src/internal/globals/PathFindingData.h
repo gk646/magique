@@ -26,12 +26,13 @@ namespace magique
     struct GridNode final
     {
         Point position{};
-        float fCost = 0.0F;
-        float gCost = 0.0F;
+        float fCost = 0.0F; // Combined cost
+        float gCost = 0.0F; // Combined cost
         uint16_t parent = UINT16_MAX;
         GridNode() = default;
+
         GridNode(const Point position, const float gCost, const float hCost, const uint16_t parent) :
-            position(position), fCost(gCost + hCost), gCost(gCost), parent(parent)
+            position(position), gCost(gCost), fCost(gCost + hCost), parent(parent)
         {
         }
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }
@@ -158,7 +159,6 @@ namespace magique
         // A star cache
         std::vector<Point> pathCache;
         StaticDenseLookupGrid<200> visited{};
-        StaticDenseLookupGrid<200> added{};
         cxstructs::PriorityQueue<GridNode> frontier{};
         GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_LEN];
 
@@ -288,9 +288,6 @@ namespace magique
             visited.clear();
             visited.setMid(start);
 
-            added.clear();
-            added.setMid(start);
-
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
 
@@ -304,10 +301,9 @@ namespace magique
             auto targetHeuristic = [](const Point& curr, const Point& end) { return curr.octile(end) * 1.15F; };
 
             frontier.emplace(start, 0.0F, targetHeuristic(start, end), UINT16_MAX);
-            added.setMarked(start.x, start.y);
             uint16_t counter = 0;
 
-            while (!frontier.empty() && counter < maxLen)
+            while (!frontier.empty() && counter < MAGIQUE_MAX_PATH_SEARCH_LEN)
             {
                 nodePool[counter] = frontier.top();
                 auto& current = nodePool[counter];
@@ -332,13 +328,12 @@ namespace magique
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
                     // Is not visited and not solid
-                    if (!added.getIsMarked(newPos.x, newPos.y) && !visited.getIsMarked(newPos.x, newPos.y) &&
+                    if (!visited.getIsMarked(newPos.x, newPos.y) &&
                         !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid))
                     {
                         const float moveCost = dir.x != 0 && dir.y != 0 ? 1.41F : 1.0F;
                         const auto hCost = targetHeuristic(newPos, end);
                         frontier.push({newPos, current.gCost + moveCost, hCost, counter});
-                        added.setMarked(newPos.x, newPos.y);
                     }
                 }
                 counter++;

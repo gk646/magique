@@ -45,7 +45,7 @@ namespace cxstructs
     template <class E>
     struct EnumMask
     {
-        using StoreType = typename SuitableStorageType<sizeof(E)>::type;
+        using StoreType = SuitableStorageType<sizeof(E) * 8>::type;
 
         EnumMask(E data) : data_(static_cast<StoreType>(data)) {}
 

@@ -59,7 +59,7 @@ namespace magique
 
     // Returns true if the given strings match up to n characters regardless of case
     // string-compare-n-no-case
-    bool strncmpnc(const char* s1, const char* s2,int n);
+    bool strncmpnc(const char* s1, const char* s2, int n);
 
     //================= ENCODING =================//
 
@@ -88,6 +88,10 @@ namespace magique
 
     // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
     const char* GetTimeString(int seconds);
+
+    // Formats a float number with 1 decimal until the cutoff - then truncates to 0 decimals
+    // if justification is postiive its right bound, if negative leftbound
+    const char* FormatFloat(float num, float cutoff = 100.0F, int justification = 4);
 
     //================= HASHING =================//
 
