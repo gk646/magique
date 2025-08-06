@@ -44,7 +44,7 @@ namespace magique
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
         // Same as ui/UIObject.h
-        void onDrawUpdate(const Rectangle& bounds) override { updateDrag(getTopBarBounds()); }
+        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override { updateDrag(getTopBarBounds()); }
 
         // Default visuals
         void drawDefault(const Rectangle& bounds) const;

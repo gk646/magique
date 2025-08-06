@@ -28,7 +28,7 @@ inline void DrawWindow(Window& window, Color color)
 
     const auto topBar = window.getTopBarBounds();
     // Check if the window is covered at the mouse position
-    if (CheckCollisionPointRec(GetMousePosition(), topBar) && !GetWindowManager().getIsCovered(&window))
+    if (CheckCollisionPointRec(GetMousePos().v(), topBar) && !GetWindowManager().getIsCovered(&window))
     {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) // Pressed
         {

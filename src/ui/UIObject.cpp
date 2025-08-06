@@ -31,36 +31,36 @@ namespace magique
 
     void UIObject::draw()
     {
-        onDraw(getBounds());
         global::UI_DATA.registerDrawCall(this, isContainer);
+        onDraw(getBounds());
     }
 
     UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
 
     //----------------- UTIL -----------------//
 
-    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, float inset)
+    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point inset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
-        inset = GetScaled(inset);
+        inset = {GetScaled(inset.x), GetScaled(inset.y)};
         switch (alignAnchor)
         {
         case Anchor::TOP_LEFT:
-            pos.x += inset;
-            pos.y += inset;
+            pos.x += inset.x;
+            pos.y += inset.y;
             break;
         case Anchor::TOP_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += inset;
+            pos.y += inset.y;
             break;
         case Anchor::TOP_RIGHT:
-            pos.x += (relWidth - myWidth) - inset;
-            pos.y += inset;
+            pos.x += (relWidth - myWidth) - inset.x;
+            pos.y += inset.y;
             break;
         case Anchor::MID_LEFT:
-            pos.x += inset;
+            pos.x += inset.x;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::MID_CENTER:
@@ -68,20 +68,20 @@ namespace magique
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::MID_RIGHT:
-            pos.x += (relWidth - myWidth) - inset;
+            pos.x += (relWidth - myWidth) - inset.x;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::BOTTOM_LEFT:
-            pos.x += inset;
-            pos.y += (relHeight - myWidth) - inset;
+            pos.x += inset.x;
+            pos.y += (relHeight - myWidth) - inset.y;
             break;
         case Anchor::BOTTOM_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += (relHeight - myWidth) - inset;
+            pos.y += (relHeight - myWidth) - inset.y;
             break;
         case Anchor::BOTTOM_RIGHT:
-            pos.x += (relWidth - myWidth) - inset;
-            pos.y += (relHeight - myWidth) - inset;
+            pos.x += (relWidth - myWidth) - inset.x;
+            pos.y += (relHeight - myWidth) - inset.y;
             break;
         case Anchor::NONE:
             return;
@@ -89,25 +89,28 @@ namespace magique
         setPosition(pos.x, pos.y);
     }
 
-    void UIObject::align(const Direction direction, const UIObject& relativeTo, float offset)
+    void UIObject::align(const Direction direction, const UIObject& relativeTo, Point offset)
     {
         const auto otherBounds = relativeTo.getBounds();
-        const auto bounds = getBounds();
         Point pos = {otherBounds.x, otherBounds.y};
-        offset = GetScaled(offset);
+        offset = {GetScaled(offset.x), GetScaled(offset.y)};
         switch (direction)
         {
         case Direction::LEFT:
-            pos.x -= bounds.width + offset;
+            pos.x -= offset.x;
+            pos.y += offset.y;
             break;
         case Direction::RIGHT:
-            pos.x += bounds.width + offset;
+            pos.x += otherBounds.width + offset.x;
+            pos.y += offset.y;
             break;
         case Direction::UP:
-            pos.y -= bounds.height + offset;
+            pos.x += offset.x;
+            pos.y -= offset.y;
             break;
         case Direction::DOWN:
-            pos.y += bounds.height + offset;
+            pos.x += offset.x;
+            pos.y += otherBounds.height + offset.y;
             break;
         }
         setPosition(pos.x, pos.y);
@@ -116,37 +119,8 @@ namespace magique
     Rectangle UIObject::getBounds() const
     {
         const auto& ui = global::UI_DATA;
-        const auto [sx, sy] = ui.targetRes;
         Rectangle bounds{px, py, pw, ph};
-        switch (scaleMode)
-        {
-        case ScalingMode::FULL:
-            bounds.x *= sx;
-            bounds.y *= sy;
-            bounds.width *= sx;
-            bounds.height *= sy;
-            break;
-        case ScalingMode::KEEP_RATIO:
-            bounds.x *= sx;
-            bounds.y *= sy;
-            bounds.width = pw * ui.sourceRes.x / ui.sourceRes.y * sy;
-            bounds.height *= sy;
-            break;
-        case ScalingMode::NONE:
-            bounds.x *= ui.sourceRes.x;
-            bounds.y *= ui.sourceRes.y;
-            bounds.width *= ui.sourceRes.x;
-            bounds.height *= ui.sourceRes.y;
-            break;
-        }
-
-        if (anchor != Anchor::NONE)
-        {
-            auto val = GetScaled(inset);
-            const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, val);
-            bounds.x = pos.x;
-            bounds.y = pos.y;
-        }
+        ui.scaleBounds(bounds, scaleMode, inset, anchor);
         return bounds;
     }
 
@@ -168,9 +142,9 @@ namespace magique
 
     bool UIObject::getIsHovered() const
     {
-        const auto& [mx, my] = global::UI_DATA.mouse;
-        const auto [rx, ry, rw, rh] = getBounds();
-        return PointToRect(mx, my, rx, ry, rw, rh);
+        const auto& [mx, my] = GetMousePos();
+        const auto [rx, ry, width, height] = getBounds();
+        return PointToRect(mx, my, rx, ry, width, height);
     }
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }

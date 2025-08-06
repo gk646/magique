@@ -19,7 +19,6 @@ namespace magique::renderer
         rlLoadIdentity();
         rlMultMatrixf(MatrixToFloat(GetScreenScale()));
         AssignCameraPosition();
-        global::UI_DATA.updateDrawTick();
         ResetDrawCallCount();
     }
 
@@ -27,9 +26,6 @@ namespace magique::renderer
     {
         const auto& cmdData = global::CONSOLE_DATA;
         auto& perfData = global::PERF_DATA;
-
-        global::UI_DATA.inputConsumed = false; // End of render ticks vs start of update tick is the same
-
         perfData.draw();
         cmdData.draw();
 

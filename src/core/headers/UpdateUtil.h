@@ -48,6 +48,7 @@ namespace magique
 #elif MAGIQUE_LAN
         global::MP_DATA.update();
 #endif
+        global::UI_DATA.update(); // Before so we can layer input
     }
 
     inline void InternalUpdatePost() // After user space update
@@ -60,7 +61,6 @@ namespace magique
             DynamicCollisionSystem(); // After cause user systems can modify entity state
             ResolveCollisions();
         }
-        global::UI_DATA.update();      // After game tick so ui reflects current state
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
         GetWindowManager().update();
     }

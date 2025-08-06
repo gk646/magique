@@ -64,8 +64,10 @@ namespace magique
         static bool IsMouseButtonReleased(int key);
 
         // Consume the input for this tick - all input methods after this will return false
-        static void Consume();
-        static bool GetIsConsumed();
+        static void ConsumeKey();
+        static void ConsumeMouse();
+        static bool GetIsKeyConsumed();
+        static bool GetIsMouseConsumed();
     };
 
     // Sets the logcal ui resolution in which all numbers are interpreted

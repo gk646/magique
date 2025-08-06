@@ -34,9 +34,26 @@ namespace magique
     // Returns a rect with the given dimensions centered on the given position
     Rectangle GetCenteredRect(const Point& center, float width, float height);
 
+    // Gets the enlarged rectangle - also adjusts x and y so it stays in the same relative spot
+    Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height);
+
+    // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
+    float GetRoundness(float radius, const Rectangle& bounds);
+
     // Toggles fullscreen more reliably
     // First maximizes the window then sets the monitors max size then toggles fullscreen
     void ToggleFullscreenEx();
+
+    // Loads a texture from memory (by first loading it as image)
+    Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType = ".png");
+
+    // Draws the full texture at the specified position and scale
+    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint);
+
+    // Draws a nice looking (rounded) pixel art outline with the given radius
+    // First the outline (dark) then the actual line (lighter) and the filler on the edges (lightest)
+    void DrawPixelOutline(const Rectangle& bounds, const Color& outline,const Color& border,const Color& filler, float radius = 2);
+
 
 } // namespace magique
 

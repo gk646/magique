@@ -43,16 +43,22 @@ namespace magique
         // Called with getBounds()
         virtual void onDraw(const Rectangle& bounds) {}
 
-        // Controls how the object is updated - called automatically at the end of each update tick
+        // Controls how the object is updated - called automatically before each update tick
         // The call order is sorted after draw order dynamically - the elements on top (drawn last) are updated first
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for objects to be updated regardless if they are drawn or not (background task,...)
         // Note: All UIContainers are updated separately and before objects
         virtual void onUpdate(const Rectangle& bounds, bool wasDrawn) {}
 
-        // Same as onUpdate() but called at the beginning of the draw tick (each render tick)
+        // Same as onUpdate() but called at the beginning of the draw tick (before the update tick)
         // This is essential for real time behavior of components (like dragging windows)
-        virtual void onDrawUpdate(const Rectangle& bounds) {}
+        virtual void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) {}
+
+        // Called each time the window wasn't drawn prior but drawn now (before its drawn this tick)
+        virtual void onShown(const Rectangle& bounds) {}
+
+        // Called each time the window was drawn but isn't anymore (at end of update tick if it wasn't drawn)
+        virtual void onHide(const Rectangle& bounds) {}
 
     public:
         // Returns the bounds of this object
@@ -67,11 +73,11 @@ namespace magique
 
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
-        void align(Anchor alignAnchor, const UIObject& relativeTo, float inset = 0.0F);
+        void align(Anchor alignAnchor, const UIObject& relativeTo, Point inset = {});
 
         // Aligns the object around the given anchor object - offset is applied in the given direction
         // Note: See the Direction enum (core/Types.h) for more info how this alignment happens
-        void align(Direction direction, const UIObject& relativeTo, float offset = 0.0F);
+        void align(Direction direction, const UIObject& relativeTo, Point offset = {});
 
         // Returns true if the cursor is over the object
         [[nodiscard]] bool getIsHovered() const;
@@ -117,6 +123,7 @@ namespace magique
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
+        bool drawnThisTick = false;
         bool isContainer = false;
         befriend(UIData, Window)
     };

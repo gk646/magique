@@ -2,10 +2,11 @@
 #ifndef MAGIQUE_UI_DATA_H
 #define MAGIQUE_UI_DATA_H
 
+#include <cmath>
 #include <raylib/raylib.h>
 
 #include <magique/ui/UIObject.h>
-#include <magique/util/Logging.h>
+#include <magique/ui/UI.h>
 
 #include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
@@ -23,16 +24,61 @@ namespace magique
         Point dragStart{-1, -1};
         Point targetRes{1280, 720};
         Point sourceRes{1920, 1080};
-        Point mouse{0, 0};
         Point scaling{1.0F, 1.0F};
-        bool inputConsumed = false;
+        bool keyConsumed = false;
+        bool mouseConsumed = false;
 
-        UIData()
+        UIData() { initialized = true; }
+
+        // Before each draw and update tick
+        void updateBeginTick()
         {
-            initialized = true;
+            if (targetRes == 0.0F)
+            {
+                targetRes.x = static_cast<float>(GetScreenWidth());
+                targetRes.x = static_cast<float>(GetScreenHeight());
+            }
+            scaling = targetRes / sourceRes;
+            const auto [mx, my] = GetMousePos();
+            keyConsumed = false;
+            mouseConsumed = false;
+
+            if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {mx, my};
+            }
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {-1, -1};
+            }
+
+            // Here we are doing the updates for next tick (instead of right at the end of the draw tick)
+            // Using fori to support deletions in the update methods
+            for (int i = 0; i < containers.size(); ++i)
+            {
+                auto& container = *containers[i];
+                if (container.wasDrawnLastTick && !container.drawnThisTick)
+                {
+                    container.onHide(container.getBounds());
+                }
+                container.wasDrawnLastTick = container.drawnThisTick;
+                container.drawnThisTick = false;
+                container.onDrawUpdate(container.getBounds(), container.wasDrawnLastTick);
+            }
+            for (int i = 0; i < objects.size(); ++i)
+            {
+                auto& obj = *objects[i];
+                if (obj.wasDrawnLastTick && !obj.drawnThisTick)
+                {
+                    obj.onHide(obj.getBounds());
+                }
+                obj.wasDrawnLastTick = obj.drawnThisTick;
+                obj.drawnThisTick = false;
+                obj.onDrawUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+            }
         }
 
-        // Called at the end of the update tick
+        // Only before each render tick (if it happens)
         void update()
         {
             // Using fori to support deletions in the update methods
@@ -46,42 +92,6 @@ namespace magique
             {
                 auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
-            }
-        }
-
-        void updateDrawTick()
-        {
-            if (targetRes == 0.0F)
-            {
-                targetRes.x = static_cast<float>(GetScreenWidth());
-                targetRes.x = static_cast<float>(GetScreenHeight());
-            }
-            scaling = targetRes / sourceRes;
-            const auto [mx, my] = GetMousePosition();
-            mouse = {mx, my};
-            inputConsumed = false;
-
-            if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {mx, my};
-            }
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {-1, -1};
-            }
-
-            // Using fori to support deletions in the update methods
-            for (int i = 0; i < containers.size(); ++i)
-            {
-                auto& container = *containers[i];
-                container.onDrawUpdate(container.getBounds());
-                container.wasDrawnLastTick = false;
-            }
-            for (int i = 0; i < objects.size(); ++i)
-            {
-                auto& obj = *objects[i];
-                obj.onDrawUpdate(obj.getBounds());
-                obj.wasDrawnLastTick = false;
             }
         }
 
@@ -110,7 +120,11 @@ namespace magique
 
         void registerDrawCall(UIObject* object, const bool isContainer)
         {
-            object->wasDrawnLastTick = true;
+            if (!object->wasDrawnLastTick)
+            {
+                object->onShown(object->getBounds());
+            }
+            object->drawnThisTick = true;
             if (!objectsSet.contains(object)) [[unlikely]]
                 registerObject(object, object->isContainer);
 
@@ -136,6 +150,44 @@ namespace magique
             {
                 sortUpfront(objects, object);
             }
+        }
+
+        void scaleBounds(Rectangle& bounds, ScalingMode scaleMode, float inset, Anchor anchor) const
+        {
+            const auto& [sx, sy] = targetRes;
+            switch (scaleMode)
+            {
+            case ScalingMode::FULL:
+                bounds.x *= sx;
+                bounds.y *= sy;
+                bounds.width *= sx;
+                bounds.height *= sy;
+                break;
+            case ScalingMode::KEEP_RATIO:
+                bounds.x *= sx;
+                bounds.y *= sy;
+                bounds.width = bounds.width * sourceRes.x / sourceRes.y * sy;
+                bounds.height *= sy;
+                break;
+            case ScalingMode::NONE:
+                bounds.x *= sourceRes.x;
+                bounds.y *= sourceRes.y;
+                bounds.width *= sourceRes.x;
+                bounds.height *= sourceRes.y;
+                break;
+            }
+            if (anchor != Anchor::NONE)
+            {
+                auto val = GetScaled(inset);
+                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, val);
+                bounds.x = pos.x;
+                bounds.y = pos.y;
+            }
+            // Floating points...
+            bounds.x = std::floor(bounds.x + 0.01F);
+            bounds.y = std::floor(bounds.y + 0.01F);
+            bounds.width = std::floor(bounds.width + 0.01F);
+            bounds.height = std::floor(bounds.height + 0.01F);
         }
     };
 

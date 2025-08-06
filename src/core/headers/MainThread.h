@@ -36,6 +36,7 @@ namespace magique::mainthread
                 data.engineTime = static_cast<float>(time);
 
                 WakeUpJobs();
+                global::UI_DATA.updateBeginTick();
 
                 if (UPDATE_WORK >= 1.0)
                 {

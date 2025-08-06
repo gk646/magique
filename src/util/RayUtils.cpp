@@ -19,9 +19,9 @@ namespace magique
 
     int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing)
     {
-        int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
-        float textOffsetY = 0;    // Offset between lines (on linebreak '\n')
-        float textOffsetX = 0.0f; // Offset X to next character to draw
+        int size = TextLength(text);                  // Total size in bytes of the text, scanned by codepoints in loop
+        float textOffsetY = 0;                        // Offset between lines (on linebreak '\n')
+        float textOffsetX = 0.0f;                     // Offset X to next character to draw
         float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
         for (int i = 0; i < size;)
         {
@@ -87,6 +87,24 @@ namespace magique
         return Rectangle{center.x - width / 2.0F, center.y - height / 2.0F, width, height};
     }
 
+    Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height)
+    {
+        return Rectangle{rect.x - width / 2, rect.y - height / 2, rect.width + width, rect.height + height};
+    }
+
+    float GetRoundness(const float radius, const Rectangle& bounds)
+    {
+        if (bounds.width > bounds.height)
+        {
+            // radius = (height * roundness) /2
+            return (radius * 2.0F) / bounds.height;
+        }
+        else
+        {
+            return (radius * 2.0F) / bounds.width;
+        }
+    }
+
     static Point prevRes = {};
 
     void ToggleFullscreenEx()
@@ -104,6 +122,33 @@ namespace magique
             SetWindowSize((int)prevRes.x, (int)prevRes.y);
         }
         ToggleFullscreen();
+    }
+
+    Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType)
+    {
+        auto img = LoadImageFromMemory(fileType, data, size);
+        auto texture = LoadTextureFromImage(img);
+        UnloadImage(img);
+        return texture;
+    }
+
+    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint)
+    {
+        DrawTexturePro(texture, {0, 0, (float)texture.width, (float)texture.height}, dest, {0, 0}, 0, tint);
+    }
+
+    void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
+                          float radius)
+    {
+        // First lighter outline
+        // then dark outline
+        // then border
+
+        const auto largeRect = GetEnlargedRect(bounds, 2, 2);
+        DrawRectangleRoundedLinesEx(largeRect, GetRoundness(radius + 1, largeRect), 30, 1, filler);
+        DrawRectangleRoundedLinesEx(largeRect, GetRoundness(radius, largeRect), 30, 1, outline);
+        const auto boundsRound = GetRoundness(radius, bounds);
+        DrawRectangleRoundedLinesEx(bounds, boundsRound, 30, 1, border);
     }
 
 

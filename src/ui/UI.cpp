@@ -59,32 +59,42 @@ namespace magique
 
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
-    Point GetMousePos() { return global::UI_DATA.mouse; }
+    Point GetMousePos()
+    {
+        const auto mouse = GetMousePosition();
+        return Point{std::round(mouse.x), std::round(mouse.y)};
+    }
 
     void SetUITargetResolution(float width, float height) { global::UI_DATA.targetRes = {width, height}; }
 
-    bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyPressed(key); }
+    bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressed(key); }
 
-    bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyDown(key); }
+    bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyDown(key); }
 
-    bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.inputConsumed && ::IsKeyReleased(key); }
+    bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
 
     bool LayeredInput::IsMouseButtonPressed(const int key)
     {
-        return !global::UI_DATA.inputConsumed && ::IsMouseButtonPressed(key);
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonPressed(key);
     }
+
     bool LayeredInput::IsMouseButtonDown(const int key)
     {
-        return !global::UI_DATA.inputConsumed && ::IsMouseButtonDown(key);
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonDown(key);
     }
-    bool LayeredInput::IsMouseButtonReleased(int key)
+
+    bool LayeredInput::IsMouseButtonReleased(const int key)
     {
-        return !global::UI_DATA.inputConsumed && ::IsMouseButtonReleased(key);
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonReleased(key);
     }
 
-    void LayeredInput::Consume() { global::UI_DATA.inputConsumed = true; }
+    void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
 
-    bool LayeredInput::GetIsConsumed() { return global::UI_DATA.inputConsumed; }
+    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
+
+    bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
+
+    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
     void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 } // namespace magique

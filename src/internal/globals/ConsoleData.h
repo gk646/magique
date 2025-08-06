@@ -6,6 +6,7 @@
 #include <raylib/config.h>
 
 #include <magique/core/Debug.h>
+#include <magique/ui/UI.h>
 #include <magique/core/Game.h>
 #include <magique/core/Core.h>
 #include <magique/gamedev/Console.h>
@@ -568,7 +569,7 @@ namespace magique
         const auto cWidth = static_cast<float>(GetScreenWidth());
         const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
         const Rectangle cRect = {0, 0, cWidth, cHeight};
-        if (CheckCollisionPointRec(GetMousePosition(), cRect))
+        if (CheckCollisionPointRec(GetMousePos().v(), cRect))
         {
             data.renderOffset = std::max(0.0F, data.renderOffset + GetMouseWheelMoveV().y * 10.0F);
         }

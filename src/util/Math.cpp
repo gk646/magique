@@ -42,6 +42,12 @@ namespace magique
         return (fractionalPart < EPSILON) || (1.0F - fractionalPart < EPSILON);
     }
 
+    bool IsEvenNumber(const float num)
+    {
+        const auto integer = static_cast<int64_t>(std::floor(num));
+        return integer % 2 == 0;
+    }
+
     Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, const float radius, const float angle)
     {
         const auto direction = GetDirectionFromAngle(angle);
