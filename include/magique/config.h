@@ -48,8 +48,8 @@
 #define MAGIQUE_PATHFINDING_CELL_SIZE (16)
 
 // Controls the maximum amount of tiles that can be evaluated in a single search
-// Note: This is the global maximum, a specific maximum can be set on each query
-#define MAGIQUE_MAX_PATH_SEARCH_LEN (2048)
+// Note: This is the total number of search iterations - you can specify a path length limit individually
+#define MAGIQUE_MAX_PATH_SEARCH_CAPACITY (1024)
 
 // Checks if the entity still exists before calling the collision method
 // This incurs some overhead but makes it easier to avoid accessing deleted entities

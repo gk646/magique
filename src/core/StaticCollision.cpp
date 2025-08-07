@@ -25,9 +25,6 @@ namespace magique
         }
 
         auto& data = global::STATIC_COLL_DATA;
-        if (!data.mapObjectGrids.contains(map))
-            data.mapObjectGrids.add(map);
-
         auto& mapTileObjectVec = data.colliderReferences.tileObjectMap[map];
         for (const auto& info : mapTileObjectVec) // Check if the vector already exists
         {
@@ -140,9 +137,6 @@ namespace magique
             LOG_WARNING("Tile data for this map was already loaded. Remove it before you can load it again");
             return;
         }
-
-        if (!data.mapTileGrids.contains(map))
-            data.mapTileGrids.add(map);
 
         auto& grid = data.mapTileGrids[map];
         const auto tileSize = data.tileSetScale * static_cast<float>(data.tileSet->getTileSize());

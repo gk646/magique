@@ -371,8 +371,8 @@ private:
 template <typename T>
 struct MapHolder final
 {
-    uint8_t lookupTable[UINT8_MAX]{};
-    magique::vector<T> elements{};
+    mutable uint8_t lookupTable[UINT8_MAX]{};
+    mutable magique::vector<T> elements{};
 
     MapHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
 
@@ -383,19 +383,21 @@ struct MapHolder final
 
     T& operator[](const MapID map)
     {
-        assert(contains(map) && "Accessing empty index");
+        if (!contains(map)) [[unlikely]]
+            add(map);
         const auto idx = lookupTable[static_cast<int>(map)];
         return elements[idx];
     }
 
     const T& operator[](const MapID map) const
     {
-        assert(contains(map) && "Accessing empty index");
+        if (!contains(map)) [[unlikely]]
+            add(map);
         const auto idx = lookupTable[static_cast<int>(map)];
         return elements[idx];
     }
 
-    void add(const MapID map)
+    void add(const MapID map) const
     {
         assert(!contains(map) && "Trying to add at existing map");
         const auto size = static_cast<int>(elements.size());

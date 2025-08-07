@@ -55,7 +55,7 @@ namespace magique
     // Failure: Returns UINT64_MAX if no timer was started in this slot
     uint64_t GetTimerTime(int num);
 
-    // Stops the timer with the given id and returns elapsed nanos since starting
+    // Stops the timer with the given id and returns elapsed nanos since starting - 0 if timer has not started
     uint64_t StopTimer(int num);
 
 } // namespace magique

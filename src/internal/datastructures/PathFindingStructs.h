@@ -1,0 +1,158 @@
+#ifndef PATHFINDINGSTRUCTS_H
+#define PATHFINDINGSTRUCTS_H
+
+#include <bitset>
+
+namespace magique
+{
+    using PathFindingHeuristicFunc = float (*)(const Point& curr, const Point& end);
+    using PathFindingMoveCostFunc = float (*)(const Point& dir);
+
+    inline constexpr std::array<PathFindingHeuristicFunc, 2> PATH_HEURISTICS = {
+        [](const Point& curr, const Point& end) { return curr.manhattan(end) * 1.1F; },
+        [](const Point& curr, const Point& end) { return curr.euclidean(end) * 1.1F; },
+    };
+    inline constexpr std::array<PathFindingMoveCostFunc, 2> MOVE_COST = {
+        [](const Point& dir) { return 1.0F; },
+        [](const Point& dir) { return dir.x != 0 && dir.y != 0 ? 1.41F : 1.0F; },
+    };
+    inline std::array MOVEMENTS = {std::vector{
+                                       Point{0, -1}, // North
+                                       {1, 0},       // East
+                                       {0, 1},       // South
+                                       {-1, 0},      // West
+                                   },
+                                   std::vector{
+                                       Point{0, -1}, // North
+                                       {1, -1},      // North-East
+                                       {1, 0},       // East
+                                       {1, 1},       // South-East
+                                       {0, 1},       // South
+                                       {-1, 1},      // South-West
+                                       {-1, 0},      // West
+                                       {-1, -1}      // North-West
+                                   }};
+
+    struct GridNode final
+    {
+        Point position{};
+        float fCost = 0.0F; // Combined cost
+        float gCost = 0.0F; // Cost from start
+        uint16_t parent = UINT16_MAX;
+        uint16_t stepCount = 0;
+        GridNode() = default;
+        GridNode(const Point position, float gCost, float hCost, uint16_t parent, uint16_t stepCount) :
+            position(position), fCost(gCost + hCost), gCost(gCost), parent(parent), stepCount(stepCount)
+        {
+        }
+        bool operator>(const GridNode& o) const { return fCost > o.fCost; }
+        bool operator==(const GridNode& o) const { return position == o.position; }
+    };
+
+    using VisitedCellID = uint32_t;
+
+    [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
+    {
+        // VisitedCellID must be uint otherwise the shifting doesn't work
+        // A signed int has its signed saved in the most significant bit regardless of size
+        // Thus shifting the number left shifts it away...
+        // The casting of negative numbers to uint results in: Largest value - abs(value)
+        // So negative numbers go down from the top - which is good for hash distribution anyway
+        const auto first = static_cast<uint16_t>(cellX);
+        const auto second = static_cast<uint16_t>(cellY);
+        return (static_cast<VisitedCellID>(first) << 16) | second;
+    }
+
+    // This is just a technique to pack data more closely
+    // Instead of treating the pathfinding grid as a grid with the main size given in config.h
+    // We increase the outer grid by a factor - this reduces the values stored in the hashmap which is already better.
+    // Then we use a bitset to tightly pack the data of each of the subgrids within the bigger grid
+    // Given a MAGIQUE_PATHFINDING_CELL_SIZE of 32 and a subgrid size of 16 the outer grid is 16 * 32 = 512
+    // This means there are 16 * 16 normal grids inside the enlarged grid
+    // By dividing the normalize coordinate inside the current enlarged grid cell (value between 0 - 512) by 32
+    // We get the index at which it is stored inside the bitset (flattened array)
+    template <int mainGridBaseSize, int subGridSize = 16> // Fits into cache line (key/value pair)
+    struct DenseLookupGrid final
+    {
+        // Is constexpr and power of 2 to get optimized division and modulo
+        constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
+
+        HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
+
+        [[nodiscard]] bool getIsMarked(const float x, const float y) const
+        {
+            // < -1 0 < 1
+            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
+            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
+            const auto pathCell = GetVisitedCell(cellX, cellY);
+            const auto it = visited.find(pathCell);
+            if (it != visited.end()) // Get the position within the subgrid
+            {
+                const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+                const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+                return it->second[vCellX + (vCellY * subGridSize)];
+            }
+            return false;
+        }
+
+        void setMarked(const float x, const float y)
+        {
+            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
+            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
+            const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
+            const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
+            const auto cell = GetVisitedCell(cellX, cellY);
+            visited[cell].set(vCellX + (vCellY * subGridSize), true);
+        }
+
+        void insert(const float x, const float y, const float w, const float h)
+        {
+            auto insertFunc = [this](const int cellX, const int cellY)
+            { setMarked((cellX * MAGIQUE_PATHFINDING_CELL_SIZE), (cellY * MAGIQUE_PATHFINDING_CELL_SIZE)); };
+            RasterizeRect<mainGridBaseSize>(insertFunc, x, y, w, h);
+        }
+
+        void clear() { visited.clear(); }
+    };
+
+    // Lookup grid that takes all given positions relative to its center
+    // This works good inside a single search - cleared between each search
+    // Allows very fast lookups without a hashmap
+    template <int size>
+    struct StaticDenseLookupGrid final
+    {
+        std::array<bool, size> rows[size]{};
+        int midX;
+        int midY;
+
+        void setMid(const Point& mid)
+        {
+            midX = static_cast<int>(mid.x);
+            midY = static_cast<int>(mid.y);
+        }
+
+        [[nodiscard]] bool getIsMarked(const float x, const float y) const
+        {
+            const auto relX = static_cast<int>(x) - midX + size / 2;
+            const auto relY = static_cast<int>(y) - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
+            {
+                return rows[relY][relX];
+            }
+            return true;
+        }
+
+        void setMarked(const float x, const float y)
+        {
+            const auto relX = static_cast<int>(x) - midX + size / 2;
+            const auto relY = static_cast<int>(y) - midY + size / 2;
+            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
+            {
+                rows[relY][relX] = true;
+            }
+        }
+
+        void clear() { memset(rows, 0, size * size * sizeof(bool)); }
+    };
+} // namespace magique
+#endif //PATHFINDINGSTRUCTS_H

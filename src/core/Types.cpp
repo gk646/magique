@@ -79,9 +79,8 @@ namespace magique
 
     float Point::euclidean(const Point& p) const
     {
-        float distSqr = (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
-        SquareRoot(distSqr);
-        return distSqr;
+        float distSqr = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+        return std::sqrt(distSqr);
     }
 
     float Point::chebyshev(const Point& p) const
@@ -159,9 +158,9 @@ namespace magique
         return *this;
     }
 
-    Point& Point::decreaseMagnitude(float f)
+    Point& Point::decreaseMagnitude(const float f)
     {
-        float magnitude = std::sqrt(x * x + y * y);
+        const float magnitude = std::sqrt(x * x + y * y);
         if (magnitude <= f)
         {
             x = 0.0f;

@@ -38,6 +38,7 @@ namespace cxstructs
               typename size_type = uint32_t>
     class PriorityQueue
     {
+        static_assert(std::is_trivially_destructible_v<T>, "Must be trivial");
         Allocator alloc;
         T* arr_;
         size_type len_;
@@ -51,13 +52,6 @@ namespace cxstructs
             T* n_arr = alloc.allocate(len_);
             std::uninitialized_move(arr_, arr_ + size_, n_arr);
 
-            if constexpr (!std::is_trivial_v<T>)
-            {
-                for (size_t i = 0; i < size_; i++)
-                {
-                    std::allocator_traits<Allocator>::destroy(alloc, &arr_[i]);
-                }
-            }
             alloc.deallocate(arr_, size_);
             arr_ = n_arr;
         }
@@ -68,19 +62,11 @@ namespace cxstructs
 
             T* n_arr = alloc.allocate(len_);
             std::uninitialized_move(arr_, arr_ + size_, n_arr);
-
             // Destroy the original objects
-            if constexpr (!std::is_trivial_v<T>)
-            {
-                for (size_t i = 0; i < old_len; i++)
-                {
-                    std::allocator_traits<Allocator>::destroy(alloc, &arr_[i]);
-                }
-            }
-
             alloc.deallocate(arr_, old_len);
             arr_ = n_arr;
         }
+
         void sift_up(size_type index) noexcept
         {
             auto parent = (index - 1) / 2;
@@ -91,6 +77,7 @@ namespace cxstructs
                 parent = (index - 1) / 2;
             }
         }
+
         void sift_down(size_type index) noexcept
         {
             auto left = 2 * index + 1;
@@ -187,17 +174,7 @@ namespace cxstructs
             }
             return *this;
         }
-        ~PriorityQueue()
-        {
-            if (!std::is_trivial_v<T>)
-            {
-                for (size_type i = 0; i < len_; i++)
-                {
-                    std::allocator_traits<Allocator>::destroy(alloc, &arr_[i]);
-                }
-            }
-            alloc.deallocate(arr_, len_);
-        }
+        ~PriorityQueue() { alloc.deallocate(arr_, len_); }
         // the current n_elem of the priority-queue
         [[nodiscard]] size_type size() const { return size_; }
         // Adds an element to the priority queue
@@ -229,25 +206,37 @@ namespace cxstructs
             std::swap(arr_[0], arr_[--size_]);
             sift_down(0);
         }
+        void update(const T& e) noexcept
+        {
+            // This should be the best solution as we cant get a O(1) lookup table for a 2d grid
+            // As the space complexity would be grid*grid (and less dynamic)
+            // Also each cell needs a unique key which probably only works by | them into a bigger type
+            // or just using a hashgrid at that point?
+            // Maybe could benchmark if faster
+            // This solutino iterates from the front and should work well for pathfinding as generally only good nodes are added
+            // This meas we wont have to iterate long
+            for (size_type i = 0; i < size_; ++i)
+            {
+                auto& elem = arr_[i];
+                if (elem == e) // Same element - hacky but works for me
+                {
+                    if (!comp(elem, e))
+                    {
+                        return;
+                    }
+                    elem = e;
+                    sift_up(i);
+                    return;
+                }
+            }
+            push(e);
+        }
         // Returns a read/write reference to the highest priority element of the queue.
         [[nodiscard]] T& top() const noexcept { return arr_[0]; }
         // returns true if the queue is empty
         bool empty() { return size_ == 0; }
         // Clears the queue of all elements
-        void clear()
-        {
-            if (!std::is_trivial_v<T>)
-            {
-                for (size_type i = 0; i < len_; i++)
-                {
-                    std::allocator_traits<Allocator>::destroy(alloc, &arr_[i]);
-                }
-            }
-            alloc.deallocate(arr_, len_);
-            size_ = 0;
-            len_ = 32;
-            arr_ = alloc.allocate(32);
-        }
+        void clear() { size_ = 0; }
         // Reduces the underlying array size to something close to the actual data size.
         // This decreases memory usage.
         void shrink_to_fit() noexcept
@@ -272,6 +261,8 @@ namespace cxstructs
         Iterator begin() { return Iterator(arr_); }
         Iterator end() { return Iterator(arr_ + size_); }
     };
+
+
 } // namespace cxstructs
 
 #endif //CXSTRUCTS_SRC_CXSTRUCTS_PRIORITYQUEUE_H_

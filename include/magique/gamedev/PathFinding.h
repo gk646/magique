@@ -13,7 +13,8 @@
 // This module allows to find paths using the collision data static collision (see core/StaticCollision.h)
 // It uses A-Star and works by keeping a search grid of traversable tiles
 // Note: The grid size is configured at compile time in magique/config.h
-// Note: Watch out if you have a low MAGIQUE_PATHFINDING_CELL_SIZE and low 'searchLen' - there might be a path but its too long!
+// IMPORTANT: You probably don't need to get a new path each tick! It's probably enough to call it a couple of times per second
+//          => 30 times faster if you only do it 2 times per second instead of 60 (each tick) with almost same results
 // .....................................................................
 
 namespace magique
@@ -25,11 +26,12 @@ namespace magique
     // Note: The point list is in REVERSE order! (last element is the next point)
     // Failure: if no path can be found returns an empty vector
     // Returns: True if a path could be found, false if the target is a solid tile or cant be reached
-    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int pathLen);
+    bool FindPath(std::vector<Point>& path, Point start, Point end, MapID map, int maxLen = 50,
+                  GridMode mode = GridMode::STAR);
 
     // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
     // Same as FindPath() but only assigns the next point
-    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
+    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
 
     //================= QUERY =================//
 
@@ -37,7 +39,7 @@ namespace magique
     bool GetPathRayCast(Point start, Point end, MapID map);
 
     // Returns true if there exists a valid path from start to end
-    bool GetExistsPath(Point start, Point end, MapID map, int max = MAGIQUE_MAX_PATH_SEARCH_LEN);
+    bool GetExistsPath(Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
 
     //================= UTIL =================//
 

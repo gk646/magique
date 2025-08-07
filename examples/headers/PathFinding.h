@@ -24,13 +24,13 @@ enum class MapID : uint8_t
 enum EntityType : uint16_t
 {
     PLAYER,
+    OBSTACLE,
     HUNTER,
 };
 
 constexpr float MOVE_SPEED = 2.5;
 std::vector<Point> PATH{};
-std::vector<Point> PATH2{};
-ManualColliderGroup COLLIDERS;
+bool STOP_FLAG = false;
 
 struct PlayerScript final : EntityScript
 {
@@ -45,13 +45,40 @@ struct PlayerScript final : EntityScript
             pos.x -= MOVE_SPEED;
         if (IsKeyDown(KEY_D))
             pos.x += MOVE_SPEED;
+
+        if (IsKeyPressed(KEY_SPACE))
+            STOP_FLAG = !STOP_FLAG;
+    }
+
+    void onMouseEvent(entt::entity self) override
+    {
+        auto worldMouse = GetScreenToWorld2D(GetMousePosition(), GetCamera());
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        {
+            if (GetNearbyEntities({}, {worldMouse.x, worldMouse.y}, 1).empty())
+                CreateEntity(OBSTACLE, worldMouse.x, worldMouse.y, {});
+        }
+        else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+        {
+            auto& vec = GetNearbyEntities({}, {worldMouse.x, worldMouse.y}, 1);
+            for (const auto e : vec)
+            {
+                DestroyEntity(e);
+            }
+        }
     }
 };
 
-struct Hunter final : EntityScript
+struct ObstacleScript final : EntityScript
+{
+    void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override {}
+};
+
+struct HunterScript final : EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
+
         auto& pos = GetComponent<PositionC>(self);
         const auto targetEntity = GetCameraEntity();
         auto& tarPos = GetComponent<PositionC>(targetEntity); // Player is the camera holder here
@@ -59,17 +86,16 @@ struct Hunter final : EntityScript
         auto mid = pos.getMiddle(GetComponent<CollisionC>(self));
         auto target = tarPos.getMiddle(GetComponent<CollisionC>(targetEntity));
 
-        if (mid.euclidean(target) < 27)
-            return;
-
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 20; ++i)
         {
-            if (!FindPath(PATH, mid, target, pos.map, 1'000))
+            if (!FindPath(PATH, mid, target, pos.map, 15, GridMode::CROSS))
             {
                 LOG_WARNING("Could not find path!");
-                return;
             }
         }
+
+        if (STOP_FLAG || PATH.empty())
+            return;
 
         Point nextPoint = PATH[PATH.size() - 1];
         Point moveVec = GetDirectionVector(mid, nextPoint);
@@ -79,7 +105,6 @@ struct Hunter final : EntityScript
     }
 };
 
-
 struct Example final : Game
 {
     Example() : Game("magique - PathFindingExample") {}
@@ -88,7 +113,6 @@ struct Example final : Game
     {
         SetTargetFPS(100);
         //SetBenchmarkTicks(300);
-        SetWindowState(FLAG_WINDOW_RESIZABLE);
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -98,31 +122,25 @@ struct Example final : Game
         };
         RegisterEntity(PLAYER, playerFunc);
 
-        const auto objFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 25, 25); };
-        RegisterEntity(HUNTER, objFunc);
+        const auto hunterFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 25, 25); };
+        RegisterEntity(HUNTER, hunterFunc);
+
+        const auto objFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 50, 50); };
+        RegisterEntity(OBSTACLE, objFunc);
 
         // Set the scripts
         SetEntityScript(PLAYER, new PlayerScript());
-        SetEntityScript(HUNTER, new Hunter());
+        SetEntityScript(HUNTER, new HunterScript());
+        SetEntityScript(OBSTACLE, new ObstacleScript());
 
         // Create some objects
         const MapID map = MapID::DEFAULT;
         CreateEntity(PLAYER, 50, 300, map);
         CreateEntity(HUNTER, 50, 50, map);
 
-        // #######
-        // #     #
-        // ##### #
-        // #     #
-        // # #####
-        // #     #
-        // ##### #
-        // #     #
-        // # #####
-        AddColliderGroup(MapID::DEFAULT, COLLIDERS);
-
         SetShowCompassOverlay(true);
         SetShowPathFindingOverlay(true);
+        SetTypePathSolid(OBSTACLE, true);
     }
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
@@ -133,21 +151,11 @@ struct Example final : Game
             {
                 const auto& pos = GetComponent<const PositionC>(e);
                 const auto& col = GetComponent<const CollisionC>(e);
-                DrawRectangleRec({pos.x, pos.y, col.p1, col.p2}, BLUE);
+                auto color = pos.type == OBSTACLE ? BLACK : pos.type == HUNTER ? RED : GREEN;
+                DrawRectangleRec({pos.x, pos.y, col.p1, col.p2}, color);
             }
-
-            const auto& pos = GetComponent<const PositionC>(GetCameraEntity());
-            const auto& tarPos = GetComponent<const PositionC>(entt::entity(1)); // Unsafe
-
-            // Solid objects
-            for (const auto& col : COLLIDERS.getColliders())
-            {
-                DrawRectangleRec({col.x, col.y, col.p1, col.p2}, DARKGRAY);
-            }
-
-            DrawPath(PATH, BLUE);
-            DrawPath(PATH2, GREEN);
         }
+        DrawPath(PATH);
         EndMode2D();
     }
 };

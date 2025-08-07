@@ -79,7 +79,7 @@ namespace magique
             }
         }
         LOG_WARNING("Timer with ID %d not found!", num);
-        return -1;
+        return 0;
     }
 
 } // namespace magique

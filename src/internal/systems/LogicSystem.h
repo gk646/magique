@@ -132,14 +132,6 @@ namespace magique
             const auto map = pos.map;
 
             loadedMaps[static_cast<int>(map)] = true;
-
-            // Sadly have to check that - could be that an entity just switched layer
-            if (!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
-                dynamicData.mapEntityGrids.add(map);
-
-            if (!pathData.mapsDynamicGrids.contains(map)) [[unlikely]]
-                pathData.mapsDynamicGrids.add(map);
-
             auto& hashGrid = dynamicData.mapEntityGrids[map];
 
             if (loadedMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is

@@ -56,7 +56,7 @@ namespace magique
         // How much vectors point in the same direction - positive if less than 90 degrees - negative if more
         float dot(const Point& p) const;
 
-        // Returns the relative orientation of two vectors (and the area of the parallelogram)
+        // Returns the relative orientation of two vectors (and the area of the parallelogram they span)
         // Positive if second vector is to the left, negative if to the right (from the first)
         float cross(const Point& p) const;
 
@@ -78,7 +78,7 @@ namespace magique
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
 
-        // Decreases the magnitude of the vector by the given scalar
+        // Decreases the magnitude of the vector by the given scalar (flat)
         Point& decreaseMagnitude(float f);
 
         // Returns the perpendicular vector to this one - either to the left or to the right
@@ -424,6 +424,14 @@ namespace magique
         friend void SetEnvironmentParam(const char*, float);
         friend void SetEnvironmentParam(const char*, bool);
         friend bool RemoveEnvironmentParam(const char*);
+    };
+
+    enum class GridMode : uint8_t
+    {
+        // Only allows movement in four orthogonal directions, up left down right
+        // The found path will NOT contain any diagonal moves
+        CROSS,
+        STAR, // Allows all orthogonal direction and additionally all diagonals top left, top right...
     };
 
     //================= MULTIPLAYER =================//

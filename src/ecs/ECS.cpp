@@ -97,22 +97,6 @@ namespace magique
             data.cameraEntity = entity;
             data.cameraMap = map;
         }
-
-        // Creating entities shouldn't happen that often - like this we can avoid the checks in tighter methods
-        auto& pathData = global::PATH_DATA;
-        if (!pathData.mapsStaticGrids.contains(map))
-        {
-            pathData.mapsStaticGrids.add(map);
-        }
-        if (!pathData.mapsDynamicGrids.contains(map))
-        {
-            pathData.mapsDynamicGrids.add(map);
-        }
-        if (!global::DY_COLL_DATA.mapEntityGrids.contains(map))
-        {
-            global::DY_COLL_DATA.mapEntityGrids.add(map);
-        }
-
         return entity;
     }
 
@@ -310,26 +294,26 @@ namespace magique
             LOG_ERROR("No existing entity with a camera component found!");
     }
 
-    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float radius)
+    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float sideLength)
     {
         // This works because the hashset uses a vector as underlying storage type (stored without holes)
-        const auto& dynamicData = global::DY_COLL_DATA;
+        auto& dynamicData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
 
         // For security - user might call this before creating any entities
         if (!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
             return data.nearbyQueryData.cache.values();
 
-        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
+        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, sideLength))
             return data.nearbyQueryData.cache.values();
 
-        data.nearbyQueryData.lastRadius = radius;
+        data.nearbyQueryData.lastRadius = sideLength;
         data.nearbyQueryData.lastOrigin = origin;
         data.nearbyQueryData.cache.clear();
 
-        const auto queryX = origin.x - radius;
-        const auto queryY = origin.y - radius;
-        dynamicData.mapEntityGrids[map].query(data.nearbyQueryData.cache, queryX, queryY, radius * 2.0F, radius * 2.0F);
+        const auto queryX = origin.x - sideLength / 2.0F;
+        const auto queryY = origin.y - sideLength / 2.0F;
+        dynamicData.mapEntityGrids[map].query(data.nearbyQueryData.cache, queryX, queryY, sideLength, sideLength);
         return data.nearbyQueryData.cache.values();
     }
 

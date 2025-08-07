@@ -8,18 +8,17 @@
 
 namespace magique
 {
-    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int pathLen)
+    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int maxLen,
+                  GridMode mode)
     {
         auto& path = global::PATH_DATA;
-        constexpr int capacity = MAGIQUE_MAX_PATH_SEARCH_LEN;
-        const int maxLen = std::min(pathLen == 0 ? capacity : pathLen, capacity);
-        return path.findPath(pathVec, start, end, map, static_cast<uint16_t>(maxLen));
+        return path.findPath(pathVec, start, end, map, maxLen, mode);
     }
 
-    bool GetNextOnPath(Point& next, const Point start, const Point end, const MapID map, const int searchLen)
+    bool GetNextOnPath(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
     {
         auto& path = global::PATH_DATA;
-        FindPath(path.pathCache, start, end, map, searchLen);
+        FindPath(path.pathCache, start, end, map, maxLen, mode);
         if (path.pathCache.empty())
         {
             return false;
@@ -34,7 +33,7 @@ namespace magique
 
     bool GetPathRayCast(const Point start, const Point end, const MapID map)
     {
-        auto& path = global::PATH_DATA; // Must exist - checked in CreateEntity()
+        auto& path = global::PATH_DATA;
         const auto& staticGrid = path.mapsStaticGrids[map];
         const auto& dynamicGrid = path.mapsDynamicGrids[map];
 
@@ -53,7 +52,7 @@ namespace magique
         {
             const float x = static_cast<float>(x0) * MAGIQUE_PATHFINDING_CELL_SIZE;
             const float y = static_cast<float>(y0) * MAGIQUE_PATHFINDING_CELL_SIZE;
-            DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
+            // DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
             if (PathFindingData::IsCellSolid(x, y, staticGrid, dynamicGrid))
             {
                 return false;
@@ -75,7 +74,7 @@ namespace magique
         return true;
     }
 
-    bool GetExistsPath(const Point start, const Point end, const MapID map, const int max)
+    bool GetExistsPath(const Point start, const Point end, const MapID map, const int max, GridMode mode)
     {
         Point point;
         return GetNextOnPath(point, start, end, map, max);

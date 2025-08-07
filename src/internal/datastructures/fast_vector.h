@@ -479,7 +479,7 @@ template <class T>
 void fast_vector<T>::insert(const T* pos, const T& object)
 {
     assert(pos >= m_data && pos <= m_data + m_size && "Iterator out of bounds");
-    const auto index = pos - m_data;
+    const auto index = static_cast<size_type>(pos - m_data);
     insert(index, object);
 }
 

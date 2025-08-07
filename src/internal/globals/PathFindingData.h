@@ -2,12 +2,13 @@
 #ifndef MAGIQUE_PATHFINDING_DATA_H
 #define MAGIQUE_PATHFINDING_DATA_H
 
-#include <bitset>
 #include <magique/core/Camera.h>
+#include <magique/core/Types.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/utils/CollisionPrimitives.h"
+#include "internal/datastructures/PathFindingStructs.h"
 
 //-----------------------------------------------
 // Pathfinding Data
@@ -23,134 +24,12 @@
 
 namespace magique
 {
-    struct GridNode final
-    {
-        Point position{};
-        float fCost = 0.0F; // Combined cost
-        float gCost = 0.0F; // Combined cost
-        uint16_t parent = UINT16_MAX;
-        GridNode() = default;
-
-        GridNode(const Point position, const float gCost, const float hCost, const uint16_t parent) :
-            position(position), gCost(gCost), fCost(gCost + hCost), parent(parent)
-        {
-        }
-        bool operator>(const GridNode& o) const { return fCost > o.fCost; }
-    };
-
-    using VisitedCellID = uint32_t;
-
-    [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
-    {
-        // VisitedCellID must be uint otherwise the shifting doesn't work
-        // A signed int has its signed saved in the most significant bit regardless of size
-        // Thus shifting the number left shifts it away...
-        // The casting of negative numbers to uint results in: Largest value - abs(value)
-        // So negative numbers go down from the top - which is good for hash distribution anyway
-        const auto first = static_cast<uint16_t>(cellX);
-        const auto second = static_cast<uint16_t>(cellY);
-        return (static_cast<VisitedCellID>(first) << 16) | second;
-    }
-
-    // This is just a technique to pack data more closely
-    // Instead of treating the pathfinding grid as a grid with the main size given in config.h
-    // We increase the outer grid by a factor - this reduces the values stored in the hashmap which is already better.
-    // Then we use a bitset to tightly pack the data of each of the subgrids within the bigger grid
-    // Given a MAGIQUE_PATHFINDING_CELL_SIZE of 32 and a subgrid size of 16 the outer grid is 16 * 32 = 512
-    // This means there are 16 * 16 normal grids inside the enlarged grid
-    // By dividing the normalize coordinate inside the current enlarged grid cell (value between 0 - 512) by 32
-    // We get the index at which it is stored inside the bitset (flattened array)
-    template <int mainGridBaseSize, int subGridSize = 16> // Fits into cache line (key/value pair)
-    struct DenseLookupGrid final
-    {
-        // Is constexpr and power of 2 to get optimized division and modulo
-        constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
-
-        HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
-
-        [[nodiscard]] bool getIsMarked(const float x, const float y) const
-        {
-            // < -1 0 < 1
-            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
-            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
-            const auto pathCell = GetVisitedCell(cellX, cellY);
-            const auto it = visited.find(pathCell);
-            if (it != visited.end()) // Get the position within the subgrid
-            {
-                const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-                const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
-                return it->second[vCellX + (vCellY * subGridSize)];
-            }
-            return false;
-        }
-
-        void setMarked(const float x, const float y)
-        {
-            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
-            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
-            const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-            const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
-            const auto cell = GetVisitedCell(cellX, cellY);
-            visited[cell].set(vCellX + (vCellY * subGridSize), true);
-        }
-
-        void insert(const float x, const float y, const float w, const float h)
-        {
-            auto insertFunc = [this](const int cellX, const int cellY)
-            { setMarked((cellX * MAGIQUE_PATHFINDING_CELL_SIZE), (cellY * MAGIQUE_PATHFINDING_CELL_SIZE)); };
-            RasterizeRect<mainGridBaseSize>(insertFunc, x, y, w, h);
-        }
-
-        void clear() { visited.clear(); }
-    };
-
-    // Lookup grid that takes all given positions relative to its center
-    // This works good inside a single search - cleared between each search
-    // Allows very fast lookups without a hashmap
-    template <int size>
-    struct StaticDenseLookupGrid final
-    {
-        std::array<bool, size> rows[size]{};
-        int midX;
-        int midY;
-
-        void setMid(const Point& mid)
-        {
-            midX = static_cast<int>(mid.x);
-            midY = static_cast<int>(mid.y);
-        }
-
-        [[nodiscard]] bool getIsMarked(const float x, const float y) const
-        {
-            const auto relX = static_cast<int>(x) - midX + size / 2;
-            const auto relY = static_cast<int>(y) - midY + size / 2;
-            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
-            {
-                return rows[relY][relX];
-            }
-            return true;
-        }
-
-        void setMarked(const float x, const float y)
-        {
-            const auto relX = static_cast<int>(x) - midX + size / 2;
-            const auto relY = static_cast<int>(y) - midY + size / 2;
-            if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
-            {
-                rows[relY][relX] = true;
-            }
-        }
-
-        void clear() { memset(rows, 0, size * size * sizeof(bool)); }
-    };
-
     using PathFindingGrid = DenseLookupGrid<MAGIQUE_PATHFINDING_CELL_SIZE>;
 
     struct PathFindingData final
     {
         // Constants
         static constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
-        static constexpr Point crossMove[4] = {{0, -1}, {-1, 0}, {1, 0}, {0, 1}};
 
         // Grid data for each map - if cell is usable for pathfinding or not
         MapHolder<PathFindingGrid> mapsStaticGrids;
@@ -160,7 +39,7 @@ namespace magique
         std::vector<Point> pathCache;
         StaticDenseLookupGrid<200> visited{};
         cxstructs::PriorityQueue<GridNode> frontier{};
-        GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_LEN];
+        GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_CAPACITY];
 
         // Lookup table for entity types and entities
         HashSet<entt::entity> solidEntities;
@@ -188,11 +67,6 @@ namespace magique
         void updateStaticPathGrid(const MapID map)
         {
             const auto& staticData = global::STATIC_COLL_DATA;
-            if (!mapsStaticGrids.contains(map))
-                mapsStaticGrids.add(map);
-            if (!mapsDynamicGrids.contains(map))
-                mapsDynamicGrids.add(map);
-
             auto& staticGrid = mapsStaticGrids[map];
             staticGrid.clear();
 
@@ -273,56 +147,50 @@ namespace magique
             }
         }
 
-        //TODO can be optimized by using bidirectional search
         bool findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map,
-                      const uint16_t maxLen)
+                      const uint16_t maxPathLen, GridMode mode)
         {
             const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
             const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
 
-            // Setup and get grids
+            // Setup
+            uint16_t iterations = 0;
             frontier.clear();
             path.clear();
-            path.reserve(maxLen);
-
+            path.reserve(maxPathLen);
             visited.clear();
             visited.setMid(start);
-
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
 
             // Viability check
-            if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid))
+            if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid)) [[unlikely]]
             {
                 return false;
             }
 
-            // Weighted towards goal
-            auto targetHeuristic = [](const Point& curr, const Point& end) { return curr.octile(end) * 1.15F; };
+            const PathFindingHeuristicFunc hFunc = PATH_HEURISTICS[(int)mode];
+            const PathFindingMoveCostFunc mFunc = MOVE_COST[(int)mode];
+            const auto& movement = MOVEMENTS[(int)mode];
 
-            frontier.emplace(start, 0.0F, targetHeuristic(start, end), UINT16_MAX);
-            uint16_t counter = 0;
-
-            while (!frontier.empty() && counter < MAGIQUE_MAX_PATH_SEARCH_LEN)
+            frontier.emplace(start, 0.0F, hFunc(start, end), UINT16_MAX, 0); // Initial node
+            while (!frontier.empty() && iterations < MAGIQUE_MAX_PATH_SEARCH_CAPACITY)
             {
-                nodePool[counter] = frontier.top();
-                auto& current = nodePool[counter];
+                nodePool[iterations] = frontier.top();
+                auto& current = nodePool[iterations];
                 if (current.position == end)
                 {
                     constructPath(current, path);
                     return true;
                 }
+                if (current.stepCount >= maxPathLen)
+                {
+                    return false;
+                }
+
                 frontier.pop();
                 visited.setMarked(current.position.x, current.position.y);
-
-                /*
-                auto cam = GetCamera();
-                DrawRectangleRec({current.position.x * cellSize - cam.target.x + cam.offset.x,
-                                  current.position.y * cellSize - cam.target.y + cam.offset.y, cellSize, cellSize},
-                                 PURPLE);
-                */
-
-                for (const auto& dir : crossMove)
+                for (const auto& dir : movement)
                 {
                     Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
@@ -331,12 +199,13 @@ namespace magique
                     if (!visited.getIsMarked(newPos.x, newPos.y) &&
                         !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid))
                     {
-                        const float moveCost = dir.x != 0 && dir.y != 0 ? 1.41F : 1.0F;
-                        const auto hCost = targetHeuristic(newPos, end);
-                        frontier.push({newPos, current.gCost + moveCost, hCost, counter});
+                        const float moveCost = mFunc(dir);
+                        const auto hCost = hFunc(newPos, end);
+                        const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
+                        frontier.update({newPos, current.gCost + moveCost, hCost, iterations, newPathLen});
                     }
                 }
-                counter++;
+                iterations++;
             }
             return false;
         }
