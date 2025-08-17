@@ -36,6 +36,9 @@ namespace magique
     // Performs a collision check between the entity and the given rectangle
     void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info);
 
+    // Returns true if the enties collision shape contains or intersects the mouse
+    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
+
     //================= RECTANGLES =================//
 
     // Performs a collision check between a rectangle and a capsule given by its top left position, radius and height

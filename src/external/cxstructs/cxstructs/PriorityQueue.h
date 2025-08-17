@@ -55,6 +55,7 @@ namespace cxstructs
             alloc.deallocate(arr_, size_);
             arr_ = n_arr;
         }
+
         void shrink() noexcept
         {
             auto old_len = len_;

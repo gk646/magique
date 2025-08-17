@@ -131,6 +131,7 @@ struct Texture;
 struct Sound;
 struct Music;
 struct Rectangle;
+struct RenderTexture;
 
 #define MOUSE_LEFT_BUTTON 0
 //=================RAYLIB=================//

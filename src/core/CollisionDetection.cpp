@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <utility>
 #include <raylib/raylib.h>
 
 #include <magique/core/CollisionDetection.h>
@@ -7,6 +6,7 @@
 #include <magique/internal/Macros.h>
 
 #include "internal/utils/CollisionPrimitives.h"
+#include "magique/core/Camera.h"
 
 namespace magique
 {
@@ -293,29 +293,29 @@ namespace magique
         switch (col.shape)
         {
         case Shape::RECT:
-        {
-            if (pos.rotation == 0) [[likely]]
             {
-                return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.width, r.height, info);
-            }
-            // Entity
-            float pxs[4] = {0, col.p1, col.p1, 0};
-            float pys[4] = {0, 0, col.p2, col.p2};
-            RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
+                if (pos.rotation == 0) [[likely]]
+                {
+                    return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.width, r.height, info);
+                }
+                // Entity
+                float pxs[4] = {0, col.p1, col.p1, 0};
+                float pys[4] = {0, 0, col.p2, col.p2};
+                RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
 
-            // World rect
-            const float p1xs[4] = {r.x, r.x + r.width, r.x + r.width, r.x};
-            const float p1ys[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
-            return SAT(pxs, pys, p1xs, p1ys, info);
-        }
+                // World rect
+                const float p1xs[4] = {r.x, r.x + r.width, r.x + r.width, r.x};
+                const float p1ys[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
+                return SAT(pxs, pys, p1xs, p1ys, info);
+            }
         case Shape::CIRCLE:
-        {
-            return RectToCircle(r.x, r.y, r.width, r.height, pos.x + col.p1, pos.y + col.p1, col.p1, info);
-        }
+            {
+                return RectToCircle(r.x, r.y, r.width, r.height, pos.x + col.p1, pos.y + col.p1, col.p1, info);
+            }
         case Shape::CAPSULE:
-        {
-            return RectToCapsule(r.x, r.y, r.width, r.height, pos.x, pos.y, col.p1, col.p2, info);
-        }
+            {
+                return RectToCapsule(r.x, r.y, r.width, r.height, pos.x, pos.y, col.p1, col.p2, info);
+            }
         case Shape::TRIANGLE:
             const float rectX[4] = {r.x, r.x + r.width, r.x + r.width, r.x}; // World rect
             const float rectY[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
@@ -331,6 +331,15 @@ namespace magique
             return SAT(rectX, rectY, triX, triY, info);
         }
     }
+
+    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
+    {
+        CollisionInfo info;
+        auto worldMouse = GetScreenToWorld2D(GetMousePosition(),GetCamera());
+        CheckCollisionEntityRect(pos, col, {worldMouse.x, worldMouse.y, 1, 1}, info);
+        return info.isColliding();
+    }
+
 
     void CheckCollisionRecCapsule(const Rectangle& rect, const Point pos, const float r, const float h,
                                   CollisionInfo& info)

@@ -97,4 +97,32 @@ namespace magique
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
     void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
+
+    Rectangle GetDynamicRectAtMouse(const Point& offset, float width, float height)
+    {
+        const auto& mouse = GetMousePos();
+        Rectangle rect = {mouse.x + offset.x, mouse.y + offset.y, width, height};
+
+        // Outside horizontally
+        if (rect.x + rect.width > global::UI_DATA.targetRes.x)
+        {
+            rect.x -= rect.width + offset.x;
+        }
+        else if (rect.x < 0)
+        {
+            rect.x += rect.width + offset.x;
+        }
+
+        // Outside vertically
+        if (rect.y + rect.height > global::UI_DATA.targetRes.y)
+        {
+            rect.y -= rect.height + offset.y;
+        }
+        else if (rect.y < 0)
+        {
+            rect.y += rect.height - (rect.height + offset.y);
+        }
+        return rect;
+    }
+
 } // namespace magique

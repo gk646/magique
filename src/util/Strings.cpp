@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include "magique/util/Math.h"
+
+
 #include <cmath>
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
@@ -461,7 +464,7 @@ namespace magique
 
     const char* FormatFloat(float num, float cutoff, int justification)
     {
-        if (num < cutoff)
+        if (num < cutoff && !IsWholeNumber(num))
         {
             return TextFormat("%*.1f", justification, num);
         }

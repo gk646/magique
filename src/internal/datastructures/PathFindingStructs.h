@@ -10,11 +10,11 @@ namespace magique
 
     inline constexpr std::array<PathFindingHeuristicFunc, 2> PATH_HEURISTICS = {
         [](const Point& curr, const Point& end) { return curr.manhattan(end) * 1.1F; },
-        [](const Point& curr, const Point& end) { return curr.euclidean(end) * 1.1F; },
+        [](const Point& curr, const Point& end) { return curr.chebyshev(end) * 1.1F; },
     };
     inline constexpr std::array<PathFindingMoveCostFunc, 2> MOVE_COST = {
         [](const Point& dir) { return 1.0F; },
-        [](const Point& dir) { return dir.x != 0 && dir.y != 0 ? 1.41F : 1.0F; },
+        [](const Point& dir) { return dir.x != 0 && dir.y != 0 ? 1.40F : 1.0F; },
     };
     inline std::array MOVEMENTS = {std::vector{
                                        Point{0, -1}, // North
@@ -35,14 +35,15 @@ namespace magique
 
     struct GridNode final
     {
-        Point position{};
-        float fCost = 0.0F; // Combined cost
-        float gCost = 0.0F; // Cost from start
-        uint16_t parent = UINT16_MAX;
-        uint16_t stepCount = 0;
+        Point position;
+        float fCost; // Combined cost
+        float gCost; // Cost from start
+        uint16_t parent;
+        uint16_t stepCount;
         GridNode() = default;
-        GridNode(const Point position, float gCost, float hCost, uint16_t parent, uint16_t stepCount) :
-            position(position), fCost(gCost + hCost), gCost(gCost), parent(parent), stepCount(stepCount)
+        GridNode(const Point position, const float gCost, const float fCost, const uint16_t parent,
+                 const uint16_t stepCount) :
+            position(position), fCost(fCost), gCost(gCost), parent(parent), stepCount(stepCount)
         {
         }
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }
@@ -118,10 +119,10 @@ namespace magique
     // Lookup grid that takes all given positions relative to its center
     // This works good inside a single search - cleared between each search
     // Allows very fast lookups without a hashmap
-    template <int size>
+    template <typename T, int size>
     struct StaticDenseLookupGrid final
     {
-        std::array<bool, size> rows[size]{};
+        std::array<T, size> rows[size]{};
         int midX;
         int midY;
 
@@ -131,7 +132,7 @@ namespace magique
             midY = static_cast<int>(mid.y);
         }
 
-        [[nodiscard]] bool getIsMarked(const float x, const float y) const
+        [[nodiscard]] T getValue(const float x, const float y) const
         {
             const auto relX = static_cast<int>(x) - midX + size / 2;
             const auto relY = static_cast<int>(y) - midY + size / 2;
@@ -139,20 +140,22 @@ namespace magique
             {
                 return rows[relY][relX];
             }
-            return true;
+            return 0;
         }
 
-        void setMarked(const float x, const float y)
+        void setValue(const float x, const float y, const T& value)
         {
             const auto relX = static_cast<int>(x) - midX + size / 2;
             const auto relY = static_cast<int>(y) - midY + size / 2;
             if (relX >= 0 && relX < size && relY >= 0 && relY < size) [[likely]]
             {
-                rows[relY][relX] = true;
+                rows[relY][relX] = value;
             }
         }
 
-        void clear() { memset(rows, 0, size * size * sizeof(bool)); }
+        void clear() { memset(rows, 0, size * size * sizeof(T)); }
     };
+
+
 } // namespace magique
 #endif //PATHFINDINGSTRUCTS_H

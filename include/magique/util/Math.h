@@ -61,6 +61,9 @@ namespace magique
     // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
     float TowardsZero(float value, float change);
 
+    // Applies the change to the given value such that it goes towards the closest max (positive or negative) but not oversteps it
+    float AwayFromZero(float value, float change, float max);
+
 } // namespace magique
 
 

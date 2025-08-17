@@ -89,7 +89,8 @@ namespace magique
     // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
     const char* GetTimeString(int seconds);
 
-    // Formats a float number with 1 decimal until the cutoff - then truncates to 0 decimals
+    // Formats a float number so its nicely readable
+    // If its lower then cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
     // if justification is postiive its right bound, if negative leftbound
     const char* FormatFloat(float num, float cutoff = 100.0F, int justification = 4);
 

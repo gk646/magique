@@ -74,6 +74,12 @@ namespace magique
     // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel are with fixed resolutions
     void SetUISourceResolution(float width, float height);
 
+    // Returns a rectangle that adjusted to be on the screen (target resolution)
+    // Default its bottom right corner is the mouse position - can be offset manually
+    // Note: Useful for tooltips
+    Rectangle GetDynamicRectAtMouse(const Point& offset, float width, float height);
+
+
 } // namespace magique
 
 #endif //MAGIQUE_UI_H

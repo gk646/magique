@@ -45,6 +45,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             >
             $<$<CONFIG:Release>:
             -Ofast
+            -ffast-math
             -DNDEBUG
             -fuse-linker-plugin
             -fomit-frame-pointer

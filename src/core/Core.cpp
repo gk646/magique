@@ -60,6 +60,8 @@ namespace magique
 
     void ClearEntityCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
+    bool IsInEntityCache(entt::entity e) { return global::ENGINE_DATA.entityUpdateCache.contains(e); }
+
     void SetEnableCollisionSystem(const bool value) { global::ENGINE_CONFIG.enableCollisionSystem = value; }
 
     void SetEngineFont(const Font& font) { global::ENGINE_CONFIG.font = font; }

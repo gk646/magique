@@ -149,6 +149,11 @@ namespace magique
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
+    bool UIObject::getIsPressed(int mouseButton) const
+    {
+        return IsMouseButtonDown(mouseButton) && CheckCollisionPointRec(GetDragStartPosition().v(), getBounds());
+    }
+
     Anchor UIObject::getAnchor() const { return anchor; }
 
     float UIObject::getInset() const { return inset; }
@@ -172,5 +177,11 @@ namespace magique
     void UIObject::setStartDimensions(const Point& dims) { startDims = dims; }
 
     const Point& UIObject::getStartDimensions() const { return startDims; }
+
+    void UIObject::beginBoundsScissor()
+    {
+        const auto bounds = getBounds();
+        BeginScissorMode((int)bounds.x, (int)bounds.y, (int)bounds.width, (int)bounds.height);
+    }
 
 } // namespace magique

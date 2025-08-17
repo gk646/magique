@@ -58,7 +58,7 @@
 //================= ASSETS =================//
 
 // Maximum width of any texture atlas
-#define MAGIQUE_TEXTURE_ATLAS_SIZE (8192)
+#define MAGIQUE_TEXTURE_ATLAS_SIZE (4096)
 
 // Maximum amount of tile layers in TileMaps
 #define MAGIQUE_MAX_TILE_LAYERS (3)
@@ -120,7 +120,6 @@
 
 // Includes the default magique font: Cascadia Code
 #define MAGIQUE_INCLUDE_FONT 1
-
 
 //================= INTERNAL =================//
 

@@ -178,6 +178,7 @@ namespace magique
 
         void saveTickTime(const TickType t, const uint32_t time)
         {
+            // Average out
             if (t == UPDATE)
             {
                 logicTickTime = time;

@@ -60,6 +60,9 @@ namespace magique
     // Manually clears the entity cache in this tick
     void ClearEntityCache();
 
+    // Returns true if this entity is in the entity cache (update this tick)
+    bool IsInEntityCache(entt::entity e);
+
     // Allows to turn off the built-in lighting system - useful if you want to do it on your own
     // Note: if disabled you will have to iterate the lighting components and render it with your own shader
     // Default: true

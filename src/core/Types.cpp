@@ -34,6 +34,8 @@ namespace magique
 
     Point Point::operator-(float f) const { return {x - f, y - f}; }
 
+    Point Point::operator+(float f) const { return {x + f, y + f}; }
+
     Point& Point::operator+=(const Point& other)
     {
         x += other.x;
@@ -52,6 +54,20 @@ namespace magique
     {
         x = f;
         y = f;
+        return *this;
+    }
+
+    Point& Point::operator-=(float f)
+    {
+        x -= f;
+        y -= f;
+        return *this;
+    }
+
+    Point& Point::operator/=(float f)
+    {
+        x /= f;
+        y /= f;
         return *this;
     }
 
@@ -134,6 +150,8 @@ namespace magique
         }
         return *this;
     }
+
+    float Point::magnitude() const { return std::sqrt(x * x + y * y); }
 
     Vector2 Point::v() const { return Vector2{x, y}; }
 
@@ -411,10 +429,10 @@ namespace magique
 
     //----------------- KEYBIND -----------------//
 
-    Keybind::Keybind(const int keyCode, bool isUI, const bool isShift, const bool isCTRL, const bool isAlt)
+    Keybind::Keybind(const int keyCode, bool isLayered, const bool isShift, const bool isCTRL, const bool isAlt)
     {
         key = static_cast<uint16_t>(keyCode);
-        if (isUI)
+        if (isLayered)
         {
             layered = true;
         }
@@ -567,6 +585,8 @@ namespace magique
     auto Keybind::hasAlt() const -> bool { return alt; }
 
     bool Keybind::isUIInput() const { return layered; }
+
+    bool Keybind::isMouse() const { return key < 3; }
 
     //----------------- PARTICLE -----------------//
 

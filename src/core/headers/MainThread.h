@@ -40,10 +40,10 @@ namespace magique::mainthread
 
                 if (UPDATE_WORK >= 1.0)
                 {
-                    data.engineTicks++;
                     UPDATE_WORK -= 1.0;
                     UPDATE_TIME = updater::Tick(time, registry, game);
                     time += UPDATE_TIME; // Avoids calling GetTime() multiple times
+                    ++data.engineTicks;
                 }
 
                 WaitTime(NEXT_RENDER, 0); // Dont render too early

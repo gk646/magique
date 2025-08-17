@@ -85,6 +85,9 @@ namespace magique
         // Returns true if specified mouse button is pressed while the object is hovered
         [[nodiscard]] bool getIsClicked(int mouseButton = MOUSE_LEFT_BUTTON) const;
 
+        // Returns true if the is down AND the mouse was pressed initially inside the object
+        [[nodiscard]] bool getIsPressed(int mouseButton = MOUSE_LEFT_BUTTON) const;
+
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
         // Note: Anchoring is updated each tick automatically
         // Default: NONE
@@ -112,6 +115,9 @@ namespace magique
         // Sets or gets the start position - set per default to the initial position
         void setStartDimensions(const Point& dims);
         [[nodiscard]] const Point& getStartDimensions() const;
+
+        // Starts a scissor mode with the current bounds - has to be stopped manually!
+        void beginBoundsScissor();
 
         virtual ~UIObject();
 

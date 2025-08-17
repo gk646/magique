@@ -40,8 +40,11 @@ namespace magique
         bool operator==(float num) const; // Both must be equal
         Point operator/(float divisor) const;
         Point operator-(float f) const;
+        Point operator+(float f) const; // To both
         Point& operator*=(float f);
         Point& operator=(float f); // Assign to both
+        Point& operator-=(float f);
+        Point& operator/=(float f);
 
         // Distance functions
         [[nodiscard]] float manhattan(const Point& p) const;
@@ -68,6 +71,8 @@ namespace magique
 
         // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
         Point& normalizeManhattan();
+
+        float magnitude() const;
 
         // uses std::round() to round to the nearest whole number
         Point& round();
@@ -601,7 +606,7 @@ namespace magique
     struct Keybind final
     {
         Keybind() = default;
-        explicit Keybind(int key, bool UIinput = true, bool shift = false, bool ctrl = false, bool alt = false);
+        explicit Keybind(int key, bool isLayered = true, bool shift = false, bool ctrl = false, bool alt = false);
 
         // Uses direct input polling (e.g. IsKeyDown())
         [[nodiscard]] bool isPressed() const;
@@ -615,6 +620,9 @@ namespace magique
         [[nodiscard]] bool hasCtrl() const;
         [[nodiscard]] bool hasAlt() const;
         [[nodiscard]] bool isUIInput() const;
+
+        // Returns true if its keybind for a mouse button
+        bool isMouse()const;
 
     private:
         uint16_t key = 0;

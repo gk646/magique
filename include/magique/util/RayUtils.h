@@ -35,6 +35,7 @@ namespace magique
     Rectangle GetCenteredRect(const Point& center, float width, float height);
 
     // Gets the enlarged rectangle - also adjusts x and y so it stays in the same relative spot
+    // Note: Also works in negative direction
     Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height);
 
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
@@ -50,9 +51,19 @@ namespace magique
     // Draws the full texture at the specified position and scale
     void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint);
 
+    // Draws a scaled render texture at the given position (automatically flips it)
+    void DrawRenderTexture(const RenderTexture& texture, const Vector2& pos, float scale, const Color& tint);
+
     // Draws a nice looking (rounded) pixel art outline with the given radius
     // First the outline (dark) then the actual line (lighter) and the filler on the edges (lightest)
-    void DrawPixelOutline(const Rectangle& bounds, const Color& outline,const Color& border,const Color& filler, float radius = 2);
+    void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
+                          float radius = 2);
+
+    // Returns true if mouse is inside rect or on rect
+    bool CheckMouseRect(const Rectangle& bounds);
+
+    // Draws a horizontally centered texture
+    void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint);
 
 
 } // namespace magique

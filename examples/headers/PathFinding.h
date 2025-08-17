@@ -86,9 +86,11 @@ struct HunterScript final : EntityScript
         auto mid = pos.getMiddle(GetComponent<CollisionC>(self));
         auto target = tarPos.getMiddle(GetComponent<CollisionC>(targetEntity));
 
-        for (int i = 0; i < 20; ++i)
+        for (int i = 0; i < 200; ++i)
         {
-            if (!FindPath(PATH, mid, target, pos.map, 15, GridMode::CROSS))
+            if (GetEngineTick() % 10 != 0)
+                continue;
+            if (!FindPath(PATH, mid, target, pos.map, 150, GridMode::STAR))
             {
                 LOG_WARNING("Could not find path!");
             }

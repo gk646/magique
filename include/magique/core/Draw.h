@@ -55,6 +55,10 @@ namespace magique
     // Returns the amount of characters drawn until the given width is reached (not overstepped)
     int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);
 
+    // Highlights all numbers in a different color
+    void DrawPixelTextNumbers(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color text = WHITE,
+                              Color numbers = GRAY);
+
     //================= SHAPES =================//
 
     // Draws a capsule given its top left coordinates and the radius of the two circles

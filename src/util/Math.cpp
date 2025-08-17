@@ -97,4 +97,17 @@ namespace magique
         return value;
     }
 
+    float AwayFromZero(float value, float change, float max)
+    {
+        if (value < 0.0F)
+        {
+            return std::max(value - change, -max);
+        }
+        if (value > 0.0F)
+        {
+            return std::min(value + change, max);
+        }
+        return value;
+    }
+
 } // namespace magique

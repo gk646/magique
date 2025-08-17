@@ -37,7 +37,8 @@ namespace magique
 
         // A star cache
         std::vector<Point> pathCache;
-        StaticDenseLookupGrid<200> visited{};
+        StaticDenseLookupGrid<bool, 200> visited{};
+        StaticDenseLookupGrid<float, 200> openCost{};
         cxstructs::PriorityQueue<GridNode> frontier{};
         GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_CAPACITY];
 
@@ -157,9 +158,11 @@ namespace magique
             uint16_t iterations = 0;
             frontier.clear();
             path.clear();
-            path.reserve(maxPathLen);
-            visited.clear();
+            path.reserve(maxPathLen + 1);
+            visited.clear(); // Costly - big memsets
+            openCost.clear();
             visited.setMid(start);
+            openCost.setMid(start);
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
 
@@ -178,32 +181,42 @@ namespace magique
             {
                 nodePool[iterations] = frontier.top();
                 auto& current = nodePool[iterations];
-                if (current.position == end)
+                if (current.position == end) [[unlikely]]
                 {
                     constructPath(current, path);
                     return true;
                 }
-                if (current.stepCount >= maxPathLen)
+                if (current.stepCount >= maxPathLen) [[unlikely]]
                 {
                     return false;
                 }
-
                 frontier.pop();
-                visited.setMarked(current.position.x, current.position.y);
+                visited.setValue(current.position.x, current.position.y, true);
                 for (const auto& dir : movement)
                 {
                     Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
                     const auto newPosCoX = newPos.x * cellSize;
                     const auto newPosCoY = newPos.y * cellSize;
+
                     // Is not visited and not solid
-                    if (!visited.getIsMarked(newPos.x, newPos.y) &&
-                        !IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid))
+                    if (visited.getValue(newPos.x, newPos.y) ||
+                        IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid)) [[unlikely]]
                     {
-                        const float moveCost = mFunc(dir);
-                        const auto hCost = hFunc(newPos, end);
-                        const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
-                        frontier.update({newPos, current.gCost + moveCost, hCost, iterations, newPathLen});
+                        continue;
                     }
+
+                    const auto val = openCost.getValue(newPos.x, newPos.y);
+                    const float gCost = mFunc(dir) + current.gCost;
+                    const auto hCost = hFunc(newPos, end);
+                    const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
+                    const auto newFCost = hCost + gCost;
+
+                    if (val != 0.0F && newFCost >= val)
+                    {
+                        continue;
+                    }
+                    frontier.push({newPos, gCost, newFCost, iterations, newPathLen});
+                    openCost.setValue(newPos.x, newPos.y, newFCost);
                 }
                 iterations++;
             }

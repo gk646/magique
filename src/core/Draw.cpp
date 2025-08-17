@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
+#include <cstdlib>
+#include <cctype>
 
 #include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
@@ -11,7 +13,6 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "external/raylib-compat/rcore_compat.h"
-
 
 constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
@@ -311,6 +312,49 @@ namespace magique
             i += codepointByteCount; // Move text bytes counter to next codepoint
         }
         return size;
+    }
+
+    void DrawPixelTextNumbers(const Font& font, const char* text, Vector2 position, int fsm, Color textColor,
+                              Color numberColor)
+    {
+        int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
+        float spacing = 1.0F;
+        float fontSize = (float)font.baseSize * (float)fsm;
+        float textOffsetY = 0;    // Offset between lines (on linebreak '\n')
+        float textOffsetX = 0.0f; // Offset X to next character to draw
+
+        float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
+
+        for (int i = 0; i < size;)
+        {
+            // Get next codepoint from byte string and glyph index in font
+            int codepointByteCount = 0;
+            int codepoint = GetCodepointNext(&text[i], &codepointByteCount);
+            int index = GetGlyphIndex(font, codepoint);
+
+            if (codepoint == '\n')
+            {
+                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
+                textOffsetY += (fontSize + GetTextLineSpacing());
+                textOffsetX = 0.0f;
+            }
+            else
+            {
+                const Color& txtColor = (isdigit(codepoint) != 0) ? numberColor : textColor;
+                if ((codepoint != ' ') && (codepoint != '\t'))
+                {
+                    DrawTextCodepoint(font, codepoint, Vector2{position.x + textOffsetX, position.y + textOffsetY},
+                                      fontSize, txtColor);
+                }
+
+                if (font.glyphs[index].advanceX == 0)
+                    textOffsetX += ((float)font.recs[index].width * scaleFactor + spacing);
+                else
+                    textOffsetX += ((float)font.glyphs[index].advanceX * scaleFactor + spacing);
+            }
+
+            i += codepointByteCount; // Move text bytes counter to next codepoint
+        }
     }
 
     void DrawCapsule2D(const float x, const float y, const float radius, const float height, const Color tint)

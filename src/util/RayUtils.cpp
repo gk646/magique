@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <raylib/raylib.h>
-
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 #include "external/raylib-compat/rcore_compat.h"
+
+#include <cmath>
 
 namespace magique
 {
@@ -89,7 +90,7 @@ namespace magique
 
     Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height)
     {
-        return Rectangle{rect.x - width / 2, rect.y - height / 2, rect.width + width, rect.height + height};
+        return Rectangle{rect.x - (width / 2), rect.y - (height / 2), rect.width + width, rect.height + height};
     }
 
     float GetRoundness(const float radius, const Rectangle& bounds)
@@ -137,6 +138,13 @@ namespace magique
         DrawTexturePro(texture, {0, 0, (float)texture.width, (float)texture.height}, dest, {0, 0}, 0, tint);
     }
 
+    void DrawRenderTexture(const RenderTexture& texture, const Vector2& pos, float scale, const Color& tint)
+    {
+        DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height},
+                       {pos.x, pos.y, (float)texture.texture.width * scale, (float)texture.texture.height * scale}, {},
+                       0, tint);
+    }
+
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
                           float radius)
     {
@@ -151,5 +159,14 @@ namespace magique
         DrawRectangleRoundedLinesEx(bounds, boundsRound, 30, 1, border);
     }
 
+    bool CheckMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
+
+    void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
+    {
+        auto center = pos;
+        center.x -= (float)texture.width / 2.0F;
+        center.x = std::floor(center.x);
+        DrawTextureV(texture, center, tint);
+    }
 
 } // namespace magique

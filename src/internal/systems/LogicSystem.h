@@ -101,7 +101,6 @@ namespace magique
     {
         const auto& registry = internal::REGISTRY;
         auto& data = global::ENGINE_DATA;
-        auto& pathData = global::PATH_DATA;
         auto& config = global::ENGINE_CONFIG;
         const auto& group = internal::POSITION_GROUP;
         auto& dynamicData = global::DY_COLL_DATA;

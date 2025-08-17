@@ -261,7 +261,8 @@ namespace magique
         void update() const
         {
 #ifndef MAGIQUE_STEAM
-            SteamNetworkingSockets()->RunCallbacks();
+            if (isInSession)
+                SteamNetworkingSockets()->RunCallbacks();
 #endif
         }
 
