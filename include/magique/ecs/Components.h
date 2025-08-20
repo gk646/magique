@@ -62,6 +62,9 @@ namespace magique
         CollisionLayer layer = CollisionLayer::DEFAULT_LAYER; // Which layers it occupies
         CollisionLayer mask = CollisionLayer::DEFAULT_LAYER;  // Against which layers it collides
 
+        // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
+        static Point GetMiddle(entt::entity e);
+
         // Returns true if the mask of this object detect the other objects layers - so if the two collide
         [[nodiscard]] bool detects(const CollisionC& other) const;
 

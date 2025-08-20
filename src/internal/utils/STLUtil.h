@@ -91,7 +91,7 @@ bool QuickSort(T* arr, const int elements, Compare comp)
         if (L < R)
         {
             T piv = arr[L];
-            if (i == MAX_LEVELS - 1)
+            if (i == MAX_LEVELS - 1) [[unlikely]]
                 return false;
             while (L < R)
             {

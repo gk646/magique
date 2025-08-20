@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Animations.h>
+#include <magique/ecs/ECS.h>
 #include <magique/core/Draw.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
@@ -59,6 +60,13 @@ namespace magique
     uint16_t AnimationC::getSpriteCount() const { return spriteCount; }
 
     //----------------- COLLISION -----------------//
+
+    Point CollisionC::GetMiddle(const entt::entity e)
+    {
+        const auto& pos = magique::GetComponent<PositionC>(e);
+        const auto& col = magique::GetComponent<CollisionC>(e);
+        return pos.getMiddle(col);
+    }
 
     bool CollisionC::detects(const CollisionC& other) const
     {

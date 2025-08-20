@@ -169,4 +169,14 @@ namespace magique
         DrawTextureV(texture, center, tint);
     }
 
+    void DrawPartialFilledRect(const Rectangle& bounds, float fillPercent, bool up, const Color& tint)
+    {
+        Rectangle filledBounds = {bounds.x, bounds.y, bounds.width, bounds.height * fillPercent};
+        if (up)
+        {
+            filledBounds.y = bounds.y - bounds.height * fillPercent + bounds.height;
+        }
+        DrawRectangleRec(filledBounds, tint);
+    }
+
 } // namespace magique

@@ -15,8 +15,19 @@ struct SparseRangeVector final
         data[index] = value;
     }
 
-    T& operator[](size_t index) { return data[index]; }
-    const T& operator[](size_t index) const { return data[index]; }
+    T& operator[](size_t index)
+    {
+        if (data.size() < index + 1)
+        {
+            data.resize(index + 1);
+        }
+        return data[index];
+    }
+
+    const T& operator[](size_t index) const
+    {
+        return data[index];
+    }
 
     void reserve(size_t size) { data.reserve(size); }
 

@@ -31,7 +31,7 @@ namespace magique
 
     // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
     // Same as FindPath() but only assigns the next point
-    bool GetNextOnPath(Point& next, Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
+    bool FindNextPoint(Point& next, Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
 
     //================= QUERY =================//
 
@@ -42,6 +42,11 @@ namespace magique
     bool GetExistsPath(Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
 
     //================= UTIL =================//
+
+    // Returns the next point on the path you should go to
+    // If inside the a cell in the path returns the next logical cell you should move to
+    // Otherwise returns the closest cell in the path
+    Point GetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path);
 
     // If set, all entities of the given type are considered solid for pathfinding and make cells non-traversable
     // The dynamic pathfinding grid will be updated each tick with their position and collision shapes

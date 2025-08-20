@@ -78,8 +78,6 @@ namespace magique
     struct BehaviorTree;
     template <typename CustomData = int>
     struct TreeBuilder;
-    struct Quest;
-    struct QuestNode;
     struct Achievement;
     struct ShareCodeFormat;
     struct ShareCodeData;

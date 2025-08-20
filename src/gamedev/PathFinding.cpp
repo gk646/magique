@@ -15,7 +15,7 @@ namespace magique
         return path.findPath(pathVec, start, end, map, maxLen, mode);
     }
 
-    bool GetNextOnPath(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
+    bool FindNextPoint(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
     {
         auto& path = global::PATH_DATA;
         FindPath(path.pathCache, start, end, map, maxLen, mode);
@@ -29,7 +29,7 @@ namespace magique
 
     // Same as FindPath() but allows to specify the dimensions of the searching entity
     // The pathfinding tries to find a path that fits the entity
-    static void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
+    // static void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
 
     bool GetPathRayCast(const Point start, const Point end, const MapID map)
     {
@@ -77,7 +77,58 @@ namespace magique
     bool GetExistsPath(const Point start, const Point end, const MapID map, const int max, GridMode mode)
     {
         Point point;
-        return GetNextOnPath(point, start, end, map, max);
+        return FindNextPoint(point, start, end, map, max);
+    }
+
+    Point GetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
+    {
+        // Stored in reverse
+        int lowestIdx = -1;
+        float lowestDist = std::numeric_limits<float>::max();
+        const auto targetDist = pos.euclidean(target);
+        if (targetDist < MAGIQUE_PATHFINDING_CELL_SIZE)
+        {
+            return target;
+        }
+        for (int i = (int)path.size() - 1; i >= 0; --i)
+        {
+            const auto& curr = path[i];
+            const auto dist = pos.euclidean(curr);
+            if (dist < lowestDist)
+            {
+                lowestIdx = i;
+                lowestDist = dist;
+            }
+            // We found the current cell
+            if (dist < MAGIQUE_PATHFINDING_CELL_SIZE)
+            {
+                // We are in the last cell
+                if (i == path.size() - 1)
+                {
+                    return curr;
+                }
+                else
+                {
+                    // We are towards the next cell - dont wanna go back to the middle of current cell
+                    if (pos.euclidean(curr) < MAGIQUE_PATHFINDING_CELL_SIZE )
+                    {
+                        return path[i + 1];
+                    }
+                    else
+                    {
+                        return curr;
+                    }
+                }
+            }
+        }
+        if (lowestIdx != -1)
+        {
+            return path[lowestIdx];
+        }
+        else
+        {
+            return pos;
+        }
     }
 
     void SetTypePathSolid(const EntityType type, const bool value)
