@@ -37,7 +37,7 @@ int floordiv(const int x)
 }
 
 template <int cellSize, typename Func>
-void RasterizeRect(Func func, const float x, const float y, const float w, const float h)
+static void RasterizeRect(Func func, const float x, const float y, const float w, const float h)
 {
     const int x1 = floordiv<cellSize>(static_cast<int>(x));
     const int y1 = floordiv<cellSize>(static_cast<int>(y));

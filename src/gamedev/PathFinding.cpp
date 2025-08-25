@@ -103,7 +103,7 @@ namespace magique
             if (dist < MAGIQUE_PATHFINDING_CELL_SIZE)
             {
                 // We are in the last cell
-                if (i == path.size() - 1)
+                if (i == static_cast<int>(path.size()) - 1)
                 {
                     return curr;
                 }

@@ -18,6 +18,8 @@ namespace magique
 {
     struct TileMap final
     {
+        TileMap() = default;
+
         //================= TILES =================//
 
         // Returns a modifiable reference to the tile index at the given position
@@ -38,7 +40,7 @@ namespace magique
         [[nodiscard]] int getHeight() const;
 
         // Returns the layer count
-        [[nodiscard]] int getLayerCount() const;
+        [[nodiscard]] int getTileLayerCount() const;
 
         //================= OBJECTS =================//
 
@@ -49,15 +51,10 @@ namespace magique
         std::vector<TileObject>& getObjects(int layer);
 
     private:
-        explicit TileMap(const Asset& asset);
-        std::vector<TileObject> objectData[MAGIQUE_MAX_OBJECT_LAYERS];
-        uint16_t* tileData = nullptr; // Contiguous array for map data
-        uint32_t tileDataSize = 0;
+        std::vector<std::vector<TileObject>> objectLayers;
+        std::vector<std::vector<uint16_t>> tileLayers; // Contiguous array for map data
         int width = 0, height = 0;
-        uint8_t objectLayers = 0;
-        uint8_t layers = 0;
-        friend handle RegisterTileMap(Asset);
-        friend void ParseTileLayer(TileMap&, char*&);
+        friend TileMap ImportTileMap(Asset);
     };
 
 } // namespace magique

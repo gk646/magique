@@ -300,19 +300,17 @@ namespace magique
         auto& dynamicData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
 
-        // For security - user might call this before creating any entities
-        if (!dynamicData.mapEntityGrids.contains(map)) [[unlikely]]
-            return data.nearbyQueryData.cache.values();
-
         if (data.nearbyQueryData.getIsSimilarParameters(map, origin, sideLength))
+        {
             return data.nearbyQueryData.cache.values();
+        }
 
         data.nearbyQueryData.lastRadius = sideLength;
         data.nearbyQueryData.lastOrigin = origin;
         data.nearbyQueryData.cache.clear();
 
-        const auto queryX = origin.x - sideLength / 2.0F;
-        const auto queryY = origin.y - sideLength / 2.0F;
+        const auto queryX = origin.x - (sideLength / 2.0F);
+        const auto queryY = origin.y - (sideLength / 2.0F);
         dynamicData.mapEntityGrids[map].query(data.nearbyQueryData.cache, queryX, queryY, sideLength, sideLength);
         return data.nearbyQueryData.cache.values();
     }

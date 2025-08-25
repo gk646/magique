@@ -72,6 +72,9 @@
 // Maximum amount of columns supported for a imported csv file
 #define MAGIQUE_MAX_CSV_COLUMNS (16)
 
+// Maximum amount of frames per single animation - used for duration array so each frame can have different duration
+#define MAGIQUE_MAX_ANIM_FRAMES (16)
+
 //================= GAMEDEV =================//
 
 //================= MULTIPLAYER =================//

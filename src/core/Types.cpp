@@ -232,15 +232,25 @@ namespace magique
         region.height = height;
         region.width = width;
         region.id = id;
-        region.offX = static_cast<uint16_t>(offX + frame * width);
+        region.offX = static_cast<uint16_t>(offX + (frame * width));
         region.offY = offY; // Same as only continuous pictures are supported
         return region;
     }
 
     TextureRegion SpriteAnimation::getCurrentFrame(const uint16_t spriteCount) const
     {
-        MAGIQUE_ASSERT(duration != UINT16_MAX, "Invalid sprite animation");
-        const int frame = (spriteCount / duration) % sheet.frames;
+        const int count = spriteCount % maxDuration;
+        int frame = 0;
+        uint16_t durationCount = 0;
+        for (const auto duration : durations)
+        {
+            durationCount += duration;
+            if (durationCount > count)
+            {
+                break;
+            }
+            frame++;
+        }
         return sheet.getRegion(frame);
     }
 
@@ -285,16 +295,10 @@ namespace magique
     const char* TileObjectCustomProperty::getName() const { return name; }
 
     //----------------- TILE OBJECT -----------------//
-    //TODO is leaking memory with name / isnt too bad
 
-    const char* TileObject::getName() const
-    {
-        if (name == nullptr)
-            return "";
-        return name;
-    }
+    const char* TileObject::getName() const { return name; }
 
-    int TileObject::getClass() const { return type; }
+    int TileObject::getClass() const { return class_; }
 
     int TileObject::getID() const { return id; }
 

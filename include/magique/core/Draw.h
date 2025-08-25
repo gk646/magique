@@ -51,6 +51,7 @@ namespace magique
     // Draws pixel perfect text - fsm is font size multiplier of the base font size
     void DrawPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
     void DrawCenteredPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawRightBoundPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
 
     // Returns the amount of characters drawn until the given width is reached (not overstepped)
     int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);

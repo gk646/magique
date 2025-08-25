@@ -145,7 +145,7 @@ namespace magique
         auto& tileVec = data.colliderReferences.tilesCollisionMap[map];
         for (const auto layer : layers)
         {
-            if (layer > tileMap.getLayerCount())
+            if (layer > tileMap.getTileLayerCount())
             {
                 LOG_WARNING("Given tilemap does not contain a layer with index: %d. Check TileMap.h for more info",
                             layer);

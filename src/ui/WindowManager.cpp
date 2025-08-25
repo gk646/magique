@@ -253,6 +253,14 @@ namespace magique
 
     Window* WindowManager::getHoveredWindow() { return WINDOW_DATA.hoveredWindow; }
 
+    void WindowManager::hideAll()
+    {
+        for (auto* w : WINDOW_DATA.windows)
+        {
+            setShown(w, false);
+        }
+    }
+
     void WindowManager::update()
     {
         // Iterated in reverse - last drawn is the front most window - as soon as we find a hovered the ones behind cant be

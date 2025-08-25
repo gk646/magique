@@ -335,11 +335,10 @@ namespace magique
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
     {
         CollisionInfo info;
-        auto worldMouse = GetScreenToWorld2D(GetMousePosition(),GetCamera());
+        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(),GetCamera());
         CheckCollisionEntityRect(pos, col, {worldMouse.x, worldMouse.y, 1, 1}, info);
         return info.isColliding();
     }
-
 
     void CheckCollisionRecCapsule(const Rectangle& rect, const Point pos, const float r, const float h,
                                   CollisionInfo& info)

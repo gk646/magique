@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Core.h>
-#include <magique/assets/AssetManager.h>
+#include <magique/assets/AssetImport.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"

@@ -16,6 +16,8 @@ namespace magique
 {
     struct TileSet final
     {
+        TileSet() = default;
+
         // Returns the vector containing all marked tiles
         [[nodiscard]] const std::vector<TileInfo>& getTileInfo() const;
 
@@ -23,10 +25,9 @@ namespace magique
         [[nodiscard]] int getTileSize() const;
 
     private:
-        explicit TileSet(const Asset& asset);
         int tileSize = -1; // Default
         std::vector<TileInfo> infoVec;
-        friend handle RegisterTileSet(Asset);
+        friend TileSet ImportTileSet(Asset);
     };
 
 } // namespace magique

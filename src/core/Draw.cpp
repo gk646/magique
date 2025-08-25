@@ -180,7 +180,7 @@ namespace magique
 
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
     {
-        MAGIQUE_ASSERT(tileMap.getLayerCount() >= layer, "Out of bounds layer!");
+        MAGIQUE_ASSERT(tileMap.getTileLayerCount() >= layer, "Out of bounds layer!");
 
         const auto cBounds = GetCameraNativeBounds(); // Camera bounds
         const float tileSize = tileSheet.getTextureSize();
@@ -256,7 +256,7 @@ namespace magique
     {
         pos.x = std::round(pos.x);
         pos.y = std::round(pos.y);
-        DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F, tint);
+        DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F *(float)fsm, tint);
     }
 
     void DrawCenteredPixelText(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)
@@ -264,6 +264,13 @@ namespace magique
         const auto fs = (float)f.baseSize * fsm;
         const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
         DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
+    }
+
+    void DrawRightBoundPixelText(const Font& f, const char* txt, Vector2 pos, int fsm, Color tint)
+    {
+        const auto fs = (float)f.baseSize * fsm;
+        const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
+        DrawPixelText(f, txt, {pos.x - width, pos.y}, fs, tint);
     }
 
     int DrawTextUpTo(const Font& font, const char* text, Vector2 position, float fontSize, float width, Color tint)
@@ -318,7 +325,7 @@ namespace magique
                               Color numberColor)
     {
         int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
-        float spacing = 1.0F;
+        float spacing = (float)fsm;
         float fontSize = (float)font.baseSize * (float)fsm;
         float textOffsetY = 0;    // Offset between lines (on linebreak '\n')
         float textOffsetX = 0.0f; // Offset X to next character to draw

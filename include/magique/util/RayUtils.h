@@ -69,6 +69,9 @@ namespace magique
     // Either fills up or down
     void DrawPartialFilledRect(const Rectangle& bounds, float fillPercent, bool up, const Color& tint);
 
+    void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
+                              const Color& tint);
+
 } // namespace magique
 
 #endif //MAGIQUE_RAYUTILS_H

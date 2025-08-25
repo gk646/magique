@@ -143,10 +143,13 @@ namespace magique
         [[nodiscard]] TextureRegion getRegion(int frame) const;
     };
 
+    using DurationArray = uint8_t[MAGIQUE_MAX_ANIM_FRAMES]; // Duration in ticks
+
     struct SpriteAnimation final
     {
+        DurationArray durations{};
         SpriteSheet sheet{};
-        uint16_t duration = UINT16_MAX;
+        uint16_t maxDuration = 0;
         int16_t offX = 0; // Draw offset
         int16_t offY = 0;
         int16_t rotX = 0; // Rotation anchor
@@ -160,10 +163,12 @@ namespace magique
     // The type of the property
     enum class TileObjectPropertyType : uint8_t
     {
-        FLOAT,
+        NONE,
         INT,
-        STRING,
         BOOL,
+        FLOAT,
+        STRING,
+        FILE, // just a string
         COLOR,
     };
 
@@ -194,25 +199,25 @@ namespace magique
             char* string;
             bool boolean;
         };
-        friend TileObject ParseObject(char*&);
+        friend TileMap ImportTileMap(Asset asset);
     };
 
     // Objects defined inside the tile editor
     struct TileObject final
     {
-        [[nodiscard]] const char* getName() const; // Can be null
-        [[nodiscard]] int getClass() const;        // Only ints are allowed as class
-        [[nodiscard]] int getID() const;
+        const char* getName() const; // Can be null
+        int getID() const;
+        int getClass() const;
 
         float x = 0, y = 0, width = 0, height = 0;                                        // Mutable
         bool visible = false;                                                             // Mutable
         TileObjectCustomProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES]; // Mutable
 
     private:
+        int class_ = 0;
         char* name = nullptr;
-        int type = INT32_MAX; // Class
         int id = INT32_MAX;
-        friend TileObject ParseObject(char*&);
+        friend TileMap ImportTileMap(Asset asset);
     };
 
     struct TileInfo final
@@ -622,7 +627,7 @@ namespace magique
         [[nodiscard]] bool isUIInput() const;
 
         // Returns true if its keybind for a mouse button
-        bool isMouse()const;
+        bool isMouse() const;
 
     private:
         uint16_t key = 0;

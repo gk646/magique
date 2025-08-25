@@ -75,6 +75,9 @@ namespace magique
         // Failure: returns nullptr if no window area intersects the mouse position
         Window* getHoveredWindow();
 
+        // Hides all registered windows
+        void hideAll();
+
     private:
         WindowManager() = default;
         void update();

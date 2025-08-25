@@ -52,7 +52,7 @@ namespace magique
     bool AnimationC::getHasAnimationPlayed() const
     {
 
-        return spriteCount > (animationStart + currentAnimation.duration * currentAnimation.sheet.frames);
+        return spriteCount > animationStart + currentAnimation.maxDuration;
     }
 
     AnimationState AnimationC::getCurrentState() const { return currentState; }

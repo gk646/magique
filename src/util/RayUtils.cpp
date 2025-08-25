@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <cmath>
+
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 #include "external/raylib-compat/rcore_compat.h"
-
-#include <cmath>
 
 namespace magique
 {
@@ -75,7 +75,8 @@ namespace magique
 
     Vector2 GetCenteredPos(const Rectangle& within, const float width, const float height)
     {
-        return Vector2{within.x + ((within.width - width) / 2), within.y + ((within.height - height) / 2)};
+        return Vector2{std::floor(within.x + ((within.width - width) / 2.0F)),
+                       std::floor(within.y + ((within.height - height) / 2.0F))};
     }
 
     Vector2 GetRectCenter(const Rectangle& rect)
@@ -177,6 +178,14 @@ namespace magique
             filledBounds.y = bounds.y - bounds.height * fillPercent + bounds.height;
         }
         DrawRectangleRec(filledBounds, tint);
+    }
+
+    void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
+                              const Color& tint)
+    {
+        auto dims = MeasureTextEx(fnt, txt, fs, spacing);
+        auto center = GetCenteredPos(bounds, dims.x, dims.y);
+        DrawTextEx(fnt, txt, center, fs, spacing, tint);
     }
 
 } // namespace magique

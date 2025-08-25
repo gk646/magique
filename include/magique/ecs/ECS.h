@@ -68,7 +68,7 @@ namespace magique
     // Args are the constructor arguments (if any)
     // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
     template <typename Component, typename... Args>
-    void GiveComponent(entt::entity entity, Args... args);
+    Component& GiveComponent(entt::entity entity, Args... args);
 
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
@@ -178,11 +178,13 @@ namespace magique
         static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
         return internal::REGISTRY.try_get<T>(entity);
     }
+
     template <class Component, typename... Args>
-    void GiveComponent(entt::entity entity, Args... args)
+    Component& GiveComponent(entt::entity entity, Args... args)
     {
-        internal::REGISTRY.emplace<Component>(entity, args...);
+        return internal::REGISTRY.emplace<Component>(entity, args...);
     }
+
     template <typename... Args>
     bool EntityHasComponents(const entt::entity entity)
     {

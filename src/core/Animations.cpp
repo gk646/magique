@@ -9,20 +9,17 @@ namespace magique
 {
     struct AnimationData final
     {
-        vector<EntityAnimation> animations{};
+        SparseRangeVector<EntityAnimation> animations;
 
         void add(const EntityType type, const EntityAnimation& animation)
         {
-            const int typeNum = type;
-            if (typeNum >= animations.size())
-                animations.resize(typeNum + 1, EntityAnimation{1});
-            animations[typeNum] = animation;
-            animations[typeNum].isSet = true;
+            animations[static_cast<int>(type)] = animation;
+            animations[static_cast<int>(type)].isSet = true;
         }
 
         [[nodiscard]] EntityAnimation& get(const EntityType type)
         {
-            MAGIQUE_ASSERT(animations.size() > type, "No animation registered for that type!");
+            MAGIQUE_ASSERT(animations.width() > type, "No animation registered for that type!");
             auto& animation = animations[type];
             MAGIQUE_ASSERT(
                 animation.isSet,
@@ -35,7 +32,7 @@ namespace magique
 
 namespace magique
 {
-    AnimationData ANIMATION_DATA{};
+    static AnimationData ANIMATION_DATA{};
 
     //----------------- ENTITY ANIMATION -----------------//
 
@@ -43,22 +40,24 @@ namespace magique
 
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration)
     {
-        const int stateNum = static_cast<int>(state);
-        if (stateNum >= static_cast<int>(animations.size()))
-            animations.resize(stateNum + 1);
-        auto& animation = animations[stateNum];
-        animation.duration = static_cast<uint16_t>(frameDuration);
+        auto& animation = animations[static_cast<int>(state)];
+        for (int i = 0; i < sheet.frames; ++i)
+        {
+            animation.durations[i] = frameDuration;
+            animation.maxDuration += frameDuration;
+        }
         animation.sheet = sheet;
     }
 
-    void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration,
-                                       const Point offset, const Point anchor)
+    void EntityAnimation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
+                                         Point offset, Point anchor)
     {
-        const int stateNum = static_cast<int>(state);
-        if (stateNum >= static_cast<int>(animations.size()))
-            animations.resize(stateNum + 1);
-        auto& animation = animations[stateNum];
-        animation.duration = static_cast<uint16_t>(frameDuration);
+        auto& animation = animations[static_cast<int>(state)];
+        for (int i = 0; i < sheet.frames; ++i)
+        {
+            animation.durations[i] = durations[i];
+            animation.maxDuration += durations[i];
+        }
         animation.sheet = sheet;
         animation.offX = static_cast<int16_t>(offset.x * scale);
         animation.offY = static_cast<int16_t>(offset.y * scale);
@@ -68,11 +67,8 @@ namespace magique
 
     void EntityAnimation::removeAnimation(AnimationState state)
     {
-        const int stateNum = static_cast<int>(state);
-        if (stateNum > static_cast<int>(animations.size()))
-            animations.resize(stateNum + 1);
-        auto& animation = animations[stateNum];
-        animation.duration = UINT16_MAX; // Mark as invalid
+        auto& animation = animations[static_cast<int>(state)];
+        animation.maxDuration = UINT16_MAX; // Mark as invalid
         animation.sheet = {};
         animation.offX = static_cast<int16_t>(0);
         animation.offY = static_cast<int16_t>(0);

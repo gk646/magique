@@ -8,7 +8,7 @@
 // Asset
 //===============================================
 // ................................................................................
-// Every loaded resources into the game is treated as asset.
+// Every resources loaded into the game is treated as an asset.
 // At startup the asset image specified in Game::run() is loaded
 // Single assets become accessible by adding loading tasks that operate on the asset container
 // ................................................................................
