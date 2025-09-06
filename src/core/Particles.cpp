@@ -15,11 +15,16 @@ namespace magique
 {
     void DrawParticles() { global::PARTICLE_DATA.render(); }
 
-    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& pos, const int amount)
+    float GetParticleAmountScale() { return global::PARTICLE_DATA.scale; }
+
+    void SetParticleAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
+
+    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& pos, int amount)
     {
         const auto& data = emitter.data;
         data.emissionPos = pos;
-        for (int i = 0; i < amount; ++i)
+        const int finalAmount = static_cast<int>((float)amount * global::PARTICLE_DATA.scale);
+        for (int i = 0; i < finalAmount; ++i)
         {
             ScreenParticle particle;
             particle.emitter = &emitter;
@@ -65,6 +70,7 @@ namespace magique
                         }
                     }
                     particle.pos += pos;
+                    particle.emissionCenter = {pos.x + data.emissionDims.x / 2, pos.y + data.emissionDims.y / 2};
                     if (data.rotation != 0)
                     {
                         RotatePoints(data.rotation, data.anchor + pos, particle.pos, particle.pos, particle.pos,
@@ -77,6 +83,7 @@ namespace magique
                     const float angle = GetRandomFloat(0, 360) * (PI / 180.0f);
                     const float dist = data.emissionDims.x - data.emissionDims.x * data.volume * GetRandomFloat(0, 1.0F);
                     particle.pos = {pos.x + dist * std::cos(angle), pos.y + dist * std::sin(angle)};
+                    particle.emissionCenter = pos;
                 }
                 break;
             case Shape::CAPSULE: // Acts as point type
@@ -149,6 +156,13 @@ namespace magique
             // Rest
             particle.age = 0;
             particle.shape = data.shape;
+
+            if (data.angularVelocity.x != 0 || data.angularVelocity.y != 0 || data.angularGravity != 0)
+            {
+                particle.angular = true;
+                particle.vx = data.angularVelocity.x * velo;
+                particle.vy = data.angularVelocity.y * velo;
+            }
 
             global::PARTICLE_DATA.addParticle(particle);
         }
@@ -279,6 +293,18 @@ namespace magique
         return *this;
     }
 
+    EmitterBase& EmitterBase::setAngularGravity(float gravity)
+    {
+        data.angularGravity = gravity;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setAngularVelocity(const Point& velocity)
+    {
+        data.angularVelocity = velocity;
+        return *this;
+    }
+
     //----------------- ADDITIONALS -----------------//
 
     EmitterBase& EmitterBase::setGravity(const float gravityX, const float gravityY)
@@ -322,7 +348,7 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setVelocity(const float minVeloc, float maxVeloc)
+    EmitterBase& EmitterBase::setVelocityRange(const float minVeloc, float maxVeloc)
     {
         if (maxVeloc == 0)
         {

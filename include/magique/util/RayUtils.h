@@ -59,6 +59,9 @@ namespace magique
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
                           float radius = 2);
 
+    // Draws a unrounded pixel art outline
+    void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border);
+
     // Returns true if mouse is inside rect or on rect
     bool CheckMouseRect(const Rectangle& bounds);
 
@@ -71,6 +74,9 @@ namespace magique
 
     void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
                               const Color& tint);
+
+    // Draws a 2d rectangle with a shade at the bottom
+    void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);
 
 } // namespace magique
 

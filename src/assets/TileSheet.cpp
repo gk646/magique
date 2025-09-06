@@ -13,17 +13,18 @@ namespace magique
     TileSheet::TileSheet(const Asset& asset, const int textureSize, const float scale)
     {
         const auto img = LoadImage(asset);
+        const Point scaledDims = {(float)img.width * scale, (float)img.height * scale};
 
         Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};
         Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
 
-        if (dst.width >= MAGIQUE_TEXTURE_ATLAS_SIZE || dst.height >= MAGIQUE_TEXTURE_ATLAS_SIZE)
+        if (scaledDims.x >= MAGIQUE_TEXTURE_ATLAS_SIZE || scaledDims.y >= MAGIQUE_TEXTURE_ATLAS_SIZE)
         {
             LOG_ERROR("Cannot load image as TilSheet: Too big!");
             return;
         }
 
-        Image texImage = GenImageColor(static_cast<int>(dst.width), static_cast<int>(dst.height), BLANK);
+        Image texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_SIZE, MAGIQUE_TEXTURE_ATLAS_SIZE, BLANK);
 
         texPerRow = static_cast<uint16_t>(texImage.width / static_cast<int>(dst.width));
         texSize = static_cast<int16_t>(dst.width);
@@ -31,6 +32,11 @@ namespace magique
         // TODO Can be optimized a lot by manually doing the image resizing and reusing a buffer
         while (src.y < img.height)
         {
+            if (dst.y >= texImage.height)
+            {
+                LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.path);
+                break;
+            }
             for (int i = 0; i < texPerRow; ++i)
             {
                 ImageDraw(&texImage, img, src, dst, WHITE);
@@ -44,11 +50,6 @@ namespace magique
             }
             dst.x = 0;
             dst.y += dst.height;
-            if (dst.y >= texImage.height)
-            {
-                LOG_ERROR("TileSheet doesnt fit into a single atlas! Skipping: %s", asset.path);
-                break;
-            }
         }
 
         const auto tex = LoadTextureFromImage(texImage);

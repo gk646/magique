@@ -52,6 +52,10 @@ namespace magique
     // Uses the mapping function to get the animation state from the aseprite tag name
     EntityAnimation ImportAseprite(Asset asset, StateMapFunc func, AtlasID atlas = {}, float scale = 1.0F);
 
+    // Only imports the given layers
+    EntityAnimation ImportAsepriteEx(Asset asset, const std::vector<const char*>& layers, StateMapFunc func,
+                                     AtlasID atlas = {}, float scale = 1.0F, Point offset = {}, Point anchor = {});
+
     //================= Audio =================//
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
@@ -68,7 +72,7 @@ namespace magique
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
     // Note: A TilSheet has its own atlas - you can access it manually as well and get a TextureRegion back
 
-    // Registers a tilemap from an export file - Supported: ".tsx" (Tiled),
+    // Registers a tilemap from an export file - Supported: ".tsj" (Tiled),
     // Supports loading multiple layers - all layers must have same dimensions!
     TileMap ImportTileMap(Asset asset);
 
@@ -86,13 +90,7 @@ namespace magique
     // 'textureSize'    - specify the width and height of each source texture tile
     // 'scale'          - allows to scale the resulting texture (rounded down)
     // Note: The tilesheet will have its own texture
-    TileSheet RegisterTileSheet(Asset asset, int tileSize, float scale = 1);
-
-    // Same as 'RegisterTileSheet()' but takes a list of pictures - assets must have the same dimensions and be pictures
-    // This is useful if you have split images instead of a single TileSheet
-    // Note: Use with AssetContainer::iterateDirectory() to collect the assets
-    // Note: The tilesheet will have its own texture - the whole picture is takes as single tile texture
-    TileSheet RegisterTileSheet(const std::vector<Asset>& assets, float scale = 1);
+    TileSheet ImportTileSheet(Asset asset, int tileSize, float scale = 1);
 
 } // namespace magique
 

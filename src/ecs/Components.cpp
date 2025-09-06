@@ -26,11 +26,11 @@ namespace magique
                                       const bool flipY) const
     {
         const auto currentFrame = currentAnimation.getCurrentFrame(spriteCount);
-        const Rectangle dest = {x + static_cast<float>(currentAnimation.offX),
-                                y + static_cast<float>(currentAnimation.offY),
+        auto offset = entityAnimation->getOffset();
+        const Rectangle dest = {x + offset.x, y + offset.y,
                                 static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
                                 static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)};
-        DrawRegionPro(currentFrame, dest, rotation, currentAnimation.getAnchor());
+        DrawRegionPro(currentFrame, dest, rotation, entityAnimation->getAnchor());
     }
 
     void AnimationC::update() { ++spriteCount; }
@@ -51,7 +51,6 @@ namespace magique
 
     bool AnimationC::getHasAnimationPlayed() const
     {
-
         return spriteCount > animationStart + currentAnimation.maxDuration;
     }
 

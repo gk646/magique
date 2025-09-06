@@ -59,8 +59,8 @@ namespace magique::internal
         void* tickFunc = nullptr;
 
         //================= EMISSION SHAPE =================//
-        mutable Point emissionPos{0, 0};  // RECT: width/height  / CIRCLE: radius
-        Point emissionDims{1, 1}; // RECT: width/height  / CIRCLE: radius
+        mutable Point emissionPos{0, 0}; // RECT: width/height  / CIRCLE: radius
+        Point emissionDims{1, 1};        // RECT: width/height  / CIRCLE: radius
         Point anchor;
 
         //================= PARTICLE =================//
@@ -72,11 +72,13 @@ namespace magique::internal
         float minInitVeloc = 1, maxInitVeloc = 1;      // Initial velocity
         Point direction{};                             // Direction
         float rotation = 0;                            // Rotation around the anchor
-        float volume = 1.0F;                              // How much of the body will be treated as spawnable area
+        float volume = 1.0F;                           // How much of the body will be treated as spawnable area
         float spreadAngle = 0;                         // Spread angle around the direction
         float gravX = 0, gravY = 0;                    // Gravity in x and y direction
-        uint16_t minLife = 100, maxLife = 100;         // Total lifetime
-        bool resolutionScaling = true;                 // resolution scaling
+        float angularGravity = 0.0F;
+        Point angularVelocity{0, 0};
+        uint16_t minLife = 100, maxLife = 100; // Total lifetime
+        bool resolutionScaling = true;         // resolution scaling
         uint8_t poolSize = 0;
         Shape shape = Shape::RECT;
         Shape emShape = Shape::CAPSULE;       // Default is point emission

@@ -44,37 +44,6 @@ namespace magique
         return region;
     }
 
-    SpriteSheet RegisterSpriteSheet(Asset asset, const int w, const int h, const AtlasID at, const float scale)
-    {
-        ASSET_CHECK(asset);
-        Image image = LoadImage(asset);
-        // Checks
-        MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
-        ASSET_CHECK_IMAGE_DIVISIBILITY(image, w, h);
-        const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
-        const int frames = image.width / w * (image.height / h);
-        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
-        auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const SpriteSheet sheet = atlas.addSpriteSheet(image, w, h, scale);
-        return sheet;
-    }
-
-    SpriteSheet RegisterSpriteSheetEx(Asset asset, const int w, const int h, const int frames, const int offX,
-                                      const int offY, const AtlasID at, const float scale)
-    {
-
-        ASSET_CHECK(asset);
-        Image image = LoadImage(asset);
-        // Checks
-        MAGIQUE_ASSERT(image.width >= w && image.height >= h, "Image is smaller than a single frame");
-        MAGIQUE_ASSERT(offX < image.width && offY < image.height, "Offset is outside image bounds");
-        const int tarWidth = static_cast<int>(static_cast<float>(w) * scale);
-        ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(frames * tarWidth);
-        auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const auto sheet = atlas.addSpriteSheetEx(image, w, h, scale, frames, offX, offY);
-        return sheet;
-    }
-
     SpriteSheet ImportSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas, float scale)
     {
         if (assets.empty())
@@ -153,6 +122,7 @@ namespace magique
 
         const int width = images[0].width;
         const int height = images[0].height;
+        bool blank = true;
 
         for (const auto& img : images)
         {
@@ -160,6 +130,18 @@ namespace magique
             {
                 LOG_WARNING("Image size mismatch in sprite sheet import");
                 return {};
+            }
+            for (int i = 0; i < img.height; ++i)
+            {
+                for (int j = 0; j < img.width; ++j)
+                {
+                    const auto col = GetImageColor(img, j, i);
+                    if (col.a != 0 || col.b != 0 || col.g != 0 || col.r != 0)
+                    {
+                        blank = false;
+                        break;
+                    }
+                }
             }
         }
 
@@ -172,17 +154,91 @@ namespace magique
             dest.x += static_cast<float>(width);
         }
 
-        for (auto& img : images)
+        for (const auto& img : images)
         {
             UnloadImage(img);
         }
 
         auto& atlasData = global::ATLAS_DATA.getAtlas(atlas);
-        const auto sheet = atlasData.addSpriteSheet(singleImage, width, height, scale);
+        auto sheet = atlasData.addSpriteSheet(singleImage, width, height, scale);
+        sheet.blank = blank;
         return sheet;
     }
 
+    static void DrawCellFrame(Image& img, ase_t* ase, const ase_frame_t& frame, const std::vector<const char*>& layers)
+    {
+        bool none = true;
+        for (int j = 0; j < frame.cel_count; ++j)
+        {
+            bool validLayer = true;
+            const ase_cel_t* cel = frame.cels + j;
+            for (const auto* name : layers)
+            {
+                if (strcmp(cel->layer->name, name) != 0)
+                {
+                    validLayer = false;
+                    break;
+                }
+            }
+            if (!validLayer)
+            {
+                continue;
+            }
+            none = false;
+
+            while (cel->is_linked != 0)
+            {
+                ase_frame_t* frame = ase->frames + cel->linked_frame_index;
+                int found = 0;
+                for (int k = 0; k < frame->cel_count; ++k)
+                {
+                    if (frame->cels[k].layer == cel->layer)
+                    {
+                        cel = frame->cels + k;
+                        found = 1;
+                        break;
+                    }
+                }
+                CUTE_ASEPRITE_ASSERT(found);
+            }
+            void* src = cel->pixels;
+            int cx = cel->x;
+            int cy = cel->y;
+            int cw = cel->w;
+            int ch = cel->h;
+            int cl = -s_min(cx, 0);
+            int ct = -s_min(cy, 0);
+            int dl = s_max(cx, 0);
+            int dt = s_max(cy, 0);
+            int dr = s_min(ase->w, cw + cx);
+            int db = s_min(ase->h, ch + cy);
+            for (int dx = dl, sx = cl; dx < dr; dx++, sx++)
+            {
+                for (int dy = dt, sy = ct; dy < db; dy++, sy++)
+                {
+                    ase_color_t src_color = s_color(ase, src, cw * sy + sx);
+                    Color color;
+                    color.a = src_color.a;
+                    color.r = src_color.r;
+                    color.g = src_color.g;
+                    color.b = src_color.b;
+                    ImageDrawPixel(&img, dx, dy, color);
+                }
+            }
+        }
+        if (none)
+        {
+            //LOG_WARNING("No matching layer!");
+        }
+    }
+
     EntityAnimation ImportAseprite(Asset asset, StateMapFunc func, AtlasID atlas, float scale)
+    {
+        return ImportAsepriteEx(asset, {}, func, atlas, scale);
+    }
+
+    EntityAnimation ImportAsepriteEx(Asset asset, const std::vector<const char*>& layers, StateMapFunc func,
+                                     AtlasID atlas, float scale, Point offset, Point anchor)
     {
         EntityAnimation animation{scale};
         if (!(asset.hasExtension(".ase") || asset.hasExtension(".aseprite")))
@@ -201,7 +257,7 @@ namespace magique
             auto& tag = import->tags[i];
             images.clear();
             DurationArray durations{};
-            for (int l = tag.from_frame; l < tag.to_frame; ++l)
+            for (int l = tag.from_frame; l <= tag.to_frame; ++l)
             {
                 if (images.size() >= MAGIQUE_MAX_ANIM_FRAMES)
                 {
@@ -210,29 +266,14 @@ namespace magique
                 }
                 const auto& frame = import->frames[l];
                 Image img = GenImageColor(width, height, BLANK);
-                auto ticks = (float)frame.duration_milliseconds / (MAGIQUE_TICK_TIME * 1000.0F);
-                durations[(int)images.size()] = (int)std::round(ticks);
+                durations[(int)images.size()] = frame.duration_milliseconds;
 
-                // Draw the frame
-                for (int j = 0; j < height; ++j)
-                {
-                    for (int k = 0; k < width; ++k)
-                    {
-                        Color color;
-                        ase_color_t aColor = frame.pixels[(j * width) + k];
-                        color.a = aColor.a;
-                        color.r = aColor.r;
-                        color.g = aColor.g;
-                        color.b = aColor.b;
-                        ImageDrawPixel(&img, k, j, color);
-                    }
-                }
-
+                DrawCellFrame(img, import, frame, layers);
                 images.push_back(img);
             }
             const auto sheet = ImportSpriteSheetVec(images, atlas, scale);
             const auto state = func(tag.name);
-            animation.addAnimationEx(state, sheet, durations);
+            animation.addAnimationEx(state, sheet, durations, offset, anchor);
         }
         cute_aseprite_free(import);
         return animation;
@@ -241,7 +282,7 @@ namespace magique
     Sound ImportSound(Asset asset)
     {
         ASSET_CHECK(asset);
-        const auto ext = asset.getExtension();
+        const auto* ext = asset.getExtension();
         if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
@@ -256,7 +297,7 @@ namespace magique
     Music ImportMusic(Asset asset)
     {
         ASSET_CHECK(asset);
-        const auto ext = asset.getExtension();
+        const auto* ext = asset.getExtension();
         if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
@@ -300,7 +341,7 @@ namespace magique
         TileMap tilemap{};
         if (strcmp(asset.getExtension(), ".tmj") != 0)
         {
-            LOG_WARNING("Invalid extensions for a TileMap: %s | Supported: .tmx", asset.getFileName());
+            LOG_WARNING("Invalid extensions for a TileMap: %s | Supported: .tmj", asset.getFileName());
             return TileMap{};
         }
 
@@ -365,7 +406,7 @@ namespace magique
 
                 for (int i = 0; i < layer->data_count; ++i)
                 {
-                    dataVec.push_back(static_cast<uint16_t>(layer->data[i]));
+                    dataVec.push_back(static_cast<int16_t>(layer->data[i]));
                 }
             }
             else
@@ -385,7 +426,7 @@ namespace magique
         TileSet tileset{};
         if (strcmp(asset.getExtension(), ".tsj") != 0)
         {
-            LOG_WARNING("Invalid extensions for a TileSet: %s | Supported: .tsx", asset.getFileName(true));
+            LOG_WARNING("Invalid extensions for a TileSet: %s | Supported: .tsj", asset.getFileName(true));
             return tileset;
         }
         auto* import = cute_tiled_load_external_tileset_from_memory(asset.getData(), asset.getSize(), nullptr);

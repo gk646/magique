@@ -40,10 +40,14 @@ namespace magique
         // Returns the frame of the given state
         [[nodiscard]] SpriteAnimation getCurrentAnimation(AnimationState state) const;
 
+        Point getOffset() const;
+        Point getAnchor() const;
+
     private:
+        Point offset{};
+        Point anchor{};
         SparseRangeVector<SpriteAnimation> animations;
-        float scale;
-        bool isSet;
+        float scale = 1.0F;
         friend struct AnimationData;
     };
 

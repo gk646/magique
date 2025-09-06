@@ -254,8 +254,6 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
-    Point SpriteAnimation::getAnchor() const { return {static_cast<float>(rotX), static_cast<float>(rotY)}; }
-
     //----------------- TILE OBJECT PROPERTY -----------------//
 
     //TODO is leaking memory with name and property value / is it bad?

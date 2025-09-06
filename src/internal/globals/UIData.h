@@ -152,7 +152,7 @@ namespace magique
             }
         }
 
-        void scaleBounds(Rectangle& bounds, ScalingMode scaleMode, float inset, Anchor anchor) const
+        void scaleBounds(Rectangle& bounds, const ScalingMode scaleMode, float inset, Anchor anchor) const
         {
             const auto& [sx, sy] = targetRes;
             switch (scaleMode)
@@ -179,7 +179,7 @@ namespace magique
             if (anchor != Anchor::NONE)
             {
                 auto val = GetScaled(inset);
-                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, val);
+                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, {val, val});
                 bounds.x = pos.x;
                 bounds.y = pos.y;
             }

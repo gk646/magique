@@ -10,6 +10,7 @@
 
 #include "external/raylib-compat/rshapes_compat.h"
 #include "internal/datastructures/VectorType.h"
+#include "magique/util/Math.h"
 
 namespace magique
 {
@@ -18,6 +19,7 @@ namespace magique
     {
         vector<ScreenParticle> rectangles;
         vector<ScreenParticle> circles;
+        float scale = 1.0F;
 
         void addParticle(const ScreenParticle& sp)
         {
@@ -84,11 +86,27 @@ namespace magique
                     {
                         const auto& emitter = p.emitter->data;
                         ++p.age;
-                        p.pos.x += p.vx;
-                        p.pos.y += p.vy;
 
-                        p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
-                        p.vy += emitter.gravY;
+                        if (p.angular) [[unlikely]]
+                        {
+                            auto diff = Point{p.pos.x, p.pos.y} - p.emissionCenter;
+                            const float radius = diff.magnitude();
+
+                            auto radialDir = diff / radius;
+                            const auto tangentDir = radialDir.perpendicular(true);
+
+                            p.pos.x += radialDir.x * -p.vy + tangentDir.x * p.vx;
+                            p.pos.y += radialDir.y * -p.vy + tangentDir.y * p.vx;
+
+                            p.vy += p.emitter->data.angularGravity;
+                        }
+                        else
+                        {
+                            p.pos.x += p.vx;
+                            p.pos.y += p.vy;
+                            p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
+                            p.vy += emitter.gravY;
+                        }
 
                         if (emitter.scaleFunc != nullptr)
                         {

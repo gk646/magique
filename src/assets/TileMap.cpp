@@ -4,18 +4,18 @@
 
 namespace magique
 {
-    uint16_t& TileMap::getTileIndex(const int x, const int y, const int layer)
+    int16_t& TileMap::getTileIndex(const int x, const int y, const int layer)
     {
         auto& data = tileLayers[layer];
         return data[x + (y * width)];
     }
 
-    uint16_t TileMap::getTileIndex(const int x, const int y, const int layer) const
+    int16_t TileMap::getTileIndex(const int x, const int y, const int layer) const
     {
         return getLayerData(layer)[x + y * width];
     }
 
-    const uint16_t* TileMap::getLayerData(const int layer) const
+    const int16_t* TileMap::getLayerData(const int layer) const
     {
         MAGIQUE_ASSERT(layer < static_cast<int>(tileLayers.size()), "TileMap does not have that many tile layers");
         return tileLayers[layer].data();
@@ -34,5 +34,13 @@ namespace magique
         MAGIQUE_ASSERT(layer < static_cast<int>(objectLayers.size()), "TileMap does not have that many object layers");
         return objectLayers[layer];
     }
+
+    const std::vector<TileObject>& TileMap::getObjects(const int layer) const
+    {
+        MAGIQUE_ASSERT(layer < static_cast<int>(objectLayers.size()), "TileMap does not have that many object layers");
+        return objectLayers[layer];
+    }
+
+    const char* TileMap::getName() { return name; }
 
 } // namespace magique

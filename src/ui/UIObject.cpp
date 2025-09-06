@@ -4,7 +4,7 @@
 #include <magique/core/Types.h>
 
 #include "internal/globals/UIData.h"
-#include "internal/utils/CollisionPrimitives.h"
+#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -140,12 +140,7 @@ namespace magique
             ph = height / dims.y;
     }
 
-    bool UIObject::getIsHovered() const
-    {
-        const auto& [mx, my] = GetMousePos();
-        const auto [rx, ry, width, height] = getBounds();
-        return PointToRect(mx, my, rx, ry, width, height);
-    }
+    bool UIObject::getIsHovered() const { return CheckMouseRect(getBounds()); }
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 

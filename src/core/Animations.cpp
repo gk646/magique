@@ -14,16 +14,12 @@ namespace magique
         void add(const EntityType type, const EntityAnimation& animation)
         {
             animations[static_cast<int>(type)] = animation;
-            animations[static_cast<int>(type)].isSet = true;
         }
 
         [[nodiscard]] EntityAnimation& get(const EntityType type)
         {
             MAGIQUE_ASSERT(animations.width() > type, "No animation registered for that type!");
             auto& animation = animations[type];
-            MAGIQUE_ASSERT(
-                animation.isSet,
-                "No animation was registered for that type. Use RegisterEntityAnimation() to register an animation");
             return animation;
         }
     };
@@ -36,7 +32,7 @@ namespace magique
 
     //----------------- ENTITY ANIMATION -----------------//
 
-    EntityAnimation::EntityAnimation(const float scale) : scale(scale), isSet(false) {}
+    EntityAnimation::EntityAnimation(const float scale) : scale(scale) {}
 
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration)
     {
@@ -50,7 +46,7 @@ namespace magique
     }
 
     void EntityAnimation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
-                                         Point offset, Point anchor)
+                                         Point off, Point anch)
     {
         auto& animation = animations[static_cast<int>(state)];
         for (int i = 0; i < sheet.frames; ++i)
@@ -59,10 +55,10 @@ namespace magique
             animation.maxDuration += durations[i];
         }
         animation.sheet = sheet;
-        animation.offX = static_cast<int16_t>(offset.x * scale);
-        animation.offY = static_cast<int16_t>(offset.y * scale);
-        animation.rotX = static_cast<int16_t>(anchor.x * scale);
-        animation.rotY = static_cast<int16_t>(anchor.y * scale);
+        offset = {off.x, off.y};
+        offset *= scale;
+        anchor = {anch.x, anch.y};
+        anchor *= scale;
     }
 
     void EntityAnimation::removeAnimation(AnimationState state)
@@ -70,15 +66,16 @@ namespace magique
         auto& animation = animations[static_cast<int>(state)];
         animation.maxDuration = UINT16_MAX; // Mark as invalid
         animation.sheet = {};
-        animation.offX = static_cast<int16_t>(0);
-        animation.offY = static_cast<int16_t>(0);
     }
 
     SpriteAnimation EntityAnimation::getCurrentAnimation(AnimationState state) const
     {
-        MAGIQUE_ASSERT(isSet, "Dont use unregistered animations");
         return animations[static_cast<int>(state)];
     }
+
+    Point EntityAnimation::getOffset() const { return offset; }
+
+    Point EntityAnimation::getAnchor() const { return anchor; }
 
     //----------------- GLOBAL INTERFACE -----------------//
 

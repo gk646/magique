@@ -26,6 +26,12 @@ namespace magique
     // Note: Needs to be called manually - so you can control at which layer particles are rendered
     void DrawParticles();
 
+    // Allows to set a global modifier to the amount of particles created
+    // Useful cause of single point of truth - modifies all calls
+    // Default: 1.0
+    float GetParticleAmountScale();
+    void SetParticleAmountScale(float amount);
+
     //================= CREATE =================//
 
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
@@ -107,6 +113,18 @@ namespace magique
 
         //================= ADDITIONALS =================//
 
+        // Sets an angular (to the circle center inwards) gravity - replaces normal gravity
+        // in pixels per second**2
+        // Note: if set will switch particle to angular mode
+        EmitterBase& setAngularGravity(float gravity);
+
+        // Sets an angular velocity (speed on the circle outline) - replaces normal velocity
+        // X is the speed along the circle outline - positive is right-around
+        // Y is the speed component away or towards the center - positive is towards center
+        // Note: Uses the base velocity for scaling - both in pixels per second
+        // Note: if set will switch particle to angular mode
+        EmitterBase& setAngularVelocity(const Point& velocity);
+
         // Sets the gravity (pixels/s**2) in both x and y direction
         // Note: Gravity is applied every tick to the particles velocity
         // Default: (0,0)
@@ -137,7 +155,7 @@ namespace magique
 
         // Sets the min and max initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setVelocity(float minVeloc, float maxVeloc = 0);
+        EmitterBase& setVelocityRange(float minVeloc, float maxVeloc = 0);
 
         // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
         // Default: True

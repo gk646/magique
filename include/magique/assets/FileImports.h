@@ -183,8 +183,8 @@ namespace magique
         auto ec = glz::read_json(data, buff);
         if (ec)
         {
-            LOG_ERROR("Failed to import JSON %s: %s at position %d", asset.getFileName(), GetJSONErrStr(ec),
-                      (int)ec.location);
+            LOG_ERROR("Failed to import JSON %s: %s at position %d\n%.30s", asset.getFileName(), GetJSONErrStr(ec),
+                      (int)ec.location, asset.getData() + ec.location);
             return false;
         }
         else

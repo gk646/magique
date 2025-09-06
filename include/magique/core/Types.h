@@ -139,25 +139,20 @@ namespace magique
         int16_t height;  // Height of a frame
         uint16_t id;     // The texture id
         uint16_t frames; // Total number of frames
+        bool blank;      // True if all frames are fully transparent
 
         [[nodiscard]] TextureRegion getRegion(int frame) const;
     };
 
-    using DurationArray = uint8_t[MAGIQUE_MAX_ANIM_FRAMES]; // Duration in ticks
+    using DurationArray = uint16_t[MAGIQUE_MAX_ANIM_FRAMES]; // Duration in millis
 
     struct SpriteAnimation final
     {
         DurationArray durations{};
         SpriteSheet sheet{};
-        uint16_t maxDuration = 0;
-        int16_t offX = 0; // Draw offset
-        int16_t offY = 0;
-        int16_t rotX = 0; // Rotation anchor
-        int16_t rotY = 0;
+        uint16_t maxDuration = 0; // in millis
 
-        [[nodiscard]] TextureRegion getCurrentFrame(uint16_t spriteCount) const;
-
-        [[nodiscard]] Point getAnchor() const;
+        TextureRegion getCurrentFrame(uint16_t spriteCount) const;
     };
 
     // The type of the property
@@ -639,7 +634,9 @@ namespace magique
 
     struct ScreenParticle final
     {
-        Point pos;
+        const ScreenEmitter* emitter; // Function pointers are shared across all instances
+        Point pos;                    // Current particles position
+        Point emissionCenter;         // Center of the emission shape - for angular movement
         int16_t p1;                   // RECT: width  / CIRCLE: radius
         int16_t p2;                   // RECT: height
         float vx, vy;                 // Velocity
@@ -648,7 +645,7 @@ namespace magique
         uint16_t lifeTime;            // Lifetime
         Shape shape;                  // Shape
         uint8_t r, g, b, a;           // Current color
-        const ScreenEmitter* emitter; // Function pointers are shared across all instances
+        bool angular = false;         // If gravity is angular or not
 
         [[nodiscard]] Color getColor() const;
         void setColor(const Color& color);

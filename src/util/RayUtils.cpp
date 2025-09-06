@@ -160,6 +160,13 @@ namespace magique
         DrawRectangleRoundedLinesEx(bounds, boundsRound, 30, 1, border);
     }
 
+    void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border)
+    {
+        auto enlargedRect = GetEnlargedRect(bounds, 2, 2);
+        DrawRectangleLinesEx(enlargedRect, 1, outline);
+        DrawRectangleLinesEx(bounds, 1, border);
+    }
+
     bool CheckMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
@@ -183,9 +190,16 @@ namespace magique
     void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
                               const Color& tint)
     {
-        auto dims = MeasureTextEx(fnt, txt, fs, spacing);
-        auto center = GetCenteredPos(bounds, dims.x, dims.y);
+        const auto dims = MeasureTextEx(fnt, txt, fs, spacing);
+        const auto center = GetCenteredPos(bounds, dims.x, dims.y);
         DrawTextEx(fnt, txt, center, fs, spacing, tint);
+    }
+
+    void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)
+    {
+        DrawRectangleRec(bounds, tint);
+        const auto shadeRect = Rectangle{bounds.x, bounds.y + bounds.height, bounds.width, bounds.height * shadeMult};
+        DrawRectangleRec(shadeRect, shade);
     }
 
 } // namespace magique

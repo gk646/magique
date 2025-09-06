@@ -269,8 +269,8 @@ namespace magique
     void DrawRightBoundPixelText(const Font& f, const char* txt, Vector2 pos, int fsm, Color tint)
     {
         const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
-        DrawPixelText(f, txt, {pos.x - width, pos.y}, fs, tint);
+        const auto width = MeasureTextEx(f, txt, fs, (float)fsm).x;
+        DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
     }
 
     int DrawTextUpTo(const Font& font, const char* text, Vector2 position, float fontSize, float width, Color tint)
