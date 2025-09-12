@@ -149,7 +149,9 @@ namespace magique
         void lazyInit()
         {
             if (initialized)
+            {
                 return;
+            }
             initialized = true;
 
             // Always PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 and 1 mipmap
@@ -162,7 +164,6 @@ namespace magique
                 LOG_ERROR("Failed to load texture atlas texture! No textures will work");
                 UnloadImage(getImg());
             }
-
             id = static_cast<uint16_t>(tex.id);
         }
 

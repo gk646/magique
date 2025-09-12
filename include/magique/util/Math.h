@@ -64,6 +64,9 @@ namespace magique
     // Applies the change to the given value such that it goes towards the closest max (positive or negative) but not oversteps it
     float AwayFromZero(float value, float change, float max);
 
+    // Mirrors the given value vertically
+    int MirrorVertically(int value, int border);
+
 } // namespace magique
 
 

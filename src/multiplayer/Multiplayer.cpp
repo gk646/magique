@@ -45,8 +45,10 @@ namespace magique
     {
         auto& data = global::MP_DATA;
         global::BATCHER.sendAll(data.outMsgBuffer);
-        if (data.outMsgBuffer.empty()) [[unlikely]]
-            return;
+        if (data.outMsgBuffer.empty())
+        {
+            [[unlikely]] return;
+        }
         const auto size = data.outMsgBuffer.size();
         SteamNetworkingSockets()->SendMessages(size, data.outMsgBuffer.data(), nullptr);
         data.outMsgBuffer.clear();
@@ -158,7 +160,7 @@ namespace magique
         for (const auto conn : data.connections)
         {
             const auto steamConn = static_cast<HSteamNetConnection>(conn);
-            auto buff = data.incMsgBuffer.data();
+            auto** buff = data.incMsgBuffer.data() + data.incMsgBuffer.size();
             const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(steamConn, buff, max);
             if (n == -1) // No more messages
             {

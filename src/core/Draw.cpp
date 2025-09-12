@@ -63,8 +63,8 @@ namespace magique
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
 
-        const auto texWidth = static_cast<float>(region.width);
-        const auto texHeight = static_cast<float>(region.height);
+        const auto texWidth = static_cast<float>(std::abs(region.width));
+        const auto texHeight = static_cast<float>(std::abs(region.height));
 
         const float texLeft = (static_cast<float>(region.offX) + (dest.width < 0 ? texWidth : 0)) / ATLAS_WIDTH;
         const float texRight = (static_cast<float>(region.offX) + (dest.width < 0 ? 0 : texWidth)) / ATLAS_WIDTH;

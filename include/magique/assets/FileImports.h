@@ -30,6 +30,10 @@ namespace magique
     template <typename T>
     bool ImportJSON(Asset asset, T& data);
 
+    // Serialized the given data into the buffer (will be cleared and sized appropriately)
+    template <typename T>
+    bool ExportJSON(const T& data, std::string& buffer);
+
 } // namespace magique
 
 
@@ -187,12 +191,23 @@ namespace magique
                       (int)ec.location, asset.getData() + ec.location);
             return false;
         }
-        else
+        return true;
+    }
+
+    template <typename T>
+    bool ExportJSON(const T& data, std::string& buffer)
+    {
+        buffer.clear();
+        auto ec = glz::write_json(data, buffer);
+        if (ec)
         {
-            LOG_INFO("Successfully imported %s", asset.getFileName());
+            LOG_ERROR("Failed to export JSON: %s ", GetJSONErrStr(ec));
+            return false;
         }
         return true;
     }
+
+
 } // namespace magique
 
 

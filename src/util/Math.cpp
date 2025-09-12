@@ -110,4 +110,6 @@ namespace magique
         return value;
     }
 
+    int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
+
 } // namespace magique

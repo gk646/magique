@@ -43,7 +43,6 @@
 
 namespace magique
 {
-
     // Returns a network message object to be sent via the network - should be used directly and not stored
     // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
     // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)

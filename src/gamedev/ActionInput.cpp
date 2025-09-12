@@ -40,7 +40,7 @@ namespace magique
 
     bool ActionInput::getIsDown() const { return isDown; }
 
-    bool ActionInput::getIsPressed() const { return isPressed; }
+    bool ActionInput::getIsClicked() const { return isPressed; }
 
     bool ActionInput::getIsReleased() const { return isReleased; }
 } // namespace magique
