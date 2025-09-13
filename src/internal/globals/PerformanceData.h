@@ -119,7 +119,7 @@ namespace magique
                 float inBytes = 0;
                 float outBytes = 0;
                 float ping = 0.0F;
-                if (!mp.isHost)
+                if (!GetCurrentConnections().empty())
                 {
                     const auto conn = static_cast<HSteamNetConnection>(mp.connections[0]);
                     SteamNetConnectionRealTimeStatus_t info{};

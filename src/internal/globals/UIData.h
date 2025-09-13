@@ -3,6 +3,7 @@
 #define MAGIQUE_UI_DATA_H
 
 #include <cmath>
+#include <algorithm>
 #include <raylib/raylib.h>
 
 #include <magique/ui/UIObject.h>

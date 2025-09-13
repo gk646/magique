@@ -88,11 +88,11 @@ namespace magique
     {
         if (value < 0.0F)
         {
-            return std::min(value + change, 0.0F);
+            return minValue(value + change, 0.0F);
         }
         if (value > 0.0F)
         {
-            return std::max(value - change, 0.0F);
+            return maxValue(value - change, 0.0F);
         }
         return value;
     }

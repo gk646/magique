@@ -82,7 +82,7 @@ namespace magique
             LOG_WARNING("Failed to connect to global socket");
             return Connection::INVALID_CONNECTION;
         }
-        data.goOnline(false);
+        data.goOnline(false, static_cast<Connection>(conn));
         return data.connections[0];
     }
 

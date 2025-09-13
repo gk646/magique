@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <chrono>
+
 #include <magique/core/Debug.h>
 
-#include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/PerformanceData.h"
 

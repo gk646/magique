@@ -66,9 +66,7 @@ struct StackVector final
     auto end() { return data.end(); }
 
 private:
-    static_assert(std::is_trivially_constructible_v<T>, "Must be trivial");
-    static_assert(std::is_trivially_destructible_v<T>, "Must be trivial");
-    std::array<T, capacity> data;
+     std::array<T, capacity> data;
     uint32_t size_ = 0;
 };
 
