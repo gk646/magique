@@ -8,7 +8,7 @@ namespace magique
 {
     struct ECSData final
     {
-        uint32_t entityID = 0;
+        uint32_t entityID = 1;
         HashMap<EntityType, CreateFunc> typeMap{50};
     };
 

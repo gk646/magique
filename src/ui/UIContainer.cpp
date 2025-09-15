@@ -84,6 +84,8 @@ namespace magique
         return true;
     }
 
+    bool UIContainer::removeChild(UIObject* child) { return std::erase(children, child) > 0; }
+
     UIObject* UIContainer::getChild(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");

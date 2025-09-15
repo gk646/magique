@@ -30,6 +30,7 @@ namespace magique
     enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
     struct Point;            // Floating point point
+    enum class Direction : uint8_t;
 
     //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu

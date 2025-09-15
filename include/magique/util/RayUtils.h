@@ -69,8 +69,8 @@ namespace magique
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint);
 
     // Draws a partially filled rectangle with the given maximum bounds
-    // Either fills up or down
-    void DrawPartialFilledRect(const Rectangle& bounds, float fillPercent, bool up, const Color& tint);
+    // Either fills up in the given direction
+    void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, const Color& tint);
 
     void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
                               const Color& tint);

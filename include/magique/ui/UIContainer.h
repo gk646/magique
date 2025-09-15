@@ -41,6 +41,7 @@ namespace magique
         // Failure: returns wrong if no child with the given name or index exists
         bool removeChild(const char* name);
         bool removeChild(int index);
+        bool removeChild(UIObject* child);
 
         // Returns a pointer to the child associated with the given name (if any)
         // Failure: returns nullptr if the name doesn't exist

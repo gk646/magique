@@ -177,12 +177,26 @@ namespace magique
         DrawTextureV(texture, center, tint);
     }
 
-    void DrawPartialFilledRect(const Rectangle& bounds, float fillPercent, bool up, const Color& tint)
+    void DrawFilledRect(const Rectangle& bounds, const float fillPercent, const Direction dir, const Color& tint)
     {
-        Rectangle filledBounds = {bounds.x, bounds.y, bounds.width, bounds.height * fillPercent};
-        if (up)
+        Rectangle filledBounds = {bounds.x, bounds.y, bounds.width, bounds.height};
+        if (dir == Direction::UP)
         {
-            filledBounds.y = bounds.y - bounds.height * fillPercent + bounds.height;
+            filledBounds.height *= fillPercent;
+            filledBounds.y = bounds.y - filledBounds.height + bounds.height;
+        }
+        else if (dir == Direction::DOWN)
+        {
+            filledBounds.height *= fillPercent;
+        }
+        else if (dir == Direction::LEFT)
+        {
+            filledBounds.width *= fillPercent;
+            filledBounds.x = bounds.x - filledBounds.width + bounds.width;
+        }
+        else if (dir == Direction::RIGHT)
+        {
+            filledBounds.width *= fillPercent;
         }
         DrawRectangleRec(filledBounds, tint);
     }
