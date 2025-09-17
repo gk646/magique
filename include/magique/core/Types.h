@@ -41,6 +41,7 @@ namespace magique
         Point operator/(float divisor) const;
         Point operator-(float f) const;
         Point operator+(float f) const; // To both
+        Point& operator+=(float f);     // To both
         Point& operator*=(float f);
         Point& operator=(float f); // Assign to both
         Point& operator-=(float f);
@@ -283,10 +284,12 @@ namespace magique
         TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
     };
 
-    // Feel free to rename those! This is a bit mask!
-    enum class CollisionLayer : uint8_t
+    // This NEEDS to be a bit mask
+    // Feel free uncomment! or implement it your own
+    enum class CollisionLayer : uint8_t;
+    /*
     {
-        NONE = 0,
+       NONE = 0,
         DEFAULT_LAYER = 1 << 0,
         LAYER_1 = 1 << 1,
         LAYER_2 = 1 << 2,
@@ -295,7 +298,7 @@ namespace magique
         LAYER_5 = 1 << 5,
         LAYER_6 = 1 << 6,
     };
-
+*/
     enum class ColliderType : uint8_t
     {
         WORLD_BOUNDS,

@@ -29,6 +29,11 @@ namespace magique
         // Sets a function that is called on click - same as onClick but without needing to override the button class
         void wireOnClick(ClickFunc func);
 
+        // Sets the disabled state - prevents only the onClick and wireOnClick activations
+        // Does NOT affect the base UIObject methods
+        void setDisabled(bool value);
+        bool getIsDisabled() const;
+
     protected:
         // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
@@ -45,6 +50,7 @@ namespace magique
 
     private:
         bool isHovered = false;
+        bool isDisabled = false;
         ClickFunc clickFunc = nullptr;
     };
 } // namespace magique

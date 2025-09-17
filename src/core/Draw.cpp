@@ -19,7 +19,8 @@ constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 
 namespace magique
 {
-    void DrawRegion(const TextureRegion region, const float x, const float y, const bool flipX, const Color tint)
+
+    void DrawRegion(const TextureRegion region, const Point& pos, const bool flipX, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -40,22 +41,29 @@ namespace magique
 
         // Top-left corner for region and quad
         rlTexCoord2f(texLeft, texTop);
-        rlVertex2f(x, y);
+        rlVertex2f(pos.x, pos.y);
 
         // Bottom-left corner for region and quad
         rlTexCoord2f(texLeft, texBottom);
-        rlVertex2f(x, y + texHeight);
+        rlVertex2f(pos.x, pos.y + texHeight);
 
         // Bottom-right corner for region and quad
         rlTexCoord2f(texRight, texBottom);
-        rlVertex2f(x + texWidth, y + texHeight);
+        rlVertex2f(pos.x + texWidth, pos.y + texHeight);
 
         // Top-right corner for region and quad
         rlTexCoord2f(texRight, texTop);
-        rlVertex2f(x + texWidth, y);
+        rlVertex2f(pos.x + texWidth, pos.y);
 
         rlEnd();
         rlSetTexture(0);
+    }
+
+    void DrawCenteredRegion(const TextureRegion& region, const Point& pos, Color tint)
+    {
+        auto center = pos;
+        center.x -= std::floor((float)region.width / 2.0F);
+        DrawRegion(region, center, false, tint);
     }
 
     void DrawRegionPro(TextureRegion region, Rectangle dest, const float rotation, const Point anchor, const Color tint)
@@ -256,7 +264,7 @@ namespace magique
     {
         pos.x = std::round(pos.x);
         pos.y = std::round(pos.y);
-        DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F *(float)fsm, tint);
+        DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
     }
 
     void DrawCenteredPixelText(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)

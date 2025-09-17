@@ -41,7 +41,7 @@ namespace magique
         float entityUpdateDistance = 2500;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
         float fontSize = 15;                        // Font size of engine UI elements - scales automatically
-        float cameraSmoothing = 0.9f;               // How fast the camera catches up to the holder position
+        float cameraSmoothing = 0.4f;               // How fast the camera catches up to the holder position
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
         LogLevel logLevel = LEVEL_INFO;             // All above info are visible

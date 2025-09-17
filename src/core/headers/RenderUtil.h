@@ -51,7 +51,7 @@ namespace magique
         }
         else // Center the camera on the collision shape if provided
         {
-            CollisionC* coll = internal::REGISTRY.try_get<CollisionC>(cameraEntity);
+            const CollisionC* coll = internal::REGISTRY.try_get<CollisionC>(cameraEntity);
             if (coll != nullptr)
             {
                 switch (coll->shape)
@@ -74,10 +74,10 @@ namespace magique
             }
         }
 
-        data.camera.target.x += (targetPosition.x - data.camera.target.x) * smoothing;
-        data.camera.target.y += (targetPosition.y - data.camera.target.y) * smoothing;
-        data.camera.target.x = std::floor(data.camera.target.x);
-        data.camera.target.y = std::floor(data.camera.target.y);
+        data.camera.target.x = Lerp(data.camera.target.x, targetPosition.x, smoothing);
+        data.camera.target.y = Lerp(data.camera.target.y, targetPosition.y, smoothing);
+        data.camera.target.x = std::round(data.camera.target.x);
+        data.camera.target.y = std::round(data.camera.target.y);
     }
 
     inline void RenderHitboxes()
@@ -296,7 +296,6 @@ namespace magique
                 const float cellY = static_cast<float>(currY) * cellSize;
                 DrawLineEx({cellX, cellY}, {cellXRight, cellY}, 1, BLACK);
             }
-
         };
 
         BeginMode2D(GetCamera());

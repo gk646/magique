@@ -36,6 +36,13 @@ namespace magique
 
     Point Point::operator+(float f) const { return {x + f, y + f}; }
 
+    Point& Point::operator+=(float f)
+    {
+        x += f;
+        y += f;
+        return *this;
+    }
+
     Point& Point::operator+=(const Point& other)
     {
         x += other.x;

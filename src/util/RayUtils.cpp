@@ -216,4 +216,29 @@ namespace magique
         DrawRectangleRec(shadeRect, shade);
     }
 
+    void Draw2DFrame(const Rectangle& bounds, const Color& tint)
+    {
+        const float x = bounds.x;
+        const float y = bounds.y;
+        const float width = bounds.width;
+        const float height = bounds.height;
+
+        const Vector2 topStart = {x, y};
+        const Vector2 topEnd = {x + width - 2, y};
+
+        const Vector2 bottomStart = {x, y + height - 1};
+        const Vector2 bottomEnd = {x + width - 2, y + height - 1};
+
+        const Vector2 leftStart = {x, y};
+        const Vector2 leftEnd = {x, y + height - 2};
+
+        const Vector2 rightStart = {x + width - 1, y};
+        const Vector2 rightEnd = {x + width - 1, y + height - 2};
+
+        DrawLineV(topStart, topEnd, tint);
+        DrawLineV(bottomStart, bottomEnd, tint);
+        DrawLineV(leftStart, leftEnd, tint);
+        DrawLineV(rightStart, rightEnd, tint);
+    }
+
 } // namespace magique

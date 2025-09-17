@@ -20,7 +20,9 @@ namespace magique
     //================= TEXTURES =================//
 
     // Draws a given texture region - rotation happens around the middle point
-    void DrawRegion(TextureRegion region, float x, float y, bool flipX = false, Color tint = WHITE);
+    void DrawRegion(TextureRegion region, const Point& pos, bool flipX = false, Color tint = WHITE);
+
+    void DrawCenteredRegion(const TextureRegion& region, const Point& pos, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect
     // Note: Pass a negative width/height to mirror the texture horizontally/vertically

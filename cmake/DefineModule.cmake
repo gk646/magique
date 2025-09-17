@@ -37,8 +37,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             $<$<CONFIG:Debug>:
             -Og
-            -g
-            -fstack-protector-strong
+            -g1
             -D_DEBUG
             -D_GLIBCXX_ASSERTIONS
             -D_DEBUG_ASSERT
@@ -107,9 +106,9 @@ if (MAGIQUE_STEAM)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_STEAM)
 
     set(FULL_STEAM_PATH "${STEAM_PATH}/public")
-    if(NOT IS_ABSOLUTE "${FULL_STEAM_PATH}")
+    if (NOT IS_ABSOLUTE "${FULL_STEAM_PATH}")
         set(FULL_STEAM_PATH "${CMAKE_SOURCE_DIR}/${FULL_STEAM_PATH}")
-    endif()
+    endif ()
     target_include_directories(magique-${MODULE_NAME} PRIVATE ${FULL_STEAM_PATH}) # Include
 elseif (MAGIQUE_LAN)
     target_compile_definitions(magique-${MODULE_NAME} PUBLIC MAGIQUE_LAN)

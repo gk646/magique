@@ -29,9 +29,9 @@ namespace magique
     // Default: (0,0)
     void SetCameraTargetOffset(float x, float y);
 
-    // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the slowest
+    // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the fastest
     // Controls how fast the camera position catches up to the position of the camera holder
-    // Default: 0.9
+    // Default: 0.4
     void SetCameraSmoothing(float smoothing);
 
     // Removes the CameraC component from the current holder and adds it to the specified entity (making it the new holder)

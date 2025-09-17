@@ -78,6 +78,9 @@ namespace magique
     // Draws a 2d rectangle with a shade at the bottom
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);
 
+    // Draws a frame - leaves out the edges for a slightly rounded look
+    void Draw2DFrame(const Rectangle& bounds, const Color& tint);
+
 } // namespace magique
 
 #endif //MAGIQUE_RAYUTILS_H

@@ -101,11 +101,11 @@ namespace magique
     {
         if (value < 0.0F)
         {
-            return std::max(value - change, -max);
+            return maxValue(value - change, -max);
         }
         if (value > 0.0F)
         {
-            return std::min(value + change, max);
+            return minValue(value + change, max);
         }
         return value;
     }

@@ -209,15 +209,14 @@ namespace magique
                                   const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), Shape::RECT,
-                                                      CollisionLayer::DEFAULT_LAYER);
+                                                      static_cast<int16_t>(anchorY), Shape::RECT, CollisionLayer{1});
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), Shape::CIRCLE,
-                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
+                                                      static_cast<int16_t>(0), Shape::CIRCLE, CollisionLayer{1},
+                                                      CollisionLayer{1});
     }
 
     CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
@@ -225,16 +224,16 @@ namespace magique
         MAGIQUE_ASSERT(height > 2 * radius,
                        "Given capsule is not well defined! Total height has to be greater than 2 * radius");
         return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, 1.0F, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), Shape::CAPSULE,
-                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
+                                                      static_cast<int16_t>(0), Shape::CAPSULE, CollisionLayer{1},
+                                                      CollisionLayer{1});
     }
 
     CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, const int anchorX,
                                  const int anchorY)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, 1.0F, static_cast<int16_t>(anchorX),
-                                                      static_cast<int16_t>(anchorY), Shape::TRIANGLE,
-                                                      CollisionLayer::DEFAULT_LAYER, CollisionLayer::DEFAULT_LAYER);
+                                                      static_cast<int16_t>(anchorY), Shape::TRIANGLE, CollisionLayer{1},
+                                                      CollisionLayer{1});
     }
 
     AnimationC& GiveAnimation(const entt::entity entity, const EntityType type, const AnimationState startState)

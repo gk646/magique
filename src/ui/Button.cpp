@@ -17,6 +17,10 @@ namespace magique
 
     void Button::wireOnClick(ClickFunc func) { clickFunc = func; }
 
+    void Button::setDisabled(bool value) { isDisabled = value; }
+
+    bool Button::getIsDisabled() const { return isDisabled; }
+
     void Button::updateActions(const Rectangle& bounds)
     {
         const auto mouse = GetMousePos();
@@ -28,7 +32,7 @@ namespace magique
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
-                    if (IsMouseButtonReleased(i))
+                    if (IsMouseButtonReleased(i) && !isDisabled)
                     {
                         onClick(bounds, i);
                         if (clickFunc)

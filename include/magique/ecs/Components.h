@@ -59,8 +59,8 @@ namespace magique
         Shape shape = Shape::RECT; // Shape
 
         // https://www.youtube.com/watch?v=9k8cMzv0ZNo - same as Godot's layers
-        CollisionLayer layer = CollisionLayer::DEFAULT_LAYER; // Which layers it occupies
-        CollisionLayer mask = CollisionLayer::DEFAULT_LAYER;  // Against which layers it collides
+        CollisionLayer layer = CollisionLayer{1}; // Which layers it occupies
+        CollisionLayer mask = CollisionLayer{1};  // Against which layers it collides
 
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);
