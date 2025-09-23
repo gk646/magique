@@ -218,7 +218,10 @@ namespace magique
 
     struct TileInfo final
     {
-        uint8_t x = 0, y = 0, width = 0, height = 0;
+        // Collision shape
+        bool hasCollision = false;
+        uint8_t x, y, width, height;
+        const char* image;            // only valid if its an image tileset
         uint16_t tileID = UINT16_MAX; // ID of the tile
 
         [[nodiscard]] int getClass() const;

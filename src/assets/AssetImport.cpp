@@ -430,7 +430,29 @@ namespace magique
             return tileset;
         }
         auto* import = cute_tiled_load_external_tileset_from_memory(asset.getData(), asset.getSize(), nullptr);
+        tileset.tileSize = import->tilewidth;
+        cute_tiled_tile_descriptor_t* tile = import->tiles;
+        while (tile != nullptr)
+        {
+            TileInfo info;
+            info.hasCollision = tile->objectgroup != nullptr;
+            if (info.hasCollision)
+            {
+                const auto& object = tile->objectgroup->objects[0];
+                info.x = object.x;
+                info.y = object.y;
+                info.width = object.width;
+                info.height = object.height;
+            }
+            auto ptr = tile->image.ptr;
+            if (ptr != nullptr)
+            {
+                info.image = strdup(tile->image.ptr);
+            }
 
+            info.tileID = tile->tile_index;
+            tile = tile->next;
+        }
 
         cute_tiled_free_external_tileset(import);
         return tileset;
