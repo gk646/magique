@@ -8,6 +8,67 @@
 
 namespace magique
 {
+    VirtualTime VirtualTime::operator+(const VirtualTime& other) const
+    {
+        VirtualTime result;
+        result.second = second + other.second;
+        result.minute = minute + other.minute;
+        result.hour = hour + other.hour;
+        result.day = day + other.day;
+
+        result.minute += result.second / 60;
+        result.second %= 60;
+
+        result.hour += result.minute / 60;
+        result.minute %= 60;
+
+        result.day += result.hour / 24;
+        result.hour %= 24;
+
+        return result;
+    }
+
+    VirtualTime VirtualTime::operator-(const VirtualTime& other) const
+    {
+        VirtualTime result;
+        result.second = second - other.second;
+        result.minute = minute - other.minute;
+        result.hour = hour - other.hour;
+        result.day = day - other.day;
+
+        if (result.second < 0)
+        {
+            result.second += 60;
+            result.minute--;
+        }
+        if (result.minute < 0)
+        {
+            result.minute += 60;
+            result.hour--;
+        }
+        if (result.hour < 0)
+        {
+            result.hour += 24;
+            result.day--;
+        }
+
+        return result;
+    }
+
+    bool VirtualTime::operator==(const VirtualTime& other) const { return toSeconds() == other.toSeconds(); }
+
+    bool VirtualTime::operator!=(const VirtualTime& other) const { return !(*this == other); }
+
+    bool VirtualTime::operator<(const VirtualTime& other) const { return toSeconds() < other.toSeconds(); }
+
+    bool VirtualTime::operator>(const VirtualTime& other) const { return toSeconds() > other.toSeconds(); }
+
+    bool VirtualTime::operator<=(const VirtualTime& other) const { return toSeconds() <= other.toSeconds(); }
+
+    bool VirtualTime::operator>=(const VirtualTime& other) const { return toSeconds() >= other.toSeconds(); }
+
+    int VirtualTime::toSeconds() const { return ((day * 24 + hour) * 60 + minute) * 60 + second; }
+
     VirtualClock::VirtualClock(const int realMinutes) { setRealMinutes(realMinutes); }
 
     int VirtualClock::getDay() const
@@ -42,7 +103,6 @@ namespace magique
 
     void VirtualClock::setTime(const int hour, const int minute, const int second, const int day)
     {
-
         if (day >= 0)
         {
             MAGIQUE_ASSERT(day >= 0, "Invalid day value. Must be more or equal to 0");
@@ -79,6 +139,22 @@ namespace magique
                 adjustment *= -1;
             adjustTicksByRealSeconds(adjustment);
         }
+    }
+
+    VirtualTime VirtualClock::getTime() const
+    {
+        VirtualTime time{};
+        time.day = getDay();
+        time.hour = getHour();
+        time.minute = getMinute();
+        time.second = getSecond();
+        return time;
+    }
+
+    bool VirtualClock::hasPassed(const VirtualTime& start, const VirtualTime& duration) const
+    {
+        const auto combined = start + duration;
+        return combined > getTime();
     }
 
     void VirtualClock::setRealMinutes(const int realMinutes)

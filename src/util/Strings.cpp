@@ -311,6 +311,32 @@ namespace magique
         return n < 0 || *s1 == *s2;
     }
 
+
+    char* strstrnc(const char* haystack, const char* needle)
+    {
+        if (*needle == '\0')
+        {
+            return (char*)haystack;
+        }
+
+        for (; *haystack != '\0'; haystack++)
+        {
+            const char* h = haystack;
+            const char* n = needle;
+            while (*h != '\0' && *n != '\0' && tolower(*h) == tolower(*n))
+            {
+                h++;
+                n++;
+            }
+            if (*n == '\0')
+            {
+                return (char*)haystack;
+            }
+        }
+
+        return nullptr;
+    }
+
     int GetBase64EncodedLength(const int bytes) { return 4 * ((bytes + 2) / 3); }
 
     constexpr char BASE64_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

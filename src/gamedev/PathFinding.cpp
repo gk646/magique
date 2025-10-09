@@ -110,7 +110,7 @@ namespace magique
                 else
                 {
                     // We are towards the next cell - dont wanna go back to the middle of current cell
-                    if (pos.euclidean(curr) < MAGIQUE_PATHFINDING_CELL_SIZE )
+                    if (pos.euclidean(curr) < MAGIQUE_PATHFINDING_CELL_SIZE)
                     {
                         return path[i + 1];
                     }
@@ -160,6 +160,14 @@ namespace magique
             const Rectangle rect = {p.x - halfSize, p.y - halfSize, cellSize, cellSize};
             DrawRectangleRec(rect, color);
         }
+    }
+
+    bool GetIsPathSolid(const Point& pos, const MapID map)
+    {
+        auto& path = global::PATH_DATA;
+        const auto& staticGrid = path.mapsStaticGrids[map];
+        const auto& dynamicGrid = path.mapsDynamicGrids[map];
+        return PathFindingData::IsCellSolid(pos.x, pos.y, staticGrid, dynamicGrid);
     }
 
 } // namespace magique

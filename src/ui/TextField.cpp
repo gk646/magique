@@ -31,6 +31,12 @@ namespace magique
         text = newText;
     }
 
+    void TextField::setHint(const char* newHint)
+    {
+        MAGIQUE_ASSERT(newHint != nullptr, "Passed null");
+        hint = newHint;
+    }
+
     bool TextField::pollTextHasChanged()
     {
         const bool val = textChanged;
@@ -50,7 +56,7 @@ namespace magique
 
     static bool IsKeyPressedAnyWay(const int key) { return IsKeyPressed(key) || IsKeyPressedRepeat(key); }
 
-    void TextField::updateInputs()
+    bool TextField::updateInputs()
     {
         ++blinkCounter;
         if (blinkCounter > 2 * blinkDelay)
@@ -63,33 +69,45 @@ namespace magique
         }
 
         if (!isFocused)
-            return;
+            return false;
 
-        updateControls();
-
+        const auto anyEvent = updateControls();
+        bool anyInput = false;
         // Iterate characters
         for (int i = 0; i < GetCharPressedQueueCount(); ++i)
         {
             const char pressedChar = static_cast<char>(GetCharPressedQueue()[i]);
             text.insert(text.begin() + cursorPos, pressedChar);
             ++cursorPos;
+            anyInput = true;
         }
+        return anyInput || anyEvent;
     }
 
     void TextField::drawText(const float fontSize, const Color color, const Color cursor, const Font& font,
                              const float spacing) const
     {
         const auto bounds = getBounds();
-        const Vector2 tPos = {bounds.x, bounds.y};
-        DrawTextEx(font, getText().c_str(), tPos, fontSize, spacing, color);
+        const Vector2 tPos = {bounds.x + 2, bounds.y + (bounds.height - fontSize) / 2.0F};
+
+        if (!isFocused && text.empty() && hint != nullptr)
+        {
+            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.65));
+        }
+        else
+        {
+            DrawTextEx(font, text.c_str(), tPos, fontSize, spacing, color);
+        }
 
         if (!isFocused || blinkCounter > blinkDelay)
+        {
             return;
+        }
 
         const auto* lineStart = text.data() + currLineStart;
         const auto cursorOffX = MeasureTextUpTo(lineStart, cursorPos - currLineStart, font, fontSize, spacing);
         const auto cursorOffY = (fontSize + static_cast<float>(GetTextLineSpacing())) * static_cast<float>(cursorLine);
-        DrawTextEx(font, "|", {bounds.x + cursorOffX, bounds.y + cursorOffY}, fontSize, spacing, cursor);
+        DrawTextEx(font, "|", {tPos.x + cursorOffX, tPos.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
     void TextField::drawDefault(const Rectangle& bounds) const
@@ -102,7 +120,7 @@ namespace magique
         drawText(14, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
     }
 
-    void TextField::updateControls()
+    bool TextField::updateControls()
     {
         // Finds the current line start
         auto findLine = [](std::string& str, const int cursorPos, int& currLineStart, int& currLine, int& lineCount)
@@ -252,7 +270,7 @@ namespace magique
         {
             textChanged = true;
             findLine(text, cursorPos, currLineStart, cursorLine, lineCount);
-            return;
+            return true;
         }
 
         if (IsKeyPressedAnyWay(KEY_ENTER))
@@ -263,8 +281,11 @@ namespace magique
                 textChanged = true;
                 ++cursorPos;
                 findLine(text, cursorPos, currLineStart, cursorLine, lineCount);
+                return true;
             }
         }
+        return false;
     }
+
 
 } // namespace magique

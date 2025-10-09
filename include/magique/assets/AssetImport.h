@@ -83,7 +83,7 @@ namespace magique
     TileMap ImportTileMapRaw(const std::vector<std::vector<std::vector<uint16_t>>>& layerData);
 
     // Registers a tileset - defines the details of all tiles in a project
-    TileSet ImportTileSet(Asset asset);
+    TileSet ImportTileSet(Asset asset, TileClassMapFunc func = nullptr);
 
     // Registers a tile sheet from a single ".png" file
     // IMPORTANT: Make sure the TileSheet has exact dimensions and no padding!

@@ -33,9 +33,9 @@ namespace magique
         EntityType entityType; // entity type - for the script
     };
 
-    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, 7, 128>; // power of two
-    using TileHashGrid = SingleResolutionHashGrid<StaticID, 7, 32>;      // power of two
-    using GroupHashGrid = SingleResolutionHashGrid<StaticID, 7, 64>;     // power of two
+    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 64>; // power of two
+    using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;      // power of two
+    using GroupHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;     // power of two
 
     using StaticPairCollector = AlignedVec<StaticPair>[MAGIQUE_WORKER_THREADS + 1];
     using ColliderCollector = AlignedVec<StaticID>[MAGIQUE_WORKER_THREADS + 1];

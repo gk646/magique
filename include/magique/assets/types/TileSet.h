@@ -19,15 +19,23 @@ namespace magique
         TileSet() = default;
 
         // Returns the vector containing all marked tiles
-        [[nodiscard]] const std::vector<TileInfo>& getTileInfo() const;
+        [[nodiscard]] const std::vector<TileInfo>& getTilesInfo() const;
 
         // Returns the tile size parsed from the tileset data
         [[nodiscard]] int getTileSize() const;
 
+        TileInfo& getInfo(uint8_t tileId);
+        const TileInfo* getInfo(uint8_t tileId) const;
+        const TileInfo* getInfo(const char* image) const;
+
+        // Returns the amount of total tiles in the set (maximum amount)
+        int getTileCount() const;
+
     private:
         int tileSize = -1; // Default
+        int tileCount = 0;
         std::vector<TileInfo> infoVec;
-        friend TileSet ImportTileSet(Asset);
+        friend TileSet ImportTileSet(Asset, TileClassMapFunc);
     };
 
 } // namespace magique

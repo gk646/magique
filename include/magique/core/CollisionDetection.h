@@ -30,6 +30,7 @@ namespace magique
 
     // Performs a collision check between two entities based on their position and collision components
     // This automatically takes into account their current position, shape and dimensions!
+    // This ignores layers and masks!
     void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                 const CollisionC& colB, CollisionInfo& info);
 

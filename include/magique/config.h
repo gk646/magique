@@ -40,6 +40,7 @@
 #define MAGIQUE_COLLISION_CELL_SIZE (32)
 
 // Maximum amount of entities allowed per cell (less is better) - if more they are not collision checked anymore
+// Also used for static collision objects!
 #define MAGIQUE_MAX_ENTITIES_CELL (24)
 
 // Sets the coarseness/size of the pathfinding grid

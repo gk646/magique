@@ -13,6 +13,11 @@ namespace magique
 
     Point PositionC::getMiddle(const CollisionC& collisionC) const { return Point{x, y} + collisionC.getMidOffset(); }
 
+    bool PositionC::operator==(const PositionC& other) const
+    {
+        return x == other.x && y == other.y && map == other.map && type == other.type && rotation == other.rotation;
+    }
+
     //----------------- ANIMATION -----------------//
 
     AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) :

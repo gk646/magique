@@ -100,7 +100,7 @@ namespace magique
 
     //----------------- TILESET -----------------//
 
-    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, const float scale)
+    void LoadGlobalTileSet(const TileSet& tileSet, const float scale)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (data.tileSet != nullptr)
@@ -109,14 +109,9 @@ namespace magique
         }
         data.tileSet = &tileSet;
         data.tileSetScale = scale;
-        HashSet<int> markedClassMap; // Local hashmap to guarantee speed - TileMaps can be big up to 65k tiles
-        for (const auto num : markedClasses)
+        for (const auto& tileInfo : tileSet.getTilesInfo())
         {
-            markedClassMap.insert(num);
-        }
-        for (const auto& tileInfo : tileSet.getTileInfo())
-        {
-            if (markedClassMap.contains(tileInfo.getClass()))
+            if (tileInfo.hasCollision)
             {
                 data.markedTilesMap[tileInfo.tileID] = tileInfo;
             }
@@ -152,7 +147,7 @@ namespace magique
                 continue;
             }
 
-            const auto start = tileMap.getLayerData(layer);
+            const auto* start = tileMap.getLayerData(layer);
             for (int i = 0; i < mapHeight; ++i)
             {
                 const auto yOff = i * mapWidth;
@@ -179,8 +174,8 @@ namespace magique
                         }
                         const auto objectNum = data.colliderStorage.insert(x, y, width, height);
                         tileVec.push_back(objectNum);
-                        const auto tileClass = infoIt->second.getClass();
-                        grid.insert(StaticIDHelper::CreateID(objectNum, tileClass), x, y, width, height);
+                        const auto tileClass = infoIt->second.tileClass;
+                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), x, y, width, height);
                     }
                 }
             }

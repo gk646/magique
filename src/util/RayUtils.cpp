@@ -216,13 +216,14 @@ namespace magique
         DrawRectangleRec(shadeRect, shade);
     }
 
-    void Draw2DFrame(const Rectangle& bounds, const Color& tint)
+    void DrawRectFrame(const Rectangle& bounds, const Color& tint)
     {
         const float x = bounds.x;
         const float y = bounds.y;
         const float width = bounds.width;
         const float height = bounds.height;
 
+#ifdef _MSC_VER
         const Vector2 topStart = {x, y};
         const Vector2 topEnd = {x + width - 2, y};
 
@@ -234,11 +235,30 @@ namespace magique
 
         const Vector2 rightStart = {x + width - 1, y};
         const Vector2 rightEnd = {x + width - 1, y + height - 2};
+#else
+        const Vector2 topStart = {x + 1, y};
+        const Vector2 topEnd = {x + width - 1, y};
+
+        const Vector2 bottomStart = {x + 1, y + height - 1};
+        const Vector2 bottomEnd = {x + width - 1, y + height - 1};
+
+        const Vector2 leftStart = {x + 0.01F, y + 1};
+        const Vector2 leftEnd = {x + 0.01F, y + height - 1};
+
+        const Vector2 rightStart = {x + width - 1 + 0.01F, y + 1};
+        const Vector2 rightEnd = {x + width - 1 + 0.01F, y + height - 1};
+#endif
 
         DrawLineV(topStart, topEnd, tint);
         DrawLineV(bottomStart, bottomEnd, tint);
         DrawLineV(leftStart, leftEnd, tint);
         DrawLineV(rightStart, rightEnd, tint);
+    }
+
+    void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline)
+    {
+        DrawRectangleRec(GetEnlargedRect(bounds, -2, -2), fill);
+        DrawRectFrame(bounds, outline);
     }
 
 } // namespace magique

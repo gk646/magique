@@ -84,6 +84,10 @@ namespace magique
     // Failure: Returns entt::null if none with that type could be found
     entt::entity GetEntity(EntityType type);
 
+    // Returns a view that contains all entities with (all) given components
+    template <typename... Args>
+    auto GetView();
+
     //============== LIFE CYCLE ==============//
 
     // Immediately tries to destroy this entity
@@ -190,6 +194,13 @@ namespace magique
     {
         return internal::REGISTRY.all_of<Args...>(entity);
     }
+
+    template <typename... Args>
+    auto GetView()
+    {
+        return internal::REGISTRY.view<Args...>();
+    }
+
 } // namespace magique
 
 #endif // MAGIQUE_ECS_H

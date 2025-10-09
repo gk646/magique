@@ -45,7 +45,9 @@ namespace magique
         const auto bb = GetEntityBoundingBox(pos, col);
         grid.insert(e, bb.x, bb.y, bb.width, bb.height);
         if (isPathSolid) [[unlikely]]
+        {
             pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
+        }
     }
 
     inline void AssignCameraData(const entt::registry& registry)

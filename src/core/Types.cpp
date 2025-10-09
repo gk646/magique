@@ -307,9 +307,9 @@ namespace magique
 
     int TileObject::getID() const { return id; }
 
-    //----------------- TILE INFO -----------------//
+    int TileObject::getTileID() const { return tileId; }
 
-    int TileInfo::getClass() const { return tileClass; }
+    //----------------- TILE INFO -----------------//
 
     static uint32_t ReverseBytes(const uint32_t value)
     {
@@ -388,14 +388,14 @@ namespace magique
         return data;
     }
 
-    int ColliderInfo::getTileNum() const
+    TileClass ColliderInfo::getTileClass() const
     {
         if (type != ColliderType::TILESET_TILE) [[unlikely]]
         {
             LOG_WARNING("Using the wrong getter. Type has to be TILESET_TILE");
-            return INT32_MAX;
+            return {};
         }
-        return data;
+        return static_cast<TileClass>(data);
     }
 
     ColliderInfo::ColliderInfo(const int data, const ColliderType type) : type(type), data(data) {}
@@ -438,32 +438,13 @@ namespace magique
 
     //----------------- KEYBIND -----------------//
 
-    Keybind::Keybind(const int keyCode, bool isLayered, const bool isShift, const bool isCTRL, const bool isAlt)
-    {
-        key = static_cast<uint16_t>(keyCode);
-        if (isLayered)
-        {
-            layered = true;
-        }
-        if (isShift)
-        {
-            shift = true;
-        }
-        if (isCTRL)
-        {
-            ctrl = true;
-        }
-        if (isAlt)
-        {
-            alt = true;
-        }
-    }
 
 #define KEY_MACRO(var, func, key, layered)                                                                              \
     if (layered)                                                                                                        \
         var = LayeredInput::func(key);                                                                                  \
     else                                                                                                                \
         var = func(key);
+
 
     bool Keybind::isPressed() const
     {

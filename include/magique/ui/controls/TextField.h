@@ -40,7 +40,8 @@ namespace magique
 
         // Updates the text with the current inputs for this tick and updates the focused state
         // Note: This should be called each update tick
-        void updateInputs();
+        // Returns: true if any event OR text input has been made
+        bool updateInputs();
 
         // Draws the text
         void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1) const;
@@ -58,7 +59,10 @@ namespace magique
         [[nodiscard]] const std::string& getText() const;
 
         // Sets the field text to the provided string
-        void setText(const char* newText);
+        void setText(const char* newText = "");
+
+        // Sets the hint - drawn on the field if empty
+        void setHint(const char* hint);
 
         // Returns true if the text has changed since last time this method was called - resets the changed status
         bool pollTextHasChanged();
@@ -74,9 +78,10 @@ namespace magique
 
 
     private:
-        void updateControls();
+        bool updateControls();
 
         std::string text;
+        const char* hint = nullptr;
         float longestLineLen = 0; // Length of the longest line
         int cursorPos = 0;        // Current text index the cursor is at
         int cursorLine = 0;       // Current line the cursor is in

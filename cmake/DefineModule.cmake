@@ -37,7 +37,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
             $<$<CONFIG:Debug>:
             -Og
-            -g1
+            -g
             -D_DEBUG
             -D_GLIBCXX_ASSERTIONS
             -D_DEBUG_ASSERT

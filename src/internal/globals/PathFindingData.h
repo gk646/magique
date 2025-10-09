@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_PATHFINDING_DATA_H
 #define MAGIQUE_PATHFINDING_DATA_H
 
-#include <magique/core/Camera.h>
 #include <magique/core/Types.h>
 
 #include "external/cxstructs/cxstructs/PriorityQueue.h"
@@ -39,7 +38,7 @@ namespace magique
         std::vector<Point> pathCache;
         StaticDenseLookupGrid<bool, 200> visited{};
         StaticDenseLookupGrid<float, 200> openCost{};
-        cxstructs::PriorityQueue<GridNode> frontier{};
+        cxstructs::PriorityQueue<GridNode> frontier{500};
         GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_CAPACITY];
 
         // Lookup table for entity types and entities

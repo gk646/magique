@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
-#include <steam/steam_api.h>
-
 #include <magique/steam/GlobalSockets.h>
 
 #include "internal/globals/MultiplayerData.h"

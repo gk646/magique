@@ -43,13 +43,12 @@ namespace magique
 
     //================= TILESET =================//
 
-    // Sets the global tileset and allows to specify which class numbers mark a collidable tile
-    // Note: In Tiled click on the tileset file -> select any tiles that should be solid and set the class property (e.g. 1)
+    // Sets the global tileset to use for parsing tile collision and other features
     // Note: Can also be used for non-solid tiles to define special areas (water, slime, poison, ...)
     // Note: Supports the Tile Collision Editor (only Rectangles!) - allows to define a custom collision area per tile
-    void LoadGlobalTileSet(const TileSet& tileSet, const std::vector<int>& markedClasses, float scale = 1);
+    void LoadGlobalTileSet(const TileSet& tileSet, float scale = 1);
 
-    // Parses the selected layers of the tile data of the given map  and inserts correct static colliders for marked tiles
+    // Parses the selected layers of the tile data of the given map and inserts correct static colliders for marked tiles
     // Note: Using this is only possible if set a global tileset with LoadGlobalTileSet()
     // Once set all calls with the same map are skipped (because there's only 1 tilemap per map)
     //       - layers: specifies which layers to parse (e.g. what layers contain collidable tiles: background, ...)
@@ -75,7 +74,6 @@ namespace magique
 
         // Returns the current colliders part of the group
         [[nodiscard]] const std::vector<StaticCollider>& getColliders() const;
-
 
     private:
         std::vector<StaticCollider> colliders;

@@ -7,12 +7,13 @@
 
 //================= USER DEFINED =================//
 
-enum class GameState : int; // Identifies different game states
-enum EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
-enum class MapID : uint8_t; // Identifies maps               - uses uint8_t  to be small for networking
-enum class HandleID : int;  // Identifies handles
-enum class ConfigID : int;  // Identifies stored config data
-enum class StorageID : int; // Identifies stored game save data
+enum class GameState : int;     // Identifies different game states
+enum EntityType : uint16_t;     // Identifies entity types       - uses uint16_t to be small for networking
+enum class MapID : uint8_t;     // Identifies maps               - uses uint8_t  to be small for networking
+enum class HandleID : int;      // Identifies handles
+enum class ConfigID : int;      // Identifies stored config data
+enum class StorageID : int;     // Identifies stored game save data
+enum class TileClass : uint8_t; // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
 enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
@@ -73,6 +74,7 @@ namespace magique
     struct Playlist;              // Stores multiple music objects to easily play and loop them
     struct TileObject;            // TileObject imported from the Tile Editor
     struct CSVImport;             // CSV file import data
+    using TileClassMapFunc = TileClass (*)(const char*);
 
     //================= GAMEDEV =================//
     template <typename CustomData = int>

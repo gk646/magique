@@ -203,14 +203,20 @@ namespace magique
     {
         const char* getName() const; // Can be null
         int getID() const;
+        // If the object is a tile object so to the id of the tile
+        // If multiple tilesets are used ids are additive
+        // e.g. first tileset has 200 tiles - second 20
+        // object with image of the 10th tile from second is placed -> tileid: 211 (starts with 1)
+        int getTileID() const;
         int getClass() const;
 
-        float x = 0, y = 0, width = 0, height = 0;                                        // Mutable
+        float x = 0, y = 0, width = 0, height = 0;                                        // Hitbox
         bool visible = false;                                                             // Mutable
         TileObjectCustomProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES]; // Mutable
 
     private:
         int class_ = 0;
+        int tileId = 0;
         char* name = nullptr;
         int id = INT32_MAX;
         friend TileMap ImportTileMap(Asset asset);
@@ -218,16 +224,14 @@ namespace magique
 
     struct TileInfo final
     {
-        // Collision shape
-        bool hasCollision = false;
-        uint8_t x, y, width, height;
-        const char* image;            // only valid if its an image tileset
-        uint16_t tileID = UINT16_MAX; // ID of the tile
-
-        [[nodiscard]] int getClass() const;
+        TileClass tileClass{};                         // class attribute
+        bool hasCollision = false;                     // True if has at least one collision shape
+        uint16_t tileID = UINT16_MAX;                  // tile index of this tile
+        float x, y, width, height;                     // Primary rect - top most (in the object list)
+        float sx = 0, sy = 0, swidth = 0, sheight = 0; // Secondary rect - second top (in the object list)
+        const char* image;                             // only valid if its an image tileset
 
     private:
-        int tileClass = INT32_MAX; // class attribute
         friend struct TileSet;
     };
 
@@ -321,7 +325,7 @@ namespace magique
         [[nodiscard]] int getManualGroup() const;
 
         // Returns the tile class ONLY IF the type is
-        [[nodiscard]] int getTileNum() const;
+        [[nodiscard]] TileClass getTileClass() const;
 
         const ColliderType type; // The type of the collider
 
@@ -611,9 +615,6 @@ namespace magique
     // Also works with mouse buttons e.g. enum MouseButton (left, right and middle)
     struct Keybind final
     {
-        Keybind() = default;
-        explicit Keybind(int key, bool isLayered = true, bool shift = false, bool ctrl = false, bool alt = false);
-
         // Uses direct input polling (e.g. IsKeyDown())
         [[nodiscard]] bool isPressed() const;
         [[nodiscard]] bool isDown() const;
@@ -630,12 +631,11 @@ namespace magique
         // Returns true if its keybind for a mouse button
         bool isMouse() const;
 
-    private:
-        uint16_t key = 0;
+        int key = 0;
+        bool layered = true;
         bool shift = false;
         bool ctrl = false;
         bool alt = false;
-        bool layered = false;
     };
 
     struct ScreenParticle final

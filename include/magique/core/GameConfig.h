@@ -50,7 +50,7 @@ namespace magique
 
         // If present returns a copy to the keybind at the given id
         // Failure: if the value is not present returns the default
-        Keybind getKeybindOrElse(ConfigID id, Keybind defaultKeybind = Keybind{0});
+        Keybind getKeybindOrElse(ConfigID id, Keybind defaultKeybind = Keybind{});
 
         // If present returns a copy to the string at the given id
         // Failure: if the value is not present returns the default

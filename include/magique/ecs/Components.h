@@ -33,6 +33,8 @@ namespace magique
 
         // Returns the middle point by factoring in the collision shape
         [[nodiscard]] Point getMiddle(const CollisionC& collisionC) const;
+
+        bool operator==(const PositionC&) const;
     };
 
     // Denotes an actor
@@ -47,13 +49,11 @@ namespace magique
 
     struct CollisionC final
     {
-        float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F; // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
-        // Determines how the displacement is split between two colliding (dynamic) objects
-        //
-        float weight = 1.0F;
+        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
+        float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
+        float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
+        float offX, offY;          // Offset applied to collision shape - only works on non-raotated rects
         int16_t anchorX = 0;       // Rotation anchor point for the hitbox
         int16_t anchorY = 0;       // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape

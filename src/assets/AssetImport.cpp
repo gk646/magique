@@ -372,6 +372,11 @@ namespace magique
                     object.visible = objectPtr->visible == 1;
                     object.name = strdup(objectPtr->name.ptr);
                     object.id = objectPtr->id;
+                    object.tileId = objectPtr->gid;
+                    if (object.tileId != 0)
+                    {
+                        object.y -= object.height;
+                    }
 
                     for (int i = 0; i < objectPtr->property_count; ++i)
                     {
@@ -420,7 +425,7 @@ namespace magique
         return tilemap;
     }
 
-    TileSet ImportTileSet(Asset asset)
+    TileSet ImportTileSet(Asset asset, TileClassMapFunc func)
     {
         ASSET_CHECK(asset);
         TileSet tileset{};
@@ -431,29 +436,43 @@ namespace magique
         }
         auto* import = cute_tiled_load_external_tileset_from_memory(asset.getData(), asset.getSize(), nullptr);
         tileset.tileSize = import->tilewidth;
+        tileset.tileCount = import->tilecount;
         cute_tiled_tile_descriptor_t* tile = import->tiles;
         while (tile != nullptr)
         {
             TileInfo info;
+            if (tile->type.ptr != nullptr && func != nullptr)
+            {
+                info.tileClass = func(tile->type.ptr);
+            }
             info.hasCollision = tile->objectgroup != nullptr;
             if (info.hasCollision)
             {
-                const auto& object = tile->objectgroup->objects[0];
-                info.x = object.x;
-                info.y = object.y;
-                info.width = object.width;
-                info.height = object.height;
+                auto& object = *tile->objectgroup->objects;
+                info.x = std::round(object.x);
+                info.y = std::round(object.y);
+                info.width = std::round(object.width);
+                info.height = std::round(object.height);
+
+                if (object.next != nullptr)
+                {
+                    object = *object.next;
+                    info.sx = std::round(object.x);
+                    info.sy = std::round(object.y);
+                    info.swidth = std::round(object.width);
+                    info.sheight = std::round(object.height);
+                }
             }
-            auto ptr = tile->image.ptr;
+            const auto* ptr = tile->image.ptr;
             if (ptr != nullptr)
             {
                 info.image = strdup(tile->image.ptr);
             }
-
             info.tileID = tile->tile_index;
+
+            tileset.infoVec.push_back(info);
             tile = tile->next;
         }
-
         cute_tiled_free_external_tileset(import);
         return tileset;
     }

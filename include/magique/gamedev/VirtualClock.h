@@ -15,11 +15,36 @@
 
 namespace magique
 {
+    struct VirtualTime final
+    {
+        VirtualTime operator+(const VirtualTime& other) const;
+        VirtualTime operator-(const VirtualTime& other) const;
+        bool operator==(const VirtualTime& other) const;
+        bool operator!=(const VirtualTime& other) const;
+        // True if this is before - to the left on the time axis
+        bool operator<(const VirtualTime& other) const;
+        // True if this is after - to the right on the time axis
+        bool operator>(const VirtualTime& other) const;
+        bool operator<=(const VirtualTime& other) const;
+        bool operator>=(const VirtualTime& other) const;
+
+        int day;
+        int hour;
+        int minute;
+        int second;
+
+    private:
+        int toSeconds() const;
+    };
+
     struct VirtualClock final
     {
         // Creates a new virtual clock where a day (24 hours) takes the given minutes in real time
         // Default: equal to real time
         explicit VirtualClock(int realMinutes = 24 * 60);
+
+        // Needs to be called each tick to update the clock
+        void update();
 
         //================= TIME =================//
 
@@ -46,6 +71,12 @@ namespace magique
         // Values have to be within their valid range as shown above - negative values are ignored
         void setTime(int hour, int minute, int second = -1, int day = -1);
 
+        // Returns a time object of the current time
+        VirtualTime getTime() const;
+
+        // Returns true if the given duration has passed
+        bool hasPassed(const VirtualTime& start, const VirtualTime& duration) const;
+
         //================= ADJUST =================//
 
         // Sets in real minutes how long a full day (24 hours) of the virtual clock should take
@@ -66,17 +97,7 @@ namespace magique
         // Note: This only sets hour, minute and second not day!
         void syncTimeOfDay();
 
-        //================= PERSISTENCE =================//
-
-        // Returns an allocated pointer and size to save the current state of the virtual clock
-        // IMPORTANT: allocates memory on each call
-        [[nodiscard("Allocates")]] DataPointer<const unsigned char> getPersistenceData() const;
-
-        // Restores the virtual clock to the state saved in the given data
-        bool loadFromPersistenceData(const unsigned char* data, int size);
-
     private:
-        void update();
         [[nodiscard]] double getRealPassedSeconds() const;
         void adjustTicksByRealSeconds(double seconds);
 

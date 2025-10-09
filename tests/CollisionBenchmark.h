@@ -44,6 +44,9 @@
 // Time: 4.5 ms | Re-enabled SIMD - accidentally had wrong define
 // Changed default hash size to be smaller & more max entities per cell -> actually all object are checked now
 // Time: 6.0 ms | Added sticky edge avoidance
+// Changed to only 2 extra threads
+// Time: 7.68
+// Time: 7.54   | optimized iteration and removed a branch
 // .....................................................................
 
 using namespace magique;

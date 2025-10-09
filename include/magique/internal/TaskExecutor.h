@@ -67,12 +67,16 @@ namespace magique::internal
             for (auto& vec : cpuTasks)
             {
                 for (auto task : vec)
+                {
                     delete task;
+                }
             }
             for (auto& vec : gpuTasks)
             {
                 for (auto task : vec)
+                {
                     delete task;
+                }
             }
         }
 
@@ -107,16 +111,6 @@ namespace magique::internal
                 return true;
             }
 
-            if (currentLevel == INTERNAL && !gpuTasks[currentLevel].empty())
-            {
-                loadTasks(gpuTasks[currentLevel], res);
-            }
-
-            if (!gpuDone)
-            {
-                gpuDone = loadTasks(gpuTasks[currentLevel], res);
-            }
-
             if (!cpuDone && !cpuWorking)
             {
                 if (!cpuTasks[currentLevel].empty())
@@ -125,7 +119,7 @@ namespace magique::internal
                     AddJob(CreateJob(
                         [this, &res]
                         {
-                            loadTasks(cpuTasks[currentLevel], res);
+                            loadTasks(cpuTasks[currentLevel], res, false);
                             cpuDone = true;
                         }));
                 }
@@ -134,6 +128,8 @@ namespace magique::internal
                     cpuDone = true;
                 }
             }
+
+            gpuDone = loadTasks(gpuTasks[currentLevel], res);
 
             if (gpuDone && cpuDone)
             {
@@ -145,7 +141,6 @@ namespace magique::internal
                     currentLevel = static_cast<PriorityLevel>(static_cast<int>(currentLevel) - 1);
                 }
             }
-
             return currentLevel == -1;
         }
 
@@ -211,13 +206,17 @@ namespace magique::internal
         bool cpuWorking = false;
 
     private:
-        bool loadTasks(std::vector<ITask<T>*>& tasks, T& res)
+        bool loadTasks(std::vector<ITask<T>*>& tasks, T& res, bool stop = true)
         {
             for (auto task : tasks)
             {
                 if (!task->getIsLoaded())
                 {
                     loadTask(task, res);
+                    if (stop)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;

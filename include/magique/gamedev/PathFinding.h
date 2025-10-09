@@ -64,6 +64,9 @@ namespace magique
     // Draws the tiles along the given path in the pathfinding grid
     void DrawPath(const std::vector<Point>& path, Color color = RED);
 
+    // Returns true if the pathfinding tile (that contains the point) is solid (cannot be walked on)
+    bool GetIsPathSolid(const Point& pos, MapID map);
+
 } // namespace magique
 
 #endif //MAGIQUE_PATHFINDING_H

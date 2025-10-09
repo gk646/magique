@@ -27,52 +27,60 @@ namespace magique
                     {
                         if (pB.rotation == 0) [[likely]]
                         {
-                            return RectToRect(pA.x, pA.y, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
+                            return RectToRect(pA.x + cA.offX, pA.y + cA.offY, cA.p1, cA.p2, pB.x + cB.offX,
+                                              pB.y + cB.offY, cB.p1, cB.p2, i);
                         }
-                        float pxs[4] = {0, cB.p1, cB.p1, 0};                                      // rect b
-                        float pys[4] = {0, 0, cB.p2, cB.p2};                                      // rect b
-                        RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
-                        const float p1xs[4] = {pA.x, pA.x + cA.p1, pA.x + cA.p1, pA.x};           // Rect a
-                        const float p1ys[4] = {pA.y, pA.y, pA.y + cA.p2, pA.y + cA.p2};           // Rect a
+                        float pxs[4] = {0, cB.p1, cB.p1, 0}; // rect b
+                        float pys[4] = {0, 0, cB.p2, cB.p2}; // rect b
+                        RotatePoints4(pB.x + cB.offX, pB.y + cB.offY, pxs, pys, pB.rotation, cB.anchorX,
+                                      cB.anchorY); // rot
+                        const float p1xs[4] = {pA.x + cA.offX, pA.x + cA.offX + cA.p1, pA.x + cA.offX + cA.p1,
+                                               pA.x + cA.offX}; // Rect a
+                        const float p1ys[4] = {pA.y + cA.offY, pA.y + cA.offY, pA.y + cA.p2 + cA.offY,
+                                               pA.y + cA.p2 + cA.offY}; // Rect a
                         return SAT(pxs, pys, p1xs, p1ys, i);
                     }
                     if (pB.rotation == 0) [[likely]] // Only A is rotated
                     {
-                        float pxs[4] = {0, cA.p1, cA.p1, 0};                                      // rect a
-                        float pys[4] = {0, 0, cA.p2, cA.p2};                                      // rect a
-                        RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY); // rot
-                        const float p1xs[4] = {pB.x, pB.x + cB.p1, pB.x + cB.p1, pB.x};           // Rect b
-                        const float p1ys[4] = {pB.y, pB.y, pB.y + cB.p2, pB.y + cB.p2};           // Rect b
+                        float pxs[4] = {0, cA.p1, cA.p1, 0}; // rect a
+                        float pys[4] = {0, 0, cA.p2, cA.p2}; // rect a
+                        RotatePoints4(pA.x + cA.offX, pA.y + cA.offY, pxs, pys, pA.rotation, cA.anchorX,
+                                      cA.anchorY); // rot
+                        const float p1xs[4] = {pB.x + cB.offX, pB.x + cB.p1 + cB.offX, pB.x + cB.p1 + cB.offX,
+                                               pB.x + cB.offX}; // Rect b
+                        const float p1ys[4] = {pB.y + cB.offY, pB.y + cB.offY, pB.y + cB.p2 + cB.offY,
+                                               pB.y + cB.p2 + cB.offY}; // Rect b
                         return SAT(pxs, pys, p1xs, p1ys, i);
                     } // Both are rotated
                     float pxs[4] = {0, cA.p1, cA.p1, 0};  // rect a
                     float pys[4] = {0, 0, cA.p2, cA.p2};  // rect a
                     float p1xs[4] = {0, cB.p1, cB.p1, 0}; // Rect b
                     float p1ys[4] = {0, 0, cB.p2, cB.p2}; // Rect b
-                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
-                    RotatePoints4(pB.x, pB.y, p1xs, p1ys, pB.rotation, cB.anchorX, cB.anchorY);
+                    RotatePoints4(pB.x + cB.offX, pB.y + cB.offY, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                    RotatePoints4(pB.x + cB.offX, pB.y + cB.offY, p1xs, p1ys, pB.rotation, cB.anchorX, cB.anchorY);
                     return SAT(pxs, pys, p1xs, p1ys, i);
                 }
             case Shape::CIRCLE:
                 {
                     if (pA.rotation == 0)
                     {
-                        return RectToCircle(pA.x, pA.y, cA.p1, cA.p2, pB.x + cB.p1, pB.y + cB.p1, cB.p1, i);
+                        return RectToCircle(pA.x + cA.offX, pA.y + cA.offY, cA.p1, cA.p2, pB.x + cB.p1, pB.y + cB.p1,
+                                            cB.p1, i);
                     }
                     float pxs[4] = {0, cA.p1, cA.p1, 0}; // rect a
                     float pys[4] = {0, 0, cA.p2, cA.p2}; // rect a
-                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
+                    RotatePoints4(pA.x + cA.offX, pA.y + cA.offY, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY);
                     return CircleToQuadrilateral(pB.x + cB.p1, pB.y + cB.p1, cB.p1, pxs, pys, i);
                 }
             case Shape::CAPSULE:
                 {
                     if (pA.rotation == 0) [[likely]]
                     {
-                        return RectToCapsule(pA.x, pA.y, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
+                        return RectToCapsule(pA.x + cA.offX, pA.y + cA.offY, cA.p1, cA.p2, pB.x, pB.y, cB.p1, cB.p2, i);
                     }
-                    float pxs[4] = {0, cA.p1, cA.p1, 0};                                      // rect a
-                    float pys[4] = {0, 0, cA.p2, cA.p2};                                      // rect a
-                    RotatePoints4(pA.x, pA.y, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY); // rot
+                    float pxs[4] = {0, cA.p1, cA.p1, 0}; // rect a
+                    float pys[4] = {0, 0, cA.p2, cA.p2}; // rect a
+                    RotatePoints4(pA.x + cA.offX, pA.y + cA.offY, pxs, pys, pA.rotation, cA.anchorX, cA.anchorY); // rot
                     return CapsuleToQuadrilateral(pB.x, pB.y, cB.p1, cB.p2, pxs, pys, i);
                 }
             case Shape::TRIANGLE:
@@ -120,12 +128,12 @@ namespace magique
                 {
                     if (pB.rotation == 0)
                     {
-                        RectToCircle(pB.x, pB.y, cB.p1, cB.p2, pA.x + cA.p1, pA.y + cA.p1, cA.p1, i);
+                        RectToCircle(pB.x + cB.offX, pB.y + cB.offY, cB.p1, cB.p2, pA.x + cA.p1, pA.y + cA.p1, cA.p1, i);
                         return;
                     }
                     float pxs[4] = {0, cB.p1, cB.p1, 0}; // rect b
                     float pys[4] = {0, 0, cB.p2, cB.p2}; // rect b
-                    RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY);
+                    RotatePoints4(pB.x + cB.offX, pB.y + cB.offY, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY);
                     CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, pxs, pys, i);
                     return;
                 }
@@ -148,8 +156,7 @@ namespace magique
                     float txs[4] = {0, cB.p1, cB.p3, 0};
                     float tys[4] = {0, cB.p2, cB.p4, 0};
                     RotatePoints4(pB.x, pB.y, txs, tys, pB.rotation, cB.anchorX, cB.anchorY);
-                    CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
-                    return;
+                    return CircleToQuadrilateral(pA.x + cA.p1, pA.y + cA.p1, cA.p1, txs, tys, i);
                 }
             }
             break;
@@ -160,11 +167,11 @@ namespace magique
                 {
                     if (pB.rotation == 0) [[likely]]
                     {
-                        return RectToCapsule(pB.x, pB.y, cB.p1, cB.p2, pA.x, pA.y, cA.p1, cA.p2, i);
+                        return RectToCapsule(pB.x + cB.offX, pB.y + cB.offY, cB.p1, cB.p2, pA.x, pA.y, cA.p1, cA.p2, i);
                     }
-                    float pxs[4] = {0, cB.p1, cB.p1, 0};                                      // rect b
-                    float pys[4] = {0, 0, cB.p2, cB.p2};                                      // rect b
-                    RotatePoints4(pB.x, pB.y, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
+                    float pxs[4] = {0, cB.p1, cB.p1, 0}; // rect b
+                    float pys[4] = {0, 0, cB.p2, cB.p2}; // rect b
+                    RotatePoints4(pB.x + cB.offX, pB.y + cB.offY, pxs, pys, pB.rotation, cB.anchorX, cB.anchorY); // rot
                     return CapsuleToQuadrilateral(pA.x, pA.y, cA.p1, cA.p2, pxs, pys, i);
                 }
             case Shape::CIRCLE:
@@ -335,7 +342,7 @@ namespace magique
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
     {
         CollisionInfo info;
-        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(),GetCamera());
+        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), GetCamera());
         CheckCollisionEntityRect(pos, col, {worldMouse.x, worldMouse.y, 1, 1}, info);
         return info.isColliding();
     }
@@ -414,7 +421,7 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    return {pos.x, pos.y, col.p1, col.p2};
+                    return {pos.x + col.offX, pos.y + col.offY, col.p1, col.p2};
                 }
                 float pxs[4] = {0, col.p1, col.p1, 0};
                 float pys[4] = {0, 0, col.p2, col.p2};

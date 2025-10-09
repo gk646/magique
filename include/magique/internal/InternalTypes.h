@@ -47,7 +47,7 @@ namespace magique::internal
             char buffer[8];
         };
         explicit GameConfigStorageCell(const ConfigID id) : id(id) {}
-        void assign(const char* data, int size, StorageType type, Keybind bind = Keybind{0});
+        void assign(const char* data, int size, StorageType type, Keybind bind = Keybind{});
     };
 
     struct EmitterData final

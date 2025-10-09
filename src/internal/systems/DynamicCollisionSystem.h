@@ -121,15 +121,14 @@ namespace magique
                 {
                     const auto first = *dIt1;
                     auto [posA, colA] = group.get<const PositionC, CollisionC>(first);
-                    // TODO can be optimizeed by skiping to dIt1
-                    for (const auto* dIt2 = dStart; dIt2 != dEnd; ++dIt2)
+                    for (const auto* dIt2 = dIt1 + 1; dIt2 != dEnd; ++dIt2)
                     {
                         const auto second = *dIt2;
-                        if (first >= second)
-                            continue;
                         auto [posB, colB] = group.get<const PositionC, CollisionC>(second);
                         if (!colA.detects(colB) && !colB.detects(colA))
+                        {
                             continue; // Not checking for each other
+                        }
                         CollisionInfo info{};
                         CheckCollisionEntities(posA, colA, posB, colB, info);
                         if (info.isColliding())
@@ -150,8 +149,6 @@ namespace magique
 
         auto& colPairs = dynamic.collisionPairs;
         auto& pairSet = dynamic.pairSet;
-
-        std::vector<PairInfo> pairs;
 
         for (auto& [vec] : colPairs)
         {
@@ -189,7 +186,6 @@ namespace magique
                     if (pairInfo.info.getIsAccumulated())
                     {
                         AccumulateInfo(col1, col2.shape, pairInfo.info);
-                        pairs.push_back(pairInfo);
                     }
                 }
 
@@ -205,7 +201,6 @@ namespace magique
                     if (secondInfo.getIsAccumulated())
                     {
                         AccumulateInfo(col2, col2.shape, secondInfo);
-                        pairs.push_back(pairInfo);
                     }
                 }
             }
