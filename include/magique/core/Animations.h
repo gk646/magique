@@ -16,6 +16,7 @@
 //                  1. Create a EntityAnimation and add animations for the states it has
 //                  2. Register the EntityAnimation to a EntityType
 //                  3. Now you can freely use it when creating entities via GiveAnimation(entity,type)
+// Notes: Frame duration is in millis
 // ................................................................................
 
 enum class AnimationState : uint8_t; // User implemented to denote different animation states - shared for all animations
@@ -28,9 +29,9 @@ namespace magique
         explicit EntityAnimation(float scale = 1);
 
         // Sets the animation for this action state with the same duration for all frames
-        void addAnimation(AnimationState state, SpriteSheet sheet, int frameDuration);
+        void addAnimation(AnimationState state, SpriteSheet sheet, int frameMillis);
 
-        // Same as addAnimation but with extended parameters -
+        // Same as addAnimation but with extended parameters
         void addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations, Point offset = {},
                             Point anchor = {});
 
@@ -40,8 +41,10 @@ namespace magique
         // Returns the frame of the given state
         [[nodiscard]] SpriteAnimation getCurrentAnimation(AnimationState state) const;
 
-        Point getOffset() const;
-        Point getAnchor() const;
+        [[nodiscard]] Point getOffset() const;
+        [[nodiscard]] Point getAnchor() const;
+
+        void setOffset(Point offset);
 
     private:
         Point offset{};

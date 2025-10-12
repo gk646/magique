@@ -29,6 +29,8 @@ namespace magique
     // Refer to https://stephenberry.github.io/glaze/json/
     template <typename T>
     bool ImportJSON(Asset asset, T& data);
+    template <typename T>
+    bool ImportJSON(const char* json, T& data);
 
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
     template <typename T, bool prettify = false>
@@ -189,6 +191,20 @@ namespace magique
         {
             LOG_ERROR("Failed to import JSON %s: %s at position %d\n%.30s", asset.getFileName(), GetJSONErrStr(ec),
                       (int)ec.location, asset.getData() + ec.location);
+            return false;
+        }
+        return true;
+    }
+
+    template <typename T>
+    bool ImportJSON(const char* json, T& data)
+    {
+        std::string_view buff{json, strlen(json)};
+        auto ec = glz::read_json(data, buff);
+        if (ec)
+        {
+            LOG_ERROR("Failed to import JSON %.15s: %s at position %d\n%.30s", json, GetJSONErrStr(ec), (int)ec.location,
+                      json + ec.location);
             return false;
         }
         return true;

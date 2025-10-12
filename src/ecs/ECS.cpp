@@ -186,7 +186,7 @@ namespace magique
             return;
         }
 
-        for (const auto e : group)
+        for (const auto e : internal::REGISTRY.view<entt::entity>())
         {
             const auto& pos = group.get<PositionC>(e);
             for (const auto id : ids)

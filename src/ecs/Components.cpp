@@ -22,15 +22,14 @@ namespace magique
 
     AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) :
         entityAnimation(&animation), currentAnimation({}), spriteCount(0), animationStart(0),
-        lastState(AnimationState{UINT8_MAX}), currentState(AnimationState{UINT8_MAX})
+        lastState(AnimationState{UINT8_MAX}), currentState(AnimationState{UINT8_MAX}), flipX(false), flipY(false)
     {
         setAnimationState(startState);
     }
 
-    void AnimationC::drawCurrentFrame(const float x, const float y, const float rotation, const bool flipX,
-                                      const bool flipY) const
+    void AnimationC::drawCurrentFrame(const float x, const float y, const float rotation) const
     {
-        const auto currentFrame = currentAnimation.getCurrentFrame(spriteCount);
+        const auto currentFrame = currentAnimation.getCurrentFrame((int)spriteCount);
         auto offset = entityAnimation->getOffset();
         const Rectangle dest = {x + offset.x, y + offset.y,
                                 static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
@@ -38,7 +37,7 @@ namespace magique
         DrawRegionPro(currentFrame, dest, rotation, entityAnimation->getAnchor());
     }
 
-    void AnimationC::update() { ++spriteCount; }
+    void AnimationC::update() { spriteCount += MAGIQUE_TICK_TIME * 1000.0F; }
 
     void AnimationC::setAnimationState(const AnimationState state)
     {
@@ -52,6 +51,10 @@ namespace magique
         }
     }
 
+    void AnimationC::setFlipX(bool flip) { flipX = flip; }
+
+    void AnimationC::setFlipY(bool flip) { flipY = flip; }
+
     SpriteAnimation AnimationC::getCurrentAnimation() const { return currentAnimation; }
 
     bool AnimationC::getHasAnimationPlayed() const
@@ -61,7 +64,7 @@ namespace magique
 
     AnimationState AnimationC::getCurrentState() const { return currentState; }
 
-    uint16_t AnimationC::getSpriteCount() const { return spriteCount; }
+    float AnimationC::getSpriteCount() const { return spriteCount; }
 
     //----------------- COLLISION -----------------//
 

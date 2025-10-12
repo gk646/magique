@@ -18,7 +18,9 @@ your game project.
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
 Checkout my [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
-and tutorials.
+and tutorials.  
+I used `magique` in a 1-day game-jam to create the winning
+entry: [A turtle's journey](https://github.com/gk646/turtles_journey).
 
 ---
 

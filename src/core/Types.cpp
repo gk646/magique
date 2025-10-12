@@ -246,6 +246,7 @@ namespace magique
 
     TextureRegion SpriteAnimation::getCurrentFrame(const uint16_t spriteCount) const
     {
+        MAGIQUE_ASSERT(maxDuration > 0 && sheet.frames > 0, "Empty Animation");
         const int count = spriteCount % maxDuration;
         int frame = 0;
         uint16_t durationCount = 0;

@@ -34,13 +34,13 @@ namespace magique
 
     EntityAnimation::EntityAnimation(const float scale) : scale(scale) {}
 
-    void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameDuration)
+    void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameMillis)
     {
         auto& animation = animations[static_cast<int>(state)];
         for (int i = 0; i < sheet.frames; ++i)
         {
-            animation.durations[i] = frameDuration;
-            animation.maxDuration += frameDuration;
+            animation.durations[i] = frameMillis;
+            animation.maxDuration += frameMillis;
         }
         animation.sheet = sheet;
     }
@@ -76,6 +76,11 @@ namespace magique
     Point EntityAnimation::getOffset() const { return offset; }
 
     Point EntityAnimation::getAnchor() const { return anchor; }
+
+    void EntityAnimation::setOffset(Point newOffset)
+    {
+        offset = newOffset;
+    }
 
     //----------------- GLOBAL INTERFACE -----------------//
 

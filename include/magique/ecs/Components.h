@@ -91,13 +91,16 @@ namespace magique
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
-        void drawCurrentFrame(float x, float y, float rotation = 0, bool flipX = false, bool flipY = false) const;
+        void drawCurrentFrame(float x, float y, float rotation = 0) const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
 
         // Sets a new action state - automatically reset the sprite count to 0 when a state change happens
         void setAnimationState(AnimationState state);
+
+        void setFlipX(bool flip);
+        void setFlipY(bool flip);
 
         //================= GETTERS =================//
 
@@ -111,16 +114,17 @@ namespace magique
         // Returns the current animation state
         [[nodiscard]] AnimationState getCurrentState() const;
 
-        // Returns the current sprite count
-        [[nodiscard]] uint16_t getSpriteCount() const;
+        // Returns the current sprite count (in millis)
+        [[nodiscard]] float getSpriteCount() const;
 
     private:
         const EntityAnimation* entityAnimation; // Always valid
         SpriteAnimation currentAnimation;
-        uint16_t spriteCount;
+        float spriteCount;
         uint16_t animationStart;
         AnimationState lastState;
         AnimationState currentState;
+        bool flipX, flipY;
     };
 
 
