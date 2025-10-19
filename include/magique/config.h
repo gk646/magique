@@ -46,7 +46,7 @@
 // Sets the coarseness/size of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
 // Note: Must be a power of two (16,32,64 -> shouldn't be bigger than that)
-#define MAGIQUE_PATHFINDING_CELL_SIZE (16)
+#define MAGIQUE_PATHFINDING_CELL_SIZE (8)
 
 // Controls the maximum amount of tiles that can be evaluated in a single search
 // Note: This is the total number of search iterations - you can specify a path length limit individually
@@ -69,6 +69,8 @@
 
 // Maximum amount of custom tile properties for each tile object (inside Tiled)
 #define MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES (2)
+// Maximum amount of custom tile properties for each tile in a tileset
+#define MAGIQUE_TILE_SET_CUSTOM_PROPERTIES (4)
 
 // Maximum amount of columns supported for a imported csv file
 #define MAGIQUE_MAX_CSV_COLUMNS (16)

@@ -169,10 +169,10 @@ namespace magique
     };
 
     // A custom definable property inside the Tiled Tile Editor
-    // -> go to your TileSet -> click on a tile -> right click on custom properties -> choose type, name and value
-    struct TileObjectCustomProperty final
+    // TileSet/TileMap/Objects... -> right click custom properties -> choose type, name and value
+    struct TiledProperty final
     {
-        // Returns the value
+        // Returns the value of the property
         // IMPORTANT: program will crash when you call the wrong type getter
         //            -> e.g. check if it's an integer first before calling getInt()
         [[nodiscard]] bool getBool() const;
@@ -181,13 +181,15 @@ namespace magique
         [[nodiscard]] const char* getString() const;
         [[nodiscard]] Color getColor() const;
 
+        // the type of the property
         [[nodiscard]] TileObjectPropertyType getType() const;
 
+        // the name of the property
         [[nodiscard]] const char* getName() const;
 
     private:
-        char* name = nullptr;
         TileObjectPropertyType type = TileObjectPropertyType::INT;
+        char* name = nullptr;
         union
         {
             float floating;
@@ -195,7 +197,9 @@ namespace magique
             char* string;
             bool boolean;
         };
-        friend TileMap ImportTileMap(Asset asset);
+        friend TileInfo;
+        friend TileObject;
+        friend TiledPropertyParser;
     };
 
     // Objects defined inside the tile editor
@@ -203,33 +207,40 @@ namespace magique
     {
         const char* getName() const; // Can be null
         int getID() const;
+        int getTileClass() const;
         // If the object is a tile object so to the id of the tile
         // If multiple tilesets are used ids are additive
         // e.g. first tileset has 200 tiles - second 20
         // object with image of the 10th tile from second is placed -> tileid: 211 (starts with 1)
         int getTileID() const;
-        int getClass() const;
 
-        float x = 0, y = 0, width = 0, height = 0;                                        // Hitbox
-        bool visible = false;                                                             // Mutable
-        TileObjectCustomProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES]; // Mutable
+        float x = 0, y = 0, width = 0, height = 0; // Hitbox
+        bool visible = false;                      // Mutable
+        int tileClass = 0;                         // NOT assigned autoamtically
+
+        // Returns: the property with the given name or nullptr if not exists
+        const TiledProperty* getProperty(const char* name) const;
 
     private:
-        int class_ = 0;
         int tileId = 0;
         char* name = nullptr;
         int id = INT32_MAX;
+        TiledProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES];
         friend TileMap ImportTileMap(Asset asset);
     };
 
     struct TileInfo final
     {
-        TileClass tileClass{};                         // class attribute
-        bool hasCollision = false;                     // True if has at least one collision shape
-        uint16_t tileID = UINT16_MAX;                  // tile index of this tile
-        float x, y, width, height;                     // Primary rect - top most (in the object list)
-        float sx = 0, sy = 0, swidth = 0, sheight = 0; // Secondary rect - second top (in the object list)
-        const char* image;                             // only valid if its an image tileset
+        TileClass tileClass{};         // class attribute
+        bool hasCollision = false;     // True if has at least one collision shape
+        uint16_t tileID = UINT16_MAX;  // tile index of this tile
+        float x, y, width, height;     // Primary rect - top most (in the object list)
+        float sx, sy, swidth, sheight; // Secondary rect - second top (in the object list)
+        const char* image;             // only valid if its an image tileset
+        TiledProperty customProperties[MAGIQUE_TILE_SET_CUSTOM_PROPERTIES]; // Mutable
+
+        // Returns: the property with the given name or nullptr if not exists
+        const TiledProperty* getProperty(const char* name) const;
 
     private:
         friend struct TileSet;

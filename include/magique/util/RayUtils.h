@@ -63,7 +63,7 @@ namespace magique
     void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border);
 
     // Returns true if mouse is inside rect or on rect
-    bool CheckMouseRect(const Rectangle& bounds);
+    bool CheckCollisionMouseRect(const Rectangle& bounds);
 
     // Draws a horizontally centered texture
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint);

@@ -140,7 +140,7 @@ namespace magique
             ph = height / dims.y;
     }
 
-    bool UIObject::getIsHovered() const { return CheckMouseRect(getBounds()); }
+    bool UIObject::getIsHovered() const { return CheckCollisionMouseRect(getBounds()); }
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 

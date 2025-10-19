@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <cstring>
 #include <magique/assets/types/TileMap.h>
 #include <magique/internal/Macros.h>
 
@@ -41,6 +42,20 @@ namespace magique
         return objectLayers[layer];
     }
 
-    const char* TileMap::getName() { return name; }
+    const TiledProperty* TileMap::getProperty(const char* name) const
+    {
+        for (const auto& property : properties)
+        {
+            if (property.getName() == nullptr)
+            {
+                continue;
+            }
+            if (strcmp(property.getName(), name) == 0)
+            {
+                return &property;
+            }
+        }
+        return nullptr;
+    }
 
 } // namespace magique

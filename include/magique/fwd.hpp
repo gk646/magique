@@ -31,6 +31,7 @@ namespace magique
     enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
     struct Point;            // Floating point point
+    struct TileInfo;
     enum class Direction : uint8_t;
 
     //================= LOADING & SAVING =================//
@@ -118,6 +119,7 @@ namespace magique
     //================= INTERNAL =================//
     struct AudioPlayer;
     struct TweenData;
+    struct TiledPropertyParser;
 
 } // namespace magique
 

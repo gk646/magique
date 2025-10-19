@@ -51,7 +51,7 @@ namespace magique
             const float scaledHeight = obj.height * scale;
 
             const auto num = data.colliderStorage.insert(scaledX, scaledY, scaledWidth, scaledHeight);
-            const auto staticID = StaticIDHelper::CreateID(num, obj.getClass());
+            const auto staticID = StaticIDHelper::CreateID(num, obj.getTileClass());
             grid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
             info.objectIds.push_back(num); // So we can uniquely delete later
         }

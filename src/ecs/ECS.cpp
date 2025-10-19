@@ -214,6 +214,13 @@ namespace magique
                                                       Shape::RECT);
     }
 
+    CollisionC& GiveCollisionRect(entt::entity entity, Rectangle rect, int anchorX, int anchorY)
+    {
+        return internal::REGISTRY.emplace<CollisionC>(entity, rect.width, rect.height, 0.0F, 0.0F, rect.x, rect.y,
+                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
+                                                      Shape::RECT);
+    }
+
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(0),

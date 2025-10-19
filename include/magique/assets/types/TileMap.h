@@ -29,7 +29,7 @@ namespace magique
         [[nodiscard]] int16_t getTileIndex(int x, int y, int layer) const;
 
         // Returns the pointer to the start of the layer
-        // layers are counted from top to bottom (in the editor), only counting tile layers
+        // Layers are sorted bottom up as shown in the editor - only counting tile layers
         // Note: the length the of the layer data (for on layer) is: getWidth() * getHeight()
         [[nodiscard]] const int16_t* getLayerData(int layer) const;
 
@@ -47,19 +47,20 @@ namespace magique
         [[nodiscard]] int getObjectLayerCount() const;
 
         // Returns a modifiable reference to the objects in the given layer
-        // layers are counted from top to bottom (in the editor), only counting object layers!
+        // Layers are sorted bottom up as shown in the editor - only counting object layers
         std::vector<TileObject>& getObjects(int layer);
         const std::vector<TileObject>& getObjects(int layer) const;
 
         //================= MISC =================//
 
-        const char* getName();
+        // Returns: the property with the given name or nullptr if not exists
+        const TiledProperty* getProperty(const char* name) const;
 
     private:
         std::vector<std::vector<TileObject>> objectLayers;
         std::vector<std::vector<int16_t>> tileLayers; // Contiguous array for map data
+        std::vector<TiledProperty> properties;
         int width = 0, height = 0;
-        const char* name = nullptr;
         friend TileMap ImportTileMap(Asset);
     };
 

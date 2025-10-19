@@ -167,7 +167,7 @@ namespace magique
         DrawRectangleLinesEx(bounds, 1, border);
     }
 
-    bool CheckMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
+    bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
     {

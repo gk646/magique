@@ -51,7 +51,7 @@ namespace magique
     Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, const float radius, const float angle)
     {
         const auto direction = GetDirectionFromAngle(angle);
-        return {middle.x + direction.x * radius, middle.y + direction.y * radius};
+        return {middle.x + (direction.x * radius), middle.y + (direction.y * radius)};
     }
 
     Point GetDirectionFromAngle(const float angle)
@@ -72,14 +72,14 @@ namespace magique
         const float dy = target.y - current.y;
         if (dx == 0 && dy == 0)
         {
-            return 0.0f;
+            return 0.0F;
         }
         const float angle = std::atan2f(dy, dx);
         const float angleDegrees = angle * RAD2DEG;
         float gameAngleDegrees = 90.0F + angleDegrees;
         if (gameAngleDegrees < 0)
         {
-            gameAngleDegrees += 360.0f;
+            gameAngleDegrees += 360.0F;
         }
         return gameAngleDegrees;
     }
@@ -111,5 +111,13 @@ namespace magique
     }
 
     int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
+
+    float GetShortestDistToRect(Point p, const Rectangle& r)
+    {
+        // Quite funny solution
+        // You clamp the point coordinates to the rects side lengths
+        const Point closest = {clamp(p.x, r.x, r.x + r.width), clamp(p.y, r.y, r.y + r.height)};
+        return closest.euclidean(p);
+    }
 
 } // namespace magique

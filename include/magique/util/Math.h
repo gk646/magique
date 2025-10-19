@@ -67,6 +67,9 @@ namespace magique
     // Mirrors the given value vertically
     int MirrorVertically(int value, int border);
 
+    // Returns the shortest possible distance to connect point p with rect r (in any way)
+    float GetShortestDistToRect(Point p, const Rectangle& r);
+
 } // namespace magique
 
 

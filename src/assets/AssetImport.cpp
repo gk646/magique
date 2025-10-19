@@ -189,17 +189,14 @@ namespace magique
             while (cel->is_linked != 0)
             {
                 ase_frame_t* frame = ase->frames + cel->linked_frame_index;
-                int found = 0;
                 for (int k = 0; k < frame->cel_count; ++k)
                 {
                     if (frame->cels[k].layer == cel->layer)
                     {
                         cel = frame->cels + k;
-                        found = 1;
                         break;
                     }
                 }
-                CUTE_ASEPRITE_ASSERT(found);
             }
             void* src = cel->pixels;
             int cx = cel->x;
@@ -335,6 +332,25 @@ namespace magique
         return playlist;
     }
 
+    struct TiledPropertyParser final
+    {
+        //TODO is leaking memory with name and property value / is it bad?
+
+        static void ParseProperty(TiledProperty& prop, const cute_tiled_property_t& tileProp)
+        {
+            prop.type = static_cast<TileObjectPropertyType>(tileProp.type);
+            if (prop.type == TileObjectPropertyType::STRING)
+            {
+                prop.string = strdup(tileProp.data.string.ptr);
+            }
+            else
+            {
+                std::memcpy(&prop.integer, &tileProp.data.integer, 4);
+            }
+            prop.name = strdup(tileProp.name.ptr);
+        }
+    };
+
     TileMap ImportTileMap(Asset asset)
     {
         ASSET_CHECK(asset);
@@ -356,6 +372,15 @@ namespace magique
         tilemap.width = map->width;
 
         cute_tiled_layer_t* layer = map->layers;
+
+        // Parse tilemap properties
+        for (int i = 0; i < map->property_count; ++i)
+        {
+            TiledProperty property;
+            TiledPropertyParser::ParseProperty(property, map->properties[i]);
+            tilemap.properties.push_back(property);
+        }
+
         while (layer != nullptr)
         {
             if (strcmp(layer->type.ptr, "objectgroup") == 0)
@@ -378,6 +403,7 @@ namespace magique
                         object.y -= object.height;
                     }
 
+                    // Parsing properties for objects
                     for (int i = 0; i < objectPtr->property_count; ++i)
                     {
                         if (i >= MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES)
@@ -385,18 +411,8 @@ namespace magique
                             LOG_WARNING("Too many custom properties in object %s", objectPtr->name);
                             break;
                         }
-                        auto& propertyPtr = objectPtr->properties[i];
-                        TileObjectCustomProperty property;
-                        property.name = strdup(propertyPtr.name.ptr);
-                        property.type = (TileObjectPropertyType)propertyPtr.type;
-                        if (property.type == TileObjectPropertyType::STRING)
-                        {
-                            property.string = strdup(propertyPtr.data.string.ptr);
-                        }
-                        else
-                        {
-                            std::memcpy(&property.integer, &propertyPtr.data.integer, 4);
-                        }
+                        TiledProperty property;
+                        TiledPropertyParser::ParseProperty(property, objectPtr->properties[i]);
                         object.customProperties[i] = property;
                     }
 
@@ -440,7 +456,7 @@ namespace magique
         cute_tiled_tile_descriptor_t* tile = import->tiles;
         while (tile != nullptr)
         {
-            TileInfo info;
+            TileInfo info{};
             if (tile->type.ptr != nullptr && func != nullptr)
             {
                 info.tileClass = func(tile->type.ptr);
@@ -469,6 +485,18 @@ namespace magique
                 info.image = strdup(tile->image.ptr);
             }
             info.tileID = tile->tile_index;
+
+            for (int i = 0; i < tile->property_count; ++i)
+            {
+                if (i >= MAGIQUE_TILE_SET_CUSTOM_PROPERTIES)
+                {
+                    LOG_WARNING("Too many custom properties for tileID %d", tile->tile_index);
+                    break;
+                }
+                TiledProperty property;
+                TiledPropertyParser::ParseProperty(property, tile->properties[i]);
+                info.customProperties[i] = property;
+            }
 
             tileset.infoVec.push_back(info);
             tile = tile->next;

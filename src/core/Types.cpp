@@ -262,51 +262,67 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
+
     //----------------- TILE OBJECT PROPERTY -----------------//
 
-    //TODO is leaking memory with name and property value / is it bad?
 
-    bool TileObjectCustomProperty::getBool() const
+    bool TiledProperty::getBool() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::BOOL, "Property does not contain a boolean!");
         return boolean;
     }
 
-    int TileObjectCustomProperty::getInt() const
+    int TiledProperty::getInt() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::INT, "Property does not contain a integer!");
         return integer;
     }
 
-    float TileObjectCustomProperty::getFloat() const
+    float TiledProperty::getFloat() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::FLOAT, "Property does not contain a float!");
         return floating;
     }
 
-    const char* TileObjectCustomProperty::getString() const
+    const char* TiledProperty::getString() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::STRING, "Property does not contain a string!");
         return string;
     }
 
-    Color TileObjectCustomProperty::getColor() const
+    Color TiledProperty::getColor() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::COLOR, "Property does not contain a color!");
         return GetColor(integer);
     }
 
-    TileObjectPropertyType TileObjectCustomProperty::getType() const { return type; }
+    TileObjectPropertyType TiledProperty::getType() const { return type; }
 
-    const char* TileObjectCustomProperty::getName() const { return name; }
+    const char* TiledProperty::getName() const { return name; }
 
     //----------------- TILE OBJECT -----------------//
 
     const char* TileObject::getName() const { return name; }
 
-    int TileObject::getClass() const { return class_; }
+    const TiledProperty* TileObject::getProperty(const char* name) const
+    {
+        for (const auto& property : customProperties)
+        {
+            if (property.getName() == nullptr)
+            {
+                continue;
+            }
+            if (strcmp(property.getName(), name) == 0)
+            {
+                return &property;
+            }
+        }
+        return nullptr;
+    }
 
     int TileObject::getID() const { return id; }
+
+    int TileObject::getTileClass() const { return tileClass; }
 
     int TileObject::getTileID() const { return tileId; }
 
@@ -317,6 +333,23 @@ namespace magique
         return ((value & 0x000000FFU) << 24) | ((value & 0x0000FF00U) << 8) | ((value & 0x00FF0000U) >> 8) |
             ((value & 0xFF000000U) >> 24);
     }
+
+    const TiledProperty* TileInfo::getProperty(const char* name) const
+    {
+        for (const auto& property : customProperties)
+        {
+            if (property.getName() == nullptr)
+            {
+                continue;
+            }
+            if (strcmp(property.getName(), name) == 0)
+            {
+                return &property;
+            }
+        }
+        return nullptr;
+    }
+
 
     Checksum::Checksum(const char* hexadecimalHash)
     {
