@@ -92,7 +92,7 @@ namespace magique
 
         if (!isFocused && text.empty() && hint != nullptr)
         {
-            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.65));
+            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.75));
         }
         else
         {

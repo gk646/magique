@@ -8,7 +8,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
 
-#if defined( __GNUC__)
+#if defined(__GNUC__)
 #include <signal.h>
 #endif
 
@@ -20,23 +20,26 @@ namespace magique
         static constexpr const char* fileName = "magique.log";
         FILE* file = nullptr;
         LogCallbackFunc callback = nullptr;
+        bool logToFile = true;
 
-        LogData()
+        void init()
         {
-#if MAGIQUE_LOG_FILE == 1
-            file = fopen(fileName, "wb");
-            if (!file)
+            if (logToFile)
             {
-                LOG_ERROR("Failed to open log file");
+                file = fopen(fileName, "wb");
+                if (file == nullptr)
+                {
+                    LOG_ERROR("Failed to open log file");
+                }
             }
-#endif
-
         }
 
         ~LogData()
         {
-            if (file)
+            if (file != nullptr)
+            {
                 fclose(file);
+            }
         }
     };
 
@@ -75,38 +78,38 @@ namespace magique
             }
 
             FILE* out = level >= LEVEL_ERROR ? stderr : stdout;
-            constexpr int cacheSize = LOG_DATA.cacheSize;
-            char FMT_CACHE[cacheSize]{};
+            constexpr int cacheSize = LogData::cacheSize;
+            char formatCache[cacheSize]{};
 
             int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                written = snprintf(FMT_CACHE, cacheSize, "[%s]: %s:%d ", level_str, file, line);
+                written = snprintf(formatCache, cacheSize, "[%s]: %s:%d ", level_str, file, line);
             }
             else
             {
-                written = snprintf(FMT_CACHE, cacheSize, "[%s]: ", level_str);
+                written = snprintf(formatCache, cacheSize, "[%s]: ", level_str);
             }
 
             MAGIQUE_ASSERT(written >= 0, "Failed to format");
-            written += vsnprintf(FMT_CACHE + written, cacheSize - written, msg, args);
+            written += vsnprintf(formatCache + written, cacheSize - written, msg, args);
 
             if (LOG_DATA.callback != nullptr)
             {
-                LOG_DATA.callback(level, FMT_CACHE);
+                LOG_DATA.callback(level, formatCache);
             }
 
             // Write to stdout
-            fputs(FMT_CACHE, out);
+            fputs(formatCache, out);
             fputc('\n', out);
 
             // Write to console
-            global::CONSOLE_DATA.addString(FMT_CACHE, consoleColor);
+            global::CONSOLE_DATA.addString(formatCache, consoleColor);
 
             // Write to log file
-            if (LOG_DATA.file)
+            if (LOG_DATA.file != nullptr)
             {
-                fwrite(FMT_CACHE, written, 1, LOG_DATA.file);
+                fwrite(formatCache, written, 1, LOG_DATA.file);
                 fputc('\n', LOG_DATA.file);
             }
 
@@ -116,7 +119,7 @@ namespace magique
 #if defined(_MSC_VER)
                 __debugbreak();
 #elif defined(__GNUC__)
-               raise(SIGTRAP);
+                raise(SIGTRAP);
 #else
                 std::abort();
 #endif
@@ -130,8 +133,6 @@ namespace magique
         }
 
     } // namespace internal
-
-    void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
     void Log(const LogLevel level, const char* msg, ...)
     {
@@ -149,6 +150,10 @@ namespace magique
         va_end(args);
     }
 
+    void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
+
     void SetLogCallback(const LogCallbackFunc func) { LOG_DATA.callback = func; }
+
+    void SetLogToFile(const bool value) { LOG_DATA.logToFile = value; }
 
 } // namespace magique

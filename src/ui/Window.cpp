@@ -9,7 +9,7 @@
 namespace magique
 {
     Window::Window(const float x, const float y, const float w, const float h, const float moverHeight) :
-        UIContainer(x, y, w, h)
+        UIObject(x, y, w, h)
     {
         const auto& ui = global::UI_DATA;
         if (moverHeight == 0.0F)

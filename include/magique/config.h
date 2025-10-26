@@ -16,6 +16,7 @@
 // Logic ticks per second
 #define MAGIQUE_LOGIC_TICKS (60)
 
+// Time taken for a single update tick (on average)
 #define MAGIQUE_TICK_TIME (1.0F / MAGIQUE_LOGIC_TICKS)
 
 // Main Thread + 2 (Worker) = 3 total threads / 95% of steam users have 4 physical cores
@@ -105,9 +106,6 @@
 //================= UI =================//
 
 //================= UTIL =================//
-
-// Enables writing all logs to a file called magique.log - created next to the executable
-#define MAGIQUE_LOG_FILE 1
 
 // Enables profiling - generates average times for update and render ticks
 #define MAGIQUE_PROFILING 1

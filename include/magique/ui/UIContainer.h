@@ -11,7 +11,11 @@ M_IGNORE_WARNING(4100)
 // UIContainer
 //===============================================
 // .....................................................................
-// A container for ui-objects that are referenced by name. This is useful to organize ui elements with multiple components
+// UIContainer allows to programmatically store and retrieve UIObjects
+// As a rule of thumb:
+//  - If you have only a few distinct classes that make up the whole thing use a UIObject with UIObject members
+//  - If you have many members and need to access them programmatically (loops, ...) use UIContainer
+// Note: UIContainer::onUpdate() is called before its children
 // Note: UIContainer is a subclass of UIObject and has its functionality (onDraw(), onUpdate(), ...)
 // .....................................................................
 

@@ -32,7 +32,7 @@ M_IGNORE_WARNING(4100)
 
 namespace magique
 {
-    struct Window : UIContainer
+    struct Window : UIObject
     {
         // Creates a new window from coordinates in the logical UI resolution
         // If not specified the top bar is 10% of the total height

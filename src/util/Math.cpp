@@ -3,6 +3,7 @@
 #include <magique/util/Math.h>
 #include <raylib/raylib.h>
 #include <magique/util/Logging.h>
+#include <magique/util/RayUtils.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 
@@ -19,6 +20,12 @@ namespace magique
     float Lermp(const float oldV, const float minO, const float maxO, const float minN, const float maxN)
     {
         return (oldV - minO / maxO - minO) * (maxN - minN) + minN;
+    }
+
+    bool RollWithChance(const float chance)
+    {
+        const auto rand = GetRandomFloat(0.0F, 1.0F);
+        return rand < clamp(chance, 0.0F, 1.0F);
     }
 
     bool IsPowerOfTwo(const unsigned int x) { return x != 0 && (x & (x - 1)) == 0; }
@@ -46,6 +53,41 @@ namespace magique
     {
         const auto integer = static_cast<int64_t>(std::floor(num));
         return integer % 2 == 0;
+    }
+
+    float TowardsZero(float value, float change)
+    {
+        if (value < 0.0F)
+        {
+            return minValue(value + change, 0.0F);
+        }
+        if (value > 0.0F)
+        {
+            return maxValue(value - change, 0.0F);
+        }
+        return value;
+    }
+
+    float AwayFromZero(float value, float change, float max)
+    {
+        if (value < 0.0F)
+        {
+            return maxValue(value - change, -max);
+        }
+        if (value > 0.0F)
+        {
+            return minValue(value + change, max);
+        }
+        return value;
+    }
+
+    int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
+
+    bool FloatEqualsRel(float one, float two, float relEpsilon)
+    {
+        const auto diff = std::abs(one - two);
+        const auto max = std::max(one, two);
+        return diff <= max * relEpsilon;
     }
 
     Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, const float radius, const float angle)
@@ -83,34 +125,6 @@ namespace magique
         }
         return gameAngleDegrees;
     }
-
-    float TowardsZero(float value, float change)
-    {
-        if (value < 0.0F)
-        {
-            return minValue(value + change, 0.0F);
-        }
-        if (value > 0.0F)
-        {
-            return maxValue(value - change, 0.0F);
-        }
-        return value;
-    }
-
-    float AwayFromZero(float value, float change, float max)
-    {
-        if (value < 0.0F)
-        {
-            return maxValue(value - change, -max);
-        }
-        if (value > 0.0F)
-        {
-            return minValue(value + change, max);
-        }
-        return value;
-    }
-
-    int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
 
     float GetShortestDistToRect(Point p, const Rectangle& r)
     {

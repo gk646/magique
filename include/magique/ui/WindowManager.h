@@ -58,6 +58,8 @@ namespace magique
         //================= LAYERING =================//
 
         // Moves the first window in front of the second one
+        // Note: This is not an immediate action - action will be saved and executed after the tick
+        // When moving position at the wrong time immediately inifinte loops and other things can happen
         void moveInFrontOf(Window* moved, Window* inFrontOf);
         void moveInFrontOf(const char* moved, const char* inFrontOf);
 
@@ -70,6 +72,10 @@ namespace magique
         // Makes the given window the top most window
         void makeTopMost(Window* window);
         void makeTopMost(const char* name);
+
+        // Returns a pointer to the window top most window that is also shown
+        // Failre: returns nullptr if non exists
+        Window* getTopShownWindow();
 
         // Returns the first window "below" the mouse cursor - checks for layering
         // Failure: returns nullptr if no window area intersects the mouse position

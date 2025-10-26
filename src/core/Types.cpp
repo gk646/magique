@@ -15,7 +15,6 @@
 #include "internal/utils/STLUtil.h"
 #include "magique/ui/UI.h"
 
-
 namespace magique
 {
     Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
@@ -188,8 +187,8 @@ namespace magique
         const float magnitude = std::sqrt(x * x + y * y);
         if (magnitude <= f)
         {
-            x = 0.0f;
-            y = 0.0f;
+            x = 0.0F;
+            y = 0.0F;
             return *this;
         }
 
@@ -262,9 +261,7 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
-
     //----------------- TILE OBJECT PROPERTY -----------------//
-
 
     bool TiledProperty::getBool() const
     {
@@ -479,6 +476,16 @@ namespace magique
     else                                                                                                                \
         var = func(key);
 
+
+    Keybind::Keybind(int key, bool layered, bool shift, bool ctrl, bool alt) :
+        key(key), layered(layered), shift(shift), alt(alt)
+    {
+    }
+
+    bool Keybind::operator==(const Keybind& other) const
+    {
+        return key == other.key && layered == other.layered && shift == other.shift && alt == other.alt;
+    }
 
     bool Keybind::isPressed() const
     {

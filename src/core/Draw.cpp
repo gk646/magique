@@ -200,7 +200,7 @@ namespace magique
         const int startTileY = std::max(0, (int)std::floor(cBounds.y / tileSize));
         const int endTileY = std::min(mHeight, (int)std::ceil((cBounds.y + cBounds.height) / tileSize));
 
-        auto* start = tileMap.getLayerData(layer) + startTileX + startTileY * mWidth;
+        const auto* start = tileMap.getLayerData(layer) + (startTileX + startTileY * mWidth);
         const int diffX = endTileX - startTileX;
         const int diffY = endTileY - startTileY;
         const float startX = static_cast<float>(startTileX) * tileSize;
@@ -210,7 +210,7 @@ namespace magique
         rlSetTexture(tileSheet.getTextureID());
         rlBegin(RL_QUADS);
         rlColor4ub(255, 255, 255, 255);
-        rlNormal3f(0.0f, 0.0f, 1.0f);
+        rlNormal3f(0.0F, 0.0F, 0.0F);
 
         constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
         constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);

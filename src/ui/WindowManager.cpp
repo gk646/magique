@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <deque>
+
 #include <magique/ui/WindowManager.h>
 #include <magique/ui/controls/Window.h>
 #include <magique/util/Logging.h>
@@ -11,10 +13,17 @@ namespace magique
 {
     struct WindowManagerData final
     {
-        std::vector<Window*> windows{};
-        std::vector<internal::WindowManagerMapping> nameMapping{};
-        HashSet<const Window*> shownSet{};
+        std::vector<Window*> windows;
+        std::vector<internal::WindowManagerMapping> nameMapping;
+        HashSet<const Window*> shownSet;
         Window* hoveredWindow = nullptr;
+
+        struct MoveCommand final
+        {
+            Window* move;
+            Window* inFrontOf;
+        };
+        std::deque<MoveCommand> moveFrontQueue;
 
         void removeWindow(const Window* window)
         {
@@ -67,10 +76,13 @@ namespace magique
 
     void WindowManager::draw()
     {
-        for (auto* w : WINDOW_DATA.windows)
+        for (int i = 0; i < (int)WINDOW_DATA.windows.size(); ++i)
         {
+            auto* w = WINDOW_DATA.windows[i];
             if (WINDOW_DATA.shownSet.contains(w))
+            {
                 w->draw();
+            }
         }
     }
 
@@ -133,7 +145,10 @@ namespace magique
 
     void WindowManager::setShown(Window* window, const bool shown)
     {
-        MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
+        if (window == nullptr)
+        {
+            return;
+        }
         if (shown)
         {
             WINDOW_DATA.shownSet.insert(window);
@@ -156,8 +171,10 @@ namespace magique
 
     void WindowManager::toggleShown(Window* window)
     {
-        MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
-
+        if (window == nullptr)
+        {
+            return;
+        }
         if (WINDOW_DATA.shownSet.contains(window))
         {
             WINDOW_DATA.shownSet.erase(window);
@@ -174,41 +191,11 @@ namespace magique
 
     void WindowManager::moveInFrontOf(Window* moved, Window* inFrontOf)
     {
-        // Moving 'moved'(3) behind 'inFrontOf'(5) (last drawn element is on top)
-        // [1][2][3][4][5]
-
-        // [3]              -> assign to temporary
-        // [1][2][4][5][0]  -> copy all element after 1 to the front
-        // [1][2][4][5][3]  -> assign position of target element
-
-        if (moved == inFrontOf)
+        if (moved == nullptr || inFrontOf == nullptr)
         {
-            LOG_WARNING("Cant move the window before itself? O.o");
             return;
         }
-
-        bool foundMoved = false;
-        for (const auto* w : WINDOW_DATA.windows)
-        {
-            if (w == moved)
-            {
-                foundMoved = true;
-            }
-            else if (w == inFrontOf)
-            {
-                if (foundMoved)
-                    break;
-                LOG_WARNING("'moved' window is already in front of the 'inFrontOf' window!");
-                return;
-            }
-        }
-
-        auto& windows = WINDOW_DATA.windows;
-        const auto targetIt = std::ranges::find(windows, inFrontOf);
-        const auto targetIndex = std::distance(windows.begin(), targetIt);
-        auto movedIt = std::ranges::find(windows, moved);
-        windows.erase(movedIt);
-        windows.insert(windows.begin() + targetIndex, moved);
+        WINDOW_DATA.moveFrontQueue.push_back({moved, inFrontOf});
     }
 
     void WindowManager::moveInFrontOf(const char* moved, const char* inFrontOf)
@@ -244,12 +231,30 @@ namespace magique
     void WindowManager::makeTopMost(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
-        if (WINDOW_DATA.windows.back() == window)
-            return;
-        moveInFrontOf(window, WINDOW_DATA.windows.back()); // Reuse the method - move
+        // We defer the order change due to many possible complications - i experienced them
+        // Either infinite loops and other things when reordering while drawing...
+        WINDOW_DATA.moveFrontQueue.push_back({window, nullptr});
     }
 
     void WindowManager::makeTopMost(const char* name) { makeTopMost(getWindow(name)); }
+
+    Window* WindowManager::getTopShownWindow()
+    {
+        if (WINDOW_DATA.windows.empty())
+        {
+            return nullptr;
+        }
+
+        for (int i = (int)WINDOW_DATA.windows.size() - 1; i >= 0; --i)
+        {
+            auto* window = WINDOW_DATA.windows[i];
+            if (getIsShown(window))
+            {
+                return window;
+            }
+        }
+        return nullptr;
+    }
 
     Window* WindowManager::getHoveredWindow() { return WINDOW_DATA.hoveredWindow; }
 
@@ -259,6 +264,47 @@ namespace magique
         {
             setShown(w, false);
         }
+    }
+
+    static void MoveInfrontImpl(Window* moved, Window* inFrontOf)
+    {
+        // Moving 'moved'(3) behind 'inFrontOf'(5) (last drawn element is on top)
+        // [1][2][3][4][5]
+
+        // [3]              -> assign to temporary
+        // [1][2][4][5][0]  -> copy all element after 1 to the front
+        // [1][2][4][5][3]  -> assign position of target element
+
+        if (moved == inFrontOf)
+        {
+            // LOG_WARNING("Cant move the window before itself? O.o");
+            return;
+        }
+
+        bool foundMoved = false;
+        for (const auto* w : WINDOW_DATA.windows)
+        {
+            if (w == moved)
+            {
+                foundMoved = true;
+            }
+            else if (w == inFrontOf)
+            {
+                if (foundMoved)
+                {
+                    break;
+                }
+                LOG_WARNING("'moved' window is already in front of the 'inFrontOf' window!");
+                return;
+            }
+        }
+
+        auto& windows = WINDOW_DATA.windows;
+        const auto targetIt = std::ranges::find(windows, inFrontOf);
+        const auto targetIndex = std::distance(windows.begin(), targetIt);
+        const auto movedIt = std::ranges::find(windows, moved);
+        windows.erase(movedIt);
+        windows.insert(windows.begin() + targetIndex, moved);
     }
 
     void WindowManager::update()
@@ -276,6 +322,14 @@ namespace magique
                     break;
                 }
             }
+        }
+
+        auto& queue = WINDOW_DATA.moveFrontQueue;
+        while (!queue.empty())
+        {
+            auto& cmd = queue.front();
+            MoveInfrontImpl(cmd.move, cmd.inFrontOf == nullptr ? WINDOW_DATA.windows.back() : cmd.inFrontOf);
+            queue.pop_front();
         }
     }
 

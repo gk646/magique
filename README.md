@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.6.0-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.7.1-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 `magique` is a **C++ 20** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
@@ -62,7 +62,7 @@ Most notable features:
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
-- **[glaze](https://github.com/stephenberry/glaze)** _(5.5.4)_: Fast JSON serialization with reflection support
+- **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
 
 ### Quickstart
 

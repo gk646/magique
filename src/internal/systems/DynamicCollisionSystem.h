@@ -116,7 +116,7 @@ namespace magique
             {
                 const auto& block = *it;
                 const auto* dStart = block.data;
-                const auto* dEnd = block.data + block.count;
+                const auto* dEnd = block.data + block.size;
                 for (const auto* dIt1 = dStart; dIt1 != dEnd; ++dIt1)
                 {
                     const auto first = *dIt1;

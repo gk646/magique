@@ -500,5 +500,24 @@ namespace magique
         }
     }
 
+    const char* FormatGameplayNumber(float num)
+    {
+        if (num < 1e3)
+        {
+            return TextFormat("%.1f", num);
+        }
+        else if (num < 1e6)
+        {
+            return TextFormat("%.2fK", num / 1e3);
+        }
+        else if (num < 1e9)
+        {
+            return TextFormat("%.2fM", num / 1e6);
+        }
+        else
+        {
+            return TextFormat("%.2fB", num / 1e9);
+        }
+    }
 
 } // namespace magique

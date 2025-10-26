@@ -622,10 +622,15 @@ namespace magique
 
     //================= HELPER TYPES =================//
 
-    // Efficient representation of a keybind with optional modifiers
+    // Representation of a keybind with optional modifiers
     // Also works with mouse buttons e.g. enum MouseButton (left, right and middle)
     struct Keybind final
     {
+        Keybind() = default;
+        explicit Keybind(int key, bool layered = true, bool shift = false, bool ctrl = false, bool alt = false);
+
+        bool operator==(const Keybind& other) const;
+
         // Uses direct input polling (e.g. IsKeyDown())
         [[nodiscard]] bool isPressed() const;
         [[nodiscard]] bool isDown() const;

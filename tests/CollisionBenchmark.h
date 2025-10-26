@@ -47,6 +47,7 @@
 // Changed to only 2 extra threads
 // Time: 7.68
 // Time: 7.54   | optimized iteration and removed a branch
+// Time: 5.69ms | New compiler version? some minor branching optimizations
 // .....................................................................
 
 using namespace magique;

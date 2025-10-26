@@ -49,6 +49,10 @@ namespace magique
     // Sets the callback func - called on each log
     void SetLogCallback(LogCallbackFunc func);
 
+    // True to enable logging to a ./magique.log file - captures all logs
+    // Note NEEDS to be set before the Game class is constructed (so in the main file at first) - else no effect
+    void SetLogToFile(bool value);
+
 } // namespace magique
 
 

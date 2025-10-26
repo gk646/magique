@@ -2,6 +2,7 @@
 #define TWEENDATA_H
 
 #include <magique/gamedev/Tweens.h>
+
 #include "internal/datastructures/VectorType.h"
 
 namespace magique
@@ -15,14 +16,17 @@ namespace magique
         {
             for (int i = 0; i < tweens.size(); ++i)
             {
-                auto& tween = tweens[i];
-                tween->step = std::min(1.0F, tween->step + tween->stepWidth);
-                if (tween->step >= 1.0F)
+                auto& tween = *tweens[i];
+                tween.step = std::min(1.0F, tween.step + tween.stepWidth);
+
+                if (tween.tickFunc)
                 {
-                    tween->started = false;
-                    if (tween->callback)
-                        tween->callback();
-                    tween->started = false;
+                    tween.tickFunc(tween);
+                }
+
+                if (tween.isDone())
+                {
+                    tween.started = false;
                     tweens.erase(&tween);
                     i--;
                 }
@@ -32,8 +36,9 @@ namespace magique
         void add(Tween& tween)
         {
             if (tweens.contains(&tween))
+            {
                 return;
-
+            }
             tweens.push_back(&tween);
         }
 

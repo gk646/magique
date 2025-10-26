@@ -113,7 +113,9 @@ namespace magique
                 objects.pop_back(); // Is added as an object as well
             }
             else
+            {
                 objects.push_back(object);
+            }
         }
 
         // All objects are un-registered in the dtor
@@ -127,7 +129,9 @@ namespace magique
             }
             object->drawnThisTick = true;
             if (!objectsSet.contains(object)) [[unlikely]]
+            {
                 registerObject(object, object->isContainer);
+            }
 
             // Moving 3 to the front
             // [1][2][3][4][5]

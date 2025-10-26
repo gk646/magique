@@ -59,7 +59,7 @@ namespace magique::internal
     if (!IsSupportedImageFormat(asset.getExtension()))                                                                  \
     {                                                                                                                   \
         LOG_WARNING("Asset has unsupported extension: %s", asset.getExtension());                                       \
-        return {};                                                                                            \
+        return {};                                                                                                      \
     }
 
 #define ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(width)                                                                     \
@@ -67,7 +67,7 @@ namespace magique::internal
     {                                                                                                                   \
         LOG_WARNING("SpriteSheet width would exceed texture atlas width! Skipping: %s", asset.getFileName(true));       \
         UnloadImage(image);                                                                                             \
-        return {};                                                                                            \
+        return {};                                                                                                      \
     }
 
 #define ASSET_CHECK_IMAGE_DIVISIBILITY(image, checkW, checkH)                                                           \
@@ -114,7 +114,7 @@ namespace magique::internal
 #else
 #define IGNORE_WARNING_GCC(warning)
 #define UNIGNORE_WARNING_GCC()
-
 #endif
+
 
 #endif //MAGIQUE_MACROS_H

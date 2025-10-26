@@ -4,7 +4,7 @@
 
 namespace magique::renderer
 {
-    inline static constexpr int BIG_NUMBER = 50'0000;
+    inline static constexpr int BIG_NUMBER = 50'000;
 
     inline void Close()
     {

@@ -645,6 +645,9 @@ namespace glz
                               if (bool(ctx.error)) [[unlikely]]
                                  return;
 
+                              if (skip_ws<Opts>(ctx, it, end)) {
+                                 return;
+                              }
                               if (*it != ',') {
                                  ctx.error = error_code::array_element_not_found;
                                  return;
@@ -666,6 +669,9 @@ namespace glz
                               if (bool(ctx.error)) [[unlikely]]
                                  return;
 
+                              if (skip_ws<Opts>(ctx, it, end)) {
+                                 return;
+                              }
                               if (*it != ',') {
                                  ctx.error = error_code::array_element_not_found;
                                  return;
@@ -735,6 +741,9 @@ namespace glz
                                  if (bool(ctx.error)) [[unlikely]]
                                     return;
 
+                                 if (skip_ws<Opts>(ctx, it, end)) {
+                                    return;
+                                 }
                                  if (*it != ',') {
                                     ctx.error = error_code::array_element_not_found;
                                     return;
@@ -763,6 +772,9 @@ namespace glz
                      else {
                         skip_value<JSON>::op<Opts>(ctx, it, end);
                         if (bool(ctx.error)) [[unlikely]] {
+                           return;
+                        }
+                        if (skip_ws<Opts>(ctx, it, end)) {
                            return;
                         }
                         if (*it != ',') {
@@ -814,6 +826,9 @@ namespace glz
                   else {
                      skip_value<JSON>::op<Opts>(ctx, it, end);
                      if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
+                     if (skip_ws<Opts>(ctx, it, end)) {
                         return;
                      }
                      if (*it != ',') {
@@ -929,6 +944,9 @@ namespace glz
                                  if (bool(ctx.error)) [[unlikely]]
                                     return;
 
+                                 if (skip_ws<Opts>(ctx, it, end)) {
+                                    return;
+                                 }
                                  if (*it != ',') {
                                     ctx.error = error_code::array_element_not_found;
                                     return;
@@ -950,6 +968,9 @@ namespace glz
                                  if (bool(ctx.error)) [[unlikely]]
                                     return;
 
+                                 if (skip_ws<Opts>(ctx, it, end)) {
+                                    return;
+                                 }
                                  if (*it != ',') {
                                     ctx.error = error_code::array_element_not_found;
                                     return;
@@ -1017,6 +1038,9 @@ namespace glz
                                     if (bool(ctx.error)) [[unlikely]]
                                        return;
 
+                                    if (skip_ws<Opts>(ctx, it, end)) {
+                                       return;
+                                    }
                                     if (*it != ',') {
                                        ctx.error = error_code::array_element_not_found;
                                        return;
@@ -1045,6 +1069,9 @@ namespace glz
                         else {
                            skip_value<JSON>::op<Opts>(ctx, it, end);
                            if (bool(ctx.error)) [[unlikely]] {
+                              return;
+                           }
+                           if (skip_ws<Opts>(ctx, it, end)) {
                               return;
                            }
                            if (*it != ',') {
@@ -1098,11 +1125,23 @@ namespace glz
                         if (bool(ctx.error)) [[unlikely]] {
                            return;
                         }
+                        if (skip_ws<Opts>(ctx, it, end)) {
+                           return;
+                        }
                         if (*it != ',') {
                            ctx.error = error_code::key_not_found;
                            return;
                         }
                         ++it;
+                     }
+                  }
+
+                  if (!bool(ctx.error)) {
+                     if (it == end) {
+                        ctx.error = error_code::unexpected_end;
+                     }
+                     else {
+                        ctx.error = error_code::key_not_found;
                      }
                   }
                }

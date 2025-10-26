@@ -214,7 +214,7 @@ namespace magique
                     const auto it = grid.cellMap.find(id);
                     if (it != grid.cellMap.end())
                     {
-                        const auto count = static_cast<int>(grid.dataBlocks[it->second].count);
+                        const auto count = static_cast<int>(grid.dataBlocks[it->second].size);
                         const auto color = count > grid.getBlockSize() ? RED : GREEN; // Over the limit
                         const Vector2 pos = {static_cast<float>(x) + textOff, static_cast<float>(y) + textOff};
                         DrawTextEx(config.font, std::to_string(count).c_str(), pos, fontSize, 1, color);

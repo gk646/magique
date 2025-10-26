@@ -24,10 +24,14 @@ namespace magique
         LINEAR,
         IN_OUT_CUBIC,
         IN_OUT_SINE,
+        IN_OUT_QUAD,
+        IN_OUT_CIRC,
     };
 
     struct Tween final
     {
+        using TweenFunc = std::function<void(const Tween&)>;
+
         explicit Tween(TweenMode mode, float seconds = 1.0F);
 
         // Returns the current value of the tween
@@ -43,8 +47,8 @@ namespace magique
         // Note: This tween object MUST NOT go out of scope or be deleted!
         void start();
 
-        // Called once when a started tween reaches a step value of 1.0
-        void onFinish(const std::function<void()>& callback);
+        // Called each update tick with the tween
+        void setOnTick(const TweenFunc& callback);
 
         // Sets the time it takes in seconds how long to reach the end
         void setDuration(float seconds);
@@ -58,7 +62,7 @@ namespace magique
         bool isStarted() const;
 
     private:
-        std::function<void()> callback;
+        TweenFunc tickFunc;
         float step = 0.0F;
         float stepWidth = 1.0F / MAGIQUE_LOGIC_TICKS;
         bool started = false;

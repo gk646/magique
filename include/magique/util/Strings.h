@@ -41,8 +41,9 @@ namespace magique
     // Returns the total amount of replacements
     int ReplaceInBuffer(char* buffer, int bufferSize, const char* keyword, const char* replacement);
 
-    // Inserts newlines so that each line is drawn within the specified width in-place
-    // Returns the number of linebreak inserted
+    // Replaces spaces with newlines such that each line is drawn within the specified width in-place
+    // Note: Does NOT change the size of the buffer
+    // Returns: the number of linebreak inserted
     int InsertNewlines(char* buffer, int bufferSize, float width, const Font& font, float fontSize);
 
     // Returns a vector of string containing the chunks by splitting the string by delim
@@ -70,9 +71,6 @@ namespace magique
     // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it
     int GetBase64EncodedLength(int bytes);
 
-    // Returns true if the given string is base64
-    bool IsBase64(const char* s);
-
     // Encodes the given string 's' into base64 representation
     //      - inputLen : length of the binary portion
     //      - outputLen: valid length of the output pointer
@@ -94,9 +92,15 @@ namespace magique
     const char* GetTimeString(int seconds);
 
     // Formats a float number so its nicely readable
-    // If its lower then cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
-    // if justification is postiive its right bound, if negative leftbound
+    // If it's lower than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
+    // If justification is positive its right bound, if negative left bound
     const char* FormatFloat(float num, float cutoff = 100.0F, int justification = 4);
+
+    // Formats the given number for displaying it in gameplay context:
+    // Shortens to at most 5 digits: 3 before dot, 2 after
+    // Uses K/M/B to shorten thousands, millions and billions
+    // e.g. 2.4 / 32.45K / 332.53K / 233.41M / 33.52B
+    const char* FormatGameplayNumber(float num);
 
     //================= HASHING =================//
 

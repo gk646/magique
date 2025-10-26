@@ -157,8 +157,9 @@ namespace magique
                     {
                         const int8_t actorNum = actorDist.getActorNum(map, i);
                         if (actorNum == -1) // No more actors in that map
+                        {
                             break;
-
+                        }
                         const auto& [x, y, w, h] = actorRects[actorNum];
                         // Check if inside any update rect - rect is an enlarged rectangle
                         if (PointToRect(pos.x, pos.y, x, y, w, h))

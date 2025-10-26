@@ -32,7 +32,9 @@ int floordiv(const int x)
 {
     const int res = x / div;
     if (x < 0) [[unlikely]]
+    {
         return res - 1;
+    }
     return res;
 }
 
@@ -43,98 +45,101 @@ static void RasterizeRect(Func func, const float x, const float y, const float w
     const int y1 = floordiv<cellSize>(static_cast<int>(y));
     const int x2 = floordiv<cellSize>(static_cast<int>(x + w));
     const int y2 = floordiv<cellSize>(static_cast<int>(y + h));
+    const bool differentX = x1 != x2;
+    const bool differentY = y1 != y2;
 
-    if (w > cellSize || h > cellSize) [[unlikely]] // It's bigger than a single cell
+    if (w < cellSize && h < cellSize) [[likely]]
     {
-        if (w > cellSize * 2 || h > cellSize * 2) [[unlikely]] // Unlimited cells
+        // It's smaller than a cell -> maximum of 4 cells
+        func(x1, y1);
+        if (differentX)
         {
-            for (int i = y1; i <= y2; ++i)
+            func(x2, y1);
+
+            if (differentY)
             {
-                for (int j = x1; j <= x2; ++j)
-                {
-                    func(j, i);
-                }
+                func(x1, y2);
+                func(x2, y2);
+                return;
             }
-            return;
         }
-        // 4 corners, the 4 middle points of the edges and the middle pointer -> 9 potential cells
+        else if (differentY)
+        {
+            func(x1, y2);
+        }
+        return;
+    }
+
+    // 4 corners, the 4 middle points of the edges and the middle point -> 9 potential cells
+    if (w < cellSize * 3 && h < cellSize * 3) [[likely]]
+    {
         const int xhalf = floordiv<cellSize>(static_cast<int>(x + (w / 2.0F)));
         const int yhalf = floordiv<cellSize>(static_cast<int>(y + (h / 2.0F)));
 
         // Process the corners
         func(x1, y1); // Top-left
-        if (x1 != x2)
+        if (differentX)
+        {
             func(x2, y1); // Top-right
-        if (y1 != y2)
+        }
+        if (differentY)
+        {
             func(x1, y2); // Bottom-left
-        if (x1 != x2 && y1 != y2)
+        }
+        if (differentX && differentY)
+        {
             func(x2, y2); // Bottom-right
+        }
+
+        const bool xMidValid = xhalf != x1 && xhalf != x2;
+        const bool yMidValid = yhalf != y1 && yhalf != y2;
 
         // edge midpoints
-        if (xhalf != x1 && xhalf != x2)
+        if (xMidValid)
         {
             func(xhalf, y1); // Top-edge midpoint
-            if (y1 != y2)
+            if (differentY)
+            {
                 func(xhalf, y2); // Bottom-edge midpoint
+            }
         }
-        if (yhalf != y1 && yhalf != y2)
+        if (yMidValid)
         {
             func(x1, yhalf); // Left-edge midpoint
-            if (x1 != x2)
+            if (differentX)
+            {
                 func(x2, yhalf); // Right-edge midpoint
+            }
         }
 
         // Process the center point
-        if (xhalf != x1 && xhalf != x2 && yhalf != y1 && yhalf != y2)
+        if (xMidValid && yMidValid)
+        {
             func(xhalf, yhalf);
+        }
+
         return;
     }
 
-    // It's smaller than a cell -> maximum of 4 cells
-    func(x1, y1);
-
-    if (x1 != x2)
+    // Unlimited cells
+    for (int i = y1; i <= y2; ++i)
     {
-        func(x2, y1);
-
-        if (y1 != y2)
+        for (int j = x1; j <= x2; ++j)
         {
-            func(x1, y2);
-            func(x2, y2);
-            return;
+            func(j, i);
         }
-    }
-
-    if (y1 != y2)
-    {
-        func(x1, y2);
     }
 }
 
-template <typename T, int size>
+template <typename T, int capacity>
 struct DataBlock final
 {
-    static constexpr int NO_NEXT_BLOCK = UINT16_MAX;
-    T data[size];                  // Fixed size data block
-    uint16_t count = 0;            // Current number of elements
-    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if it's the end
-
-    [[nodiscard]] bool isFull() const { return count == size; }
-
-    // Can happen that its full but no next one is inserted yet
-    [[nodiscard]] bool hasNext() const { return next != NO_NEXT_BLOCK; }
-
-    void add(T val)
-    {
-        assert(count < size);
-        data[count++] = val;
-    }
 
     template <typename Container>
     void append(Container& elems) const
     {
         const auto start = data;
-        const auto end = data + count;
+        const auto end = data + size;
         for (auto it = start; it != end; ++it)
         {
             if constexpr (std::is_same_v<Container, magique::vector<T>> || std::is_same_v<Container, std::vector<T>>)
@@ -150,18 +155,18 @@ struct DataBlock final
 
     void remove(T val)
     {
-        if (count == 1 && data[0] == val)
+        if (size == 1 && data[0] == val)
         {
-            count = 0;
+            size = 0;
             return;
         }
 
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < size; ++i)
         {
             if (data[i] == val)
             {
-                data[i] = data[count - 1];
-                --count;
+                data[i] = data[size - 1];
+                --size;
                 --i;
             }
         }
@@ -170,29 +175,45 @@ struct DataBlock final
     template <typename NewType, typename Pred>
     void removeIf(NewType val, Pred pred)
     {
-        if (count == 1 && pred(val, data[0]))
+        if (size == 1 && pred(val, data[0]))
         {
-            count = 0;
+            size = 0;
             return;
         }
 
-        for (int i = 0; i < count; ++i)
+        for (int i = 0; i < size; ++i)
         {
             if (pred(val, data[i]))
             {
-                data[i] = data[count - 1];
-                --count;
+                data[i] = data[size - 1];
+                --size;
                 --i;
             }
         }
     }
+
+    [[nodiscard]] bool isFull() const { return size == capacity; }
+
+    // Can happen that its full but no next one is inserted yet
+    [[nodiscard]] bool hasNext() const { return next != NO_NEXT_BLOCK; }
+
+    void add(T val)
+    {
+        assert(size < capacity);
+        data[size++] = val;
+    }
+
+    static constexpr int NO_NEXT_BLOCK = UINT16_MAX;
+    T data[capacity];              // Fixed size data block
+    uint16_t size = 0;             // Current number of elements
+    uint16_t next = NO_NEXT_BLOCK; // Index of the next block or NO_NEXT_BLOCK if it's the end
 };
 
 // assuming 4 bytes as value size its 15 * 4 + 2 + 2 = 64 / one cache line
 template <typename V, int blockSize = 15, int cellSize = 64 /*power of two is optimized*/>
 struct SingleResolutionHashGrid final
 {
-    magique::HashMap<CellID, int> cellMap;
+    magique::HashMap<CellID, int32_t> cellMap;
     magique::vector<DataBlock<V, blockSize>> dataBlocks{};
 
     void insert(V val, const float x, const float y, const float w, const float h)
@@ -281,25 +302,25 @@ private:
         while (start->hasNext())
         {
             next = &dataBlocks[start->next];
-            auto count = start->count;
+            auto count = start->size;
             uint16_t i = 0;
-            for (; i + count < blockSize && i < next->count; ++i) // Copy elements from next to current
+            for (; i + count < blockSize && i < next->size; ++i) // Copy elements from next to current
             {
                 start->data[i + count] = next->data[i];
             }
-            start->count = count + i;
-            next->count -= i;
-            memcpy(next->data, next->data + i, sizeof(V) * next->count); // Shift elements to the front
+            start->size = count + i;
+            next->size -= i;
+            memcpy(next->data, next->data + i, sizeof(V) * next->size); // Shift elements to the front
 
-            if (start->count < blockSize)
+            if (start->size < blockSize)
             {
-                assert(next->count == 0 && "if current is not filled next has to be empty");
+                assert(next->size == 0 && "if current is not filled next has to be empty");
                 start->next = DataBlock<V, blockSize>::NO_NEXT_BLOCK;
                 break;
             }
             start = next;
         }
-        if (start->count < blockSize)
+        if (start->size < blockSize)
         {
             start->next = DataBlock<V, blockSize>::NO_NEXT_BLOCK;
         }

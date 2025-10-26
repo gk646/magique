@@ -13,6 +13,8 @@
 
 namespace magique
 {
+    //================= FUNCTIONS =================//
+
     // Clamps the given value - returns low if values is smaller than it, high if value is bigger than it, else val itself
     template <typename T>
     constexpr T clamp(T val, T low, T high);
@@ -26,6 +28,12 @@ namespace magique
 
     // Returns the translated old value in the old scale to the corresponding value in the new scale - linear remapping
     float Lermp(float oldVal, float minO, float maxO, float minN, float maxN);
+
+    // Returns true if a roll with the given chance was true - GetRandomFloat()
+    // Note: Chance must be between 0.0 and 1.0F - 0 is never true 1 is always true
+    bool RollWithChance(float chance);
+
+    //================= NUMBERS =================//
 
     // True if the given "val" is within the specified range (included) - only uses 'operator<'
     template <typename T>
@@ -43,6 +51,20 @@ namespace magique
     // Returns true if the number is even
     bool IsEvenNumber(float num);
 
+    // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
+    float TowardsZero(float value, float change);
+
+    // Applies the change to the given value such that it goes towards the closest max (positive or negative) but not oversteps it
+    float AwayFromZero(float value, float change, float max);
+
+    // Mirrors the given value vertically
+    int MirrorVertically(int value, int border);
+
+    // Returns true if the absolute difference of the floats is smaller than the epsilon times the bigger value
+    bool FloatEqualsRel(float one, float two, float relEpsilon = 1e-6);
+
+    //================= GEOMETRY =================//
+
     // Returns the point on the given circle that intersects the given angle
     //      - angle: 0-360 starting from the top clockwise
     Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, float radius, float angle);
@@ -57,15 +79,6 @@ namespace magique
 
     // Returns the angle that spans from the current to target point
     float GetAngleFromPoints(Point current, Point target);
-
-    // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
-    float TowardsZero(float value, float change);
-
-    // Applies the change to the given value such that it goes towards the closest max (positive or negative) but not oversteps it
-    float AwayFromZero(float value, float change, float max);
-
-    // Mirrors the given value vertically
-    int MirrorVertically(int value, int border);
 
     // Returns the shortest possible distance to connect point p with rect r (in any way)
     float GetShortestDistToRect(Point p, const Rectangle& r);
