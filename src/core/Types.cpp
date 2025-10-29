@@ -21,13 +21,44 @@ namespace magique
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
-    bool Point::operator==(float num) const { return x == num && y == num; }
-
     bool Point::operator!=(const Point& other) const { return x != other.x || y != other.y; }
 
     Point Point::operator+(const Point& other) const { return {x + other.x, y + other.y}; }
 
     Point Point::operator-(const Point& point) const { return {x - point.x, y - point.y}; }
+
+    Point& Point::operator+=(const Point& other)
+    {
+        x += other.x;
+        y += other.y;
+        return *this;
+    }
+
+    Point& Point::operator-=(const Point& other)
+    {
+        x -= other.x;
+        y -= other.y;
+        return *this;
+    }
+
+    Point Point::operator*(const Point& other) const { return {x * other.x, y * other.y}; }
+
+    Point& Point::operator*=(const Point& p)
+    {
+        x *= p.x;
+        y *= p.y;
+        return *this;
+    }
+
+    Point Point::operator/(const Point& p) const { return {x / p.x, y / p.y}; }
+
+    Point Point::operator*(const float i) const { return {x * i, y * i}; }
+
+    bool Point::operator<(float num) const { return x < num && y < num; }
+
+    bool Point::operator<=(float num) const { return x <= num && y <= num; }
+
+    bool Point::operator==(float num) const { return x == num && y == num; }
 
     Point Point::operator/(const float divisor) const { return {x / divisor, y / divisor}; }
 
@@ -39,13 +70,6 @@ namespace magique
     {
         x += f;
         y += f;
-        return *this;
-    }
-
-    Point& Point::operator+=(const Point& other)
-    {
-        x += other.x;
-        y += other.y;
         return *this;
     }
 
@@ -77,26 +101,6 @@ namespace magique
         return *this;
     }
 
-    Point& Point::operator*=(const Point& p)
-    {
-        x *= p.x;
-        y *= p.y;
-        return *this;
-    }
-
-    Point Point::operator/(const Point& p) const { return {x / p.x, y / p.y}; }
-
-    bool Point::operator<(float num) const { return x < num && y < num; }
-
-    Point& Point::operator-=(const Point& other)
-    {
-        x -= other.x;
-        y -= other.y;
-        return *this;
-    }
-
-    Point Point::operator*(const Point& other) const { return {x * other.x, y * other.y}; }
-
     float Point::manhattan(const Point& p) const { return std::abs(x - p.x) + std::abs(y - p.y); }
 
     float Point::euclidean(const Point& p) const
@@ -122,6 +126,8 @@ namespace magique
         const auto dy = abs(y - p.y);
         return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
     }
+
+    Vector2 Point::v() const { return Vector2{x, y}; }
 
     float Point::dot(const Point& p) const { return x * p.x + y * p.y; }
 
@@ -158,8 +164,6 @@ namespace magique
     }
 
     float Point::magnitude() const { return std::sqrt(x * x + y * y); }
-
-    Vector2 Point::v() const { return Vector2{x, y}; }
 
     Point& Point::round()
     {
@@ -227,8 +231,6 @@ namespace magique
             return direction.perpendicular(false);
         }
     }
-
-    Point Point::operator*(const float i) const { return {x * i, y * i}; }
 
     //----------------- SPRITE SHEET -----------------//
 
@@ -301,7 +303,7 @@ namespace magique
 
     const char* TileObject::getName() const { return name; }
 
-    const TiledProperty* TileObject::getProperty(const char* name) const
+    const TiledProperty* TileObject::getProperty(const char* propertyName) const
     {
         for (const auto& property : customProperties)
         {
@@ -309,7 +311,7 @@ namespace magique
             {
                 continue;
             }
-            if (strcmp(property.getName(), name) == 0)
+            if (strcmp(property.getName(), propertyName) == 0)
             {
                 return &property;
             }
@@ -460,7 +462,7 @@ namespace magique
     int Param::getInt() const
     {
         MAGIQUE_ASSERT(type == ParamType::NUMBER, "Accessing wrong type");
-        return (int)number;
+        return static_cast<int>(number);
     }
 
     //----------------- GAMEDEV -----------------/

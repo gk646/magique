@@ -36,8 +36,9 @@ namespace magique
 
         // With numbers
         [[nodiscard]] Point operator*(float i) const;
-        bool operator<(float num) const;  // Both must be smaller
-        bool operator==(float num) const; // Both must be equal
+        bool operator<(float num) const;  // For both
+        bool operator<=(float num) const; // For both
+        bool operator==(float num) const; // For both
         Point operator/(float divisor) const;
         Point operator-(float f) const;
         Point operator+(float f) const; // To both
@@ -219,7 +220,7 @@ namespace magique
         int tileClass = 0;                         // NOT assigned autoamtically
 
         // Returns: the property with the given name or nullptr if not exists
-        const TiledProperty* getProperty(const char* name) const;
+        const TiledProperty* getProperty(const char* propertyName) const;
 
     private:
         int tileId = 0;
@@ -411,10 +412,6 @@ namespace magique
 
     struct Param final
     {
-        Param(const char* name, float value);
-        Param(const char* name, const char* value);
-        Param(const char* name, bool value);
-
         // Returns the parameter name
         const char* getName() const;
 
@@ -472,8 +469,6 @@ namespace magique
         //      2. Reliable messages retain order, they arrive at the client in the same order they were sent from the host
         // Use this for vital game updates and messages that MUST arrive or arrive in a certain order
         RELIABLE = 8,
-
-
     };
 
     enum class Connection : uint32_t
@@ -647,11 +642,13 @@ namespace magique
         // Returns true if its keybind for a mouse button
         bool isMouse() const;
 
+    private:
         int key = 0;
         bool layered = true;
         bool shift = false;
         bool ctrl = false;
         bool alt = false;
+        friend struct glz::meta<Keybind>;
     };
 
     struct ScreenParticle final

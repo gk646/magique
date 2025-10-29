@@ -69,7 +69,19 @@ namespace magique
 
     int VirtualTime::toSeconds() const { return ((day * 24 + hour) * 60 + minute) * 60 + second; }
 
-    VirtualClock::VirtualClock(const int realMinutes) { setRealMinutes(realMinutes); }
+    VirtualClock::VirtualClock(const int realMinutes)
+    {
+        setRealMinutes(realMinutes);
+        syncTimeOfDay();
+    }
+
+    static constexpr float DAY_SECONDS = 24 * 60 * 60;
+    static constexpr float HOUR_SECONDS = 60 * 60;
+    static constexpr float MIN_SECONDS = 60;
+
+#define realDaySeconds (realSecondSeconds * DAY_SECONDS)
+#define realHourSeconds (realSecondSeconds * HOUR_SECONDS)
+#define realMinuteSeconds (realSecondSeconds * MIN_SECONDS)
 
     int VirtualClock::getDay() const
     {
@@ -157,15 +169,13 @@ namespace magique
         return combined > getTime();
     }
 
-    void VirtualClock::setRealMinutes(const int realMinutes)
+    void VirtualClock::setRealMinutes(const double realMinutes)
     {
-        realDaySeconds = static_cast<float>(realMinutes) * 60;
-        realHourSeconds = realDaySeconds / 24;
-        realMinuteSeconds = realDaySeconds / 1440;
-        realSecondSeconds = realDaySeconds / 86400;
+        const auto daySeconds = 24.0 * 60.0 * 60.0;
+        realSecondSeconds = (realMinutes * 60) / daySeconds;
     }
 
-    int VirtualClock::getRealMinutes() const { return static_cast<int>(realDaySeconds / 60.0F); }
+    double VirtualClock::getRealMinutes() const { return realDaySeconds / 60.0; }
 
     void VirtualClock::setPaused(const bool paused) { isPaused = paused; }
 

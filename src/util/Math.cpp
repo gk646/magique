@@ -83,14 +83,7 @@ namespace magique
 
     int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
 
-    bool FloatEqualsRel(float one, float two, float relEpsilon)
-    {
-        const auto diff = std::abs(one - two);
-        const auto max = std::max(one, two);
-        return diff <= max * relEpsilon;
-    }
-
-    Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, const float radius, const float angle)
+    Point GetPointOnCircleFromAngle(const Point& middle, const float radius, const float angle)
     {
         const auto direction = GetDirectionFromAngle(angle);
         return {middle.x + (direction.x * radius), middle.y + (direction.y * radius)};
@@ -132,6 +125,18 @@ namespace magique
         // You clamp the point coordinates to the rects side lengths
         const Point closest = {clamp(p.x, r.x, r.x + r.width), clamp(p.y, r.y, r.y + r.height)};
         return closest.euclidean(p);
+    }
+
+    Point GetClosestPointInRange(Point p, Point middle, float radius)
+    {
+        if (middle.euclidean(p) > radius)
+        {
+            return GetPointOnCircleFromAngle(middle, radius, GetAngleFromPoints(middle, p));
+        }
+        else
+        {
+            return p;
+        }
     }
 
 } // namespace magique

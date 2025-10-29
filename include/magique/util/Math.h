@@ -60,14 +60,11 @@ namespace magique
     // Mirrors the given value vertically
     int MirrorVertically(int value, int border);
 
-    // Returns true if the absolute difference of the floats is smaller than the epsilon times the bigger value
-    bool FloatEqualsRel(float one, float two, float relEpsilon = 1e-6);
-
     //================= GEOMETRY =================//
 
     // Returns the point on the given circle that intersects the given angle
     //      - angle: 0-360 starting from the top clockwise
-    Point GetPointOnCircleCircumferenceFromAngle(const Point& middle, float radius, float angle);
+    Point GetPointOnCircleFromAngle(const Point& middle, float radius, float angle);
 
     // Returns the direction vector of the given angle
     //      - angle: 0-360 starting from the top clockwise
@@ -82,6 +79,10 @@ namespace magique
 
     // Returns the shortest possible distance to connect point p with rect r (in any way)
     float GetShortestDistToRect(Point p, const Rectangle& r);
+
+    // Returns p, if p is inside the circle defined by middle and radius
+    // else returns the closest point on the circle using GetPointOnCircleFromAngle()
+    Point GetClosestPointInRange(Point p, Point middle, float radius);
 
 } // namespace magique
 

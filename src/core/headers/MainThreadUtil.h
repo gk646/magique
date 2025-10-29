@@ -8,16 +8,16 @@ extern "C" {
 
 void SetTargetFPS(const int fps)
 {
-    auto& config = magique::global::ENGINE_CONFIG.timing;
-    if (fps < 1)
-        config.frameTarget = 0;
-    else
+    if (fps < MAGIQUE_LOGIC_TICKS)
     {
-        config.frameTarget = 1.0 / static_cast<double>(fps);
-        // Round down cause minimal accuracy is only 1ms - so wait 1 ms less to be accurate
-        config.sleepTime = std::floor(config.frameTarget * 1000) / 1000;
-        config.workPerTick = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
+        LOG_WARNING("FPS must be more than logic tickrate!");
+        return;
     }
+    auto& config = magique::global::ENGINE_CONFIG.timing;
+    config.frameTarget = 1.0 / static_cast<double>(fps);
+    // Round down cause minimal accuracy is only 1ms - so wait 1 ms less to be accurate
+    config.sleepTime = std::floor(config.frameTarget * 1000) / 1000;
+    config.workPerTick = MAGIQUE_LOGIC_TICKS / static_cast<double>(fps);
 }
 
 int GetFPS()

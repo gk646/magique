@@ -3,52 +3,19 @@
 #include <cstdio>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/Console.h>
-#include <magique/config.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
-
-#if defined(__GNUC__)
-#include <signal.h>
-#endif
+#include "internal/globals/LoggingData.h"
+#include "util/CrashLog.h"
 
 namespace magique
 {
-    struct LogData final
-    {
-        static constexpr int cacheSize = 255;
-        static constexpr const char* fileName = "magique.log";
-        FILE* file = nullptr;
-        LogCallbackFunc callback = nullptr;
-        bool logToFile = true;
-
-        void init()
-        {
-            if (logToFile)
-            {
-                file = fopen(fileName, "wb");
-                if (file == nullptr)
-                {
-                    LOG_ERROR("Failed to open log file");
-                }
-            }
-        }
-
-        ~LogData()
-        {
-            if (file != nullptr)
-            {
-                fclose(file);
-            }
-        }
-    };
-
-    static LogData LOG_DATA{};
-
     namespace internal
     {
         void LogInternal(const LogLevel level, const char* file, const int line, const char* msg, va_list args)
         {
+            auto& log = global::LOG_DATA;
             if (level < global::ENGINE_CONFIG.logLevel)
             {
                 return;
@@ -94,9 +61,9 @@ namespace magique
             MAGIQUE_ASSERT(written >= 0, "Failed to format");
             written += vsnprintf(formatCache + written, cacheSize - written, msg, args);
 
-            if (LOG_DATA.callback != nullptr)
+            if (log.callback != nullptr)
             {
-                LOG_DATA.callback(level, formatCache);
+                log.callback(level, formatCache);
             }
 
             // Write to stdout
@@ -107,10 +74,10 @@ namespace magique
             global::CONSOLE_DATA.addString(formatCache, consoleColor);
 
             // Write to log file
-            if (LOG_DATA.file != nullptr)
+            if (log.file != nullptr)
             {
-                fwrite(formatCache, written, 1, LOG_DATA.file);
-                fputc('\n', LOG_DATA.file);
+                fwrite(formatCache, written, 1, log.file);
+                fputc('\n', log.file);
             }
 
             if (level >= LEVEL_ERROR) [[unlikely]]
@@ -126,8 +93,12 @@ namespace magique
 #endif
                 if (level == LEVEL_FATAL) [[unlikely]]
                 {
-                    fclose(LOG_DATA.file);
+                    fclose(log.file);
+#if defined(__linux__) || defined(__APPLE__)
+                    raise(SIGABRT);
+#elif _WIN32
                     std::exit(EXIT_FAILURE);
+#endif
                 }
             }
         }
@@ -152,8 +123,10 @@ namespace magique
 
     void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
-    void SetLogCallback(const LogCallbackFunc func) { LOG_DATA.callback = func; }
+    void SetLogCallback(const LogCallbackFunc func) { global::LOG_DATA.callback = func; }
 
-    void SetLogToFile(const bool value) { LOG_DATA.logToFile = value; }
+    void SetLogToFile(bool value) { global::LOG_DATA.logToFile = value; }
+
+    void EnableCrashLogs(bool value) { global::LOG_DATA.crashLog = value; }
 
 } // namespace magique

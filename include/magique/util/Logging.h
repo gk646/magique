@@ -49,9 +49,16 @@ namespace magique
     // Sets the callback func - called on each log
     void SetLogCallback(LogCallbackFunc func);
 
-    // True to enable logging to a ./magique.log file - captures all logs
+    // True to enable logging to a ./{GAME_NAME}.log file - captures all logs
     // Note NEEDS to be set before the Game class is constructed (so in the main file at first) - else no effect
+    // Default: OFF if compiling in Debug - else ON
     void SetLogToFile(bool value);
+
+    // Enables creating a detailed crash log file that includes system information and stacktrace
+    // FileName: ./crash-log-{GAME_NAME}-{DATE with format dd:mm::yyyy/hh:mm}.txt
+    // Note NEEDS to be set before the Game class is constructed (so in the main file at first) - else no effect
+    // Default: OFF if compiling in Debug - else ON
+    void EnableCrashLogs(bool value);
 
 } // namespace magique
 

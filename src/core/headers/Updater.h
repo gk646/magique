@@ -16,7 +16,7 @@ namespace magique::updater
         return tickTime;
     }
 
-    inline double Tick(const double startTime, const entt::registry& reg, Game& game)
+    inline double Tick(const double startTime, Game& game, const entt::registry& reg)
     {
         const auto& gameState = global::ENGINE_DATA.gameState;
         StartTick();

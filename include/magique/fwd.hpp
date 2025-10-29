@@ -91,6 +91,7 @@ namespace magique
     struct ConsoleData;
     struct ParamParser;
     struct ConsoleHandler;
+    struct VirtualClock;
 
     //================= Multiplayer =================//
 
@@ -142,6 +143,12 @@ struct RenderTexture;
 namespace entt
 {
     enum class entity : std::uint32_t;
+}
+
+namespace glz
+{
+    template<typename T>
+    struct meta;
 }
 
 #endif

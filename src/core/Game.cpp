@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <random> // Needed for non-deterministic hardware randomness
+
 #include <cxstructs/SmallVector.h>
 #include <raylib/config.h>
 #include <raylib/raylib.h>
@@ -18,6 +19,7 @@
 #include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/JobSystem.h>
+#include <magique/util/Logging.h>
 #include <magique/core/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
@@ -38,6 +40,8 @@
 #include "internal/utils/CollisionSystemUtil.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
+#include "internal/globals/LoggingData.h"
+
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #include "internal/globals/MultiplayerData.h"
@@ -94,6 +98,7 @@ namespace magique
                     logLevel = std::max(logLevel - 3, 0);
                     LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
                 });
+            global::LOG_DATA.init();
             global::ENGINE_CONFIG.init();
 #if MAGIQUE_INCLUDE_FONT == 1
             global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();

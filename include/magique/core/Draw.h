@@ -22,7 +22,7 @@ namespace magique
     // Draws a given texture region - rotation happens around the middle point
     void DrawRegion(TextureRegion region, const Point& pos, bool flipX = false, Color tint = WHITE);
 
-    void DrawCenteredRegion(const TextureRegion& region, const Point& pos, Color tint = WHITE);
+    void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect
     // Note: Pass a negative width/height to mirror the texture horizontally/vertically
@@ -44,19 +44,19 @@ namespace magique
 
     // Draws the given text centered around the given position
     // Drop in replacement for DrawTextEx()
-    void DrawCenteredText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
+    void DrawTextCentered(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
     // Draws the given text aligned so that it ends on the given x positions
     // Drop in replacement for DrawTextEx()
-    void DrawRightBoundText(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
-
-    // Draws pixel perfect text - fsm is font size multiplier of the base font size
-    void DrawPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
-    void DrawCenteredPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
-    void DrawRightBoundPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawTextRightBound(const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
     // Returns the amount of characters drawn until the given width is reached (not overstepped)
     int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);
+
+    // Draws pixel perfect text - fsm is font size multiplier of the base font size
+    void DrawPixelText(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawPixelTextCentered(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawPixelTextRightBound(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
 
     // Highlights all numbers in a different color
     void DrawPixelTextNumbers(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color text = WHITE,

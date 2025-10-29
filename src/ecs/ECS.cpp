@@ -209,8 +209,9 @@ namespace magique
     CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
                                   const int anchorY)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, 0.0F, 0.0F,
-                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
+        int16_t anchorXu = anchorX == 0 ? static_cast<int16_t>(width / 2.0F) : static_cast<int16_t>(anchorX);
+        int16_t anchorYu = anchorY == 0 ? static_cast<int16_t>(height / 2.0F) : static_cast<int16_t>(anchorY);
+        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, 0.0F, 0.0F, anchorXu, anchorYu,
                                                       Shape::RECT);
     }
 

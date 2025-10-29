@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <algorithm>
 #include <cmath>
 
 #include <raylib/raylib.h>
@@ -245,8 +246,8 @@ namespace magique
         const Vector2 leftStart = {x + 0.01F, y + 1};
         const Vector2 leftEnd = {x + 0.01F, y + height - 1};
 
-        const Vector2 rightStart = {x + width - 1 + 0.01F, y + 1};
-        const Vector2 rightEnd = {x + width - 1 + 0.01F, y + height - 1};
+        const Vector2 rightStart = {x + width, y + 1};
+        const Vector2 rightEnd = {x + width, y + height - 1};
 #endif
 
         DrawLineV(topStart, topEnd, tint);
@@ -259,6 +260,26 @@ namespace magique
     {
         DrawRectangleRec(GetEnlargedRect(bounds, -2, -2), fill);
         DrawRectFrame(bounds, outline);
+    }
+
+    void DrawTruePixelartScale(RenderTexture texture)
+    {
+        auto canvas = Point{(float)texture.texture.width, (float)texture.texture.height};
+        const auto display = Point{(float)GetScreenWidth(), (float)GetScreenHeight()};
+        auto scale = display / canvas;
+        if (scale <= 0)
+        {
+            scale = {1, 1};
+        }
+        // Use for both axis the smallest common scalar
+        scale.y = std::min(scale.x, scale.y);
+        scale.x = std::min(scale.y, scale.x);
+        canvas *= scale;
+        canvas.floor();
+        SetMouseScale(1 / scale.x, 1 / scale.y);
+        const auto drawPos = GetCenteredPos({0, 0, display.x, display.y}, canvas.x, canvas.y);
+        SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
+        DrawRenderTexture(texture, drawPos, scale.x, WHITE);
     }
 
 } // namespace magique

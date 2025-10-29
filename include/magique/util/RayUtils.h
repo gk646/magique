@@ -59,7 +59,7 @@ namespace magique
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
                           float radius = 2);
 
-    // Draws a unrounded pixel art outline
+    // Draws an unrounded pixel art outline
     void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border);
 
     // Returns true if mouse is inside rect or on rect
@@ -83,6 +83,11 @@ namespace magique
 
     // Draws a frame but filled
     void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline);
+
+    // Scales and draws the given render texture at the correct position to fill most of the screen
+    // Scales only with multiples and in a way such that both x and y dimension must fit within the screen
+    // Also correctly sets the mouse offset and scale such that the top left is {0,0}
+    void DrawTruePixelartScale(RenderTexture texture);
 
 } // namespace magique
 

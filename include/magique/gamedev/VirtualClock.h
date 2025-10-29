@@ -40,8 +40,8 @@ namespace magique
     struct VirtualClock final
     {
         // Creates a new virtual clock where a day (24 hours) takes the given minutes in real time
-        // Default: equal to real time
-        explicit VirtualClock(int realMinutes = 24 * 60);
+        // Default: 20 minutes (minecraft day) and syncs to current local time
+        explicit VirtualClock(int realMinutes = 20);
 
         // Needs to be called each tick to update the clock
         void update();
@@ -80,8 +80,8 @@ namespace magique
         //================= ADJUST =================//
 
         // Sets in real minutes how long a full day (24 hours) of the virtual clock should take
-        void setRealMinutes(int realMinutes);
-        [[nodiscard]] int getRealMinutes() const;
+        void setRealMinutes(double realMinutes);
+        [[nodiscard]] double getRealMinutes() const;
 
         // Set the paused status - if paused does not tick
         void setPaused(bool isPaused);
@@ -101,13 +101,11 @@ namespace magique
         [[nodiscard]] double getRealPassedSeconds() const;
         void adjustTicksByRealSeconds(double seconds);
 
-        double realDaySeconds = 24 * 60 * 60; // Real seconds this clock needs to a day
-        double realHourSeconds = 60 * 60;     // Real seconds this clock needs to pass an hour
-        double realMinuteSeconds = 60;        // Real seconds this clock needs to pass a minute
-        double realSecondSeconds = 1;         // Real seconds this clock needs to pass a second
+        double realSecondSeconds = 1; // Real seconds this clock needs to pass a second
         double ticks = 0;
         double timeScale = 1.0F;
         bool isPaused = false;
+        friend glz::meta<VirtualClock>;
     };
 
 } // namespace magique

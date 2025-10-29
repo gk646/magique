@@ -43,7 +43,7 @@ namespace magique
         // Resets the step value to 0 and removes internally so its not updated anymore
         void reset();
 
-        // Starts the tween - if already started its reset
+        // Starts the tween (if its not already started)
         // Note: This tween object MUST NOT go out of scope or be deleted!
         void start();
 

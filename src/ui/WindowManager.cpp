@@ -310,13 +310,12 @@ namespace magique
     void WindowManager::update()
     {
         // Iterated in reverse - last drawn is the front most window - as soon as we find a hovered the ones behind cant be
-        const auto mouse = GetMousePos();
+        WINDOW_DATA.hoveredWindow = nullptr;
         for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
         {
             if (WINDOW_DATA.shownSet.contains(*it))
             {
-                const auto bounds = (*it)->getBounds();
-                if (PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height))
+                if ((*it)->getIsHovered())
                 {
                     WINDOW_DATA.hoveredWindow = *it;
                     break;
@@ -327,8 +326,8 @@ namespace magique
         auto& queue = WINDOW_DATA.moveFrontQueue;
         while (!queue.empty())
         {
-            auto& cmd = queue.front();
-            MoveInfrontImpl(cmd.move, cmd.inFrontOf == nullptr ? WINDOW_DATA.windows.back() : cmd.inFrontOf);
+            auto& [move, inFrontOf] = queue.front();
+            MoveInfrontImpl(move, inFrontOf == nullptr ? WINDOW_DATA.windows.back() : inFrontOf);
             queue.pop_front();
         }
     }

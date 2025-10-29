@@ -59,7 +59,7 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawCenteredRegion(const TextureRegion& region, const Point& pos, Color tint)
+    void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint)
     {
         auto center = pos;
         center.x -= std::floor((float)region.width / 2.0F);
@@ -246,14 +246,14 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawCenteredText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+    void DrawTextCentered(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
                           const Color c)
     {
         const auto width = MeasureTextEx(f, txt, fs, spc).x;
         DrawTextEx(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
     }
 
-    void DrawRightBoundText(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+    void DrawTextRightBound(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
                             const Color c)
     {
         const auto width = MeasureTextEx(f, txt, fs, spc).x;
@@ -267,14 +267,14 @@ namespace magique
         DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
     }
 
-    void DrawCenteredPixelText(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)
+    void DrawPixelTextCentered(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)
     {
         const auto fs = (float)f.baseSize * fsm;
         const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
         DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
     }
 
-    void DrawRightBoundPixelText(const Font& f, const char* txt, Vector2 pos, int fsm, Color tint)
+    void DrawPixelTextRightBound(const Font& f, const char* txt, Vector2 pos, int fsm, Color tint)
     {
         const auto fs = (float)f.baseSize * fsm;
         const auto width = MeasureTextEx(f, txt, fs, (float)fsm).x;

@@ -6,6 +6,7 @@
 #include <magique/assets/container/CSVImport.h>
 #include <glaze/json/write.hpp>
 #include <magique/util/Logging.h>
+#include <magique/gamedev/VirtualClock.h>
 
 //===============================================
 // File Imports
@@ -15,6 +16,8 @@
 //
 // Refer to https://stephenberry.github.io/glaze/json/ for more info on how to use the JSON library
 // IMPORTANT: If you define custom parse/serialization rules etc. they need to be included BEFORE you call Import/Export
+
+// Notes: This also contains the serialization specializations for magique structs
 // ................................................................................
 
 namespace magique
@@ -37,6 +40,28 @@ namespace magique
     bool ExportJSON(const T& data, std::string& buffer);
 
 } // namespace magique
+
+
+template <>
+struct glz::meta<magique::Point>
+{
+    using T = magique::Point;
+    static constexpr auto value = object(&T::x, &T::y);
+};
+
+template <>
+struct glz::meta<magique::Keybind>
+{
+    using T = magique::Keybind;
+    static constexpr auto value = object(&T::key, &T::layered, &T::shift, &T::ctrl, &T::alt);
+};
+
+template <>
+struct glz::meta<magique::VirtualClock>
+{
+    using T = magique::VirtualClock;
+    static constexpr auto value = object(&T::realSecondSeconds, &T::ticks, &T::timeScale, &T::isPaused);
+};
 
 
 // IMPLEMENTATION

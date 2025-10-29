@@ -49,7 +49,7 @@ namespace magique
 
         // Returns the state of the action
         [[nodiscard]] bool getIsDown() const;
-        [[nodiscard]] bool getIsClicked() const;
+        [[nodiscard]] bool getIsPressed() const;
         [[nodiscard]] bool getIsReleased() const;
 
     private:

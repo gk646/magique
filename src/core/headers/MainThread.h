@@ -7,7 +7,6 @@ namespace magique::mainthread
     inline double UPDATE_WORK = 0.0F;
     inline double UPDATE_TIME = 0.0F;
     inline double RENDER_TIME = 0.0F;
-    inline double NEXT_RENDER = 0.0F;
 
     inline void Setup()
     {
@@ -23,7 +22,7 @@ namespace magique::mainthread
 
     inline void Run(Game& game)
     {
-        auto& registry = internal::REGISTRY;
+        const auto& registry = internal::REGISTRY;
         auto& config = global::ENGINE_CONFIG.timing;
         auto& data = global::ENGINE_DATA;
 
@@ -41,19 +40,23 @@ namespace magique::mainthread
                 if (UPDATE_WORK >= 1.0)
                 {
                     UPDATE_WORK -= 1.0;
-                    UPDATE_TIME = updater::Tick(time, registry, game);
+                    UPDATE_TIME = updater::Tick(time, game, registry);
                     time += UPDATE_TIME; // Avoids calling GetTime() multiple times
                     ++data.engineTicks;
                 }
 
-                WaitTime(NEXT_RENDER, 0); // Dont render too early
-                time = GetTime();
+                // The concept is
+                // If the update tick was too fast we want to cleanly wait until the next render tick
+                // But I guess this violates our "on average" rule by forcing actual tick times
+                // And this cause issues - max framerate is way lower even when the tick times would allow for higher
+                // I guess this introduced some blocking and messes with the general strategy
+                // WaitTime(NEXT_RENDER, 0); // Dont render too early
+                // time = GetTime();
 
                 RENDER_TIME = renderer::Tick(time, game, registry);
                 time += RENDER_TIME;
 
                 UPDATE_WORK += config.workPerTick;
-                NEXT_RENDER = time + RENDER_TIME;
 
                 // Predict next frame time by last time - sleep shorter if next tick an update happens
                 const auto nextFrameTime = RENDER_TIME + (static_cast<double>(UPDATE_WORK >= 1.0) * UPDATE_TIME);
