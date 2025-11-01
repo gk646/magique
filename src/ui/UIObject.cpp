@@ -167,11 +167,19 @@ namespace magique
 
     void UIObject::setStartPosition(const Point& pos) { startPos = pos; }
 
-    const Point& UIObject::getStartPosition() const { return startPos; }
+    Point UIObject::getStartPosition() const
+    {
+        const auto& ui = global::UI_DATA;
+        return startDims * ui.sourceRes;
+    }
 
     void UIObject::setStartDimensions(const Point& dims) { startDims = dims; }
 
-    const Point& UIObject::getStartDimensions() const { return startDims; }
+    Point UIObject::getStartDimensions() const
+    {
+        const auto& ui = global::UI_DATA;
+        return startDims * ui.sourceRes;
+    }
 
     void UIObject::beginBoundsScissor()
     {

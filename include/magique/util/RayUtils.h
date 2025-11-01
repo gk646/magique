@@ -89,6 +89,7 @@ namespace magique
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
 
+
 } // namespace magique
 
 #endif //MAGIQUE_RAYUTILS_H

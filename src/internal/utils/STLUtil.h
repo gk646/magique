@@ -52,7 +52,7 @@ void UnorderedDelete(Container& container, const T& value, Pred pred)
 
 // Used cause std::min is in <algorithm> (heavy include)
 template <typename T>
-T minValue(const T& t1, const T& t2)
+const T& minValue(const T& t1, const T& t2)
 {
     if (t1 < t2)
         return t1;
@@ -60,7 +60,7 @@ T minValue(const T& t1, const T& t2)
 }
 
 template <typename T>
-T maxValue(const T& t1, const T& t2)
+const T& maxValue(const T& t1, const T& t2)
 {
     if (t1 < t2)
         return t2;

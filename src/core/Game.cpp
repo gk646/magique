@@ -96,7 +96,7 @@ namespace magique
                 [](int logLevel, const char* text, va_list args)
                 {
                     logLevel = std::max(logLevel - 3, 0);
-                    LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, text, args);
+                    LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
                 });
             global::LOG_DATA.init();
             global::ENGINE_CONFIG.init();
@@ -148,7 +148,7 @@ namespace magique
     {
 #ifdef MAGIQUE_STEAM
         global::MP_DATA.close();
-        // Give some time to steam thread and callbacks to cleanup?
+        // Give some time to steam thread and callbacks to clean up?
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         global::STEAM_DATA.close();
 #elif MAGIQUE_LAN

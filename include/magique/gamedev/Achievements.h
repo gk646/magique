@@ -4,6 +4,7 @@
 
 #include <string>
 #include <magique/core/Types.h>
+#include <magique/internal/PlatformIncludes.h>
 
 //===============================================
 // Achievements Module

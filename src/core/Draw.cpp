@@ -13,6 +13,7 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "external/raylib-compat/rcore_compat.h"
+#include "magique/util/RayUtils.h"
 
 constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
@@ -369,6 +370,55 @@ namespace magique
             }
 
             i += codepointByteCount; // Move text bytes counter to next codepoint
+        }
+    }
+
+    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs, float spc,
+                           Color highlight)
+    {
+        if (from > to)
+        {
+            std::swap(from, to);
+        }
+
+        const char* textStart = txt;
+        const char* lineStart = txt;
+        Rectangle baseRect = {pos.x - 1.0F, pos.y - 1.0F, 0, fs + 2};
+        while (true)
+        {
+            if (*txt == '\n' || *txt == '\0')
+            {
+                const auto lineStartPos = static_cast<int>(lineStart - textStart);
+                const auto lineEndPos = static_cast<int>(txt - textStart);
+
+                if (lineEndPos > from && lineStartPos < to)
+                {
+                    int drawStart = std::max(lineStartPos, from);
+                    int drawEnd = std::min(lineEndPos, to);
+
+                    if (drawEnd != drawStart)
+                    {
+                        const auto offset = MeasureTextUpTo(lineStart, drawStart - lineStartPos, f, fs, spc);
+                        const auto width =
+                            MeasureTextUpTo(lineStart + (drawStart - lineStartPos), drawEnd - drawStart, f, fs, spc);
+                        Rectangle lineRect = baseRect;
+                        lineRect.x += offset + (drawStart == 0 ? 0.0F : 1.0F);
+                        lineRect.x = std::floor(lineRect.x);
+                        lineRect.width = width + 2;
+                        lineRect.width = std::floor(lineRect.width);
+                        DrawRectangleRec(lineRect, highlight);
+                    }
+                }
+
+                baseRect.y += fs + GetTextLineSpacing();
+                lineStart = txt + 1;
+
+                if (*txt == '\0')
+                {
+                    return;
+                }
+            }
+            txt++;
         }
     }
 

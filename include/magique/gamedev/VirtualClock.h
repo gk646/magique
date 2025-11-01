@@ -91,6 +91,11 @@ namespace magique
         // Default: 1.0
         void setTimeScale(float scale);
 
+        // Adjusts the time as precisely as possible
+        // Useful when syncing over e.g. a network
+        void setByTicks(double ticks);
+        [[nodiscard]] double getTicks() const;
+
         //================= UTILS =================//
 
         // Sets the virtual day time equal to the current real time - once set it progresses on its own again

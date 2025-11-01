@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <fstream>
+#include <stacktrace>
 #include <cxxabi.h>
 
 // Platform-specific headers
@@ -21,7 +22,7 @@
 
 #define M_CALL_STACK_SIZE 128
 
-const char* GetCrashLogFilename()
+inline const char* GetCrashLogFilename()
 {
     const auto now = std::chrono::system_clock::now();
     const std::time_t now_time = std::chrono::system_clock::to_time_t(now);
@@ -32,7 +33,7 @@ const char* GetCrashLogFilename()
     return TextFormat("./crash-log-%s-%s-%s.txt", game, date, time);
 }
 
-void WriteCrashData(const std::string& crashData)
+inline void WriteCrashData(const std::string& crashData)
 {
     const auto* fileName = GetCrashLogFilename();
     FILE* crashFile = fopen(fileName, "wb+");
@@ -107,7 +108,6 @@ inline std::string GetSystemInfoString()
         systemInfo += "  Speed: " + MHz + " MHz\n";
         systemInfo += "  FPU: " + fpu + "\n";
     }
-
 
     systemInfo += "\nGPU Information:\n";
     FILE* lspci = popen("lspci | grep -i vga", "r");
@@ -194,9 +194,37 @@ inline std::string GetSystemInfoString()
     return systemInfo;
 }
 
+inline std::string GetStackTrace()
+{
+    std::string stackTrace;
+    stackTrace.reserve(128);
+
+    auto stacktrace = std::stacktrace::current();
+    int lineNumber = 0;
+    for (const auto& entry : stacktrace)
+    {
+        stackTrace += TextFormat("%2d", lineNumber++);
+        stackTrace += ":";
+        const auto file = entry.source_file();
+        if (file.empty())
+        {
+            stackTrace += "Unknown File";
+        }
+        else
+        {
+            stackTrace += file;
+        }
+        stackTrace += ":";
+        stackTrace += std::to_string(entry.source_line());
+        stackTrace += " - ";
+        stackTrace += entry.description();
+        stackTrace += "\n";
+    }
+    return stackTrace;
+}
 
 #if defined(__linux__) || defined(__APPLE__)
-inline const char* getSignalName(int signal)
+inline const char* GetSignalName(int signal)
 {
     switch (signal)
     {
@@ -216,109 +244,46 @@ inline const char* getSignalName(int signal)
         return TextFormat("%d Unknown signal", signal);
     }
 }
-
 inline void crashLogHandler(int signal)
 {
-    std::string crashData;
-    crashData.reserve(1024);
-
-    crashData += "magique CrashLog File\n";
-
-    crashData += "Signal received: ";
-    crashData += getSignalName(signal);
-    crashData += "\n\n";
-
-    crashData += "System Information:\n";
-    crashData += GetSystemInfoString();
-    crashData += "\n";
-
-    crashData += "Trace Log:\n";
-    void* callstack[M_CALL_STACK_SIZE];
-    const int frames = backtrace(callstack, M_CALL_STACK_SIZE);
-    char** strs = backtrace_symbols(callstack, frames);
-
-    for (int i = 0; i < frames; ++i)
-    {
-        crashData += "  [" + std::to_string(i) + "] ";
-
-        std::string symbol = strs[i];
-        size_t start = symbol.find('(');
-        size_t end = symbol.find(')');
-        if (start != std::string::npos && end != std::string::npos)
-        {
-            std::string mangledName = symbol.substr(start + 1, end - start - 1);
-            int status;
-            char* demangledName = abi::__cxa_demangle(mangledName.c_str(), nullptr, nullptr, &status);
-            if (status == 0 && (demangledName != nullptr))
-            {
-                symbol.replace(start + 1, end - start - 1, demangledName);
-                free(demangledName);
-            }
-        }
-        crashData += symbol + "\n";
-    }
-
-    free((void*)strs);
-    WriteCrashData(crashData);
-    exit(1);
-}
+    const auto signalName = GetSignalName(signal);
 #elif _WIN32
-inline LONG WINAPI exceptionHandler(EXCEPTION_POINTERS* exceptionPointers)
+inline LONG WINAPI crashLogHandler(EXCEPTION_POINTERS* exceptionPointers)
 {
+    const auto signalName = std::to_string(exceptionPointers->ExceptionRecord->ExceptionCode);
+#endif
     std::string crashData;
     crashData.reserve(1024);
     crashData += "magique CrashLog File\n";
-    crashData += "Exception code: ";
-    crashData += std::to_string(exceptionPointers->ExceptionRecord->ExceptionCode);
+    crashData += "Exception received: ";
+    crashData += signalName;
     crashData += "\n\n";
     crashData += "System Information:\n";
     crashData += GetSystemInfoString();
     crashData += "\n";
     crashData += "Trace Log:\n";
-
-    HANDLE process = GetCurrentProcess();
-    SymInitialize(process, NULL, TRUE);
-    CONTEXT context = *exceptionPointers->ContextRecord;
-    STACKFRAME64 stackFrame = {0};
-    stackFrame.AddrPC.Offset = context.Rip;
-    stackFrame.AddrPC.Mode = AddrModeFlat;
-    stackFrame.AddrFrame.Offset = context.Rbp;
-    stackFrame.AddrFrame.Mode = AddrModeFlat;
-    stackFrame.AddrStack.Offset = context.Rsp;
-    stackFrame.AddrStack.Mode = AddrModeFlat;
-
-    int frameCount = 0;
-    while (StackWalk64(IMAGE_FILE_MACHINE_AMD64, process, NULL, NULL, &context, NULL, &stackFrame, NULL, NULL))
-    {
-        char symbolBuffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME * sizeof(TCHAR)];
-        PSYMBOL_INFO symbol = (PSYMBOL_INFO)symbolBuffer;
-        symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-        symbol->MaxNameLen = MAX_SYM_NAME;
-        DWORD64 displacement = 0;
-        if (SymFromAddr(process, stackFrame.AddrPC.Offset, &displacement, symbol))
-        {
-            crashData += "  [" + std::to_string(frameCount) + "] ";
-            crashData += symbol->Name;
-            crashData += "\n";
-        }
-        frameCount++;
-    }
-
-    SymCleanup(process);
+    crashData += GetStackTrace();
     WriteCrashData(crashData);
+#if defined(__linux__) || defined(__APPLE__)
+    exit(1);
+#elif _WIN32
     return EXCEPTION_EXECUTE_HANDLER;
-}
 #endif
+}
 
 namespace magique
 {
-     void RegisterCrashLoggers()
+    void RegisterCrashLoggers()
     {
+
 #if defined(__linux__) || defined(__APPLE__)
         signal(SIGSEGV, crashLogHandler);
         signal(SIGABRT, crashLogHandler);
+#ifndef MAGIQUE_DEBUG
+        signal(SIGTRAP, crashLogHandler);
+#endif
 #elif _WIN32
-        SetUnhandledExceptionFilter(exceptionHandler);
+        SetUnhandledExceptionFilter(crashLogHandler);
 #endif
     }
 

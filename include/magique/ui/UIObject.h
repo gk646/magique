@@ -110,11 +110,11 @@ namespace magique
 
         // Sets or gets the start position - set per default to the initial position
         void setStartPosition(const Point& pos);
-        [[nodiscard]] const Point& getStartPosition() const;
+        [[nodiscard]] Point getStartPosition() const;
 
         // Sets or gets the start position - set per default to the initial position
         void setStartDimensions(const Point& dims);
-        [[nodiscard]] const Point& getStartDimensions() const;
+        [[nodiscard]] Point getStartDimensions() const;
 
         // Starts a scissor mode with the current bounds - has to be stopped manually!
         void beginBoundsScissor();
@@ -123,9 +123,9 @@ namespace magique
 
     private:
         float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        float inset = 0.0F;                        // Inset - offset towards the middle of the screen
         Point startPos{};                          // Default position
         Point startDims{};                         // Default dimensions
-        float inset = 0.0F;                        // Inset - offset towards the middle of the screen
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
@@ -133,7 +133,6 @@ namespace magique
         bool isContainer = false;
         befriend(UIData, Window)
     };
-
 
 } // namespace magique
 

@@ -13,7 +13,8 @@ namespace magique
 {
     namespace internal
     {
-        void LogInternal(const LogLevel level, const char* file, const int line, const char* msg, va_list args)
+        void LogInternal(const LogLevel level, const char* file, const int line, const char* function, const char* msg,
+                         va_list args)
         {
             auto& log = global::LOG_DATA;
             if (level < global::ENGINE_CONFIG.logLevel)
@@ -51,7 +52,7 @@ namespace magique
             int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                written = snprintf(formatCache, cacheSize, "[%s]: %s:%d ", level_str, file, line);
+                written = snprintf(formatCache, cacheSize, "[%s]:%s:%d %s: ", level_str, file, line, function);
             }
             else
             {
@@ -109,15 +110,15 @@ namespace magique
     {
         va_list args;
         va_start(args, msg);
-        internal::LogInternal(level, "(null)", -1, msg, args);
+        internal::LogInternal(level, "Unknown File", -1, "Unknown Func", msg, args);
         va_end(args);
     }
 
-    void LogEx(const LogLevel level, const char* file, const int line, const char* msg, ...)
+    void LogEx(const LogLevel level, const char* file, const int line, const char* function, const char* msg, ...)
     {
         va_list args;
         va_start(args, msg);
-        internal::LogInternal(level, file, line, msg, args);
+        internal::LogInternal(level, file, line, function, msg, args);
         va_end(args);
     }
 

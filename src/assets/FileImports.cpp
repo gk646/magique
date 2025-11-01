@@ -92,4 +92,9 @@ namespace magique
         }
         return csv;
     }
+
+    TextLines ImportText(Asset asset, char delimiter)
+    {
+        return TextLines{asset, delimiter   };
+    }
 } // namespace magique

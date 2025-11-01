@@ -16,7 +16,7 @@
 
 namespace magique
 {
-    // Sets the loading screen instance to handle different loading scenarios - see ui/LoadingScreen.h for more info
+    // Sets the loading screen instance to handle different loading scenarios
     // Note: The given pointer will be valid until a new loading screen is set
     void SetLoadingScreen(LoadingScreen* loadingScreen);
 

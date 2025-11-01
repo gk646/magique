@@ -2,6 +2,9 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
+#include "magique/assets/types/TextLines.h"
+
+
 #include <magique/assets/types/Asset.h>
 #include <magique/assets/container/CSVImport.h>
 #include <glaze/json/write.hpp>
@@ -38,6 +41,11 @@ namespace magique
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
     template <typename T, bool prettify = false>
     bool ExportJSON(const T& data, std::string& buffer);
+
+    // Imports the given asset into a simple container
+    // The file is separated and stored line-wise
+    // Failure: Returns empty container
+    TextLines ImportText(Asset asset, char delimiter = '\n');
 
 } // namespace magique
 

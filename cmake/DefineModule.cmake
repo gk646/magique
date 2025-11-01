@@ -18,7 +18,10 @@ target_include_directories(magique-${MODULE_NAME} PRIVATE
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique-${MODULE_NAME} PRIVATE
-            -march=native -fno-exceptions -fno-rtti -fvisibility=hidden
+            -march=native
+            -fno-exceptions
+            -fno-rtti
+            -fvisibility=hidden
             -Wall
             -Wextra
             -Wpedantic

@@ -25,8 +25,6 @@
 //      - The NPC's: Some AI component calculate NPC actions and creates the action virtually
 //      - The multiplayers: Send their actions over the network
 // - Then a single system can uniformly update the movement or abilities for all entities in the same way
-//
-// The class is made efficient by only saving events (and only a configurable amount) instead of the whole state
 // .....................................................................
 
 namespace magique

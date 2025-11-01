@@ -62,6 +62,10 @@ namespace magique
     void DrawPixelTextNumbers(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color text = WHITE,
                               Color numbers = GRAY);
 
+    // Draws a rectangle over the text block defined by "from" and "to" so it looks like its highlighted
+    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F,
+                           Color highlight = ColorAlpha(BLUE, 0.4));
+
     //================= SHAPES =================//
 
     // Draws a capsule given its top left coordinates and the radius of the two circles

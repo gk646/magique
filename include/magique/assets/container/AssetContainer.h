@@ -16,7 +16,7 @@
 // You interact with it by registering a task in Game::onStartup() where its passed as argument.
 //
 // IMPORTANT: All assets are named with their path from the asset content root
-// Example :
+// Example:
 // The texture:       resources/textures/player.png
 // Compile Image:     assets::CompileImage("../resources");
 // While loading:     RegisterTexture(assets.getAsset("textures/player.png");

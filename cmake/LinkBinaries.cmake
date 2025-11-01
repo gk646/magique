@@ -47,8 +47,6 @@ endif ()
 
 
 # Compile the definition that need to be inherited by targets to not get build errors
-# Inherit C++20 to target
-
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique PUBLIC MAGIQUE_STEAM)
 elseif (MAGIQUE_LAN)
@@ -62,6 +60,7 @@ if (WIN32)
     endif ()
 elseif (UNIX)
     target_compile_options(magique PUBLIC -std=c++23 -flto=auto -fno-rtti)
+    target_link_libraries(magique PUBLIC stdc++exp)
 else ()
     #
 endif ()

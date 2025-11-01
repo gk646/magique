@@ -60,8 +60,7 @@ namespace magique
 
     Point GetMousePos()
     {
-        const auto mouse = GetMousePosition();
-        return Point{std::round(mouse.x), std::round(mouse.y)};
+        return Point{GetMousePosition()}.floor();
     }
 
     void SetUITargetResolution(float width, float height) { global::UI_DATA.targetRes = {width, height}; }

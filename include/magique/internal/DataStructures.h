@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <array>
+#include <magique/core/Types.h>
 
 template <typename T>
 struct SparseRangeVector final
@@ -29,7 +30,7 @@ struct SparseRangeVector final
 
     void reserve(size_t size) { data.reserve(size); }
 
-    size_t width() { return data.size(); }
+    size_t width() const { return data.size(); }
 
     void clear() { data.clear(); }
 

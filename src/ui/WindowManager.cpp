@@ -230,10 +230,12 @@ namespace magique
 
     void WindowManager::makeTopMost(Window* window)
     {
-        MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
-        // We defer the order change due to many possible complications - i experienced them
-        // Either infinite loops and other things when reordering while drawing...
-        WINDOW_DATA.moveFrontQueue.push_back({window, nullptr});
+        if (window != nullptr)
+        {
+            // We defer the order change due to many possible complications - i experienced them
+            // Either infinite loops and other things when reordering while drawing...
+            WINDOW_DATA.moveFrontQueue.push_back({window, nullptr});
+        }
     }
 
     void WindowManager::makeTopMost(const char* name) { makeTopMost(getWindow(name)); }

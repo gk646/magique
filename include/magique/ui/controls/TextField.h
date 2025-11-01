@@ -16,6 +16,7 @@ M_IGNORE_WARNING(4100)
 //      - Arrow keys        : move cursor
 //      - Arrow keys + CTRL : move cursor one word
 //      - BACKSPACE/DEL     : delete in front/behind
+//      - CTRL + V          : Paste clipboard content at cursor
 //
 // The default behavior is to require the user to focus it by clicking it once - once focused it registers the input
 // .....................................................................
@@ -24,7 +25,6 @@ namespace magique
 {
     struct TextField : UIObject
     {
-
         // Creates the textfield from absolute dimensions in the logical UI resolution
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         TextField(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
@@ -43,11 +43,11 @@ namespace magique
         // Returns: true if any event OR text input has been made
         bool updateInputs();
 
-        // Draws the text
-        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1) const;
+        // Draws the text and updates the selection
+        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rectangle& bounds) const;
+        void drawDefault(const Rectangle& bounds);
 
         // Called everytime the textfield is focused and enter is pressed
         // Return true: signals enter action was consumed and should NOT be treated as newline
@@ -73,12 +73,24 @@ namespace magique
         // Returns true if the textfield is focused
         [[nodiscard]] bool getIsFocused() const;
 
-        // Returns the total amount of lines (count of newlines '\n')
+        // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
         [[nodiscard]] int getLineCount() const;
 
+        // Adjust the bounds such that the text fits
+        // Keeps the top left the same
+        void fitBoundsToText(float size, const Font& font = GetEngineFont(), float spacing = 1);
 
     private:
+        bool pollControls();
         bool updateControls();
+        void updateSelection(float fSize, const Font& font, float spacing);
+        void updateLineState();
+        Point getTextPos(const Rectangle& bounds, float fontSize) const;
+
+        // Returns if change occurred
+        bool removeSelectionContent();
+        void resetSelection();
+        bool hasSelection() const;
 
         std::string text;
         const char* hint = nullptr;
@@ -87,7 +99,9 @@ namespace magique
         int cursorLine = 0;       // Current line the cursor is in
         int currLineStart = 0;    // Text index where the current line starts
         int blinkDelay = 30;      // Blink delay of the cursor - 30 ticks are 0.5 seconds at 60 ticks/s
-        int lineCount = 0;        // Amount of lines (separated by newlines)
+        int lineCount = 1;        // Amount of lines (separated by newlines)
+        int selectionStart = -1;
+        int selectionEnd = 0;
         bool isFocused = false;   // If the textfield is focused
         bool textChanged = false; // If the text was changed
         bool showCursor = true;   // If the cursor is shown

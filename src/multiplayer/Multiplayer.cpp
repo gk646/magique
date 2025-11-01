@@ -9,8 +9,6 @@
 
 namespace magique
 {
-
-
     Payload CreatePayload(const void* data, const int size, const MessageType type) { return Payload{data, size, type}; }
 
     void BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)

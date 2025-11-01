@@ -181,6 +181,8 @@ namespace magique
 
     bool VirtualClock::getIsPaused() const { return isPaused; }
 
+    double VirtualClock::getTicks() const { return ticks; }
+
     void VirtualClock::syncTimeOfDay()
     {
         // Get the current time
@@ -194,6 +196,8 @@ namespace magique
     }
 
     void VirtualClock::setTimeScale(const float scale) { timeScale = scale; }
+
+    void VirtualClock::setByTicks(double newTicks) { ticks = newTicks; }
 
     void VirtualClock::update()
     {

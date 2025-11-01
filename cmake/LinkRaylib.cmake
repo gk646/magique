@@ -7,6 +7,7 @@ set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
 set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
+set(SUPPORT_MODULE_RAUDIO ON)
 
 if (NOT APPLE)
     set(OPENGL_VERSION "4.3")
@@ -48,7 +49,6 @@ target_compile_definitions(raylib PRIVATE SUPPORT_CUSTOM_FRAME_CONTROL)
 # ----------------------------------------------------------------------
 # Link raylib
 # ----------------------------------------------------------------------
-
 
 # Link raylib to magique
 target_link_libraries(magique PUBLIC raylib)

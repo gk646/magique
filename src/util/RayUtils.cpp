@@ -16,7 +16,7 @@ namespace magique
         nonConstText[index] = '\0';
         const float ret = MeasureTextEx(f, text, fontSize, spacing).x;
         nonConstText[index] = temp;
-        return ret;
+        return std::floor(ret);
     }
 
     int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing)

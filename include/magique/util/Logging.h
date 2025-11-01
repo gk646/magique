@@ -33,7 +33,7 @@ namespace magique
     void Log(LogLevel level, const char* msg, ...);
 
     // Logs a message with extended parameters - use the macros for easier access
-    void LogEx(LogLevel level, const char* file, int line, const char* msg, ...);
+    void LogEx(LogLevel level, const char* file, int line, const char* function, const char* msg, ...);
 
     // Macros that call LogEx internally with the given level
 #define LOG_INFO(msg, ...)
@@ -69,16 +69,24 @@ namespace magique
 namespace magique::internal
 {
     // Internal log function
-    void LogInternal(LogLevel level, const char* file, int line, const char* msg, va_list args);
+    void LogInternal(LogLevel level, const char* file, int line, const char* function, const char* msg, va_list args);
 } // namespace magique::internal
+
+#if defined(_MSC_VER)
+#define M_FUNCTION __FUNCSIG__
+#elif defined(__clang__) || defined(__GNUC__)
+#define M_FUNCTION __PRETTY_FUNCTION__
+#else
+#define M_FUNCTION __func__
+#endif
 
 #undef LOG_INFO
 #undef LOG_WARNING
 #undef LOG_ERROR
 #undef LOG_FATAL
-#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, msg, ##__VA_ARGS__)
-#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, msg, ##__VA_ARGS__)
+#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
 
 #endif //MAGIQUE_LOGGING_H
