@@ -3,14 +3,15 @@
 #include <magique/ecs/ECS.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
+#include <magique/util/Math.h>
 
 #include "internal/globals/AudioPlayer.h"
 
 namespace magique
 {
-    void SetSoundMasterVolume(const float volume)
+    void SetSoundMasterVolume(float volume)
     {
-        MAGIQUE_ASSERT(volume >= 0.0F && volume <= 1.0F, "Volume must be between 0.0 and 1.0");
+        volume = clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
         ap.soundVolume = volume;
         for (auto& s : ap.sounds)
@@ -25,9 +26,9 @@ namespace magique
 
     float GetSoundMasterVolume() { return global::AUDIO_PLAYER.soundVolume; }
 
-    void SetMusicMasterVolume(const float volume)
+    void SetMusicMasterVolume(float volume)
     {
-        MAGIQUE_ASSERT(volume >= 0.0F && volume <= 1.0F, "Volume must be between 0.0 and 1.0");
+        volume = clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
         for (auto& t : ap.tracks)

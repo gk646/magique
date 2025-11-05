@@ -171,4 +171,56 @@ private:
     int cols, rows;
 };
 
+
+template <int size>
+struct BitSet final
+{
+    static constexpr int BITS_PER_BYTE = 8;
+    static constexpr int BYTE_COUNT = (size + BITS_PER_BYTE - 1) / BITS_PER_BYTE;
+
+    uint8_t data[BYTE_COUNT] = {0};
+
+    bool operator[](int bit) const
+    {
+        if (bit < 0 || bit >= size)
+        {
+            return false;
+        }
+        int byteIdx = bit / BITS_PER_BYTE;
+        const int bitIdx = bit % BITS_PER_BYTE;
+        return (data[byteIdx] & (1 << bitIdx)) != 0;
+    }
+
+    void set(int bit, bool val)
+    {
+        if (bit < 0 || bit >= size)
+        {
+            return;
+        }
+        int byteIdx = bit / BITS_PER_BYTE;
+        int bitIdx = bit % BITS_PER_BYTE;
+        data[byteIdx] |= ((val ? 1 : 0) << bitIdx);
+    }
+
+    void clear(int index)
+    {
+        if (index < 0 || index >= size)
+        {
+            return;
+        }
+        int byteIdx = index / BITS_PER_BYTE;
+        int bitIdx = index % BITS_PER_BYTE;
+        data[byteIdx] &= ~(1 << bitIdx);
+    }
+
+    void reset()
+    {
+        for (int i = 0; i < BYTE_COUNT; i++)
+        {
+            data[i] = 0;
+        }
+    }
+};
+
+
 #endif //MAGIQUE_PUBLIC_DATASTRUCTURES_H

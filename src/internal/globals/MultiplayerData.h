@@ -10,6 +10,9 @@
 #include "internal/datastructures/VectorType.h"
 #include "internal/utils/STLUtil.h"
 #include "internal/datastructures/StringHashMap.h"
+#include "multiplayer/headers/MultiplayerStatistics.h"
+#include "multiplayer/headers/LobbyData.h"
+#include "multiplayer/headers/ConnectionMapping.h"
 
 #ifdef MAGIQUE_LAN
 #include "external/networkingsockets/steamnetworkingsockets.h"
@@ -48,130 +51,9 @@ inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, cons
 namespace magique
 {
 
-    enum class LobbyPacketType : char
-    {
-        CHAT,
-        METADATA,
-        START_SIGNAL
-    };
-
-    struct LobbyData final
-    {
-        LobbyChatCallback chatCallback;         // callback for chat
-        LobbyMetadataCallback metadataCallback; // Callback for metadata
-        StringHashMap<std::string> metadata;    // meta data map
-        bool startSignal = false;
-
-        void handleLobbyPacket(const Message& msg)
-        {
-            const auto type = LobbyPacketType{((const int8_t*)msg.payload.data)[0]};
-            const auto data = ((const char*)msg.payload.data) + 1;
-
-            if (type == LobbyPacketType::CHAT)
-            {
-                MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LEN, "Missing null terminator");
-                if (chatCallback)
-                {
-                    chatCallback(msg.connection, data);
-                }
-            }
-            else if (type == LobbyPacketType::METADATA)
-            {
-                auto key = data;
-                auto value = data + strlen(key) + 1;
-                if (metadataCallback)
-                {
-                    metadataCallback(msg.connection, key, value);
-                }
-                if (GetIsClient())
-                {
-                    metadata[key] = value;
-                }
-            }
-            else if (type == LobbyPacketType::START_SIGNAL)
-            {
-                startSignal = (bool)data[1] == true;
-            }
-            else
-            {
-                LOG_WARNING("MessageType=255 is reserved for lobby packet!");
-            }
-        }
-
-        void closeLobby()
-        {
-            startSignal = false;
-            metadata.clear();
-        }
-    };
-
-    namespace global
-    {
-        inline LobbyData LOBBY_DATA{};
-    } // namespace global
-
-    struct ConnMapping final
-    {
-        Connection conn;
-        entt::entity entity;
-
-        static bool DeleteFunc(const ConnMapping& m1, const ConnMapping& m2) { return m1.conn == m2.conn; }
-    };
-
-    struct ConnNumberMapping final
-    {
-        std::array<Connection, MAGIQUE_MAX_PLAYERS - 1> conns{}; // Not invalid
-
-        void addConnection(Connection conn)
-        {
-            for (auto& savedConn : conns)
-            {
-                if (savedConn == Connection::INVALID_CONNECTION)
-                {
-                    savedConn = conn;
-                    return;
-                }
-            }
-            LOG_ERROR("Too many connections");
-        }
-
-        void removeConnection(Connection conn)
-        {
-            for (auto& savedConn : conns)
-            {
-                if (savedConn == conn)
-                {
-                    savedConn = Connection::INVALID_CONNECTION;
-                    return;
-                }
-            }
-            LOG_ERROR("Connection could not be removed?!");
-        }
-
-        [[nodiscard]] int getNum(Connection conn) const
-        {
-            for (int i = 0; i < MAGIQUE_MAX_PLAYERS - 1; ++i)
-            {
-                if (conns[i] == conn)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        void clear()
-        {
-            for (auto& conn : conns)
-            {
-                conn = Connection::INVALID_CONNECTION;
-            }
-        }
-    };
-
-
     struct MultiplayerData final
     {
+        MultiplayerStatistics statistics{};
         MultiplayerCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
@@ -227,6 +109,7 @@ namespace magique
             }
             isHost = asHost;
             global::BATCHER.clear();
+            statistics.reset();
         }
 
         void goOffline()

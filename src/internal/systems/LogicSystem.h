@@ -138,17 +138,15 @@ namespace magique
             if (loadedMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
                 // Check if inside the camera bounds already
-                if (map == cameraMap)
+                if (map == cameraMap &&
+                    PointToRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
                 {
-                    if (PointToRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
+                    drawVec.push_back(e); // Should be drawn
+                    cache[e] = cacheDuration;
+                    if (group.contains(e))
                     {
-                        drawVec.push_back(e); // Should be drawn
-                        cache[e] = cacheDuration;
-                        if (group.contains(e))
-                        {
-                            auto& col = group.get<CollisionC>(e);
-                            HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
-                        }
+                        auto& col = group.get<CollisionC>(e);
+                        HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
                     }
                 }
                 else

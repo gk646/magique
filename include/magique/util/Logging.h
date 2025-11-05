@@ -3,6 +3,7 @@
 #define MAGIQUE_LOGGING_H
 
 #include <cstdarg>
+#include <magique/internal/Macros.h>
 
 //===============================================
 // Logging Module
@@ -71,14 +72,6 @@ namespace magique::internal
     // Internal log function
     void LogInternal(LogLevel level, const char* file, int line, const char* function, const char* msg, va_list args);
 } // namespace magique::internal
-
-#if defined(_MSC_VER)
-#define M_FUNCTION __FUNCSIG__
-#elif defined(__clang__) || defined(__GNUC__)
-#define M_FUNCTION __PRETTY_FUNCTION__
-#else
-#define M_FUNCTION __func__
-#endif
 
 #undef LOG_INFO
 #undef LOG_WARNING

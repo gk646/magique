@@ -13,8 +13,17 @@
 
 namespace magique::internal
 {
-    void AssertHandler(const char* expr, const char* file, int line, const char* message);
+    void AssertHandler(const char* expr, const char* file, int line, const char* function, const char* message);
 } // namespace magique::internal
+
+#if defined(_MSC_VER)
+#define M_FUNCTION __FUNCSIG__
+#elif defined(__clang__) || defined(__GNUC__)
+#define M_FUNCTION __PRETTY_FUNCTION__
+#else
+#define M_FUNCTION __func__
+#endif
+
 
 //================= SCRIPTING =================//
 
@@ -46,7 +55,7 @@ namespace magique::internal
 #define MAGIQUE_ASSERT(expr, message) ((void)0)
 #else
 #define MAGIQUE_ASSERT(expr, message)                                                                                   \
-    ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, message))
+    ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, M_FUNCTION, message))
 #endif
 
 //================= ASSET LOADING =================//

@@ -27,13 +27,13 @@ namespace magique
     // SetMasterVolume() - raylib
     // GetMasterVolume() - raylib
 
-    // Affects all Sound and Sound2D instances - has to be between (0.0 - 1.0)
+    // Affects all Sound and Sound2D instances - clamped to (0.0 - 1.0)
     void SetSoundMasterVolume(float volume);
 
     // Returns the current sound volume - (0.0 - 1.0)
     float GetSoundMasterVolume();
 
-    // Affects all Music instance including playlists - has to be between (0.0 - 1.0)
+    // Affects all Music instance including playlists - clamped to (0.0 - 1.0)
     void SetMusicMasterVolume(float volume);
 
     // Returns the current music volume - (0.0 - 1.0)

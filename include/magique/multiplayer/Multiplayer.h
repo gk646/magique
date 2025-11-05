@@ -140,6 +140,10 @@ namespace magique
     // Failure: -1 if connection is not valid
     int GetConnectionNum(Connection conn);
 
+    // Prints statistics on the amount of sent packages (since last time this method was called)
+    // Only works in debug mode
+    void PrintPacketStats();
+
     //================= CLIENT-MODE =================//
 
     // Puts this game into client mode - all game simulation (should) is skipped except rendering

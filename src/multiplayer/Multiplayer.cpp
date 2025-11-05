@@ -6,6 +6,7 @@
 
 #include "internal/globals/MultiplayerData.h"
 #include "internal/globals/EngineConfig.h"
+#include "headers/MultiplayerStatistics.h"
 
 namespace magique
 {
@@ -29,6 +30,7 @@ namespace magique
         }
         auto& data = global::MP_DATA;
         global::BATCHER.batchMessage(data.outMsgBuffer, conn, payload.data, payload.type, payload.size, flag);
+        global::MP_DATA.statistics.addOutgoing(payload.type, payload.size);
     }
 
     void BatchMessageToAll(const Payload payload, const SendFlag flag)
@@ -56,7 +58,7 @@ namespace magique
 
     bool SendMessage(Connection conn, Payload payload, SendFlag flag)
     {
-        MAGIQUE_ASSERT((int)conn != k_HSteamNetConnection_Invalid, "Invalid connection");
+        MAGIQUE_ASSERT(static_cast<int>(conn) != k_HSteamNetConnection_Invalid, "Invalid connection");
         MAGIQUE_ASSERT(flag <= SendFlag::RELIABLE, "Invalid flag");
 
         if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
@@ -70,19 +72,20 @@ namespace magique
         }
         const int totalSize = payload.size + 1;
         char* buffer = MESSAGE_BUFFER;
-        if ((int)sizeof(MESSAGE_BUFFER) < totalSize)
+        if (static_cast<int>(sizeof(MESSAGE_BUFFER)) < totalSize)
         {
             buffer = new char[totalSize];
         }
-        buffer[0] = (char)payload.type;
+        buffer[0] = static_cast<char>(payload.type);
         std::memcpy(buffer + 1, payload.data, payload.size);
 
-        const auto res =
-            SteamNetworkingSockets()->SendMessageToConnection((int)conn, buffer, totalSize, (int)flag, nullptr);
-
+        global::MP_DATA.statistics.addOutgoing(payload.type, payload.size);
+        const auto res = SteamNetworkingSockets()->SendMessageToConnection(static_cast<int>(conn), buffer, totalSize,
+                                                                           static_cast<int>(flag), nullptr);
         if (buffer != MESSAGE_BUFFER)
+        {
             delete[] buffer;
-
+        }
         return res == k_EResultOK;
     }
 
@@ -98,7 +101,7 @@ namespace magique
     {
         for (const auto conn : GetCurrentConnections())
         {
-            SteamNetworkingSockets()->FlushMessagesOnConnection((int)conn);
+            SteamNetworkingSockets()->FlushMessagesOnConnection(static_cast<int>(conn));
         }
     }
 
@@ -139,6 +142,12 @@ namespace magique
                 if (message.payload.type == MessageType{UINT8_MAX - 1}) [[likely]]
                 {
                     global::BATCHER.handleBatchedPacket(data.incMsgVec, message);
+#ifdef MAGIQUE_DEBUG
+                    for (const auto& msg : data.incMsgVec)
+                    {
+                        global::MP_DATA.statistics.addIncoming(msg.payload.type, msg.payload.size);
+                    }
+#endif
                     continue;
                 }
                 // Lobby message handling - reserved message type
@@ -147,6 +156,7 @@ namespace magique
                     lobby.handleLobbyPacket(message);
                     continue;
                 }
+                global::MP_DATA.statistics.addIncoming(message.payload.type, message.payload.size);
                 data.incMsgVec.push_back(message);
             }
         };
@@ -183,7 +193,7 @@ namespace magique
 
     bool GetIsActiveHost() { return GetIsHost() && !global::MP_DATA.connections.empty(); }
 
-    bool GetIsClient() { return global::MP_DATA.isInSession && global::MP_DATA.isHost == false; }
+    bool GetIsClient() { return global::MP_DATA.isInSession && !global::MP_DATA.isHost; }
 
     void SetConnectionEntityMapping(const Connection conn, const entt::entity entity)
     {
@@ -236,6 +246,12 @@ namespace magique
     }
 
     int GetConnectionNum(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
+
+    void PrintPacketStats()
+    {
+        global::MP_DATA.statistics.print();
+        global::MP_DATA.statistics.reset();
+    }
 
     void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
