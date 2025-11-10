@@ -38,8 +38,11 @@ namespace magique
         // This is a fast operation  - O (log n)
         const Asset& getAssetByPath(const char* path) const;
 
-        // Retrieves the first asset that matches the given name
-        // This is slower than getAssetByPath() - O (n)
+        // Retrieves the first asset that contains the given name
+        // This is slower than getAssetByPath() but more convenient - O (n)
+        // This does NOT require the full name - any fully mathing path will be returned
+        // e.g. res/icons/currencies/human/gold.png will be found by: human/gold.png
+        // Just make sure its still unique!
         const Asset& getAsset(const char* name) const;
 
         // Returns a reference to the asset vector containing all loaded assets

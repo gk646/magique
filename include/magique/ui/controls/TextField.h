@@ -14,9 +14,13 @@ M_IGNORE_WARNING(4100)
 // The textfield is useful to capture text input and allows editing text inside the field
 // Controls are:
 //      - Arrow keys        : move cursor
-//      - Arrow keys + CTRL : move cursor one word
-//      - BACKSPACE/DEL     : delete in front/behind
+//      - Arrow keys + CTRL : move cursor one word (non whitespace)
+//      - BACKSPACE/DEL     : delete in front/behind or selection if any
 //      - CTRL + V          : Paste clipboard content at cursor
+//      - CTRL + C          : Copy selection
+//      - CTRL + X          : Copy selection then erase selection
+//      - CTRL + A          : Select the whole text
+//      - Mouse Drag        : Select text area - also works multiline
 //
 // The default behavior is to require the user to focus it by clicking it once - once focused it registers the input
 // .....................................................................
@@ -56,7 +60,7 @@ namespace magique
 
     public:
         // Returns the current text of the textfield
-        [[nodiscard]] const std::string& getText() const;
+        [[nodiscard]] std::string& getText();
 
         // Sets the field text to the provided string
         void setText(const char* newText = "");
@@ -76,9 +80,9 @@ namespace magique
         // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
         [[nodiscard]] int getLineCount() const;
 
-        // Adjust the bounds such that the text fits
+        // Adjust the bounds such that the text fits inside
         // Keeps the top left the same
-        void fitBoundsToText(float size, const Font& font = GetEngineFont(), float spacing = 1);
+        void fitBoundsToText(float size = 14, const Font& font = GetEngineFont(), float spacing = 1);
 
     private:
         bool pollControls();

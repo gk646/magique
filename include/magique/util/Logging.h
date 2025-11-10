@@ -81,5 +81,4 @@ namespace magique::internal
 #define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
 #define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
 #define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
-
 #endif //MAGIQUE_LOGGING_H

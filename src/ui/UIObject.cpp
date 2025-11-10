@@ -14,16 +14,20 @@ namespace magique
         px = x / ui.sourceRes.x;
         py = y / ui.sourceRes.y;
         if (w >= 0)
+        {
             pw = w / ui.sourceRes.x;
+        }
         if (h >= 0)
+        {
             ph = h / ui.sourceRes.y;
+        }
         setScalingMode(scaling);
         setStartPosition({px, py});
         setStartDimensions({pw, ph});
         global::UI_DATA.registerObject(this);
     }
 
-    UIObject::UIObject(const float w, const float h, const Anchor anchor, const float inset, const ScalingMode scaling) :
+    UIObject::UIObject(const float w, const float h, const Anchor anchor, const Point inset, const ScalingMode scaling) :
         UIObject(0, 0, w, h, scaling)
     {
         setAnchor(anchor, inset);
@@ -39,13 +43,41 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point inset)
+    Rectangle UIObject::getBounds() const
+    {
+        const auto& ui = global::UI_DATA;
+        Rectangle bounds{px, py, pw, ph};
+        ui.scaleBounds(bounds, scaleMode, inset, anchor);
+        return bounds;
+    }
+
+    void UIObject::setPosition(const Point& pos)
+    {
+        const auto& dims = global::UI_DATA.targetRes;
+        px = pos.x / dims.x;
+        py = pos.y / dims.y;
+    }
+
+    void UIObject::setSize(float width, float height)
+    {
+        const auto& dims = global::UI_DATA.targetRes;
+        if (width >= 0)
+        {
+            pw = width / dims.x;
+        }
+        if (height >= 0)
+        {
+            ph = height / dims.y;
+        }
+    }
+
+    void UIObject::align(const Anchor anchor, const UIObject& relativeTo, Point inset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
         inset = {GetScaled(inset.x), GetScaled(inset.y)};
-        switch (alignAnchor)
+        switch (anchor)
         {
         case Anchor::TOP_LEFT:
             pos.x += inset.x;
@@ -86,7 +118,7 @@ namespace magique
         case Anchor::NONE:
             return;
         }
-        setPosition(pos.x, pos.y);
+        setPosition(pos);
     }
 
     void UIObject::align(const Direction direction, const UIObject& relativeTo, Point offset)
@@ -113,31 +145,7 @@ namespace magique
             pos.y += otherBounds.height + offset.y;
             break;
         }
-        setPosition(pos.x, pos.y);
-    }
-
-    Rectangle UIObject::getBounds() const
-    {
-        const auto& ui = global::UI_DATA;
-        Rectangle bounds{px, py, pw, ph};
-        ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds;
-    }
-
-    void UIObject::setPosition(float x, float y)
-    {
-        const auto& dims = global::UI_DATA.targetRes;
-        px = x / dims.x;
-        py = y / dims.y;
-    }
-
-    void UIObject::setSize(float width, float height)
-    {
-        const auto& dims = global::UI_DATA.targetRes;
-        if (width >= 0)
-            pw = width / dims.x;
-        if (height >= 0)
-            ph = height / dims.y;
+        setPosition(pos);
     }
 
     bool UIObject::getIsHovered() const { return CheckCollisionMouseRect(getBounds()); }
@@ -149,15 +157,15 @@ namespace magique
         return IsMouseButtonDown(mouseButton) && CheckCollisionPointRec(GetDragStartPosition().v(), getBounds());
     }
 
-    Anchor UIObject::getAnchor() const { return anchor; }
-
-    float UIObject::getInset() const { return inset; }
-
-    void UIObject::setAnchor(const Anchor newAnchor, const float inset)
+    void UIObject::setAnchor(const Anchor newAnchor, const Point newInset)
     {
         anchor = newAnchor;
-        this->inset = inset;
+        inset = newInset;
     }
+
+    Anchor UIObject::getAnchor() const { return anchor; }
+
+    Point UIObject::getInset() const { return inset; }
 
     void UIObject::setScalingMode(const ScalingMode newScaling) { scaleMode = newScaling; }
 
@@ -181,7 +189,7 @@ namespace magique
         return startDims * ui.sourceRes;
     }
 
-    void UIObject::beginBoundsScissor()
+    void UIObject::beginBoundsScissor() const
     {
         const auto bounds = getBounds();
         BeginScissorMode((int)bounds.x, (int)bounds.y, (int)bounds.width, (int)bounds.height);

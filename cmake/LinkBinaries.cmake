@@ -69,3 +69,7 @@ endif ()
 if (MAGIQUE_IS_MAIN)
     target_compile_definitions(magique PUBLIC MAGIQUE_TEST_MODE)
 endif ()
+
+# Gives all the compile option to the magique target so they can be inherited by using PUBLIC linking
+set(TARGET_NAME "magique")
+include(CompileOptions)

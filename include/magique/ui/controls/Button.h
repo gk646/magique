@@ -3,6 +3,7 @@
 #define MAGIQUE_BUTTON_H
 
 #include <magique/ui/UIObject.h>
+#include <magique/internal/PlatformIncludes.h>
 M_IGNORE_WARNING(4100)
 
 //===============================================
@@ -15,6 +16,8 @@ M_IGNORE_WARNING(4100)
 
 namespace magique
 {
+    using ClickFunc = std::function<void(const Rectangle& bounds, int mouseButton)>;
+
     struct Button : UIObject
     {
         // Creates a new button from coordinates in the logical UI resolution

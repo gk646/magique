@@ -132,9 +132,7 @@ namespace magique
 
     namespace global
     {
-
         inline ParticleData PARTICLE_DATA{};
-
     }
 } // namespace magique
 

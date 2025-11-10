@@ -24,7 +24,6 @@ namespace magique
 
     namespace global
     {
-
         inline ScriptData SCRIPT_DATA{};
     }
 } // namespace magique

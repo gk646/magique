@@ -1,5 +1,20 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
+#ifndef MAGIQUE_STEAM
+#include "magique/steam/Matchmaking.h"
+#include "magique/core/Types.h"
+#include "magique/util/Logging.h"
+namespace magique
+{
+    bool CreateSteamLobby(const SteamLobbyType type, const int maxPlayers) { M_ENABLE_STEAM_ERROR(false) }
+    void JoinSteamLobby(SteamLobbyID lobbyID) { M_ENABLE_STEAM_ERROR() }
+    bool LeaveSteamLobby() { M_ENABLE_STEAM_ERROR(false) }
+    bool GetInSteamLobby() { M_ENABLE_STEAM_ERROR(false); }
+    bool OpenSteamLobbyInviteDialogue() { M_ENABLE_STEAM_ERROR(false); }
+    bool InviteToSteamLobby(SteamID userID) { M_ENABLE_STEAM_ERROR(false); }
+    void SetSteamLobbyCallback(const SteamLobbyCallback& callback) { }
+} // namespace magique
+#else
 #include <magique/steam/Matchmaking.h>
 #include <magique/internal/Macros.h>
 
@@ -86,3 +101,5 @@ namespace magique
     }
 
 } // namespace magique
+
+#endif

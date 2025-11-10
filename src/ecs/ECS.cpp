@@ -264,8 +264,8 @@ namespace magique
 
     EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
     {
-        return internal::REGISTRY.emplace<EmitterC>(entity, color.r, color.g, color.b, color.a,
-                                                    static_cast<uint16_t>(intensity), style);
+        return internal::REGISTRY.emplace<EmitterC>(entity, static_cast<uint16_t>(intensity), color.r, color.g, color.b,
+                                                    color.a, style, true);
     }
 
     void GiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }

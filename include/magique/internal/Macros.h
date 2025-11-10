@@ -16,13 +16,6 @@ namespace magique::internal
     void AssertHandler(const char* expr, const char* file, int line, const char* function, const char* message);
 } // namespace magique::internal
 
-#if defined(_MSC_VER)
-#define M_FUNCTION __FUNCSIG__
-#elif defined(__clang__) || defined(__GNUC__)
-#define M_FUNCTION __PRETTY_FUNCTION__
-#else
-#define M_FUNCTION __func__
-#endif
 
 
 //================= SCRIPTING =================//
@@ -56,6 +49,14 @@ namespace magique::internal
 #else
 #define MAGIQUE_ASSERT(expr, message)                                                                                   \
     ((expr) ? (void)0 : magique::internal::AssertHandler(#expr, __FILE__, __LINE__, M_FUNCTION, message))
+#endif
+
+#if defined(_MSC_VER)
+#define M_FUNCTION __FUNCSIG__
+#elif defined(__clang__) || defined(__GNUC__)
+#define M_FUNCTION __PRETTY_FUNCTION__
+#else
+#define M_FUNCTION __func__
 #endif
 
 //================= ASSET LOADING =================//
@@ -99,6 +100,10 @@ namespace magique::internal
 
 #define M_FRIEND(type) friend type;
 #define befriend(...) FOR_EACH(M_FRIEND, __VA_ARGS__)
+
+#define M_ENABLE_STEAM_ERROR(ret)\
+    LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");\
+    return ret;
 
 //================= BUILDING =================//
 

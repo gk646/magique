@@ -133,7 +133,7 @@ namespace magique
         SetBitflag(layer, (uint8_t)newLayer, enabled);
     }
 
-    bool CollisionC::isLookingFor(CollisionLayer newLayer) const
+    bool CollisionC::isMaskSet(CollisionLayer newLayer) const
     {
         return ((uint8_t)mask & static_cast<uint8_t>(newLayer)) != 0;
     }

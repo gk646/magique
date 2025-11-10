@@ -8,7 +8,6 @@
 #include <magique/core/Core.h>
 #include <magique/core/Debug.h>
 #include <magique/core/Draw.h>
-#include <magique/util/RayUtils.h>
 #include <magique/util/Logging.h>
 
 // Recommended

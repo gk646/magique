@@ -6,6 +6,7 @@
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 #include "external/raylib-compat/rcore_compat.h"
+#include "magique/ui/UI.h"
 
 namespace magique
 {
@@ -168,7 +169,7 @@ namespace magique
         DrawRectangleLinesEx(bounds, 1, border);
     }
 
-    bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
+    bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePos().v(), bounds); }
 
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
     {

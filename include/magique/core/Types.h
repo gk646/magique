@@ -22,6 +22,7 @@ namespace magique
         Point() = default;
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
+        constexpr Point(float both) : x(both), y(both) {}
 
         // With other points
         bool operator==(const Point& p) const;
@@ -78,9 +79,10 @@ namespace magique
 
         // uses std::round() to round to the nearest whole number
         Point& round();
-
         // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
         Point& floor();
+        // uses std::ceil()
+        Point& ceil();
 
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
@@ -612,8 +614,6 @@ namespace magique
         BALANCED,
         IMBALANCED,
     };
-
-    using ClickFunc = void (*)(const struct Rectangle& bounds, int mouseButton);
 
     //================= HELPER TYPES =================//
 

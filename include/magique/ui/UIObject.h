@@ -30,7 +30,7 @@ namespace magique
         // Creates the object from absolute dimensions in the logical UI resolution (see ui/UI.h)
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIObject(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIObject(float w, float h, Anchor anchor = Anchor::NONE, float inset = 0,
+        UIObject(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {},
                  ScalingMode scaling = ScalingMode::FULL);
 
         //================= CORE =================//
@@ -65,7 +65,7 @@ namespace magique
         [[nodiscard]] Rectangle getBounds() const;
 
         // Sets a new position for this object - values are scaled to the CURRENT (target) resolution
-        void setPosition(float x, float y);
+        void setPosition(const Point& pos);
 
         // Sets new dimensions for this object - values are scaled to the CURRENT (target) resolution
         // Note: Negative values will be ignored
@@ -73,10 +73,12 @@ namespace magique
 
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
-        void align(Anchor alignAnchor, const UIObject& relativeTo, Point inset = {});
+        // Note: Aligns the object once - use setAnchor() for permanent anchoring
+        void align(Anchor anchor, const UIObject& relativeTo, Point inset = {});
 
         // Aligns the object around the given anchor object - offset is applied in the given direction
         // Note: See the Direction enum (core/Types.h) for more info how this alignment happens
+        // Note: Aligns the object once - use setAnchor() for permanent anchoring
         void align(Direction direction, const UIObject& relativeTo, Point offset = {});
 
         // Returns true if the cursor is over the object
@@ -91,9 +93,9 @@ namespace magique
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
         // Note: Anchoring is updated each tick automatically
         // Default: NONE
-        void setAnchor(Anchor anchor, float inset = 0.0F);
+        void setAnchor(Anchor anchor, Point inset = {});
         [[nodiscard]] Anchor getAnchor() const;
-        [[nodiscard]] float getInset() const;
+        [[nodiscard]] Point getInset() const;
 
         // Controls the scaling mode of the object
         // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
@@ -117,13 +119,13 @@ namespace magique
         [[nodiscard]] Point getStartDimensions() const;
 
         // Starts a scissor mode with the current bounds - has to be stopped manually!
-        void beginBoundsScissor();
+        void beginBoundsScissor() const;
 
         virtual ~UIObject();
 
     private:
         float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
-        float inset = 0.0F;                        // Inset - offset towards the middle of the screen
+        Point inset = 0.0F;                        // Inset - offset towards the middle of the screen
         Point startPos{};                          // Default position
         Point startDims{};                         // Default dimensions
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions

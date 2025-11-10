@@ -11,9 +11,9 @@
 // .....................................................................
 // Note: This is for advanced module.
 // This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
-// Between ticks, it's in hibernation, sleeping until woken up again.
+// Between ticks, it's in hibernation, sleeping until woken up again (if not used).
 // Allows to submit concurrent jobs to distribute compatible work across threads and await their completion.
-// Per default has 3 worker threads.
+// Per default has MAGIQUE_WORKER_THREADS many worker threads.
 // Note: Don't forget to give the main thread work BEFORE waiting for the jobs to return!
 // .....................................................................
 
@@ -42,9 +42,6 @@ namespace magique
 
     // Adds a new job to the global queue
     jobHandle AddJob(IJob* job);
-
-    // Adds the job to a group
-    //jobHandle AddGroupJob(IJob* job, int group);
 
     //================= WAITING =================//
 

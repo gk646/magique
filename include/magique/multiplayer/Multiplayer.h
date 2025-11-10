@@ -68,6 +68,8 @@ namespace magique
     // Batches the given payload for each current connection
     // This is equal to calling BatchMessage() for each connection from GetCurrentConnections()
     void BatchMessageToAll(Payload payload, SendFlag flag = SendFlag::RELIABLE);
+    // Allows to specify a connection that is excluded
+    void BatchMessageToAll(Payload payload, SendFlag flag, Connection exclude);
 
     // Flushed the batching buffers for all connections
     void SendBatch();

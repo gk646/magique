@@ -16,7 +16,7 @@ namespace magique
         void LogInternal(const LogLevel level, const char* file, const int line, const char* function, const char* msg,
                          va_list args)
         {
-            auto& log = global::LOG_DATA;
+            const auto& log = global::LOG_DATA;
             if (level < global::ENGINE_CONFIG.logLevel)
             {
                 return;

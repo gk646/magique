@@ -166,7 +166,7 @@ namespace magique
             }
         }
 
-        const auto* msg = "Successfully loaded Localization: Language: %s | keywords: %d";
+        const auto* msg = "Loaded Localization: Language: %s | keywords: %d";
         LOG_INFO(msg, language, keywordPairs);
     }
 

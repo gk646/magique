@@ -13,7 +13,7 @@ namespace magique
         global::UI_DATA.registerObject(this, true);
     }
 
-    UIContainer::UIContainer(const float w, const float h, const Anchor anchor, const float inset,
+    UIContainer::UIContainer(const float w, const float h, const Anchor anchor, const Point inset,
                              const ScalingMode scaling) : UIObject(w, h, anchor, inset, scaling)
     {
         global::UI_DATA.registerObject(this, true);

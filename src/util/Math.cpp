@@ -22,6 +22,13 @@ namespace magique
         return (oldV - minO / maxO - minO) * (maxN - minN) + minN;
     }
 
+    float ExponentialDecay(float a, float b, float minRatio, float steepness)
+    {
+        const float difference = std::abs(a - b);
+        const float ratio = minRatio + (1.0f - minRatio) * std::exp(-steepness * difference);
+        return ratio;
+    }
+
     bool RollWithChance(const float chance)
     {
         const auto rand = GetRandomFloat(0.0F, 1.0F);

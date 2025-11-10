@@ -30,9 +30,8 @@ struct MultiplayerStatistics final
         printf("\nOutgoing Messages:\n");
         outgoing.print(passedTicks);
     }
-
 private:
-    struct DirecionData final
+    struct DirectionData final
     {
         uint32_t counts[UINT8_MAX]{};
         uint32_t size;
@@ -70,6 +69,8 @@ private:
             printf("  Total:\n");
             printf("    %u messages (%.2f/tick)\n", total, static_cast<float>(total) / passed);
             printf("    %u bytes (%.2f/tick)\n", size, static_cast<float>(size) / passed);
+            const auto passedSeconds = passed / MAGIQUE_LOGIC_TICKS;
+            printf("    %.2f MB/h\n", ((static_cast<float>(size) / passedSeconds) * 60 * 60) / 1'000'000);
         }
         void add(MessageType type, int addSize)
         {
@@ -77,15 +78,14 @@ private:
             size += addSize;
         }
     };
-    DirecionData incoming{};
-    DirecionData outgoing{};
+    DirectionData incoming{};
+    DirectionData outgoing{};
     uint32_t startTick = 0;
-
 #else
     void reset() {}
-    void addOutgoing(MessageType type) {}
-    void addIncoming(MessageType type) {}
-    void print() { printf("Only works in DEBUG\n") }
+    void addOutgoing(MessageType type, int size) {}
+    void addIncoming(MessageType type, int size) {}
+    void print() { LOG_WARNING("Network stats only work in DEBUG"); }
 #endif
 };
 

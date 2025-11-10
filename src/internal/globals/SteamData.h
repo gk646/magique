@@ -5,6 +5,7 @@
 #include <functional>
 #include "internal/globals/MultiplayerData.h"
 
+#ifdef MAGIQUE_STEAM
 namespace magique
 {
     struct SteamCallback
@@ -56,7 +57,10 @@ namespace magique
 
     inline CSteamID SteamIDFromLobby(SteamLobbyID magiqueID) { return CSteamID{static_cast<uint64>(magiqueID)}; }
 
-    inline SteamLobbyID LobbyIDFromSteam(const CSteamID steamID) { return static_cast<SteamLobbyID>(steamID.ConvertToUint64()); }
+    inline SteamLobbyID LobbyIDFromSteam(const CSteamID steamID)
+    {
+        return static_cast<SteamLobbyID>(steamID.ConvertToUint64());
+    }
 
     inline void SteamCallback::OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
     {
@@ -122,8 +126,8 @@ namespace magique
             EChatEntryType chatEntryType;
             char message[MAGIQUE_MAX_LOBBY_MESSAGE_LEN];
             const auto chatId = static_cast<int>(pCallback->m_iChatID);
-            const int messageSize = SteamMatchmaking()->GetLobbyChatEntry(
-                steam.lobbyID, chatId, &senderID, message, MAGIQUE_MAX_LOBBY_MESSAGE_LEN, &chatEntryType);
+            const int messageSize = SteamMatchmaking()->GetLobbyChatEntry(steam.lobbyID, chatId, &senderID, message,
+                                                                          MAGIQUE_MAX_LOBBY_MESSAGE_LEN, &chatEntryType);
 
             if (messageSize > 0 && chatEntryType == k_EChatEntryTypeChatMsg)
             {
@@ -164,5 +168,6 @@ namespace magique
     }
 
 } // namespace magique
+#endif
 
 #endif //MAGIQUE_STEAMDATA_H

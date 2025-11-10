@@ -33,6 +33,7 @@ namespace magique
     // Accepts a value in the logical resolution and returns the value in the current resolution (scaled vertically)
     // Note: This is useful when needing static offsets that automatically scale
     float GetScaled(float val);
+    Point GetScaled(Point p);
 
     // Returns the current horizontal and vertical scaling
     Point GetUIScaling();
@@ -46,7 +47,7 @@ namespace magique
 
     // Sets the resolution the UI scales TO - if set to (0,0) display resolution is used
     // Note: This is useful if your using different render targets
-    void SetUITargetResolution(float width, float height);
+    void SetUITargetResolution(Point resolution);
 
     // Getters for input that allows for consumption - when consumed all methods return false
     // The consumed state is automatically reset at the beginning of each tick
@@ -70,8 +71,8 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    // Sets the logcal ui resolution in which all numbers are interpreted
-    // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel are with fixed resolutions
+    // Sets the logical ui resolution in which all numbers are interpreted
+    // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel art with fixed resolutions
     void SetUISourceResolution(float width, float height);
 
     // Returns a rectangle that adjusted to be on the screen (target resolution)

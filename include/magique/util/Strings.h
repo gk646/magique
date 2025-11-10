@@ -101,6 +101,7 @@ namespace magique
     // Uses K/M/B to shorten thousands, millions and billions
     // e.g. 2.4 / 32.45K / 332.53K / 233.41M / 33.52B
     const char* FormatGameplayNumber(float num);
+    const char* FormatGameplayNumber(int64_t num);
 
     //================= HASHING =================//
 

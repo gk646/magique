@@ -28,8 +28,8 @@ namespace magique
     struct Game
     {
         // Constructs a game instance - sets the window title to the passed name
-        // Note: This must only be called once per program
-        explicit Game(const char* name = "MyGame");
+        // Note: This MUST only be called once per program
+        explicit Game(const char* name = "MyGame", const char* version = "0.0.0");
         virtual ~Game();
 
         // Call this to start the game - should be call in the main method: return game.run();
@@ -67,9 +67,8 @@ namespace magique
         // Called after the internal update tick (collision, ui, sound)
         virtual void postTickUpdate(GameState gameState) {}
 
-        // Called each render tick - passed the current gamestate and camera
-        // Note: BeginDraw() is already called before this method
-        // Default: called 90 times per second - changed by SetTargetFPS()
+        // Called each render tick
+        // Default: called 100 times per second - changed by SetTargetFPS()
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
 
         // Called each render tick after drawGame()
@@ -81,11 +80,13 @@ namespace magique
         [[nodiscard]] bool getIsRunning() const;
         [[nodiscard]] bool getIsLoading() const;
         [[nodiscard]] const char* getName() const;
+        [[nodiscard]] const char* getVersion() const;
 
     private:
         bool isRunning = false;
         bool isLoading = false;
         const char* gameName;
+        const char* version;
         friend void HandleLoadingScreen(Game& game);
     };
 

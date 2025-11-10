@@ -179,6 +179,13 @@ namespace magique
         return *this;
     }
 
+    Point& Point::ceil()
+    {
+        x = std::ceil(x);
+        y = std::ceil(y);
+        return *this;
+    }
+
     Point& Point::clamp(const float min, const float max)
     {
         x = magique::clamp(x, min, max);

@@ -1,5 +1,17 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
+#ifndef MAGIQUE_STEAM
+#include "magique/core/Types.h"
+#include "magique/util/Logging.h"
+namespace magique
+{
+    bool InitSteam(const bool createFile) { M_ENABLE_STEAM_ERROR(false) };
+    SteamID GetUserSteamID() { M_ENABLE_STEAM_ERROR({}) };
+    const char* GetSteamUserName() { M_ENABLE_STEAM_ERROR({}); };
+    void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback) { M_ENABLE_STEAM_ERROR() }
+    const char* GetSteamUserDataLocation() { M_ENABLE_STEAM_ERROR({}) };
+} // namespace magique
+#else
 #include <fstream>
 
 #include <magique/steam/Steam.h>
@@ -65,7 +77,7 @@ namespace magique
         memcpy(&steamData.userID, &id, sizeof(id));
 
         steamData.isInitialized = true;
-        LOG_INFO("Successfully initialized steam");
+        LOG_INFO("Initialized steam");
         return true;
     }
 
@@ -93,3 +105,4 @@ namespace magique
     }
 
 } // namespace magique
+#endif

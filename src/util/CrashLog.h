@@ -4,13 +4,11 @@
 #include <chrono>
 #include <fstream>
 #include <stacktrace>
-#include <cxxabi.h>
 
 // Platform-specific headers
 #ifdef __linux__
 #include <csignal>
 #include <execinfo.h>
-#include <sys/utsname.h>
 #elif __APPLE__
 #include <csignal>
 #include <execinfo.h>
@@ -254,10 +252,11 @@ inline LONG WINAPI crashLogHandler(EXCEPTION_POINTERS* exceptionPointers)
 #endif
     std::string crashData;
     crashData.reserve(1024);
+    auto& game = magique::GetGame();
     crashData += "magique CrashLog File\n";
-    crashData += "Exception received: ";
-    crashData += signalName;
-    crashData += "\n\n";
+    crashData +=  TextFormat("Exception received: %s\n\n",signalName);
+    crashData +=  TextFormat("magique version: %s\n",MAGIQUE_VERSION);
+    crashData +=  TextFormat("%s version: %s\n\n", game.getName(), game.getVersion());
     crashData += "System Information:\n";
     crashData += GetSystemInfoString();
     crashData += "\n";
@@ -275,7 +274,6 @@ namespace magique
 {
     void RegisterCrashLoggers()
     {
-
 #if defined(__linux__) || defined(__APPLE__)
         signal(SIGSEGV, crashLogHandler);
         signal(SIGABRT, crashLogHandler);

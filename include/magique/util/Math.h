@@ -29,6 +29,8 @@ namespace magique
     // Returns the translated old value in the old scale to the corresponding value in the new scale - linear remapping
     float Lermp(float oldVal, float minO, float maxO, float minN, float maxN);
 
+    float ExponentialDecay(float a, float b, float minRatio = 0.1f, float steepness = 1.0f);
+
     // Returns true if a roll with the given chance was true - GetRandomFloat()
     // Note: Chance must be between 0.0 and 1.0F - 0 is never true 1 is always true
     bool RollWithChance(float chance);

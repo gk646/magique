@@ -114,7 +114,7 @@ namespace magique
         }
     } // namespace internal
 
-    Game::Game(const char* name) : isRunning(true), gameName(name)
+    Game::Game(const char* name, const char* version) : isRunning(true), gameName(name), version(strdup(version))
     {
         global::ENGINE_DATA.gameInstance = this; // Assign global game instance
         SetTraceLogLevel(LOG_WARNING);
@@ -137,7 +137,7 @@ namespace magique
         internal::InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
-        LOG_INFO("Initialized Game: %s", gameName);
+        LOG_INFO("Initialized %s: %s", gameName, getVersion());
 
 #if !defined(MAGIQUE_DEBUG) && MAGIQUE_PROFILING == 1
         LOG_WARNING("Profiling enabled in Release mode. Disable for production build");
@@ -156,7 +156,7 @@ namespace magique
 #endif
         CloseAudioDevice();
         CloseWindow();
-        LOG_INFO("Successfully shutdown magique");
+        LOG_INFO("Shutdown magique");
     }
 
     int Game::run(const char* assetPath, const char* configPath, const uint64_t encryptionKey)
@@ -190,11 +190,13 @@ namespace magique
         return 0;
     }
 
+    void Game::shutDown() { isRunning = false; }
+
     bool Game::getIsRunning() const { return isRunning; }
 
     bool Game::getIsLoading() const { return isLoading; }
 
     const char* Game::getName() const { return gameName; }
 
-    void Game::shutDown() { isRunning = false; }
+    const char* Game::getVersion() const { return version; }
 } // namespace magique

@@ -520,4 +520,13 @@ namespace magique
         }
     }
 
+    const char* FormatGameplayNumber(int64_t num)
+    {
+        if (num < 1000)
+        {
+            return TextFormat("%d", num);
+        }
+        return FormatGameplayNumber((float)num);
+    }
+
 } // namespace magique

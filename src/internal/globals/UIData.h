@@ -23,21 +23,22 @@ namespace magique
         vector<UIObject*> containers;
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
-        Point targetRes{1280, 720};
+        Point targetRes{};
         Point sourceRes{1920, 1080};
         Point scaling{1.0F, 1.0F};
         bool keyConsumed = false;
         bool mouseConsumed = false;
+        bool customTargetRes = false;
 
         UIData() { initialized = true; }
 
         // Before each draw and update tick
         void updateBeginTick()
         {
-            if (targetRes == 0.0F)
+            if (!customTargetRes)
             {
                 targetRes.x = static_cast<float>(GetScreenWidth());
-                targetRes.x = static_cast<float>(GetScreenHeight());
+                targetRes.y = static_cast<float>(GetScreenHeight());
             }
             scaling = targetRes / sourceRes;
             const auto [mx, my] = GetMousePos();
@@ -157,7 +158,7 @@ namespace magique
             }
         }
 
-        void scaleBounds(Rectangle& bounds, const ScalingMode scaleMode, float inset, Anchor anchor) const
+        void scaleBounds(Rectangle& bounds, const ScalingMode scaleMode, Point inset, Anchor anchor) const
         {
             const auto& [sx, sy] = targetRes;
             switch (scaleMode)
@@ -183,8 +184,8 @@ namespace magique
             }
             if (anchor != Anchor::NONE)
             {
-                auto val = GetScaled(inset);
-                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, {val, val});
+                auto scaledInset = GetScaled(inset);
+                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, scaledInset);
                 bounds.x = pos.x;
                 bounds.y = pos.y;
             }

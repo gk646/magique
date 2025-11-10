@@ -1,7 +1,17 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/GlobalSockets.h>
-
+#ifndef MAGIQUE_STEAM
+#include "magique/util/Logging.h"
+namespace magique
+{
+    bool InitGlobalMultiplayer() { M_ENABLE_STEAM_ERROR(false) }
+    bool CreateGlobalSocket() { M_ENABLE_STEAM_ERROR(false) }
+    bool CloseGlobalSocket(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) };
+    Connection ConnectToGlobalSocket(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}) }
+    bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) }
+} // namespace magique
+#else
 #include "internal/globals/MultiplayerData.h"
 #include "internal/globals/SteamData.h"
 
@@ -95,5 +105,5 @@ namespace magique
         data.goOffline();
         return res;
     }
-
 } // namespace magique
+#endif

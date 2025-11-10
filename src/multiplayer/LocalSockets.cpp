@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <string>
-
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
@@ -12,12 +10,11 @@
 #include <arpa/inet.h>
 #endif
 
+#include <raylib/raylib.h>
 #include <magique/multiplayer/LocalSockets.h>
-
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #endif
-
 #include "internal/globals/MultiplayerData.h"
 
 namespace magique
@@ -28,14 +25,15 @@ namespace magique
 #ifndef MAGIQUE_STEAM
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         SteamDatagramErrMsg errMsg;
-        if (!GameNetworkingSockets_Init(nullptr, errMsg))
+        if (!GameNetworkingSockets_Init(nullptr, errMsg) ||
+            !SteamNetworkingUtils()->SetGlobalConfigValuePtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
+                                                             (void*)OnConnectionStatusChange))
         {
             LOG_FATAL("Initializing local sockets failed.  %s", errMsg);
             return false;
         }
-        SteamNetworkingUtils()->SetGlobalConfigValuePtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
-                                                        (void*)OnConnectionStatusChange);
-        LOG_INFO("Successfully initialized local sockets");
+
+        LOG_INFO("Initialized local sockets");
         global::MP_DATA.isInitialized = true;
         return true;
 #else
@@ -66,6 +64,7 @@ namespace magique
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
         SteamNetworkingIPAddr ip{};
+        ip.Clear();
         ip.SetIPv4(0, port);
         data.listenSocket = SteamNetworkingSockets()->CreateListenSocketIP(ip, 0, nullptr);
         if (data.listenSocket == k_HSteamListenSocket_Invalid)
@@ -73,7 +72,7 @@ namespace magique
             LOG_WARNING("Failed to create listen socket on port %d", port);
             return false;
         }
-        LOG_INFO("Successfully created listen socket on port %d", port);
+        LOG_INFO("Created listen socket on port %d", port);
         data.goOnline(true);
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
@@ -82,16 +81,15 @@ namespace magique
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
-
         if (!data.isInSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        {
             return false;
-
+        }
         for (const auto conn : data.connections)
         {
             const auto steamConn = static_cast<HSteamNetConnection>(conn);
             SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
         }
-
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
         data.goOffline();
         return res;
@@ -106,18 +104,11 @@ namespace magique
         MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
-        char fullAddress[64]{};
-        const int ipLen = static_cast<int>(strlen(ip));
-        memcpy(fullAddress, ip, ipLen);
-        fullAddress[ipLen] = ':';
-        const std::string number = std::to_string(port); // no allocation - small buffer optimized
-        memcpy(fullAddress + ipLen + 1, number.c_str(), number.length());
-
         SteamNetworkingIPAddr addr{};
         addr.Clear();
-        if (!addr.ParseString(fullAddress))
+        if (!addr.ParseString(TextFormat("%s:%d", ip, port)))
         {
-            LOG_WARNING("Given ip is not valid!");
+            LOG_WARNING("Given IP or port is not valid: %s:%d", ip, port);
             return Connection::INVALID_CONNECTION;
         }
 
@@ -139,7 +130,9 @@ namespace magique
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
         if (!data.isInSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
+        {
             return false;
+        }
 
         const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);
         const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
@@ -151,8 +144,10 @@ namespace magique
 
     const char* GetLocalIP()
     {
-        if (!IP_ADDR.empty()) // Cache
+        if (!IP_ADDR.empty())
+        {
             return IP_ADDR.c_str();
+        }
 #ifdef _WIN32
         WSADATA wsaData;
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) // Initialize Winsock
@@ -200,19 +195,23 @@ namespace magique
         for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next)
         {
             if (ifa->ifa_addr == nullptr)
+            {
                 continue;
+            }
 
             if (ifa->ifa_addr->sa_family == AF_INET)
             {
                 char buff[32];
                 void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
                 inet_ntop(AF_INET, addr, buff, 32);
-                IP_ADDR.append(buff);
+                IP_ADDR = buff;
                 break;
             }
         }
         if (ifAddrStruct != nullptr)
+        {
             freeifaddrs(ifAddrStruct);
+        }
 #endif
         return IP_ADDR.c_str();
     }

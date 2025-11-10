@@ -29,7 +29,7 @@ namespace magique
         {
             if (isDragged)
             {
-                setPosition(mouse.x + clickOffset.x, mouse.y + clickOffset.y);
+                setPosition(mouse + clickOffset);
                 return true;
             }
             if (PointToRect(mouse.x, mouse.y, area.x, area.y, area.width, area.height))

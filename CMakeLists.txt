@@ -5,9 +5,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(magique LANGUAGES CXX C)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE  ON)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 23)
-set(MAGIQUE_VERSION "0.7.1")
+set(MAGIQUE_VERSION "0.8.0")
 
 # Set CMake modules directory - path searched when using include()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -41,14 +41,8 @@ add_subdirectory(src/internal)
 add_subdirectory(src/persistence)
 add_subdirectory(src/ui)
 add_subdirectory(src/util)
-
-# Add the submodules if enabled
-if (MAGIQUE_STEAM)
-    add_subdirectory(src/steam)
-    add_subdirectory(src/multiplayer)
-elseif (MAGIQUE_LAN)
-    add_subdirectory(src/multiplayer)
-endif ()
+add_subdirectory(src/steam)
+add_subdirectory(src/multiplayer)
 
 # ----------------------------------------------------------------------
 # Collect and Organize Object Files
@@ -64,16 +58,9 @@ set(MAGIQUE_OBJECTS
         $<TARGET_OBJECTS:magique-internal>
         $<TARGET_OBJECTS:magique-gamedev>
         $<TARGET_OBJECTS:magique-persistence>
+        $<TARGET_OBJECTS:magique-steam>
+        $<TARGET_OBJECTS:magique-multiplayer>
 )
-
-# Conditionally include networking libraries
-if (MAGIQUE_STEAM)
-    list(APPEND MAGIQUE_OBJECTS $<TARGET_OBJECTS:magique-steam>)
-    list(APPEND MAGIQUE_OBJECTS $<TARGET_OBJECTS:magique-multiplayer>)
-elseif (MAGIQUE_LAN)
-    list(APPEND MAGIQUE_OBJECTS $<TARGET_OBJECTS:magique-multiplayer>)
-
-endif ()
 
 # ----------------------------------------------------------------------
 # Build the Main Magique Library

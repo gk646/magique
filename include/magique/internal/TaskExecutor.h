@@ -231,7 +231,7 @@ namespace magique::internal
             {
                 return;
             }
-            LOG_INFO("Loaded Task: Impact: %d |  Progress: %d/%d -> %.2f%%", task->impact, loadedImpact.load(),
+            LOG_INFO("Finished Task: Impact: %2d | Progress: %d/%d %.0f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }
 

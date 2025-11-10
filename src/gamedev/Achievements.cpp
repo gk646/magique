@@ -156,7 +156,7 @@ namespace magique
         if (notFound > 0)
             LOG_WARNING("Couldnt locate %d saved achievements", notFound);
 
-        LOG_INFO("Successfully loaded achievements: %d", saved);
+        LOG_INFO("Loaded achievements: %d", saved);
         return true;
     }
 

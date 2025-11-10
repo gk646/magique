@@ -152,7 +152,7 @@ namespace magique
     {
         if (!fs::exists(path)) // User cant use AssetContainer -> its empty
         {
-            LOG_WARNING("No asset image at:%s", path);
+            LOG_WARNING("No asset image at: %s", path);
             return false;
         }
         const auto startTime = GetTime();
@@ -181,12 +181,12 @@ namespace magique
                 if (original == imageSize)
                 {
                     auto* logText =
-                        "Successfully loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
+                        "Loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 else
                 {
-                    auto* logText = "Successfully loaded asset image %s | Took: %d millis. Decompressed: %.2f mb -> "
+                    auto* logText = "Loaded asset image %s | Took: %d millis. Decompressed: %.2f mb -> "
                                     "%.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
                 }
@@ -456,7 +456,7 @@ namespace magique
             fclose(compFile);
 
             const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
-            auto* logText = "Successfully compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
+            auto* logText = "Compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
                             "(%.0f%%) | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
                      static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
@@ -466,7 +466,7 @@ namespace magique
         {
             fclose(imageFile);
             const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
-            auto* logText = "Successfully compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
+            auto* logText = "Compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
             LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
         }
 

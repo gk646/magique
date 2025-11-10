@@ -79,7 +79,7 @@ namespace magique
         fclose(file);
         delete[] data;
 
-        LOG_INFO("Successfully saved GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
+        LOG_INFO("Saved GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
     }
 
     GameConfig GameConfig::LoadFromFile(const char* filePath, const uint64_t key)
@@ -144,7 +144,7 @@ namespace magique
 
         fclose(file);
         free(data);
-        LOG_INFO("Successfully loaded GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
+        LOG_INFO("Loaded GameConfig: %s | Entries: %d", filePath, static_cast<int>(config.storage.size()));
         config.loaded = true;
         return config;
     }

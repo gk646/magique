@@ -53,7 +53,7 @@ namespace magique
         float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
         float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
-        float offX, offY;          // Offset applied to collision shape - only works on non-raotated rects
+        float offX, offY;          // Offset applied to collision shape - only works on non-rotated rects
         int16_t anchorX = 0;       // Rotation anchor point for the hitbox
         int16_t anchorY = 0;       // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape
@@ -65,7 +65,7 @@ namespace magique
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);
 
-        // Returns true if the mask of this object detect the other objects layers - so if the two collide
+        // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         [[nodiscard]] bool detects(const CollisionC& other) const;
 
         // Returns true if the entity has this layer is set
@@ -73,7 +73,7 @@ namespace magique
         void setLayer(CollisionLayer layer, bool enabled = true);
 
         // Returns true if the entity looks for collision on the given layer
-        [[nodiscard]] bool isLookingFor(CollisionLayer layer) const;
+        [[nodiscard]] bool isMaskSet(CollisionLayer layer) const;
         void setMask(CollisionLayer layer, bool enabled = true);
 
         // Returns the offset from the position (top left) to the middle
@@ -132,9 +132,10 @@ namespace magique
     struct EmitterC final
     {
         // float radius = 50.0F; // Radius of the light
-        uint8_t r, g, b, a; // 0 - 255, a = transparency
         uint16_t intensity; // Style dependant - the size of the light
+        uint8_t r, g, b, a; // 0 - 255, a = transparency
         LightStyle style;
+        bool active = true;
     };
 
     // If added entity will throw shadows

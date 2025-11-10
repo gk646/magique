@@ -10,7 +10,7 @@ namespace magique
         static constexpr int cacheSize = 255;
         LogCallbackFunc callback = nullptr;
         FILE* file = nullptr;
-#ifdef _DEBUG
+#ifdef MAGIQUE_DEBUG
         bool crashLog = false;
         bool logToFile = false;
 #else
@@ -46,7 +46,7 @@ namespace magique
 
     namespace global
     {
-        static LogData LOG_DATA{};
+        inline LogData LOG_DATA{};
     }
 
 } // namespace magique

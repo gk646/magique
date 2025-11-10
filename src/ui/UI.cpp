@@ -54,16 +54,26 @@ namespace magique
 
     float GetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
 
+    Point GetScaled(Point p) { return p * global::UI_DATA.scaling; }
+
     Point GetUIScaling() { return global::UI_DATA.scaling; }
 
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
-    Point GetMousePos()
-    {
-        return Point{GetMousePosition()}.floor();
-    }
+    Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
-    void SetUITargetResolution(float width, float height) { global::UI_DATA.targetRes = {width, height}; }
+    void SetUITargetResolution(Point resolution)
+    {
+        if (resolution == 0)
+        {
+            global::UI_DATA.customTargetRes = false;
+        }
+        else
+        {
+            global::UI_DATA.targetRes = resolution;
+            global::UI_DATA.customTargetRes = true;
+        }
+    }
 
     bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressed(key); }
 

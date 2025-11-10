@@ -105,7 +105,7 @@ namespace magique
         save.isPersisted = true;
         delete[] data;
 
-        LOG_INFO("Successfully saved gamesave: %s | Size: %.2fkb", filePath, (float)totalSize / 1000.0F);
+        LOG_INFO("Saved gamesave: %s | Size: %.2fkb", filePath, (float)totalSize / 1000.0F);
         return true;
     }
 
@@ -174,7 +174,7 @@ namespace magique
 
         fclose(file);
         delete[] data;
-        LOG_INFO("Successfully loaded gamesave: %s | Size: %.2fkb", filePath, static_cast<float>(totalSize) / 1000.0F);
+        LOG_INFO("Loaded gamesave: %s | Size: %.2fkb", filePath, static_cast<float>(totalSize) / 1000.0F);
         return true;
     }
 

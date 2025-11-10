@@ -30,7 +30,7 @@ namespace magique
 
     TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, 0.0F, scaling) {}
 
-    const std::string& TextField::getText() const { return text; }
+    std::string& TextField::getText() { return text; }
 
     void TextField::setText(const char* newText)
     {
@@ -40,8 +40,10 @@ namespace magique
 
     void TextField::setHint(const char* newHint)
     {
-        MAGIQUE_ASSERT(newHint != nullptr, "Passed null");
-        hint = newHint;
+        if (newHint != nullptr)
+        {
+            hint = newHint;
+        }
     }
 
     bool TextField::pollTextHasChanged()
@@ -79,7 +81,7 @@ namespace magique
         }
         const auto bounds = getBounds();
         const auto mouse = GetMousePos();
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        if (LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
             isFocused = PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height);
         }
@@ -127,11 +129,11 @@ namespace magique
 
         if (hasSelection())
         {
-            const auto highlight = ColorAlpha(color, 0.45);
+            const auto highlight = ColorAlpha(cursor, 0.45);
             DrawTextHighlight(selectionStart, selectionEnd, font, text.c_str(), tPos.v(), fontSize, spacing, highlight);
         }
 
-        if (!isFocused || blinkCounter > blinkDelay)
+        if (!isFocused || blinkCounter > blinkDelay || !showCursor)
         {
             return;
         }
@@ -306,7 +308,11 @@ namespace magique
             else if (IsKeyPressedAnyWay(CUT))
             {
                 copy();
-                removeSelectionContent();
+                if (hasSelection())
+                {
+                    removeSelectionContent();
+                    return true;
+                }
             }
             else if (IsKeyPressedAnyWay(SELECT))
             {
@@ -374,7 +380,7 @@ namespace magique
                 {
                     if (lineCounter == mouseLine) // Beyond end of line
                     {
-                        return i - 1;
+                        return i;
                     }
                     lineCounter++;
                     lineStart = i + 1;
@@ -407,6 +413,7 @@ namespace magique
             std::swap(selectionStart, selectionEnd);
         }
         cursorPos = selectionStart;
+        updateLineState();
         if (selectionStart == selectionEnd)
         {
             resetSelection();
