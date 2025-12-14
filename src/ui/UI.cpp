@@ -81,6 +81,11 @@ namespace magique
 
     bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
 
+    bool LayeredInput::IsKeyPressedRepeat(int key)
+    {
+        return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key);
+    }
+
     bool LayeredInput::IsMouseButtonPressed(const int key)
     {
         return !global::UI_DATA.mouseConsumed && ::IsMouseButtonPressed(key);
@@ -102,7 +107,10 @@ namespace magique
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
-    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
+    bool LayeredInput::GetIsMouseConsumed()
+    {
+        return global::UI_DATA.mouseConsumed;
+    }
 
     void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 

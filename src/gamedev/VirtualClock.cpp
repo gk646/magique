@@ -8,6 +8,8 @@
 
 namespace magique
 {
+    VirtualTime::VirtualTime(int hours, int minutes) : day(0), hour(hours % 24), minute(minutes % 60), second(0) {}
+
     VirtualTime VirtualTime::operator+(const VirtualTime& other) const
     {
         VirtualTime result;
@@ -69,11 +71,15 @@ namespace magique
 
     int VirtualTime::toSeconds() const { return ((day * 24 + hour) * 60 + minute) * 60 + second; }
 
-    VirtualClock::VirtualClock(const int realMinutes)
-    {
-        setRealMinutes(realMinutes);
-        syncTimeOfDay();
-    }
+    int VirtualTime::getSecond() const { return second; }
+
+    int VirtualTime::getMinute() const { return minute; }
+
+    int VirtualTime::getHour() const { return hour; }
+
+    int VirtualTime::getDay() const { return day; }
+
+    VirtualClock::VirtualClock(const int realMinutes) { setRealMinutes(realMinutes); }
 
     static constexpr float DAY_SECONDS = 24 * 60 * 60;
     static constexpr float HOUR_SECONDS = 60 * 60;

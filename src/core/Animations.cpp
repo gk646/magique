@@ -28,7 +28,7 @@ namespace magique
 
 namespace magique
 {
-    static AnimationData ANIMATION_DATA{};
+    inline AnimationData ANIMATION_DATA{};
 
     //----------------- ENTITY ANIMATION -----------------//
 

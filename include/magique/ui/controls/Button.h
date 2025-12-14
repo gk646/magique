@@ -4,6 +4,7 @@
 
 #include <magique/ui/UIObject.h>
 #include <magique/internal/PlatformIncludes.h>
+#include <string>
 M_IGNORE_WARNING(4100)
 
 //===============================================
@@ -37,6 +38,9 @@ namespace magique
         void setDisabled(bool value);
         bool getIsDisabled() const;
 
+        void setHoverText(const char* value);
+        const char* getHoverText();
+
     protected:
         // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
@@ -51,10 +55,14 @@ namespace magique
         // Draws a default graphical representation of this button
         void drawDefault(const Rectangle& bounds) const;
 
+        // Draws the hovered text at the mouse leftbound
+        void drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const;
+
     private:
+        ClickFunc clickFunc = nullptr;
+        std::string hoverText;
         bool isHovered = false;
         bool isDisabled = false;
-        ClickFunc clickFunc = nullptr;
     };
 } // namespace magique
 

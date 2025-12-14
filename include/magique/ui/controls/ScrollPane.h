@@ -14,6 +14,10 @@
 // Note: The scroller is the rectangle that is draggable to move the contents
 // Note: The content is aligned to the top left of the pane with the given scroll offset
 //        You should use a Container type UIObject as content that holds your actual content and scales with its size
+// Controls:
+//      DRAG            : Move scroll bar
+//      SCROLL          : Move vertical bar
+//      CTRL + SCROLL   : Move horizontal bar
 // .....................................................................
 
 namespace magique
@@ -34,6 +38,17 @@ namespace magique
         void setContent(UIObject* content);
         UIObject* getContent() const;
 
+        // Sets the base anchor position of the content
+        // Note: This is useful to position the main content inside the pane
+        Anchor getContentAnchor() const;
+        Point getContentInset() const;
+        void setContentAnchor(Anchor anchor, Point inset = {});
+
+        // If true scroller starts at the bottom to move up (instead of at the top to move down)
+        // Useful for e.g. chat
+        void setInvertVertScroll(bool invert);
+        bool getInvertVertScroll() const;
+
     protected:
         void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
@@ -53,9 +68,10 @@ namespace magique
         struct Scroller final
         {
             bool isHorizontal = false;  // If scroller is horizontal
-            float offset = 0;           // Offset in px of the scroller
+            float offset = 0.0F;        // Offset in px of the scroller
             float scrollerWidth = 0.05; // How wide the scroller is
-            float moveFactor = 1.0f;    // How much content moves for 1px of scroller
+            float moveFactor = 1.0F;    // How much content moves for 1px of scroller
+            bool invertScroll = false;
 
             // Drag state
             Point dragStart{};
@@ -66,9 +82,11 @@ namespace magique
             void updateInputs(const Rectangle& scroller, const Rectangle& pane);
             float getScaledOffset() const;
         };
-        UIObject* content = nullptr;
         Scroller horizontal{true};
         Scroller vertical{false};
+        UIObject* content = nullptr;
+        Anchor contentAnchor = Anchor::TOP_LEFT;
+        Point contentInset = {};
     };
 } // namespace magique
 

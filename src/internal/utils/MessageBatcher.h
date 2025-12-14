@@ -103,13 +103,20 @@ namespace magique
                 batchedMsg.payload.data = data + off;
                 batchedMsg.payload.type = type;
 
-                vec.push_back(batchedMsg);
+                if (type == MAGIQUE_LOBBY_PACKET_TYPE)
+                {
+                    global::LOBBY_DATA.handleLobbyPacket(batchedMsg);
+                }
+                else
+                {
+                    vec.push_back(batchedMsg);
+                }
                 off += size;
             }
 
             if (off != message.payload.size)
             {
-                LOG_WARNING("Batched message size mismath");
+                LOG_WARNING("Batched message size mismatch");
             }
         }
 
@@ -124,7 +131,7 @@ namespace magique
 
             const auto msg = SteamNetworkingUtils()->AllocateMessage(buffer.size + 1);
             // Reserved message type
-            static_cast<char*>(msg->m_pData)[0] = static_cast<char>(UINT8_MAX - 1);
+            static_cast<char*>(msg->m_pData)[0] = static_cast<char>(MAGIQUE_BATCHED_PACKET_TYPE);
             std::memcpy(static_cast<char*>(msg->m_pData) + 1, buffer.buffer, buffer.size);
 
             // set the flags

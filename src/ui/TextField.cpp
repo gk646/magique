@@ -15,20 +15,26 @@
 namespace magique
 {
     // Keybindings to avoid hardcoding
-    static constexpr int MOVE_LEFT = KEY_LEFT;
-    static constexpr int MOVE_RIGHT = KEY_RIGHT;
-    static constexpr int MOVE_UP = KEY_UP;
-    static constexpr int MOVE_DOWN = KEY_DOWN;
-    static constexpr int BACKSPACE = KEY_BACKSPACE;
-    static constexpr int DELETE = KEY_DELETE;
-    static constexpr int PASTE = KEY_V;
-    static constexpr int COPY = KEY_C;
-    static constexpr int SELECT = KEY_A;
-    static constexpr int CUT = KEY_X;
+    inline constexpr int MOVE_LEFT = KEY_LEFT;
+    inline constexpr int MOVE_RIGHT = KEY_RIGHT;
+    inline constexpr int MOVE_UP = KEY_UP;
+    inline constexpr int MOVE_DOWN = KEY_DOWN;
+    inline constexpr int BACKSPACE = KEY_BACKSPACE;
+    inline constexpr int DELETE = KEY_DELETE;
+    inline constexpr int PASTE = KEY_V;
+    inline constexpr int COPY = KEY_C;
+    inline constexpr int SELECT = KEY_A;
+    inline constexpr int CUT = KEY_X;
 
-    TextField::TextField(float x, float y, float w, float h, ScalingMode scaling) : UIObject(x, y, w, h, scaling) {}
+    TextField::TextField(float x, float y, float w, float h, ScalingMode scaling) : UIObject(x, y, w, h, scaling)
+    {
+        text.reserve(64);
+    }
 
-    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, 0.0F, scaling) {}
+    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, 0.0F, scaling)
+    {
+        text.reserve(64);
+    }
 
     std::string& TextField::getText() { return text; }
 
@@ -61,46 +67,64 @@ namespace magique
 
     bool TextField::getIsFocused() const { return isFocused; }
 
+    void TextField::setFocused(bool val) { isFocused = val; }
+
     int TextField::getLineCount() const { return lineCount; }
 
-    void TextField::fitBoundsToText(float size, const Font& font, float spacing)
+    void TextField::fitBoundsToText(float size, const Font& font, float spacing, bool heightOnly)
     {
         const auto dims = MeasureTextEx(font, text.c_str(), size, spacing);
         const auto startDims = getStartDimensions();
-        setSize(std::max(dims.x + 4, startDims.x), std::max(dims.y + 2, startDims.y));
+        if (heightOnly)
+        {
+            setSize(getBounds().width, std::max(dims.y, startDims.y));
+        }
+        else
+        {
+            setSize(std::max(dims.x + 4, startDims.x), std::max(dims.y, startDims.y));
+        }
     }
 
-    static bool IsKeyPressedAnyWay(const int key) { return IsKeyPressed(key) || IsKeyPressedRepeat(key); }
+    static bool IsKeyPressedAnyWay(const int key)
+    {
+        return LayeredInput::IsKeyPressed(key) || LayeredInput::IsKeyPressedRepeat(key);
+    }
 
-    bool TextField::updateInputs()
+    bool TextField::updateInputs(bool allowInput)
     {
         ++blinkCounter;
         if (blinkCounter > 2 * blinkDelay || (IsKeyPressedAnyWay(KEY_LEFT) || IsKeyPressedAnyWay(KEY_RIGHT)))
         {
             blinkCounter = 0;
         }
-        const auto bounds = getBounds();
-        const auto mouse = GetMousePos();
+
         if (LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
-            isFocused = PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height);
+            isFocused = CheckCollisionMouseRect(getBounds());
+        }
+        else if (LayeredInput::GetIsMouseConsumed())
+        {
+            isFocused = false;
         }
 
         if (!isFocused)
         {
+            resetSelection();
             return false;
         }
 
         const auto anyEvent = updateControls();
+        if (!allowInput)
+        {
+            return anyEvent;
+        }
+
         bool anyInput = false;
         // Iterate characters
         for (int i = 0; i < GetCharPressedQueueCount(); ++i)
         {
             const char pressedChar = static_cast<char>(GetCharPressedQueue()[i]);
-            if (hasSelection())
-            {
-                removeSelectionContent();
-            }
+            removeSelectionContent();
             text.insert(text.begin() + cursorPos, pressedChar);
             ++cursorPos;
             anyInput = true;
@@ -109,14 +133,15 @@ namespace magique
     }
 
     void TextField::drawText(const float fontSize, const Color color, const Color cursor, const Font& font,
-                             const float spacing)
+                             const float spacing, bool centered)
     {
         if (isFocused)
         {
             updateSelection(fontSize, font, spacing);
         }
+
         const auto bounds = getBounds();
-        const Point tPos = getTextPos(bounds, fontSize);
+        const Point tPos = centered ? getCenteredTextPos(bounds, fontSize) : Point{bounds.x, bounds.y};
 
         if (!isFocused && text.empty() && hint != nullptr)
         {
@@ -154,6 +179,8 @@ namespace magique
         drawText(14, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
     }
 
+    void TextField::wireOnEnter(const EnterFunc& func) { enterFunc = func; }
+
     bool TextField::pollControls()
     {
         const int size = static_cast<int>(text.size());
@@ -166,14 +193,14 @@ namespace magique
                 {
                     return false;
                 }
-                if (isspace(text[cursorPos - 1]))
+                if (std::isspace(text[cursorPos - 1]) != 0)
                 {
                     --cursorPos;
                     return true;
                 }
                 for (int i = cursorPos - 1; i > -1; --i)
                 {
-                    if (isspace(text[i]))
+                    if (std::isspace(text[i]) != 0)
                     {
                         cursorPos = i + 1;
                         return true;
@@ -196,14 +223,14 @@ namespace magique
             resetSelection();
             if (IsKeyDown(KEY_LEFT_CONTROL))
             {
-                if (isspace(text[cursorPos]))
+                if (std::isspace(text[cursorPos]) != 0)
                 {
                     ++cursorPos;
                     return true;
                 }
                 for (int i = cursorPos; i < size; ++i)
                 {
-                    if (isspace(text[i]))
+                    if (std::isspace(text[i]) != 0)
                     {
                         cursorPos = i;
                         return true;
@@ -283,7 +310,7 @@ namespace magique
             {
                 if (hasSelection())
                 {
-                    auto start = &text[selectionStart];
+                    auto* start = &text[selectionStart];
                     auto temp = text[selectionEnd];
                     text[selectionEnd] = '\0';
                     SetClipboardText(start);
@@ -338,7 +365,12 @@ namespace magique
 
         if (IsKeyPressedAnyWay(KEY_ENTER))
         {
-            if (!onEnterPressed(IsKeyDown(KEY_LEFT_CONTROL), IsKeyDown(KEY_LEFT_SHIFT), IsKeyDown(KEY_LEFT_ALT)))
+            const auto newLineEnter = !enterFunc ||
+                !enterFunc(IsKeyDown(KEY_LEFT_CONTROL), IsKeyDown(KEY_LEFT_SHIFT), IsKeyDown(KEY_LEFT_ALT));
+
+            cursorPos = clamp(cursorPos, 0, static_cast<int>(text.size()));
+            updateLineState();
+            if (newLineEnter)
             {
                 removeSelectionContent();
                 text.insert(text.begin() + cursorPos, '\n');
@@ -360,7 +392,7 @@ namespace magique
         }
 
         const auto bounds = getBounds();
-        const Point textStart = getTextPos(bounds, fSize);
+        const Point textStart = getCenteredTextPos(bounds, fSize);
         const float lineHeight = fSize + GetTextLineSpacing();
 
         auto findTextPos = [&](Point pos) -> int
@@ -440,7 +472,7 @@ namespace magique
         }
     }
 
-    Point TextField::getTextPos(const Rectangle& bounds, float fontSize) const
+    Point TextField::getCenteredTextPos(const Rectangle& bounds, float fontSize) const
     {
         const auto textHeight = (int)fontSize * lineCount + GetTextLineSpacing() * (lineCount - 1);
         return Point{bounds.x + 2, bounds.y + (bounds.height - (float)textHeight) / 2.0F}.floor();

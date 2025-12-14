@@ -85,12 +85,10 @@ namespace magique
         void hideAll();
 
     private:
-        WindowManager() = default;
         void update();
         friend WindowManager& GetWindowManager();
         friend void InternalUpdatePost();
     };
-
 
 } // namespace magique
 

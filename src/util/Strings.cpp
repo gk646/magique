@@ -224,7 +224,7 @@ namespace magique
                 const float currentLineWidth = MeasureTextEx(font, lineStart, fontSize, 1.0F).x;
                 *cursor = temp;
 
-                if (currentLineWidth >= width && wordStart != buffer && *(wordStart - 1) != '\n')
+                if (currentLineWidth > width && wordStart != buffer && *(wordStart - 1) != '\n')
                 {
                     *(wordStart - 1) = '\n';
                     lineStart = wordStart;
@@ -335,6 +335,25 @@ namespace magique
         }
 
         return nullptr;
+    }
+
+    bool TextIsPlayerName(const char* text, int minLen, int maxLen)
+    {
+        if (text == nullptr)
+        {
+            return false;
+        }
+        int len = 0;
+        while (*text != '\0')
+        {
+            if ((*text < 'A' || *text > 'Z') && (*text < 'a' || *text > 'z') && (*text < '0' || *text > '9'))
+            {
+                return false;
+            }
+            len++;
+            text++;
+        }
+        return len >= minLen && len <= maxLen;
     }
 
     int GetBase64EncodedLength(const int bytes) { return 4 * ((bytes + 2) / 3); }

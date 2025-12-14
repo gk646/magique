@@ -66,13 +66,10 @@ namespace magique
         }
     };
 
-    static WindowManagerData WINDOW_DATA{};
+    inline WindowManagerData WINDOW_DATA{};
+    inline WindowManager WINDOW_MANAGER{};
 
-    WindowManager& GetWindowManager()
-    {
-        static WindowManager WINDOW_MANAGER{};
-        return WINDOW_MANAGER;
-    }
+    WindowManager& GetWindowManager() { return WINDOW_MANAGER; }
 
     void WindowManager::draw()
     {

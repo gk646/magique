@@ -117,11 +117,10 @@ namespace magique
     const std::vector<Message>& ReceiveIncomingMessages(const int max)
     {
         auto& data = global::MP_DATA;
-        auto& lobby = global::LOBBY_DATA;
 
         if (!data.incMsgBuffer.empty()) [[likely]]
         {
-            for (const auto msg : data.incMsgBuffer)
+            for (auto* msg : data.incMsgBuffer)
             {
                 msg->Release();
             }
@@ -137,6 +136,7 @@ namespace magique
         // Lambda to process received messages
         auto processMessages = [&](const int startIdx, const int count)
         {
+            const auto start = data.incMsgVec.size();
             for (int i = startIdx; i < startIdx + count; ++i)
             {
                 const auto* msg = data.incMsgBuffer[i];
@@ -148,26 +148,22 @@ namespace magique
                 message.timeStamp = msg->m_usecTimeReceived;
 
                 // Batched message
-                if (message.payload.type == MessageType{UINT8_MAX - 1}) [[likely]]
+                if (message.payload.type == MAGIQUE_BATCHED_PACKET_TYPE) [[likely]]
                 {
                     global::BATCHER.handleBatchedPacket(data.incMsgVec, message);
-#ifdef MAGIQUE_DEBUG
-                    for (const auto& msg : data.incMsgVec)
-                    {
-                        global::MP_DATA.statistics.addIncoming(msg.payload.type, msg.payload.size);
-                    }
-#endif
-                    continue;
                 }
-                // Lobby message handling - reserved message type
-                else if (message.payload.type == MessageType{UINT8_MAX}) [[unlikely]]
+                else
                 {
-                    lobby.handleLobbyPacket(message);
-                    continue;
+                    data.incMsgVec.push_back(message);
                 }
-                global::MP_DATA.statistics.addIncoming(message.payload.type, message.payload.size);
-                data.incMsgVec.push_back(message);
             }
+#ifdef MAGIQUE_DEBUG
+            for (size_t i = start; i < data.incMsgVec.size(); ++i)
+            {
+                auto& msg = data.incMsgVec[i];
+                global::MP_DATA.statistics.addIncoming(msg.payload.type, msg.payload.size);
+            }
+#endif
         };
 
         MAGIQUE_ASSERT(data.incMsgBuffer.empty(), "Must be empty by now");
@@ -179,7 +175,7 @@ namespace magique
             const auto steamConn = static_cast<HSteamNetConnection>(conn);
             auto** buff = data.incMsgBuffer.data() + data.incMsgBuffer.size();
             const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(steamConn, buff, max);
-            if (n == -1) // No more messages
+            if (n == -1 || n == 0) // No more messages
             {
                 continue;
             }

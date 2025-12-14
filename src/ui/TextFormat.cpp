@@ -54,13 +54,13 @@ namespace magique
 
     //----------------- STATE DATA -----------------//
 
-    static StringHashMap<ValueInfo> VALUES{};     // Placeholder to value mapping - transparent lookup enabled!
-    static ValueStorage VALUE_STORAGE{};          // All values stored by the placeholders
-    static char FMT_PREFIX = '$';                 // The format prefix to each for#
-    static char FMT_ENCAP_START = '{';            // Format encapsulator start
-    static char FMT_ENCAP_END = '}';              // Format encapsulator end
-    static std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
-    static std::string STRING_BUILDER(512, '\0'); // Cache for the final formatted string
+    inline StringHashMap<ValueInfo> VALUES{};     // Placeholder to value mapping - transparent lookup enabled!
+    inline ValueStorage VALUE_STORAGE{};          // All values stored by the placeholders
+    inline char FMT_PREFIX = '$';                 // The format prefix to each for#
+    inline char FMT_ENCAP_START = '{';            // Format encapsulator start
+    inline char FMT_ENCAP_END = '}';              // Format encapsulator end
+    inline std::string FORMAT_CACHE(64, '\0');    // Length of 64 to ensure it is large enough for most values
+    inline std::string STRING_BUILDER(512, '\0'); // Cache for the final formatted string
 
     template <typename T>
     static constexpr ValueType getValueType() // Function to get the ValueType for a given type T

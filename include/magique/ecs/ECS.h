@@ -109,6 +109,7 @@ namespace magique
     // By passing a rect, an X and Y offset (from the position) can also be specified
     CollisionC& GiveCollisionRect(entt::entity entity, float width, float height, int anchorX = 0, int anchorY = 0);
     CollisionC& GiveCollisionRect(entt::entity entity, Rectangle rect, int anchorX = 0, int anchorY = 0);
+    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor);
 
     // Makes the entity collidable with others - Shape: CIRCLE (vertical)
     // Pass the height and the radius of the capsule - circles always rotated around their middle point!

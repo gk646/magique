@@ -116,7 +116,6 @@
 // Maximum amount of timers supported at the same time
 #define MAGIQUE_MAX_SUPPORTED_TIMERS (4)
 
-
 //================= COMPILATION =================//
 
 // Forward declares std::function which improves compile time about 150ms per TU - only on MSVC
@@ -152,6 +151,7 @@ namespace std
 #endif
 
 #define MAGIQUE_WORLD_BOUND_DEPTH (100)
-
+#define MAGIQUE_LOBBY_PACKET_TYPE (static_cast<MessageType>(UINT8_MAX))
+#define MAGIQUE_BATCHED_PACKET_TYPE (static_cast<MessageType>(UINT8_MAX - 1))
 
 #endif //MAGIQUE_CONFIG_H

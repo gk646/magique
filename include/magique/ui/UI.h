@@ -59,6 +59,7 @@ namespace magique
         static bool IsKeyPressed(int key);
         static bool IsKeyDown(int key);
         static bool IsKeyReleased(int key);
+        static bool IsKeyPressedRepeat(int key);
 
         static bool IsMouseButtonPressed(int key);
         static bool IsMouseButtonDown(int key);

@@ -6,7 +6,9 @@ endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${TARGET_NAME} PUBLIC
+            -std=c++23
             -march=native
+            -flto=auto
             -fno-exceptions
             -fno-rtti
             -fvisibility=hidden
@@ -27,7 +29,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_compile_options(${TARGET_NAME} PUBLIC
             $<$<CONFIG:Debug>:
-            -Og
+            -O0
             -g1
             #-D_GLIBCXX_DEBUG
             #-D_GLIBCXX_ASSERTIONS

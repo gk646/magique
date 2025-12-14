@@ -61,7 +61,7 @@ namespace magique
         std::vector<std::vector<int16_t>> tileLayers; // Contiguous array for map data
         std::vector<TiledProperty> properties;
         int width = 0, height = 0;
-        friend TileMap ImportTileMap(Asset);
+        friend TileMap ImportTileMap(const Asset&);
     };
 
 } // namespace magique

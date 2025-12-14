@@ -12,24 +12,26 @@ namespace magique
         global::LOBBY_DATA.metadataCallback = callback;
     }
 
-    static Lobby LOBBY{};
+    inline Lobby LOBBY{};
 
     Lobby& GetLobby() { return LOBBY; }
 
+#define MG_SESSION_LOCK()                                                                                               \
+    if (!GetInMultiplayerSession())                                                                                     \
+    {                                                                                                                   \
+        return;                                                                                                         \
+    }
+
     void Lobby::setStartSignal(const bool value)
     {
-        if (!GetInMultiplayerSession())
-        {
-            return;
-        }
-
+        MG_SESSION_LOCK()
         global::LOBBY_DATA.startSignal = value;
 
         char buff[2]; // 1 type + signal
         buff[0] = (int8_t)LobbyPacketType::START_SIGNAL;
         buff[1] = (int8_t)value;
 
-        const auto payload = CreatePayload(buff, 2, MessageType{UINT8_MAX});
+        const auto payload = CreatePayload(buff, 2, MAGIQUE_LOBBY_PACKET_TYPE);
         BatchMessageToAll(payload);
     }
 
@@ -37,42 +39,28 @@ namespace magique
 
     void Lobby::sendChatMessage(const char* message)
     {
-        if (!GetInMultiplayerSession())
-        {
-            return;
-        }
-
+        MG_SESSION_LOCK()
         const auto len = strnlen(message, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
         if (len > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
             LOG_WARNING("Sent message longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
-
         if (len == 0)
         {
             return;
         }
-
         char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 2]; // Message + 1 null terminators + 1 type
-
         buff[0] = (int8_t)LobbyPacketType::CHAT;
         std::memcpy(buff + 1, message, len);
         buff[len + 1] = '\0';
-        const auto payload = CreatePayload(buff, 1 + len + 1, MessageType{UINT8_MAX});
+        const auto payload = CreatePayload(buff, 1 + len + 1, MAGIQUE_LOBBY_PACKET_TYPE);
         BatchMessageToAll(payload);
-        if (global::LOBBY_DATA.chatCallback)
-        {
-            global::LOBBY_DATA.chatCallback(Connection::INVALID_CONNECTION, message);
-        }
     }
 
     void Lobby::setMetadata(const char* key, const char* value)
     {
-        if (!GetInMultiplayerSession())
-        {
-            return;
-        }
+        MG_SESSION_LOCK()
         const auto keyLen = strnlen(key, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
         const auto valLen = strnlen(value, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
         if ((keyLen + valLen) > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
@@ -96,7 +84,7 @@ namespace magique
         std::memcpy(buff + 1 + keyLen + 1, value, valLen);
         buff[keyLen + 1 + valLen + 1] = '\0';
 
-        const auto payload = CreatePayload(buff, 1 + keyLen + 1 + valLen + 1, MessageType{UINT8_MAX});
+        const auto payload = CreatePayload(buff, 1 + keyLen + 1 + valLen + 1, MAGIQUE_LOBBY_PACKET_TYPE);
         if (GetIsClient())
         {
             BatchMessage(GetCurrentConnections().front(), payload);

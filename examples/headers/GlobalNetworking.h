@@ -41,7 +41,7 @@ using namespace magique;
 
 enum EntityType : uint16_t
 {
-    PLAYER,
+    Player,
     NET_PLAYER,
     OBJECT,
 };
@@ -154,7 +154,7 @@ struct Test final : Game
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
-        RegisterEntity(PLAYER, playerFunc);
+        RegisterEntity(Player, playerFunc);
 
         // Other players
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
@@ -174,12 +174,12 @@ struct Test final : Game
         };
         RegisterEntity(OBJECT, objectFunc);
 
-        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(Player, new PlayerScript());
         SetEntityScript(NET_PLAYER, new NetPlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
 
         // Create some entities
-        CreateEntity(PLAYER, 0, 0, MapID(0));
+        CreateEntity(Player, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
             CreateEntity(OBJECT, GetRandomFloat(1, 1000), GetRandomFloat(1, 1000), MapID(0));
@@ -206,8 +206,8 @@ struct Test final : Game
                     spawnUpdate.x = pos.x;
                     spawnUpdate.y = pos.y;
                     if (id == e) // If it's the network player itself send the player type (for the camera)
-                        spawnUpdate.type = PLAYER;
-                    else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
+                        spawnUpdate.type = Player;
+                    else if (pos.type == Player) // Filter out the host - the host is a network player on the client
                         spawnUpdate.type = NET_PLAYER;
                     else
                         spawnUpdate.type = pos.type;

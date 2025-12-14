@@ -16,7 +16,7 @@ using namespace magique;
 // Define the types of entities used in this game
 enum EntityType : uint16_t
 {
-    PLAYER,
+    Player,
     OBJECT,
 };
 
@@ -105,7 +105,7 @@ struct Example final : Game
             GiveCollisionRect(e,25, 25);
             GiveComponent<TestCompC>(e);
         };
-        RegisterEntity(PLAYER, playerFunc);
+        RegisterEntity(Player, playerFunc);
 
         // Create moving objects
         const auto objFunc = [](entt::entity e, EntityType type)
@@ -132,10 +132,10 @@ struct Example final : Game
         };
         RegisterEntity(OBJECT, objFunc);
 
-        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(Player, new PlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
 
-        auto player = CreateEntity(PLAYER, 0, 0, MapID(0));
+        auto player = CreateEntity(Player, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
             // CreateEntity(OBJECT, GetRandomFloat(-500, 500), GetRandomFloat(-500, 500), MapID(0));

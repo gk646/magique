@@ -2,14 +2,13 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
-#include "magique/assets/types/TextLines.h"
-
-
+#include <glaze/json/write.hpp>
 #include <magique/assets/types/Asset.h>
 #include <magique/assets/container/CSVImport.h>
-#include <glaze/json/write.hpp>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/VirtualClock.h>
+#include <magique/assets/types/TextLines.h>
+#include <raylib/raylib.h>
 
 //===============================================
 // File Imports
@@ -20,7 +19,7 @@
 // Refer to https://stephenberry.github.io/glaze/json/ for more info on how to use the JSON library
 // IMPORTANT: If you define custom parse/serialization rules etc. they need to be included BEFORE you call Import/Export
 
-// Notes: This also contains the serialization specializations for magique structs
+// Notes: This also contains the serialization specializations for magique (and raylib) structs
 // ................................................................................
 
 namespace magique
@@ -50,29 +49,41 @@ namespace magique
 } // namespace magique
 
 
-template <>
-struct glz::meta<magique::Point>
-{
-    using T = magique::Point;
-    static constexpr auto value = object(&T::x, &T::y);
-};
-
-template <>
-struct glz::meta<magique::Keybind>
-{
-    using T = magique::Keybind;
-    static constexpr auto value = object(&T::key, &T::layered, &T::shift, &T::ctrl, &T::alt);
-};
-
-template <>
-struct glz::meta<magique::VirtualClock>
-{
-    using T = magique::VirtualClock;
-    static constexpr auto value = object(&T::realSecondSeconds, &T::ticks, &T::timeScale, &T::isPaused);
-};
-
-
 // IMPLEMENTATION
+
+
+namespace glz
+{
+    template <>
+    struct meta<magique::Point>
+    {
+        using T = magique::Point;
+        static constexpr auto value = object(&T::x, &T::y);
+    };
+
+    template <>
+    struct meta<magique::Keybind>
+    {
+        using T = magique::Keybind;
+        static constexpr auto value = object(&T::key, &T::layered, &T::shift, &T::ctrl, &T::alt);
+    };
+
+    template <>
+    struct meta<magique::VirtualClock>
+    {
+        using T = magique::VirtualClock;
+        static constexpr auto value = object(&T::realSecondSeconds, &T::ticks, &T::timeScale, &T::isPaused);
+    };
+
+    template <>
+    struct meta<Color>
+    {
+        using T = Color;
+        static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
+    };
+
+} // namespace glz
+
 
 namespace magique
 {
@@ -222,7 +233,7 @@ namespace magique
         auto ec = glz::read_json(data, buff);
         if (ec)
         {
-            LOG_ERROR("Failed to import JSON %s: %s at position %d\n%.30s", asset.getFileName(), GetJSONErrStr(ec),
+            LOG_ERROR("Failed to import JSON %s: %s at position %d\n%.30s", asset.getPath(), GetJSONErrStr(ec),
                       (int)ec.location, asset.getData() + ec.location);
             return false;
         }
@@ -233,7 +244,9 @@ namespace magique
     bool ImportJSON(const char* json, T& data)
     {
         std::string_view buff{json, strlen(json)};
-        auto ec = glz::read_json(data, buff);
+        auto ec = glz::read_json<glz::opts{
+            .comments = true,
+        }>(data, buff);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON %.15s: %s at position %d\n%.30s", json, GetJSONErrStr(ec), (int)ec.location,
@@ -247,7 +260,7 @@ namespace magique
     bool ExportJSON(const T& data, std::string& buffer)
     {
         buffer.clear();
-        auto ec = glz::write<glz::opts{.prettify = prettify}>(data, buffer);
+        auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);
         if (ec)
         {
             LOG_ERROR("Failed to export JSON: %s ", GetJSONErrStr(ec));

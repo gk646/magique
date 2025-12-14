@@ -66,16 +66,18 @@ namespace magique::internal
         {
             for (auto& vec : cpuTasks)
             {
-                for (auto task : vec)
+                for (auto& task : vec)
                 {
                     delete task;
+                    task = nullptr;
                 }
             }
             for (auto& vec : gpuTasks)
             {
-                for (auto task : vec)
+                for (auto& task : vec)
                 {
                     delete task;
+                    task = nullptr;
                 }
             }
         }

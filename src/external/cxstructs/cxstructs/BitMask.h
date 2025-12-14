@@ -26,15 +26,6 @@
 namespace cxstructs
 {
 
-    template <size_t N>
-    struct SuitableStorageType
-    {
-        // Default to uint64_t for N <= 64
-        using type =
-            std::conditional_t<N <= 8, uint8_t,
-                               std::conditional_t<N <= 16, uint16_t, std::conditional_t<N <= 32, uint32_t, uint64_t>>>;
-    };
-
     /**
  * BitMask for a given enum type
  *
@@ -42,82 +33,7 @@ namespace cxstructs
  * enum Test { ONE = 1, TWO = 2, THREE = 4 };
  * @tparam E the enum
  */
-    template <class E>
-    struct EnumMask
-    {
-        using StoreType = SuitableStorageType<sizeof(E) * 8>::type;
 
-        EnumMask(E data) : data_(static_cast<StoreType>(data)) {}
-
-        void assign(E flag, const bool value)
-        {
-            if (value)
-            {
-                set(flag);
-            }
-            else
-            {
-                unset(flag);
-            }
-        }
-
-        void set(E flag) noexcept { data_ |= static_cast<StoreType>(flag); }
-
-        void unset(E flag) noexcept { data_ &= ~static_cast<StoreType>(flag); }
-
-        void toggle(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
-
-        [[nodiscard]] bool isSet(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
-
-        void clear() noexcept { data_ = 0; }
-
-        [[nodiscard]] bool any() const noexcept { return data_ != 0x0; }
-
-        //Compile time check(unfolding)
-        template <E... Flags>
-        [[nodiscard]] constexpr bool any_of() const noexcept
-        {
-            E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
-            return (data_ & compositeFlag) != 0;
-        }
-
-        //Compile time check(unfolding)
-        template <E... Flags>
-        [[nodiscard]] constexpr bool all_of() const noexcept
-        {
-            E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
-            return (data_ & compositeFlag) == compositeFlag;
-        }
-
-        //Runtime check
-        [[nodiscard]] bool any_of(std::initializer_list<E> flags) const noexcept
-        {
-            for (auto flag : flags)
-            {
-                if ((data_ & static_cast<StoreType>(flag)) != 0)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        //Runtime check
-        [[nodiscard]] bool all_of(std::initializer_list<E> flags) const noexcept
-        {
-            for (auto flag : flags)
-            {
-                if ((data_ & static_cast<E>(flag)) == 0)
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-    private:
-        StoreType data_ = 0;
-    };
 
 #ifdef CX_INCLUDE_TESTS
     static void TEST_FLAG_CONTAINERS()

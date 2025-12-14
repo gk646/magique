@@ -33,7 +33,7 @@ namespace magique
         return region;
     }
 
-    TextureRegion ImportTexture(Asset asset, const AtlasID at, const float scale)
+    TextureRegion ImportTexture(const Asset& asset, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
         const Image image = LoadImage(asset);
@@ -229,12 +229,12 @@ namespace magique
         }
     }
 
-    EntityAnimation ImportAseprite(Asset asset, StateMapFunc func, AtlasID atlas, float scale)
+    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc func, AtlasID atlas, float scale)
     {
         return ImportAsepriteEx(asset, {}, func, atlas, scale);
     }
 
-    EntityAnimation ImportAsepriteEx(Asset asset, const std::vector<const char*>& layers, StateMapFunc func,
+    EntityAnimation ImportAsepriteEx(const Asset& asset, const std::vector<const char*>& layers, StateMapFunc func,
                                      AtlasID atlas, float scale, Point offset, Point anchor)
     {
         EntityAnimation animation{scale};
@@ -276,7 +276,25 @@ namespace magique
         return animation;
     }
 
-    Sound ImportSound(Asset asset)
+    Shader ImportShader(const Asset& vertex, const Asset& fragment)
+    {
+        if (vertex.getSize() != 0)
+        {
+            if (fragment.getSize() != 0)
+            {
+                return LoadShaderFromMemory(vertex.getData(), fragment.getData());
+            }
+            return LoadShaderFromMemory(vertex.getData(), nullptr);
+        }
+        else if (fragment.getSize() != 0)
+        {
+            return LoadShaderFromMemory(nullptr, fragment.getData());
+        }
+        LOG_WARNING("Passed empty asset for both vertex and fragment: Cant load shader");
+        return {};
+    }
+
+    Sound ImportSound(const Asset& asset)
     {
         ASSET_CHECK(asset);
         const auto* ext = asset.getExtension();
@@ -291,7 +309,7 @@ namespace magique
         return sound;
     }
 
-    Music ImportMusic(Asset asset)
+    Music ImportMusic(const Asset& asset)
     {
         ASSET_CHECK(asset);
         const auto* ext = asset.getExtension();
@@ -351,7 +369,7 @@ namespace magique
         }
     };
 
-    TileMap ImportTileMap(Asset asset)
+    TileMap ImportTileMap(const Asset& asset)
     {
         ASSET_CHECK(asset);
         TileMap tilemap{};
@@ -441,7 +459,7 @@ namespace magique
         return tilemap;
     }
 
-    TileSet ImportTileSet(Asset asset, TileClassMapFunc func)
+    TileSet ImportTileSet(const Asset& asset, TileClassMapFunc func)
     {
         ASSET_CHECK(asset);
         TileSet tileset{};
@@ -505,7 +523,7 @@ namespace magique
         return tileset;
     }
 
-    TileSheet ImportTileSheet(Asset asset, const int tileSize, const float scale)
+    TileSheet ImportTileSheet(const Asset& asset, const int tileSize, const float scale)
     {
         ASSET_CHECK(asset);
         ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);

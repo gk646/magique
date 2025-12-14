@@ -2,12 +2,15 @@
 #ifndef MAGIQUE_PERFDATA_H
 #define MAGIQUE_PERFDATA_H
 
+#include <magique/multiplayer/Multiplayer.h>
+
 #include "internal/datastructures/VectorType.h"
 #include "external/raylib-compat/rlgl_compat.h"
-
 #include "internal/utils/OSUtil.h"
+
 #if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
-#include "internal/globals/MultiplayerData.h"
+#include "external/networkingsockets/isteamnetworkingsockets.h"
+#include "external/networkingsockets/steamnetworkingtypes.h"
 #endif
 
 namespace magique
@@ -113,15 +116,14 @@ namespace magique
             blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
-            const auto& mp = global::MP_DATA;
-            if (mp.isInSession)
+            if (GetInMultiplayerSession())
             {
                 float inBytes = 0;
                 float outBytes = 0;
                 float ping = 0.0F;
-                if (!GetCurrentConnections().empty())
+                if (GetIsClient())
                 {
-                    const auto conn = static_cast<HSteamNetConnection>(mp.connections[0]);
+                    const auto conn = (HSteamNetConnection)GetCurrentConnections()[0];
                     SteamNetConnectionRealTimeStatus_t info{};
                     SteamNetworkingSockets()->GetConnectionRealTimeStatus(conn, &info, 0, nullptr);
                     inBytes = info.m_flInBytesPerSec;
@@ -130,7 +132,7 @@ namespace magique
                 }
                 else if (GetIsActiveHost())
                 {
-                    for (const auto conn : mp.connections) // Only contains valid connections
+                    for (const auto conn : GetCurrentConnections()) // Only contains valid connections
                     {
                         SteamNetConnectionRealTimeStatus_t info{};
                         SteamNetworkingSockets()->GetConnectionRealTimeStatus(static_cast<HSteamNetConnection>(conn),
@@ -139,7 +141,7 @@ namespace magique
                         outBytes += info.m_flOutBytesPerSec;
                         ping += (float)info.m_nPing;
                     }
-                    ping /= (float)mp.connections.size();
+                    ping /= (float)GetCurrentConnections().size();
                 }
 
                 block++;

@@ -71,28 +71,28 @@ namespace magique
         }
     }
 
-    void UIObject::align(const Anchor anchor, const UIObject& relativeTo, Point inset)
+    void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point alignInset)
     {
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
-        inset = {GetScaled(inset.x), GetScaled(inset.y)};
-        switch (anchor)
+        alignInset = GetScaled(alignInset);
+        switch (alignAnchor)
         {
         case Anchor::TOP_LEFT:
-            pos.x += inset.x;
-            pos.y += inset.y;
+            pos.x += alignInset.x;
+            pos.y += alignInset.y;
             break;
         case Anchor::TOP_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += inset.y;
+            pos.y += alignInset.y;
             break;
         case Anchor::TOP_RIGHT:
-            pos.x += (relWidth - myWidth) - inset.x;
-            pos.y += inset.y;
+            pos.x += (relWidth - myWidth) - alignInset.x;
+            pos.y += alignInset.y;
             break;
         case Anchor::MID_LEFT:
-            pos.x += inset.x;
+            pos.x += alignInset.x;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::MID_CENTER:
@@ -100,23 +100,23 @@ namespace magique
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::MID_RIGHT:
-            pos.x += (relWidth - myWidth) - inset.x;
+            pos.x += (relWidth - myWidth) - alignInset.x;
             pos.y += (relHeight - myHeight) / 2.0F;
             break;
         case Anchor::BOTTOM_LEFT:
-            pos.x += inset.x;
-            pos.y += (relHeight - myWidth) - inset.y;
+            pos.x += alignInset.x;
+            pos.y += relHeight - myHeight + alignInset.y;
             break;
         case Anchor::BOTTOM_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += (relHeight - myWidth) - inset.y;
+            pos.y += relHeight - myHeight + alignInset.y;
             break;
         case Anchor::BOTTOM_RIGHT:
-            pos.x += (relWidth - myWidth) - inset.x;
-            pos.y += (relHeight - myWidth) - inset.y;
+            pos.x += (relWidth - myWidth) - alignInset.x;
+            pos.y += relHeight - myHeight + alignInset.y;
             break;
         case Anchor::NONE:
-            return;
+            break;
         }
         setPosition(pos);
     }

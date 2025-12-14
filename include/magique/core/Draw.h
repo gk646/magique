@@ -40,6 +40,9 @@ namespace magique
     // 'layer' is 0-based indexing and starts from the bottom up in draw order
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
 
+    // Allows to specify the origin (zero point) and rectangle (of the tilemap) to draw
+    void DrawTileMapEx(const Point& origin, const Rectangle& rect ,const TileMap& tileMap, const TileSheet& tileSheet, int layer);
+
     //================= TEXT =================//
 
     // Draws the given text centered around the given position

@@ -88,10 +88,10 @@ namespace magique
     // Note: These methods cache their call parameters
     // -> No overhead when called with the same parameters in the same tick (with no other calls in between)
 
-    // Returns a vector containing all (collision)entities that are in the cells intersected by the search square
-    // The search square is given by its middle point and sidelengths
+    // Returns a vector containing all (collision) entities that within the given distance (euclidean) from the origin
+    // Note: Entities are filtered based on position or mid-point based on CollisionC (if present)
     // Note: The returned vector is only valid until this method is called again (single instance)
-    const std::vector<entt::entity>& GetNearbyEntities(MapID map, Point mid, float length);
+    const std::vector<entt::entity>& GetNearbyEntities(MapID map, Point origin, float dist);
 
     // Returns true if the nearby entities contain the given target entity
     // Note: This is a hash lookup O(1) (after querying the entity grid)

@@ -3,7 +3,10 @@
 
 #include <chrono>
 #include <fstream>
+
+#if __has_include(<stacktrace>)
 #include <stacktrace>
+#endif
 
 // Platform-specific headers
 #ifdef __linux__
@@ -197,6 +200,7 @@ inline std::string GetStackTrace()
     std::string stackTrace;
     stackTrace.reserve(128);
 
+#if __has_include(<stacktrace>)
     auto stacktrace = std::stacktrace::current();
     int lineNumber = 0;
     for (const auto& entry : stacktrace)
@@ -218,6 +222,7 @@ inline std::string GetStackTrace()
         stackTrace += entry.description();
         stackTrace += "\n";
     }
+#endif
     return stackTrace;
 }
 

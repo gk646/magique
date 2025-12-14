@@ -5,11 +5,9 @@
 
 namespace magique
 {
-    SceneManager& GetSceneManager()
-    {
-        static SceneManager SCENE_MANAGER{};
-        return SCENE_MANAGER;
-    }
+    inline SceneManager SCENE_MANAGER{};
+
+    SceneManager& GetSceneManager() { return SCENE_MANAGER; }
 
     void Scene::draw()
     {
@@ -57,7 +55,7 @@ namespace magique
         HashMap<GameState, Scene> stateMap;
     };
 
-    static SceneManagerData SCENE_DATA{};
+    inline SceneManagerData SCENE_DATA{};
 
     Scene& SceneManager::getScene(const char* name) { return SCENE_DATA.nameMap[name]; }
 

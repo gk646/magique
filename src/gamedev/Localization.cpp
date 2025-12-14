@@ -28,7 +28,7 @@ namespace magique
         }
     };
 
-    static LocalizationData DATA{};
+    inline LocalizationData DATA{};
 
     const char* Localize(const char* keyword)
     {

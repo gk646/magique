@@ -27,6 +27,10 @@ M_IGNORE_WARNING(4100)
 
 namespace magique
 {
+    // Return true: signals enter action was consumed and should NOT be treated as newline
+    // Return false: signals that enter action was not used and should be treated as newline
+    using EnterFunc = std::function<bool(bool ctrl, bool shift, bool alt)>;
+
     struct TextField : UIObject
     {
         // Creates the textfield from absolute dimensions in the logical UI resolution
@@ -45,20 +49,19 @@ namespace magique
         // Updates the text with the current inputs for this tick and updates the focused state
         // Note: This should be called each update tick
         // Returns: true if any event OR text input has been made
-        bool updateInputs();
+        bool updateInputs(bool allowInput = true);
 
         // Draws the text and updates the selection
-        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1);
+        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1,
+                      bool centered = true);
 
         // Draws the default graphical representation of this textfield
         void drawDefault(const Rectangle& bounds);
 
-        // Called everytime the textfield is focused and enter is pressed
-        // Return true: signals enter action was consumed and should NOT be treated as newline
-        // Return false: signals that enter action was not used and should be treated as newline
-        virtual bool onEnterPressed(bool ctrl, bool shift, bool alt) { return false; }
-
     public:
+        // Called everytime the textfield is focused and enter is pressed
+        virtual void wireOnEnter(const EnterFunc& func);
+
         // Returns the current text of the textfield
         [[nodiscard]] std::string& getText();
 
@@ -76,26 +79,29 @@ namespace magique
 
         // Returns true if the textfield is focused
         [[nodiscard]] bool getIsFocused() const;
+        void setFocused(bool val);
 
         // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
         [[nodiscard]] int getLineCount() const;
 
         // Adjust the bounds such that the text fits inside
         // Keeps the top left the same
-        void fitBoundsToText(float size = 14, const Font& font = GetEngineFont(), float spacing = 1);
+        void fitBoundsToText(float size = 14, const Font& font = GetEngineFont(), float spacing = 1,
+                             bool heightOnly = false);
 
     private:
         bool pollControls();
         bool updateControls();
         void updateSelection(float fSize, const Font& font, float spacing);
         void updateLineState();
-        Point getTextPos(const Rectangle& bounds, float fontSize) const;
+        Point getCenteredTextPos(const Rectangle& bounds, float fontSize) const;
 
         // Returns if change occurred
         bool removeSelectionContent();
         void resetSelection();
         bool hasSelection() const;
 
+        EnterFunc enterFunc;
         std::string text;
         const char* hint = nullptr;
         float longestLineLen = 0; // Length of the longest line

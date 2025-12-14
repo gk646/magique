@@ -71,7 +71,7 @@ static void RasterizeRect(Func func, const float x, const float y, const float w
     }
 
     // 4 corners, the 4 middle points of the edges and the middle point -> 9 potential cells
-    if (w < cellSize * 3 && h < cellSize * 3) [[likely]]
+    if (w < cellSize * 2 && h < cellSize * 2) [[likely]]
     {
         const int xhalf = floordiv<cellSize>(static_cast<int>(x + (w / 2.0F)));
         const int yhalf = floordiv<cellSize>(static_cast<int>(y + (h / 2.0F)));

@@ -189,24 +189,29 @@ namespace magique
 
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
     {
+        DrawTileMapEx({}, GetCameraNativeBounds(), tileMap, tileSheet, layer);
+    }
+
+    void DrawTileMapEx(const Point& origin, const Rectangle& rect, const TileMap& tileMap, const TileSheet& tileSheet,
+                       int layer)
+    {
         MAGIQUE_ASSERT(tileMap.getTileLayerCount() >= layer, "Out of bounds layer!");
 
-        const auto cBounds = GetCameraNativeBounds(); // Camera bounds
         const float tileSize = tileSheet.getTextureSize();
         const int mWidth = tileMap.getWidth();
         const int mHeight = tileMap.getHeight();
 
-        const int startTileX = std::max(0, (int)std::floor(cBounds.x / tileSize));
-        const int endTileX = std::min(mWidth, (int)std::ceil((cBounds.x + cBounds.width) / tileSize));
-        const int startTileY = std::max(0, (int)std::floor(cBounds.y / tileSize));
-        const int endTileY = std::min(mHeight, (int)std::ceil((cBounds.y + cBounds.height) / tileSize));
+        const int startTileX = std::max(0, (int)std::floor(rect.x / tileSize));
+        const int endTileX = std::min(mWidth, (int)std::ceil((rect.x + rect.width) / tileSize));
+        const int startTileY = std::max(0, (int)std::floor(rect.y / tileSize));
+        const int endTileY = std::min(mHeight, (int)std::ceil((rect.y + rect.height) / tileSize));
 
         const auto* start = tileMap.getLayerData(layer) + (startTileX + startTileY * mWidth);
         const int diffX = endTileX - startTileX;
         const int diffY = endTileY - startTileY;
-        const float startX = static_cast<float>(startTileX) * tileSize;
 
-        float screenY = static_cast<float>(startTileY) * tileSize;
+        const float screenX = static_cast<float>(startTileX) * tileSize + origin.x;
+        float screenY = static_cast<float>(startTileY) * tileSize + origin.y;
 
         rlSetTexture(tileSheet.getTextureID());
         rlBegin(RL_QUADS);
@@ -217,28 +222,28 @@ namespace magique
         constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
         for (int i = 0; i < diffY; ++i)
         {
-            float screenX = startX;
+            float tmpScreenX = screenX;
             for (int j = 0; j < diffX; ++j)
             {
                 const auto [x, y] = tileSheet.getOffset(start[j]);
-                const float texCoordLeft = x / atlasWidth;
-                const float texCoordRight = (x + tileSize) / atlasWidth;
-                const float texCoordTop = y / atlasHeight;
-                const float texCoordBottom = (y + tileSize) / atlasHeight;
+                const float texCoordLeft = std::floor(x) / atlasWidth;
+                const float texCoordRight = std::floor(x + tileSize) / atlasWidth;
+                const float texCoordTop = std::floor(y) / atlasHeight;
+                const float texCoordBottom = std::floor(y + tileSize) / atlasHeight;
 
                 rlTexCoord2f(texCoordLeft, texCoordTop);
-                rlVertex2f(screenX, screenY);
+                rlVertex2f(tmpScreenX, screenY);
 
                 rlTexCoord2f(texCoordLeft, texCoordBottom);
-                rlVertex2f(screenX, screenY + tileSize);
+                rlVertex2f(tmpScreenX, screenY + tileSize);
 
                 rlTexCoord2f(texCoordRight, texCoordBottom);
-                rlVertex2f(screenX + tileSize, screenY + tileSize);
+                rlVertex2f(tmpScreenX + tileSize, screenY + tileSize);
 
                 rlTexCoord2f(texCoordRight, texCoordTop);
-                rlVertex2f(screenX + tileSize, screenY);
+                rlVertex2f(tmpScreenX + tileSize, screenY);
 
-                screenX += tileSize;
+                tmpScreenX += tileSize;
             }
             start += mWidth;
             screenY += tileSize;

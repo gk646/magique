@@ -23,7 +23,7 @@ enum class MapID : uint8_t
 
 enum EntityType : uint16_t
 {
-    PLAYER,
+    Player,
     OBSTACLE,
     HUNTER,
 };
@@ -122,7 +122,7 @@ struct Example final : Game
             GiveCamera(e);
             GiveCollisionRect(e, 25, 25);
         };
-        RegisterEntity(PLAYER, playerFunc);
+        RegisterEntity(Player, playerFunc);
 
         const auto hunterFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 25, 25); };
         RegisterEntity(HUNTER, hunterFunc);
@@ -131,13 +131,13 @@ struct Example final : Game
         RegisterEntity(OBSTACLE, objFunc);
 
         // Set the scripts
-        SetEntityScript(PLAYER, new PlayerScript());
+        SetEntityScript(Player, new PlayerScript());
         SetEntityScript(HUNTER, new HunterScript());
         SetEntityScript(OBSTACLE, new ObstacleScript());
 
         // Create some objects
         const MapID map = MapID::DEFAULT;
-        CreateEntity(PLAYER, 50, 300, map);
+        CreateEntity(Player, 50, 300, map);
         CreateEntity(HUNTER, 50, 50, map);
 
         SetShowCompassOverlay(true);

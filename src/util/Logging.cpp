@@ -46,21 +46,20 @@ namespace magique
             }
 
             FILE* out = level >= LEVEL_ERROR ? stderr : stdout;
-            constexpr int cacheSize = LogData::cacheSize;
-            char formatCache[cacheSize]{};
+            char formatCache[LogData::CACHE_SIZE]{};
 
             int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                written = snprintf(formatCache, cacheSize, "[%s]:%s:%d %s: ", level_str, file, line, function);
+                written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]:%s:%d %s: ", level_str, file, line, function);
             }
             else
             {
-                written = snprintf(formatCache, cacheSize, "[%s]: ", level_str);
+                written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]: ", level_str);
             }
 
             MAGIQUE_ASSERT(written >= 0, "Failed to format");
-            written += vsnprintf(formatCache + written, cacheSize - written, msg, args);
+            written += vsnprintf(formatCache + written, LogData::CACHE_SIZE - written, msg, args);
 
             if (log.callback != nullptr)
             {

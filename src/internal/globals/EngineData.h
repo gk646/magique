@@ -28,12 +28,12 @@ namespace magique
     {
         HashSet<entt::entity> cache;
         Point lastOrigin{};
-        float lastRadius = 0;
+        float lastLength = 0;
         MapID lastMap{};
 
         [[nodiscard]] bool getIsSimilarParameters(const MapID map, const Point& p, const float radius) const
         {
-            return lastOrigin == p && lastRadius == radius && lastMap == map;
+            return lastOrigin == p && lastLength == radius && lastMap == map;
         }
     };
 

@@ -7,7 +7,7 @@ namespace magique
 
     struct LogData final
     {
-        static constexpr int cacheSize = 255;
+        static constexpr int CACHE_SIZE = 512;
         LogCallbackFunc callback = nullptr;
         FILE* file = nullptr;
 #ifdef MAGIQUE_DEBUG

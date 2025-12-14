@@ -34,8 +34,9 @@
 //               - LAN:   Connect via IP-address, either manual exchange or use LocalSockets.h helpers
 //      2. Once a connection with either socket type is established this API takes over
 //      3. Use lobby features like chat messages or metadata or configure the gamestate
-//      5. Set the start signal to true
+//      5. Set the start signal to true - this starts the game for all clients
 //      6. Continuously send game updates
+//          - New joining clients read the metadata and immediately join the game
 //
 // Note: The lobby only works if you call ReceiveIncomingMessages() (each tick) - lobby packets are filtered and handled automatically
 // .....................................................................
@@ -67,7 +68,7 @@ namespace magique
         [[nodiscard]] bool getStartSignal() const;
 
         // Sends a new chat message in the lobby chat
-        // Note: requires you to be in a lobby
+        // Note: requires you to be in a lobby - callback not called for sent messages
         void sendChatMessage(const char* message);
 
         // Sets the metadata - behavior differs from clients vs hosts

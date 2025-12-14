@@ -6,6 +6,8 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
+#include "magique/core/Core.h"
+#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -20,6 +22,10 @@ namespace magique
     void Button::setDisabled(bool value) { isDisabled = value; }
 
     bool Button::getIsDisabled() const { return isDisabled; }
+
+    void Button::setHoverText(const char* value) { hoverText = value; }
+
+    const char* Button::getHoverText() {}
 
     void Button::updateActions(const Rectangle& bounds)
     {
@@ -62,6 +68,22 @@ namespace magique
         const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
+        drawHoverText(GetEngineFont(), GetScaled(15), DARKGRAY, GRAY, WHITE);
+    }
+
+    void Button::drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const
+    {
+        if (hoverText.empty() || !CheckCollisionMouseRect(getBounds()))
+        {
+            return;
+        }
+
+        auto mouse = GetMousePos();
+        const auto dims = MeasureTextEx(fnt, hoverText.c_str(), size, 1.0F);
+        Rectangle textRect = {mouse.x, mouse.y, dims.x + 4, dims.y + 2};
+        DrawRectFrameFilled(textRect, back, outline);
+        mouse += Point{1, 2};
+        DrawTextEx(fnt, hoverText.c_str(), mouse.v(), size, 1.0F, text);
     }
 
 

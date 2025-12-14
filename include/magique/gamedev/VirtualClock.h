@@ -15,8 +15,13 @@
 
 namespace magique
 {
+    // Represents a point in time or interval
     struct VirtualTime final
     {
+        VirtualTime() = default;
+        // Values outside valid range wrap around and start at the beginning: hour=25 => hour=1
+        VirtualTime(int hour, int minute);
+
         VirtualTime operator+(const VirtualTime& other) const;
         VirtualTime operator-(const VirtualTime& other) const;
         bool operator==(const VirtualTime& other) const;
@@ -28,19 +33,26 @@ namespace magique
         bool operator<=(const VirtualTime& other) const;
         bool operator>=(const VirtualTime& other) const;
 
+        // The whole time converted to seconds
+        int toSeconds() const;
+
+        int getSecond() const;
+        int getMinute() const;
+        int getHour() const;
+        int getDay() const;
+
+    private:
         int day;
         int hour;
         int minute;
         int second;
-
-    private:
-        int toSeconds() const;
+        friend VirtualClock;
     };
 
     struct VirtualClock final
     {
         // Creates a new virtual clock where a day (24 hours) takes the given minutes in real time
-        // Default: 20 minutes (minecraft day) and syncs to current local time
+        // Default: 20 minutes (minecraft day)
         explicit VirtualClock(int realMinutes = 20);
 
         // Needs to be called each tick to update the clock
@@ -99,7 +111,7 @@ namespace magique
         //================= UTILS =================//
 
         // Sets the virtual day time equal to the current real time - once set it progresses on its own again
-        // Note: This only sets hour, minute and second not day!
+        // Note: This only sets hour, minute and second NOT day!
         void syncTimeOfDay();
 
     private:

@@ -17,6 +17,21 @@
 
 namespace magique
 {
+    Point::Point(const char* string)
+    {
+        x = TextToFloat(string);
+        while (*string != '\0')
+        {
+            if (*string == ',')
+            {
+                string++;
+                break;
+            }
+            string++;
+        }
+        y = TextToFloat(string);
+    }
+
     Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
@@ -223,6 +238,18 @@ namespace magique
         {
             return {y, -x};
         }
+    }
+
+    void Point::max(const Point& other)
+    {
+        x = std::max(x, other.x);
+        y = std::max(y, other.y);
+    }
+
+    void Point::min(const Point& other)
+    {
+        x = std::min(x, other.x);
+        y = std::min(y, other.y);
     }
 
     Point Point::PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target)

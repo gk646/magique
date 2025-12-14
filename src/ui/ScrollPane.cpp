@@ -40,6 +40,20 @@ namespace magique
 
     UIObject* ScrollPane::getContent() const { return content; }
 
+    Anchor ScrollPane::getContentAnchor() const { return contentAnchor; }
+
+    Point ScrollPane::getContentInset() const { return contentInset; }
+
+    void ScrollPane::setContentAnchor(const Anchor anchor, const Point inset)
+    {
+        contentAnchor = anchor;
+        contentInset = inset;
+    }
+
+    void ScrollPane::setInvertVertScroll(bool invert) { vertical.invertScroll = invert; }
+
+    bool ScrollPane::getInvertVertScroll() const { return vertical.invertScroll; }
+
     void ScrollPane::drawDefault(const Rectangle& bounds)
     {
         auto& theme = global::ENGINE_CONFIG.theme;
@@ -80,9 +94,7 @@ namespace magique
         {
             horizontal.updateInputs(getHorizontalScrollBounds(), bounds);
         }
-
-        const auto offset = getScrollOffset();
-        content->align(Direction::LEFT, *this, Point{offset.x, -offset.y} / GetUIScaling());
+        content->align(contentAnchor, *this, contentInset + getScrollOffset());
     }
 
     Rectangle ScrollPane::getVerticalScrollBounds()
@@ -128,7 +140,7 @@ namespace magique
             paneSize = pane.height;
         }
 
-        if (contentSize <= paneSize) // No need
+        if (contentSize <= paneSize || paneSize == 0) // No need
         {
             offset = 0;
             return scroller;
@@ -142,7 +154,7 @@ namespace magique
         // How much we actually have to scroll - only what comes on top of the pane size
         const auto maxScrollOff = contentSize - paneSize;
         // How far we can move the slider - before hitting the bottom with the end of the scroller
-        const auto moveWay = std::floor(paneSize - scrollerSize);
+        const auto moveWay = std::ceil(paneSize - scrollerSize);
         // How much content moves based on 1px scroller
         moveFactor = maxScrollOff / moveWay;
 
@@ -155,7 +167,15 @@ namespace magique
         else
         {
             offset = std::min(offset, pane.height - scrollerSize);
-            scroller = {pane.x + pane.width - width, pane.y + offset, width, scrollerSize};
+            if (invertScroll)
+            {
+                scroller = {pane.x + pane.width - width, pane.y + pane.height - offset - scrollerSize, width,
+                            scrollerSize};
+            }
+            else
+            {
+                scroller = {pane.x + pane.width - width, pane.y + offset, width, scrollerSize};
+            }
         }
         return scroller;
     }
@@ -166,17 +186,33 @@ namespace magique
         {
             isDragging = true;
         }
-
         if (!LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             isDragging = false;
         }
 
+        const auto scroll = GetMouseWheelMove() * (invertScroll ? -2.0F : 2.0F);
+        if (CheckCollisionMouseRect(pane) && scroll != 0 && scroller.width != 0)
+        {
+            isDragging = false;
+            if (!isHorizontal && !IsKeyDown(KEY_LEFT_CONTROL))
+            {
+                offset -= scroll;
+                offset = std::floor(std::min(offset, pane.height - scroller.height));
+            }
+            else if (isHorizontal && IsKeyDown(KEY_LEFT_CONTROL))
+            {
+                offset -= scroll;
+                offset = std::floor(std::min(offset, pane.width - scroller.width));
+            }
+        }
+
         if (isDragging)
         {
-            const Point diff = GetMousePos() - dragStart;
+            const Point diff = (GetMousePos() - dragStart) * (invertScroll ? -1.0F : 1.0F);
             if (isHorizontal)
             {
+
                 offset = dragStartOffset + diff.x;
                 offset = std::min(offset, pane.width - scroller.width);
             }
@@ -185,7 +221,6 @@ namespace magique
                 offset = dragStartOffset + diff.y;
                 offset = std::min(offset, pane.height - scroller.height);
             }
-            offset = std::max(offset, 0.0F);
             LayeredInput::ConsumeMouse();
         }
         else
@@ -194,6 +229,8 @@ namespace magique
             dragStartOffset = offset;
             dragStart = GetMousePos();
         }
+
+        offset = std::max(offset, 0.0F);
     }
 
     float ScrollPane::Scroller::getScaledOffset() const { return std::ceil(offset * moveFactor); }

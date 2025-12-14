@@ -53,22 +53,22 @@ namespace magique
     inline void AssignCameraData(const entt::registry& registry)
     {
         const auto view = registry.view<const CameraC, const PositionC>();
-        auto& tickData = global::ENGINE_DATA;
+        auto& data = global::ENGINE_DATA;
 #ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
         const auto sWidth = static_cast<float>(GetScreenWidth());
         const auto sHeight = static_cast<float>(GetScreenHeight());
-        tickData.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
+        data.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);
-            tickData.cameraMap = pos.map;
-            tickData.cameraEntity = e;
+            data.cameraMap = pos.map;
+            data.cameraEntity = e;
             const auto manualOff = global::ENGINE_CONFIG.cameraViewOff;
             if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
             {
-                tickData.camera.offset = manualOff;
+                data.camera.offset = manualOff;
             }
 #ifdef MAGIQUE_DEBUG
             count++;

@@ -259,8 +259,9 @@ namespace magique
 
     void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(GetEnlargedRect(bounds, -2, -2), fill);
-        DrawRectFrame(bounds, outline);
+        const auto final = RectFloor(bounds);
+        DrawRectangleRec(GetEnlargedRect(final, -2, -2), fill);
+        DrawRectFrame(final, outline);
     }
 
     void DrawTruePixelartScale(RenderTexture texture)
@@ -281,6 +282,21 @@ namespace magique
         const auto drawPos = GetCenteredPos({0, 0, display.x, display.y}, canvas.x, canvas.y);
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, drawPos, scale.x, WHITE);
+    }
+
+    Rectangle RectMove(const Rectangle& original, float x, float y)
+    {
+        return {original.x + x, original.y + y, original.width, original.height};
+    }
+
+    Rectangle RectFloor(const Rectangle& rect)
+    {
+        Rectangle floored = rect;
+        floored.x = std::floor(floored.x);
+        floored.y = std::floor(floored.y);
+        floored.width = std::floor(floored.width);
+        floored.height = std::floor(floored.height);
+        return floored;
     }
 
 } // namespace magique

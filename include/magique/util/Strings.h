@@ -66,6 +66,14 @@ namespace magique
     // https://en.cppreference.com/w/c/string/byte/strstr
     char* strstrnc(const char* haystack, const char* needle);
 
+    // Returns true if the given string conforms to:
+    //  - At least "minLen" but not longer than "maxLen"
+    //  - Characters are only:
+    //      - Letters a-zA-Z
+    //      - Numbers 0-9
+    // That means no symbols like "%!?-_" or spaces
+    bool TextIsPlayerName(const char* text, int minLen = 3, int maxLen = 16);
+
     //================= ENCODING =================//
 
     // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it

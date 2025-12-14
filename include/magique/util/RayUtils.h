@@ -89,6 +89,11 @@ namespace magique
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
 
+    // Returns the original rectangle moved by x and y
+    Rectangle RectMove(const Rectangle& original, float x, float y);
+
+    // Applies std::floor all values of the rectangle
+    Rectangle RectFloor( const Rectangle& rect);
 
 } // namespace magique
 

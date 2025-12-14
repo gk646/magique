@@ -73,7 +73,6 @@ private:
     uint32_t size_ = 0;
 };
 
-
 // This is useful for dynamically size 2D grids
 // The reduction is useful to sample the grid at a lower resolution
 // E.g. for the fog of war for a map
@@ -222,5 +221,148 @@ struct BitSet final
     }
 };
 
+template <class E>
+struct EnumSet
+{
+    using StoreType = std::underlying_type_t<E>;
+
+    EnumSet() = default;
+    explicit EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
+
+    EnumSet& operator=(E data)
+    {
+        assign(data, true);
+        return *this;
+    }
+
+    EnumSet& operator-=(E data)
+    {
+        unset(data);
+        return *this;
+    }
+
+    EnumSet& operator+=(E data)
+    {
+        set(data);
+        return *this;
+    }
+
+    void assign(E flag, const bool value)
+    {
+        if (value)
+        {
+            data_ = static_cast<StoreType>(flag);
+        }
+        else
+        {
+            data_ = 0;
+        }
+    }
+
+    void set(E flag) noexcept { data_ |= static_cast<StoreType>(flag); }
+
+    void unset(E flag) noexcept { data_ &= ~static_cast<StoreType>(flag); }
+
+    void toggle(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
+
+    [[nodiscard]] bool isSet(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
+
+    void clear() noexcept { data_ = 0; }
+
+    [[nodiscard]] bool any() const noexcept { return data_ != 0x0; }
+
+    //Compile time check(unfolding)
+    template <E... Flags>
+    [[nodiscard]] constexpr bool any_of() const noexcept
+    {
+        E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
+        return (data_ & compositeFlag) != 0;
+    }
+
+    //Compile time check(unfolding)
+    template <E... Flags>
+    [[nodiscard]] constexpr bool all_of() const noexcept
+    {
+        E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
+        return (data_ & compositeFlag) == compositeFlag;
+    }
+
+    //Runtime check
+    template <typename Iterable>
+    [[nodiscard]] bool any_of(const Iterable& flags) const noexcept
+    {
+        for (auto flag : flags)
+        {
+            if ((data_ & static_cast<StoreType>(flag)) != 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //Runtime check
+    template <typename Iterable>
+    [[nodiscard]] bool all_of(const Iterable& flags) const noexcept
+    {
+        for (auto flag : flags)
+        {
+            if ((data_ & static_cast<E>(flag)) == 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    E get() const noexcept { return static_cast<E>(data_); }
+
+    void assign(const E& value) { data_ = static_cast<StoreType>(value); }
+
+    struct EnumSetIterator
+    {
+        EnumSetIterator(StoreType data, StoreType newCurrent) : set(static_cast<E>(data)), current(newCurrent)
+        {
+            while (current != 0 && !set.isSet(static_cast<E>(current)))
+            {
+                current = current << 1;
+            }
+        }
+
+        E operator*() const noexcept { return static_cast<E>(current); }
+
+        EnumSetIterator& operator++() noexcept
+        {
+            current = current << 1;
+            while (current != 0 && !set.isSet(static_cast<E>(current)))
+            {
+                current = current << 1;
+            }
+            return *this;
+        }
+
+        EnumSetIterator operator++(int) noexcept
+        {
+            EnumSetIterator tmp = *this;
+            ++(*this);
+            return tmp;
+        }
+
+        bool operator==(const EnumSetIterator& other) const noexcept { return current == other.current; }
+
+        bool operator!=(const EnumSetIterator& other) const noexcept { return !(*this == other); }
+
+    private:
+        const EnumSet set;
+        StoreType current;
+    };
+
+    EnumSetIterator begin() const noexcept { return EnumSetIterator(data_, 1); }
+
+    EnumSetIterator end() const noexcept { return EnumSetIterator(data_, 0); }
+
+private:
+    StoreType data_ = 0;
+};
 
 #endif //MAGIQUE_PUBLIC_DATASTRUCTURES_H

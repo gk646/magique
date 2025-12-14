@@ -132,21 +132,18 @@ namespace magique
                 InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
             }
 
-            registry.destroy(entity);
             data.entityUpdateCache.erase(entity);
             UnorderedDelete(data.drawVec, entity);
             UnorderedDelete(data.entityUpdateVec, entity);
             UnorderedDelete(data.collisionVec, entity);
             data.entityNScriptedSet.erase(entity);
-            if (dynamic.mapEntityGrids.contains(pos.map)) [[likely]]
-            {
-                dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
-            }
+            dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
             global::PATH_DATA.solidEntities.erase(entity);
             if (entity == GetCameraEntity())
             {
                 data.cameraEntity = entt::entity{UINT32_MAX};
             }
+            registry.destroy(entity);
             return true;
         }
         return false;
@@ -220,6 +217,11 @@ namespace magique
         return internal::REGISTRY.emplace<CollisionC>(entity, rect.width, rect.height, 0.0F, 0.0F, rect.x, rect.y,
                                                       static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
                                                       Shape::RECT);
+    }
+
+    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
+    {
+        return GiveCollisionRect(entity, dims.x, dims.y, (int)anchor.x, (int)anchor.y);
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
@@ -301,24 +303,46 @@ namespace magique
             LOG_ERROR("No existing entity with a camera component found!");
     }
 
-    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float sideLength)
+    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float dist)
     {
         // This works because the hashset uses a vector as underlying storage type (stored without holes)
         auto& dynamicData = global::DY_COLL_DATA;
         auto& data = global::ENGINE_DATA;
+        auto& set = data.nearbyQueryData.cache;
 
-        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, sideLength))
+        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, dist))
         {
-            return data.nearbyQueryData.cache.values();
+            return set.values();
         }
 
-        data.nearbyQueryData.lastRadius = sideLength;
+        data.nearbyQueryData.lastLength = dist;
         data.nearbyQueryData.lastOrigin = origin;
-        data.nearbyQueryData.cache.clear();
+        set.clear();
 
-        const auto queryX = origin.x - (sideLength / 2.0F);
-        const auto queryY = origin.y - (sideLength / 2.0F);
-        dynamicData.mapEntityGrids[map].query(data.nearbyQueryData.cache, queryX, queryY, sideLength, sideLength);
+        const auto queryX = origin.x - dist;
+        const auto queryY = origin.y - dist;
+        dynamicData.mapEntityGrids[map].query(set, queryX, queryY, dist * 2, dist * 2);
+
+        for (auto it = set.begin(); it != set.end();)
+        {
+            const auto entity = *it;
+            Point pos = GetComponent<PositionC>(entity).getPosition();
+            const auto* col = TryGetComponent<const CollisionC>(entity);
+            if (col != nullptr)
+            {
+                pos -= col->getMidOffset();
+            }
+            const auto range = pos.euclidean(origin);
+            if (range > dist)
+            {
+                it = set.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
         return data.nearbyQueryData.cache.values();
     }
 

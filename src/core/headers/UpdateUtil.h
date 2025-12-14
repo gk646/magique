@@ -37,7 +37,7 @@ namespace magique
 
         // Reset nearby query
         auto& data = global::ENGINE_DATA;
-        data.nearbyQueryData.lastRadius = 0;
+        data.nearbyQueryData.lastLength = 0;
 
         data.updateCameraShake();
 

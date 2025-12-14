@@ -59,10 +59,9 @@ if (WIN32)
         target_compile_options(magique PUBLIC /std:c++latest /Zc:preprocessor)
     endif ()
 elseif (UNIX)
-    target_compile_options(magique PUBLIC -std=c++23 -flto=auto -fno-rtti)
     target_link_libraries(magique PUBLIC stdc++exp)
-else ()
-    #
+else (APPLE)
+    target_link_libraries(magique PUBLIC stdc++_libbacktrace)
 endif ()
 
 # Make internal things public in the header

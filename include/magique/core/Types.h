@@ -19,6 +19,8 @@ namespace magique
         float x;
         float y;
 
+        // Creates a point from a given string - "x,y"
+        Point(const char* string);
         Point() = default;
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
@@ -92,6 +94,10 @@ namespace magique
 
         // Returns the perpendicular vector to this one - either to the left or to the right
         Point perpendicular(bool left) const;
+
+        // Assigns both values to the maximum/minimum value of both points
+        void max(const Point& other);
+        void min(const Point& other);
 
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
@@ -229,7 +235,7 @@ namespace magique
         char* name = nullptr;
         int id = INT32_MAX;
         TiledProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES];
-        friend TileMap ImportTileMap(Asset asset);
+        friend TileMap ImportTileMap(const Asset& asset);
     };
 
     struct TileInfo final

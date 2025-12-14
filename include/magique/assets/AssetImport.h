@@ -28,7 +28,9 @@ namespace magique
 
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
-    TextureRegion ImportTexture(Asset asset, AtlasID atlas = {}, float scale = 1);
+    TextureRegion ImportTexture(const Asset& asset, AtlasID atlas = {}, float scale = 1);
+
+    //================= Animations =================//
 
     // Tries to load a .png file as sprite sheet
     // Starts at (0,0) top left and then tries to split the image into frames row by row with the given dimensions
@@ -50,31 +52,36 @@ namespace magique
     // Imports an aseprite file with all the frames and duration set (.ase,.aseprite)
     using StateMapFunc = AnimationState (*)(const char* tagName);
     // Uses the mapping function to get the animation state from the aseprite tag name
-    EntityAnimation ImportAseprite(Asset asset, StateMapFunc func, AtlasID atlas = {}, float scale = 1.0F);
+    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc func, AtlasID atlas = {}, float scale = 1.0F);
 
     // Only imports the given layers
-    EntityAnimation ImportAsepriteEx(Asset asset, const std::vector<const char*>& layers, StateMapFunc func,
+    EntityAnimation ImportAsepriteEx(const Asset& asset, const std::vector<const char*>& layers, StateMapFunc func,
                                      AtlasID atlas = {}, float scale = 1.0F, Point offset = {}, Point anchor = {});
+
+    // Imports a shader by loading the given assets as vertex and fragment shaders
+    // Note: Either one can be empty - its allowed to load with only a fragment, only a vertex or both
+    Shader ImportShader(const Asset& vertex, const Asset& fragment);
 
     //================= Audio =================//
 
     // Registers a sound file - can be any raylib supported file type (.mp3, .wav)
-    Sound ImportSound(Asset asset);
+    Sound ImportSound(const Asset& asset);
 
     // Register a music file (streamed audio) - can be any raylib supported type (.mp3)
     // Everything above 10s should be loaded as music (and compressed with .mp3) instead of sound!
-    Music ImportMusic(Asset asset);
+    Music ImportMusic(const Asset& asset);
 
     // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
     Playlist ImportPlaylist(const std::vector<Asset>& assets);
 
-    //================= Tile Exports =================//
+    //================= Tiled Exports =================//
+
     // Note: Generally you have multiple TileMaps, but only 1 TileSet and 1 TileSheet!
     // Note: A TilSheet has its own atlas - you can access it manually as well and get a TextureRegion back
 
     // Registers a tilemap from an export file - Supported: ".tsj" (Tiled),
     // Supports loading multiple layers - all layers must have same dimensions!
-    TileMap ImportTileMap(Asset asset);
+    TileMap ImportTileMap(const Asset& asset);
 
     // Registers a tilemap from the given custom layer data
     // This creates a new tilemap out of the given data like so:
@@ -83,14 +90,14 @@ namespace magique
     TileMap ImportTileMapRaw(const std::vector<std::vector<std::vector<uint16_t>>>& layerData);
 
     // Registers a tileset - defines the details of all tiles in a project
-    TileSet ImportTileSet(Asset asset, TileClassMapFunc func = nullptr);
+    TileSet ImportTileSet(const Asset& asset, TileClassMapFunc func = nullptr);
 
     // Registers a tile sheet from a single ".png" file
     // IMPORTANT: Make sure the TileSheet has exact dimensions and no padding!
     // 'textureSize'    - specify the width and height of each source texture tile
     // 'scale'          - allows to scale the resulting texture (rounded down)
     // Note: The tilesheet will have its own texture
-    TileSheet ImportTileSheet(Asset asset, int tileSize, float scale = 1);
+    TileSheet ImportTileSheet(const Asset& asset, int tileSize, float scale = 1);
 
 } // namespace magique
 

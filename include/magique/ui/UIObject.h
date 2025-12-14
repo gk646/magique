@@ -74,7 +74,7 @@ namespace magique
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
         // Note: Aligns the object once - use setAnchor() for permanent anchoring
-        void align(Anchor anchor, const UIObject& relativeTo, Point inset = {});
+        void align(Anchor alignAnchor, const UIObject& relativeTo, Point alignInset = {});
 
         // Aligns the object around the given anchor object - offset is applied in the given direction
         // Note: See the Direction enum (core/Types.h) for more info how this alignment happens

@@ -35,7 +35,7 @@ namespace magique
         int tileSize = -1; // Default
         int tileCount = 0;
         std::vector<TileInfo> infoVec;
-        friend TileSet ImportTileSet(Asset, TileClassMapFunc);
+        friend TileSet ImportTileSet(const Asset&, TileClassMapFunc);
     };
 
 } // namespace magique
