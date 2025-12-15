@@ -46,6 +46,8 @@ namespace magique
 
         void setOffset(Point offset);
 
+        bool hasAnimation(AnimationState state) const;
+
     private:
         Point offset{};
         Point anchor{};

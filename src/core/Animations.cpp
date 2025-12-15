@@ -77,9 +77,16 @@ namespace magique
 
     Point EntityAnimation::getAnchor() const { return anchor; }
 
-    void EntityAnimation::setOffset(Point newOffset)
+    void EntityAnimation::setOffset(Point newOffset) { offset = newOffset; }
+
+    bool EntityAnimation::hasAnimation(AnimationState state) const
     {
-        offset = newOffset;
+        if ((size_t)state >= animations.width())
+        {
+            return false;
+        }
+        const auto& anim = animations[static_cast<int>(state)];
+        return anim.isValid();
     }
 
     //----------------- GLOBAL INTERFACE -----------------//

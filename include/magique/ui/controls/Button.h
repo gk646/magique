@@ -39,7 +39,7 @@ namespace magique
         bool getIsDisabled() const;
 
         void setHoverText(const char* value);
-        const char* getHoverText();
+        const char* getHoverText() const;
 
     protected:
         // Called once when the mouse position enters the button

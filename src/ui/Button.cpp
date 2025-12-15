@@ -25,7 +25,7 @@ namespace magique
 
     void Button::setHoverText(const char* value) { hoverText = value; }
 
-    const char* Button::getHoverText() {}
+    const char* Button::getHoverText() const { return hoverText.c_str(); }
 
     void Button::updateActions(const Rectangle& bounds)
     {

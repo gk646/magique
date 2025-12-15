@@ -70,6 +70,10 @@ namespace magique
     template <typename Component, typename... Args>
     Component& GiveComponent(entt::entity entity, Args... args);
 
+    // Tries to remove the specified components from the given entities
+    template < typename... Args>
+    void RemoveComponent(entt::entity entity);
+
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
 
@@ -190,6 +194,12 @@ namespace magique
     Component& GiveComponent(entt::entity entity, Args... args)
     {
         return internal::REGISTRY.emplace<Component>(entity, args...);
+    }
+
+    template <typename... Args>
+    void RemoveComponent(entt::entity entity)
+    {
+         internal::REGISTRY.remove<Args ...>(entity);
     }
 
     template <typename... Args>

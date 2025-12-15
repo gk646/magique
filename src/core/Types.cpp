@@ -297,6 +297,9 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
+    bool SpriteAnimation::isValid() const { return sheet.id != 0 && sheet.frames > 0; }
+
+
     //----------------- TILE OBJECT PROPERTY -----------------//
 
     bool TiledProperty::getBool() const

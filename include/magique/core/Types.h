@@ -163,6 +163,8 @@ namespace magique
         uint16_t maxDuration = 0; // in millis
 
         TextureRegion getCurrentFrame(uint16_t spriteCount) const;
+
+        bool isValid() const;
     };
 
     // The type of the property
