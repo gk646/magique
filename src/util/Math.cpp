@@ -126,6 +126,18 @@ namespace magique
         return gameAngleDegrees;
     }
 
+    float GetAngleFromDirection(Point dir)
+    {
+        const float angle = std::atan2f(dir.y, dir.x);
+        const float angleDegrees = angle * RAD2DEG;
+        float gameAngleDegrees = 90.0F + angleDegrees;
+        if (gameAngleDegrees < 0)
+        {
+            gameAngleDegrees += 360.0F;
+        }
+        return gameAngleDegrees;
+    }
+
     float GetShortestDistToRect(Point p, const Rectangle& r)
     {
         // Quite funny solution
@@ -144,6 +156,14 @@ namespace magique
         {
             return p;
         }
+    }
+
+    Point GetCenterPos(const Rectangle& one, const Point& two)
+    {
+        Point p;
+        p.x = one.x + one.width / 2.0F - two.x / 2.0F;
+        p.y = one.y + one.height / 2.0F - two.y / 2.0F;
+        return p;
     }
 
 } // namespace magique

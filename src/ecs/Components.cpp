@@ -117,11 +117,11 @@ namespace magique
         switch (shape)
         {
         case Shape::RECT:
-            return {p1 / 2.0F, p2 / 2.0F};
+            return {p1 / 2.0F + offX, p2 / 2.0F + offY};
         case Shape::CIRCLE:
-            return {p1, p1};
+            return {p1 + offX, p1 + offY};
         case Shape::CAPSULE:
-            return {p1, p2 / 2.0F};
+            return {p1 + offX, p2 / 2.0F + offY};
         case Shape::TRIANGLE:
             break;
         }

@@ -92,14 +92,18 @@ namespace magique
         // Dynamic entities
         for (const auto e : GetDrawEntities())
         {
-            if (!group.contains(e))
+            if (!EntityHasComponents<CollisionC>(e))
+            {
                 continue;
+            }
 
             const auto& pos = group.get<const PositionC>(e);
             const auto& col = group.get<const CollisionC>(e);
 
             if (!PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
+            {
                 continue;
+            }
 
             switch (col.shape)
             {

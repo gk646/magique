@@ -79,12 +79,18 @@ namespace magique
     // Returns the angle that spans from the current to target point
     float GetAngleFromPoints(Point current, Point target);
 
+    // Returns the angle in which the direction vector points - starting at 0 at 12'o clock
+    float GetAngleFromDirection(Point dir);
+
     // Returns the shortest possible distance to connect point p with rect r (in any way)
     float GetShortestDistToRect(Point p, const Rectangle& r);
 
     // Returns p, if p is inside the circle defined by middle and radius
     // else returns the closest point on the circle using GetPointOnCircleFromAngle()
     Point GetClosestPointInRange(Point p, Point middle, float radius);
+
+    // Returns the coordinates to center two (give only by dimensions) in the middle of one
+    Point GetCenterPos(const Rectangle& one, const Point& two);
 
 } // namespace magique
 
