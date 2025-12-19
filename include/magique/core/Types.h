@@ -163,7 +163,8 @@ namespace magique
         uint16_t maxDuration = 0; // in millis
 
         TextureRegion getCurrentFrame(uint16_t spriteCount) const;
-
+        // Returns duration in ticks
+        int getDurationUntil(int frame) const;
         bool isValid() const;
     };
 

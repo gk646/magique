@@ -297,6 +297,16 @@ namespace magique
         return sheet.getRegion(frame);
     }
 
+    int SpriteAnimation::getDurationUntil(int frame) const
+    {
+        int duration = 0;
+        for (int i = 0; i < frame; i++)
+        {
+            duration += durations[i];
+        }
+        return (float)duration / 1000.0F * MAGIQUE_LOGIC_TICKS;
+    }
+
     bool SpriteAnimation::isValid() const { return sheet.id != 0 && sheet.frames > 0; }
 
 
