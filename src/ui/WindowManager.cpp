@@ -126,6 +126,18 @@ namespace magique
         return nullptr;
     }
 
+    const char* WindowManager::getName(Window* window)
+    {
+        for (const auto& m : WINDOW_DATA.nameMapping)
+        {
+            if (m.window == window) [[unlikely]]
+            {
+                return m.name;
+            }
+        }
+        return nullptr;
+    }
+
     bool WindowManager::removeWindow(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");

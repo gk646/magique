@@ -27,7 +27,9 @@ namespace magique
             lazyInit();
             TextureRegion region{};
             if (!isFullAndSkipToNextRowIfNeeded(tarW, tarH))
+            {
                 return region;
+            }
 
             region.width = static_cast<int16_t>(tarW);
             region.height = static_cast<int16_t>(tarH);
@@ -48,43 +50,11 @@ namespace magique
 
         SpriteSheet addSpriteSheet(Image& img, const int srcW, const int srcH, const float scale)
         {
-            lazyInit(); // Only load a texture if atlas is actually used
-            // Cache
-            const int tarW = static_cast<int>(static_cast<float>(srcW) * scale);
-            const int tarH = static_cast<int>(static_cast<float>(srcH) * scale);
             const int frames = img.width / srcW * (img.height / srcH);
-            const int totalWidth = frames * tarW;
-
-            SpriteSheet sheet{};
-            if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
-                return sheet;
-
-            // Assign sheet
-            assignSheet(sheet, tarW, tarH, frames);
-
-            Image atlasImage = getImg(); // The current image of the atlas in the RAM
-            Rectangle src = {0, 0, static_cast<float>(srcW), static_cast<float>(srcH)};
-            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), (float)tarW, (float)tarH};
-
-            while (true)
-            {
-                ImageDraw(&atlasImage, img, src, dest, WHITE);
-                src.x += static_cast<float>(srcW);
-                dest.x += static_cast<float>(tarW);
-                if (src.x >= static_cast<float>(img.width))
-                {
-                    src.x = 0.0F;
-                    src.y += static_cast<float>(tarH);
-                    if (src.y >= static_cast<float>(img.height))
-                        break; // We reached the end by going row by row
-                }
-            }
-            posX = static_cast<int>(dest.x);
-            UnloadImage(img);
-            return sheet;
+            return addSpriteSheetEx(img, srcW, srcH, scale, frames, 0, 0);
         }
 
-        SpriteSheet addSpriteSheetEx(Image& img, const int srcW, const int srcH, const float scale, const int frames,
+        SpriteSheet addSpriteSheetEx(const Image& img, const int srcW, const int srcH, const float scale, const int frames,
                                      const int offX, const int offY)
         {
             lazyInit(); // Only load a texture if atlas is actually used

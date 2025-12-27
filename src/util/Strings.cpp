@@ -1,13 +1,11 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include "magique/util/Math.h"
-
-
 #include <cmath>
 #include <raylib/raylib.h>
 #include <cxutil/cxstring.h>
 
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
+#include <magique/util/Math.h>
 
 namespace magique
 {
@@ -22,7 +20,7 @@ namespace magique
     // 'a' to 'l'
     // 'z' to 'm'
 
-    constexpr Point KEY_POSITIONS[4][10] = {
+    constexpr static Point KEY_POSITIONS[4][10] = {
         {
             {0, 0},
             {1, 0},
@@ -83,56 +81,6 @@ namespace magique
         return cxstructs::str_sort_levenshtein_case<16>(s1.c_str(), s2.c_str(), caseSensitive);
     }
 
-    static float GetCharacterSimilarity(char base, char check, const bool caseSensitive) noexcept
-    {
-        if (base == check)
-            return 1.0F;
-
-        bool casePenalty = false;
-
-        const bool baseIsUpper = base < 91;
-        const bool checkIsUpper = check < 91;
-
-        if (caseSensitive && baseIsUpper != checkIsUpper)
-        {
-            casePenalty = true;
-        }
-
-        base -= baseIsUpper ? 65 : 97;
-        check -= checkIsUpper ? 65 : 97;
-
-        auto diff = static_cast<float>(std::abs(base - check));
-        diff = std::min(26.0F, diff);
-        if (casePenalty) [[unlikely]]
-        {
-            return std::max(0.0F, 0.98F - 1.0F / 26.0F * diff);
-        }
-        return 1.0F - 1.0F / 26.0F * diff;
-    }
-
-    float StringSimilarity(const char* s1, const char* s2, const bool caseSensitive)
-    {
-        if (s1 == nullptr || s2 == nullptr || s1[0] == '\0' || s2[0] == '\0')
-            return 0.0F;
-
-        float sum = 0.0F;
-        int i = 0;
-
-        // Iterate until either string ends
-        while (s1[i] != '\0' && s2[i] != '\0')
-        {
-            sum += GetCharacterSimilarity(s1[i], s2[i], caseSensitive);
-            i++;
-        }
-
-        return sum / static_cast<float>(i);
-    }
-
-    float StringSimilarity(const std::string& s1, const std::string& s2, const bool caseSensitive)
-    {
-        return StringSimilarity(s1.c_str(), s2.c_str(), caseSensitive);
-    }
-
     float StringDistancePhysical(const char* s1, const char* s2, const KeyLayout layout)
     {
         float distance = 0.0F;
@@ -163,6 +111,23 @@ namespace magique
     float StringDistancePhysical(const std::string& s1, const std::string& s2, const KeyLayout layout)
     {
         return StringDistancePhysical(s1.c_str(), s2.c_str(), layout);
+    }
+
+    bool TextIsSimilar(const char* original, const char* search, float tolerance)
+    {
+        if (*original == '\0')
+        {
+            return true;
+        }
+        if (strstrnc(original, search) != nullptr)
+        {
+            return true;
+        }
+        if (StringDistancePhysical(original, search) > tolerance)
+        {
+            return true;
+        }
+        return false;
     }
 
     int ReplaceInBuffer(char* buffer, const int bufferSize, const char* keyword, const char* replacement)

@@ -36,12 +36,12 @@ namespace magique
         text.reserve(64);
     }
 
-    std::string& TextField::getText() { return text; }
+    const std::string& TextField::getText() const { return text; }
 
-    void TextField::setText(const char* newText)
+    std::string& TextField::getTextToModify()
     {
-        MAGIQUE_ASSERT(newText != nullptr, "Passed null");
-        text = newText;
+        textChanged = true;
+        return text;
     }
 
     void TextField::setHint(const char* newHint)
@@ -125,6 +125,7 @@ namespace magique
         {
             const char pressedChar = static_cast<char>(GetCharPressedQueue()[i]);
             removeSelectionContent();
+            textChanged = true;
             text.insert(text.begin() + cursorPos, pressedChar);
             ++cursorPos;
             anyInput = true;

@@ -185,7 +185,7 @@ namespace magique
             if (anchor != Anchor::NONE)
             {
                 auto scaledInset = GetScaled(inset);
-                const auto pos = GetUIAnchor(anchor, bounds.width, bounds.height, scaledInset);
+                const auto pos = GetUIAnchor(anchor, Point{bounds.width, bounds.height}, scaledInset);
                 bounds.x = pos.x;
                 bounds.y = pos.y;
             }

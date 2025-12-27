@@ -29,7 +29,6 @@ namespace magique
         auto& texAtlas = global::ATLAS_DATA.getAtlas(atlas);
         const Image textImg = LoadImageFromTexture(texture);
         const auto region = texAtlas.addTexture(textImg, texture.width, texture.height);
-        UnloadImage(textImg);
         return region;
     }
 

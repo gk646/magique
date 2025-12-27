@@ -63,10 +63,9 @@ namespace magique
         virtual void wireOnEnter(const EnterFunc& func);
 
         // Returns the current text of the textfield
-        [[nodiscard]] std::string& getText();
-
-        // Sets the field text to the provided string
-        void setText(const char* newText = "");
+        const std::string& getText() const;
+        // Sets the textChanged flag to true
+        std::string& getTextToModify();
 
         // Sets the hint - drawn on the field if empty
         void setHint(const char* hint);

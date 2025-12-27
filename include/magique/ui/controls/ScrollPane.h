@@ -51,9 +51,17 @@ namespace magique
 
     protected:
         void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
-        // Draws a default representation
+        void onDraw(const Rectangle& bounds) override
+        {
+            drawContent();
+            drawDefault(bounds);
+        }
+
+        // Correctly aligns and draws the content
+        void drawContent() const;
+
+        // Draws a default representation of scrollers
         void drawDefault(const Rectangle& bounds);
 
         // Updates the dragging for the mouse input and aligns the content

@@ -73,6 +73,12 @@ namespace magique
         data.pointer = nullptr; // we switch out the pointer
     }
 
+    static void EncryptedRead(void* dest, void* src, int size, uint64_t key)
+    {
+        SymmetricEncrypt((char*)src, size, key);
+        memcpy(dest, src, size);
+    }
+
     static bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
         int totalSize = 0;
@@ -122,19 +128,22 @@ namespace magique
             const char* titlePointer;
             // Get title pointer
             {
-                memcpy(&titleLen, &imageData[filePointer], 4);
+                SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
+                memcpy(&titleLen, &imageData[filePointer], sizeof(int));
                 if (titleLen > 512)
                 {
                     LOG_ERROR("Filename exceeds limit");
                     return false;
                 }
                 filePointer += 4;
+                SymmetricEncrypt(&imageData[filePointer], titleLen, encryptionKey);
                 titlePointer = &imageData[filePointer];
                 filePointer += titleLen;
             }
 
             // Get file pointer
-            memcpy(&fileSize, &imageData[filePointer], 4);
+            SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
+            memcpy(&fileSize, &imageData[filePointer], sizeof(int));
             if (fileSize > imageSize - filePointer)
             {
                 LOG_ERROR("File data exceeds image data");
@@ -142,7 +151,7 @@ namespace magique
             }
             filePointer += 4;
             SymmetricEncrypt(&imageData[filePointer], fileSize, encryptionKey);
-            assets.push_back({titlePointer, fileSize, &imageData[filePointer]});
+            assets.push_back(Asset{titlePointer, fileSize, &imageData[filePointer]});
             filePointer += fileSize;
         }
         return true;
@@ -180,8 +189,7 @@ namespace magique
                 const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
                 if (original == imageSize)
                 {
-                    auto* logText =
-                        "Loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
+                    auto* logText = "Loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 else
@@ -315,8 +323,15 @@ namespace magique
         fclose(file);
     }
 
-    static void WriteImage(const uint64_t encryptionKey, const vector<fs::path>& pathList, int& writtenSize,
-                           const fs::path& rootPath, FILE* imageFile, vector<char>& data, const char* imageName)
+    // Warning: Changes data inplace
+    static void WriteEncrypted(FILE* file, void* data, int size, uint64_t key)
+    {
+        SymmetricEncrypt((char*)data, size, key);
+        fwrite(data, size, 1, file);
+    }
+
+    static void WriteImage(const vector<fs::path>& pathList, int& writtenSize, const fs::path& rootPath, FILE* imageFile,
+                           vector<char>& data, const char* imageName, const uint64_t key)
     {
         std::string relativePathStr;
         int totalFileSize = 0; // Only raw file size
@@ -333,7 +348,7 @@ namespace magique
 
             // Read the file size
             fseek(file, 0, SEEK_END);
-            const int fileSize = (int)ftell(file); // File size per file limited to 2GB
+            int fileSize = (int)ftell(file); // File size per file limited to 2GB
             totalFileSize += fileSize;
             if (fileSize > data.size())
                 data.resize(fileSize, 0);
@@ -342,30 +357,27 @@ namespace magique
             // Read the file data into the buffer
             fread(data.data(), fileSize, 1, file);
 
-            // Encrypt the file data
-            SymmetricEncrypt(data.data(), fileSize, encryptionKey);
-
             // Get the relative path for the file
             fs::path relativePath = fs::relative(entry, rootPath);
             relativePathStr = relativePath.generic_string();
             auto pathLen = static_cast<int>(relativePathStr.size() + 1);
 
-            // Write the path length to the image file
-            fwrite(&pathLen, sizeof(int), 1, imageFile);
-
-            // Write the relative path to the image file
-            fwrite(relativePathStr.c_str(), pathLen, 1, imageFile);
-
-            // Write the file size to the image file
-            fwrite(&fileSize, sizeof(int), 1, imageFile);
-
-            // Write the encrypted file data to the image file
-            fwrite(data.data(), fileSize, 1, imageFile);
-
             // Update the total written size - Two 4 byte integers for path length and file size
-            writtenSize += fileSize;
+            writtenSize += 4;
             writtenSize += pathLen;
-            writtenSize += 8;
+            writtenSize += 4;
+            writtenSize += fileSize;
+
+            // Write the path length to the image file
+            int pathLenBuf = pathLen;
+            WriteEncrypted(imageFile, &pathLenBuf, sizeof(int), key);
+            // Write the relative path to the image file
+            WriteEncrypted(imageFile, relativePathStr.data(), pathLen, key);
+            // Write the file size to the image file
+            int fileSizeBuff = fileSize;
+            WriteEncrypted(imageFile, &fileSizeBuff, sizeof(int), key);
+            // Write the file data to the image file
+            WriteEncrypted(imageFile, data.data(), fileSize, key);
 
             // Close the input file
             fclose(file);
@@ -422,7 +434,7 @@ namespace magique
         data.reserve(10000);
 
         // Write the image data
-        WriteImage(encryptionKey, pathList, writtenSize, rootPath, imageFile, data, fileName);
+        WriteImage(pathList, writtenSize, rootPath, imageFile, data, fileName, encryptionKey);
 
         // Update the total written size in the file header
         fseek(imageFile, 5, SEEK_SET);
@@ -489,7 +501,7 @@ namespace magique
         checksum.third = 0x98badcfe;
         checksum.fourth = 0x10325476;
 
-        auto processChunk = [](uint32_t(&M)[16], Checksum& checksum)
+        auto processChunk = [](uint32_t (&M)[16], Checksum& checksum)
         {
             static constexpr unsigned int s[] = {7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
                                                  5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20, 5, 9,  14, 20,

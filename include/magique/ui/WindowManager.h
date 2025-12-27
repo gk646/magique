@@ -35,6 +35,9 @@ namespace magique
         // Failure: returns nullptr if no window was added with that name
         Window* getWindow(const char* name);
 
+        // Returns the name the window was added with
+        const char* getName(Window* window);
+
         // Returns true if the window was successfully removed - gives back ownership of the window!
         // Failure: returns false if no window matched the identifier
         bool removeWindow(Window* window);

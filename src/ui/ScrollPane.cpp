@@ -54,18 +54,21 @@ namespace magique
 
     bool ScrollPane::getInvertVertScroll() const { return vertical.invertScroll; }
 
+    void ScrollPane::drawContent() const
+    {
+        beginBoundsScissor();
+        if (getContent() != nullptr)
+        {
+            getContent()->align(getContentAnchor(), *this, getContentInset() + getScrollOffset());
+            getContent()->draw();
+        }
+        EndScissorMode();
+    }
+
     void ScrollPane::drawDefault(const Rectangle& bounds)
     {
         auto& theme = global::ENGINE_CONFIG.theme;
         DrawRectangleLinesEx(bounds, 1, theme.backDark);
-
-        beginBoundsScissor();
-        if (content != nullptr)
-        {
-            content->draw();
-        }
-        EndScissorMode();
-
         Color color;
         {
             const auto scroller = getVerticalScrollBounds();
@@ -233,7 +236,18 @@ namespace magique
         offset = std::max(offset, 0.0F);
     }
 
-    float ScrollPane::Scroller::getScaledOffset() const { return std::ceil(offset * moveFactor); }
+    float ScrollPane::Scroller::getScaledOffset() const
+    {
+        const auto val = std::ceil(offset * moveFactor);
+        if (invertScroll)
+        {
+            return val;
+        }
+        else
+        {
+            return -val;
+        }
+    }
 
 
 } // namespace magique

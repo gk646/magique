@@ -29,11 +29,13 @@ namespace magique
     float StringDistancePhysical(const char* s1, const char* s2, KeyLayout layout = KeyLayout::QWERTY);
     float StringDistancePhysical(const std::string& s1, const std::string& s2, KeyLayout layout = KeyLayout::QWERTY);
 
-    // Returns the similarity (0.0 - 1.0) of the two strings based on alphabetical distance
+    // Returns true if any condition is true:
+    //  - original contains search as a substring anywhere (not case sensitive)
+    //  - StringDistancePhysical > tolerance
+    //  - search is empty
     // This is very useful for finding the best matching entry to a user input (list of items, spells...)
-    // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
-    float StringSimilarity(const char* s1, const char* s2, bool caseSensitive = false);
-    float StringSimilarity(const std::string& s1, const std::string& s2, bool caseSensitive = false);
+    // In this case original would be the item name, and compare the search string
+    bool TextIsSimilar(const char* original, const char* search, float tolerance = 0.9);
 
     //================= OPERATIONS =================//
 

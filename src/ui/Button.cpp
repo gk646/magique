@@ -38,7 +38,7 @@ namespace magique
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
-                    if (IsMouseButtonReleased(i) && !isDisabled)
+                    if (IsMouseButtonPressed(i) && !isDisabled)
                     {
                         onClick(bounds, i);
                         if (clickFunc)

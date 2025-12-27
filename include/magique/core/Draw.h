@@ -20,20 +20,20 @@ namespace magique
     //================= TEXTURES =================//
 
     // Draws a given texture region - rotation happens around the middle point
-    void DrawRegion(TextureRegion region, const Point& pos, bool flipX = false, Color tint = WHITE);
+    void DrawRegion(const TextureRegion& region, const Point& pos, bool flipX = false, Color tint = WHITE);
 
     void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect
     // Note: Pass a negative width/height to mirror the texture horizontally/vertically
     // Rotation happens around the anchor (relative to the position)
-    void DrawRegionPro(TextureRegion region, Rectangle dest, float rotation = 0, Point anchor = {}, Color tint = WHITE);
+    void DrawRegionPro(const TextureRegion& region, Rectangle dest, float rotation = 0, Point anchor = {}, Color tint = WHITE);
 
     // Draws the given frame from the sprite sheet
-    void DrawSprite(SpriteSheet sheet, float x, float y, int frame, bool flipX = false, Color tint = WHITE);
+    void DrawSprite(const SpriteSheet& sheet, float x, float y, int frame, bool flipX = false, Color tint = WHITE);
 
     // Draws and scales the given frame of the sprite sheet into the destination rect
-    void DrawSpriteEx(SpriteSheet sheet, Rectangle dest, int frame, float rotation, Color tint = WHITE);
+    void DrawSpriteEx(const SpriteSheet& sheet, Rectangle dest, int frame, float rotation, Color tint = WHITE);
 
     // Automatically culled with the current camera!
     // If you need to scale your textures, provide a scaling factor when you load the sheet

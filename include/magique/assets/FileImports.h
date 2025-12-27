@@ -244,9 +244,7 @@ namespace magique
     bool ImportJSON(const char* json, T& data)
     {
         std::string_view buff{json, strlen(json)};
-        auto ec = glz::read_json<glz::opts{
-            .comments = true,
-        }>(data, buff);
+        auto ec = glz::read_json(data, buff);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON %.15s: %s at position %d\n%.30s", json, GetJSONErrStr(ec), (int)ec.location,

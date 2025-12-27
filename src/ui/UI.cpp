@@ -4,52 +4,56 @@
 
 namespace magique
 {
-    Point GetUIAnchor(const Anchor anchor, const float width, const float height, const Point inset)
+
+    static Point GetUIAnchor(const Anchor anchor, Point topLeft, Point bounds, Point size, Point inset)
     {
-        Point point{};
-        const auto res = global::UI_DATA.targetRes;
+        Point point = topLeft;
         switch (anchor)
         {
         case Anchor::TOP_LEFT:
-            point = {inset.x, inset.y};
+            point = {topLeft.x + inset.x, topLeft.y + inset.y};
             break;
-
         case Anchor::TOP_CENTER:
-            point = {(res.x - width) / 2.0F, inset.y};
+            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + inset.y};
             break;
-
         case Anchor::TOP_RIGHT:
-            point = {res.x - width - inset.x, inset.y};
+            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + inset.y};
             break;
-
         case Anchor::MID_LEFT:
-            point = {inset.x, res.y / 2 - height / 2};
+            point = {topLeft.x + inset.x, topLeft.y + (bounds.y - size.y) / 2};
             break;
-
         case Anchor::MID_CENTER:
-            point = {res.x / 2 - width / 2, res.y / 2 - height / 2};
+            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + (bounds.y - size.y) / 2};
             break;
-
         case Anchor::MID_RIGHT:
-            point = {res.x - width - inset.x, res.y / 2 - height / 2};
+            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + (bounds.y - size.y) / 2};
             break;
-
         case Anchor::BOTTOM_LEFT:
-            point = {inset.x, res.y - height - inset.y};
+            point = {topLeft.x + inset.x, topLeft.y + bounds.y - size.y - inset.y};
             break;
-
         case Anchor::BOTTOM_CENTER:
-            point = {res.x / 2 - width / 2, res.y - height - inset.y};
+            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + bounds.y - size.y - inset.y};
             break;
-
         case Anchor::BOTTOM_RIGHT:
-            point = {res.x - width - inset.x, res.y - height - inset.y};
+            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + bounds.y - size.y - inset.y};
             break;
         case Anchor::NONE:
             MAGIQUE_ASSERT(false, "Invalid anchor");
             break;
         }
         return point;
+    }
+
+
+    Point GetUIAnchor(const Anchor anchor, const Point size, const Point inset)
+    {
+        return GetUIAnchor(anchor, {}, global::UI_DATA.targetRes, size, inset);
+    }
+
+    Point GetUIAnchor(Anchor anchor, const UIObject& relative, const Point size, const Point inset)
+    {
+        const auto bounds = relative.getBounds();
+        return GetUIAnchor(anchor, {bounds.x, bounds.y}, {bounds.width, bounds.height}, size, inset);
     }
 
     float GetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
@@ -81,10 +85,7 @@ namespace magique
 
     bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
 
-    bool LayeredInput::IsKeyPressedRepeat(int key)
-    {
-        return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key);
-    }
+    bool LayeredInput::IsKeyPressedRepeat(int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key); }
 
     bool LayeredInput::IsMouseButtonPressed(const int key)
     {
@@ -107,10 +108,7 @@ namespace magique
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
-    bool LayeredInput::GetIsMouseConsumed()
-    {
-        return global::UI_DATA.mouseConsumed;
-    }
+    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
     void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 

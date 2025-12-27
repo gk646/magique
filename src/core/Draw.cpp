@@ -21,7 +21,7 @@ constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 namespace magique
 {
 
-    void DrawRegion(const TextureRegion region, const Point& pos, const bool flipX, const Color tint)
+    void DrawRegion(const TextureRegion& region, const Point& pos, const bool flipX, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -67,7 +67,7 @@ namespace magique
         DrawRegion(region, center, false, tint);
     }
 
-    void DrawRegionPro(TextureRegion region, Rectangle dest, const float rotation, const Point anchor, const Color tint)
+    void DrawRegionPro(const TextureRegion& region, Rectangle dest, const float rotation, const Point anchor, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -131,7 +131,7 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawSprite(SpriteSheet sheet, float x, float y, const int frame, const bool flipX, const Color tint)
+    void DrawSprite( SpriteSheet& sheet, float x, float y, const int frame, const bool flipX, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(sheet.id > 0, "The texture for this region is invalid");
