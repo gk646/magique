@@ -17,11 +17,6 @@
 
 namespace magique
 {
-
-    // Returns the global game instance
-    // IMPORTANT: only valid after the game constructor finished (so before game.run(), ... so pretty early)
-    Game& GetGame();
-
     // Returns the current gamestate
     // Default: if unset returns GameState(INT32_MAX)
     GameState GetGameState();
@@ -82,20 +77,29 @@ namespace magique
     const std::vector<entt::entity>& GetDrawEntities();
 
     // Returns the currently loaded maps - a map is loaded if it contains at least 1 actor
-    const std::vector<MapID>& GetLoadedMaps();
+    const std::vector<MapID>& GetActiveMaps();
 
-    //================= QUERY DYNAMIC ENTITIES =================//
-    // Note: These methods cache their call parameters
-    // -> No overhead when called with the same parameters in the same tick (with no other calls in between)
+    //================= QUERY LOADED ENTITIES =================//
 
-    // Returns a vector containing all (collision) entities that within the given distance (euclidean) from the origin
-    // Note: Entities are filtered based on position or mid-point based on CollisionC (if present)
+    using FilterFunc = std::function<bool(entt::entity)>;
+
+    // Returns a vector containing all (collision) entities within the given shape
     // Note: The returned vector is only valid until this method is called again (single instance)
-    const std::vector<entt::entity>& GetNearbyEntities(MapID map, Point origin, float dist);
+    // Note: Only searches entity within update range of any ActorC!
+    // If filter func returns false entity is removed from the vector
+    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,
+                                                                const FilterFunc& filter = {});
+    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,
+                                                              const FilterFunc& filter = {});
 
-    // Returns true if the nearby entities contain the given target entity
-    // Note: This is a hash lookup O(1) (after querying the entity grid)
-    bool NearbyEntitiesContain(MapID map, Point origin, float radius, entt::entity target);
+    //================= QUERY ENTITIES =================//
+
+    // Similar to the loaded variant but searches all entities instead of only those within update range
+    // Much slower!
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,
+                                                          const FilterFunc& filter = {});
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,
+                                                        FilterFunc filter = {});
 
     //================= UTILS =================//
 
@@ -109,11 +113,9 @@ namespace magique
 
     // Sets the engine font for performance-overlay and console
     void SetEngineFont(const Font& font);
-
-    // Returns the default font used by the engine
     const Font& GetEngineFont();
 
-    // Returns the time since startup - updated at the start of each tick
+    // Returns the seconds since startup - updated at the start of each tick
     float GetEngineTime();
 
     // Returns the logic ticks since startup - updated at the start of each logic tick (MAGIQUE_LOGIC_TICKS)

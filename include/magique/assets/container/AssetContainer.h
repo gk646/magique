@@ -40,10 +40,13 @@ namespace magique
 
         // Retrieves the first asset that contains the given name
         // This is slower than getAssetByPath() but more convenient - O (n)
-        // This does NOT require the full name - any fully mathing path will be returned
+        // This does NOT require the full name - any fully matching path will be returned
         // e.g. res/icons/currencies/human/gold.png will be found by: human/gold.png
         // Just make sure its still unique!
         const Asset& getAsset(const char* name) const;
+
+        // Returns true if any asset contains the given name (substring)
+        bool hasAsset(const char* name) const;
 
         // Returns a reference to the asset vector containing all loaded assets
         const std::vector<Asset>& getAllAssets() const;

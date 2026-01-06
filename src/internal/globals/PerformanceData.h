@@ -7,6 +7,7 @@
 #include "internal/datastructures/VectorType.h"
 #include "external/raylib-compat/rlgl_compat.h"
 #include "internal/utils/OSUtil.h"
+#include "magique/gamedev/UsefulStuff.h"
 
 #if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
 #include "external/networkingsockets/isteamnetworkingsockets.h"
@@ -31,8 +32,7 @@ namespace magique
     {
         uint32_t logicTickTime = 0;
         uint32_t drawTickTime = 0;
-        int tickCounter = 0;
-        int updateDelayTicks = 15;
+        Counter updateDelay{15};
         PerformanceBlock blocks[7]{}; // 7 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download, Ping
 
 #if MAGIQUE_PROFILING == 1
@@ -87,10 +87,10 @@ namespace magique
 
         void updateValues()
         {
-            tickCounter++;
-            // Update values only every 10 ticks
-            if (tickCounter != updateDelayTicks) [[likely]]
+            if (!updateDelay.tick()) [[likely]]
+            {
                 return;
+            }
 
             const auto& font = global::ENGINE_CONFIG.font;
             const auto fs = global::ENGINE_CONFIG.fontSize;
@@ -169,7 +169,6 @@ namespace magique
                 block++;
                 blocks[block].width = 0;
             }
-            tickCounter = 0;
 
 #if MAGIQUE_PROFILING == 1
             const auto currentMemory = GetMemoryWorkingSet();

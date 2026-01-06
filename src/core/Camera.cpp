@@ -5,24 +5,25 @@
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
+#include "magique/ecs/ECS.h"
 
 namespace magique
 {
 
-    void SetCameraCullPadding(const int distance)
+    void CameraSetCullPadding(const int distance)
     {
         global::ENGINE_CONFIG.cameraCullPadding = static_cast<float>(distance);
     }
 
-    void SetCameraViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
+    void CameraSetViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
 
     void SetCameraTarget(const float x, const float y) { global::ENGINE_CONFIG.cameraPositionOff = {x, y}; }
 
-    void SetCameraSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
+    void CameraSetSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
-    Camera2D& GetCamera() { return global::ENGINE_DATA.camera; }
+    Camera2D& CameraGet() { return global::ENGINE_DATA.camera; }
 
-    MapID GetCameraMap()
+    MapID CameraGetMap()
     {
 #ifdef MAGIQUE_DEBUG
         if (global::ENGINE_DATA.cameraMap == static_cast<MapID>(UINT8_MAX))
@@ -34,9 +35,9 @@ namespace magique
         return global::ENGINE_DATA.cameraMap;
     }
 
-    Vector2 GetCameraPosition() { return global::ENGINE_DATA.camera.target; }
+    Vector2 CameraGetPosition() { return global::ENGINE_DATA.camera.target; }
 
-    Rectangle GetCameraBounds()
+    Rectangle CameraGetBounds()
     {
         const auto pad = global::ENGINE_CONFIG.cameraCullPadding;
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
@@ -52,7 +53,7 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    Rectangle GetCameraNativeBounds()
+    Rectangle CameraGetNativeBounds()
     {
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
@@ -64,9 +65,30 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    entt::entity GetCameraEntity() { return global::ENGINE_DATA.cameraEntity; }
+    bool IsInsideAnyActorViewBounds(Point point)
+    {
+        auto bounds = CameraGetBounds();
 
-    void AddCameraShakeImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
+        if (CheckCollisionPointRec(point.v(), bounds))
+        {
+            return true;
+        }
+
+        for (const auto actor : GetView<ActorC>())
+        {
+            const auto& pos = GetComponent<PositionC>(actor);
+            bounds = {pos.x - bounds.width / 2, pos.y - bounds.height / 2, bounds.width, bounds.height};
+            if (CheckCollisionPointRec(point.v(), bounds))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    entt::entity CameraGetEntity() { return global::ENGINE_DATA.cameraEntity; }
+
+    void CameraAddShakeImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
     {
         auto& shake = global::ENGINE_DATA.cameraShake;
         shake.decay = decay;

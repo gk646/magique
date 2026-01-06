@@ -41,6 +41,14 @@ private:
 template <typename T, uint32_t capacity>
 struct StackVector final
 {
+    StackVector(const std::initializer_list<T>& list)
+    {
+        for (auto& elem : list)
+        {
+            push_back(elem);
+        }
+    }
+
     void pop_back()
     {
         if (size_ > 0)
@@ -63,10 +71,10 @@ struct StackVector final
     const T& operator[](size_t index) const { return data[index]; }
 
     auto begin() const { return data.begin(); }
-    auto end() const { return data.end(); }
+    auto end() const { return data.begin() + size_; }
 
     auto begin() { return data.begin(); }
-    auto end() { return data.end(); }
+    auto end() { return data.begin() + size_; }
 
 private:
     std::array<T, capacity> data;
@@ -82,6 +90,7 @@ private:
 // And then another /2 to make the grid smaller
 // So you a single grid cell is 16pixels instead of 8
 // By making it a template parameter (and a power of two) you loose almost no speed!
+// All functions take the pixel value
 template <typename T, int reduction = 1>
 struct DynamicSimpleGrid final
 {

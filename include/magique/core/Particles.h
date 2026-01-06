@@ -24,13 +24,13 @@ namespace magique
 {
     // Renders all active particles
     // Note: Needs to be called manually - so you can control at which layer particles are rendered
-    void DrawParticles();
+    void ParticlesDraw();
 
     // Allows to set a global modifier to the amount of particles created
     // Useful cause of single point of truth - modifies all calls
     // Default: 1.0
-    float GetParticleAmountScale();
-    void SetParticleAmountScale(float amount);
+    float ParticlesGetAmountScale();
+    void ParticlesSetAmountScale(float amount);
 
     //================= CREATE =================//
 

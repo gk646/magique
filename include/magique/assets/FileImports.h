@@ -62,6 +62,13 @@ namespace glz
     };
 
     template <>
+    struct meta<magique::Rect>
+    {
+        using T = magique::Rect;
+        static constexpr auto value = object(&T::x, &T::y, &T::w, &T::h);
+    };
+
+    template <>
     struct meta<magique::Keybind>
     {
         using T = magique::Keybind;

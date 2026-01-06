@@ -45,14 +45,11 @@ namespace magique
         {
             if (!obj.visible) // Only visible objects
                 continue;
-            const float scaledX = obj.x * scale;
-            const float scaledY = obj.y * scale;
-            const float scaledWidth = obj.width * scale;
-            const float scaledHeight = obj.height * scale;
 
-            const auto num = data.colliderStorage.insert(scaledX, scaledY, scaledWidth, scaledHeight);
+            const Rect scaled = obj.bounds * scale;
+            const auto num = data.colliderStorage.insert(scaled.x, scaled.y, scaled.w, scaled.h);
             const auto staticID = StaticIDHelper::CreateID(num, obj.getTileClass());
-            grid.insert(staticID, scaledX, scaledY, scaledWidth, scaledHeight);
+            grid.insert(staticID, scaled.x, scaled.y, scaled.w, scaled.h);
             info.objectIds.push_back(num); // So we can uniquely delete later
         }
 

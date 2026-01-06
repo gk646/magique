@@ -342,7 +342,7 @@ namespace magique
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
     {
         CollisionInfo info;
-        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), GetCamera());
+        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
         CheckCollisionEntityRect(pos, col, {worldMouse.x, worldMouse.y, 1, 1}, info);
         return info.isColliding();
     }

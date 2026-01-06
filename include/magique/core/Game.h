@@ -25,6 +25,11 @@ M_IGNORE_WARNING(4100) // unreferenced formal parameter
 
 namespace magique
 {
+
+    // Returns the global game instance
+    // IMPORTANT: only valid after the game constructor finished (so before game.run(), ... so pretty early)
+    Game& GetGame();
+
     struct Game
     {
         // Constructs a game instance - sets the window title to the passed name

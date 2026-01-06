@@ -8,17 +8,26 @@
 
 namespace magique
 {
-    bool FindPath(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const int maxLen,
-                  GridMode mode)
+    bool PathFind(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const Point hitbox,
+                  const int maxLen, GridMode mode)
     {
         auto& path = global::PATH_DATA;
-        return path.findPath(pathVec, start, end, map, maxLen, mode);
+        path.findPath(pathVec, start, end, map, maxLen, mode);
+        return !pathVec.empty();
     }
 
-    bool FindNextPoint(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
+    bool PathFindEx(std::vector<Point>& pathVec, Point start, Point end, MapID map, Point hitbox,
+                    PathFindHeuristicFunc heuristic, int maxLen, GridMode mode)
     {
         auto& path = global::PATH_DATA;
-        FindPath(path.pathCache, start, end, map, maxLen, mode);
+        path.findPath(pathVec, start, end, map, maxLen, mode, heuristic);
+        return !pathVec.empty();
+    }
+
+    bool PathFindNext(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
+    {
+        auto& path = global::PATH_DATA;
+        PathFind(path.pathCache, start, end, map, {}, maxLen, mode);
         if (path.pathCache.empty())
         {
             return false;
@@ -27,11 +36,7 @@ namespace magique
         return true;
     }
 
-    // Same as FindPath() but allows to specify the dimensions of the searching entity
-    // The pathfinding tries to find a path that fits the entity
-    // static void FindPathEx(std::vector<Point>& path, Point start, Point end, Point dimensions, int searchLen) {}
-
-    bool GetPathRayCast(const Point start, const Point end, const MapID map)
+    bool PathRayCast(const Point start, const Point end, const MapID map)
     {
         auto& path = global::PATH_DATA;
         const auto& staticGrid = path.mapsStaticGrids[map];
@@ -52,13 +57,14 @@ namespace magique
         {
             const float x = static_cast<float>(x0) * MAGIQUE_PATHFINDING_CELL_SIZE;
             const float y = static_cast<float>(y0) * MAGIQUE_PATHFINDING_CELL_SIZE;
-            // DrawRectangleRec({x, y, MAGIQUE_PATHFINDING_CELL_SIZE, MAGIQUE_PATHFINDING_CELL_SIZE}, PURPLE);
             if (PathFindingData::IsCellSolid(x, y, staticGrid, dynamicGrid))
             {
                 return false;
             }
             if (x0 == x1 && y0 == y1)
+            {
                 break;
+            }
             int const e2 = 2 * error;
             if (e2 >= dy)
             {
@@ -74,13 +80,26 @@ namespace magique
         return true;
     }
 
-    bool GetExistsPath(const Point start, const Point end, const MapID map, const int max, GridMode mode)
+    bool PathExist(const Point start, const Point end, const MapID map, const int max, GridMode mode)
     {
         Point point;
-        return FindNextPoint(point, start, end, map, max);
+        return PathFindNext(point, start, end, map, max);
     }
 
-    Point GetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
+    Point PathFindRandomTarget(Point start, const Rect& area, MapID map, int iterations)
+    {
+        for (int i = 0; i < iterations; i++)
+        {
+            auto random = area.random();
+            if (PathExist(start, random, map))
+            {
+                return random;
+            }
+        }
+        return -1;
+    }
+
+    Point PathFindNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
     {
         // Stored in reverse
         int lowestIdx = -1;
@@ -131,7 +150,7 @@ namespace magique
         }
     }
 
-    void SetTypePathSolid(const EntityType type, const bool value)
+    void PathSetSolidType(const EntityType type, const bool value)
     {
         if (value)
             global::PATH_DATA.solidTypes.insert(type);
@@ -139,9 +158,9 @@ namespace magique
             global::PATH_DATA.solidTypes.erase(type);
     }
 
-    bool GetIsTypePathSolid(const EntityType type) { return global::PATH_DATA.solidTypes.contains(type); }
+    bool PathGetIsSolidType(const EntityType type) { return global::PATH_DATA.solidTypes.contains(type); }
 
-    void SetEntityPathSolid(const entt::entity entity, const bool value)
+    void PathSetSolidEntity(const entt::entity entity, const bool value)
     {
         if (value)
             global::PATH_DATA.solidEntities.insert(entity);
@@ -149,9 +168,9 @@ namespace magique
             global::PATH_DATA.solidEntities.erase(entity);
     }
 
-    bool GetIsEntityPathSolid(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
+    bool PathGetSolidEntity(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
 
-    void DrawPath(const std::vector<Point>& path, Color color)
+    void PathDraw(const std::vector<Point>& path, Color color)
     {
         constexpr int halfSize = MAGIQUE_PATHFINDING_CELL_SIZE / 2;
         constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
@@ -162,7 +181,7 @@ namespace magique
         }
     }
 
-    bool GetIsPathSolid(const Point& pos, const MapID map)
+    bool PathIsSolid(const Point& pos, const MapID map)
     {
         auto& path = global::PATH_DATA;
         const auto& staticGrid = path.mapsStaticGrids[map];

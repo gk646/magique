@@ -22,30 +22,23 @@ namespace magique
         }
     }
 
-    bool Window::updateDrag(const Rectangle& area, const int mouseButton)
+    void Window::drawDefault(const Rectangle& bounds) const
     {
-        const auto mouse = GetMousePos();
-        if (LayeredInput::IsMouseButtonDown(mouseButton))
-        {
-            if (isDragged)
-            {
-                setPosition(mouse + clickOffset);
-                return true;
-            }
-            if (PointToRect(mouse.x, mouse.y, area.x, area.y, area.width, area.height))
-            {
-                const auto bounds = getBounds();
-                clickOffset = {bounds.x - mouse.x, bounds.y - mouse.y};
-                clickOffset.floor();
-                isDragged = true;
-                return true;
-            }
-        }
-        else
-        {
-            isDragged = false;
-        }
-        return false;
+        const auto& theme = global::ENGINE_CONFIG.theme;
+
+        // Body
+        DrawRectangleRounded(bounds, 0.1F, 30, theme.backLight);
+        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, theme.backDark);
+
+        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
+
+        // Top bar
+        const auto topBar = getTopBarBounds();
+        const auto isHovered = CheckCollisionPointRec(GetMousePos().v(), topBar) || isDragged;
+        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
+        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
+        DrawRectangleRounded(topBar, 0.2F, 30, body);
+        DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }
 
     Rectangle Window::getBodyBounds() const
@@ -66,22 +59,29 @@ namespace magique
 
     bool Window::getIsDragged() const { return isDragged; }
 
-    void Window::drawDefault(const Rectangle& bounds) const
+    bool Window::updateDrag(const Rect& area, const int mouseButton)
     {
-        const auto& theme = global::ENGINE_CONFIG.theme;
-
-        // Body
-        DrawRectangleRounded(bounds, 0.1F, 30, theme.backLight);
-        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, theme.backDark);
-
-        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-
-        // Top bar
-        const auto topBar = getTopBarBounds();
-        const auto isHovered = CheckCollisionPointRec(GetMousePos().v(), topBar) || isDragged;
-        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
-        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
-        DrawRectangleRounded(topBar, 0.2F, 30, body);
-        DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
+        const auto mouse = GetMousePos();
+        if (LayeredInput::IsMouseButtonDown(mouseButton))
+        {
+            if (isDragged)
+            {
+                setPosition(mouse + clickOffset);
+                return true;
+            }
+            if (area.contains(mouse))
+            {
+                const auto bounds = getBounds();
+                clickOffset = {bounds.x - mouse.x, bounds.y - mouse.y};
+                clickOffset.floor();
+                isDragged = true;
+                return true;
+            }
+        }
+        else
+        {
+            isDragged = false;
+        }
+        return false;
     }
 } // namespace magique

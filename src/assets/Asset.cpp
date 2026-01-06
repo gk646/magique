@@ -44,17 +44,19 @@ namespace magique
             return false;
         const size_t pathLen = strlen(path);
         const size_t suffixLen = strlen(suffix);
-
         if (suffixLen > pathLen)
+        {
             return false;
-
+        }
         return strcmp(path + pathLen - suffixLen, suffix) == 0;
     }
 
     bool Asset::contains(const char* str) const
     {
         if (str == nullptr)
+        {
             return false;
+        }
         const char* found = strstr(path, str);
         return found != nullptr;
     }

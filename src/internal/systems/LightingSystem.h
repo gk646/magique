@@ -91,7 +91,7 @@ namespace magique
                 {
                     BeginShaderMode(lightShader);
                     {
-                        const auto screnPos = GetWorldToScreen2D(light, GetCamera());
+                        const auto screnPos = GetWorldToScreen2D(light, CameraGet());
                         SetShaderValue(lightShader, lightLightLoc, &screnPos, SHADER_UNIFORM_VEC2);
                         SetShaderValueV(lightShader, lightColorLoc, &color, SHADER_UNIFORM_VEC4, 1);
                         SetShaderValueV(lightShader, lightTypeLoc, &style, SHADER_UNIFORM_INT, 1);

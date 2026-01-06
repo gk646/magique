@@ -55,15 +55,6 @@ namespace magique
         float scale = 1.0F;
         friend struct AnimationData;
     };
-
-    // Registers the given animation
-    // Note: Passed animation shouldn't be used anymore - use GetEntityAnimation()
-    void RegisterEntityAnimation(EntityType type, const EntityAnimation& animation);
-
-    // Returns the animation registered under the given type
-    // Failure: returns an empty animation with warning
-    EntityAnimation& GetEntityAnimation(EntityType type);
-
 } // namespace magique
 
 

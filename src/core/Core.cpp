@@ -78,7 +78,7 @@ namespace magique
 
     const std::vector<entt::entity>& GetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
 
-    const std::vector<MapID>& GetLoadedMaps() { return global::ENGINE_DATA.loadedMaps; }
+    const std::vector<MapID>& GetActiveMaps() { return global::ENGINE_DATA.loadedMaps; }
 
     // implemented in ECS.cpp cause of includes
     // const std::vector<entt::entity>& GetNearbyEntities(entt::entity entity, float radius){}

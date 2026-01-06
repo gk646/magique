@@ -50,7 +50,11 @@ namespace magique
         bool getInvertVertScroll() const;
 
     protected:
-        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
+        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override
+        {
+            if (wasDrawn)
+                updateInputs();
+        }
 
         void onDraw(const Rectangle& bounds) override
         {

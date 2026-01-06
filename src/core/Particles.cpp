@@ -13,11 +13,11 @@
 
 namespace magique
 {
-    void DrawParticles() { global::PARTICLE_DATA.render(); }
+    void ParticlesDraw() { global::PARTICLE_DATA.render(); }
 
-    float GetParticleAmountScale() { return global::PARTICLE_DATA.scale; }
+    float ParticlesGetAmountScale() { return global::PARTICLE_DATA.scale; }
 
-    void SetParticleAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
+    void ParticlesSetAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
 
     void CreateScreenParticle(const ScreenEmitter& emitter, const Point& pos, int amount)
     {

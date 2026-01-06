@@ -115,7 +115,7 @@ namespace magique
         const uint16_t cacheDuration = config.entityCacheDuration;
         int actorCount = 0;
         const auto cameraMap = data.cameraMap;
-        const auto camBound = GetCameraBounds();
+        const auto camBound = CameraGetBounds();
 
         // Lookup tables
         ActorMapDistribution actorDist{};

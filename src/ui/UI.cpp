@@ -104,7 +104,10 @@ namespace magique
 
     void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
 
-    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
+    void LayeredInput::ConsumeMouse()
+    {
+        global::UI_DATA.mouseConsumed = true;
+    }
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
@@ -112,10 +115,9 @@ namespace magique
 
     void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 
-    Rectangle GetDynamicRectAtMouse(const Point& offset, float width, float height)
+    Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base)
     {
-        const auto& mouse = GetMousePos();
-        Rectangle rect = {mouse.x + offset.x, mouse.y + offset.y, width, height};
+        Rectangle rect = {base.x + offset.x, base.y + offset.y, width, height};
 
         // Outside horizontally
         if (rect.x + rect.width > global::UI_DATA.targetRes.x)

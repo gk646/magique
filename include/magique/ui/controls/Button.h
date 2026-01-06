@@ -23,7 +23,7 @@ namespace magique
     {
         // Creates a new button from coordinates in the logical UI resolution
         Button(float x, float y, float w, float h);
-        Button(float w, float h, Anchor anchor, float inset = 0.0F);
+        Button(float w, float h, Anchor anchor, Point inset = {});
 
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 

@@ -9,7 +9,7 @@
 
 namespace magique
 {
-    void SetSoundMasterVolume(float volume)
+    void SoundSetMasterVolume(float volume)
     {
         volume = clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
@@ -24,9 +24,9 @@ namespace magique
         }
     }
 
-    float GetSoundMasterVolume() { return global::AUDIO_PLAYER.soundVolume; }
+    float SoundGetMasterVolume() { return global::AUDIO_PLAYER.soundVolume; }
 
-    void SetMusicMasterVolume(float volume)
+    void SoundSetMusicVolume(float volume)
     {
         volume = clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
@@ -37,9 +37,9 @@ namespace magique
         }
     }
 
-    float GetMusicMasterVolume() { return global::AUDIO_PLAYER.musicVolume; }
+    float SoundGetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }
 
-    void PlaySound(const Sound& sound, const float volume)
+    void SoundPlay(const Sound& sound, const float volume)
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
@@ -47,7 +47,7 @@ namespace magique
         global::AUDIO_PLAYER.sounds.emplace_back(alias, volume);
     }
 
-    void PlaySound2D(const Sound& sound, const entt::entity entity, const float volume)
+    void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume)
     {
         auto& reg = GetRegistry();
         if (!reg.valid(entity))
@@ -62,7 +62,7 @@ namespace magique
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
     }
 
-    void PlaySound2D(const Sound& sound, float& x, float& y, float volume)
+    void SoundPlay2D(const Sound& sound, float& x, float& y, float volume)
     {
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
@@ -70,7 +70,7 @@ namespace magique
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &x, &y, x, y, true);
     }
 
-    void StopSound(const Sound& sound)
+    void SoundStop(const Sound& sound)
     {
         auto& ap = global::AUDIO_PLAYER;
         for (auto it = ap.sounds.begin(); it != ap.sounds.end();)
@@ -93,7 +93,7 @@ namespace magique
         }
     }
 
-    bool IsSoundPlaying(const Sound& sound)
+    bool SoundIsPlaying(const Sound& sound)
     {
         const auto& sd = global::AUDIO_PLAYER;
         for (const auto& s : sd.sounds)
@@ -113,14 +113,14 @@ namespace magique
         return false;
     }
 
-    void PlayMusic(const Music& music, const float volume, const bool fade)
+    void SoundPlayMusic(const Music& music, const float volume, const bool fade)
     {
         global::AUDIO_PLAYER.addTrack(music, volume, fade);
     }
 
-    void StopMusic(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
+    void SoundStopMusic(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
 
-    void PlayPlaylist(Playlist& playlist, const float volume)
+    void SoundPlayPlaylist(Playlist& playlist, const float volume)
     {
         if (playlist.getSize() == 0)
         {
@@ -131,9 +131,9 @@ namespace magique
         global::AUDIO_PLAYER.startPlaylist(playlist);
     }
 
-    void StopPlaylist(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }
+    void SoundStopPlaylist(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }
 
-    void ForwardPlaylist(Playlist& playlist)
+    void SoundForwardPlaylist(Playlist& playlist)
     {
         global::AUDIO_PLAYER.stopPlaylist(playlist);
         global::AUDIO_PLAYER.startPlaylist(playlist);

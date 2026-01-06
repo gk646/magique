@@ -52,12 +52,14 @@ namespace magique
         Point& operator/=(float f);
 
         // Distance functions
-        [[nodiscard]] float manhattan(const Point& p) const;
-        [[nodiscard]] float euclidean(const Point& p) const;
-        [[nodiscard]] float chebyshev(const Point& p) const;
-        [[nodiscard]] float octile(const Point& p) const;
+        float manhattan(const Point& p) const;
+        float euclidean(const Point& p) const;
+        float chebyshev(const Point& p) const;
+        float octile(const Point& p) const;
 
-        [[nodiscard]] Vector2 v() const; // Convert into raylib vector
+        Vector2 v() const; // Convert into raylib vector
+        int intx() const;
+        int inty() const;
 
         // Vector functions
 
@@ -102,6 +104,41 @@ namespace magique
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
         static Point PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target);
+    };
+
+    struct Rect final
+    {
+        float x;
+        float y;
+        float w;
+        float h;
+
+        Rect() = default;
+        Rect(const Rectangle& rect);
+        Rect(Point topLeft, Point size);
+        Rect(float x, float y, float w, float h);
+
+        Rect operator*(float num) const; // scales all values
+
+        // Returns raylib rect
+        Rectangle v() const;
+
+        // Returns random point inside the rect
+        Point random() const;
+
+        // Returns true if the point is contained in the rect
+        bool contains(const Point& p) const;
+
+        // Returns the area of the rect
+        float area() const;
+
+        // Returns topleft/size/mid point
+        Point pos() const;
+        Point size() const;
+        Point mid() const;
+
+        // Returns a rectangle that is centered on p with the given size
+        static Rect CenteredOn(const Point& p, const Point& size);
     };
 
     //================= CORE =================//
@@ -226,9 +263,10 @@ namespace magique
         // object with image of the 10th tile from second is placed -> tileid: 211 (starts with 1)
         int getTileID() const;
 
-        float x = 0, y = 0, width = 0, height = 0; // Hitbox
-        bool visible = false;                      // Mutable
-        int tileClass = 0;                         // NOT assigned autoamtically
+        Rect bounds{};
+        float rotation = 0;
+        bool visible = false; // Mutable
+        int tileClass = 0;    // NOT assigned autoamtically
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* propertyName) const;
@@ -467,6 +505,9 @@ namespace magique
         CROSS,
         STAR, // Allows all orthogonal direction and additionally all diagonals top left, top right...
     };
+
+    using PathFindHeuristicFunc = float (*)(const Point& curr, const Point& end);
+    using PathFindMoveCostFunc = float (*)(const Point& dir);
 
     //================= MULTIPLAYER =================//
 

@@ -27,6 +27,7 @@ namespace magique
     // Sets the value with which the specified placeholder will be replaced
     // Given string has to be valid until this method returns!
     // Note: If a given format already exists it will be overwritten silently!
+    // Note: "placeholder" is only the value without prefix and braces e.g. PLAYER_NAME instead of ${PLAYER_NAME}
     void SetFormatValue(const char* placeholder, const char* val);
     void SetFormatValue(const char* placeholder, const std::string& val);
     void SetFormatValue(const char* placeholder, float val);

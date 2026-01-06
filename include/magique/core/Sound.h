@@ -28,60 +28,60 @@ namespace magique
     // GetMasterVolume() - raylib
 
     // Affects all Sound and Sound2D instances - clamped to (0.0 - 1.0)
-    void SetSoundMasterVolume(float volume);
+    void SoundSetMasterVolume(float volume);
 
     // Returns the current sound volume - (0.0 - 1.0)
-    float GetSoundMasterVolume();
+    float SoundGetMasterVolume();
 
     // Affects all Music instance including playlists - clamped to (0.0 - 1.0)
-    void SetMusicMasterVolume(float volume);
+    void SoundSetMusicVolume(float volume);
 
     // Returns the current music volume - (0.0 - 1.0)
-    float GetMusicMasterVolume();
+    float SoundGetMusicVolume();
 
     //================= SOUND & SOUND2D =================//
 
     // Plays the given sound - multiple calls play it multiple times
-    void PlaySound(const Sound& sound, float volume = 1.0F);
+    void SoundPlay(const Sound& sound, float volume = 1.0F);
 
     // Plays the given sound attached to the given entity
     // Automatically handles lifetime if entities is destroyed
-    void PlaySound2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
+    void SoundPlay2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
 
     // Plays the given sound attached to the given coordinates
     // IMPORTANT: Given references MUST outlive the duration of the sound!
-    void PlaySound2D(const Sound& sound, float& x, float& y, float volume = 1.0F);
+    void SoundPlay2D(const Sound& sound, float& x, float& y, float volume = 1.0F);
 
     // Stops playing the first instance of this sound
     // Checks both normal and 2D
-    void StopSound(const Sound& sound);
+    void SoundStop(const Sound& sound);
 
     // Returns true if any instance of the given sound is currently playing
     // Checks both normal and 2D
-    bool IsSoundPlaying(const Sound& sound);
+    bool SoundIsPlaying(const Sound& sound);
 
     //================= MUSIC =================//
 
     // Plays the given music - multiple calls play it multiple times
     // fade controls both fade-in and fade-out
-    void PlayMusic(const Music& music, float volume = 1.0F, bool fade = true);
+    void SoundPlayMusic(const Music& music, float volume = 1.0F, bool fade = true);
 
     // Stops the first instance of this music
-    void StopMusic(const Music& music);
+    void SoundStopMusic(const Music& music);
 
     //================= PLAYLIST =================//
 
     // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
     // Only pass a playlist with permanent storage (either use RegisterPlaylist() or allocate it)
     // A playlist cannot be played multiple times simultaneously - plays (loops) until stopped
-    void PlayPlaylist(Playlist& playlist, float volume = 1.0F);
+    void SoundPlayPlaylist(Playlist& playlist, float volume = 1.0F);
 
     // Stops playing the playlist
-    void StopPlaylist(Playlist& playlist);
+    void SoundStopPlaylist(Playlist& playlist);
 
     // Forwards the playlist manually
     // Progresses the tracks sequentially (looping) or calls the custom forward function to determine the next track
-    void ForwardPlaylist(Playlist& playlist);
+    void SoundForwardPlaylist(Playlist& playlist);
 
     // Sound, Sound2D, Music, Playlist
     // play, pause, resume, stop, volume, PreProcess

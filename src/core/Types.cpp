@@ -14,6 +14,7 @@
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/STLUtil.h"
 #include "magique/ui/UI.h"
+#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -144,6 +145,10 @@ namespace magique
 
     Vector2 Point::v() const { return Vector2{x, y}; }
 
+    int Point::intx() const { return (int)x; }
+
+    int Point::inty() const { return (int)y; }
+
     float Point::dot(const Point& p) const { return x * p.x + y * p.y; }
 
     float Point::cross(const Point& p) const { return x * p.x - y * p.y; }
@@ -265,6 +270,32 @@ namespace magique
             return direction.perpendicular(false);
         }
     }
+
+    //----------------- RECT -----------------//
+
+    Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), w(rect.width), h(rect.height) {}
+
+    Rect::Rect(const Point topLeft, const Point size) : x(topLeft.x), y(topLeft.y), w(size.x), h(size.y) {}
+
+    Rect::Rect(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {}
+
+    Rect Rect::operator*(float num) const { return {x * num, y * num, w * num, h * num}; }
+
+    Rectangle Rect::v() const { return Rectangle{x, y, w, h}; }
+
+    Point Rect::random() const { return Point{x + GetRandomFloat(0, w), y + GetRandomFloat(0, h)}; }
+
+    bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, w, h); }
+
+    float Rect::area() const { return w * h; }
+
+    Point Rect::pos() const { return Point{x, y}; }
+
+    Point Rect::size() const { return Point{w, h}; }
+
+    Point Rect::mid() const { return Point{x + w / 2, y + h / 2}; }
+
+    Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
 
     //----------------- SPRITE SHEET -----------------//
 

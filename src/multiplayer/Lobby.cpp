@@ -1,7 +1,7 @@
 #include <magique/multiplayer/Lobby.h>
 
+#if defined( MAGIQUE_STEAM) || defined( MAGIQUE_LAN)
 #include "internal/globals/MultiplayerData.h"
-
 namespace magique
 {
 
@@ -98,3 +98,6 @@ namespace magique
     const std::string& Lobby::getMetadata(const char* key) { return global::LOBBY_DATA.metadata[key]; }
 
 } // namespace magique
+
+#endif
+

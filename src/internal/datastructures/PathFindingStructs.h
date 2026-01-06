@@ -1,28 +1,29 @@
 #ifndef PATHFINDINGSTRUCTS_H
 #define PATHFINDINGSTRUCTS_H
 
+#include "magique/internal/DataStructures.h"
+
+
 #include <bitset>
 
 namespace magique
 {
-    using PathFindingHeuristicFunc = float (*)(const Point& curr, const Point& end);
-    using PathFindingMoveCostFunc = float (*)(const Point& dir);
-
-    inline constexpr std::array<PathFindingHeuristicFunc, 2> PATH_HEURISTICS = {
+    inline constexpr std::array<PathFindHeuristicFunc, 2> PATH_HEURISTICS = {
         [](const Point& curr, const Point& end) { return curr.manhattan(end) * 1.1F; },
         [](const Point& curr, const Point& end) { return curr.chebyshev(end) * 1.1F; },
     };
-    inline constexpr std::array<PathFindingMoveCostFunc, 2> MOVE_COST = {
+    inline constexpr std::array<PathFindMoveCostFunc, 2> MOVE_COST = {
         [](const Point& dir) { return 1.0F; },
         [](const Point& dir) { return dir.x != 0 && dir.y != 0 ? 1.40F : 1.0F; },
     };
-    inline std::array MOVEMENTS = {std::vector{
+
+    inline std::array MOVEMENTS = {StackVector<Point, 8>{
                                        Point{0, -1}, // North
                                        {1, 0},       // East
                                        {0, 1},       // South
                                        {-1, 0},      // West
                                    },
-                                   std::vector{
+                                   StackVector<Point, 8>{
                                        Point{0, -1}, // North
                                        {1, -1},      // North-East
                                        {1, 0},       // East
@@ -126,10 +127,11 @@ namespace magique
         int midX;
         int midY;
 
-        void setMid(const Point& mid)
+        void setNewMid(const Point& mid)
         {
             midX = static_cast<int>(mid.x);
             midY = static_cast<int>(mid.y);
+            clear();
         }
 
         [[nodiscard]] T getValue(const float x, const float y) const
@@ -143,6 +145,8 @@ namespace magique
             return 0;
         }
 
+        [[nodiscard]] T getValue(const Point& p) const { return getValue(p.x, p.y); }
+
         void setValue(const float x, const float y, const T& value)
         {
             const auto relX = static_cast<int>(x) - midX + size / 2;
@@ -152,6 +156,7 @@ namespace magique
                 rows[relY][relX] = value;
             }
         }
+        void setValue(const Point& p, const T& value) { setValue(p.x, p.y, value); }
 
         void clear() { memset(rows, 0, size * size * sizeof(T)); }
     };

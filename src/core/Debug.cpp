@@ -39,7 +39,7 @@ namespace magique
 
     using Clock = std::chrono::high_resolution_clock;
 
-    void StartTimer(const int num)
+    void TimerStart(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
         {
@@ -53,7 +53,7 @@ namespace magique
         LOG_WARNING("No available timer slots!");
     }
 
-    uint64_t GetTimerTime(const int num)
+    uint64_t TimerGetTime(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
         {
@@ -67,7 +67,7 @@ namespace magique
         return UINT64_MAX;
     }
 
-    uint64_t StopTimer(const int num)
+    uint64_t TimerStop(const int num)
     {
         for (int i = 0; i < MAGIQUE_MAX_SUPPORTED_TIMERS; ++i)
         {

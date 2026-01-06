@@ -17,45 +17,50 @@ namespace magique
     // Adds additional padding to the sides of the normal camera rectangle to be used to cull entities inside visible space
     // Entities are checked with their topleft to be inside the enlarged rectangle (so necessary when you have large entities)
     // Default: 250
-    void SetCameraCullPadding(int distance);
+    void CameraSetCullPadding(int distance);
 
     // Manually sets the camera view offset from the top left of the screen - automatically set to be half the screen dimensions
     // Note: If any offset other than (0,0) is set there are no automatic adjustments - useful if for different render target
     // Default: (0,0)
-    void SetCameraViewOffset(float x, float y);
+    void CameraSetViewOffset(float x, float y);
 
     // Sets the cameras position offset - automatically centered within the camera entities collision shape (if it exists)
     // Note: If any offset other than (0,0) is set there are no automatic adjustments
     // Default: (0,0)
-    void SetCameraTargetOffset(float x, float y);
+    void CameraSetTargetOffset(float x, float y);
 
     // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the fastest
     // Controls how fast the camera position catches up to the position of the camera holder
     // Default: 0.4
-    void SetCameraSmoothing(float smoothing);
+    void CameraSetSmoothing(float smoothing);
 
     // Removes the CameraC component from the current holder and adds it to the specified entity (making it the new holder)
-    void SetCameraEntity(entt::entity entity);
+    void CameraSetEntity(entt::entity target);
 
     // Returns the current camera holder
     // Failure: returns UINT32_MAX if there is no camera currently
-    entt::entity GetCameraEntity();
+    entt::entity CameraGetEntity();
 
     // Returns the engine internal camera - used for all getter methods, culling visible entities and drawing debug visuals
-    Camera2D& GetCamera();
+    Camera2D& CameraGet();
 
     // Returns the map of the camera - you should probably draw this map
     // Failure: returns UINT8_MAX if there is no camera
-    MapID GetCameraMap();
+    MapID CameraGetMap();
 
     // Returns the current position (target) of the camera
-    Vector2 GetCameraPosition();
+    Vector2 CameraGetPosition();
 
     // Returns the bounds of the camera rect including the view padding and zoom scaling
-    Rectangle GetCameraBounds();
+    Rectangle CameraGetBounds();
 
     // Returns the bounds of the camera without padding
-    Rectangle GetCameraNativeBounds();
+    Rectangle CameraGetNativeBounds();
+
+    //================= UTIL =================//
+
+    // Returns true if the given point is inside any actors view bounds (using the camera bounds)
+    bool IsInsideAnyActorViewBounds(Point pos);
 
     //================= SHAKE =================//
 
@@ -65,7 +70,7 @@ namespace magique
     //      - velocity: how far the shake changes each tick in pixels/s
     //      - decay: how much the maxDistance is reduced in pixels/s
     // Note: the shake stops when maxDistance is 0 - the direction of multiple impulses adds up, the rest overwrites
-    void AddCameraShakeImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
+    void CameraAddShakeImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
 
 } // namespace magique
 

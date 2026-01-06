@@ -24,16 +24,16 @@ namespace magique
     using EntityCache = HashMap<entt::entity, uint16_t>;
     using StateCallback = std::function<void(GameState, GameState)>;
 
-    struct NearbyQueryData final
+    struct QueryData final
     {
         HashSet<entt::entity> cache;
-        Point lastOrigin{};
-        float lastLength = 0;
-        MapID lastMap{};
+        Point origin{};
+        Point size{};
+        MapID map{};
 
-        [[nodiscard]] bool getIsSimilarParameters(const MapID map, const Point& p, const float radius) const
+        [[nodiscard]] bool getIsSimilarParameters(MapID newMap, Point newOrigin, Point newSize) const
         {
-            return lastOrigin == p && lastLength == radius && lastMap == map;
+            return map == newMap && origin == newOrigin && size == newSize;
         }
     };
 
@@ -62,7 +62,7 @@ namespace magique
         entt::entity cameraEntity{UINT32_MAX};       // Entity id of the camera
         GameState gameState{INT32_MAX};              // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);          // Map the camera is in
-        NearbyQueryData nearbyQueryData;             // Caches the parameters of the last query to skip similar calls
+        QueryData nearbyQueryData;                   // Caches the parameters of the last query to skip similar calls
         entt::entity playerEntity = entt::null;      // Manually set player entity
         float engineTime = 0.0F;                     // Time since engine start
         uint32_t engineTicks = 0;                    // Ticks since engine start

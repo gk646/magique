@@ -35,17 +35,17 @@ namespace magique
 
     // Sets a C++ script for this entity type
     // Subclass the EntityScript class and pass a new Instance()
-    void SetEntityScript(EntityType entity, EntityScript* script);
+    void ScriptSetScript(EntityType entity, EntityScript* script);
 
     // Retrieves the script for the entity type
     // Failure: if no script is registered for the given type returns nullptr
-    EntityScript* GetEntityScript(EntityType entity);
+    EntityScript* ScriptGetScript(EntityType entity);
 
     // Sets the scripted status for the given entity - if set no automatic script methods will be called for this entity
-    void SetIsEntityScripted(entt::entity entity, bool val);
+    void ScriptSetScripted(entt::entity entity, bool val);
 
     // Returns true if the given entity receives script updates
-    bool GetIsEntityScripted(entt::entity entity);
+    bool ScriptGetIsScripted(entt::entity entity);
 
     // Calls the given event function on the given entity
     // Note: If you want to access non-inherited methods you HAVE to pass your subclass type
@@ -134,7 +134,7 @@ namespace magique
     void magique::InvokeEvent(entt::entity entity, Args&&... arguments)
     {
         const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
-        auto* script = static_cast<Script*>(GetEntityScript(pos.type));
+        auto* script = static_cast<Script*>(ScriptGetScript(pos.type));
         MAGIQUE_ASSERT(script != nullptr, "No Script for this type!");
         Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
     }

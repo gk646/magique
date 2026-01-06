@@ -35,7 +35,7 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& config = global::ENGINE_CONFIG;
         const auto smoothing = 1.0F - config.cameraSmoothing; // The higher the value the smoother
-        const auto cameraEntity = GetCameraEntity();
+        const auto cameraEntity = CameraGetEntity();
 
         Point targetPosition{0, 0};
         if (cameraEntity != entt::entity{UINT32_MAX}) [[unlikely]] // No camera assigned
@@ -82,12 +82,12 @@ namespace magique
 
     inline void RenderHitboxes()
     {
-        BeginMode2D(GetCamera());
+        BeginMode2D(CameraGet());
         auto& group = internal::POSITION_GROUP;
         const auto& staticData = global::STATIC_COLL_DATA;
 
-        const auto bounds = GetCameraBounds();
-        const auto map = GetCameraMap();
+        const auto bounds = CameraGetBounds();
+        const auto map = CameraGetMap();
 
         // Dynamic entities
         for (const auto e : GetDrawEntities())
@@ -196,7 +196,7 @@ namespace magique
             if (!dynamic.mapEntityGrids.contains(currentMap))
                 return;
             const auto& grid = dynamic.mapEntityGrids[currentMap];
-            const auto bounds = GetCameraBounds();
+            const auto bounds = CameraGetBounds();
             constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
             const float fontSize = config.fontSize;
             const float textOff = MAGIQUE_COLLISION_CELL_SIZE / 2.0F - fontSize / 2.0F;
@@ -234,7 +234,7 @@ namespace magique
             constexpr int MARKER_GAP = 250; // Pixels between each marker
             constexpr int MARKER_SIZE = 30; // Pixels between each marker
 
-            const auto bounds = GetCameraBounds();
+            const auto bounds = CameraGetBounds();
             const int startX = static_cast<int>(bounds.x) / MARKER_GAP;
             const int startY = static_cast<int>(bounds.y) / MARKER_GAP;
             const int width = static_cast<int>(bounds.width) / MARKER_GAP;
@@ -262,7 +262,7 @@ namespace magique
             const auto& staticGrid = path.mapsStaticGrids[currentMap];
             const auto& dynamicGrid = path.mapsDynamicGrids[currentMap];
 
-            const auto bounds = GetCameraBounds();
+            const auto bounds = CameraGetBounds();
             constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
             const int startX = static_cast<int>(bounds.x) / cellSize;
             const int startY = static_cast<int>(bounds.y) / cellSize;
@@ -303,7 +303,7 @@ namespace magique
             }
         };
 
-        BeginMode2D(GetCamera());
+        BeginMode2D(CameraGet());
         {
             if (config.showCompassOverlay)
                 drawCompass(BLACK);

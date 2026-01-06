@@ -3,6 +3,7 @@
 #define MAGIQUE_CONSOLE_DATA_H
 
 #include <deque>
+#include <algorithm>
 #include <raylib/config.h>
 
 #include <magique/core/Debug.h>
@@ -20,6 +21,7 @@
 #include "internal/globals/EngineData.h"
 #include "internal/utils/STLUtil.h"
 #include "external/raylib-compat/rcore_compat.h"
+
 
 namespace magique
 {
@@ -257,6 +259,11 @@ namespace magique
             uptime.setFunction([](const ParamList& params) { AddConsoleStringF("Uptime: %.2f sec", GetEngineTime()); });
             RegisterConsoleCommand(uptime);
 
+            Command perfOverlay{"m.setPerfOverlay", "Open the performance overlay"};
+            perfOverlay.addParam("value", {ParamType::BOOL});
+            perfOverlay.setFunction([](const ParamList& params) { SetShowPerformanceOverlay(params.back().getBool()); });
+            RegisterConsoleCommand(perfOverlay);
+
 #ifndef MAGIQUE_TEST_MODE
             SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
 #endif
@@ -306,7 +313,7 @@ namespace magique
                 auto second = StringDistance(lineStr, c2->name.c_str());
                 return first < second;
             };
-            QuickSort(suggestions.data(), suggestions.size(), pred);
+            std::ranges::sort(suggestions.begin(), suggestions.end(), pred);
         }
 
         void draw() const { ConsoleHandler::draw(*this); }

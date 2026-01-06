@@ -36,12 +36,12 @@ namespace magique
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type, float x, float y, MapID map, int rotation = 0, bool withFunc = true);
+    entt::entity CreateEntity(EntityType type, Point pos, MapID map, int rotation = 0, bool withFunc = true);
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
     // Note: You shouldnt use  this information - but entity ids start with 0 and go up until UINT32_MAX
-    entt::entity CreateEntityEx(entt::entity id, EntityType type, float x, float y, MapID map, int rot, bool withFunc);
+    entt::entity CreateEntityEx(entt::entity id, EntityType type, Point pos, MapID map, int rot, bool withFunc);
 
     // Unregisters an entity
     // Failure: Returns false
@@ -71,7 +71,7 @@ namespace magique
     Component& GiveComponent(entt::entity entity, Args... args);
 
     // Tries to remove the specified components from the given entities
-    template < typename... Args>
+    template <typename... Args>
     void RemoveComponent(entt::entity entity);
 
     // Returns true if the given entity exist in the registry
@@ -111,9 +111,9 @@ namespace magique
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
     // By passing a rect, an X and Y offset (from the position) can also be specified
-    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height, int anchorX = 0, int anchorY = 0);
-    CollisionC& GiveCollisionRect(entt::entity entity, Rectangle rect, int anchorX = 0, int anchorY = 0);
-    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor);
+    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height);
+    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor = {});
+    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor = {});
 
     // Makes the entity collidable with others - Shape: CIRCLE (vertical)
     // Pass the height and the radius of the capsule - circles always rotated around their middle point!
@@ -127,11 +127,6 @@ namespace magique
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
     CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
-
-    // Gives the entity access to shared animation data for that entity type
-    // Note: Use the core/Animations.h module to create an EntityAnimation
-    // Failure: fails fatally if there is no animation registered for that type
-    AnimationC& GiveAnimation(entt::entity entity, EntityType type, AnimationState startState = {});
 
     // Makes the entity emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
@@ -163,7 +158,7 @@ namespace magique
     template <typename T>
     T& GetComponent(const entt::entity entity)
     {
-        static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
+        static_assert(sizeof(T) != 0 && "Trying to get empty component - those are not instantiated by EnTT");
         MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
         MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
@@ -199,7 +194,7 @@ namespace magique
     template <typename... Args>
     void RemoveComponent(entt::entity entity)
     {
-         internal::REGISTRY.remove<Args ...>(entity);
+        internal::REGISTRY.remove<Args...>(entity);
     }
 
     template <typename... Args>

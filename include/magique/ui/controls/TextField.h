@@ -44,7 +44,11 @@ namespace magique
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
         // Same as ui/UIObject.h
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        {
+            if (wasDrawn)
+                updateInputs();
+        }
 
         // Updates the text with the current inputs for this tick and updates the focused state
         // Note: This should be called each update tick

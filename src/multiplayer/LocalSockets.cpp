@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+
+#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
+
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
@@ -217,3 +220,5 @@ namespace magique
     }
 
 } // namespace magique
+
+#endif

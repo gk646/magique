@@ -1,6 +1,7 @@
 #ifndef MAGEQUEST_MENU_H
 #define MAGEQUEST_MENU_H
 
+#include "magique/ui/UIContainer.h"
 #include <vector>
 #include <magique/fwd.hpp>
 #include <magique/ui/UIObject.h>
@@ -29,9 +30,8 @@ namespace magique
         Menu& createMenu(Menu* menu, const char* name);
     };
 
-    struct Menu : UIObject
+    struct Menu : UIContainer
     {
-
         // Util
         void addSubMenu(Menu* menu, const char* name);
         bool removeSubMenu(const char* name);
@@ -41,13 +41,19 @@ namespace magique
         void switchToParent();
 
         // Returns true if this menu is a top menu (no parents)
-        bool isTop() const;
+        bool getIsTopLevel() const;
+        // Returns true if this menu is currently active
+        bool getIsActive() const;
 
     protected:
         // A menu doesnt draw anything per default
         void onDraw(const Rectangle& bounds) override {}
 
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        {
+            if (wasDrawn)
+                updateInputs();
+        }
 
         // Updates the default inputs:
         //      - ESC: Switch to parent
@@ -55,7 +61,6 @@ namespace magique
         void updateInputs();
 
     private:
-        Menu(Menu* parent, const char* name);
         Menu* parent = nullptr;
         struct SubMenu final
         {
@@ -63,6 +68,7 @@ namespace magique
             Menu* menu;
         };
         std::vector<SubMenu> subMenus;
+        bool isActive = false;
     };
 } // namespace magique
 #endif //MAGEQUEST_MENU_H

@@ -8,6 +8,8 @@
 
 #include "internal/utils/STLUtil.h"
 
+#include <algorithm>
+
 struct Sorter
 {
     static bool Full(const char* a, const char* b)
@@ -158,15 +160,12 @@ namespace magique
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
-
         const int pos = FindAssetPos(assets, name);
-
         if (pos == -1) [[unlikely]]
         {
             LOG_ERROR("No asset with name %s found! Returning empty asset", name);
             return emptyAsset;
         }
-
         return assets[pos];
     }
 
@@ -176,12 +175,21 @@ namespace magique
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
         for (const auto& asset : assets)
         {
-            if (asset.endsWith(name))
+            if (asset.contains(name))
+            {
                 return asset;
+            }
         }
         LOG_ERROR("No asset with name %s found! Returning empty asset", name);
         return emptyAsset;
     }
+
+    bool AssetContainer::hasAsset(const char* name) const
+    {
+        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
+        return std::ranges::any_of(assets, [&](auto& asset) { return asset.contains(name); });
+    }
+
 
     const std::vector<Asset>& AssetContainer::getAllAssets() const { return assets; }
 

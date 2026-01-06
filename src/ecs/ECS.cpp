@@ -101,17 +101,16 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntity(const EntityType type, const float x, const float y, const MapID map, int rotation,
-                              const bool withFunc)
+    entt::entity CreateEntity(const EntityType type, Point pos, const MapID map, int rotation, const bool withFunc)
     {
-        return CreateEntityInternal(entt::null, type, x, y, map, rotation, withFunc);
+        return CreateEntityInternal(entt::null, type, pos.x, pos.y, map, rotation, withFunc);
     }
 
-    entt::entity CreateEntityEx(const entt::entity id, const EntityType type, const float x, const float y,
-                                const MapID map, const int rot, const bool withFunc)
+    entt::entity CreateEntityEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const int rot,
+                                const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
-        return CreateEntityInternal(id, type, x, y, map, rot, withFunc);
+        return CreateEntityInternal(id, type, pos.x, pos.y, map, rot, withFunc);
     }
 
     bool DestroyEntity(const entt::entity entity)
@@ -139,7 +138,7 @@ namespace magique
             data.entityNScriptedSet.erase(entity);
             dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
             global::PATH_DATA.solidEntities.erase(entity);
-            if (entity == GetCameraEntity())
+            if (entity == CameraGetEntity())
             {
                 data.cameraEntity = entt::entity{UINT32_MAX};
             }
@@ -203,25 +202,22 @@ namespace magique
         global::ENGINE_DATA.destroyEntityCallback = callback;
     }
 
-    CollisionC& GiveCollisionRect(const entt::entity e, const float width, const float height, const int anchorX,
-                                  const int anchorY)
+    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height)
     {
-        int16_t anchorXu = anchorX == 0 ? static_cast<int16_t>(width / 2.0F) : static_cast<int16_t>(anchorX);
-        int16_t anchorYu = anchorY == 0 ? static_cast<int16_t>(height / 2.0F) : static_cast<int16_t>(anchorY);
-        return internal::REGISTRY.emplace<CollisionC>(e, width, height, 0.0F, 0.0F, 0.0F, 0.0F, anchorXu, anchorYu,
-                                                      Shape::RECT);
+        const auto size = Point{width, height};
+        return GiveCollisionRect(entity, Rect{{0, 0}, size}, size / 2);
     }
 
-    CollisionC& GiveCollisionRect(entt::entity entity, Rectangle rect, int anchorX, int anchorY)
+    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
-        return internal::REGISTRY.emplace<CollisionC>(entity, rect.width, rect.height, 0.0F, 0.0F, rect.x, rect.y,
-                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
+        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.x, rect.y,
+                                                      static_cast<int16_t>(anchor.x), static_cast<int16_t>(anchor.y),
                                                       Shape::RECT);
     }
 
     CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
     {
-        return GiveCollisionRect(entity, dims.x, dims.y, (int)anchor.x, (int)anchor.y);
+        return GiveCollisionRect(entity, Rect{{0, 0}, dims}, anchor);
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
@@ -246,12 +242,6 @@ namespace magique
                                                       Shape::TRIANGLE);
     }
 
-    AnimationC& GiveAnimation(const entt::entity entity, const EntityType type, const AnimationState startState)
-    {
-        const auto& animation = GetEntityAnimation(type);
-        return internal::REGISTRY.emplace<AnimationC>(entity, animation, startState);
-    }
-
     void GiveCamera(const entt::entity entity)
     {
         internal::REGISTRY.emplace<CameraC>(entity);
@@ -274,66 +264,52 @@ namespace magique
 
     //----------------- CORE -----------------//
 
-    void SetCameraEntity(const entt::entity e)
+    void CameraSetEntity(const entt::entity target)
     {
         auto& reg = internal::REGISTRY;
-        if (!reg.valid(e))
+        if (!reg.valid(target))
         {
-            LOG_WARNING("Trying to assign camera to invalid entity: %d", static_cast<int>(e));
+            LOG_WARNING("Trying to assign camera to invalid entity: %d", static_cast<int>(target));
             return;
         }
-        const auto view = reg.view<CameraC>();
-        bool found = false;
-        for (const auto cam : view)
+
+        if (EntityHasComponents<CameraC>(target))
         {
-            if (cam == e)
-            {
-                LOG_WARNING("Target entity is already the camera holder!");
-                return;
-            }
-            reg.erase<CameraC>(cam);
-            found = true;
+            LOG_WARNING("Target entity is already the camera holder!");
+            return;
         }
-        if (found)
-        {
-            MAGIQUE_ASSERT(!reg.any_of<CameraC>(e), "Target entity cannot have camera component already!");
-            reg.emplace<CameraC>(e);
-        }
-        else
-            LOG_ERROR("No existing entity with a camera component found!");
+
+        RemoveComponent<CameraC>(CameraGetEntity());
+        reg.emplace<CameraC>(target);
     }
 
-    const std::vector<entt::entity>& GetNearbyEntities(const MapID map, const Point origin, const float dist)
+    static HashSet<entt::entity>& QueryLoadedEntitiesRectIMPL(MapID map, Point origin, Point size)
     {
-        // This works because the hashset uses a vector as underlying storage type (stored without holes)
         auto& dynamicData = global::DY_COLL_DATA;
-        auto& data = global::ENGINE_DATA;
-        auto& set = data.nearbyQueryData.cache;
+        auto& data = global::ENGINE_DATA.nearbyQueryData;
+        auto& set = data.cache;
 
-        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, dist))
+        if (data.getIsSimilarParameters(map, origin, size))
         {
-            return set.values();
+            return set;
         }
 
-        data.nearbyQueryData.lastLength = dist;
-        data.nearbyQueryData.lastOrigin = origin;
+        data.origin = origin;
+        data.size = size;
+        data.map = map;
         set.clear();
 
-        const auto queryX = origin.x - dist;
-        const auto queryY = origin.y - dist;
-        dynamicData.mapEntityGrids[map].query(set, queryX, queryY, dist * 2, dist * 2);
+        dynamicData.mapEntityGrids[map].query(set, origin.x, origin.y, size.x, size.y);
+        return set;
+    }
 
+    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
+    {
+        QueryLoadedEntitiesRectIMPL(map, origin - size, size * 2);
+        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         for (auto it = set.begin(); it != set.end();)
         {
-            const auto entity = *it;
-            Point pos = GetComponent<PositionC>(entity).getPosition();
-            const auto* col = TryGetComponent<const CollisionC>(entity);
-            if (col != nullptr)
-            {
-                pos -= col->getMidOffset();
-            }
-            const auto range = pos.euclidean(origin);
-            if (range > dist)
+            if (CollisionC::GetMiddle(*it).euclidean(origin) > size || (filter && !filter(*it)))
             {
                 it = set.erase(it);
             }
@@ -342,18 +318,60 @@ namespace magique
                 ++it;
             }
         }
-
-        return data.nearbyQueryData.cache.values();
+        // This works because the hashset uses a vector as underlying storage type (stored without holes)
+        return set.values();
     }
 
-    bool NearbyEntitiesContain(const MapID map, const Point origin, const float radius, const entt::entity target)
+    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size, const FilterFunc& filter)
     {
-        auto& data = global::ENGINE_DATA;
-        if (data.nearbyQueryData.getIsSimilarParameters(map, origin, radius))
-            return data.nearbyQueryData.cache.contains(target);
-        GetNearbyEntities(map, origin, radius);
-        return data.nearbyQueryData.cache.contains(target);
+        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        QueryLoadedEntitiesRectIMPL(map, origin, size);
+        const Rect bounds{origin, size};
+        for (auto it = set.begin(); it != set.end();)
+        {
+            if (!bounds.contains(CollisionC::GetMiddle(*it)) || (filter && !filter(*it)))
+            {
+                it = set.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        return set.values();
     }
 
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
+    {
+        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        set.clear();
+        for (const auto e : GetView<PositionC>())
+        {
+            const auto& pos = GetComponent<PositionC>(e);
+            if (pos.map != map || pos.getPosition().euclidean(origin) > size || (filter && !filter(e))) [[likely]]
+            {
+                continue;
+            }
+            set.insert(e);
+        }
+        return set.values();
+    }
+
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, FilterFunc filter)
+    {
+        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        set.clear();
+        const Rect bounds{origin, size};
+        for (const auto e : GetView<PositionC>())
+        {
+            const auto& pos = GetComponent<PositionC>(e);
+            if (pos.map != map || !bounds.contains(pos.getPosition()) || (filter && !filter(e))) [[likely]]
+            {
+                continue;
+            }
+            set.insert(e);
+        }
+        return set.values();
+    }
 
 } // namespace magique

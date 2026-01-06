@@ -49,14 +49,14 @@ namespace magique
     //================= TIME MEASURE =================//
 
     // Starts a timer from 0 with the given id
-    void StartTimer(int num);
+    void TimerStart(int num);
 
     // Returns the current time passed since the timer was started in nanoseconds
     // Failure: Returns UINT64_MAX if no timer was started in this slot
-    uint64_t GetTimerTime(int num);
+    uint64_t TimerGetTime(int num);
 
     // Stops the timer with the given id and returns elapsed nanos since starting - 0 if timer has not started
-    uint64_t StopTimer(int num);
+    uint64_t TimerStop(int num);
 
 } // namespace magique
 

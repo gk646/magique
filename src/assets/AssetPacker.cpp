@@ -73,12 +73,6 @@ namespace magique
         data.pointer = nullptr; // we switch out the pointer
     }
 
-    static void EncryptedRead(void* dest, void* src, int size, uint64_t key)
-    {
-        SymmetricEncrypt((char*)src, size, key);
-        memcpy(dest, src, size);
-    }
-
     static bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
     {
         int totalSize = 0;

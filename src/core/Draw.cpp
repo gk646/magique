@@ -189,7 +189,7 @@ namespace magique
 
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
     {
-        DrawTileMapEx({}, GetCameraNativeBounds(), tileMap, tileSheet, layer);
+        DrawTileMapEx({}, CameraGetNativeBounds(), tileMap, tileSheet, layer);
     }
 
     void DrawTileMapEx(const Point& origin, const Rectangle& rect, const TileMap& tileMap, const TileSheet& tileSheet,

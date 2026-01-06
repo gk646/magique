@@ -13,7 +13,7 @@ namespace magique
 {
     Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
 
-    Button::Button(const float w, const float h, const Anchor anchor, const float inset) : UIObject(w, h, anchor, inset)
+    Button::Button(const float w, const float h, const Anchor anchor, Point inset) : UIObject(w, h, anchor, inset)
     {
     }
 

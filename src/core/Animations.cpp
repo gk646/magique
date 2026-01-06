@@ -1,35 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Animations.h>
-#include <magique/internal/Macros.h>
 
 #include "internal/datastructures/VectorType.h"
 
-// Needs namespace cause of friend struct
 namespace magique
 {
-    struct AnimationData final
-    {
-        SparseRangeVector<EntityAnimation> animations;
-
-        void add(const EntityType type, const EntityAnimation& animation)
-        {
-            animations[static_cast<int>(type)] = animation;
-        }
-
-        [[nodiscard]] EntityAnimation& get(const EntityType type)
-        {
-            MAGIQUE_ASSERT(animations.width() > type, "No animation registered for that type!");
-            auto& animation = animations[type];
-            return animation;
-        }
-    };
-
-} // namespace magique
-
-namespace magique
-{
-    inline AnimationData ANIMATION_DATA{};
-
     //----------------- ENTITY ANIMATION -----------------//
 
     EntityAnimation::EntityAnimation(const float scale) : scale(scale) {}
@@ -89,13 +64,5 @@ namespace magique
         return anim.isValid();
     }
 
-    //----------------- GLOBAL INTERFACE -----------------//
-
-    void RegisterEntityAnimation(const EntityType type, const EntityAnimation& animation)
-    {
-        ANIMATION_DATA.add(type, animation);
-    }
-
-    EntityAnimation& GetEntityAnimation(const EntityType type) { return ANIMATION_DATA.get(type); }
 
 } // namespace magique

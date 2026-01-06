@@ -407,17 +407,15 @@ namespace magique
                 while (objectPtr != nullptr)
                 {
                     TileObject object;
-                    object.x = objectPtr->x;
-                    object.y = objectPtr->y;
-                    object.height = objectPtr->height;
-                    object.width = objectPtr->width;
+                    object.bounds = {objectPtr->x, objectPtr->y, objectPtr->width, objectPtr->height};
+                    object.rotation = objectPtr->rotation;
                     object.visible = objectPtr->visible == 1;
                     object.name = strdup(objectPtr->name.ptr);
                     object.id = objectPtr->id;
                     object.tileId = objectPtr->gid;
                     if (object.tileId != 0)
                     {
-                        object.y -= object.height;
+                        object.bounds.y -= object.bounds.h;
                     }
 
                     // Parsing properties for objects

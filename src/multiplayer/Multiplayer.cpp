@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+
+#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/internal/Macros.h>
 #include <magique/multiplayer/Multiplayer.h>
@@ -265,3 +267,5 @@ namespace magique
     bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
 } // namespace magique
+
+#endif

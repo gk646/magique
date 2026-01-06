@@ -147,80 +147,101 @@ namespace magique
             }
         }
 
-        bool findPath(std::vector<Point>& path, const Point startC, const Point endC, const MapID map,
-                      const uint16_t maxPathLen, GridMode mode)
+        void initPathFinding(std::vector<Point>& path, const Point& start)
         {
-            const Point start = {std::floor(startC.x / cellSize), std::floor(startC.y / cellSize)};
-            const Point end = {std::floor(endC.x / cellSize), std::floor(endC.y / cellSize)};
-
             // Setup
-            uint16_t iterations = 0;
             frontier.clear();
             path.clear();
-            path.reserve(maxPathLen + 1);
-            visited.clear(); // Costly - big memsets
-            openCost.clear();
-            visited.setMid(start);
-            openCost.setMid(start);
+            path.reserve(32);
+            visited.setNewMid(start);
+            openCost.setNewMid(start);
+        }
+
+        void findPath(std::vector<Point>& path, Point start, Point end, const MapID map, const uint16_t maxPathLen,
+                      GridMode mode, PathFindHeuristicFunc hFunc = nullptr)
+        {
+            start = Point{start / cellSize}.floor();
+            end = Point{end / cellSize}.floor();
+            initPathFinding(path, start);
+
             const auto& staticGrid = mapsStaticGrids[map];
             const auto& dynamicGrid = mapsDynamicGrids[map];
 
+            uint16_t iteration = 0;
+            uint16_t maxIts = MAGIQUE_MAX_PATH_SEARCH_CAPACITY;
+            uint16_t bestNodeIndex = 0;
+            float bestDistance = 1e12;
+
             // Viability check
-            if (IsCellSolid(end.x * cellSize, end.y * cellSize, staticGrid, dynamicGrid)) [[unlikely]]
+            if (IsCellSolid(start.x, start.y, staticGrid, dynamicGrid)) [[unlikely]]
             {
-                return false;
+                return;
             }
 
-            const PathFindingHeuristicFunc hFunc = PATH_HEURISTICS[(int)mode];
-            const PathFindingMoveCostFunc mFunc = MOVE_COST[(int)mode];
+            if (hFunc == nullptr)
+            {
+                hFunc = PATH_HEURISTICS[(int)mode];
+            }
+
+            const PathFindMoveCostFunc mFunc = MOVE_COST[(int)mode];
             const auto& movement = MOVEMENTS[(int)mode];
 
             frontier.emplace(start, 0.0F, hFunc(start, end), UINT16_MAX, 0); // Initial node
-            while (!frontier.empty() && iterations < MAGIQUE_MAX_PATH_SEARCH_CAPACITY)
+            while (!frontier.empty() && iteration < maxIts)
             {
-                nodePool[iterations] = frontier.top();
-                auto& current = nodePool[iterations];
+                nodePool[iteration] = frontier.top();
+                auto& current = nodePool[iteration];
+
+                float currentDistance = current.fCost;
+                if (currentDistance < bestDistance)
+                {
+                    bestDistance = currentDistance;
+                    bestNodeIndex = iteration;
+                }
+
                 if (current.position == end) [[unlikely]]
                 {
                     constructPath(current, path);
-                    return true;
+                    return;
                 }
-                if (current.stepCount >= maxPathLen) [[unlikely]]
-                {
-                    return false;
-                }
+
                 frontier.pop();
-                visited.setValue(current.position.x, current.position.y, true);
-                for (const auto& dir : movement)
+                visited.setValue(current.position, true);
+
+                if (current.stepCount < maxPathLen)
                 {
-                    Point const newPos = {current.position.x + dir.x, current.position.y + dir.y};
-                    const auto newPosCoX = newPos.x * cellSize;
-                    const auto newPosCoY = newPos.y * cellSize;
-
-                    // Is not visited and not solid
-                    if (visited.getValue(newPos.x, newPos.y) ||
-                        IsCellSolid(newPosCoX, newPosCoY, staticGrid, dynamicGrid)) [[unlikely]]
+                    for (const auto& dir : movement)
                     {
-                        continue;
-                    }
+                        const auto newPos = current.position + dir;
+                        const auto newPosWorld = newPos * cellSize;
 
-                    const auto val = openCost.getValue(newPos.x, newPos.y);
-                    const float gCost = mFunc(dir) + current.gCost;
-                    const auto hCost = hFunc(newPos, end);
-                    const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
-                    const auto newFCost = hCost + gCost;
+                        // Is not visited and not solid
+                        if (visited.getValue(newPos) ||
+                            IsCellSolid(newPosWorld.x, newPosWorld.y, staticGrid, dynamicGrid))
+                        {
+                            continue;
+                        }
 
-                    if (val != 0.0F && newFCost >= val)
-                    {
-                        continue;
+                        const auto val = openCost.getValue(newPos);
+                        const float gCost = mFunc(dir) + current.gCost;
+                        const auto hCost = hFunc(newPos, end);
+                        const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
+                        const auto newFCost = hCost + gCost;
+
+                        if (val != 0.0F && newFCost >= val)
+                        {
+                            continue;
+                        }
+                        frontier.push({newPos, gCost, newFCost, iteration, newPathLen});
+                        openCost.setValue(newPos, newFCost);
                     }
-                    frontier.push({newPos, gCost, newFCost, iterations, newPathLen});
-                    openCost.setValue(newPos.x, newPos.y, newFCost);
+                    iteration++;
                 }
-                iterations++;
             }
-            return false;
+
+            constructPath(nodePool[bestNodeIndex], path);
         }
+
 
     private:
         void constructPath(const GridNode& current, std::vector<Point>& path) const
