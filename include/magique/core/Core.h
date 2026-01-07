@@ -5,7 +5,7 @@
 #include <vector>
 #include <entt/entity/fwd.hpp>
 #include <magique/core/Types.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Core Module
@@ -88,18 +88,16 @@ namespace magique
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
     const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,
-                                                                const FilterFunc& filter = {});
+                                                               FilterFunc filter = {});
     const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,
-                                                              const FilterFunc& filter = {});
+                                                             FilterFunc filter = {});
 
     //================= QUERY ENTITIES =================//
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,
-                                                          const FilterFunc& filter = {});
-    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,
-                                                        FilterFunc filter = {});
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, FilterFunc filter = {});
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, FilterFunc filter = {});
 
     //================= UTILS =================//
 

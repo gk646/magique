@@ -81,7 +81,7 @@ namespace magique
         {
             bool isHorizontal = false;  // If scroller is horizontal
             float offset = 0.0F;        // Offset in px of the scroller
-            float scrollerWidth = 0.05; // How wide the scroller is
+            float scrollerWidth = 0.05F; // How wide the scroller is
             float moveFactor = 1.0F;    // How much content moves for 1px of scroller
             bool invertScroll = false;
 

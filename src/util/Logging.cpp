@@ -7,7 +7,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
 #include "internal/globals/LoggingData.h"
-#include "util/CrashLog.h"
+#include "headers/CrashLog.h"
 
 namespace magique
 {

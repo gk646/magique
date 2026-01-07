@@ -155,7 +155,7 @@ namespace magique
 
         if (hasSelection())
         {
-            const auto highlight = ColorAlpha(cursor, 0.45);
+            const auto highlight = ColorAlpha(cursor, 0.45F);
             DrawTextHighlight(selectionStart, selectionEnd, font, text.c_str(), tPos.v(), fontSize, spacing, highlight);
         }
 

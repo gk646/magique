@@ -335,7 +335,7 @@ namespace magique
         {
             duration += durations[i];
         }
-        return (float)duration / 1000.0F * MAGIQUE_LOGIC_TICKS;
+        return static_cast<int>((float)duration / 1000.0F * MAGIQUE_LOGIC_TICKS);
     }
 
     bool SpriteAnimation::isValid() const { return sheet.id != 0 && sheet.frames > 0; }

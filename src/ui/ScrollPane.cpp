@@ -151,7 +151,7 @@ namespace magique
 
         // The factor of the scroll size relative to the pane size
         // Gets smaller the bigger the difference
-        const auto sizeFactor = ExponentialDecay(contentSize, paneSize, 0.1F, 0.005);
+        const auto sizeFactor = ExponentialDecay(contentSize, paneSize, 0.1F, 0.005F);
         const float scrollerSize = std::floor(paneSize * sizeFactor);
 
         // How much we actually have to scroll - only what comes on top of the pane size

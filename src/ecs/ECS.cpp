@@ -303,7 +303,7 @@ namespace magique
         return set;
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size, FilterFunc filter)
     {
         QueryLoadedEntitiesRectIMPL(map, origin - size, size * 2);
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
@@ -322,7 +322,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size, const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size, FilterFunc filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         QueryLoadedEntitiesRectIMPL(map, origin, size);
@@ -341,7 +341,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,  FilterFunc filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         set.clear();
