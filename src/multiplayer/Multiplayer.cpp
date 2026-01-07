@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 
+#include <vector>
+#include <magique/core/Types.h>
+#include <entt/entity/entity.hpp>
+#include <magique/multiplayer/Multiplayer.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/internal/Macros.h>
-#include <magique/multiplayer/Multiplayer.h>
-#include <entt/entity/entity.hpp>
 
 #include "internal/globals/MultiplayerData.h"
 #include "internal/globals/EngineConfig.h"
@@ -268,4 +270,109 @@ namespace magique
 
 } // namespace magique
 
+#else
+namespace magique
+{
+    Payload CreatePayload(const void* data, const int size, const MessageType type)
+    {
+        (void)data;
+        (void)size;
+        (void)type;
+        return {};
+    }
+
+    void BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
+    {
+        (void)conn;
+        (void)payload;
+        (void)flag;
+    }
+
+    void BatchMessageToAll(const Payload payload, const SendFlag flag)
+    {
+        (void)payload;
+        (void)flag;
+    }
+
+    void BatchMessageToAll(Payload payload, SendFlag flag, Connection exclude)
+    {
+        (void)payload;
+        (void)flag;
+        (void)exclude;
+    }
+
+    void SendBatch() {}
+
+    bool SendMessage(Connection conn, Payload payload, SendFlag flag)
+    {
+        (void)conn;
+        (void)payload;
+        (void)flag;
+        return false;
+    }
+
+    void SendMessageToAll(const Payload payload, const SendFlag flag)
+    {
+        (void)payload;
+        (void)flag;
+    }
+
+    void FlushMessages() {}
+
+    const std::vector<Message>& ReceiveIncomingMessages(const int max)
+    {
+        (void)max;
+        static std::vector<Message> empty;
+        return empty;
+    }
+
+    const std::vector<Connection>& GetCurrentConnections()
+    {
+        static std::vector<Connection> empty;
+        return empty;
+    }
+
+    void SetMultiplayerCallback(const MultiplayerCallback& func) { (void)func; }
+
+    bool GetInMultiplayerSession() { return false; }
+
+    bool GetIsHost() { return false; }
+
+    bool GetIsActiveHost() { return false; }
+
+    bool GetIsClient() { return false; }
+
+    void SetConnectionEntityMapping(const Connection conn, const entt::entity entity)
+    {
+        (void)conn;
+        (void)entity;
+    }
+
+    entt::entity GetConnectionEntityMapping(const Connection conn)
+    {
+        (void)conn;
+        return entt::null;
+    }
+
+    Connection GetConnectionEntityMapping(const entt::entity entity)
+    {
+        (void)entity;
+        return Connection::INVALID_CONNECTION;
+    }
+
+    int GetConnectionNum(const Connection conn)
+    {
+        (void)conn;
+        return -1;
+    }
+
+    void PrintPacketStats() {}
+
+    void EnterClientMode() {}
+
+    void ExitClientMode() {}
+
+    bool GetIsClientMode() { return false; }
+
+} // namespace magique
 #endif

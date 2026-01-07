@@ -1,6 +1,6 @@
 #include <magique/multiplayer/Lobby.h>
 
-#if defined( MAGIQUE_STEAM) || defined( MAGIQUE_LAN)
+#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #include "internal/globals/MultiplayerData.h"
 namespace magique
 {
@@ -98,6 +98,35 @@ namespace magique
     const std::string& Lobby::getMetadata(const char* key) { return global::LOBBY_DATA.metadata[key]; }
 
 } // namespace magique
+#else
 
+namespace magique
+{
+    void SetLobbyChatCallback(const LobbyChatCallback& callback) { (void)callback; }
+
+    void SetLobbyMetadataCallback(const LobbyMetadataCallback& callback) { (void)callback; }
+
+    inline Lobby LOBBY{};
+
+    Lobby& GetLobby() { return LOBBY; }
+
+    void Lobby::setStartSignal(const bool value) { (void)value; }
+
+    bool Lobby::getStartSignal() const { return false; }
+
+    void Lobby::sendChatMessage(const char* message) { (void)message; }
+
+    void Lobby::setMetadata(const char* key, const char* value)
+    {
+        (void)key;
+        (void)value;
+    }
+
+    const std::string& Lobby::getMetadata(const char* key)
+    {
+        (void)key;
+        static std::string empty;
+        return empty;
+    }
+} // namespace magique
 #endif
-

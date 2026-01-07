@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 
+#include <magique/multiplayer/LocalSockets.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
-
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <winsock2.h>
@@ -14,7 +14,6 @@
 #endif
 
 #include <raylib/raylib.h>
-#include <magique/multiplayer/LocalSockets.h>
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #endif
@@ -218,7 +217,40 @@ namespace magique
 #endif
         return IP_ADDR.c_str();
     }
+} // namespace magique
+#else
+namespace magique
+{
+    bool InitLocalMultiplayer() { return false; }
+
+    bool CreateLocalSocket(const uint16_t port)
+    {
+        (void)port;
+        return false;
+    }
+
+    bool CloseLocalSocket(const int closeCode, const char* closeReason)
+    {
+        (void)closeCode;
+        (void)closeReason;
+        return false;
+    }
+
+    Connection ConnectToLocalSocket(const char* ip, const uint16_t port)
+    {
+        (void)ip;
+        (void)port;
+        return Connection::INVALID_CONNECTION;
+    }
+
+    bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
+    {
+        (void)closeCode;
+        (void)closeReason;
+        return false;
+    }
+
+    const char* GetLocalIP() { return nullptr; }
 
 } // namespace magique
-
 #endif
