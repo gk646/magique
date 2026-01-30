@@ -66,6 +66,7 @@ namespace magique
 
         // Sets a new position for this object - values are scaled to the CURRENT (target) resolution
         void setPosition(const Point& pos);
+        Point getPosition() const;
 
         // Sets new dimensions for this object - values are scaled to the CURRENT (target) resolution
         // Note: Negative values will be ignored

@@ -60,11 +60,11 @@ namespace magique
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rectangle& bounds);
+        void drawDefault(const Rectangle& bounds, float fontSize = 14);
 
     public:
         // Called everytime the textfield is focused and enter is pressed
-        virtual void wireOnEnter(const EnterFunc& func);
+        void setOnEnter(const EnterFunc& func);
 
         // Returns the current text of the textfield
         const std::string& getText() const;

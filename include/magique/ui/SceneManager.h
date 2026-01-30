@@ -22,19 +22,33 @@ namespace magique
         // Draws all objects such that they appear in the order they were added (added first => last drawn => appears on top)
         void draw();
 
-        // Adds or removes an object
+        // Adds an object
         // Returns: The given objects
-        UIObject* addObject(UIObject* obj, const char* name = nullptr);
+        template <typename T>
+        T& addObject(T* obj, const char* name = nullptr)
+        {
+            static_assert(std::is_base_of_v<UIObject, T>, "T must be a subclass of UIObject");
+            return *static_cast<T*>(addObjImpl(obj, name));
+        }
+
+        // Returns: The given objects casted to the given type
+        template <typename T = UIObject>
+        T* getObject(const char* name) const
+        {
+            return static_cast<T*>(getObjectImpl(name));
+        }
 
         // Returns true if the object was removed
         bool removeObject(UIObject* obj);
 
-        UIObject* getObject(const char* name) const;
 
         // Returns all objects
         const std::vector<UIObject*>& getObjects();
 
     private:
+        UIObject* addObjImpl(UIObject* obj, const char* name);
+        UIObject* getObjectImpl(const char* name) const;
+
         std::vector<UIObject*> objects;
         std::vector<internal::SceneManagerMapping> mappings;
     };

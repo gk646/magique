@@ -2,7 +2,6 @@
 #define MAGEQUEST_MENU_H
 
 #include "magique/ui/UIContainer.h"
-#include <vector>
 #include <magique/fwd.hpp>
 #include <magique/ui/UIObject.h>
 
@@ -16,23 +15,22 @@
 //  - ...
 //
 // A menu has certain properties
-//  - Always covers the full screen
+//  - Always covers the full screen (its bounds are UI target resolution)
+//  - A menu can be active or not (if its drawn and the "shown" one)
+//      - If a submenu (or a submenu of a submenu) is active the menu itself is NOT active
+
+// Note: "getIsActive()" NEEDS to be check when drawing and updating (as menu switching takes place in updateInputs()
+//        Also the base functions need to be called
 // .....................................................................
 
 namespace magique
 {
-    MenuManager& GetMenuManager();
-
-    struct MenuManager final
-    {
-        // Creates a new top-level menu out of the given instance with the give name
-        // Returns the passed instance
-        Menu& createMenu(Menu* menu, const char* name);
-    };
 
     struct Menu : UIContainer
     {
-        // Util
+        Menu();
+
+        // Note: Adds the menu as children to the UIContainer
         void addSubMenu(Menu* menu, const char* name);
         bool removeSubMenu(const char* name);
 
@@ -46,14 +44,21 @@ namespace magique
         bool getIsActive() const;
 
     protected:
-        // A menu doesnt draw anything per default
-        void onDraw(const Rectangle& bounds) override {}
+        void onDraw(const Rectangle& bounds) override
+        {
+            if (subMenu != nullptr)
+            {
+                subMenu->draw();
+            }
+        }
 
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateInputs();
         }
+
+        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override;
 
         // Updates the default inputs:
         //      - ESC: Switch to parent
@@ -62,13 +67,9 @@ namespace magique
 
     private:
         Menu* parent = nullptr;
-        struct SubMenu final
-        {
-            const char* name;
-            Menu* menu;
-        };
-        std::vector<SubMenu> subMenus;
-        bool isActive = false;
+        Menu* subMenu = nullptr;
+        bool isActive = true;
     };
 } // namespace magique
+
 #endif //MAGEQUEST_MENU_H

@@ -40,7 +40,7 @@ namespace magique
         Point targetPosition{0, 0};
         if (cameraEntity != entt::entity{UINT32_MAX}) [[unlikely]] // No camera assigned
         {
-            targetPosition = internal::REGISTRY.get<PositionC>(cameraEntity).getPosition();
+            targetPosition = internal::REGISTRY.get<PositionC>(cameraEntity).getPosition().floor();
         }
 
         // Apply manual offset if specified
@@ -76,17 +76,17 @@ namespace magique
 
         data.camera.target.x = Lerp(data.camera.target.x, targetPosition.x, smoothing);
         data.camera.target.y = Lerp(data.camera.target.y, targetPosition.y, smoothing);
-        data.camera.target.x = std::round(data.camera.target.x);
-        data.camera.target.y = std::round(data.camera.target.y);
+        data.camera.target.x = std::floor(data.camera.target.x);
+        data.camera.target.y = std::floor(data.camera.target.y);
     }
 
     inline void RenderHitboxes()
     {
         BeginMode2D(CameraGet());
-        auto& group = internal::POSITION_GROUP;
+        const auto& group = internal::POSITION_GROUP;
         const auto& staticData = global::STATIC_COLL_DATA;
 
-        const auto bounds = CameraGetBounds();
+        const Rect camBounds = CameraGetBounds();
         const auto map = CameraGetMap();
 
         // Dynamic entities
@@ -99,8 +99,7 @@ namespace magique
 
             const auto& pos = group.get<const PositionC>(e);
             const auto& col = group.get<const CollisionC>(e);
-
-            if (!PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
+            if (!camBounds.contains(pos.getPosition()))
             {
                 continue;
             }
@@ -128,9 +127,11 @@ namespace magique
         {
             for (const auto idx : objectIds)
             {
-                const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx);
-                if (p1 == 0 || !PointToRect(x, y, bounds.x, bounds.y, bounds.width, bounds.height))
+                const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx).bounds;
+                if (p1 == 0 || !camBounds.contains({x, y}))
+                {
                     continue;
+                }
 
                 if (p2 != 0)
                 {

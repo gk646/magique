@@ -58,12 +58,11 @@ namespace magique
 
     void Slider::updateActions(const Rectangle& bounds)
     {
-        const auto mouse = GetMousePos();
-        if (PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height))
+        if (getIsHovered())
         {
             const auto dragStart = GetDragStartPosition();
             const auto sliderKnob = getKnobPosition();
-            const auto radius = GetScaled(15);
+            const auto radius = UIGetScaled(15);
             const auto knobVec = Vector2{sliderKnob.x, sliderKnob.y};
             const auto dragStarted = CheckCollisionPointCircle(Vector2{dragStart.x, dragStart.y}, knobVec, radius);
 
@@ -119,7 +118,7 @@ namespace magique
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
 
         const Vector2 sliderKnob = {bounds.x + sliderPos * bounds.width, sliderBody.y + sliderBody.height / 2.0F};
-        DrawCircleV(sliderKnob, GetScaled(15), body);
+        DrawCircleV(sliderKnob, UIGetScaled(15), body);
     }
 
     Point Slider::getKnobPosition() const

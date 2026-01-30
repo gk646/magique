@@ -1,13 +1,13 @@
 #ifndef ENTT_META_CTX_HPP
 #define ENTT_META_CTX_HPP
 
+#include <memory>
 #include "../container/dense_map.hpp"
 #include "../core/fwd.hpp"
 #include "../core/utility.hpp"
+#include "fwd.hpp"
 
 namespace entt {
-
-class meta_ctx;
 
 /*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
@@ -15,10 +15,10 @@ namespace internal {
 struct meta_type_node;
 
 struct meta_context {
-    dense_map<id_type, meta_type_node, identity> value;
+    dense_map<id_type, std::unique_ptr<meta_type_node>, identity> value;
 
-    [[nodiscard]] inline static meta_context &from(meta_ctx &ctx);
-    [[nodiscard]] inline static const meta_context &from(const meta_ctx &ctx);
+    [[nodiscard]] inline static meta_context &from(meta_ctx &);
+    [[nodiscard]] inline static const meta_context &from(const meta_ctx &);
 };
 
 } // namespace internal

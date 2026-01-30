@@ -36,7 +36,12 @@ namespace magique
     void UIObject::draw()
     {
         global::UI_DATA.registerDrawCall(this, isContainer);
-        onDraw(getBounds());
+        const auto bounds = getBounds();
+        onDraw(bounds);
+        if (global::UI_DATA.showHitboxes)
+        {
+            DrawRectangleLinesEx(bounds, 1, BLUE);
+        }
     }
 
     UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
@@ -58,6 +63,14 @@ namespace magique
         py = pos.y / dims.y;
     }
 
+    Point UIObject::getPosition() const
+    {
+        const auto& ui = global::UI_DATA;
+        Rectangle bounds{px, py, pw, ph};
+        ui.scaleBounds(bounds, scaleMode, inset, anchor);
+        return {bounds.x, bounds.y};
+    }
+
     void UIObject::setSize(float width, float height)
     {
         const auto& dims = global::UI_DATA.targetRes;
@@ -76,7 +89,7 @@ namespace magique
         const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
-        alignInset = GetScaled(alignInset);
+        alignInset = UIGetScaled(alignInset);
         switch (alignAnchor)
         {
         case Anchor::TOP_LEFT:
@@ -125,7 +138,7 @@ namespace magique
     {
         const auto otherBounds = relativeTo.getBounds();
         Point pos = {otherBounds.x, otherBounds.y};
-        offset = {GetScaled(offset.x), GetScaled(offset.y)};
+        offset = {UIGetScaled(offset.x), UIGetScaled(offset.y)};
         switch (direction)
         {
         case Direction::LEFT:

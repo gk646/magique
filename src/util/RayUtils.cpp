@@ -169,7 +169,7 @@ namespace magique
         DrawRectangleLinesEx(bounds, 1, border);
     }
 
-    bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePos().v(), bounds); }
+    bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
     void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
     {
@@ -297,6 +297,57 @@ namespace magique
         floored.width = std::floor(floored.width);
         floored.height = std::floor(floored.height);
         return floored;
+    }
+
+    Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)
+    {
+        Point newTarget = {camera.target.x, camera.target.y};
+        const auto move = GetMouseWheelMove();
+        if (move > 0)
+        {
+            resetDragPos(camera);
+            camera.zoom = std::min(camera.zoom + move * zoomMult, max);
+        }
+        else if (move < 0)
+        {
+            resetDragPos(camera);
+            camera.zoom = std::max(camera.zoom + move * zoomMult, min);
+        }
+
+        if (GetDragStartPosition() == -1)
+        {
+            dragStartScreen = GetMousePos();
+            dragStartWorld = camera.target;
+        }
+        else
+        {
+            auto diff = (dragStartScreen - GetMousePos()) / camera.zoom;
+            newTarget = dragStartWorld + diff.floor();
+            newTarget.floor();
+        }
+        return newTarget;
+    }
+
+    Point MouseDragger::getDragOffset(Camera2D& camera) const { return (dragStartScreen - GetMousePos()) / camera.zoom; }
+
+    Point MouseDragger::getDragStartWorld() const { return dragStartWorld; }
+
+    void MouseDragger::resetDragPos(Camera2D& camera)
+    {
+        // When dragging we have to reset drag position when zooming
+        // otherwise target jumps as diff is made with different zoom levels
+        if (GetDragStartPosition() == -1)
+        {
+            return;
+        }
+
+        const auto diff = dragStartScreen - GetMousePos();
+        auto newTarget = dragStartWorld + (diff / camera.zoom);
+        camera.target.x = newTarget.x;
+        camera.target.y = newTarget.y;
+
+        dragStartWorld = newTarget;
+        dragStartScreen = GetMousePos();
     }
 
 } // namespace magique

@@ -1,6 +1,8 @@
 #ifndef MAGEQUEST_LOGGINGDATA_H
 #define MAGEQUEST_LOGGINGDATA_H
 
+#include "internal/types/SpinLock.h"
+
 namespace magique
 {
     void RegisterCrashLoggers();
@@ -10,6 +12,7 @@ namespace magique
         static constexpr int CACHE_SIZE = 512;
         LogCallbackFunc callback = nullptr;
         FILE* file = nullptr;
+        SpinLock lock{};
 #ifdef MAGIQUE_DEBUG
         bool crashLog = false;
         bool logToFile = false;

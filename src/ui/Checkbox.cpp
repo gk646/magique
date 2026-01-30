@@ -45,7 +45,7 @@ namespace magique
             const auto len = std::min(bounds.width, bounds.height) / 2 * 0.7F;
             DrawCircleV(rect.mid().v(), len, YELLOW);
         }
-        const auto size = GetScaled(15);
+        const auto size = UIGetScaled(15);
         const auto pos = Point{bounds.x - 2, bounds.y + (bounds.height - size) / 2};
         DrawTextRightBound(GetEngineFont(), infoText.c_str(), pos.v(), size);
     }

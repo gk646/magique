@@ -10,14 +10,11 @@ namespace magique
 {
     ScrollPane::ScrollPane(float w, float h, Anchor anchor, Point inset) : UIObject(w, h, anchor, inset)
     {
-        // Registered as container so its updated before content despite being drawn behind
-        global::UI_DATA.registerObject(this, true);
         setScrollerWidth(w * 0.05F);
     }
 
     ScrollPane::ScrollPane(float x, float y, float w, float h) : UIObject(x, y, w, h)
     {
-        global::UI_DATA.registerObject(this, true);
         setScrollerWidth(w * 0.05F);
     }
 
@@ -31,7 +28,7 @@ namespace magique
     float ScrollPane::getScrollerWidth() const
     {
         // At least 5 pixels
-        return std::max(GetScaled(vertical.scrollerWidth), 5.0F);
+        return std::max(UIGetScaled(vertical.scrollerWidth), 5.0F);
     }
 
     Point ScrollPane::getScrollOffset() const { return {horizontal.getScaledOffset(), vertical.getScaledOffset()}; }
@@ -161,7 +158,7 @@ namespace magique
         // How much content moves based on 1px scroller
         moveFactor = maxScrollOff / moveWay;
 
-        const auto width = GetScaled(scrollerWidth);
+        const auto width = UIGetScaled(scrollerWidth);
         if (isHorizontal)
         {
             offset = std::min(offset, pane.width - scrollerSize);

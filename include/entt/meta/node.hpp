@@ -1,13 +1,13 @@
 #ifndef ENTT_META_NODE_HPP
 #define ENTT_META_NODE_HPP
 
+#include <array>
 #include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
 #include "../config/config.h"
-#include "../core/attribute.h"
 #include "../core/bit.hpp"
 #include "../core/enum.hpp"
 #include "../core/fwd.hpp"
@@ -21,7 +21,7 @@ namespace entt {
 
 class meta_any;
 class meta_type;
-struct meta_handle;
+class meta_handle;
 
 /*! @cond TURN_OFF_DOXYGEN */
 namespace internal {
@@ -64,12 +64,12 @@ struct meta_type_node;
 
 struct meta_custom_node {
     id_type type{};
-    std::shared_ptr<void> value;
+    std::shared_ptr<void> value{};
 };
 
 struct meta_base_node {
     id_type type{};
-    meta_type_node (*resolve)(const meta_context &) noexcept {};
+    const meta_type_node &(*resolve)(const meta_context &) noexcept {};
     const void *(*cast)(const void *) noexcept {};
 };
 
@@ -87,17 +87,14 @@ struct meta_ctor_node {
     meta_any (*invoke)(const meta_ctx &, meta_any *const){};
 };
 
-struct meta_dtor_node {
-    void (*dtor)(void *){};
-};
-
 struct meta_data_node {
     using size_type = std::size_t;
 
     id_type id{};
+    const char *name{};
     meta_traits traits{meta_traits::is_none};
     size_type arity{0u};
-    meta_type_node (*type)(const meta_context &) noexcept {};
+    const meta_type_node &(*type)(const meta_context &) noexcept {};
     meta_type (*arg)(const meta_ctx &, const size_type) noexcept {};
     bool (*set)(meta_handle, meta_any){};
     meta_any (*get)(meta_handle){};
@@ -108,12 +105,13 @@ struct meta_func_node {
     using size_type = std::size_t;
 
     id_type id{};
+    const char *name{};
     meta_traits traits{meta_traits::is_none};
     size_type arity{0u};
-    meta_type_node (*ret)(const meta_context &) noexcept {};
+    const meta_type_node &(*ret)(const meta_context &) noexcept {};
     meta_type (*arg)(const meta_ctx &, const size_type) noexcept {};
     meta_any (*invoke)(meta_handle, meta_any *const){};
-    std::shared_ptr<meta_func_node> next;
+    std::unique_ptr<meta_func_node> next;
     meta_custom_node custom{};
 };
 
@@ -121,16 +119,16 @@ struct meta_template_node {
     using size_type = std::size_t;
 
     size_type arity{0u};
-    meta_type_node (*resolve)(const meta_context &) noexcept {};
-    meta_type_node (*arg)(const meta_context &, const size_type) noexcept {};
+    const meta_type_node &(*resolve)(const meta_context &) noexcept {};
+    const meta_type_node &(*arg)(const meta_context &, const size_type) noexcept {};
 };
 
 struct meta_type_descriptor {
-    std::vector<meta_ctor_node> ctor;
-    std::vector<meta_base_node> base;
-    std::vector<meta_conv_node> conv;
-    std::vector<meta_data_node> data;
-    std::vector<meta_func_node> func;
+    std::vector<meta_ctor_node> ctor{};
+    std::vector<meta_base_node> base{};
+    std::vector<meta_conv_node> conv{};
+    std::vector<meta_data_node> data{};
+    std::vector<meta_func_node> func{};
 };
 
 struct meta_type_node {
@@ -138,17 +136,16 @@ struct meta_type_node {
 
     const type_info *info{};
     id_type id{};
+    const char *name{};
     meta_traits traits{meta_traits::is_none};
     size_type size_of{0u};
-    meta_type_node (*resolve)(const meta_context &) noexcept {};
-    meta_type_node (*remove_pointer)(const meta_context &) noexcept {};
+    const meta_type_node &(*remove_pointer)(const meta_context &) noexcept {};
     meta_any (*default_constructor)(const meta_ctx &){};
     double (*conversion_helper)(void *, const void *){};
     meta_any (*from_void)(const meta_ctx &, void *, const void *){};
     meta_template_node templ{};
-    meta_dtor_node dtor{};
     meta_custom_node custom{};
-    std::shared_ptr<meta_type_descriptor> details;
+    std::unique_ptr<meta_type_descriptor> details{};
 };
 
 template<auto Member, typename Type, typename Value>
@@ -168,7 +165,7 @@ template<auto Member, typename Type, typename Value>
 }
 
 template<auto Member>
-[[nodiscard]] auto *look_for(const meta_context &context, const meta_type_node &node, const id_type id) {
+[[nodiscard]] auto *look_for(const meta_context &context, const meta_type_node &node, const id_type id, bool recursive) {
     using value_type = typename std::remove_reference_t<decltype((node.details.get()->*Member))>::value_type;
 
     if(node.details) {
@@ -176,9 +173,11 @@ template<auto Member>
             return member;
         }
 
-        for(auto &&curr: node.details->base) {
-            if(auto *elem = look_for<Member>(context, curr.resolve(context), id); elem) {
-                return elem;
+        if(recursive) {
+            for(auto &&curr: node.details->base) {
+                if(auto *elem = look_for<Member>(context, curr.resolve(context), id, recursive); elem) {
+                    return elem;
+                }
             }
         }
     }
@@ -187,29 +186,22 @@ template<auto Member>
 }
 
 template<typename Type>
-meta_type_node resolve(const meta_context &) noexcept;
+const meta_type_node &resolve(const meta_context &) noexcept;
 
 template<typename... Args>
-[[nodiscard]] auto meta_arg_node(const meta_context &context, type_list<Args...>, [[maybe_unused]] const std::size_t index) noexcept {
-    meta_type_node (*value)(const meta_context &) noexcept = nullptr;
-
-    if constexpr(sizeof...(Args) != 0u) {
-        std::size_t pos{};
-        ((value = (pos++ == index ? &resolve<std::remove_cv_t<std::remove_reference_t<Args>>> : value)), ...);
-    }
-
-    ENTT_ASSERT(value != nullptr, "Out of bounds");
-    return value(context);
+[[nodiscard]] const meta_type_node &meta_arg_node(const meta_context &context, type_list<Args...>, const std::size_t index) noexcept {
+    using resolve_type = const meta_type_node &(*)(const meta_context &) noexcept;
+    constexpr std::array<resolve_type, sizeof...(Args)> list{&resolve<std::remove_const_t<std::remove_reference_t<Args>>>...};
+    ENTT_ASSERT(index < sizeof...(Args), "Out of bounds");
+    return list[index](context);
 }
 
-[[nodiscard]] inline const void *try_cast(const meta_context &context, const meta_type_node &from, const type_info &to, const void *instance) noexcept {
-    if((from.info != nullptr) && *from.info == to) {
-        return instance;
-    }
-
+[[nodiscard]] inline const void *try_cast(const meta_context &context, const meta_type_node &from, const id_type to, const void *instance) noexcept {
     if(from.details) {
         for(auto &&curr: from.details->base) {
-            if(const void *elem = try_cast(context, curr.resolve(context), to, curr.cast(instance)); elem) {
+            if(const void *other = curr.cast(instance); curr.type == to) {
+                return other;
+            } else if(const void *elem = try_cast(context, curr.resolve(context), to, other); elem) {
                 return elem;
             }
         }
@@ -218,49 +210,12 @@ template<typename... Args>
     return nullptr;
 }
 
-template<typename Func>
-[[nodiscard]] inline auto try_convert(const meta_context &context, const meta_type_node &from, const type_info &to, const bool arithmetic_or_enum, const void *instance, Func func) {
-    if(from.info && *from.info == to) {
-        return func(instance, from);
-    }
-
-    if(from.details) {
-        for(auto &&elem: from.details->conv) {
-            if(elem.type == to.hash()) {
-                return func(instance, elem);
-            }
-        }
-
-        for(auto &&curr: from.details->base) {
-            if(auto other = try_convert(context, curr.resolve(context), to, arithmetic_or_enum, curr.cast(instance), func); other) {
-                return other;
-            }
-        }
-    }
-
-    if(from.conversion_helper && arithmetic_or_enum) {
-        return func(instance, from.conversion_helper);
-    }
-
-    return func(instance);
-}
-
-[[nodiscard]] inline const meta_type_node *try_resolve(const meta_context &context, const type_info &info) noexcept {
-    const auto it = context.value.find(info.hash());
-    return it != context.value.end() ? &it->second : nullptr;
-}
-
 template<typename Type>
-[[nodiscard]] meta_type_node resolve(const meta_context &context) noexcept {
-    static_assert(std::is_same_v<Type, std::remove_const_t<std::remove_reference_t<Type>>>, "Invalid type");
-
-    if(auto *elem = try_resolve(context, type_id<Type>()); elem) {
-        return *elem;
-    }
-
+auto setup_node_for() noexcept {
     meta_type_node node{
         &type_id<Type>(),
         type_id<Type>().hash(),
+        nullptr,
         (std::is_arithmetic_v<Type> ? meta_traits::is_arithmetic : meta_traits::is_none)
             | (std::is_integral_v<Type> ? meta_traits::is_integral : meta_traits::is_none)
             | (std::is_signed_v<Type> ? meta_traits::is_signed : meta_traits::is_none)
@@ -272,8 +227,7 @@ template<typename Type>
             | (is_complete_v<meta_sequence_container_traits<Type>> ? meta_traits::is_sequence_container : meta_traits::is_none)
             | (is_complete_v<meta_associative_container_traits<Type>> ? meta_traits::is_associative_container : meta_traits::is_none),
         size_of_v<Type>,
-        &resolve<Type>,
-        &resolve<std::remove_cv_t<std::remove_pointer_t<Type>>>};
+        &resolve<std::remove_const_t<std::remove_pointer_t<Type>>>};
 
     if constexpr(std::is_default_constructible_v<Type>) {
         node.default_constructor = +[](const meta_ctx &ctx) {
@@ -310,10 +264,23 @@ template<typename Type>
         node.templ = meta_template_node{
             meta_template_traits<Type>::args_type::size,
             &resolve<typename meta_template_traits<Type>::class_type>,
-            +[](const meta_context &area, const std::size_t index) noexcept { return meta_arg_node(area, typename meta_template_traits<Type>::args_type{}, index); }};
+            +[](const meta_context &area, const std::size_t index) noexcept -> decltype(auto) { return meta_arg_node(area, typename meta_template_traits<Type>::args_type{}, index); }};
     }
 
     return node;
+}
+
+[[nodiscard]] inline const meta_type_node *try_resolve(const meta_context &context, const type_info &info) noexcept {
+    const auto it = context.value.find(info.hash());
+    return (it != context.value.end()) ? it->second.get() : nullptr;
+}
+
+template<typename Type>
+[[nodiscard]] const meta_type_node &resolve(const meta_context &context) noexcept {
+    static_assert(std::is_same_v<Type, std::remove_const_t<std::remove_reference_t<Type>>>, "Invalid type");
+    static const meta_type_node node = setup_node_for<Type>();
+    const auto *elem = try_resolve(context, *node.info);
+    return (elem == nullptr) ? node : *elem;
 }
 
 } // namespace internal

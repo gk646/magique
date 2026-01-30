@@ -38,6 +38,7 @@ namespace magique
         sprintf(FILE_NAME.data(), "./crash-log-%s-%s-%s.txt", game, date.c_str(), time.c_str());
         return FILE_NAME.c_str();
     }
+
     void WriteCrashData(const std::string& crashData)
     {
         const auto* fileName = GetCrashLogFilename();
@@ -52,6 +53,7 @@ namespace magique
             fprintf(stderr, "Failed to open file: %s\n", fileName);
         }
     }
+
     std::string GetSystemInfoString()
     {
         std::string systemInfo;
@@ -68,8 +70,8 @@ namespace magique
             std::string line;
             while (getline(meminfo, line))
             {
-                if (line.find("MemTotal:") != std::string::npos || line.find("MemFree:") != std::string::npos ||
-                    line.find("MemAvailable:") != std::string::npos)
+                if (line.contains("MemTotal:") || line.find("MemFree:") != std::string::npos ||
+                    line.contains("MemAvailable:"))
                 {
                     systemInfo += "  " + line + "\n";
                 }
@@ -88,19 +90,19 @@ namespace magique
             std::string fpu;
             while (getline(cpuinfo, line))
             {
-                if (line.find("model name") != std::string::npos)
+                if (line.contains("model name"))
                 {
                     model = line.substr(line.find(':') + 2);
                 }
-                else if (line.find("cpu cores") != std::string::npos)
+                else if (line.contains("cpu cores"))
                 {
                     cores = line.substr(line.find(':') + 2);
                 }
-                else if (line.find("MHz") != std::string::npos)
+                else if (line.contains("MHz"))
                 {
                     MHz = line.substr(line.find(':') + 2);
                 }
-                else if (line.find("fpu") != std::string::npos)
+                else if (line.contains("fpu"))
                 {
                     fpu = line.substr(line.find(':') + 2);
                     break;
@@ -135,7 +137,7 @@ namespace magique
             std::string line;
             while (getline(osRelease, line))
             {
-                if (line.find("PRETTY_NAME=") != std::string::npos)
+                if (line.contains("PRETTY_NAME="))
                 {
                     std::string prettyName = line.substr(line.find("\"") + 1);
                     prettyName = prettyName.substr(0, prettyName.find("\""));
@@ -229,7 +231,7 @@ namespace magique
 
 
 #if defined(__linux__) || defined(__APPLE__)
-    inline const char* GetSignalName(int signal)
+    inline std::string GetSignalName(int signal)
     {
         switch (signal)
         {
@@ -246,7 +248,7 @@ namespace magique
         case SIGTERM:
             return "SIGTERM";
         default:
-            return TextFormat("%d Unknown signal", signal);
+            return "Unknown signal" + std::to_string(signal);
         }
     }
     inline void crashLogHandler(int signal)

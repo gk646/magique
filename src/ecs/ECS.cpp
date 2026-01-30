@@ -19,7 +19,7 @@
 
 namespace magique
 {
-    bool RegisterEntity(const EntityType type, const CreateFunc& createFunc)
+    bool EntityRegister(const EntityType type, const CreateFunc& createFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
@@ -37,7 +37,7 @@ namespace magique
         return true;
     }
 
-    bool UnRegisterEntity(const EntityType type)
+    bool EntityUnregister(const EntityType type)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
@@ -53,7 +53,7 @@ namespace magique
 
     bool EntityIsActor(const entt::entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
 
-    entt::entity GetEntity(const EntityType type)
+    entt::entity EntityFirstOf(const EntityType type)
     {
         for (const auto entity : internal::REGISTRY.view<entt::entity>())
         {
@@ -101,19 +101,19 @@ namespace magique
         return entity;
     }
 
-    entt::entity CreateEntity(const EntityType type, Point pos, const MapID map, int rotation, const bool withFunc)
+    entt::entity EntityCreate(const EntityType type, Point pos, const MapID map, int rotation, const bool withFunc)
     {
         return CreateEntityInternal(entt::null, type, pos.x, pos.y, map, rotation, withFunc);
     }
 
-    entt::entity CreateEntityEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const int rot,
+    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const int rot,
                                 const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
         return CreateEntityInternal(id, type, pos.x, pos.y, map, rot, withFunc);
     }
 
-    bool DestroyEntity(const entt::entity entity)
+    bool EntityDestroy(const entt::entity entity)
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
@@ -148,7 +148,7 @@ namespace magique
         return false;
     }
 
-    void DestroyEntities(const std::initializer_list<EntityType>& ids)
+    void EntityDestroy(const std::initializer_list<EntityType>& ids)
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
@@ -189,7 +189,7 @@ namespace magique
             {
                 if (pos.type == id)
                 {
-                    DestroyEntity(e);
+                    EntityDestroy(e);
                     break;
                 }
             }
@@ -197,7 +197,18 @@ namespace magique
         // Don't need to patch as its cleared each tick
     }
 
-    void SetDestroyEntityCallback(const DestroyEntityCallback callback)
+    void EntityDestroy(const std::function<bool(entt::entity)>& func)
+    {
+        for (const auto e : internal::REGISTRY.view<entt::entity>())
+        {
+            if (func(e))
+            {
+                EntityDestroy(e);
+            }
+        }
+    }
+
+    void EntitySetDestroyCallback(const DestroyEntityCallback callback)
     {
         global::ENGINE_DATA.destroyEntityCallback = callback;
     }
@@ -245,7 +256,7 @@ namespace magique
     void GiveCamera(const entt::entity entity)
     {
         internal::REGISTRY.emplace<CameraC>(entity);
-        global::ENGINE_DATA.cameraMap = GetComponent<const PositionC>(entity).map;
+        global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(entity).map;
     }
 
     OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, const Shape shape)
@@ -279,7 +290,7 @@ namespace magique
             return;
         }
 
-        RemoveComponent<CameraC>(CameraGetEntity());
+        ComponentRemove<CameraC>(CameraGetEntity());
         reg.emplace<CameraC>(target);
     }
 
@@ -303,7 +314,7 @@ namespace magique
         return set;
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size, FilterFunc filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,  const FilterFunc& filter)
     {
         QueryLoadedEntitiesRectIMPL(map, origin - size, size * 2);
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
@@ -322,7 +333,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size, FilterFunc filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,  const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         QueryLoadedEntitiesRectIMPL(map, origin, size);
@@ -341,13 +352,13 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,  FilterFunc filter)
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         set.clear();
-        for (const auto e : GetView<PositionC>())
+        for (const auto e : ComponentGetView<PositionC>())
         {
-            const auto& pos = GetComponent<PositionC>(e);
+            const auto& pos = ComponentGet<PositionC>(e);
             if (pos.map != map || pos.getPosition().euclidean(origin) > size || (filter && !filter(e))) [[likely]]
             {
                 continue;
@@ -357,14 +368,14 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, FilterFunc filter)
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,  const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         set.clear();
         const Rect bounds{origin, size};
-        for (const auto e : GetView<PositionC>())
+        for (const auto e : ComponentGetView<PositionC>())
         {
-            const auto& pos = GetComponent<PositionC>(e);
+            const auto& pos = ComponentGet<PositionC>(e);
             if (pos.map != map || !bounds.contains(pos.getPosition()) || (filter && !filter(e))) [[likely]]
             {
                 continue;

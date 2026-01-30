@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/UI.h>
+
 #include "internal/globals/UIData.h"
+#include "magique/core/Camera.h"
+#include "external/raylib-compat/rcore_compat.h"
 
 namespace magique
 {
 
-    static Point GetUIAnchor(const Anchor anchor, Point topLeft, Point bounds, Point size, Point inset)
+    static Point UIGetAnchor(const Anchor anchor, Point topLeft, Point bounds, Point size, Point inset)
     {
         Point point = topLeft;
         switch (anchor)
@@ -45,28 +48,30 @@ namespace magique
     }
 
 
-    Point GetUIAnchor(const Anchor anchor, const Point size, const Point inset)
+    Point UIGetAnchor(const Anchor anchor, const Point size, const Point inset)
     {
-        return GetUIAnchor(anchor, {}, global::UI_DATA.targetRes, size, inset);
+        return UIGetAnchor(anchor, {}, global::UI_DATA.targetRes, size, inset);
     }
 
-    Point GetUIAnchor(Anchor anchor, const UIObject& relative, const Point size, const Point inset)
+    Point UIGetAnchor(Anchor anchor, const UIObject& relative, const Point size, const Point inset)
     {
         const auto bounds = relative.getBounds();
-        return GetUIAnchor(anchor, {bounds.x, bounds.y}, {bounds.width, bounds.height}, size, inset);
+        return UIGetAnchor(anchor, {bounds.x, bounds.y}, {bounds.width, bounds.height}, size, inset);
     }
 
-    float GetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
+    float UIGetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
 
-    Point GetScaled(Point p) { return p * global::UI_DATA.scaling; }
+    Point UIGetScaled(Point p) { return p * global::UI_DATA.scaling; }
 
-    Point GetUIScaling() { return global::UI_DATA.scaling; }
+    Point UIGetScaling() { return global::UI_DATA.scaling; }
 
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
     Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
-    void SetUITargetResolution(Point resolution)
+    Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
+
+    void UISetTargetResolution(Point resolution)
     {
         if (resolution == 0)
         {
@@ -78,6 +83,8 @@ namespace magique
             global::UI_DATA.customTargetRes = true;
         }
     }
+
+    Point UIGetTargetResolution() { return global::UI_DATA.targetRes; }
 
     bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressed(key); }
 
@@ -104,16 +111,24 @@ namespace magique
 
     void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
 
-    void LayeredInput::ConsumeMouse()
-    {
-        global::UI_DATA.mouseConsumed = true;
-    }
+    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
-    void SetUISourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
+    void UISetShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
+
+    UIMouseToWorld::UIMouseToWorld()
+    {
+        prev = GetMousePosition();
+        auto worldMouse = GetScreenToWorld2D(prev.v(), magique::CameraGet());
+        SetMousePositionDirect(worldMouse.x, worldMouse.y);
+    }
+
+    UIMouseToWorld::~UIMouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
+
+    void UISetSourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 
     Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base)
     {

@@ -264,6 +264,11 @@ namespace magique
             perfOverlay.setFunction([](const ParamList& params) { SetShowPerformanceOverlay(params.back().getBool()); });
             RegisterConsoleCommand(perfOverlay);
 
+            Command showUIHitbox{"m.setUIHitboxOverlay", "Turns the hitboxes for UI elements on/off"};
+            showUIHitbox.addParam("value", {ParamType::BOOL});
+            showUIHitbox.setFunction([](const ParamList& params) { UISetShowHitboxes(params.back().getBool()); });
+            RegisterConsoleCommand(showUIHitbox);
+
 #ifndef MAGIQUE_TEST_MODE
             SetEnvironmentParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
 #endif

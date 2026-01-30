@@ -164,14 +164,14 @@ namespace magique
                 }
 
                 // this checks existence as well - also needed cause deletion caused reference invalidation
-                const auto p1 = TryGetComponent<const PositionC>(e1);
-                const auto p2 = TryGetComponent<const PositionC>(e2);
+                const auto p1 = ComponentTryGet<const PositionC>(e1);
+                const auto p2 = ComponentTryGet<const PositionC>(e2);
                 if (p1 == nullptr || p2 == nullptr) [[unlikely]]
                 {
                     continue;
                 }
-                auto& col1 = GetComponent<CollisionC>(e1);
-                auto& col2 = GetComponent<CollisionC>(e2);
+                auto& col1 = ComponentGet<CollisionC>(e1);
+                auto& col2 = ComponentGet<CollisionC>(e2);
 
                 // Prepare second info - with the fresh data
                 auto secondInfo = pairInfo.info;

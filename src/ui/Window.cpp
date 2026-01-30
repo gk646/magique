@@ -62,7 +62,7 @@ namespace magique
     bool Window::updateDrag(const Rect& area, const int mouseButton)
     {
         const auto mouse = GetMousePos();
-        if (LayeredInput::IsMouseButtonDown(mouseButton))
+        if (!IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && (LayeredInput::IsMouseButtonDown(mouseButton) || isDragged))
         {
             if (isDragged)
             {

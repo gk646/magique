@@ -75,9 +75,8 @@ namespace magique
         for (const auto num : collector)
         {
             const auto objectNum = StaticIDHelper::GetObjectNum(num);
-            const auto [x, y, p1, p2] = colliders[(int)objectNum]; // O(1) direct lookup
             CollisionInfo info{};
-            CheckCollisionEntityRect(pos, col, {x, y, p1, p2}, info);
+            CheckCollisionEntityRect(pos, col, colliders[(int)objectNum].bounds, info);
             if (info.isColliding())
             {
                 pairCollector.push_back({info, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
@@ -168,7 +167,7 @@ namespace magique
                 }
 
                 // Also check existence
-                auto* col = TryGetComponent<CollisionC>(e);
+                auto* col = ComponentTryGet<CollisionC>(e);
                 if (col == nullptr)
                 {
                     continue;

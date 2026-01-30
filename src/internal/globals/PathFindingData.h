@@ -116,7 +116,7 @@ namespace magique
                 {
                     for (const auto idx : info.objectIds)
                     {
-                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
+                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
                         rasterizeRect(x, y, w, h);
                     }
                 }
@@ -128,7 +128,7 @@ namespace magique
                 const auto& objectIndices = staticData.colliderReferences.tilesCollisionMap.at(map);
                 for (const auto idx : objectIndices)
                 {
-                    const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
+                    const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
                     rasterizeRect(x, y, w, h);
                 }
             }
@@ -140,7 +140,7 @@ namespace magique
                 {
                     for (const auto idx : groupInfo.objectIds)
                     {
-                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx);
+                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
                         rasterizeRect(x, y, w, h);
                     }
                 }

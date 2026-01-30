@@ -70,8 +70,8 @@ namespace magique
 
     Point CollisionC::GetMiddle(const entt::entity e)
     {
-        const auto& pos = magique::GetComponent<PositionC>(e);
-        const auto& col = magique::GetComponent<CollisionC>(e);
+        const auto& pos = magique::ComponentGet<PositionC>(e);
+        const auto& col = magique::ComponentGet<CollisionC>(e);
         return pos.getMiddle(col);
     }
 

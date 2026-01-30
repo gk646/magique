@@ -46,8 +46,8 @@ namespace magique
             if (!obj.visible) // Only visible objects
                 continue;
 
-            const Rect scaled = obj.bounds * scale;
-            const auto num = data.colliderStorage.insert(scaled.x, scaled.y, scaled.w, scaled.h);
+            const Rect scaled = obj.bounds.scale(scale);
+            const auto num = data.colliderStorage.insert(scaled);
             const auto staticID = StaticIDHelper::CreateID(num, obj.getTileClass());
             grid.insert(staticID, scaled.x, scaled.y, scaled.w, scaled.h);
             info.objectIds.push_back(num); // So we can uniquely delete later
@@ -158,21 +158,18 @@ namespace magique
                     if (infoIt != data.markedTilesMap.end())
                     {
                         const auto& info = infoIt->second;
-                        auto x = static_cast<float>(info.x) * data.tileSetScale;
-                        auto y = static_cast<float>(info.y) * data.tileSetScale;
-                        auto width = static_cast<float>(info.width) * data.tileSetScale;
-                        auto height = static_cast<float>(info.height) * data.tileSetScale;
-                        x += static_cast<float>(j) * tileSize;
-                        y += static_cast<float>(i) * tileSize;
-                        if (width == 0) // rect is 0 if not assigned - so adding to x and y is always valid
+                        auto scaled = info.bounds.scale(data.tileSetScale);
+                        scaled += Point{(float)j, (float)i} * tileSize;
+                        if (scaled.w == 0) // rect is 0 if not assigned - so adding to x and y is always valid
                         {
-                            width = tileSize;
-                            height = tileSize;
+                            scaled.w = tileSize;
+                            scaled.h = tileSize;
                         }
-                        const auto objectNum = data.colliderStorage.insert(x, y, width, height);
+                        const auto objectNum = data.colliderStorage.insert(scaled);
                         tileVec.push_back(objectNum);
                         const auto tileClass = infoIt->second.tileClass;
-                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), x, y, width, height);
+                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), scaled.x, scaled.y, scaled.w,
+                                    scaled.h);
                     }
                 }
             }
@@ -208,12 +205,12 @@ namespace magique
 
     void ManualColliderGroup::addRect(const float x, const float y, const float width, const float height)
     {
-        colliders.push_back({x, y, width, height});
+        colliders.push_back({{x, y, width, height}});
     }
 
     void ManualColliderGroup::addRectCentered(const float x, const float y, const float width, const float height)
     {
-        colliders.push_back({x - width / 2, y - height / 2, width, height});
+        colliders.push_back({{x - width / 2, y - height / 2, width, height}});
     }
 
     int ManualColliderGroup::getID() const { return id; }
@@ -240,9 +237,10 @@ namespace magique
         groupInfo.groupId = group.getID();
 
         auto& hashGrids = data.mapGroupGrids[map];
-        for (const auto& [x, y, w, h] : group.getColliders())
+        for (const auto& collider : group.getColliders())
         {
-            const auto num = data.colliderStorage.insert(x, y, w, h);
+            const auto& [x, y, w, h] = collider.bounds;
+            const auto num = data.colliderStorage.insert(collider.bounds);
             const auto staticID = StaticIDHelper::CreateID(num, groupInfo.groupId);
             hashGrids.insert(staticID, x, y, w, h);
             groupInfo.objectIds.push_back(num); // So we can uniquely delete later

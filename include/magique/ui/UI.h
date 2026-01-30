@@ -30,30 +30,45 @@ namespace magique
     // Passing a size aligns the point to be left bound relative to the dimension
     // Inset applies an offset on the border points inwards
     // Passing a UIObject return the anchor point relative to the object bounds
-    Point GetUIAnchor(Anchor anchor, Point size = {}, Point inset = {});
-    Point GetUIAnchor(Anchor anchor, const UIObject& relative, Point size = {}, Point inset = {});
+    Point UIGetAnchor(Anchor anchor, Point size = {}, Point inset = {});
+    Point UIGetAnchor(Anchor anchor, const UIObject& relative, Point size = {}, Point inset = {});
 
     // Accepts a value in the logical resolution and returns the value in the current resolution (scaled vertically)
     // Note: This is useful when needing static offsets that automatically scale
-    float GetScaled(float val);
-    Point GetScaled(Point p);
+    float UIGetScaled(float val);
+    Point UIGetScaled(Point p);
 
     // Returns the current horizontal and vertical scaling
-    Point GetUIScaling();
+    Point UIGetScaling();
 
     // Returns the position where the left mouse button was first pressed - resets when the button is released
     // Failure: returns {-1,-1} if the mouse was not yet pressed or was released
     Point GetDragStartPosition();
 
-    // Same as raylib's but returns a magique::Point
-    Point GetMousePos();
+    // Sets the logical ui resolution in which all numbers are interpreted
+    // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel art with fixed resolutions
+    void UISetSourceResolution(float width, float height);
 
     // Sets the resolution the UI scales TO - if set to (0,0) display resolution is used
     // Note: This is useful if your using different render targets
-    void SetUITargetResolution(Point resolution);
+    void UISetTargetResolution(Point resolution);
+    Point UIGetTargetResolution();
+
+    //================= UTIL =================//
+
+    // Same as raylib's but returns a magique::Point
+    Point GetMousePos();
+
+    // Return the world mouse pos using CameraGet()
+    Point GetWorldMousePos();
+
+    // Returns a rectangle that adjusted to be on the screen (target resolution) by picking which corner the mouse is
+    // Default its bottom right corner is the mouse position - can be offset manually
+    // Note: Useful for tooltips
+    Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePos());
 
     // Getters for input that allows for consumption - when consumed all methods return false
-    // The consumed state is automatically reset at the beginning of each tick
+    // The consumed state is automatically reset at the beginning of each update tick
     // Note: This is very useful when dealing with layered UI to prevent unwanted input propagation
     // Note: You can still use the raylib inputs methods if you need exceptions to this rule!
     struct LayeredInput final
@@ -75,15 +90,19 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    // Sets the logical ui resolution in which all numbers are interpreted
-    // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel art with fixed resolutions
-    void SetUISourceResolution(float width, float height);
+    // If enables shows the hitboxes off all ui elements in BLUE
+    void UISetShowHitboxes(bool value);
 
-    // Returns a rectangle that adjusted to be on the screen (target resolution)
-    // Default its bottom right corner is the mouse position - can be offset manually
-    // Note: Useful for tooltips
-    Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePos());
+    // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space
+    // Destructor resets it back to original screen pos
+    struct UIMouseToWorld
+    {
+        UIMouseToWorld();
+        ~UIMouseToWorld();
 
+    private:
+        Point prev;
+    };
 
 } // namespace magique
 

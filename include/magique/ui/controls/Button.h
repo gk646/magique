@@ -28,10 +28,14 @@ namespace magique
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
         // Called each tick on update thread
-        void onUpdate(const Rectangle& bounds, bool isDrawn) override { updateActions(bounds); }
+        void onUpdate(const Rectangle& bounds, bool isDrawn) override
+        {
+            if (isDrawn)
+                updateActions(bounds);
+        }
 
         // Sets a function that is called on click - same as onClick but without needing to override the button class
-        void wireOnClick(ClickFunc func);
+        void setOnClick(const ClickFunc& func);
 
         // Sets the disabled state - prevents only the onClick and wireOnClick activations
         // Does NOT affect the base UIObject methods
@@ -45,8 +49,8 @@ namespace magique
         // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
 
-        // Called if the mouse is clicked inside the button bounds - can be called multiple times with different buttons
-        virtual void onClick(const Rectangle& bounds, int button) {}
+        // Called on click
+        virtual void onClick(const Rectangle& bounds, int mouseButton) {}
 
         // Updates the action state and calls onHover() and onClick() if necessary
         // Note: You can conditionally NOT call this based on LayeredInput.isConsumed() to respect layers
@@ -64,6 +68,7 @@ namespace magique
         bool isHovered = false;
         bool isDisabled = false;
     };
+
 } // namespace magique
 
 M_UNIGNORE_WARNING()

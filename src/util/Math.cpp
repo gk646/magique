@@ -90,10 +90,72 @@ namespace magique
 
     int MirrorVertically(int value, int border) { return value + 2 * (border - value); }
 
-    Point GetPointOnCircleFromAngle(const Point& middle, const float radius, const float angle)
+    float AngleChange(float angle, float change)
+    {
+        float newAngle = angle + change;
+        if (newAngle >= 360)
+        {
+            newAngle -= 360;
+        }
+        else if (newAngle < 0)
+        {
+            newAngle += 360;
+        }
+        return newAngle;
+    }
+
+    float AngleDiff(float one, float two)
+    {
+        float diff = std::abs(one - two);
+        if (diff > 180.0F)
+        {
+            return std::abs(diff - 360.0F);
+        }
+        else
+        {
+            return diff;
+        }
+    }
+
+    float AngleDistance(float one, float two)
+    {
+        float dist = two - one;
+        if (dist < -180.0F)
+        {
+            return dist + 360.0F;
+        }
+        else if (dist > 180.0F)
+        {
+            return dist - 360.0F;
+        }
+        return dist;
+    }
+
+    float AngleModulate(float old, float target, float max)
+    {
+        auto dist = AngleDistance(old, target);
+        if (dist > 0.0F)
+        {
+            return AngleChange(old, std::min(dist, max));
+        }
+        else if (dist < 0.0F)
+        {
+            return AngleChange(old, std::max(dist, -max));
+        }
+        return old;
+    }
+
+    Point GetCirclePosOutline(const Point& middle, const float radius, const float angle)
     {
         const auto direction = GetDirectionFromAngle(angle);
         return {middle.x + (direction.x * radius), middle.y + (direction.y * radius)};
+    }
+
+    Point GetCirclePosRandom(const Point& mid, float radius)
+    {
+        const auto angle = GetRandomValue(0, 359);
+        const Point dir = GetDirectionFromAngle((float)angle);
+        return mid + dir * (GetRandomFloat(0, 1.0F) * radius);
     }
 
     Point GetDirectionFromAngle(const float angle)
@@ -102,7 +164,7 @@ namespace magique
         return {-sinf(radians), cosf(radians)};
     }
 
-    Point GetDirectionVector(const Point current, const Point target)
+    Point GetDirectionFromPoints(const Point current, const Point target)
     {
         auto diff = target - current;
         return diff.normalize();
@@ -146,11 +208,11 @@ namespace magique
         return closest.euclidean(p);
     }
 
-    Point GetClosestPointInRange(Point p, Point middle, float radius)
+    Point GetClosestPointOnCircle(Point p, Point middle, float radius)
     {
         if (middle.euclidean(p) > radius)
         {
-            return GetPointOnCircleFromAngle(middle, radius, GetAngleFromPoints(middle, p));
+            return GetCirclePosOutline(middle, radius, GetAngleFromPoints(middle, p));
         }
         else
         {
@@ -158,7 +220,7 @@ namespace magique
         }
     }
 
-    Point GetCenterPos(const Rectangle& one, const Point& two)
+    Point GetCenteredPos(const Rectangle& one, const Point& two)
     {
         Point p;
         p.x = one.x + one.width / 2.0F - two.x / 2.0F;

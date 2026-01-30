@@ -130,6 +130,7 @@ namespace magique
             ++cursorPos;
             anyInput = true;
         }
+
         return anyInput || anyEvent;
     }
 
@@ -170,17 +171,17 @@ namespace magique
         DrawTextEx(font, "|", {tPos.x + cursorOffX, tPos.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
-    void TextField::drawDefault(const Rectangle& bounds)
+    void TextField::drawDefault(const Rectangle& bounds, float fontSize)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const Color body = getIsFocused() ? theme.backSelected : getIsHovered() ? theme.backLight : theme.backDark;
         const Color outline = theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawText(14, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
+        drawText(fontSize, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
     }
 
-    void TextField::wireOnEnter(const EnterFunc& func) { enterFunc = func; }
+    void TextField::setOnEnter(const EnterFunc& func) { enterFunc = func; }
 
     bool TextField::pollControls()
     {

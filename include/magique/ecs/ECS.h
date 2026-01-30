@@ -23,59 +23,36 @@ enum EntityType : uint16_t; // A unique type identifier handled by the user to d
 namespace magique
 {
     // Returns the magique registry
-    entt::registry& GetRegistry();
+    entt::registry& EntityGetRegistry();
 
-    //============== REGISTER ==============//
+    //============== ENTITIY ==============//
 
     using CreateFunc = std::function<void(entt::entity entity, EntityType type)>;
     // Registers an entity with the given create function - replaces the existing function if present
     // Failure: Returns false
-    bool RegisterEntity(EntityType type, const CreateFunc& createFunc);
+    bool EntityRegister(EntityType type, const CreateFunc& createFunc);
+
+    // Unregisters an entity
+    // Failure: Returns false
+    bool EntityUnregister(EntityType type);
 
     // Creates a new entity by calling the registered function for that type
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
     // Failure: Returns entt::null
-    entt::entity CreateEntity(EntityType type, Point pos, MapID map, int rotation = 0, bool withFunc = true);
+    entt::entity EntityCreate(EntityType type, Point pos, MapID map, int rotation = 0, bool withFunc = true);
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
     // Note: You shouldnt use  this information - but entity ids start with 0 and go up until UINT32_MAX
-    entt::entity CreateEntityEx(entt::entity id, EntityType type, Point pos, MapID map, int rot, bool withFunc);
-
-    // Unregisters an entity
-    // Failure: Returns false
-    bool UnRegisterEntity(EntityType type);
-
-    //================= INTERACTION =================//
-
-    // Retrieves the specified component from the global registry
-    // Note: When using views to iterate over entities it's faster to access components over the view
-    template <typename T>
-    T& GetComponent(entt::entity entity);
-
-    // Returns one or more of the specified components from the entity
-    template <typename... T>
-    auto GetComponents(entt::entity entity);
-
-    // Tries to retrieve the specified component from the global registry
-    // Note: When using views to iterate over entities it's faster to access components over the view
-    // Failure: Returns nullptr if the component is not present on the given entity
-    template <typename T>
-    T* TryGetComponent(entt::entity entity);
-
-    // Uses emplace_back to add the component to the given entity
-    // Args are the constructor arguments (if any)
-    // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
-    template <typename Component, typename... Args>
-    Component& GiveComponent(entt::entity entity, Args... args);
-
-    // Tries to remove the specified components from the given entities
-    template <typename... Args>
-    void RemoveComponent(entt::entity entity);
+    entt::entity EntityCreateEx(entt::entity id, EntityType type, Point pos, MapID map, int rot, bool withFunc);
 
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
+
+    // Returns true and executes the given function if the entity exists
+    template <typename Func>
+    bool EntityIfExists(entt::entity entity, const Func& func);
 
     // Returns true if the given entity has ALL the specified component types
     template <typename... Args>
@@ -86,27 +63,55 @@ namespace magique
 
     // Returns the first entity with the given type
     // Failure: Returns entt::null if none with that type could be found
-    entt::entity GetEntity(EntityType type);
-
-    // Returns a view that contains all entities with (all) given components
-    template <typename... Args>
-    auto GetView();
-
-    //============== LIFE CYCLE ==============//
+    entt::entity EntityFirstOf(EntityType type);
 
     // Immediately tries to destroy this entity
     // Note: It's up to the user to make sure invalid entities are not accessed (destroying in event functions...)
     // Failure: Returns false if entity is invalid or doesn't exist
-    bool DestroyEntity(entt::entity entity);
+    bool EntityDestroy(entt::entity entity);
 
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
-    void DestroyEntities(const std::initializer_list<EntityType>& ids);
+    void EntityDestroy(const std::initializer_list<EntityType>& ids);
+
+    // Iterates all enemies and destroys them if the function returns true
+    void EntityDestroy(const std::function<bool(entt::entity)>& func);
 
     // Sets a function that is called each time a entity is destroyed
     // See core/Types.h for more info on the functino
-    void SetDestroyEntityCallback(DestroyEntityCallback callback);
+    void EntitySetDestroyCallback(DestroyEntityCallback callback);
 
-    //============== COMPONENTS ==============//
+    //================= COMPONENTS =================//
+
+    // Retrieves the specified component from the global registry
+    // Note: When using views to iterate over entities it's faster to access components over the view
+    template <typename T>
+    T& ComponentGet(entt::entity entity);
+
+    // Returns one or more of the specified components from the entity
+    template <typename... T>
+    auto ComponentsGet(entt::entity entity);
+
+    // Tries to retrieve the specified component from the global registry
+    // Note: When using views to iterate over entities it's faster to access components over the view
+    // Failure: Returns nullptr if the component is not present on the given entity
+    template <typename T>
+    T* ComponentTryGet(entt::entity entity);
+
+    // Uses emplace_back to add the component to the given entity
+    // Args are the constructor arguments (if any)
+    // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
+    template <typename Component, typename... Args>
+    Component& ComponentGive(entt::entity entity, Args... args);
+
+    // Tries to remove the specified components from the given entities
+    template <typename... Args>
+    void ComponentRemove(entt::entity entity);
+
+    // Returns a view that contains all entities with (all) given components
+    template <typename... Args>
+    auto ComponentGetView();
+
+    //============== GIVE ==============//
 
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
@@ -153,10 +158,10 @@ namespace magique
         inline auto POSITION_GROUP = REGISTRY.group<PositionC, CollisionC>(); // Pos + Collision group
 
     } // namespace internal
-    inline entt::registry& GetRegistry() { return internal::REGISTRY; }
+    inline entt::registry& EntityGetRegistry() { return internal::REGISTRY; }
 
     template <typename T>
-    T& GetComponent(const entt::entity entity)
+    T& ComponentGet(const entt::entity entity)
     {
         static_assert(sizeof(T) != 0 && "Trying to get empty component - those are not instantiated by EnTT");
         MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
@@ -172,29 +177,40 @@ namespace magique
     }
 
     template <typename... T>
-    auto GetComponents(entt::entity entity)
+    auto ComponentsGet(entt::entity entity)
     {
         MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
         return internal::REGISTRY.get<T...>(entity);
     }
 
     template <typename T>
-    T* TryGetComponent(const entt::entity entity)
+    T* ComponentTryGet(const entt::entity entity)
     {
         static_assert(sizeof(T) > 0 && "Trying to get empty component - those are not instantiated by EnTT");
         return internal::REGISTRY.try_get<T>(entity);
     }
 
     template <class Component, typename... Args>
-    Component& GiveComponent(entt::entity entity, Args... args)
+    Component& ComponentGive(entt::entity entity, Args... args)
     {
         return internal::REGISTRY.emplace<Component>(entity, args...);
     }
 
     template <typename... Args>
-    void RemoveComponent(entt::entity entity)
+    void ComponentRemove(entt::entity entity)
     {
         internal::REGISTRY.remove<Args...>(entity);
+    }
+
+    template <typename Func>
+    bool EntityIfExists(entt::entity entity, const Func& func)
+    {
+        if (EntityExists(entity))
+        {
+            func(entity);
+            return true;
+        }
+        return false;
     }
 
     template <typename... Args>
@@ -204,7 +220,7 @@ namespace magique
     }
 
     template <typename... Args>
-    auto GetView()
+    auto ComponentGetView()
     {
         return internal::REGISTRY.view<Args...>();
     }

@@ -16,8 +16,6 @@ namespace magique::renderer
 
     inline void StartTick()
     {
-        rlLoadIdentity();
-        rlMultMatrixf(MatrixToFloat(GetScreenScale()));
         AssignCameraPosition();
         ResetDrawCallCount();
     }

@@ -37,6 +37,7 @@ namespace magique
         selected = -1;
         entries.clear();
     }
+
     bool ListMenu::empty() const { return entries.empty(); }
 
     void ListMenu::add(const char* item, int index)
@@ -128,7 +129,7 @@ namespace magique
             backGround = GRAY;
         }
         const auto& fnt = GetEngineFont();
-        const auto size = GetScaled(15);
+        const auto size = UIGetScaled(15);
         const auto bounds = getBounds();
         DrawRectangleRec({pos.x, pos.y, bounds.width, bounds.height}, backGround);
         DrawTextEx(fnt, txt, {pos.x + 2, pos.y + 1}, size, 1.0F, textColor);

@@ -31,7 +31,7 @@ namespace magique
         }
     };
 
-    using ActorRectsTable = std::array<Rectangle, MAGIQUE_MAX_PLAYERS>;
+    using ActorRectsTable = std::array<Rect, MAGIQUE_MAX_PLAYERS>;
     using ActorMapsTable = std::array<bool, UINT8_MAX>;
 
     inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col,
@@ -115,7 +115,7 @@ namespace magique
         const uint16_t cacheDuration = config.entityCacheDuration;
         int actorCount = 0;
         const auto cameraMap = data.cameraMap;
-        const auto camBound = CameraGetBounds();
+        const Rect camBound = CameraGetBounds();
 
         // Lookup tables
         ActorMapDistribution actorDist{};
@@ -138,8 +138,7 @@ namespace magique
             if (loadedMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
                 // Check if inside the camera bounds already
-                if (map == cameraMap &&
-                    PointToRect(pos.x, pos.y, camBound.x, camBound.y, camBound.width, camBound.height))
+                if (map == cameraMap && camBound.contains(pos.getPosition()))
                 {
                     drawVec.push_back(e); // Should be drawn
                     cache[e] = cacheDuration;
@@ -158,9 +157,8 @@ namespace magique
                         {
                             break;
                         }
-                        const auto& [x, y, w, h] = actorRects[actorNum];
                         // Check if inside any update rect - rect is an enlarged rectangle
-                        if (PointToRect(pos.x, pos.y, x, y, w, h))
+                        if (actorRects[actorNum].contains(pos.getPosition()))
                         {
                             cache[e] = cacheDuration;
                             if (group.contains(e))
@@ -232,7 +230,7 @@ namespace magique
         }
 
         // Iterates all entities
-        for (const auto entity : GetRegistry().view<entt::entity>())
+        for (const auto entity : EntityGetRegistry().view<entt::entity>())
         {
             // Invoke tick event on all entities that are in this tick and are scripted
             if (data.isEntityScripted(entity)) [[likely]]

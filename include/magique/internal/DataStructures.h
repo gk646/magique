@@ -41,6 +41,8 @@ private:
 template <typename T, uint32_t capacity>
 struct StackVector final
 {
+    StackVector() = default;
+
     StackVector(const std::initializer_list<T>& list)
     {
         for (auto& elem : list)

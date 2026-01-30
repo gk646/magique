@@ -20,6 +20,8 @@ M_IGNORE_WARNING(4100) // unreferenced formal parameter
 //      return game.run();
 //
 // Note: All functions are called on the main thread!
+// Note: Inputs are polled before each UpdateTick only! So polling for keyboard input (besides IsDown() or IsUp)
+//        is NOT accurate in drawGame()!
 // Making the engine usable without the game class is a low priority task for the future.
 // ................................................................................
 
@@ -65,13 +67,6 @@ namespace magique
 
         //================= CORE =================//
 
-        // Called each update tick BEFORE drawGame()
-        // Default: called 60 times per second (constant)
-        virtual void updateGame(GameState gameState) {}
-
-        // Called after the internal update tick (collision, ui, sound)
-        virtual void postTickUpdate(GameState gameState) {}
-
         // Called each render tick
         // Default: called 100 times per second - changed by SetTargetFPS()
         virtual void drawGame(GameState gameState, Camera2D& camera2D) {}
@@ -79,6 +74,14 @@ namespace magique
         // Called each render tick after drawGame()
         // EndDrawing() will be called after this method internally
         virtual void drawUI(GameState gameState) {}
+
+        // Called each update tick BEFORE drawGame()
+        // Default: called 60 times per second (constant)
+        virtual void updateGame(GameState gameState) {}
+
+        // Called after the internal update tick (collision, ui, sound)
+        // Note: Useful for sending network updates as this it the final state for this tick
+        virtual void updateGameLate(GameState gameState) {}
 
         //================= VARIABLES =================//
 

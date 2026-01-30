@@ -49,7 +49,7 @@ namespace magique
 
     void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume)
     {
-        auto& reg = GetRegistry();
+        auto& reg = EntityGetRegistry();
         if (!reg.valid(entity))
         {
             LOG_ERROR("Passed invalid entity: %d", static_cast<int>(entity));
@@ -58,7 +58,7 @@ namespace magique
         const auto alias = LoadSoundAlias(sound);
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
         ::PlaySound(alias);
-        auto& pos = GetRegistry().get<PositionC>(entity);
+        auto& pos = EntityGetRegistry().get<PositionC>(entity);
         global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
     }
 

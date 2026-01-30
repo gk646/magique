@@ -150,15 +150,15 @@ public:
           destruction{allocator},
           update{allocator} {
         if constexpr(internal::has_on_construct<typename underlying_type::element_type, Registry>::value) {
-            entt::sink{construction}.template connect<&underlying_type::element_type::on_construct>();
+            sink{construction}.template connect<&underlying_type::element_type::on_construct>();
         }
 
         if constexpr(internal::has_on_update<typename underlying_type::element_type, Registry>::value) {
-            entt::sink{update}.template connect<&underlying_type::element_type::on_update>();
+            sink{update}.template connect<&underlying_type::element_type::on_update>();
         }
 
         if constexpr(internal::has_on_destroy<typename underlying_type::element_type, Registry>::value) {
-            entt::sink{destruction}.template connect<&underlying_type::element_type::on_destroy>();
+            sink{destruction}.template connect<&underlying_type::element_type::on_destroy>();
         }
     }
 
@@ -169,28 +169,24 @@ public:
      * @brief Move constructor.
      * @param other The instance to move from.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_sigh_mixin(basic_sigh_mixin &&other) noexcept
-        : underlying_type{std::move(other)},
+        : underlying_type{static_cast<underlying_type &&>(other)},
           owner{other.owner},
           construction{std::move(other.construction)},
           destruction{std::move(other.destruction)},
           update{std::move(other.update)} {}
-    // NOLINTEND(bugprone-use-after-move)
 
     /**
      * @brief Allocator-extended move constructor.
      * @param other The instance to move from.
      * @param allocator The allocator to use.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_sigh_mixin(basic_sigh_mixin &&other, const allocator_type &allocator)
-        : underlying_type{std::move(other), allocator},
+        : underlying_type{static_cast<underlying_type &&>(other), allocator},
           owner{other.owner},
           construction{std::move(other.construction), allocator},
           destruction{std::move(other.destruction), allocator},
           update{std::move(other.update), allocator} {}
-    // NOLINTEND(bugprone-use-after-move)
 
     /*! @brief Default destructor. */
     ~basic_sigh_mixin() override = default;
@@ -454,26 +450,22 @@ public:
      * @brief Move constructor.
      * @param other The instance to move from.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_reactive_mixin(basic_reactive_mixin &&other) noexcept
-        : underlying_type{std::move(other)},
+        : underlying_type{static_cast<underlying_type &&>(other)},
           owner{other.owner},
-          conn{} {
+          conn{std::move(other.conn)} {
     }
-    // NOLINTEND(bugprone-use-after-move)
 
     /**
      * @brief Allocator-extended move constructor.
      * @param other The instance to move from.
      * @param allocator The allocator to use.
      */
-    // NOLINTBEGIN(bugprone-use-after-move)
     basic_reactive_mixin(basic_reactive_mixin &&other, const allocator_type &allocator)
-        : underlying_type{std::move(other), allocator},
+        : underlying_type{static_cast<underlying_type &&>(other), allocator},
           owner{other.owner},
-          conn{allocator} {
+          conn{std::move(other.conn), allocator} {
     }
-    // NOLINTEND(bugprone-use-after-move)
 
     /*! @brief Default destructor. */
     ~basic_reactive_mixin() override = default;

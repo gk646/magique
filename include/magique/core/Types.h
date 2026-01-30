@@ -39,9 +39,10 @@ namespace magique
 
         // With numbers
         [[nodiscard]] Point operator*(float i) const;
-        bool operator<(float num) const;  // For both
-        bool operator<=(float num) const; // For both
-        bool operator==(float num) const; // For both
+        bool operator<(float num) const;      // For both
+        bool operator<(const Point& p) const; // For both
+        bool operator<=(float num) const;     // For both
+        bool operator==(float num) const;     // For both
         Point operator/(float divisor) const;
         Point operator-(float f) const;
         Point operator+(float f) const; // To both
@@ -115,19 +116,30 @@ namespace magique
 
         Rect() = default;
         Rect(const Rectangle& rect);
-        Rect(Point topLeft, Point size);
+        Rect(const Point& topLeft, const Point& size);
         Rect(float x, float y, float w, float h);
+        static Rect FromPoints(const Point& p1, const Point& p2);
 
-        Rect operator*(float num) const; // scales all values
+        Rect& operator+=(float num);      // only x and y
+        Rect& operator+=(const Point& p); // only x and y
+        bool operator==(float num) const; // checks all
 
         // Returns raylib rect
         Rectangle v() const;
+
+        // Applies to all valeus
+        Rect& floor();
+        Rect& round();
+        Rect& zero();
 
         // Returns random point inside the rect
         Point random() const;
 
         // Returns true if the point is contained in the rect
         bool contains(const Point& p) const;
+
+        // Returns true if the two rects have any overlapping area
+        bool intersects(const Rect& r) const;
 
         // Returns the area of the rect
         float area() const;
@@ -136,6 +148,15 @@ namespace magique
         Point pos() const;
         Point size() const;
         Point mid() const;
+
+        // Returns the point on the outline closes to p
+        Point closestOutline(const Point& p) const;
+
+        // Scales all values and returns a new object
+        Rect scale(float factor) const;
+
+        // Enlarges the rect in x and y direction by size such that it stays centered on its current center
+        Rect enlarge(float size) const;
 
         // Returns a rectangle that is centered on p with the given size
         static Rect CenteredOn(const Point& p, const Point& size);
@@ -176,6 +197,9 @@ namespace magique
         int16_t width;  // Width of the texture
         int16_t height; // Height of the texture
         uint16_t id;    // The texture id
+
+        Point getSize() const { return {(float)width, (float)height}; }
+        bool isValid() const { return id != 0; }
     };
 
     struct SpriteSheet final
@@ -199,7 +223,7 @@ namespace magique
         SpriteSheet sheet{};
         uint16_t maxDuration = 0; // in millis
 
-        TextureRegion getCurrentFrame(uint16_t spriteCount) const;
+        TextureRegion getCurrentFrame(float millis) const;
         // Returns duration in ticks
         int getDurationUntil(int frame) const;
         bool isValid() const;
@@ -281,13 +305,13 @@ namespace magique
 
     struct TileInfo final
     {
-        TileClass tileClass{};         // class attribute
-        bool hasCollision = false;     // True if has at least one collision shape
-        uint16_t tileID = UINT16_MAX;  // tile index of this tile
-        float x, y, width, height;     // Primary rect - top most (in the object list)
-        float sx, sy, swidth, sheight; // Secondary rect - second top (in the object list)
-        const char* image;             // only valid if its an image tileset
         TiledProperty customProperties[MAGIQUE_TILE_SET_CUSTOM_PROPERTIES]; // Mutable
+        Rect bounds;                  // Primary rect - top most (in the object list)
+        Rect secBounds;               // Secondary rect - second top (in the object list)
+        const char* image;            // only valid if its an image tileset
+        TileClass tileClass{};        // class attribute
+        bool hasCollision = false;    // True if has at least one collision shape
+        uint16_t tileID = UINT16_MAX; // tile index of this tile
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* name) const;
@@ -398,8 +422,7 @@ namespace magique
 
     struct StaticCollider final
     {
-        float x, y;   // Position
-        float p1, p2; // Extra values - if p2 == 0 -> circle
+        Rect bounds;
     };
 
     struct CollisionInfo final

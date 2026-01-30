@@ -472,15 +472,29 @@ namespace magique
         return TextFormat("%id:%ih:%im:%is", days, hours, minutes, seconds);
     }
 
-    const char* FormatFloat(float num, float cutoff, int justification)
+    const char* FormatFloat(float num, float cutoff, bool withSign)
     {
-        if (num < cutoff && !IsWholeNumber(num))
+        if (withSign)
         {
-            return TextFormat("%*.1f", justification, num);
+            if (num < cutoff && !IsWholeNumber(num))
+            {
+                return TextFormat("%+.1f", num);
+            }
+            else
+            {
+                return TextFormat("%+d", (int)std::round(num));
+            }
         }
         else
         {
-            return TextFormat("%*d", justification, (int)std::round(num));
+            if (num < cutoff && !IsWholeNumber(num))
+            {
+                return TextFormat("%.1f", num);
+            }
+            else
+            {
+                return TextFormat("%d", (int)std::round(num));
+            }
         }
     }
 

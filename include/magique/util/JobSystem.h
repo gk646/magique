@@ -2,8 +2,8 @@
 #ifndef MAGIQUE_JOBSYSTEM_H
 #define MAGIQUE_JOBSYSTEM_H
 
-#include <tuple>
 #include <magique/fwd.hpp>
+#include <tuple>
 
 //===============================================
 // Job System
@@ -117,25 +117,7 @@ namespace magique
 
         void* GetJobMemory(size_t bytes);
     } // namespace internal
-    template <typename Callable>
-    Job<Callable>::Job(Callable func) : func_(std::move(func))
-    {
-    }
-    template <typename Callable>
-    void Job<Callable>::run()
-    {
-        func_();
-    }
-    template <typename Func, typename... Args>
-    ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
-        func(std::move(func)), args(std::make_tuple(args...))
-    {
-    }
-    template <typename Func, typename... Args>
-    void ExplicitJob<Func, Args...>::run()
-    {
-        std::apply(func, args);
-    }
+
     template <typename Callable>
     IJob* CreateJob(Callable callable)
     {
@@ -150,6 +132,29 @@ namespace magique
         constexpr auto size = sizeof(ExplicitJob<Callable, Args...>);
         void* ptr = internal::GetJobMemory(size);
         return new (ptr) ExplicitJob<Callable, Args...>(callable, args...);
+    }
+
+    template <typename Func, typename... Args>
+    ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
+        func(std::move(func)), args(std::make_tuple(args...))
+    {
+    }
+
+    template <typename Func, typename... Args>
+    void ExplicitJob<Func, Args...>::run()
+    {
+        std::apply(func, args);
+    }
+
+    template <typename Callable>
+    Job<Callable>::Job(Callable func) : func_(std::move(func))
+    {
+    }
+
+    template <typename Callable>
+    void Job<Callable>::run()
+    {
+        func_();
     }
 } // namespace magique
 #endif //MAGIQUE_JOBSYSTEM_H

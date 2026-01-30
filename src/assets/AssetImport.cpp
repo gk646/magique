@@ -480,18 +480,13 @@ namespace magique
             if (info.hasCollision)
             {
                 auto& object = *tile->objectgroup->objects;
-                info.x = std::round(object.x);
-                info.y = std::round(object.y);
-                info.width = std::round(object.width);
-                info.height = std::round(object.height);
-
+                info.bounds = {std::round(object.x), std::round(object.y), std::round(object.width),
+                               std::round(object.height)};
                 if (object.next != nullptr)
                 {
                     object = *object.next;
-                    info.sx = std::round(object.x);
-                    info.sy = std::round(object.y);
-                    info.swidth = std::round(object.width);
-                    info.sheight = std::round(object.height);
+                    info.secBounds = {std::round(object.x), std::round(object.y), std::round(object.width),
+                                      std::round(object.height)};
                 }
             }
             const auto* ptr = tile->image.ptr;

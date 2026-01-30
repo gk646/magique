@@ -27,7 +27,11 @@ namespace magique
 
         void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
 
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override { updateInputs(); }
+        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        {
+            if (wasDrawn)
+                updateInputs();
+        }
 
         // Sets the function called when the state changes
         void setOnClick(const SwitchFunc& func);

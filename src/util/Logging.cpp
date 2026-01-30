@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
+#include <csignal>
+
 #include <magique/util/Logging.h>
-#include <magique/gamedev/Console.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/ConsoleData.h"
 #include "internal/globals/LoggingData.h"
-#include "headers/CrashLog.h"
 
 namespace magique
 {
@@ -16,7 +16,7 @@ namespace magique
         void LogInternal(const LogLevel level, const char* file, const int line, const char* function, const char* msg,
                          va_list args)
         {
-            const auto& log = global::LOG_DATA;
+            auto& log = global::LOG_DATA;
             if (level < global::ENGINE_CONFIG.logLevel)
             {
                 return;
@@ -58,7 +58,7 @@ namespace magique
                 written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]: ", level_str);
             }
 
-            MAGIQUE_ASSERT(written >= 0, "Failed to format");
+            assert(written >= 0);
             written += vsnprintf(formatCache + written, LogData::CACHE_SIZE - written, msg, args);
 
             if (log.callback != nullptr)
@@ -107,6 +107,7 @@ namespace magique
 
     void Log(const LogLevel level, const char* msg, ...)
     {
+        SpinLockGuard guard{global::LOG_DATA.lock};
         va_list args;
         va_start(args, msg);
         internal::LogInternal(level, "Unknown File", -1, "Unknown Func", msg, args);
@@ -115,6 +116,7 @@ namespace magique
 
     void LogEx(const LogLevel level, const char* file, const int line, const char* function, const char* msg, ...)
     {
+        SpinLockGuard guard{global::LOG_DATA.lock};
         va_list args;
         va_start(args, msg);
         internal::LogInternal(level, file, line, function, msg, args);

@@ -23,4 +23,9 @@ int GetPreviousMousePositionY() { return CORE.Input.Mouse.previousPosition.y; }
 int GetTextLineSpacing() { return 2; }
 
 
-Matrix GetScreenScale() { return CORE.Window.screenScale; }
+
+void SetMousePositionDirect(float x, float y)
+{
+    CORE.Input.Mouse.currentPosition.x = x;
+    CORE.Input.Mouse.currentPosition.y = y;
+}

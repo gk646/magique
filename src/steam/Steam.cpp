@@ -5,7 +5,7 @@
 #include "magique/util/Logging.h"
 namespace magique
 {
-    bool InitSteam(const bool createFile) { M_ENABLE_STEAM_ERROR(false) };
+    bool InitSteam(const bool createFile) { return false; };
     SteamID GetUserSteamID() { M_ENABLE_STEAM_ERROR({}) };
     const char* GetSteamUserName() { M_ENABLE_STEAM_ERROR({}); };
     void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback) { M_ENABLE_STEAM_ERROR() }

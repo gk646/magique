@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_RAYUTILS_H
 #define MAGIQUE_RAYUTILS_H
 
-#include <magique/fwd.hpp>
+#include <magique/core/Types.h>
 
 //===============================================
 // raylib Utils
@@ -41,7 +41,7 @@ namespace magique
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
 
-    // Toggles fullscreen more reliably
+    // Toggles fullscreen more reliably - should not be called during a frame
     // First maximizes the window then sets the monitors max size then toggles fullscreen
     void ToggleFullscreenEx();
 
@@ -93,7 +93,23 @@ namespace magique
     Rectangle RectMove(const Rectangle& original, float x, float y);
 
     // Applies std::floor all values of the rectangle
-    Rectangle RectFloor( const Rectangle& rect);
+    Rectangle RectFloor(const Rectangle& rect);
+
+    struct MouseDragger final
+    {
+        // Updates the zoom and returns the new camera position
+        Point update(Camera2D& camera, float zoomMult = 2, float min = 1, float max = 5);
+
+        Point getDragOffset(Camera2D& camera) const;
+
+        Point getDragStartWorld() const;
+
+    private:
+        void resetDragPos(Camera2D& camera);
+        Point dragStartScreen{};
+        Point dragStartWorld{};
+    };
+
 
 } // namespace magique
 

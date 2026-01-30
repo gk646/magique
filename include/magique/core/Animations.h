@@ -26,7 +26,7 @@ namespace magique
     struct EntityAnimation final
     {
         // Sets the scaling for the offset and anchor points
-        explicit EntityAnimation(float scale = 1);
+         EntityAnimation(float scale = 1);
 
         // Sets the animation for this action state with the same duration for all frames
         void addAnimation(AnimationState state, SpriteSheet sheet, int frameMillis);

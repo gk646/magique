@@ -103,8 +103,7 @@ namespace magique
 
     // Formats a float number so its nicely readable
     // If it's lower than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
-    // If justification is positive its right bound, if negative left bound
-    const char* FormatFloat(float num, float cutoff = 100.0F, int justification = 4);
+    const char* FormatFloat(float num, float cutoff = 100.0F, bool withSign = false);
 
     // Formats the given number for displaying it in gameplay context:
     // Shortens to at most 5 digits: 3 before dot, 2 after

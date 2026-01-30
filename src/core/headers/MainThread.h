@@ -52,7 +52,7 @@ namespace magique::mainthread
                     ++data.engineTicks;
                 }
 
-                // The concept is
+                // The concept was:
                 // If the update tick was too fast we want to cleanly wait until the next render tick
                 // But I guess this violates our "on average" rule by forcing actual tick times
                 // And this cause issues - max framerate is way lower even when the tick times would allow for higher

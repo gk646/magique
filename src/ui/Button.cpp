@@ -13,11 +13,9 @@ namespace magique
 {
     Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
 
-    Button::Button(const float w, const float h, const Anchor anchor, Point inset) : UIObject(w, h, anchor, inset)
-    {
-    }
+    Button::Button(const float w, const float h, const Anchor anchor, Point inset) : UIObject(w, h, anchor, inset) {}
 
-    void Button::wireOnClick(ClickFunc func) { clickFunc = func; }
+    void Button::setOnClick(const ClickFunc& func) { clickFunc = func; }
 
     void Button::setDisabled(bool value) { isDisabled = value; }
 
@@ -29,12 +27,10 @@ namespace magique
 
     void Button::updateActions(const Rectangle& bounds)
     {
-        const auto mouse = GetMousePos();
-        const auto dragStart = GetDragStartPosition();
-        if (PointToRect(mouse.x, mouse.y, bounds.x, bounds.y, bounds.width, bounds.height))
+        if (getIsHovered())
         {
             // Ensure click started within button
-            if (PointToRect(dragStart.x, dragStart.y, bounds.x, bounds.y, bounds.width, bounds.height))
+            if (getIsHovered())
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
@@ -68,7 +64,7 @@ namespace magique
         const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawHoverText(GetEngineFont(), GetScaled(15), DARKGRAY, GRAY, WHITE);
+        drawHoverText(GetEngineFont(), UIGetScaled(15), DARKGRAY, GRAY, WHITE);
     }
 
     void Button::drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const

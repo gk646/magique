@@ -29,6 +29,7 @@ namespace magique
         bool keyConsumed = false;
         bool mouseConsumed = false;
         bool customTargetRes = false;
+        bool showHitboxes = false;
 
         UIData() { initialized = true; }
 
@@ -42,8 +43,6 @@ namespace magique
             }
             scaling = targetRes / sourceRes;
             const auto [mx, my] = GetMousePos();
-            keyConsumed = false;
-            mouseConsumed = false;
 
             if (dragStart.x == -1 && dragStart.y == -1 && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
             {
@@ -80,9 +79,13 @@ namespace magique
             }
         }
 
-        // Only before each render tick (if it happens)
+
+        // Only before each update tick (if it happens)
         void update()
         {
+            keyConsumed = false;
+            mouseConsumed = false;
+
             // Using fori to support deletions in the update methods
             for (int i = 0; i < containers.size(); ++i)
             {
@@ -184,8 +187,8 @@ namespace magique
             }
             if (anchor != Anchor::NONE)
             {
-                auto scaledInset = GetScaled(inset);
-                const auto pos = GetUIAnchor(anchor, Point{bounds.width, bounds.height}, scaledInset);
+                auto scaledInset = UIGetScaled(inset);
+                const auto pos = UIGetAnchor(anchor, Point{bounds.width, bounds.height}, scaledInset);
                 bounds.x = pos.x;
                 bounds.y = pos.y;
             }

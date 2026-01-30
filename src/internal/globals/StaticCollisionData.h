@@ -34,8 +34,8 @@ namespace magique
     };
 
     using ColliderHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 64>; // power of two
-    using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;      // power of two
-    using GroupHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;     // power of two
+    using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;     // power of two
+    using GroupHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;    // power of two
 
     using StaticPairCollector = AlignedVec<StaticPair>[MAGIQUE_WORKER_THREADS + 1];
     using ColliderCollector = AlignedVec<StaticID>[MAGIQUE_WORKER_THREADS + 1];
@@ -47,17 +47,17 @@ namespace magique
 
         [[nodiscard]] const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
 
-        uint32_t insert(const float x, const float y, const float width, const float height)
+        uint32_t insert(const Rect& r)
         {
             if (freeList.empty())
             {
                 const auto currIdx = colliders.size();
-                colliders.push_back({x, y, width, height});
+                colliders.emplace_back(r);
                 return currIdx;
             }
             const auto nextIdx = freeList.back();
             freeList.pop_back();
-            colliders[nextIdx] = {x, y, width, height};
+            colliders[nextIdx].bounds = r;
             return nextIdx;
         }
 
@@ -65,9 +65,8 @@ namespace magique
         {
             MAGIQUE_ASSERT((int)objectNum < colliders.size(), "Given num is out of bounds");
             auto& collider = colliders[objectNum];
-            MAGIQUE_ASSERT(collider.p1 != 0.0F || collider.p2 != 0.0F, "Attempting to delete a deleted collider");
-            collider.p1 = 0;
-            collider.p2 = 0;
+            MAGIQUE_ASSERT(collider.bounds.size() != 0, "Attempting to delete a deleted collider");
+            collider.bounds.zero();
             freeList.push_back(objectNum);
         }
     };

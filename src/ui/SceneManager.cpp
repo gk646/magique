@@ -18,7 +18,7 @@ namespace magique
         }
     }
 
-    UIObject* Scene::addObject(UIObject* obj, const char* name)
+    UIObject* Scene::addObjImpl(UIObject* obj, const char* name)
     {
         MAGIQUE_ASSERT(obj != nullptr, "Passed nullptr");
         objects.push_back(obj);
@@ -35,7 +35,7 @@ namespace magique
 
     bool Scene::removeObject(UIObject* obj) { return std::erase(objects, obj) > 0; }
 
-    UIObject* Scene::getObject(const char* name) const
+    UIObject* Scene::getObjectImpl(const char* name) const
     {
         for (const auto& mapping : mappings)
         {

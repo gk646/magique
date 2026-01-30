@@ -295,7 +295,7 @@ namespace magique
         }
     }
 
-    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rectangle& r, CollisionInfo& info)
+    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
     {
         switch (col.shape)
         {
@@ -303,7 +303,7 @@ namespace magique
             {
                 if (pos.rotation == 0) [[likely]]
                 {
-                    return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.width, r.height, info);
+                    return RectToRect(pos.x, pos.y, col.p1, col.p2, r.x, r.y, r.w, r.h, info);
                 }
                 // Entity
                 float pxs[4] = {0, col.p1, col.p1, 0};
@@ -311,21 +311,21 @@ namespace magique
                 RotatePoints4(pos.x, pos.y, pxs, pys, pos.rotation, col.anchorX, col.anchorY);
 
                 // World rect
-                const float p1xs[4] = {r.x, r.x + r.width, r.x + r.width, r.x};
-                const float p1ys[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
+                const float p1xs[4] = {r.x, r.x + r.w, r.x + r.w, r.x};
+                const float p1ys[4] = {r.y, r.y, r.y + r.h, r.y + r.h};
                 return SAT(pxs, pys, p1xs, p1ys, info);
             }
         case Shape::CIRCLE:
             {
-                return RectToCircle(r.x, r.y, r.width, r.height, pos.x + col.p1, pos.y + col.p1, col.p1, info);
+                return RectToCircle(r.x, r.y, r.w, r.h, pos.x + col.p1, pos.y + col.p1, col.p1, info);
             }
         case Shape::CAPSULE:
             {
-                return RectToCapsule(r.x, r.y, r.width, r.height, pos.x, pos.y, col.p1, col.p2, info);
+                return RectToCapsule(r.x, r.y, r.w, r.h, pos.x, pos.y, col.p1, col.p2, info);
             }
         case Shape::TRIANGLE:
-            const float rectX[4] = {r.x, r.x + r.width, r.x + r.width, r.x}; // World rect
-            const float rectY[4] = {r.y, r.y, r.y + r.height, r.y + r.height};
+            const float rectX[4] = {r.x, r.x + r.w, r.x + r.w, r.x}; // World rect
+            const float rectY[4] = {r.y, r.y, r.y + r.h, r.y + r.h};
             if (pos.rotation == 0) [[likely]]
             {
                 const float triX[4] = {pos.x, pos.x + col.p1, pos.x + col.p3, pos.x};
@@ -343,7 +343,7 @@ namespace magique
     {
         CollisionInfo info;
         const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
-        CheckCollisionEntityRect(pos, col, {worldMouse.x, worldMouse.y, 1, 1}, info);
+        CheckCollisionEntityRect(pos, col, Rect{worldMouse.x, worldMouse.y, 1, 1}, info);
         return info.isColliding();
     }
 

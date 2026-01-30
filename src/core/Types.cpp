@@ -72,6 +72,8 @@ namespace magique
 
     bool Point::operator<(float num) const { return x < num && y < num; }
 
+    bool Point::operator<(const Point& p) const { return x < p.x && y < p.y; }
+
     bool Point::operator<=(float num) const { return x <= num && y <= num; }
 
     bool Point::operator==(float num) const { return x == num && y == num; }
@@ -275,17 +277,69 @@ namespace magique
 
     Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), w(rect.width), h(rect.height) {}
 
-    Rect::Rect(const Point topLeft, const Point size) : x(topLeft.x), y(topLeft.y), w(size.x), h(size.y) {}
+    Rect::Rect(const Point& topLeft, const Point& size) : x(topLeft.x), y(topLeft.y), w(size.x), h(size.y) {}
 
     Rect::Rect(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {}
 
-    Rect Rect::operator*(float num) const { return {x * num, y * num, w * num, h * num}; }
+    Rect Rect::FromPoints(const Point& p1, const Point& p2)
+    {
+        Point smallest = {std::min(p1.x, p2.x), std::min(p1.y, p2.y)};
+        Point biggest = {std::max(p1.x, p2.x), std::max(p1.y, p2.y)};
+        Rect rect;
+        rect.x = smallest.x;
+        rect.y = smallest.y;
+        rect.w = biggest.x - smallest.x;
+        rect.h = biggest.y - smallest.y;
+        return rect;
+    }
+
+    Rect& Rect::operator+=(float num)
+    {
+        x += num;
+        y += num;
+        return *this;
+    }
+
+    Rect& Rect::operator+=(const Point& p)
+    {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+    bool Rect::operator==(const float num) const { return x == num && y == num && w == num && h == num; }
 
     Rectangle Rect::v() const { return Rectangle{x, y, w, h}; }
+
+    Rect& Rect::floor()
+    {
+        x = std::floor(x);
+        y = std::floor(y);
+        w = std::floor(w);
+        h = std::floor(h);
+        return *this;
+    }
+    Rect& Rect::round()
+    {
+        x = std::round(x);
+        y = std::round(y);
+        w = std::round(w);
+        h = std::round(h);
+        return *this;
+    }
+    Rect& Rect::zero()
+    {
+        x = 0.0F;
+        y = 0.0F;
+        w = 0.0F;
+        h = 0.0F;
+        return *this;
+    }
 
     Point Rect::random() const { return Point{x + GetRandomFloat(0, w), y + GetRandomFloat(0, h)}; }
 
     bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, w, h); }
+
+    bool Rect::intersects(const Rect& r) const { return RectToRect(x, y, w, h, r.x, r.y, r.w, r.h); }
 
     float Rect::area() const { return w * h; }
 
@@ -294,6 +348,27 @@ namespace magique
     Point Rect::size() const { return Point{w, h}; }
 
     Point Rect::mid() const { return Point{x + w / 2, y + h / 2}; }
+
+    Point Rect::closestOutline(const Point& p) const
+    {
+        Point closest;
+        closest.x = std::min(std::abs(x - p.x), std::abs((x + w) - p.x));
+        closest.y = std::min(std::abs(y - p.y), std::abs((y + h) - p.y));
+        return closest;
+    }
+
+    Rect Rect::scale(const float factor) const { return {x * factor, y * factor, w * factor, h * factor}; }
+
+    Rect Rect::enlarge(const float size) const
+    {
+        const auto change = size / 2;
+        Rect rect;
+        rect.x = x - change;
+        rect.y = y - change;
+        rect.w = w + size;
+        rect.h = h + size;
+        return rect;
+    }
 
     Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
 
@@ -310,16 +385,16 @@ namespace magique
         return region;
     }
 
-    TextureRegion SpriteAnimation::getCurrentFrame(const uint16_t spriteCount) const
+    TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {
         MAGIQUE_ASSERT(maxDuration > 0 && sheet.frames > 0, "Empty Animation");
-        const int count = spriteCount % maxDuration;
+        const int count = (int)millis % maxDuration;
         int frame = 0;
-        uint16_t durationCount = 0;
+        uint16_t millisCount = 0;
         for (const auto duration : durations)
         {
-            durationCount += duration;
-            if (durationCount > count)
+            millisCount += duration;
+            if (millisCount > count)
             {
                 break;
             }

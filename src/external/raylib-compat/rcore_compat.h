@@ -27,7 +27,7 @@ int GetFBOHeight();
 
 int GetTextLineSpacing();
 
-Matrix GetScreenScale();
+void SetMousePositionDirect(float x, float y);
 }
 
 #endif // RCORE_COMPAT_H

@@ -21,8 +21,6 @@ namespace magique
         return handle;
     }
 
-    jobHandle AddGroupJob(IJob* /**/, int /**/) { return jobHandle::null; }
-
     template <typename Iterable>
     void AwaitJobs(const Iterable& handles)
     {

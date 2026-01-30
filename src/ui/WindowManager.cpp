@@ -222,8 +222,8 @@ namespace magique
             {
                 if (*it == window) // We found the given window - nothing is in front
                     return false;
-                const auto bounds = (*it)->getBounds();
-                if (PointToRect(pos.x, pos.y, bounds.x, bounds.y, bounds.width, bounds.height))
+                const Rect bounds = (*it)->getBounds();
+                if (bounds.contains(pos))
                 {
                     return true; // We found something, and it's not the given window - covered
                 }

@@ -10,7 +10,7 @@
 
 #include "internal/utils/OSUtil.h"
 #include "internal/utils/STLUtil.h"
-#include "internal/types/Spinlock.h"
+#include "internal/types/SpinLock.h"
 #include "internal/datastructures/VectorType.h"
 #include "external/cxstructs/cxallocator/SlotAllocator.h"
 
@@ -24,8 +24,8 @@ namespace magique
         alignas(64) vector<const IJob*> workedJobs; // Currently processed jobs
         vector<std::thread> threads;                // All working threads
         cxstructs::SlotAllocator<50> jobAllocator;  // Allocator for jobs
-        Spinlock queueLock;                         // The lock to make queue access thread safe
-        Spinlock workedLock;                        // The lock to worked vector thread safe
+        SpinLock queueLock;                         // The lock to make queue access thread safe
+        SpinLock workedLock;                        // The lock to worked vector thread safe
         std::atomic<bool> shutDown = false;         // Signal to shut down all threads
         std::atomic<bool> isHibernate = false;      // If the scheduler is running
         std::atomic<int> currentJobsSize = 0;       // Current jobs

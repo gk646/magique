@@ -382,7 +382,7 @@ namespace magique
             if (penetration < minPenetration)
             {
                 minPenetration = penetration;
-                bestAxis = {axisX, axisY};
+                bestAxis = Point{axisX, axisY};
             }
             return true;
         };
