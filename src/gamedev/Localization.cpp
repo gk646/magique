@@ -3,8 +3,7 @@
 #include <magique/internal/Macros.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/util/Logging.h>
-
-#include "internal/datastructures/StringHashMap.h"
+#include <magique/util/Datastructures.h>
 
 namespace magique
 {

@@ -83,8 +83,7 @@ Same as for implementation files but without new lines between the categories to
 
 ### Types
 
-Use fast_vector (magique::vector) internally by including:
-`#include "internal/datastructures/VectorType.h"`
+``
 
 It can be slightly faster, but compiles faster and uses fewer templates and more allows control (e.g. unordered erase).
 Don't expose it to the user, which means dont use it in public structs or when you return a vector to the user.

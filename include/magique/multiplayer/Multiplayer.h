@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <magique/core/Types.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Multiplayer Module

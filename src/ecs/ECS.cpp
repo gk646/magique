@@ -15,7 +15,7 @@
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/PathFindingData.h"
 #include "internal/globals/ScriptData.h"
-#include "internal/utils/STLUtil.h"
+
 
 namespace magique
 {
@@ -91,7 +91,7 @@ namespace magique
 
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
-            InvokeEvent<onCreate>(entity);
+            ScriptingInvokeEvent<onCreate>(entity);
         }
         if (registry.all_of<CameraC>(entity)) [[unlikely]]
         {
@@ -122,19 +122,19 @@ namespace magique
         if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (data.destroyEntityCallback)
+            if (data.destroyEntityCallback != nullptr)
             {
                 data.destroyEntityCallback(entity, pos);
             }
             if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
             {
-                InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
+                ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
             }
 
             data.entityUpdateCache.erase(entity);
-            UnorderedDelete(data.drawVec, entity);
-            UnorderedDelete(data.entityUpdateVec, entity);
-            UnorderedDelete(data.collisionVec, entity);
+            std::erase(data.drawVec, entity);
+            std::erase(data.entityUpdateVec, entity);
+            std::erase(data.collisionVec, entity);
             data.entityNScriptedSet.erase(entity);
             dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
             global::PATH_DATA.solidEntities.erase(entity);
@@ -166,7 +166,7 @@ namespace magique
                 }
                 if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
-                    InvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
+                    ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
                 }
             }
 

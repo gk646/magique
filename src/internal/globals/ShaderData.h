@@ -11,7 +11,7 @@ namespace magique
 {
     struct Shaders final
     {
-        vector<Vector3> shadowQuads; // Shadow segments
+     std::vector<Vector3> shadowQuads; // Shadow segments
         Vector2 shadowResolution{};  //Shadow map resolution
 
         Shader shadow{};

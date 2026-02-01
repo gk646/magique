@@ -5,8 +5,8 @@
 #include <magique/gamedev/ShareCode.h>
 #include <magique/util/Strings.h>
 
-#include "internal/utils/STLUtil.h"
 #include "internal/utils/BitUtil.h"
+
 
 //-------------------------------
 // Share Code Format
@@ -32,9 +32,9 @@ namespace magique
 
     } // namespace internal
 
-    uint8_t GetShareCodeGeneratorVersion() { return VERSION; }
+    uint8_t ShareCodeGetVersion() { return VERSION; }
 
-    bool IsShareCodeVersionSupported(const uint8_t version)
+    bool ShareCodeIsSupported(const uint8_t version)
     {
         if (version == 1)
         {
@@ -69,7 +69,7 @@ namespace magique
 
         ShareCode test{header, nullptr};
         const auto version = test.getVersion();
-        if (!IsShareCodeVersionSupported(version))
+        if (!ShareCodeIsSupported(version))
         {
             LOG_WARNING("Passed ShareCode has unsupported version: %d", static_cast<int>(version));
             return;
@@ -266,9 +266,11 @@ namespace magique
 
     void ShareCodeFormat::removeProperty(const char* name)
     {
-        const auto pred = [](const internal::ShareCodeProperty& p, const char* name)
-        { return p.name != nullptr && strcmp(p.name, name) == 0; };
-        UnorderedDelete(properties, name, pred);
+        const auto pred = [&](const internal::ShareCodeProperty& p)
+        {
+            return p.name != nullptr && strcmp(p.name, name) == 0;
+        };
+        std::erase_if(properties, pred);
     }
 
     void ShareCodeFormat::removeProperty(const int index) { properties.erase(properties.begin() + index); }
@@ -441,7 +443,7 @@ namespace magique
         // Checks
         MAGIQUE_ASSERT(shareCode.getIsValid(), "passed nullptr");
         const auto version = shareCode.getVersion();
-        if (!IsShareCodeVersionSupported(version))
+        if (!ShareCodeIsSupported(version))
         {
             LOG_WARNING("Passed ShareCode has unsupported version: %d", static_cast<int>(version));
             return {};

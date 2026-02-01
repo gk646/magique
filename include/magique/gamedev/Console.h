@@ -2,10 +2,12 @@
 #ifndef MAGIQUE_COMMANDLINE_H
 #define MAGIQUE_COMMANDLINE_H
 
+#include "magique/core/Types.h"
+
+
 #include <functional>
 #include <string>
 #include <vector>
-#include <magique/internal/InternalTypes.h>
 
 //===============================================
 // Console Module
@@ -44,19 +46,19 @@ namespace magique
     // Sets the key which opens the command line
     // Note: Can be set to an invalid key to "lock" the console
     // Default: KEY_PAGE_UP
-    void SetConsoleKey(int key);
+    void ConsoleSetOpenKey(int key);
 
     // Sets the maximum length of the command history
     // Default: 10
-    void SetCommandHistorySize(int len);
+    void ConsoleSetHistorySize(int len);
 
     //================= INTERACTION =================//
 
     // Adds a string to the console in a new line
-    void AddConsoleString(const char* text);
+    void ConsoleAddString(const char* text);
 
     // Adds a formatted string to the console in a new line - same as printf()
-    void AddConsoleStringF(const char* format, ...);
+    void ConsoleAddStringF(const char* format, ...);
 
     //================= COMMANDS =================//
     // Builtin commands:
@@ -77,25 +79,26 @@ namespace magique
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)
-    void RegisterConsoleCommand(const Command& command);
+    void ConsoleRegisterCommand(const Command& command);
 
     // Returns true if the command with the given name is successfully removed
-    bool UnRegisterCommand(const char* name);
+    bool ConsoleRemoveCommand(const std::string_view& name);
 
     // Returns ture if a command with the given name was found and executed (must have no params)
-    bool ExecuteCommand(const char* name);
+    bool ConsoleExecuteCommand(const std::string_view& name);
 
     // Function is passed the parsed parameters - function is only called if the parsed parameters match the definition
     using CommandFunction = std::function<void(const std::vector<Param>& params)>;
 
     struct Command final
     {
+        Command() = default;
         // Creates a new command instance with the specified name and optional description
         //      - cmdName: the name of the command - must not contain whitespace - can contain numbers
         explicit Command(const char* cmdName, const char* description = nullptr);
 
-        // Adds a new parameters that accepts any of the specified types
-        Command& addParam(const char* name, std::initializer_list<ParamType> types);
+        // Adds a new parameter that accepts any of the specified types
+        Command& addParam(std::string_view name, const std::array<ParamType, 3>& types);
 
         // Adds a new optional parameter - if not specified will have the provided value
         // Note: optional params have to be last, but can be followed by other optional params (exclusive with variadic)
@@ -111,16 +114,16 @@ namespace magique
         Command& setFunction(const CommandFunction& func);
 
         // Returns the name of the command
-        const char* getName() const;
+        const std::string& getName() const;
+        const std::string& getDescription() const;
+        const std::vector<ParamInfo>& getParamInfo() const;
+
+        CommandFunction cmdFunc;
 
     private:
-        CommandFunction cmdFunc;
-        std::vector<internal::ParamData> parameters;
+        std::vector<ParamInfo> parameters;
         std::string name;
         std::string description;
-        befriend(ConsoleData, ParamParser, ConsoleHandler);
-        befriend(bool UnRegisterCommand(const char*), void RegisterConsoleCommand(const Command&))
-        befriend(bool ExecuteCommand(const char* name))
     };
 
     //================= Environmental Parameters =================//
@@ -128,26 +131,24 @@ namespace magique
     //      - GAME_NAME: STRING | name of the game as specified in the Game constructor
 
     // Sets (or creates) the environment param with the given name to the given value
-    // Note: you can dynamically switch the type of the same param - float stands for the NUMBER type
-    void SetEnvironmentParam(const char* name, const char* value);
-    void SetEnvironmentParam(const char* name, float value);
-    void SetEnvironmentParam(const char* name, bool value);
+    // Note: Type is determined automatically
+    void ConsoleSetEnvParam(const std::string_view&, const std::string_view& value);
 
     // Returns true if the environment param with the given name was successfully removed
-    bool RemoveEnvironmentParam(const char* name);
+    bool ConsoleRemoveEnvParam(const std::string_view& name);
 
     // Returns the environment param with the given name
     // Note: returned pointer might become invalid (don't save it)
     // Failure: returns nullptr
-    const Param* GetEnvironmentParam(const char* name);
+    const Param* ConsoleGetEnvParam(const std::string_view& name);
 
     // Sets the callback called after any environment param was changed with the changed param
-    void SetEnvironmentSetCallback(const std::function<void(const Param& param)>& func);
+    void ConsoleSetEnvParamCallback(const std::function<void(const Param& param)>& func);
 
     // Sets the prefix used to denote a environment param
     // Default: $
-    void SetEnvironmentParamPrefix(char prefix = '$');
+    void ConsoleSetEnvParamPrefix(char prefix = '$');
 
 } // namespace magique
 
-#endif //MAGIQUE_COMMANDLINE_H
+#endif // MAGIQUE_COMMANDLINE_H

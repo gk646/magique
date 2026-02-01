@@ -1,5 +1,6 @@
 #ifndef MAGEQUEST_LOBBYDATA_H
 #define MAGEQUEST_LOBBYDATA_H
+
 namespace magique
 {
     enum class LobbyPacketType : char

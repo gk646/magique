@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <magique/core/Types.h>
+#include <magique/assets/types/TextLines.h>
 #include <raylib/raylib.h>
 
 //===============================================
@@ -98,6 +99,13 @@ namespace magique
     // 'scale'          - allows to scale the resulting texture (rounded down)
     // Note: The tilesheet will have its own texture
     TileSheet ImportTileSheet(const Asset& asset, int tileSize, float scale = 1);
+
+    //================= Other =================//
+
+    // Imports the given asset into a simple container
+    // The file is separated and stored line-wise
+    // Failure: Returns empty container
+    TextLines ImportText(Asset asset, char delimiter = '\n');
 
 } // namespace magique
 

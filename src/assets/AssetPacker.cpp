@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <filesystem>
+#include <vector>
+#include <cstring>
 #include <cmath>
 #include <raylib/raylib.h>
-#include <cxutil/cxstring.h>
 
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/assets/AssetPacker.h>
+#include <magique/assets/AssetContainer.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
 
-#include "internal/datastructures/VectorType.h"
 #include "internal/utils/EncryptionUtil.h"
 
 namespace fs = std::filesystem;
@@ -19,7 +19,7 @@ namespace fs = std::filesystem;
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
 
-static void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& pathList)
+static void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
 {
     const auto iter = fs::directory_iterator(directory);
     for (const auto& entry : iter)
@@ -35,7 +35,7 @@ static void ScanDirectory(const fs::path& directory, magique::vector<fs::path>& 
     }
 }
 
-static bool CreatePathList(const char* directory, magique::vector<fs::path>& pathList)
+static bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
 {
     fs::path dirPath(directory);
     std::error_code ec;
@@ -79,9 +79,9 @@ namespace magique
         int filePointer = 0;
         int totalEntries = 0;
 
-        if (memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
+        if (std::memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
         {
-            if (memcmp(IMAGE_HEADER_COMPRESSED, &imageData[filePointer], 5) == 0)
+            if (std::memcmp(IMAGE_HEADER_COMPRESSED, &imageData[filePointer], 5) == 0)
             {
                 UnCompressImage(imageData, imageSize);
             }
@@ -93,7 +93,7 @@ namespace magique
         }
 
         filePointer += 5;
-        memcpy(&totalSize, &imageData[filePointer], 4);
+        std::memcpy(&totalSize, &imageData[filePointer], 4);
 
         if (imageSize == 0)
             imageSize = totalSize;
@@ -106,7 +106,7 @@ namespace magique
         // Skip header file size
         filePointer += 4;
 
-        memcpy(&totalEntries, &imageData[filePointer], 4);
+        std::memcpy(&totalEntries, &imageData[filePointer], 4);
 
         if (totalEntries < 50'000 && totalEntries > 0) // Sanity check
         {
@@ -123,7 +123,7 @@ namespace magique
             // Get title pointer
             {
                 SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
-                memcpy(&titleLen, &imageData[filePointer], sizeof(int));
+                std::memcpy(&titleLen, &imageData[filePointer], sizeof(int));
                 if (titleLen > 512)
                 {
                     LOG_ERROR("Filename exceeds limit");
@@ -137,7 +137,7 @@ namespace magique
 
             // Get file pointer
             SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
-            memcpy(&fileSize, &imageData[filePointer], sizeof(int));
+            std::memcpy(&fileSize, &imageData[filePointer], sizeof(int));
             if (fileSize > imageSize - filePointer)
             {
                 LOG_ERROR("File data exceeds image data");
@@ -228,17 +228,30 @@ namespace magique
                     return true;
                 }
 
-                char* ptr = &buff[20]; // Skip format
+                char* ptr = &buff[19]; // Skip format
+
+                auto skipChar = [](char*& ptr, char skip)
+                {
+                    while (*ptr != '\0')
+                    {
+                        if (*ptr == skip)
+                        {
+                            ++ptr;
+                            break;
+                        }
+                        ++ptr;
+                    }
+                };
 
                 // Check assets
-                cxstructs::str_skip_char(ptr, ':', 1);
-                const int assets = cxstructs::str_parse_int(ptr);
+                skipChar(ptr, ':');
+                const int assets = TextToInteger(ptr);
                 if (assets == -1) // empty
                     return true;
 
                 // Check Size
-                cxstructs::str_skip_char(ptr, ':', 1);
-                const int size = cxstructs::str_parse_int(ptr);
+                skipChar(ptr, ':');
+                const int size = TextToInteger(ptr);
                 if (assets == 0 || size == 0) // parse error
                 {
                     LOG_WARNING("Failed to read asset image index file");
@@ -246,8 +259,8 @@ namespace magique
                 }
 
                 // Check mode (only same mode allowed)
-                cxstructs::str_skip_char(ptr, ':', 1);
-                const int mode = cxstructs::str_parse_int(ptr);
+                skipChar(ptr, ':');
+                const int mode = TextToInteger(ptr);
 #ifdef NDEBUG
                 if (mode == 0) // Debug mode
                 {
@@ -261,11 +274,11 @@ namespace magique
 #endif
 
                 // Actually check size of all assets
-                vector<fs::path> pathList;
+                std::vector<fs::path> pathList;
                 CreatePathList(path.string().c_str(), pathList);
 
                 // Count mismatch
-                if (pathList.size() != assets)
+                if ((int)pathList.size() != assets)
                     return true;
 
                 int totalSize = 0;
@@ -273,7 +286,7 @@ namespace magique
                 {
                     totalSize += static_cast<int>(fs::file_size(assetPath));
                 }
-                //TODO to also check for hash here we would need to basically compile the asset image
+                // TODO to also check for hash here we would need to basically compile the asset image
                 // so i guess we skip it?
                 if (totalSize == size)
                 {
@@ -324,8 +337,8 @@ namespace magique
         fwrite(data, size, 1, file);
     }
 
-    static void WriteImage(const vector<fs::path>& pathList, int& writtenSize, const fs::path& rootPath, FILE* imageFile,
-                           vector<char>& data, const char* imageName, const uint64_t key)
+    static void WriteImage(const std::vector<fs::path>& pathList, int& writtenSize, const fs::path& rootPath,
+                           FILE* imageFile, std::vector<char>& data, const char* imageName, const uint64_t key)
     {
         std::string relativePathStr;
         int totalFileSize = 0; // Only raw file size
@@ -344,7 +357,7 @@ namespace magique
             fseek(file, 0, SEEK_END);
             int fileSize = (int)ftell(file); // File size per file limited to 2GB
             totalFileSize += fileSize;
-            if (fileSize > data.size())
+            if (fileSize > (int)data.size())
                 data.resize(fileSize, 0);
             fseek(file, 0, SEEK_SET);
 
@@ -387,7 +400,7 @@ namespace magique
             return true;
         }
         const auto startTime = GetTime();
-        vector<fs::path> pathList;
+        std::vector<fs::path> pathList;
         pathList.reserve(100);
 
         // Create the list of file paths
@@ -424,7 +437,7 @@ namespace magique
         writtenSize += static_cast<int>(strlen(IMAGE_HEADER)) + 4 + 4;
 
         // Temp data from files
-        vector<char> data;
+        std::vector<char> data;
         data.reserve(10000);
 
         // Write the image data
@@ -437,7 +450,7 @@ namespace magique
         if (compress)
         {
             // Read the file data into a vector for compression
-            if (writtenSize > data.size())
+            if (writtenSize > (int)data.size())
                 data.resize(writtenSize);
 
             fseek(imageFile, 0, SEEK_SET);

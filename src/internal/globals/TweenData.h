@@ -1,22 +1,22 @@
 #ifndef TWEENDATA_H
 #define TWEENDATA_H
 
-#include <magique/gamedev/Tweens.h>
+#include <algorithm>
 
-#include "internal/datastructures/VectorType.h"
+#include <magique/gamedev/Tweens.h>
 
 namespace magique
 {
 
     struct TweenData final
     {
-        vector<Tween*> tweens;
+        std::vector<Tween*> tweens;
 
         void update()
         {
-            for (int i = 0; i < tweens.size(); ++i)
+            for (auto it = tweens.begin(); it != tweens.end();)
             {
-                auto& tween = *tweens[i];
+                auto& tween = **it;
                 tween.step = std::min(1.0F, tween.step + tween.stepWidth);
 
                 if (tween.tickFunc)
@@ -27,22 +27,25 @@ namespace magique
                 if (tween.isDone())
                 {
                     tween.started = false;
-                    tweens.erase(&tween);
-                    i--;
+                    it = tweens.erase(it);
+                }
+                else
+                {
+                    ++it;
                 }
             }
         }
 
         void add(Tween& tween)
         {
-            if (tweens.contains(&tween))
+            if (std::ranges::contains(tweens, &tween))
             {
                 return;
             }
             tweens.push_back(&tween);
         }
 
-        void remove(Tween& tween) { tweens.erase(&tween); }
+        void remove(Tween& tween) { std::erase(tweens, &tween); }
     };
 
     namespace global
@@ -51,4 +54,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //TWEENDATA_H
+#endif // TWEENDATA_H

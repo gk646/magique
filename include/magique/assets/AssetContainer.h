@@ -6,7 +6,7 @@
 #include <magique/fwd.hpp>
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Asset Container

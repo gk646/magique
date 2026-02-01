@@ -4,20 +4,20 @@
 
 #include <magique/ecs/Scripting.h>
 
-#include "internal/datastructures/VectorType.h"
 
 namespace magique
 {
     struct ScriptData final
     {
         inline static auto* defaultScript = new EntityScript();
-        vector<EntityScript*> scripts;
+        std::vector<EntityScript*> scripts;
 
         void padUpToEntity(const EntityType entity)
         {
-            if (scripts.size() < entity + 1)
+            const auto newSize = (size_t)entity + 1U;
+            if (scripts.size() < newSize)
             {
-                scripts.resize(entity + 1, defaultScript);
+                scripts.resize(newSize, defaultScript);
             }
         }
     };

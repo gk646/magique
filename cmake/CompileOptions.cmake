@@ -29,10 +29,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_compile_options(${TARGET_NAME} PUBLIC
             $<$<CONFIG:Debug>:
-            -O0
-            -g
-            #-D_GLIBCXX_DEBUG
-            #-D_GLIBCXX_ASSERTIONS
+            -Og
+            -g1
+            -gz
+           # -D_GLIBCXX_DEBUG
+           # -D_GLIBCXX_ASSERTIONS
             -D_DEBUG
             >
             $<$<CONFIG:Release>:

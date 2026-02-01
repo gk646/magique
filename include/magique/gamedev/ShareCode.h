@@ -30,30 +30,30 @@
 namespace magique
 {
     // Returns the version of the sharecode generator
-    uint8_t GetShareCodeGeneratorVersion();
+    uint8_t ShareCodeGetVersion();
 
     // Returns true if the given version of the sharecode is supported by this version of magique
-    bool IsShareCodeVersionSupported(uint8_t version);
+    bool ShareCodeIsSupported(uint8_t version);
 
     // The centerpiece - used to generate and import sharecodes
     struct ShareCodeFormat final
     {
         //================= PROPERTIES =================//
 
-        // Adds a new property with that stores an integer number - bit size is the minimal size that can hold the given amount
+        // Adds a new property that stores an integer number - bit size is the minimal size that can hold the given amount
         //      - amount: maximum amount of different numbers the property can hold (e.g. 255, 4000, 65536)
         void addIntegerProperty(uint32_t amount, const char* name = nullptr);
 
-        // Adds a new property with that stores floating point number - always 32 bits
+        // Adds a new property that stores floating point number - always 32 bits
         void addFloatProperty(const char* name = nullptr);
 
         // Adds a new property that can store text up to the given maximum length - variable length
         void addTextProperty(const char* name = nullptr);
 
-        // Removes the property with the given name (if exists)
+        // Removes the property the given name (if exists)
         void removeProperty(const char* name);
 
-        // Removes the property with at the given index (if exists)
+        // Removes the property at the given index (if exists)
         void removeProperty(int index);
 
         //================= EXPORT =================//

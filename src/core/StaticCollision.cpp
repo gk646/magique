@@ -8,7 +8,7 @@
 
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/PathFindingData.h"
-#include "internal/utils/STLUtil.h"
+
 
 namespace magique
 {
@@ -85,9 +85,7 @@ namespace magique
                 }
                 hashGrid.patchHoles(); // Patch as we cant rebuild it
                 // Remove the entry in the map specific info vec
-                const auto pred = [](const ObjectReferenceHolder::TileObjectInfo& info, const void* vecPtr)
-                { return vecPtr == info.vectorPointer; };
-                UnorderedDelete(mapVec, info.vectorPointer, pred);
+                std::erase_if(mapVec, [&](auto& ele) { return ele.vectorPointer == info.vectorPointer; });
                 global::PATH_DATA.updateStaticPathGrid(map);
                 return; // Skip if already exists
             }
@@ -272,9 +270,11 @@ namespace magique
                 }
                 hashGrid.patchHoles();
                 // Remove the entry in the map specific info vec
-                const auto pred = [](const ObjectReferenceHolder::ManualGroupInfo& info, int groupID)
-                { return groupID == info.groupId; };
-                UnorderedDelete(mapGroupInfoVec, info.groupId, pred);
+                const auto pred = [&](const ObjectReferenceHolder::ManualGroupInfo& ele)
+                {
+                    return ele.groupId == info.groupId;
+                };
+                std::erase_if(mapGroupInfoVec, pred);
                 global::PATH_DATA.updateStaticPathGrid(map);
                 return;
             }

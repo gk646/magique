@@ -3,9 +3,8 @@
 #define STATIC_COLLISION_DATA_H
 
 #include <magique/internal/Macros.h>
+#include <magique/util/Datastructures.h>
 
-#include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/HashTypes.h"
 #include "internal/datastructures/MultiResolutionGrid.h"
 
 //-----------------------------------------------
@@ -42,8 +41,8 @@ namespace magique
 
     struct ColliderStorage final
     {
-        vector<StaticCollider> colliders;
-        vector<uint32_t> freeList;
+        std::vector<StaticCollider> colliders;
+        std::vector<uint32_t> freeList;
 
         [[nodiscard]] const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
 
@@ -63,7 +62,7 @@ namespace magique
 
         void remove(const uint32_t objectNum)
         {
-            MAGIQUE_ASSERT((int)objectNum < colliders.size(), "Given num is out of bounds");
+            MAGIQUE_ASSERT(objectNum < colliders.size(), "Given num is out of bounds");
             auto& collider = colliders[objectNum];
             MAGIQUE_ASSERT(collider.bounds.size() != 0, "Attempting to delete a deleted collider");
             collider.bounds.zero();
@@ -90,22 +89,22 @@ namespace magique
     {
         struct TileObjectInfo final // Saves the pointer to the vec and the loaded ids
         {
-            vector<uint32_t> objectIds;
+            std::vector<uint32_t> objectIds;
             const void* vectorPointer = nullptr;
         };
 
         struct ManualGroupInfo final // Saves the id and the loaded ids
         {
-            vector<uint32_t> objectIds;
+            std::vector<uint32_t> objectIds;
             int groupId = -1;
         };
 
         // Maps + which colliders where loaded for each map (can be many for each map)
-        HashMap<MapID, vector<TileObjectInfo>> tileObjectMap;
+        HashMap<MapID, std::vector<TileObjectInfo>> tileObjectMap;
         // Tiles + what colliders where loaded per map
-        HashMap<MapID, vector<uint32_t>> tilesCollisionMap;
+        HashMap<MapID, std::vector<uint32_t>> tilesCollisionMap;
         // What groups where loaded for ach map (can be many for each map)
-        HashMap<MapID, vector<ManualGroupInfo>> groupMap;
+        HashMap<MapID, std::vector<ManualGroupInfo>> groupMap;
     };
 
     struct StaticCollisionData final

@@ -9,9 +9,7 @@
 #include <magique/internal/Macros.h>
 
 #include "internal/utils/OSUtil.h"
-#include "internal/utils/STLUtil.h"
 #include "internal/types/SpinLock.h"
-#include "internal/datastructures/VectorType.h"
 #include "external/cxstructs/cxallocator/SlotAllocator.h"
 
 M_IGNORE_WARNING(4324) // structure was padded due to alignment specifier
@@ -20,16 +18,16 @@ namespace magique
 {
     struct Scheduler final
     {
-        alignas(64) std::deque<IJob*> jobQueue;     // Global job queue
-        alignas(64) vector<const IJob*> workedJobs; // Currently processed jobs
-        vector<std::thread> threads;                // All working threads
-        cxstructs::SlotAllocator<50> jobAllocator;  // Allocator for jobs
-        SpinLock queueLock;                         // The lock to make queue access thread safe
-        SpinLock workedLock;                        // The lock to worked vector thread safe
-        std::atomic<bool> shutDown = false;         // Signal to shut down all threads
-        std::atomic<bool> isHibernate = false;      // If the scheduler is running
-        std::atomic<int> currentJobsSize = 0;       // Current jobs
-        std::atomic<uint16_t> handleID = 0;         // The internal handle counter
+        alignas(64) std::deque<IJob*> jobQueue;          // Global job queue
+        alignas(64) std::vector<const IJob*> workedJobs; // Currently processed jobs
+        std::vector<std::thread> threads;                // All working threads
+        cxstructs::SlotAllocator<50> jobAllocator;       // Allocator for jobs
+        SpinLock queueLock;                              // The lock to make queue access thread safe
+        SpinLock workedLock;                             // The lock to worked vector thread safe
+        std::atomic<bool> shutDown = false;              // Signal to shut down all threads
+        std::atomic<bool> isHibernate = false;           // If the scheduler is running
+        std::atomic<int> currentJobsSize = 0;            // Current jobs
+        std::atomic<uint16_t> handleID = 0;              // The internal handle counter
         double targetTime = 0;
         double sleepTime = 0;
 
@@ -49,7 +47,7 @@ namespace magique
             // allows for time tracking later on
             workedLock.lock();
             --currentJobsSize;
-            UnorderedDelete(workedJobs, job);
+            std::erase(workedJobs, job);
             jobAllocator.free(job);
             workedLock.unlock();
             // Just spin the handles around
@@ -66,16 +64,15 @@ namespace magique
             for (auto& t : threads)
             {
                 if (t.joinable())
+                {
                     t.join();
+                }
             }
             threads.clear();
             jobAllocator.destroy();
         }
 
-        jobHandle getNextHandle()
-        {
-            return static_cast<jobHandle>(handleID++);
-        }
+        jobHandle getNextHandle() { return static_cast<jobHandle>(handleID++); }
 
         friend void WorkerThreadFunc(Scheduler* scheduler, int threadNumber);
     };
@@ -123,4 +120,4 @@ namespace magique
 
 M_UNIGNORE_WARNING()
 
-#endif //MAGIQUE_JOB_SCHEDULER_H
+#endif // MAGIQUE_JOB_SCHEDULER_H

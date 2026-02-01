@@ -1,10 +1,8 @@
 #ifndef PATHFINDINGSTRUCTS_H
 #define PATHFINDINGSTRUCTS_H
 
-#include "magique/internal/DataStructures.h"
-
-
 #include <bitset>
+#include "magique/util/Datastructures.h"
 
 namespace magique
 {
@@ -78,7 +76,6 @@ namespace magique
     {
         // Is constexpr and power of 2 to get optimized division and modulo
         constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
-
         HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
 
         [[nodiscard]] bool getIsMarked(const float x, const float y) const
@@ -156,6 +153,7 @@ namespace magique
                 rows[relY][relX] = value;
             }
         }
+
         void setValue(const Point& p, const T& value) { setValue(p.x, p.y, value); }
 
         void clear() { memset(rows, 0, size * size * sizeof(T)); }

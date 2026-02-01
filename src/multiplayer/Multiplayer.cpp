@@ -121,7 +121,6 @@ namespace magique
     const std::vector<Message>& ReceiveIncomingMessages(const int max)
     {
         auto& data = global::MP_DATA;
-
         if (!data.incMsgBuffer.empty()) [[likely]]
         {
             for (auto* msg : data.incMsgBuffer)
@@ -173,19 +172,19 @@ namespace magique
         MAGIQUE_ASSERT(data.incMsgBuffer.empty(), "Must be empty by now");
         MAGIQUE_ASSERT(data.incMsgVec.empty(), "Must be empty by now");
 
-        data.incMsgBuffer.reserve((int)data.connections.size() * max);
+        int receivedMsgs = 0;
+        data.incMsgBuffer.resize((int)data.connections.size() * max);
         for (const auto conn : data.connections)
         {
             const auto steamConn = static_cast<HSteamNetConnection>(conn);
-            auto** buff = data.incMsgBuffer.data() + data.incMsgBuffer.size();
+            auto** buff = data.incMsgBuffer.data() + receivedMsgs;
             const auto n = SteamNetworkingSockets()->ReceiveMessagesOnConnection(steamConn, buff, max);
             if (n == -1 || n == 0) // No more messages
             {
                 continue;
             }
-            auto start = data.incMsgBuffer.size();
-            data.incMsgBuffer.set_size(data.incMsgBuffer.size() + n);
-            processMessages(start, n);
+            processMessages(receivedMsgs, n);
+            receivedMsgs += n;
         }
         return data.incMsgVec;
     }

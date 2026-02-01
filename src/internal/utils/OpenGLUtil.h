@@ -2,7 +2,7 @@
 #ifndef OPENGLUTIL_H
 #define OPENGLUTIL_H
 
-inline void CreateShadowQuads(magique::vector<Vector3>& quads, Vector2 posA, Vector2 posB)
+inline void CreateShadowQuads(std::vector<Vector3>& quads, Vector2 posA, Vector2 posB)
 {
     // Triangle 1
     quads.push_back(Vector3{posA.x, posA.y, 0});
@@ -15,7 +15,7 @@ inline void CreateShadowQuads(magique::vector<Vector3>& quads, Vector2 posA, Vec
     quads.push_back(Vector3{posB.x, posB.y, 1});
 }
 
-inline void CreateQuadsFromRect(magique::vector<Vector3> &quads, const Rectangle rect)
+inline void CreateQuadsFromRect(std::vector<Vector3> &quads, const Rectangle rect)
 {
     // Bottom edge
     CreateShadowQuads(quads, {rect.x, rect.y}, {rect.x + rect.width, rect.y});

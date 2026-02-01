@@ -3,7 +3,7 @@
 #define MAGIQUE_ANIMATIONS_H
 
 #include <magique/core/Types.h>
-#include <magique/internal/DataStructures.h>
+#include <magique/util/Datastructures.h>
 
 //===============================
 // Animation Module

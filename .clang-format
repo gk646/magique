@@ -24,11 +24,12 @@ BraceWrapping:
   SplitEmptyFunction: true
   SplitEmptyRecord: true
   SplitEmptyNamespace: true
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Allman
 BreakConstructorInitializers: AfterColon
 BreakConstructorInitializersBeforeComma: false
 ColumnLimit: 121
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
+AllowShortLambdasOnASingleLine: Inline
 IncludeCategories:
   - Regex: '^<.*>'
     Priority: 1
@@ -53,7 +54,7 @@ IncludeBlocks: Regroup
 SortIncludes: Never
 TabWidth: 4
 PointerAlignment: Left
-ReflowComments: false
+ReflowComments: IndentOnly
 FixNamespaceComments: true
 AlignAfterOpenBracket: Align
 ContinuationIndentWidth: 4

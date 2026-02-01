@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_TYPES_H
 #define MAGIQUE_TYPES_H
 
+#include <array>
+#include <string>
 #include <magique/fwd.hpp>
 
 //===============================================
@@ -19,8 +21,6 @@ namespace magique
         float x;
         float y;
 
-        // Creates a point from a given string - "x,y"
-        Point(const char* string);
         Point() = default;
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
@@ -118,10 +118,14 @@ namespace magique
         Rect(const Rectangle& rect);
         Rect(const Point& topLeft, const Point& size);
         Rect(float x, float y, float w, float h);
-        static Rect FromPoints(const Point& p1, const Point& p2);
+
+        // Returns the rect the is spanned by the two points
+        static Rect FromSpanPoints(const Point& p1, const Point& p2);
 
         Rect& operator+=(float num);      // only x and y
         Rect& operator+=(const Point& p); // only x and y
+        Rect& operator=(const Point& p);  // only x and y
+
         bool operator==(float num) const; // checks all
 
         // Returns raylib rect
@@ -149,7 +153,10 @@ namespace magique
         Point size() const;
         Point mid() const;
 
-        // Returns the point on the outline closes to p
+        // Returns the point on the inside of the rect closest to p
+        Point closestInside(const Point& p) const;
+
+        // Returns the point on the outline of the rect closest to p
         Point closestOutline(const Point& p) const;
 
         // Scales all values and returns a new object
@@ -315,9 +322,6 @@ namespace magique
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* name) const;
-
-    private:
-        friend struct TileSet;
     };
 
     // Checksum (hash) for a file
@@ -456,7 +460,7 @@ namespace magique
         VALUE,
     };
 
-    enum class ParamType
+    enum class ParamType : uint8_t
     {
         // [Boolean type]
         // Can either be 0 or 1
@@ -484,6 +488,10 @@ namespace magique
 
     struct Param final
     {
+        Param() = default;
+        Param(const ParamInfo& info); // Create from default
+        Param(const std::string_view& name, const std::string_view& str);
+
         // Returns the parameter name
         const char* getName() const;
 
@@ -503,22 +511,30 @@ namespace magique
         // Returns the type of the parameter
         ParamType getType() const;
 
-        Param() = default;
-
     private:
         union
         {
             float number;
             bool boolean;
-            const char* string;
         };
-        const char* name;
-        ParamType type; // Type of the parameter
+        std::string string; // string value
+        std::string name{};
+        ParamType type{}; // Type of the parameter
         friend ParamParser;
-        friend void SetEnvironmentParam(const char*, const char*);
-        friend void SetEnvironmentParam(const char*, float);
-        friend void SetEnvironmentParam(const char*, bool);
-        friend bool RemoveEnvironmentParam(const char*);
+    };
+
+    struct ParamInfo final
+    {
+        std::string name;
+        std::array<ParamType, 3> allowedTypes;
+        bool isOptional = false;
+        bool isVariadic = false; // Matches variable amount of parameters
+        union
+        {
+            float number;
+            bool boolean;
+        };
+        std::string string; // string value
     };
 
     enum class GridMode : uint8_t
@@ -863,4 +879,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_TYPES_H
+#endif // MAGIQUE_TYPES_H

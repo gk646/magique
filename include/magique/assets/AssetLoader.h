@@ -3,7 +3,7 @@
 #define MAGIQUE_ASSETLOADER_H
 
 #include <magique/internal/TaskExecutor.h>
-#include <magique/assets/container/AssetContainer.h>
+#include <magique/assets/AssetContainer.h>
 
 //===============================================
 // Asset Loader

@@ -5,7 +5,7 @@
 #include <initializer_list>
 #include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Particle Module

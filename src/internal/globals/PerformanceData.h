@@ -3,11 +3,10 @@
 #define MAGIQUE_PERFDATA_H
 
 #include <magique/multiplayer/Multiplayer.h>
+#include <magique/gamedev/UsefulStuff.h>
 
-#include "internal/datastructures/VectorType.h"
 #include "external/raylib-compat/rlgl_compat.h"
 #include "internal/utils/OSUtil.h"
-#include "magique/gamedev/UsefulStuff.h"
 
 #if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
 #include "external/networkingsockets/isteamnetworkingsockets.h"
@@ -36,8 +35,8 @@ namespace magique
         PerformanceBlock blocks[7]{}; // 7 blocks for FPS, CPU, GPU, DrawCalls, Upload, Download, Ping
 
 #if MAGIQUE_PROFILING == 1
-        vector<uint32_t> logicTimes;
-        vector<uint32_t> drawTimes;
+        std::vector<uint32_t> logicTimes;
+        std::vector<uint32_t> drawTimes;
         uint64_t maxMemoryBytes = 0;
 #endif
 
@@ -210,7 +209,7 @@ namespace magique
     private:
         [[nodiscard]] float getAverageTime(const TickType t)
         {
-            vector<uint32_t>* times;
+            std::vector<uint32_t>* times;
             if (t == UPDATE)
             {
                 times = &logicTimes;
@@ -246,4 +245,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_PERFDATA_H
+#endif // MAGIQUE_PERFDATA_H

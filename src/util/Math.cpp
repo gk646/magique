@@ -66,11 +66,11 @@ namespace magique
     {
         if (value < 0.0F)
         {
-            return minValue(value + change, 0.0F);
+            return std::min(value + change, 0.0F);
         }
         if (value > 0.0F)
         {
-            return maxValue(value - change, 0.0F);
+            return std::max(value - change, 0.0F);
         }
         return value;
     }
@@ -79,11 +79,11 @@ namespace magique
     {
         if (value < 0.0F)
         {
-            return maxValue(value - change, -max);
+            return std::max(value - change, -max);
         }
         if (value > 0.0F)
         {
-            return minValue(value + change, max);
+            return std::min(value + change, max);
         }
         return value;
     }

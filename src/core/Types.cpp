@@ -3,6 +3,10 @@
 #include <cstdio>
 #include <utility>
 #include <cstring>
+#include <cctype>
+#include <string_view>
+#include <charconv>
+#include <algorithm>
 
 #include <raylib/raylib.h>
 
@@ -12,27 +16,11 @@
 #include <magique/internal/Macros.h>
 
 #include "internal/utils/CollisionPrimitives.h"
-#include "internal/utils/STLUtil.h"
 #include "magique/ui/UI.h"
 #include "magique/util/RayUtils.h"
 
 namespace magique
 {
-    Point::Point(const char* string)
-    {
-        x = TextToFloat(string);
-        while (*string != '\0')
-        {
-            if (*string == ',')
-            {
-                string++;
-                break;
-            }
-            string++;
-        }
-        y = TextToFloat(string);
-    }
-
     Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
@@ -133,7 +121,7 @@ namespace magique
         constexpr auto D2 = 1.0F;
         const auto dx = std::abs(x - p.x);
         const auto dy = std::abs(y - p.y);
-        return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
+        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
 
     float Point::octile(const Point& p) const
@@ -142,7 +130,7 @@ namespace magique
         constexpr auto D2 = 1.41421356237F;
         const auto dx = abs(x - p.x);
         const auto dy = abs(y - p.y);
-        return D * (dx + dy) + (D2 - 2 * D) * minValue(dx, dy);
+        return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
 
     Vector2 Point::v() const { return Vector2{x, y}; }
@@ -281,10 +269,10 @@ namespace magique
 
     Rect::Rect(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {}
 
-    Rect Rect::FromPoints(const Point& p1, const Point& p2)
+    Rect Rect::FromSpanPoints(const Point& p1, const Point& p2)
     {
-        Point smallest = {std::min(p1.x, p2.x), std::min(p1.y, p2.y)};
-        Point biggest = {std::max(p1.x, p2.x), std::max(p1.y, p2.y)};
+        const Point smallest = {std::min(p1.x, p2.x), std::min(p1.y, p2.y)};
+        const Point biggest = {std::max(p1.x, p2.x), std::max(p1.y, p2.y)};
         Rect rect;
         rect.x = smallest.x;
         rect.y = smallest.y;
@@ -306,6 +294,14 @@ namespace magique
         y += p.y;
         return *this;
     }
+
+    Rect& Rect::operator=(const Point& p)
+    {
+        x = p.x;
+        y = p.y;
+        return *this;
+    }
+
     bool Rect::operator==(const float num) const { return x == num && y == num && w == num && h == num; }
 
     Rectangle Rect::v() const { return Rectangle{x, y, w, h}; }
@@ -349,12 +345,40 @@ namespace magique
 
     Point Rect::mid() const { return Point{x + w / 2, y + h / 2}; }
 
+    Point Rect::closestInside(const Point& p) const
+    {
+        Point closest{};
+        closest.x = std::clamp(p.x, x, x + w);
+        closest.y = std::clamp(p.y, y, y + h);
+        return closest;
+    }
+
     Point Rect::closestOutline(const Point& p) const
     {
-        Point closest;
-        closest.x = std::min(std::abs(x - p.x), std::abs((x + w) - p.x));
-        closest.y = std::min(std::abs(y - p.y), std::abs((y + h) - p.y));
-        return closest;
+        auto inside = closestInside(p);
+
+        const auto distUp = std::abs(y - inside.y);
+        const auto distDown = std::abs((y+h) - inside.y);
+        const auto distLeft = std::abs(x - inside.x);
+        const auto distRight = std::abs((x+w) - inside.x);
+
+        const auto minDist = std::min({distUp, distDown, distLeft, distRight});
+        if (minDist == distUp)
+        {
+            return {inside.x, y};
+        }
+        else if (minDist == distDown)
+        {
+            return {inside.x, y + h};
+        }
+        else if (minDist == distLeft)
+        {
+            return {x, inside.y};
+        }
+        else
+        {
+            return {x + w, inside.y};
+        }
     }
 
     Rect Rect::scale(const float factor) const { return {x * factor, y * factor, w * factor, h * factor}; }
@@ -592,12 +616,58 @@ namespace magique
 
     bool CollisionInfo::getIsAccumulated() const { return isAccumulated; }
 
-    const char* Param::getName() const { return name; }
+    Param::Param(const ParamInfo& info) : name(info.name), type(info.allowedTypes[0])
+    {
+        switch (type)
+        {
+        case ParamType::BOOL:
+            boolean = info.boolean;
+            break;
+        case ParamType::NUMBER:
+            number = info.number;
+            break;
+        case ParamType::STRING:
+            string = info.string.c_str();
+            break;
+        }
+    }
+
+    Param::Param(const std::string_view& name, const std::string_view& str) : name(name)
+    {
+        std::string_view view{str};
+
+        // Bool cases
+        if (view == "False" || view == "false" || view == "FALSE" || view == "OFF" || view == "off")
+        {
+            boolean = false;
+            type = ParamType::BOOL;
+        }
+        else if (view == "True" || view == "true" || view == "TRUE" || view == "ON" || view == "on")
+        {
+            boolean = true;
+            type = ParamType::BOOL;
+        }
+        else // Either number or string
+        {
+            auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), number);
+            if (ec == std::errc())
+            {
+                type = ParamType::NUMBER;
+            }
+            else
+            {
+                string = str;
+                type = ParamType::STRING;
+            }
+        }
+    }
+
+    const char* Param::getName() const { return name.c_str(); }
 
     const char* Param::getString() const
     {
         MAGIQUE_ASSERT(type == ParamType::STRING, "Accessing wrong type");
-        return string;
+        return string.c_str();
     }
 
     bool Param::getBool() const

@@ -50,7 +50,7 @@ namespace magique
         HandleCollisionPairs(staticData.pairCollector, global::DY_COLL_DATA.pairSet);
     }
 
-    inline void CheckAgainstWorldBounds(vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
+    inline void CheckAgainstWorldBounds(std::vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
                                         const CollisionC& col, const Rectangle& r, const uint32_t num)
     {
         CollisionInfo info{};
@@ -66,9 +66,9 @@ namespace magique
     }
 
     template <class TypeHashGrid>
-    void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, vector<StaticID>& collector,
-                       vector<StaticPair>& pairCollector, const ColliderType type,
-                       const vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
+    void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, std::vector<StaticID>& collector,
+                    std::vector<StaticPair>& pairCollector, const ColliderType type,
+                       const std::vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
     {
         const auto bb = GetEntityBoundingBox(pos, col);
         grid.query(collector, bb.x, bb.y, bb.width, bb.height);
@@ -175,7 +175,7 @@ namespace magique
 
                 // Process the collision
                 const auto colliderInfo = ColliderInfo{data, objType};
-                InvokeEventDirect<onStaticCollision>(scripts[entType], e, colliderInfo, info);
+                ScriptingInvokeEventDirect<onStaticCollision>(scripts[entType], e, colliderInfo, info);
 
                 if (info.getIsAccumulated()) // Accumulate the data if specified
                 {

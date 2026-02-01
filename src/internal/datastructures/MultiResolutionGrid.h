@@ -142,7 +142,7 @@ struct DataBlock final
         const auto end = data + size;
         for (auto it = start; it != end; ++it)
         {
-            if constexpr (std::is_same_v<Container, magique::vector<T>> || std::is_same_v<Container, std::vector<T>>)
+            if constexpr (std::is_same_v<Container, std::vector<T>> || std::is_same_v<Container, std::vector<T>>)
             {
                 elems.push_back(*it);
             }
@@ -199,7 +199,7 @@ struct DataBlock final
 
     void add(T val)
     {
-        assert(size < capacity);
+        MAGIQUE_ASSERT(size < capacity, "Datablock full");
         data[size++] = val;
     }
 
@@ -214,7 +214,7 @@ template <typename V, int blockSize = 15, int cellSize = 64 /*power of two is op
 struct SingleResolutionHashGrid final
 {
     magique::HashMap<CellID, int32_t> cellMap;
-    magique::vector<DataBlock<V, blockSize>> dataBlocks{};
+    std::vector<DataBlock<V, blockSize>> dataBlocks{};
 
     void insert(V val, const float x, const float y, const float w, const float h)
     {
@@ -314,7 +314,7 @@ private:
 
             if (start->size < blockSize)
             {
-                assert(next->size == 0 && "if current is not filled next has to be empty");
+                MAGIQUE_ASSERT(next->size == 0, "if current is not filled next has to be empty");
                 start->next = DataBlock<V, blockSize>::NO_NEXT_BLOCK;
                 break;
             }
@@ -393,7 +393,7 @@ template <typename T>
 struct MapHolder final
 {
     mutable uint8_t lookupTable[UINT8_MAX]{};
-    mutable magique::vector<T> elements{};
+    mutable std::vector<T> elements{};
 
     MapHolder() { memset(lookupTable, UINT8_MAX, UINT8_MAX); }
 
@@ -420,9 +420,9 @@ struct MapHolder final
 
     void add(const MapID map) const
     {
-        assert(!contains(map) && "Trying to add at existing map");
+        MAGIQUE_ASSERT(!contains(map), "Trying to add at existing map");
         const auto size = static_cast<int>(elements.size());
-        assert(size <= UINT8_MAX && "Too many elements");
+        MAGIQUE_ASSERT(size <= UINT8_MAX, "Too many elements");
         lookupTable[static_cast<int>(map)] = static_cast<uint8_t>(size);
         elements.push_back({});
     }

@@ -16,8 +16,6 @@ namespace magique::internal
     void AssertHandler(const char* expr, const char* file, int line, const char* function, const char* message);
 } // namespace magique::internal
 
-
-
 //================= SCRIPTING =================//
 
 #define PARENS ()

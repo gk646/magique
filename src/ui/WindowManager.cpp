@@ -5,9 +5,7 @@
 #include <magique/ui/controls/Window.h>
 #include <magique/util/Logging.h>
 
-#include "internal/utils/STLUtil.h"
 #include "internal/globals/UIData.h"
-#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -36,9 +34,11 @@ namespace magique
                 }
             }
             // If pred evaluates to true the element gets deleted
-            auto pred = [](internal::WindowManagerMapping& mapping, const Window* window)
-            { return mapping.window == window; };
-            UnorderedDelete(nameMapping, window, pred);
+            auto pred = [&](internal::WindowManagerMapping& mapping)
+            {
+                return mapping.window == window;
+            };
+            std::erase_if(nameMapping, pred);
         }
 
         bool getNameExists(const char* name) const

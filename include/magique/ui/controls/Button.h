@@ -3,7 +3,7 @@
 #define MAGIQUE_BUTTON_H
 
 #include <magique/ui/UIObject.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 #include <string>
 M_IGNORE_WARNING(4100)
 

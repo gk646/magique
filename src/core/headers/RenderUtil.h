@@ -123,7 +123,7 @@ namespace magique
             }
         }
 
-        auto drawStaticObjectVectorHitboxes = [&](const vector<uint32_t>& objectIds)
+        auto drawStaticObjectVectorHitboxes = [&](const std::vector<uint32_t>& objectIds)
         {
             for (const auto idx : objectIds)
             {

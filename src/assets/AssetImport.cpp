@@ -529,4 +529,6 @@ namespace magique
         return sheet;
     }
 
+    TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset.getData(), delimiter}; }
+
 } // namespace magique

@@ -48,7 +48,7 @@ TEST_CASE("TextFormattingModule Text Formatting")
     std::string value = "Jespar";
     SetFormatValue(placeholder, value);
 
-    const char* formattedText = GetFormattedText(templateText);
+    const char* formattedText = FormatGetText(templateText);
     REQUIRE(formattedText != nullptr);
     REQUIRE(std::string(formattedText) == "Hello, Jespar!");
 }
@@ -62,7 +62,7 @@ TEST_CASE("TextFormattingModule Customization")
     SetFormatPrefix('@');
     SetFormatValue(placeholder, value);
 
-    const char* formattedText = GetFormattedText(templateText);
+    const char* formattedText = FormatGetText(templateText);
     REQUIRE(formattedText != nullptr);
     REQUIRE(std::string(formattedText) == "Hello, Jespar!");
     SetFormatPrefix('$'); // Set back as other tests rely on it

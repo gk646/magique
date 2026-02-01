@@ -110,9 +110,9 @@ namespace magique
 
             const int startIdx = static_cast<int>(beginP * static_cast<float>(size));
             const int endIdx = static_cast<int>(endP * static_cast<float>(size));
-            const auto* start = hashGrid.dataBlocks.begin() + startIdx;
-            const auto* end = hashGrid.dataBlocks.begin() + endIdx;
-            for (const auto* it = start; it != end; ++it)
+            const auto start = hashGrid.dataBlocks.begin() + startIdx;
+            const auto end = hashGrid.dataBlocks.begin() + endIdx;
+            for (auto it = start; it != end; ++it)
             {
                 const auto& block = *it;
                 const auto* dStart = block.data;
@@ -181,7 +181,7 @@ namespace magique
                 if (col1.detects(col2))
                 {
                     // Already checked if both entities exist
-                    InvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, pairInfo.info);
+                    ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, pairInfo.info);
 
                     if (pairInfo.info.getIsAccumulated())
                     {
@@ -196,7 +196,7 @@ namespace magique
                     bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
                     if (invokeEvent)
 #endif
-                        InvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
+                        ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
 
                     if (secondInfo.getIsAccumulated())
                     {

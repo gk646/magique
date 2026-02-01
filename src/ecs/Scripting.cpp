@@ -13,10 +13,10 @@ namespace magique
 
     void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
 
-    void ScriptSetScript(const EntityType entity, EntityScript* script)
+    void ScriptingSetScript(const EntityType entity, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
-        if (scData.scripts.size() < entity + 1)
+        if ((int)scData.scripts.size() < entity + 1)
         {
             MAGIQUE_ASSERT(entity < UINT16_MAX, "Sanity check");
             scData.scripts.resize(entity + 1, ScriptData::defaultScript);
@@ -29,7 +29,7 @@ namespace magique
         scData.scripts[entity] = script;
     }
 
-    EntityScript* ScriptGetScript(const EntityType entity)
+    EntityScript* ScriptingGetScript(const EntityType entity)
     {
         auto& scriptData = global::SCRIPT_DATA;
         MAGIQUE_ASSERT(scriptData.scripts.size() > entity,
@@ -41,7 +41,7 @@ namespace magique
         return scriptData.scripts[entity];
     }
 
-    void ScriptSetScripted(const entt::entity entity, const bool val)
+    void ScriptingSetScripted(const entt::entity entity, const bool val)
     {
         if (val)
         {
@@ -53,7 +53,7 @@ namespace magique
         }
     }
 
-    bool ScriptGetIsScripted(const entt::entity entity)
+    bool ScriptingGetIsScripted(const entt::entity entity)
     {
         return global::ENGINE_DATA.entityNScriptedSet.contains(entity);
     }

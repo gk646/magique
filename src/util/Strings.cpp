@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
+#include <cstring>
 #include <raylib/raylib.h>
-#include <cxutil/cxstring.h>
 
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
@@ -71,23 +71,13 @@ namespace magique
         return KEY_POSITIONS[y][x]; // Switched
     }
 
-    int StringDistance(const char* s1, const char* s2, const bool caseSensitive)
-    {
-        return cxstructs::str_sort_levenshtein_case<16>(s1, s2, caseSensitive);
-    }
-
-    int StringDistance(const std::string& s1, const std::string& s2, const bool caseSensitive)
-    {
-        return cxstructs::str_sort_levenshtein_case<16>(s1.c_str(), s2.c_str(), caseSensitive);
-    }
-
-    float StringDistancePhysical(const char* s1, const char* s2, const KeyLayout layout)
+    float StringDistancePhysical(const std::string_view s1, const std::string_view s2, const KeyLayout layout)
     {
         float distance = 0.0F;
-        int i = 0;
+        size_t i = 0;
         const float maxDistance = std::sqrt(9.5F * 9.5F + 3.0F * 3.0F);
 
-        while (s1[i] != '\0' && s2[i] != '\0')
+        while (i < s1.size() && i < s2.size())
         {
             const auto [x1, y1] = GetCharPosition(layout, s1[i]);
             const auto [x2, y2] = GetCharPosition(layout, s2[i]);
@@ -108,18 +98,18 @@ namespace magique
         return similarity;
     }
 
-    float StringDistancePhysical(const std::string& s1, const std::string& s2, const KeyLayout layout)
+    bool TextIsSimilar(std::string_view original, std::string_view search, float tolerance)
     {
-        return StringDistancePhysical(s1.c_str(), s2.c_str(), layout);
-    }
-
-    bool TextIsSimilar(const char* original, const char* search, float tolerance)
-    {
-        if (*original == '\0')
+        if (original.empty())
         {
             return true;
         }
-        if (strstrnc(original, search) != nullptr)
+
+        const auto compareFunc = [](char ch1, char ch2)
+        { return std::tolower(static_cast<unsigned char>(ch1)) == std::tolower(static_cast<unsigned char>(ch2)); };
+        const auto it = std::ranges::search(original, search, compareFunc);
+
+        if (it.data() != original.end())
         {
             return true;
         }
@@ -203,38 +193,25 @@ namespace magique
         return lineBreaks;
     }
 
-    std::vector<std::string> SplitString(const char* s, const char delim)
+    std::vector<std::string> SplitString(std::string_view s, char delim)
     {
         std::vector<std::string> result;
-        result.reserve(5);
-
-        const char* start = s;
-        const char* end = s;
-
-        while (*end != '\0')
+        result.reserve(32);
+        size_t start = 0;
+        size_t end = 0;
+        while ((end = s.find(delim, start)) != std::string_view::npos)
         {
-            if (*end == delim)
+            if (end != start)
             {
-                if (start != end)
-                {
-                    result.emplace_back(start, end);
-                }
-                start = end + 1;
+                result.emplace_back(s.substr(start, end - start));
             }
-            end++;
+            start = end + 1;
         }
-
-        if (start != end)
+        if (start < s.size())
         {
-            result.emplace_back(start);
+            result.emplace_back(s.substr(start));
         }
-
         return result;
-    }
-
-    std::vector<std::string> SplitString(const std::string& s, const char delim)
-    {
-        return SplitString(s.c_str(), delim);
     }
 
     std::string& TrimLeadingWhitespace(std::string& s)
@@ -525,6 +502,30 @@ namespace magique
             return TextFormat("%d", num);
         }
         return FormatGameplayNumber((float)num);
+    }
+
+    std::size_t StringHashFunc::operator()(const std::string& key) const { return HashString(key.c_str()); }
+
+    std::size_t StringHashFunc::operator()(const std::string_view& key) const
+    {
+        return HashString(key.data(), key.size());
+    }
+
+    std::size_t StringHashFunc::operator()(const char* key) const { return HashString(key); }
+
+    bool StringEqualsFunc::operator()(const std::string& lhs, const std::string& rhs) const
+    {
+        return strcmp(lhs.c_str(), rhs.c_str()) == 0;
+    }
+
+    bool StringEqualsFunc::operator()(const std::string_view& lhs, const std::string& rhs) const
+    {
+        return lhs == std::string_view{rhs};
+    }
+
+    bool StringEqualsFunc::operator()(const char* lhs, const std::string& rhs) const
+    {
+        return strcmp(lhs, rhs.c_str()) == 0;
     }
 
 } // namespace magique

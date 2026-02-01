@@ -6,10 +6,8 @@
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/multiplayer/Lobby.h>
 #include <magique/internal/Macros.h>
+#include <magique/util/Datastructures.h>
 
-#include "internal/datastructures/VectorType.h"
-#include "internal/utils/STLUtil.h"
-#include "internal/datastructures/StringHashMap.h"
 #include "multiplayer/headers/MultiplayerStatistics.h"
 #include "multiplayer/headers/LobbyData.h"
 #include "multiplayer/headers/ConnectionMapping.h"
@@ -23,7 +21,7 @@
 #error "Using Networking without enabling it in CMake! Set the networking status in CMakeLists.txt in the root!"
 #endif
 
-using MessageVec = magique::vector<SteamNetworkingMessage_t*>;
+using MessageVec = std::vector<SteamNetworkingMessage_t*>;
 
 #include "internal/utils/MessageBatcher.h"
 
@@ -156,8 +154,8 @@ namespace magique
         {
             global::BATCHER.clearConBuffer(client);
             numberMapping.removeConnection(client);
-            UnorderedDelete(connectionMapping, ConnMapping{client, entt::entity{0}}, ConnMapping::DeleteFunc);
-            UnorderedDelete(connections, client);
+            std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == client; });
+            std::erase(connections, client);
         }
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
@@ -277,4 +275,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_MULTIPLAYER_DATA_H
+#endif // MAGIQUE_MULTIPLAYER_DATA_H

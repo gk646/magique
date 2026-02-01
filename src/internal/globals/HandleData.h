@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_HANDLEREGISTRY_H
 #define MAGIQUE_HANDLEREGISTRY_H
 
-#include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/HashTypes.h"
 
 namespace magique
@@ -10,8 +9,8 @@ namespace magique
     struct HandleRegistry final
     {
         HashMap<uint32_t, handle> handleMap{100};
-        vector<handle> handles;
-        vector<handle> directHandles;
+     std::vector<handle> handles;
+     std::vector<handle> directHandles;
 
         HandleRegistry()
         {

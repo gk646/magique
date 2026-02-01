@@ -4,6 +4,7 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
+#include <string>
 
 //===============================================
 // Public Internal Module
@@ -248,12 +249,6 @@ namespace magique::internal
         }
     };
 
-    struct ThreatTableEntry final
-    {
-        entt::entity target;
-        float threat;
-    };
-
     struct UIContainerMapping final
     {
         char name[MAGIQUE_MAX_NAMES_LENGTH]{};
@@ -270,21 +265,6 @@ namespace magique::internal
         char name[MAGIQUE_MAX_NAMES_LENGTH]{};
         UIObject* object = nullptr;
     };
-
-    struct ParamData final
-    {
-        ParamType types[3]{};  // Allowed types
-        char* name = nullptr;  // Name
-        bool optional = false; // If param is optional
-        bool variadic = false; // Stands for a variable amount of parameters
-        union
-        {
-            float number;
-            bool boolean;
-            char* string;
-        };
-    };
-
 
 } // namespace magique::internal
 

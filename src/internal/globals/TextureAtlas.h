@@ -4,8 +4,6 @@
 
 #include <magique/util/Logging.h>
 
-#include "internal/datastructures/VectorType.h"
-
 namespace magique
 {
     // Uses naive 'scheduling' - if a sequence doesn't fit into the same row we skip to the next row
@@ -54,8 +52,8 @@ namespace magique
             return addSpriteSheetEx(img, srcW, srcH, scale, frames, 0, 0);
         }
 
-        SpriteSheet addSpriteSheetEx(const Image& img, const int srcW, const int srcH, const float scale, const int frames,
-                                     const int offX, const int offY)
+        SpriteSheet addSpriteSheetEx(const Image& img, const int srcW, const int srcH, const float scale,
+                                     const int frames, const int offX, const int offY)
         {
             lazyInit(); // Only load a texture if atlas is actually used
 
@@ -169,17 +167,17 @@ namespace magique
 
     struct AtlasData final
     {
-        vector<TextureAtlas> atlases;
+        std::vector<TextureAtlas> atlases;
 
         TextureAtlas& getAtlas(AtlasID type)
         {
             const auto atlasNum = static_cast<int>(type);
-            if (atlasNum >= atlases.size())
+            if (atlasNum >= (int)atlases.size())
                 atlases.resize(atlasNum + 1);
             return atlases[atlasNum];
         }
 
-        void loadToGPU()
+        void loadToGPU() const
         {
             for (const auto& atlas : atlases)
             {

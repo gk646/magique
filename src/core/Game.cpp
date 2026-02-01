@@ -2,7 +2,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <random> // Needed for non-deterministic hardware randomness
 
-#include <cxstructs/SmallVector.h>
 #include <raylib/config.h>
 #include <raylib/raylib.h>
 #include <raylib/rlgl.h>
@@ -114,7 +113,7 @@ namespace magique
         }
     } // namespace internal
 
-    Game::Game(const char* name, const char* version) : isRunning(true), gameName(name), version(strdup(version))
+    Game::Game(const char* name, const char* version) : isRunning(true), gameName(strdup(name)), version(strdup(version))
     {
         global::ENGINE_DATA.gameInstance = this; // Assign global game instance
         SetTraceLogLevel(LOG_WARNING);

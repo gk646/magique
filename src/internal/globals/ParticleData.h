@@ -9,7 +9,6 @@
 #include <magique/util/Logging.h>
 
 #include "external/raylib-compat/rshapes_compat.h"
-#include "internal/datastructures/VectorType.h"
 #include "magique/util/Math.h"
 
 namespace magique
@@ -17,8 +16,8 @@ namespace magique
     // Data driven
     struct ParticleData final
     {
-        vector<ScreenParticle> rectangles;
-        vector<ScreenParticle> circles;
+        std::vector<ScreenParticle> rectangles;
+        std::vector<ScreenParticle> circles;
         float scale = 1.0F;
 
         void addParticle(const ScreenParticle& sp)
@@ -71,9 +70,9 @@ namespace magique
 
         void update()
         {
-            const auto updateVec = [](vector<ScreenParticle>& vec)
+            const auto updateVec = [](std::vector<ScreenParticle>& vec)
             {
-                for (int i = 0; i < vec.size(); ++i)
+                for (size_t i = 0; i < vec.size(); ++i)
                 {
                     auto& p = vec[i];
                     const float relTime = static_cast<float>(p.age) / static_cast<float>(p.lifeTime);

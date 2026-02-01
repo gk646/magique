@@ -10,13 +10,10 @@
 #endif
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
-#include <emmintrin.h>
 #endif
 
 #include <cmath>
 #include <limits>
-#include <utility> // Needed with clang
-#include <internal/utils/STLUtil.h>
 
 //-----------------------------------------------
 // Collision Primitives with up to AVX2 intrinsics
@@ -169,8 +166,8 @@ namespace magique
             return;
         }
 
-        const float overlapX = minValue(x1 + w1, x2 + w2) - maxValue(x1, x2);
-        const float overlapY = minValue(y1 + h1, y2 + h2) - maxValue(y1, y2);
+        const float overlapX = std::min(x1 + w1, x2 + w2) - std::max(x1, x2);
+        const float overlapY = std::min(y1 + h1, y2 + h2) - std::max(y1, y2);
 
         if (overlapX < overlapY)
         {
@@ -185,8 +182,8 @@ namespace magique
             info.penDepth = overlapY;
         }
 
-        info.collisionPoint.x = (maxValue(x1, x2) + minValue(x1 + w1, x2 + w2)) / 2.0f;
-        info.collisionPoint.y = (maxValue(y1, y2) + minValue(y1 + h1, y2 + h2)) / 2.0f;
+        info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
+        info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
     }
 
     inline void RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx,
@@ -517,7 +514,7 @@ namespace magique
                 SquareRoot(edgeLength);
 
                 float t = ((cx - pxs[i]) * dx + (cy - pys[i]) * dy) / (edgeLength * edgeLength);
-                t = maxValue(0.0f, minValue(1.0f, t));
+                t = std::max(0.0f, std::min(1.0f, t));
 
                 const float closestPx = pxs[i] + t * dx;
                 const float closestPy = pys[i] + t * dy;

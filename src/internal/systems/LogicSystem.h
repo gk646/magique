@@ -8,18 +8,19 @@ namespace magique
     struct ActorMapDistribution final
     {
         static constexpr int8_t EMPTY_VALUE = -1;
-        cxstructs::SmallVector<int8_t, MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS> dataVec;
+        std::vector<int8_t> dataVec;
 
         ActorMapDistribution() { dataVec.resize(MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, EMPTY_VALUE); }
 
-        int8_t getActorNum(const MapID map, const int offset)
+        int8_t getActorNum(const MapID map, const int offset) const
         {
             return dataVec[(static_cast<int>(map) * MAGIQUE_MAX_PLAYERS) + offset];
         }
 
         void insertActorNum(const MapID map, const int num)
         {
-            dataVec.resize(static_cast<int>(map) * MAGIQUE_MAX_PLAYERS, EMPTY_VALUE);
+            if ((int)dataVec.size() < static_cast<int>(map) * MAGIQUE_MAX_PLAYERS)
+                dataVec.resize(static_cast<int>(map) * MAGIQUE_MAX_PLAYERS, EMPTY_VALUE);
             for (int i = 0; i < MAGIQUE_MAX_PLAYERS; i++)
             {
                 if (dataVec[(MAGIQUE_MAX_PLAYERS * static_cast<int>(map)) + i] == EMPTY_VALUE)
@@ -35,7 +36,7 @@ namespace magique
     using ActorMapsTable = std::array<bool, UINT8_MAX>;
 
     inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col,
-                                      EntityHashGrid& grid, vector<entt::entity>& cVec)
+                                      EntityHashGrid& grid, std::vector<entt::entity>& cVec)
     {
         auto& pathData = global::PATH_DATA;
         auto& pathGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - check in loop before
@@ -236,11 +237,11 @@ namespace magique
             if (data.isEntityScripted(entity)) [[likely]]
             {
                 // Pass a boolean whether the entity is updated => if it's in the cache
-                InvokeEvent<onTick>(entity, cache.contains(entity));
+                ScriptingInvokeEvent<onTick>(entity, cache.contains(entity));
             }
         }
     }
 
 } // namespace magique
 
-#endif //MAGIQUE_LOGIC_SYSTEM_H
+#endif // MAGIQUE_LOGIC_SYSTEM_H

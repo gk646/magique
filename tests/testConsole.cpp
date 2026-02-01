@@ -48,7 +48,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
     Command printHello{"printHello"};
     printHello.addParam("name", {ParamType::STRING});
     printHello.setFunction([](const std::vector<Param>& params)
-                           { AddConsoleStringF("Hello %s!", params.front().getString()); });
+                           { ConsoleAddStringF("Hello %s!", params.front().getString()); });
 
     Command likes{"likes"};
     likes.addParam("person1", {ParamType::STRING});
@@ -59,12 +59,12 @@ TEST_CASE("fuzzing with random Params and additional commands")
         {
             if (params.size() > 2) // Last Param is present
             {
-                AddConsoleStringF("%s likes %s %d many times!", params[0].getString(), params[1].getString(),
+                ConsoleAddStringF("%s likes %s %d many times!", params[0].getString(), params[1].getString(),
                                   params[2].getInt());
             }
             else // Not present
             {
-                AddConsoleStringF("%s likes %s; but we don't know how much :(", params[0].getString(),
+                ConsoleAddStringF("%s likes %s; but we don't know how much :(", params[0].getString(),
                                   params[1].getString());
             }
         });
@@ -73,7 +73,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
     greet.addParam("name", {ParamType::STRING});
     greet.addParam("timeOfDay", {ParamType::STRING});
     greet.setFunction([](const std::vector<Param>& params)
-                      { AddConsoleStringF("Good %s, %s!", params[1].getString(), params[0].getString()); });
+                      { ConsoleAddStringF("Good %s, %s!", params[1].getString(), params[0].getString()); });
 
     // addNumbers Command
     Command addNumbers{"addNumbers", "Adds two numbers, with the second number being optional"};
@@ -83,7 +83,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
             [](const std::vector<Param>& params)
             {
                 float sum = params[0].getFloat() + (params.size() > 1 ? params[1].getFloat() : 0.0f);
-                AddConsoleStringF("The sum is: %.2f", sum);
+                ConsoleAddStringF("The sum is: %.2f", sum);
             });
 
     // logMessages Command
@@ -93,10 +93,10 @@ TEST_CASE("fuzzing with random Params and additional commands")
     logMessages.setFunction(
         [](const std::vector<Param>& params)
         {
-            AddConsoleStringF("Messages prefixed by '%s':", params[0].getString());
+            ConsoleAddStringF("Messages prefixed by '%s':", params[0].getString());
             for (size_t i = 1; i < params.size(); ++i)
             {
-                AddConsoleStringF("- %s", params[i].getString());
+                ConsoleAddStringF("- %s", params[i].getString());
             }
         });
 
@@ -108,7 +108,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
         .setFunction(
             [](const std::vector<Param>& params)
             {
-                AddConsoleStringF("Setting config '%s' to value %.2f, enabled: %s", params[0].getString(),
+                ConsoleAddStringF("Setting config '%s' to value %.2f, enabled: %s", params[0].getString(),
                                   params[1].getFloat(), params[2].getBool() ? "true" : "false");
             });
 
@@ -120,7 +120,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
             {
                 for (const auto& param : params)
                 {
-                    AddConsoleStringF("Broadcasting: %s", param.getString());
+                    ConsoleAddStringF("Broadcasting: %s", param.getString());
                 }
             });
 

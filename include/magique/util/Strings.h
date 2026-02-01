@@ -18,16 +18,10 @@ namespace magique
 {
     //================= SORTING =================//
 
-    // Returns the levenshtein distance of the two strings
-    // Only compares up to a length of 16 characters
-    int StringDistance(const char* s1, const char* s2, bool caseSensitive = false);
-    int StringDistance(const std::string& s1, const std::string& s2, bool caseSensitive = false);
-
     // Returns the similarity (0.0 - 1.0) of the two strings based on their distance on the keyboard
     // This is useful for user input as it handles common mistakes better - not case-sensitive per design
     // Only checks until either one ends and doesn't penalize unequal length -> bla and blabbbbbb = 1.0F
-    float StringDistancePhysical(const char* s1, const char* s2, KeyLayout layout = KeyLayout::QWERTY);
-    float StringDistancePhysical(const std::string& s1, const std::string& s2, KeyLayout layout = KeyLayout::QWERTY);
+    float StringDistancePhysical(std::string_view s1, std::string_view s2, KeyLayout layout = KeyLayout::QWERTY);
 
     // Returns true if any condition is true:
     //  - original contains search as a substring anywhere (not case sensitive)
@@ -35,7 +29,7 @@ namespace magique
     //  - search is empty
     // This is very useful for finding the best matching entry to a user input (list of items, spells...)
     // In this case original would be the item name, and compare the search string
-    bool TextIsSimilar(const char* original, const char* search, float tolerance = 0.9);
+    bool TextIsSimilar(std::string_view original, std::string_view search, float tolerance = 0.9);
 
     //================= OPERATIONS =================//
 
@@ -50,8 +44,7 @@ namespace magique
 
     // Returns a vector of string containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-    std::vector<std::string> SplitString(const char* s, char delim);
-    std::vector<std::string> SplitString(const std::string& s, char delim);
+    std::vector<std::string> SplitString(std::string_view s, char delim);
 
     // Removes any leading whitespace in-place and returns the string
     std::string& TrimLeadingWhitespace(std::string& s);
@@ -114,8 +107,27 @@ namespace magique
 
     //================= HASHING =================//
 
-    // Uses fnav32a1 to hash the string
+    // Uses fnav32a1 to hash the string - aimed to be fast not secure!
     constexpr uint32_t HashString(char const* s) noexcept;
+    constexpr uint32_t HashString(const char* s, size_t len) noexcept;
+
+    // Useful for passing to a hashmap for to enable transparent lookups (avoids conversion)
+    struct StringHashFunc
+    {
+        using is_transparent = void;
+        std::size_t operator()(const std::string& key) const;
+        std::size_t operator()(const std::string_view& key) const;
+        std::size_t operator()(const char* key) const;
+    };
+
+    // Useful for passing to a hashmap for to enable transparent lookups (avoids conversion)
+    struct StringEqualsFunc
+    {
+        using is_transparent = void;
+        bool operator()(const std::string& lhs, const std::string& rhs) const;
+        bool operator()(const std::string_view& lhs, const std::string& rhs) const;
+        bool operator()(const char* lhs, const std::string& rhs) const;
+    };
 
 } // namespace magique
 
@@ -131,6 +143,18 @@ namespace magique
         while (*s != 0)
         {
             hash ^= static_cast<uint32_t>(*s++);
+            hash *= 16777619U;
+        }
+        return hash;
+    }
+
+    constexpr uint32_t HashString(const char* s, const size_t len) noexcept
+    {
+        uint32_t hash = 2166136261U;
+        size_t counter = 0;
+        while (counter < len)
+        {
+            hash ^= static_cast<uint32_t>(s[counter++]);
             hash *= 16777619U;
         }
         return hash;

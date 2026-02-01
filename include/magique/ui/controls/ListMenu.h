@@ -5,7 +5,7 @@
 #include <vector>
 #include <magique/ui/UIObject.h>
 #include <magique/core/Core.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // List Menu

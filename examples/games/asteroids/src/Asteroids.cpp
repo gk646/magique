@@ -305,7 +305,7 @@ void ScoreCounter::onDraw(const Rectangle& bounds)
 {
     DrawRectangleLinesEx(bounds, 2, WHITE);
     SetFormatValue("Score", SCORE); // Update the format value
-    const char* text = GetFormattedText("Score: ${Score}");
+    const char* text = FormatGetText("Score: ${Score}");
     const auto width = MeasureText(text, FONT_SIZE);
     auto middlePos = GetCenteredPos(bounds, width, FONT_SIZE); // Make the text centered inside the element bounds
     DrawText(text, middlePos.x, middlePos.y, FONT_SIZE, WHITE);

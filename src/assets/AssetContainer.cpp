@@ -1,14 +1,11 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <functional>
+#include <algorithm>
 #include <cstring>
 
-#include <magique/assets/container/AssetContainer.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/Macros.h>
-
-#include "internal/utils/STLUtil.h"
-
-#include <algorithm>
+#include <magique/assets/AssetContainer.h>
 
 struct Sorter
 {
@@ -128,7 +125,7 @@ namespace magique
         auto comparator = [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); };
         // This sorts all entries after directory and then inside a directory after numbering
         //std::ranges::sort(assets, comparator);
-        QuickSort(assets.data(), static_cast<int>(assets.size()), comparator);
+        std::ranges::sort(assets, comparator);
     }
 
     void AssetContainer::iterateDirectory(const char* name, const std::function<void(Asset)>& func) const
@@ -189,7 +186,6 @@ namespace magique
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         return std::ranges::any_of(assets, [&](auto& asset) { return asset.contains(name); });
     }
-
 
     const std::vector<Asset>& AssetContainer::getAllAssets() const { return assets; }
 

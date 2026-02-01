@@ -3,7 +3,7 @@
 
 #include <string>
 #include <magique/ui/UIObject.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 M_IGNORE_WARNING(4100)
 
 //===============================================

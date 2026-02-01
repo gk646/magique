@@ -62,19 +62,24 @@ namespace magique
     bool Window::updateDrag(const Rect& area, const int mouseButton)
     {
         const auto mouse = GetMousePos();
-        if (!IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && (LayeredInput::IsMouseButtonDown(mouseButton) || isDragged))
+        const auto contained = area.contains(mouse);
+        bool alreadyDragging = !IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && isDragged;
+        bool startDrag = LayeredInput::IsMouseButtonDown(mouseButton) && contained;
+        bool isDragging = startDrag || alreadyDragging;
+
+        if (isDragging)
         {
-            if (isDragged)
-            {
-                setPosition(mouse + clickOffset);
-                return true;
-            }
-            if (area.contains(mouse))
+            if (!isDragged)
             {
                 const auto bounds = getBounds();
                 clickOffset = {bounds.x - mouse.x, bounds.y - mouse.y};
                 clickOffset.floor();
                 isDragged = true;
+                return true;
+            }
+            else
+            {
+                setPosition(mouse + clickOffset);
                 return true;
             }
         }

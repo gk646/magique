@@ -5,10 +5,10 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/GameConfig.h>
+#include <magique/util/Datastructures.h>
 #include <entt/entity/entity.hpp>
 
-#include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/HashTypes.h"
+
 
 //-----------------------------------------------
 // Engine Data
@@ -54,7 +54,7 @@ namespace magique
         std::vector<entt::entity> entityUpdateVec;   // Vector containing the entities to update for this tick
         std::vector<entt::entity> drawVec;           // Vector containing all entities to be drawn this tick
         std::vector<MapID> loadedMaps{};             // Currently loaded zones
-        vector<entt::entity> collisionVec;           // Vector containing the entities to check for collision
+     std::vector<entt::entity> collisionVec;           // Vector containing the entities to check for collision
         CameraShakeData cameraShake{};               // Data about the current camera shake
         GameConfig gameConfig{};                     // Global game config instance
         Camera2D camera{};                           // Current camera

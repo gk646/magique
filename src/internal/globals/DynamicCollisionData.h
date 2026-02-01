@@ -3,9 +3,8 @@
 #define MAGIQUE_DYNAMIC_COLLISION_DATA_H
 
 #include <magique/core/Types.h>
+#include <magique/util/Datastructures.h>
 
-#include "internal/datastructures/HashTypes.h"
-#include "internal/datastructures/VectorType.h"
 #include "internal/datastructures/MultiResolutionGrid.h"
 
 namespace magique

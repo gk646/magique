@@ -7,6 +7,7 @@ namespace magique
 {
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
+        global::UI_DATA.resetConsumed();
         global::TWEEN_DATA.update();
         global::CONSOLE_DATA.update();  // First in case needs to block input
         InputSystem();                  // Before gametick per contract (scripting system)
@@ -66,4 +67,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //UPDATEUTIL_H
+#endif // UPDATEUTIL_H

@@ -1,6 +1,6 @@
 #include <magique/ui/SceneManager.h>
+#include <magique/util/Datastructures.h>
 
-#include "internal/datastructures/StringHashMap.h"
 #include "magique/ui/UIObject.h"
 
 namespace magique

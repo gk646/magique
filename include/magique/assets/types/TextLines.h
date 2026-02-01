@@ -17,25 +17,24 @@ namespace magique
     struct TextLines final
     {
         TextLines() = default;
-        const std::string& getRandomLine() const;
-        std::string& getRandomLine();
+        TextLines(const std::string& buff, char delimiter = '\n');
+
+        // Returns a random lines or nullptr if empty
+        const std::string* getRandomLine() const;
 
         // Returns the lines vector
-        const std::vector<std::string>& getTextLines() const;
-        std::vector<std::string>& getTextLines();
+        const std::vector<std::string>& getLines() const;
+        std::vector<std::string>& getLines();
 
         // Adds the given line
-        // Moves the string
-        void addLine(std::string line);
-        void addLine(const char* line);
+        void addLine(std::string_view line);
 
         // Returns true if a line with the given text is present
-        bool hasLine(const char* line) const;
+        bool hasLine(std::string_view line) const;
 
     private:
-        TextLines(const Asset& asset, char delimiter);
         std::vector<std::string> lines;
-        friend TextLines ImportText(Asset, char);
+        std::string full;
     };
 } // namespace magique
 

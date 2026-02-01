@@ -118,21 +118,10 @@
 
 //================= COMPILATION =================//
 
-// Forward declares std::function which improves compile time about 150ms per TU - only on MSVC
-#define MAGIQUE_FORWARD_FUNCTION 1
-
 // Includes the default magique font: Cascadia Code
 #define MAGIQUE_INCLUDE_FONT 1
 
 //================= INTERNAL =================//
-
-#if MAGIQUE_FORWARD_FUNCTION == 1 && defined(_MSC_VER)
-namespace std
-{
-    template <class>
-    class function;
-} // namespace std
-#endif
 
 #if !defined(NDEBUG)
 #define MAGIQUE_DEBUG

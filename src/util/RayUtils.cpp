@@ -302,7 +302,7 @@ namespace magique
     Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)
     {
         Point newTarget = {camera.target.x, camera.target.y};
-        const auto move = GetMouseWheelMove();
+        const auto move = LayeredInput::GetIsMouseConsumed() ? 0.0F : GetMouseWheelMove();
         if (move > 0)
         {
             resetDragPos(camera);

@@ -4,18 +4,15 @@
 
 #include <glaze/json/write.hpp>
 #include <magique/assets/types/Asset.h>
-#include <magique/assets/container/CSVImport.h>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/VirtualClock.h>
 #include <magique/assets/types/TextLines.h>
 #include <raylib/raylib.h>
 
 //===============================================
-// File Imports
+// JSON Import/Exports
 //===============================================
 // ................................................................................
-// This module allows to import various files types to a representation that can easily be accessed.
-//
 // Refer to https://stephenberry.github.io/glaze/json/ for more info on how to use the JSON library
 // IMPORTANT: If you define custom parse/serialization rules etc. they need to be included BEFORE you call Import/Export
 
@@ -24,27 +21,16 @@
 
 namespace magique
 {
-    // Imports the given asset as CSV file - if specified the first row will be loaded as column names
-    // Supported filetypes: ".csv"
-    // Failure: Returns an empty import
-    // IMPORTANT: Only supports \n or \r as line feeds (not the windows \r\n)
-    CSVImport ImportCSV(Asset asset, char delimiter = ';', bool firstRowNames = true);
-
     // Deserializes the given json into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
     template <typename T>
     bool ImportJSON(Asset asset, T& data);
     template <typename T>
-    bool ImportJSON(const char* json, T& data);
+    bool ImportJSON(std::string_view json, T& data);
 
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
-    template <typename T, bool prettify = false>
+    template <typename T, bool prettify = true>
     bool ExportJSON(const T& data, std::string& buffer);
-
-    // Imports the given asset into a simple container
-    // The file is separated and stored line-wise
-    // Failure: Returns empty container
-    TextLines ImportText(Asset asset, char delimiter = '\n');
 
 } // namespace magique
 
@@ -248,14 +234,13 @@ namespace magique
     }
 
     template <typename T>
-    bool ImportJSON(const char* json, T& data)
+    bool ImportJSON(std::string_view json, T& data)
     {
-        std::string_view buff{json, strlen(json)};
-        auto ec = glz::read_json(data, buff);
+        const auto ec = glz::read_json(data, json);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON: %s at position %d\n%.30s", GetJSONErrStr(ec), (int)ec.location,
-                      json + ec.location);
+                      json.data() + ec.location);
             return false;
         }
         return true;
@@ -265,7 +250,7 @@ namespace magique
     bool ExportJSON(const T& data, std::string& buffer)
     {
         buffer.clear();
-        auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);
+        const auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);
         if (ec)
         {
             LOG_ERROR("Failed to export JSON: %s ", GetJSONErrStr(ec));

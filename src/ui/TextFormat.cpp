@@ -3,11 +3,8 @@
 
 #include <magique/config.h>
 #include <magique/ui/TextFormat.h>
-#include <magique/util/Logging.h>
+#include <magique/util/Datastructures.h>
 #include <magique/internal/Macros.h>
-
-#include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/StringHashMap.h"
 
 // Note: This implementation uses separate vectors to store values without memory overhead
 //       Inserting new values, and overwriting values from the same type is fast.
@@ -30,12 +27,12 @@ namespace magique
 
     struct ValueStorage final
     {
-        vector<std::string> strings;
-        vector<int> ints;
-        vector<float> floats;
+        std::vector<std::string> strings;
+        std::vector<int> ints;
+        std::vector<float> floats;
 
         template <typename T>
-        constexpr vector<T>& getValueVec()
+        constexpr std::vector<T>& getValueVec()
         {
             if constexpr (std::is_same_v<std::string, T>)
             {
@@ -189,24 +186,22 @@ namespace magique
 
     //----------------- IMPLEMENTATION -----------------//
 
-    void SetFormatValue(const char* placeholder, const char* val) { SetFormatValueImpl<std::string>(placeholder, val); }
-
-    void SetFormatValue(const char* placeholder, const float val) { SetFormatValueImpl<float>(placeholder, val); }
-
-    void SetFormatValue(const char* placeholder, const int val) { SetFormatValueImpl<int>(placeholder, val); }
-
-    void SetFormatValue(const char* placeholder, const std::string& val)
+    void FormatSetValue(const char* placeholder, const std::string_view& val)
     {
-        SetFormatValueImpl<std::string>(placeholder, val.c_str());
+        SetFormatValueImpl<std::string>(placeholder, val);
     }
+
+    void FormatSetValue(const char* placeholder, const float val) { SetFormatValueImpl<float>(placeholder, val); }
+
+    void FormatSetValue(const char* placeholder, const int val) { SetFormatValueImpl<int>(placeholder, val); }
 
     void DrawTextFmt(const Font& f, const char* t, const Vector2 p, const float s, const float sp, const Color c)
     {
-        auto* fmtText = GetFormattedText(t);
+        auto* fmtText = FormatGetText(t);
         DrawTextEx(f, fmtText, p, s, sp, c);
     }
 
-    const char* GetFormattedText(const char* text)
+    const char* FormatGetText(const char* text)
     {
         if (text == nullptr) [[unlikely]]
             return nullptr;
@@ -254,10 +249,10 @@ namespace magique
         return STRING_BUILDER.c_str();
     }
 
-    void SetFormatPrefix(const char prefix) { FMT_PREFIX = prefix; }
+    void FormatSetPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
     template <typename T>
-    T* GetFormatValue(const char* placeholder)
+    T* FormatGetValue(const std::string_view& placeholder)
     {
         const auto it = VALUES.find(placeholder);
         if (it == VALUES.end())
@@ -290,8 +285,8 @@ namespace magique
         return &VALUE_STORAGE.getValueVec<T>()[it->second.index];
     }
 
-    template float* GetFormatValue(const char*);
-    template std::string* GetFormatValue(const char*);
-    template int* GetFormatValue(const char*);
+    template float* FormatGetValue(const std::string_view&);
+    template std::string* FormatGetValue(const std::string_view&);
+    template int* FormatGetValue(const std::string_view&);
 
 } // namespace magique

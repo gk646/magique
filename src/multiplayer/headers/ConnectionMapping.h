@@ -7,8 +7,6 @@ namespace magique
     {
         Connection conn;
         entt::entity entity;
-
-        static bool DeleteFunc(const ConnMapping& m1, const ConnMapping& m2) { return m1.conn == m2.conn; }
     };
 
     struct ConnNumberMapping final

@@ -1,29 +1,38 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <functional>
+#include <cstring>
 
 #include <magique/gamedev/Achievements.h>
+#include <magique/assets/JSON.h>
 #include <magique/util/Logging.h>
 
-#include "internal/datastructures/VectorType.h"
+struct Achievement final
+{
+    std::function<bool()> condition;
+    std::string name;
+    bool isFinished = false;
+};
+
+template <>
+struct glz::meta<Achievement>
+{
+    using T = Achievement;
+    static constexpr auto value = object(&T::name, &T::isFinished);
+}; // namespace glz
 
 namespace magique
 {
-    struct Achievement final
-    {
-        std::function<bool()> condition;
-        std::string name;
-        bool isFinished = false;
-    };
-
-    static vector<Achievement> ACHIEVEMENTS{};
-    static AchievementCallback CALL_BACK = nullptr;
+    inline std::vector<Achievement> ACHIEVEMENTS{};
+    inline AchievementCallback CALL_BACK = nullptr;
 
     Achievement* GetAchievement(const std::string& name)
     {
         for (auto& a : ACHIEVEMENTS)
         {
-            if (strcmp(a.name.c_str(), name.c_str()) == 0)
+            if (a.name == name)
+            {
                 return &a;
+            }
         }
         return nullptr;
     }
@@ -67,96 +76,53 @@ namespace magique
         }
     }
 
-    DataPointer<const unsigned char> GetAchievementsData()
+    std::string ExportAchievementsState()
     {
         if (ACHIEVEMENTS.empty())
         {
-            LOG_WARNING("Failed to generate achievements data. No achievements exist!");
+            LOG_WARNING("Failed to export achievements: No achievements exist!");
             return {nullptr, 0};
         }
 
-        int totalSize = 0;
-        for (const auto& a : ACHIEVEMENTS)
+        std::string buffer;
+        if (!ExportJSON(ACHIEVEMENTS, buffer))
         {
-            totalSize += static_cast<int>(a.name.size()) + 1; // Name
-            ++totalSize;                                      // 1 Bytes for completion state
+            LOG_WARNING("Failed to export achievements");
         }
-
-        auto* data = new unsigned char[totalSize];
-        int i = 0;
-        for (const auto& a : ACHIEVEMENTS)
-        {
-            const int len = static_cast<int>(a.name.size());
-            std::memcpy(&data[i], a.name.data(), len);
-            i += len;
-            data[i] = '\0';
-            ++i;
-            data[i] = a.isFinished ? 1 : 0;
-            ++i;
-        }
-        return {data, totalSize};
+        return buffer;
     }
 
-    bool LoadAchievements(const unsigned char* data, const int size)
+    bool ImportAchievementsState(std::string_view data)
     {
-        if (data == nullptr || size == 0)
+        if (data.empty())
         {
-            LOG_WARNING("Invalid data - Failed to load achievements");
+            LOG_WARNING("Failed to import achievements: Invalid data");
             return false;
         }
 
-        std::string cache(20, '\0');
-        int saved = 0;    // How many achievements were saved total
-        int notFound = 0; // How many saved ones are not found
-        int i = 0;
-        while (i < size)
+        std::vector<Achievement> imports;
+        if (!ImportJSON(data, imports))
         {
-            const auto nameLength = (int)strlen(reinterpret_cast<const char*>(&data[i]));
-            if (i + nameLength >= size)
-            {
-                LOG_ERROR("Corrupted data - Achievement name exceeds bounds");
-                return false;
-            }
-            cache.assign(reinterpret_cast<const char*>(&data[i]), nameLength);
-            i += nameLength + 1;
-
-            if (i >= size)
-            {
-                LOG_ERROR("Corrupted data - Achievement state missing");
-                return false;
-            }
-
-            bool found = false;
-            for (auto& a : ACHIEVEMENTS)
-            {
-                if (strcmp(a.name.c_str(), cache.c_str()) == 0)
-                {
-                    a.isFinished = data[i] == 1;
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-                ++notFound;
-
-            ++i;
-            ++saved;
+            LOG_WARNING("Failed to import achievements");
+            return false;
         }
 
-        const auto current = ACHIEVEMENTS.size();
-        if (current > saved)
+        int loaded = 0;
+        for (auto& import : imports)
         {
-            LOG_WARNING("More achievements present than save: %d / %d", current, saved);
+            auto local = std::ranges::find_if(ACHIEVEMENTS, [&](auto& a) { return a.name == import.name; });
+            if (local == ACHIEVEMENTS.end())
+            {
+                LOG_WARNING("Achievement %s does not exists locally", import.name.c_str());
+            }
+            else
+            {
+                local->isFinished = import.isFinished;
+                loaded++;
+            }
         }
-        else if (current < saved)
-        {
-            LOG_WARNING("More achievements saved than present: %d / %d", saved, current);
-        }
-        if (notFound > 0)
-            LOG_WARNING("Couldnt locate %d saved achievements", notFound);
 
-        LOG_INFO("Loaded achievements: %d", saved);
+        LOG_INFO("Imported state of %d achievements", loaded);
         return true;
     }
 

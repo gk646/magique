@@ -82,11 +82,11 @@ namespace magique
     struct BehaviorTree;
     template <typename CustomData = int>
     struct TreeBuilder;
-    struct Achievement;
     struct ShareCodeFormat;
     struct ShareCodeData;
     struct ShareCode;
     struct ShareCodeProperty;
+    struct ParamInfo;
     struct Command;
     struct ConsoleData;
     struct ParamParser;

@@ -28,16 +28,15 @@ namespace magique
     // Given string has to be valid until this method returns!
     // Note: If a given format already exists it will be overwritten silently!
     // Note: "placeholder" is only the value without prefix and braces e.g. PLAYER_NAME instead of ${PLAYER_NAME}
-    void SetFormatValue(const char* placeholder, const char* val);
-    void SetFormatValue(const char* placeholder, const std::string& val);
-    void SetFormatValue(const char* placeholder, float val);
-    void SetFormatValue(const char* placeholder, int val);
+    void FormatSetValue(const char* placeholder, const std::string_view& val);
+    void FormatSetValue(const char* placeholder, float val);
+    void FormatSetValue(const char* placeholder, int val);
 
     // Returns a modifiable reference to the value of this placeholder
     // Note: Type has to be specified manually - int, float or std::string
     // Failure: returns nullptr
     template <typename T>
-    T* GetFormatValue(const char* placeholder);
+    T* FormatGetValue(const std::string_view& placeholder);
 
     //================= FORMAT =================//
 
@@ -47,13 +46,13 @@ namespace magique
 
     // Formats and returns the given text with the current placeholder state
     // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again
-    const char* GetFormattedText(const char* text);
+    const char* FormatGetText(const char* text);
 
     //================= CUSTOMIZE =================//
 
     // Sets the prefix to search for when looking for placeholders
     // Default: '$'
-    void SetFormatPrefix(char prefix);
+    void FormatSetPrefix(char prefix = '$');
 
 } // namespace magique
 

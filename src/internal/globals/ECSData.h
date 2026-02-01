@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_ECSDATA_H
 #define MAGIQUE_ECSDATA_H
 
-#include "internal/datastructures/HashTypes.h"
+#include <magique/util/Datastructures.h>
 
 namespace magique
 {

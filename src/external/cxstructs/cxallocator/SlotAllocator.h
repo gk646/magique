@@ -21,6 +21,8 @@
 #ifndef SLOT_ALLOCATOR_H
 #define SLOT_ALLOCATOR_H
 
+#include <cassert>
+
 namespace cxstructs
 {
     // Slot allocator caters to the usage pattern of having reoccurring allocations with the same size

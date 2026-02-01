@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
-#include <utility> // Needed for std::move() in STLUtil.h
+#include <utility>
+#include <algorithm>
 
 #include <magique/assets/types/Asset.h>
 #include <magique/internal/Macros.h>
-
-#include "internal/utils/STLUtil.h"
 
 namespace magique
 {
@@ -94,8 +93,8 @@ namespace magique
             goto beginning;
         }
 
-        memcpy(stringBuffer, lastSep, minValue(64, len));
-        stringBuffer[minValue(64, len)] = '\0';
+        memcpy(stringBuffer, lastSep, std::min(64, len));
+        stringBuffer[std::min(64, len)] = '\0';
         return stringBuffer;
     }
 
@@ -125,8 +124,8 @@ namespace magique
             workPtr++;
         }
 
-        memcpy(stringBuffer, lastDot, minValue(64, len));
-        stringBuffer[minValue(64, len)] = '\0';
+        memcpy(stringBuffer, lastDot, std::min(64, len));
+        stringBuffer[std::min(64, len)] = '\0';
         return stringBuffer;
     }
 } // namespace magique

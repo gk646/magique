@@ -8,10 +8,7 @@
 
 #include <magique/ui/UIObject.h>
 #include <magique/ui/UI.h>
-
-#include "internal/datastructures/VectorType.h"
-#include "internal/datastructures/HashTypes.h"
-#include "internal/utils/STLUtil.h"
+#include <magique/util/Datastructures.h>
 
 inline bool initialized = false;
 
@@ -19,8 +16,8 @@ namespace magique
 {
     struct UIData final
     {
-        vector<UIObject*> objects;
-        vector<UIObject*> containers;
+        std::vector<UIObject*> objects;
+        std::vector<UIObject*> containers;
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
         Point targetRes{};
@@ -32,6 +29,12 @@ namespace magique
         bool showHitboxes = false;
 
         UIData() { initialized = true; }
+
+        void resetConsumed()
+        {
+            keyConsumed = false;
+            mouseConsumed = false;
+        }
 
         // Before each draw and update tick
         void updateBeginTick()
@@ -55,7 +58,7 @@ namespace magique
 
             // Here we are doing the updates for next tick (instead of right at the end of the draw tick)
             // Using fori to support deletions in the update methods
-            for (int i = 0; i < containers.size(); ++i)
+            for (size_t i = 0; i < containers.size(); ++i)
             {
                 auto& container = *containers[i];
                 if (container.wasDrawnLastTick && !container.drawnThisTick)
@@ -66,7 +69,7 @@ namespace magique
                 container.drawnThisTick = false;
                 container.onDrawUpdate(container.getBounds(), container.wasDrawnLastTick);
             }
-            for (int i = 0; i < objects.size(); ++i)
+            for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
                 if (obj.wasDrawnLastTick && !obj.drawnThisTick)
@@ -79,21 +82,17 @@ namespace magique
             }
         }
 
-
         // Only before each update tick (if it happens)
         void update()
         {
-            keyConsumed = false;
-            mouseConsumed = false;
-
             // Using fori to support deletions in the update methods
-            for (int i = 0; i < containers.size(); ++i)
+            for (size_t i = 0; i < containers.size(); ++i)
             {
                 auto& container = *containers[i];
                 container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
             }
 
-            for (int i = 0; i < objects.size(); ++i)
+            for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
@@ -123,7 +122,7 @@ namespace magique
         }
 
         // All objects are un-registered in the dtor
-        void unregisterObject(const UIObject* object) { UnorderedDelete(objects, object); }
+        void unregisterObject(UIObject* object) { std::erase(objects, object); }
 
         void registerDrawCall(UIObject* object, const bool isContainer)
         {
@@ -144,9 +143,9 @@ namespace magique
             // [3][1][2][4][5]
             // or using std::iterators ... :(
 
-            auto sortUpfront = [](vector<UIObject*>& objects, UIObject* obj)
+            auto sortUpfront = [](std::vector<UIObject*>& objects, UIObject* obj)
             {
-                auto* it = std::ranges::find(objects, obj);
+                auto it = std::ranges::find(objects, obj);
                 objects.erase(it);
                 objects.insert(objects.begin(), obj);
             };
@@ -206,4 +205,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_UI_DATA_H
+#endif // MAGIQUE_UI_DATA_H

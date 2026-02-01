@@ -3,8 +3,7 @@
 #define MAGIQUE_ACHIEVEMENTS_H
 
 #include <string>
-#include <magique/core/Types.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Achievements Module
@@ -41,14 +40,13 @@ namespace magique
 
     //================= PERSISTENCE =================//
 
-    // Returns an allocated pointer and size to save the current achievements state - use e.g. GameSaveData::saveData()
-    // Note: Only name and completion state is saved not the constraint - achievements have to be added each time
-    // IMPORTANT: allocates memory on each call
-    [[nodiscard("Allocates")]] DataPointer<const unsigned char> GetAchievementsData();
+    // Returns a json with the achievement state
+    // Note: Only name and completion state is saved not the constraint (... how would you do that?)
+    std::string ExportAchievementsState();
 
     // Restores a previous achievements state from the given data
-    // Note: only sets the completion state of existing achievements and only if the name matches with the saved data
-    bool LoadAchievements(const unsigned char* data, int size);
+    // Note: only sets the completion state of existing achievements only if the name matches with the saved data
+    bool ImportAchievementsState(std::string_view json);
 
 } // namespace magique
 

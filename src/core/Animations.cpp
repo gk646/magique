@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Animations.h>
 
-#include "internal/datastructures/VectorType.h"
+
 
 namespace magique
 {

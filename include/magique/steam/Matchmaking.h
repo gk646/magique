@@ -3,7 +3,7 @@
 #define MAGIQUE_STEAM_MATCHMAKING_H
 
 #include <magique/core/Types.h>
-#include <magique/internal/PlatformIncludes.h>
+#include <functional>
 
 //===============================================
 // Steam Lobbies Module

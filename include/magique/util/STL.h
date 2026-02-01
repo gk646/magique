@@ -5,31 +5,35 @@
 #include <string_view>
 #include <vector>
 
+//===============================================
+// STL (Standard Templates Libarary)
+//===============================================
+// ................................................................................
+// These are the simple and public types/enums used and exposed by magique
+// Note: Some enum use an explicit type to save memory when used in the ECS or networking
+// ................................................................................
+
 namespace magique
 {
-
-    // Uses a static std::string to assign and returns the pointer to it
-    // Note: Only valid until this method is called again
-    const char* ToCStr(const std::string_view& view);
+    // Returns a valid c-string with the content of the given view
+    // Note: Uses a static std::string  - ONLY valid until this method is called again!
+    const char* to_cstr(const std::string_view& view);
 
     // Returns the max element of the vector based on the return value of pred
     // Note: calls pred only ONCE for all elements (unlike std::max_element)
     template <typename T, typename Pred>
-    T* MaxElement(std::vector<T>& vec, Pred pred);
+    T* max_element(std::vector<T>& vec, Pred pred);
     template <typename T, typename Pred>
-    const T* MaxElement(const std::vector<T>& vec, Pred pred);
+    const T* max_element(const std::vector<T>& vec, Pred pred);
 
 } // namespace magique
 
-
 // IMPLEMENTATION
-
 
 namespace magique
 {
-
     template <typename T, typename Pred>
-    T* MaxElement(std::vector<T>& vec, Pred pred)
+    T* max_element(std::vector<T>& vec, Pred pred)
     {
         float highest = FLT_MIN;
         T* ret = nullptr;
@@ -46,7 +50,7 @@ namespace magique
     }
 
     template <typename T, typename Pred>
-    const T* MaxElement(const std::vector<T>& vec, Pred pred)
+    const T* max_element(const std::vector<T>& vec, Pred pred)
     {
         float highest = FLT_MIN;
         const T* ret = nullptr;
@@ -63,6 +67,7 @@ namespace magique
     }
 
 
+
 } // namespace magique
 
-#endif //MAGEQUEST_STL_H
+#endif // MAGEQUEST_STL_H

@@ -4,7 +4,6 @@
 #include "internal/globals/MultiplayerData.h"
 namespace magique
 {
-
     void SetLobbyChatCallback(const LobbyChatCallback& callback) { global::LOBBY_DATA.chatCallback = callback; }
 
     void SetLobbyMetadataCallback(const LobbyMetadataCallback& callback)
