@@ -48,6 +48,13 @@ namespace glz
     };
 
     template <>
+    struct meta<Vector2>
+    {
+        using T = Vector2;
+        static constexpr auto value = object(&T::x, &T::y);
+    };
+
+    template <>
     struct meta<magique::Rect>
     {
         using T = magique::Rect;
@@ -74,6 +81,7 @@ namespace glz
         using T = Color;
         static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
     };
+
 
 } // namespace glz
 

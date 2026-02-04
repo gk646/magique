@@ -19,9 +19,9 @@ namespace magique::updater
         StartTick();
         {
             InternalUpdatePre(reg, game); // Internal update upfront
-            game.updateGame(gameState);
+            game.onUpdateGame(gameState);
             InternalUpdatePost();
-            game.updateGameLate(gameState);
+            game.onUpdateEnd(gameState);
         }
         return EndTick(startTime);
     }

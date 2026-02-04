@@ -45,9 +45,9 @@ namespace magique::renderer
                 HandleLoadingScreen(game); // Loading screen
                 return EndTick(startTime);
             }
-            game.drawGame(gameState, CameraGet()); // User draw tick
+            game.onRenderGame(gameState, CameraGet()); // User draw tick
             InternalRenderPost();                  // Post user tick render tasks
-            game.drawUI(gameState);                // User UI raw tick
+            game.onRenderUI(gameState);                // User UI raw tick
         }
         return EndTick(startTime);
     }

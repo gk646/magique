@@ -51,7 +51,7 @@ namespace magique
             int written = 0;
             if (level >= LEVEL_ERROR)
             {
-                written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]:%s:%d %s: ", level_str, file, line, function);
+                written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]: %s:%d %s: ", level_str, file, line, function);
             }
             else
             {

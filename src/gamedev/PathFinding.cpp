@@ -96,7 +96,7 @@ namespace magique
                 return random;
             }
         }
-        return -1;
+        return Point{-1};
     }
 
     Point PathFindNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)

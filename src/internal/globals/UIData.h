@@ -10,8 +10,6 @@
 #include <magique/ui/UI.h>
 #include <magique/util/Datastructures.h>
 
-inline bool initialized = false;
-
 namespace magique
 {
     struct UIData final
@@ -102,12 +100,6 @@ namespace magique
         // All objects are registered in their ctor
         void registerObject(UIObject* object, const bool isContainer = false)
         {
-            if (!initialized)
-            {
-                *this = {};
-                initialized = true;
-            }
-
             objectsSet.insert(object);
             if (isContainer)
             {
@@ -131,7 +123,7 @@ namespace magique
                 object->onShown(object->getBounds());
             }
             object->drawnThisTick = true;
-            if (!objectsSet.contains(object)) [[unlikely]]
+            if ( !objectsSet.contains(object)) [[unlikely]]
             {
                 registerObject(object, object->isContainer);
             }
@@ -146,8 +138,11 @@ namespace magique
             auto sortUpfront = [](std::vector<UIObject*>& objects, UIObject* obj)
             {
                 auto it = std::ranges::find(objects, obj);
-                objects.erase(it);
-                objects.insert(objects.begin(), obj);
+                if (it != objects.end())
+                {
+                    objects.erase(it);
+                    objects.insert(objects.begin(), obj);
+                }
             };
 
             if (isContainer)

@@ -24,7 +24,7 @@ namespace magique
         Point() = default;
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
-        constexpr Point(float both) : x(both), y(both) {}
+        explicit constexpr Point(float both) : x(both), y(both) {}
 
         // With other points
         bool operator==(const Point& p) const;

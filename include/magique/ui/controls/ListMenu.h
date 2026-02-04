@@ -30,7 +30,7 @@ namespace magique
     {
         // Creates a new ListMenu from coordinates in the logical UI resolution
         ListMenu(float x, float y, float w, float h);
-        ListMenu(float w, float h, Anchor anchor = Anchor::NONE, Point inset = 0.0F);
+        ListMenu(float w, float h, Anchor anchor = Anchor::NONE, Point inset ={});
 
         // Draws all entries by calling drawEntryDefault or if set a custom draw function
         void onDraw(const Rectangle& bounds) override;

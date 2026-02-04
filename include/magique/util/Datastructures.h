@@ -37,6 +37,20 @@ namespace magique
         EnumSet() = default;
         explicit EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
 
+        template<typename Iterable>
+        explicit EnumSet(Iterable data) : data_()
+        {
+            for (const auto flag : data)
+            {
+                set(flag);
+            }
+        }
+
+        bool operator==(const EnumSet& other) const
+        {
+            return data_ == other.data_;
+        }
+
         EnumSet& operator=(E data)
         {
             assign(data, true);
@@ -55,16 +69,11 @@ namespace magique
             return *this;
         }
 
-        void assign(E flag, const bool value)
+        E get() const noexcept { return static_cast<E>(data_); }
+
+        void assign(E flag)
         {
-            if (value)
-            {
                 data_ = static_cast<StoreType>(flag);
-            }
-            else
-            {
-                data_ = 0;
-            }
         }
 
         void set(E flag) noexcept { data_ |= static_cast<StoreType>(flag); }
@@ -77,7 +86,7 @@ namespace magique
 
         void clear() noexcept { data_ = 0; }
 
-        [[nodiscard]] bool any() const noexcept { return data_ != 0x0; }
+        [[nodiscard]] bool any() const noexcept { return data_ != 0; }
 
         // Compile time check(unfolding)
         template <E... Flags>
@@ -101,7 +110,7 @@ namespace magique
         {
             for (auto flag : flags)
             {
-                if ((data_ & static_cast<StoreType>(flag)) != 0)
+                if (isSet(flag))
                 {
                     return true;
                 }
@@ -113,9 +122,9 @@ namespace magique
         template <typename Iterable>
         [[nodiscard]] bool all_of(const Iterable& flags) const noexcept
         {
-            for (auto flag : flags)
+            for (const auto flag : flags)
             {
-                if ((data_ & static_cast<E>(flag)) == 0)
+                if (!isSet(flag))
                 {
                     return false;
                 }
@@ -123,9 +132,6 @@ namespace magique
             return true;
         }
 
-        E get() const noexcept { return static_cast<E>(data_); }
-
-        void assign(const E& value) { data_ = static_cast<StoreType>(value); }
 
         struct EnumSetIterator
         {
@@ -173,59 +179,7 @@ namespace magique
         StoreType data_ = 0;
     };
 
-    // Allows to easily save and modify individual bits
-    // As small and efficient as possible
-    template <int size>
-    struct BitSet final
-    {
-        static constexpr int BITS_PER_BYTE = 8;
-        static constexpr int BYTE_COUNT = (size + BITS_PER_BYTE - 1) / BITS_PER_BYTE;
-
-        uint8_t data[BYTE_COUNT] = {0};
-
-        bool operator[](int bit) const
-        {
-            if (bit < 0 || bit >= size)
-            {
-                return false;
-            }
-            int byteIdx = bit / BITS_PER_BYTE;
-            const int bitIdx = bit % BITS_PER_BYTE;
-            return (data[byteIdx] & (1 << bitIdx)) != 0;
-        }
-
-        void set(int bit, bool val)
-        {
-            if (bit < 0 || bit >= size)
-            {
-                return;
-            }
-            int byteIdx = bit / BITS_PER_BYTE;
-            const int bitIdx = bit % BITS_PER_BYTE;
-            data[byteIdx] |= ((val ? 1 : 0) << bitIdx);
-        }
-
-        void clear(int index)
-        {
-            if (index < 0 || index >= size)
-            {
-                return;
-            }
-            int byteIdx = index / BITS_PER_BYTE;
-            const int bitIdx = index % BITS_PER_BYTE;
-            data[byteIdx] &= ~(1 << bitIdx);
-        }
-
-        void reset()
-        {
-            for (int i = 0; i < BYTE_COUNT; i++)
-            {
-                data[i] = 0;
-            }
-        }
-    };
-
-    // Statically sized vector
+    // Statically sized vector (coming as inplace_vector in c++26)
     // Useful when you want to track the size but want an array as storage
     // Does not support complex types without a default constructor
     template <typename T, uint32_t capacity>
@@ -414,6 +368,7 @@ namespace magique
     {
         alignas(64) std::vector<T> vec;
     };
+
 } // namespace magique
 
 #endif // NODO_DATASTRUCTURES_H

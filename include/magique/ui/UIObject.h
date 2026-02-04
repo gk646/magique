@@ -126,7 +126,7 @@ namespace magique
 
     private:
         float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
-        Point inset = 0.0F;                        // Inset - offset towards the middle of the screen
+        Point inset{};                        // Inset - offset towards the middle of the screen
         Point startPos{};                          // Default position
         Point startDims{};                         // Default dimensions
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions

@@ -31,7 +31,7 @@ namespace magique
         text.reserve(64);
     }
 
-    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, 0.0F, scaling)
+    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor,{}, scaling)
     {
         text.reserve(64);
     }

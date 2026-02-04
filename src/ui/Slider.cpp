@@ -5,14 +5,13 @@
 #include <magique/ui/UI.h>
 #include <magique/util/Math.h>
 
-#include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
     Slider::Slider(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
 
-    Slider::Slider(const float w, const float h, const Anchor anchor, const float inset) : UIObject(w, h, anchor, inset)
+    Slider::Slider(const float w, const float h, const Anchor anchor, const float inset) : UIObject(w, h, anchor, Point{inset})
     {
     }
 

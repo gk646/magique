@@ -109,7 +109,7 @@ namespace magique
         { return std::tolower(static_cast<unsigned char>(ch1)) == std::tolower(static_cast<unsigned char>(ch2)); };
         const auto it = std::ranges::search(original, search, compareFunc);
 
-        if (it.data() != original.end())
+        if (!it.empty())
         {
             return true;
         }

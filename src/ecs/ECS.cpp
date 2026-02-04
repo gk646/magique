@@ -316,7 +316,7 @@ namespace magique
 
     const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,  const FilterFunc& filter)
     {
-        QueryLoadedEntitiesRectIMPL(map, origin - size, size * 2);
+        QueryLoadedEntitiesRectIMPL(map, origin - size, Point{size * 2});
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         for (auto it = set.begin(); it != set.end();)
         {
