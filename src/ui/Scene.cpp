@@ -1,4 +1,4 @@
-#include <magique/ui/SceneManager.h>
+#include <magique/ui/Scene.h>
 #include <magique/util/Datastructures.h>
 
 #include "magique/ui/UIObject.h"
@@ -9,7 +9,7 @@ namespace magique
 
     SceneManager& GetSceneManager() { return SCENE_MANAGER; }
 
-    void Scene::draw()
+    void Scene::draw() const
     {
         const auto size = (int)objects.size() - 1;
         for (int i = size; i >= 0; --i)

@@ -43,11 +43,6 @@
 
 namespace magique
 {
-    // Returns a network message object to be sent via the network - should be used directly and not stored
-    // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
-    // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)
-    Payload CreatePayload(const void* data, int size, MessageType type);
-
     //================= BATCHING =================//
 
     // The batching system is very efficient and gameplay tested
@@ -64,6 +59,9 @@ namespace magique
     // Batches (stores) the payload internally - batch is sent (and cleared) when SendBatch() is called
     // Each message can be sent to a different connection (as specified by the connection)
     void BatchMessage(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
+
+    // Only works if you are a client - same as BatchMessage with the first available connection
+    void BatchToHost(Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
     // Batches the given payload for each current connection
     // This is equal to calling BatchMessage() for each connection from GetCurrentConnections()
@@ -90,7 +88,7 @@ namespace magique
 
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
-    // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna its information)
+    // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna store its information)
     const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = MAGIQUE_ESTIMATED_MESSAGES);
 
     //================= UTIL =================//
@@ -162,4 +160,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_MULTIPLAYER_H
+#endif // MAGIQUE_MULTIPLAYER_H

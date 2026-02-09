@@ -2,12 +2,10 @@
 #ifndef MAGIQUE_COMMANDLINE_H
 #define MAGIQUE_COMMANDLINE_H
 
-#include "magique/core/Types.h"
-
-
 #include <functional>
 #include <string>
 #include <vector>
+#include <magique/core/Types.h>
 
 //===============================================
 // Console Module

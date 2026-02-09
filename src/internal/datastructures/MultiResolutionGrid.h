@@ -2,6 +2,8 @@
 #ifndef MULTI_RESOLUTION_GRID_H
 #define MULTI_RESOLUTION_GRID_H
 
+// TODO can be optimized a lot if we enforce a upper limit anway ... can remove the chaining all together and simplify
+
 // This is a cache friendly "top-level" data structure
 // https://stackoverflow.com/questions/41946007/efficient-and-well-explained-implementation-of-a-quadtree-for-2d-collision-det
 // Originally inspired by the above post to just move all the data of the structure to the top level
@@ -384,7 +386,6 @@ private:
     static_assert(std::is_trivially_constructible_v<V> && std::is_trivially_destructible_v<V>);
     static_assert(sizeof(V) <= 8, "You should only use small id types");
 };
-
 
 // Structure that holds the given type for each map separately efficiently
 // This is likely the best solution as it does not require annotating the data with the map or checks on each lookup

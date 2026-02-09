@@ -63,7 +63,7 @@ namespace magique
         // Returns true if the window is currently dragged
         [[nodiscard]] bool getIsDragged() const;
 
-        // Returns true if the window was clicked in the given area with the given mouse button
+        // Returns true if the window was clicked (or is dragged) in the given area with the given mouse button
         // Does not check if anything is in front - use the ui/WindowManager.h
         // Note: Uses LayeredInput to check for click - if true probably want to call LayeredInput::Consume()
         bool updateDrag(const Rect& area, int mouseButton = MOUSE_BUTTON_LEFT);

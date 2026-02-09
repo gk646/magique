@@ -87,7 +87,7 @@ namespace magique
             }
             else
             {
-                LOG_ERROR("Malformed asset image File");
+                LOG_ERROR("Malformed asset pack file");
                 return false;
             }
         }
@@ -100,7 +100,7 @@ namespace magique
 
         if (imageSize != totalSize)
         {
-            LOG_ERROR("Image size mismatch between header and buffer size");
+            LOG_ERROR("AssetPack size mismatch between header and buffer size");
             return false;
         }
         // Skip header file size
@@ -151,11 +151,11 @@ namespace magique
         return true;
     }
 
-    bool LoadAssetImage(AssetContainer& assets, const char* path, const uint64_t encryptionKey)
+    bool AssetPackLoad(AssetContainer& assets, const char* path, const uint64_t encryptionKey)
     {
         if (!fs::exists(path)) // User cant use AssetContainer -> its empty
         {
-            LOG_WARNING("No asset image at: %s", path);
+            LOG_WARNING("No asset pack at: %s", path);
             return false;
         }
         const auto startTime = GetTime();
@@ -183,21 +183,21 @@ namespace magique
                 const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
                 if (original == imageSize)
                 {
-                    auto* logText = "Loaded asset image %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
+                    auto* logText = "Loaded asset pack %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 else
                 {
-                    auto* logText = "Loaded asset image %s | Took: %d millis. Decompressed: %.2f mb -> "
+                    auto* logText = "Loaded asset pack %s | Took: %d millis. Decompressed: %.2f mb -> "
                                     "%.2f mb | Assets: %d";
                     LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
                 }
                 return true;
             }
-            LOG_ERROR("Failed to parse asset image: %s", path);
+            LOG_ERROR("Failed to parse asset pack: %s", path);
             return false;
         }
-        LOG_ERROR("Failed to load asset image file: %s", path);
+        LOG_ERROR("Failed to load asset pack file: %s", path);
         return false;
     }
 
@@ -212,7 +212,7 @@ namespace magique
                 FILE* file = fopen(filePath, "rb");
                 if (!file)
                 {
-                    LOG_WARNING("Failed to read asset image index file");
+                    LOG_WARNING("Failed to read asset pack index file");
                     return true;
                 }
 
@@ -224,7 +224,7 @@ namespace magique
                 // Detect format
                 if (strncmp(buff, "MAGIQUE_INDEX_FILE", 18) != 0)
                 {
-                    LOG_WARNING("Failed to read asset image index file");
+                    LOG_WARNING("Failed to read asset pack index file");
                     return true;
                 }
 
@@ -254,7 +254,7 @@ namespace magique
                 const int size = TextToInteger(ptr);
                 if (assets == 0 || size == 0) // parse error
                 {
-                    LOG_WARNING("Failed to read asset image index file");
+                    LOG_WARNING("Failed to read asset pack index file");
                     return true;
                 }
 
@@ -286,16 +286,16 @@ namespace magique
                 {
                     totalSize += static_cast<int>(fs::file_size(assetPath));
                 }
-                // TODO to also check for hash here we would need to basically compile the asset image
+                // TODO to also check for hash here we would need to basically compile the asset pack
                 // so i guess we skip it?
                 if (totalSize == size)
                 {
-                    LOG_INFO("Skipped compiling asset image: No changes detected (Only checks size not content!)");
+                    LOG_INFO("Skipped compiling asset pack: No changes detected (Only checks size not content!)");
                     return false;
                 }
             }
         }
-        LOG_INFO("Recompiling asset image: Changes detected");
+        LOG_INFO("Recompiling asset pack: Changes detected");
         return true;
     }
 
@@ -312,7 +312,7 @@ namespace magique
             asset = -1; // empty
 
         char checksumBuf[33]{};
-        const auto checksum = GetAssetImageChecksum(imageName);
+        const auto checksum = AssetPackChecksum(imageName);
         checksum.format(checksumBuf, sizeof(checksumBuf));
 
         char buffer[128] = {0}; // Buffer to hold the content
@@ -392,7 +392,7 @@ namespace magique
         CreateIndexFile(imageName, pathList.size(), totalFileSize);
     }
 
-    bool CompileAssetImage(const char* directory, const char* fileName, const uint64_t encryptionKey,
+    bool AssetPackCompile(const char* directory, const char* fileName, const uint64_t encryptionKey,
                            const bool compress)
     {
         if (!IsImageOutdated(directory))
@@ -410,7 +410,7 @@ namespace magique
         }
         if (pathList.empty())
         {
-            LOG_ERROR("No files to compile into asset image");
+            LOG_ERROR("No files to compile into asset pack");
             return false;
         }
 
@@ -493,13 +493,13 @@ namespace magique
     }
 
     // https://en.wikipedia.org/wiki/MD5#Pseudocode
-    Checksum GetAssetImageChecksum(const char* path)
+    Checksum AssetPackChecksum(const char* path)
     {
         MAGIQUE_ASSERT(path != nullptr, "Passed null");
         Checksum checksum{};
         if (!fs::exists(path))
         {
-            LOG_WARNING("No asset image at:%s/%s", GetWorkingDirectory(), path);
+            LOG_WARNING("No asset pack at:%s/%s", GetWorkingDirectory(), path);
             return checksum;
         }
 
@@ -621,10 +621,10 @@ namespace magique
         return checksum;
     }
 
-    bool ValidateAssetImage(const Checksum checksum, const char* path)
+    bool AssetPackValidate(const Checksum checksum, const char* path)
     {
         MAGIQUE_ASSERT(checksum != Checksum{}, "Passed empty checksum");
-        return GetAssetImageChecksum(path) == checksum;
+        return AssetPackChecksum(path) == checksum;
     }
 
 } // namespace magique

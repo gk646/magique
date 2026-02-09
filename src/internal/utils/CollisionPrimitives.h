@@ -151,13 +151,6 @@ namespace magique
 #endif
     }
 
-    inline void RectToSector(const float rx, const float ry, const float rw, const float rh, const float cx,
-                             const float cy, const float cr, const float startAngle, const float stopAngle,
-                             CollisionInfo& info)
-    {
-
-    }
-
     inline void RectToRect(const float x1, const float y1, const float w1, const float h1, const float x2,
                            const float y2, const float w2, const float h2, CollisionInfo& info)
     {
@@ -217,7 +210,7 @@ namespace magique
         }
         float distance = distance_squared;
         SquareRoot(distance);
-        if (distance != 0.0f)
+        if (distance != 0.0f) [[likely]]
         {
             info.normalVector.x = dx / distance;
             info.normalVector.y = dy / distance;
@@ -232,28 +225,7 @@ namespace magique
         info.collisionPoint.y = closestY;
     }
 
-    // Top left of the capsule and its height and radius
-    inline void RectToCapsule(const float x1, const float y1, const float w1, const float h1, const float x2,
-                              const float y2, const float radius, const float height, CollisionInfo& info)
-    {
-        // Fast bounding box check using RectToRect
-        if (!RectToRect(x1, y1, w1, h1, x2, y2, 2.0F * radius, height)) [[likely]]
-        {
-            return;
-        }
-
-        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        RectToCircle(x1, y1, w1, h1, x2 + radius, y2 + height - radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        RectToRect(x1, y1, w1, h1, x2, y2 + radius, radius * 2, height - radius, info);
-    }
-
-    //----------------- SAT -----------------//
+    // --------- SAT -----------------//
 
     // checks 4 points against another 4 points
     inline void SAT(const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4], const float (&p1ys)[4],
@@ -267,11 +239,11 @@ namespace magique
         }
         float minPenetration = std::numeric_limits<float>::max();
         Point bestAxis{};
-#if MAGIQUE_SIMD == 1 // TODO can be optimized a lot by using AVX2
-        const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
-                                      const float(&p1ys)[4], float& axisX, float& axisY, float& penetration)
+#if MAGIQUE_SIMD == 1
+        const auto OverlapOnAxis = [](const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4],
+                                      const float (&p1ys)[4], float& axisX, float& axisY, float& penetration)
         {
-            const auto project = [](const float(&pxs)[4], const float(&pys)[4], const float axisX, const float axisY,
+            const auto project = [](const float (&pxs)[4], const float (&pys)[4], const float axisX, const float axisY,
                                     float& min, float& max)
             {
                 __m128 axisX_vec = _mm_set1_ps(axisX);
@@ -293,8 +265,8 @@ namespace magique
             project(pxs, pys, axisX, axisY, minA, maxA);
             project(p1xs, p1ys, axisX, axisY, minB, maxB);
 #else
-        const auto OverlapOnAxis = [](const float(&pxs)[4], const float(&pys)[4], const float(&p1xs)[4],
-                                      const float(&p1ys)[4], float& axisX, float& axisY, float& penetration) -> bool
+        const auto OverlapOnAxis = [](const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4],
+                                      const float (&p1ys)[4], float& axisX, float& axisY, float& penetration) -> bool
         {
             float minA = pxs[0] * axisX + pys[0] * axisY;
             float maxA = minA;
@@ -598,93 +570,6 @@ namespace magique
 #endif
     }
 
-    // circle x,y,radius / capsule: top left(x,y), radius of both circles, total height
-    inline void CircleToCapsule(const float cx, const float cy, const float cr, const float x2, const float y2,
-                                const float radius, const float height, CollisionInfo& info)
-    {
-        if (!RectToRect(cx - cr, cy - cr, cr * 2.0F, cr * 2.0F, x2, y2, radius * 2.0F, height)) [[likely]]
-        {
-            return; // quick bound check
-        }
-        CircleToCircle(cx, cy, cr, x2 + radius, y2 + radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        CircleToCircle(cx, cy, cr, x2 + radius, y2 + height - radius, radius, info);
-        if (info.isColliding())
-            return;
-
-        RectToCircle(x2, y2 + radius, radius * 2.0F, height - radius * 2.0F, cx, cy, cr, info);
-    }
-
-    //----------------- CAPSULE -----------------//
-
-    inline void CapsuleToCapsule(const float x1, const float y1, const float r1, const float h1, const float x2,
-                                 const float y2, const float r2, const float h2, CollisionInfo& info)
-    {
-        // Fast bounding box check using RectToRect
-        if (!RectToRect(x1, y1, r1 * 2.0F, h1, x2, y2, 2.0F * r2, h2)) [[likely]]
-        {
-            return; // most of the time we skip
-        }
-
-        // Check if any circles intersect with any other
-        CircleToCircle(x1 + r1, y1 + r1, r1, x2 + r2, y2 + r2, r2, info);
-        if (info.isColliding())
-            return;
-        CircleToCircle(x1 + r1, y1 + r1, r1, x2 + r2, y2 + h2 - r2, r2, info);
-        if (info.isColliding())
-            return;
-        CircleToCircle(x1 + r1, y1 + h1 - r1, r1, x2 + r2, y2 + r2, r2, info);
-        if (info.isColliding())
-            return;
-        CircleToCircle(x1 + r1, y1 + h1 - r1, r1, x2 + r2, y2 + h2 - r2, r2, info);
-        if (info.isColliding())
-            return;
-
-        // Check if the rects intersect
-        RectToRect(x1, y1 + r1, r1 * 2, h1 - r1 * 2, x2, y2 + r2, r2 * 2, h2 - r2 * 2, info);
-        if (info.isColliding())
-            return;
-
-        // Check if the circles intersect rect
-        RectToCircle(x2, y2 + r2, r2 * 2.0F, h2 - r2 * 2.0F, x1 + r1, y1 + r1, r1, info);
-        if (info.isColliding())
-            return;
-        RectToCircle(x2, y2 + r2, r2 * 2.0F, h2 - r2 * 2.0F, x1 + r1, y1 + h1 - r1, r1, info);
-        if (info.isColliding())
-            return;
-        RectToCircle(x1, y1 + r1, r1 * 2.0F, h1 - r1 * 2.0F, x2 + r2, y2 + r2, r2, info);
-        if (info.isColliding())
-            return;
-        RectToCircle(x1, y1 + r1, r1 * 2.0F, h1 - r1 * 2.0F, x2 + r2, y2 + h2 - r2, r2, info);
-    }
-
-    inline void CapsuleToQuadrilateral(const float x, const float y, const float r, const float h, const float (&pxs)[4],
-                                       const float (&pys)[4], CollisionInfo& info)
-    {
-        const auto bb = GetBBQuadrilateral(pxs, pys);
-        if (!RectToRect(x, y, r * 2.0F, h, bb.x, bb.y, bb.width, bb.height)) [[likely]]
-        {
-            return; // quick bound check
-        }
-
-        CircleToQuadrilateral(x + r, y + r, r, pxs, pys, info);
-        if (info.isColliding())
-        {
-            return;
-        }
-        CircleToQuadrilateral(x + r, y + (h - r), r, pxs, pys, info);
-        if (info.isColliding())
-        {
-            return;
-        }
-
-        const float cr2xs[4] = {x, x + r * 2.0F, x + r * 2.0F, x};
-        const float cr2ys[4] = {y + r, y + r, y + h - r, y + h - r};
-        SAT(cr2xs, cr2ys, pxs, pys, info);
-    }
-
     //----------------- ROTATION -----------------//
 
     // Takes translation x and y / point coordinates relative to translation / rotation clockwise in degrees from the top / anchor is relative to the points
@@ -738,7 +623,6 @@ namespace magique
 #endif
     }
 
-
 } // namespace magique
 
-#endif //MAGIQUE_COLLISION_PRIMITIVES_H
+#endif // MAGIQUE_COLLISION_PRIMITIVES_H

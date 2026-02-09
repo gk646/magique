@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_BITUTIL_H
 #define MAGIQUE_BITUTIL_H
 
+// TODO rewrite sharecode and remove
 namespace magique
 {
     // Writes 'bitsToWrite' many bits from val to 'byte' starting at the given bit offset

@@ -4,9 +4,6 @@
 
 #include <string>
 #include <magique/assets/AssetLoader.h>
-#include <magique/assets/AssetManager.h>
-#include <magique/assets/HandleRegistry.h>
-#include <magique/core/Draw.h>
 #include <magique/core/Game.h>
 #include <raylib/raylib.h>
 
@@ -14,7 +11,7 @@
 // AssetLoadingDemo
 //===============================================
 // ................................................................................
-// IMPORTANT: checkout main.cpp to see how to compile the asset image
+// IMPORTANT: checkout main.cpp to see how to compile the asset pack
 // magique automatically loads the image from the provided path in Game::run() when it starts
 // You can then register tasks to use all loaded resources in Game::onStartup()
 // These tasks are then executed with the given guarantees after the method returns

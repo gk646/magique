@@ -4,7 +4,7 @@
 ![Version Badge](https://img.shields.io/badge/Version:-0.7.1-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
-`magique` is a **C++ 20** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
+`magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
 It combines your favourite game libraries (*[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
 written modules** into a featureful standalone engine.
 With an **intutive and easy-to-learn API** and **extensive documenation** it is specifically designed to be the basis of

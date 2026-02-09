@@ -60,8 +60,7 @@ namespace magique
     void Menu::onDrawUpdate(const Rectangle& bounds, bool wasDrawn)
     {
         UIContainer::onDrawUpdate(bounds, wasDrawn);
-        const auto size = UIGetTargetResolution();
-        setSize(size.x, size.y);
+        setSize(UIGetTargetResolution());
     }
 
     void Menu::updateInputs()

@@ -33,17 +33,11 @@ namespace magique
             case Shape::TRIANGLE:
                 LOG_ERROR("Shape not supported");
                 break;
-            case Shape::CAPSULE:
-                LOG_ERROR("Shape not supported");
-                break;
             }
         }
 
         void render() const
         {
-            // TODO optimize with custom vertex buffer - could even be filled multithreaded
-            // Preallocate it - like with the hard shadows
-
             rlSetTexture(GetShapesTexture().id);
             const auto shapeRect = GetTexShapesRect();
             const auto& texShapes = GetTexShapes();
@@ -57,7 +51,8 @@ namespace magique
             rlBegin(RL_QUADS);
             for (const auto& p : rectangles)
             {
-                rlColor4ub(p.r, p.g, p.b, p.a);
+                const auto& [r, g, b, a] = p.color;
+                rlColor4ub(r, g, b, a);
                 rlVertex2f(p.pos.x, p.pos.y);
                 rlVertex2f(p.pos.x, p.pos.y + p.p2 * p.scale);
                 rlVertex2f(p.pos.x + p.p1 * p.scale, p.pos.y + p.p2 * p.scale);
@@ -94,17 +89,15 @@ namespace magique
                             auto radialDir = diff / radius;
                             const auto tangentDir = radialDir.perpendicular(true);
 
-                            p.pos.x += radialDir.x * -p.vy + tangentDir.x * p.vx;
-                            p.pos.y += radialDir.y * -p.vy + tangentDir.y * p.vx;
+                            p.pos.x += radialDir.x * -p.veloc.y + tangentDir.x * p.veloc.x;
+                            p.pos.y += radialDir.y * -p.veloc.y + tangentDir.y * p.veloc.x;
 
-                            p.vy += p.emitter->data.angularGravity;
+                            p.veloc.y += p.emitter->data.angularGravity;
                         }
                         else
                         {
-                            p.pos.x += p.vx;
-                            p.pos.y += p.vy;
-                            p.vx += emitter.gravX; // already changed from pixel/s into pixel/tick
-                            p.vy += emitter.gravY;
+                            p.pos += p.veloc;
+                            p.veloc+= emitter.gravity;// already changed from pixel/s into pixel/tick
                         }
 
                         if (emitter.scaleFunc != nullptr)
@@ -114,7 +107,7 @@ namespace magique
 
                         if (emitter.colorFunc != nullptr)
                         {
-                            p.setColor(emitter.colorFunc(p.getColor(), relTime));
+                            p.color = emitter.colorFunc(p.color, relTime);
                         }
 
                         if (emitter.tickFunc != nullptr)
@@ -135,4 +128,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_PARTICLEDATA_H
+#endif // MAGIQUE_PARTICLEDATA_H

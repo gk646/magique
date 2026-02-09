@@ -5,6 +5,7 @@
 #include <entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
 #include <magique/internal/Macros.h>
+#include <magique/core/Core.h>
 
 //===============================
 // ECS Module
@@ -85,23 +86,17 @@ namespace magique
     // Retrieves the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view
     template <typename T>
-    T& ComponentGet(entt::entity entity);
+    T& ComponentGet(entt::entity entity = GetPlayerEntity());
 
     // Returns one or more of the specified components from the entity
     template <typename... T>
-    auto ComponentsGet(entt::entity entity);
+    auto ComponentsGet(entt::entity entity = GetPlayerEntity());
 
     // Tries to retrieve the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view
     // Failure: Returns nullptr if the component is not present on the given entity
     template <typename T>
     T* ComponentTryGet(entt::entity entity);
-
-    // Uses emplace_back to add the component to the given entity
-    // Args are the constructor arguments (if any)
-    // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
-    template <typename Component, typename... Args>
-    Component& ComponentGive(entt::entity entity, Args... args);
 
     // Tries to remove the specified components from the given entities
     template <typename... Args>
@@ -113,6 +108,12 @@ namespace magique
 
     //============== GIVE ==============//
 
+    // Uses emplace_back to add the component to the given entity
+    // Args are the constructor arguments (if any)
+    // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
+    template <typename Component, typename... Args>
+    Component& GiveComponent(entt::entity entity, Args... args);
+
     // Makes the entity collidable with others - Shape: RECT
     // Pass the width and height of the rectangle
     // By passing a rect, an X and Y offset (from the position) can also be specified
@@ -123,11 +124,6 @@ namespace magique
     // Makes the entity collidable with others - Shape: CIRCLE (vertical)
     // Pass the height and the radius of the capsule - circles always rotated around their middle point!
     CollisionC& GiveCollisionCircle(entt::entity entity, float radius);
-
-    // Makes the entity collidable with others - Shape: CAPSULE (vertical)
-    // Pass the height and the radius of the capsule - a capsule cant be rotated
-    // Note: The total height must be greater than 2 * radius!
-    CollisionC& GiveCollisionCapsule(entt::entity entity, float height, float radius);
 
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
@@ -191,7 +187,7 @@ namespace magique
     }
 
     template <class Component, typename... Args>
-    Component& ComponentGive(entt::entity entity, Args... args)
+    Component& GiveComponent(entt::entity entity, Args... args)
     {
         return internal::REGISTRY.emplace<Component>(entity, args...);
     }

@@ -15,7 +15,7 @@
 
 namespace magique
 {
-    using AchievementCallback = void (*)(std::string& name);
+    using AchievementCallback = std::function<void(const std::string& name)>;
 
     // Defines a new achievable achievement and adds it to the system
     // Note: If constraint evaluates to true the achievement is done - only evaluated if not finished
@@ -32,7 +32,7 @@ namespace magique
 
     // Sets the callback for finished achievements
     // Called each time an achievement is finished for the first time
-    void SetAchievementCallback(AchievementCallback callback);
+    void SetAchievementCallback(const AchievementCallback& callback);
 
     // Checks for completion of any achievements
     // Note: This is called automatically every 30 ticks - but may want to be invoked manually at certain points
@@ -40,7 +40,7 @@ namespace magique
 
     //================= PERSISTENCE =================//
 
-    // Returns a json with the achievement state
+    // Returns a JSON with the achievement state
     // Note: Only name and completion state is saved not the constraint (... how would you do that?)
     std::string ExportAchievementsState();
 

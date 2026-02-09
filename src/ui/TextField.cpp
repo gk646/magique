@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
+#include <algorithm>
 
 #include <raylib/raylib.h>
 #include <magique/ui/controls/TextField.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
-#include <magique/util/Math.h>
 
 #include "external/raylib-compat/rcore_compat.h"
 #include "internal/utils/CollisionPrimitives.h"
@@ -31,7 +31,7 @@ namespace magique
         text.reserve(64);
     }
 
-    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor,{}, scaling)
+    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, {}, scaling)
     {
         text.reserve(64);
     }
@@ -75,14 +75,16 @@ namespace magique
     {
         const auto dims = MeasureTextEx(font, text.c_str(), size, spacing);
         const auto startDims = getStartDimensions();
+        const auto height = std::max(dims.y, startDims.y);
         if (heightOnly)
         {
-            setSize(getBounds().width, std::max(dims.y, startDims.y));
+            setSize({getBounds().width, height});
         }
         else
         {
-            setSize(std::max(dims.x + 4, startDims.x), std::max(dims.y, startDims.y));
+            setSize({std::max(dims.x + 4, startDims.x), height});
         }
+        updateLineState();
     }
 
     static bool IsKeyPressedAnyWay(const int key)
@@ -355,7 +357,7 @@ namespace magique
     bool TextField::updateControls()
     {
         // Clamp as safety at the beginning
-        cursorPos = clamp(cursorPos, 0, static_cast<int>(text.size()));
+        cursorPos = std::clamp(cursorPos, 0, static_cast<int>(text.size()));
 
         // Parses controls and returns true if cursor or text have changed
         if (pollControls())
@@ -370,7 +372,7 @@ namespace magique
             const auto newLineEnter = !enterFunc ||
                 !enterFunc(IsKeyDown(KEY_LEFT_CONTROL), IsKeyDown(KEY_LEFT_SHIFT), IsKeyDown(KEY_LEFT_ALT));
 
-            cursorPos = clamp(cursorPos, 0, static_cast<int>(text.size()));
+            cursorPos = std::clamp(cursorPos, 0, static_cast<int>(text.size()));
             updateLineState();
             if (newLineEnter)
             {
@@ -402,7 +404,7 @@ namespace magique
             // Adjust position relative to text start
             Point relPos = pos - textStart;
             relPos.floor();
-            const int mouseLine = clamp((int)std::floor(relPos.y / lineHeight), 0, lineCount - 1);
+            const int mouseLine = std::clamp((int)std::floor(relPos.y / lineHeight), 0, lineCount - 1);
 
             const int size = static_cast<int>(text.size());
             int lineCounter = 0;

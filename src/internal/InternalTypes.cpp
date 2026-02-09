@@ -7,6 +7,9 @@
 
 namespace magique::internal
 {
+
+    // TODO rewrite and simplfy API and remove all of this
+
     void GameSaveStorageCell::grow(const int newSize)
     {
         if (newSize > allocatedSize)

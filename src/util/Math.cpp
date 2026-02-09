@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <algorithm>
+
 #include <magique/internal/Macros.h>
 #include <magique/util/Math.h>
 #include <raylib/raylib.h>
-#include <magique/util/Logging.h>
 #include <magique/util/RayUtils.h>
 
 #include "internal/utils/CollisionPrimitives.h"
@@ -32,7 +33,7 @@ namespace magique
     bool RollWithChance(const float chance)
     {
         const auto rand = GetRandomFloat(0.0F, 1.0F);
-        return rand < clamp(chance, 0.0F, 1.0F);
+        return rand < std::clamp(chance, 0.0F, 1.0F);
     }
 
     bool IsPowerOfTwo(const unsigned int x) { return x != 0 && (x & (x - 1)) == 0; }
@@ -147,24 +148,24 @@ namespace magique
 
     Point GetCirclePosOutline(const Point& middle, const float radius, const float angle)
     {
-        const auto direction = GetDirectionFromAngle(angle);
+        const auto direction = GetDirFromAngle(angle);
         return {middle.x + (direction.x * radius), middle.y + (direction.y * radius)};
     }
 
     Point GetCirclePosRandom(const Point& mid, float radius)
     {
         const auto angle = GetRandomValue(0, 359);
-        const Point dir = GetDirectionFromAngle((float)angle);
+        const Point dir = GetDirFromAngle((float)angle);
         return mid + dir * (GetRandomFloat(0, 1.0F) * radius);
     }
 
-    Point GetDirectionFromAngle(const float angle)
+    Point GetDirFromAngle(const float angle)
     {
         const float radians = (angle + 180) * DEG2RAD;
         return {-sinf(radians), cosf(radians)};
     }
 
-    Point GetDirectionFromPoints(const Point current, const Point target)
+    Point GetDirFromPoints(const Point current, const Point target)
     {
         auto diff = target - current;
         return diff.normalize();
@@ -188,7 +189,7 @@ namespace magique
         return gameAngleDegrees;
     }
 
-    float GetAngleFromDirection(Point dir)
+    float GetAngleFromDir(Point dir)
     {
         const float angle = std::atan2f(dir.y, dir.x);
         const float angleDegrees = angle * RAD2DEG;
@@ -204,7 +205,7 @@ namespace magique
     {
         // Quite funny solution
         // You clamp the point coordinates to the rects side lengths
-        const Point closest = {clamp(p.x, r.x, r.x + r.width), clamp(p.y, r.y, r.y + r.height)};
+        const Point closest = {std::clamp(p.x, r.x, r.x + r.width), std::clamp(p.y, r.y, r.y + r.height)};
         return closest.euclidean(p);
     }
 

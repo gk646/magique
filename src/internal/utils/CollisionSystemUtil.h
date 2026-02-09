@@ -111,8 +111,7 @@ namespace magique
         for (const auto e : colVec)
         {
             auto [pos, col] = group.get<PositionC, CollisionC>(e);
-            pos.x += col.resolutionVec.x;
-            pos.y += col.resolutionVec.y;
+            pos.pos += col.resolutionVec;
             col.resolutionVec = {0, 0};
             for (auto& p : col.dirs)
             {

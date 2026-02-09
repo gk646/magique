@@ -66,7 +66,7 @@ namespace magique
         return entt::null;
     }
 
-    static entt::entity CreateEntityInternal(const entt::entity id, EntityType type, float x, float y, const MapID map,
+    static entt::entity CreateEntityInternal(const entt::entity id, EntityType type, const Point& pos, const MapID map,
                                              const int rotation, const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
@@ -76,7 +76,7 @@ namespace magique
         auto& registry = internal::REGISTRY;
 
         const auto entity = registry.create(id != entt::null ? id : entt::entity{ecs.entityID++});
-        registry.emplace<PositionC>(entity, x, y, map, type, static_cast<uint16_t>(rotation)); // PositionC is default
+        registry.emplace<PositionC>(entity, pos, map, type, static_cast<uint16_t>(rotation)); // PositionC is default
 
         if (withFunc) [[likely]]
         {
@@ -103,14 +103,14 @@ namespace magique
 
     entt::entity EntityCreate(const EntityType type, Point pos, const MapID map, int rotation, const bool withFunc)
     {
-        return CreateEntityInternal(entt::null, type, pos.x, pos.y, map, rotation, withFunc);
+        return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
     }
 
     entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const int rot,
                                 const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
-        return CreateEntityInternal(id, type, pos.x, pos.y, map, rot, withFunc);
+        return CreateEntityInternal(id, type, pos, map, rot, withFunc);
     }
 
     bool EntityDestroy(const entt::entity entity)
@@ -221,7 +221,7 @@ namespace magique
 
     CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
-        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.x, rect.y,
+        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(),
                                                       static_cast<int16_t>(anchor.x), static_cast<int16_t>(anchor.y),
                                                       Shape::RECT);
     }
@@ -233,22 +233,14 @@ namespace magique
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(0),
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, Point{}, static_cast<int16_t>(0),
                                                       static_cast<int16_t>(0), Shape::CIRCLE);
-    }
-
-    CollisionC& GiveCollisionCapsule(const entt::entity e, const float height, const float radius)
-    {
-        MAGIQUE_ASSERT(height > 2 * radius,
-                       "Given capsule is not well defined! Total height has to be greater than 2 * radius");
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, height, 0.0F, 0.0F, 0.0F, 0.0F, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), Shape::CAPSULE);
     }
 
     CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, const int anchorX,
                                  const int anchorY)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, 0.0F, 0.0F,
+        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{},
                                                       static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
                                                       Shape::TRIANGLE);
     }
@@ -359,7 +351,7 @@ namespace magique
         for (const auto e : ComponentGetView<PositionC>())
         {
             const auto& pos = ComponentGet<PositionC>(e);
-            if (pos.map != map || pos.getPosition().euclidean(origin) > size || (filter && !filter(e))) [[likely]]
+            if (pos.map != map || pos.pos.euclidean(origin) > size || (filter && !filter(e))) [[likely]]
             {
                 continue;
             }
@@ -376,7 +368,7 @@ namespace magique
         for (const auto e : ComponentGetView<PositionC>())
         {
             const auto& pos = ComponentGet<PositionC>(e);
-            if (pos.map != map || !bounds.contains(pos.getPosition()) || (filter && !filter(e))) [[likely]]
+            if (pos.map != map || !bounds.contains(pos.pos) || (filter && !filter(e))) [[likely]]
             {
                 continue;
             }

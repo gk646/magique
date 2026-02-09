@@ -20,7 +20,7 @@ namespace magique::renderer
         ResetDrawCallCount();
     }
 
-    inline double EndTick(const double starTime)
+    inline double EndTick(const double startTime)
     {
         const auto& cmdData = global::CONSOLE_DATA;
         auto& perfData = global::PERF_DATA;
@@ -29,9 +29,7 @@ namespace magique::renderer
 
         EndDrawing();
         SwapScreenBuffer();
-        const double frameTime = GetTime() - starTime;
-        perfData.saveTickTime(DRAW, static_cast<uint32_t>(frameTime * SEC_TO_NANOS));
-        return frameTime;
+        return global::PERF_DATA.drawTick.add(GetTime() - startTime);
     }
 
     inline double Tick(const double startTime, Game& game, const entt::registry& registry)
@@ -45,13 +43,13 @@ namespace magique::renderer
                 HandleLoadingScreen(game); // Loading screen
                 return EndTick(startTime);
             }
-            game.onRenderGame(gameState, CameraGet()); // User draw tick
-            InternalRenderPost();                  // Post user tick render tasks
-            game.onRenderUI(gameState);                // User UI raw tick
+            game.onDrawGame(gameState, CameraGet()); // User draw tick
+            InternalRenderPost();                    // Post user tick render tasks
+            game.onDrawUI(gameState);                // User UI raw tick
         }
         return EndTick(startTime);
     }
 
 } // namespace magique::renderer
 
-#endif //MAGIQUE_RENDERER_H
+#endif // MAGIQUE_RENDERER_H

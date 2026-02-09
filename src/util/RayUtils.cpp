@@ -203,7 +203,7 @@ namespace magique
         DrawRectangleRec(filledBounds, tint);
     }
 
-    void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
+    void DrawTextCenteredRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
                               const Color& tint)
     {
         const auto dims = MeasureTextEx(fnt, txt, fs, spacing);
@@ -349,5 +349,24 @@ namespace magique
         dragStartWorld = newTarget;
         dragStartScreen = GetMousePos();
     }
+
+    Point GetGamePadLeftStick(int gamepad)
+    {
+        Point p;
+        p.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_X);
+        p.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_Y);
+        return p;
+    }
+
+    Point GetGamePadRightStick(int gamepad)
+    {
+        Point p;
+        p.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_X);
+        p.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_Y);
+        return p;
+    }
+
+
+    bool IsUsingGamepad() { return false; }
 
 } // namespace magique

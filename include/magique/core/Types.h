@@ -5,6 +5,7 @@
 #include <array>
 #include <string>
 #include <magique/fwd.hpp>
+#include <raylib/raylib.h>
 
 //===============================================
 // Types Modules
@@ -24,7 +25,7 @@ namespace magique
         Point() = default;
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
-        explicit constexpr Point(float both) : x(both), y(both) {}
+        constexpr Point(float both) : x(both), y(both) {}
 
         // With other points
         bool operator==(const Point& p) const;
@@ -36,13 +37,14 @@ namespace magique
         Point operator*(const Point& other) const;
         Point& operator*=(const Point& p);
         Point operator/(const Point& p) const;
+        bool operator<(const Point& p) const; // For both
+        Point& operator/=(const Point& p);
 
         // With numbers
         [[nodiscard]] Point operator*(float i) const;
-        bool operator<(float num) const;      // For both
-        bool operator<(const Point& p) const; // For both
-        bool operator<=(float num) const;     // For both
-        bool operator==(float num) const;     // For both
+        bool operator<(float num) const;  // For both
+        bool operator<=(float num) const; // For both
+        bool operator==(float num) const; // For both
         Point operator/(float divisor) const;
         Point operator-(float f) const;
         Point operator+(float f) const; // To both
@@ -61,8 +63,6 @@ namespace magique
         Vector2 v() const; // Convert into raylib vector
         int intx() const;
         int inty() const;
-
-        // Vector functions
 
         // How much vectors point in the same direction - positive if less than 90 degrees - negative if more
         float dot(const Point& p) const;
@@ -89,6 +89,8 @@ namespace magique
         // uses std::ceil()
         Point& ceil();
 
+        Point floor() const;
+
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
 
@@ -98,7 +100,7 @@ namespace magique
         // Returns the perpendicular vector to this one - either to the left or to the right
         Point perpendicular(bool left) const;
 
-        // Assigns both values to the maximum/minimum value of both points
+        // Assigns x to the max of "this.x" and "other.x"; same for y (separate check)
         void max(const Point& other);
         void min(const Point& other);
 
@@ -122,7 +124,9 @@ namespace magique
         // Returns the rect the is spanned by the two points
         static Rect FromSpanPoints(const Point& p1, const Point& p2);
 
-        Rect& operator+=(float num);      // only x and y
+        // Returns a rectangle that is centered on p with the given size
+        static Rect CenteredOn(const Point& p, const Point& size);
+
         Rect& operator+=(const Point& p); // only x and y
         Rect& operator=(const Point& p);  // only x and y
 
@@ -153,7 +157,7 @@ namespace magique
         Point size() const;
         Point mid() const;
 
-        // Returns the point on the inside of the rect closest to p
+        // Returns the point on the inside of rect area closest to p
         Point closestInside(const Point& p) const;
 
         // Returns the point on the outline of the rect closest to p
@@ -164,19 +168,9 @@ namespace magique
 
         // Enlarges the rect in x and y direction by size such that it stays centered on its current center
         Rect enlarge(float size) const;
-
-        // Returns a rectangle that is centered on p with the given size
-        static Rect CenteredOn(const Point& p, const Point& size);
     };
 
     //================= CORE =================//
-
-    enum class LightingMode
-    {
-        NONE,           // Default
-        STATIC_SHADOWS, // Fast but only hard shadows - max of 1k+ objects
-        RAY_TRACING,    // Slow but provides global illumination - max of ~50 object
-    };
 
     //================= ASSETS =================//
 
@@ -344,8 +338,8 @@ namespace magique
         uint32_t second = 0;
         uint32_t third = 0;
         uint32_t fourth = 0;
-        friend Checksum GetAssetImageChecksum(const char* path);
-        friend bool ValidateAssetImage(Checksum, const char*);
+        friend Checksum AssetPackChecksum(const char* path);
+        friend bool AssetPackValidate(Checksum, const char*);
     };
 
     //================= ECS =================//
@@ -376,7 +370,6 @@ namespace magique
     {
         RECT,     // Rectangle
         CIRCLE,   // Circle - rotated around its middle point
-        CAPSULE,  // Capsule (vertical - non rotated) - https://docs.unity3d.com/Manual/class-CapsuleCollider2D.html
         TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
     };
 
@@ -586,11 +579,24 @@ namespace magique
         CLIENT_LOCAL_PROBLEM,
     };
 
+    // A network message object to be sent via the network - should be used directly and not stored
+    // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
+    // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)
     struct Payload final
     {
         const void* data; // Direct pointer to the given data
         int size;         // Valid size of the data
         MessageType type; // Type of the message (very useful for handling messages on the receiver)
+
+        // Constructor
+        template <typename T>
+        Payload(const T&, MessageType type) : data(&data), size(sizeof(T)), type(type)
+        {
+        }
+
+        Payload(const void* data, int size, MessageType type) : data(data), size(size), type(type) {}
+
+        Payload() = default;
 
         // Cast the payload data to an object of the given type and returns it - uses *static_cast
         template <typename T>
@@ -694,8 +700,9 @@ namespace magique
         // Scales only the dimensions by the current screen height - used for most things and with a distinct shape (square...)
         // In this mode you should use anchor points or align() to position the object as the static position will not fit the size anymore
         KEEP_RATIO,
-        // Object is not changed at all by different resolutions - should only be used in special cases
-        NONE,
+        // Dimensions are taken in absolute values and not scaled at all
+        // Size of object is not changed at all by different resolutions
+        ABSOLUTE,
     };
 
     enum class SliderMode : uint8_t
@@ -706,57 +713,68 @@ namespace magique
 
     //================= HELPER TYPES =================//
 
+    enum KeyBindType : uint8_t
+    {
+        Mouse,
+        Keyboard,
+        Controller,
+    };
+
     // Representation of a keybind with optional modifiers
-    // Also works with mouse buttons e.g. enum MouseButton (left, right and middle)
+    // Also works with mouse buttons (left, right and middle)
+    // If layered uses LayeredInput API
     struct Keybind final
     {
         Keybind() = default;
-        explicit Keybind(int key, bool layered = true, bool shift = false, bool ctrl = false, bool alt = false);
 
-        bool operator==(const Keybind& other) const;
+        Keybind(KeyboardKey key, bool layered = true, bool shift = false, bool ctrl = false, bool alt = false);
+        Keybind(MouseButton mouse, bool layered = true, bool shift = false, bool ctrl = false, bool alt = false);
+        Keybind(GamepadButton gamepad, bool layered = true);
 
+        bool operator==(const Keybind& other) const = default;
+
+        // Gamepad only used for gamepad bindings
         // Uses direct input polling (e.g. IsKeyDown())
-        [[nodiscard]] bool isPressed() const;
-        [[nodiscard]] bool isDown() const;
+        // Modifiers are checked to be down in both isPressed and isDown
+        [[nodiscard]] bool isPressed(int gamepad = 0) const;
+        [[nodiscard]] bool isDown(int gamepad = 0) const;
         // Returns true if the base key OR any modifiers are released
-        [[nodiscard]] bool isReleased() const;
+        [[nodiscard]] bool isReleased(int gamepad = 0) const;
 
         // Returns the base key code
         [[nodiscard]] int getKey() const;
         [[nodiscard]] bool hasShift() const;
         [[nodiscard]] bool hasCtrl() const;
         [[nodiscard]] bool hasAlt() const;
-        [[nodiscard]] bool isUIInput() const;
+        [[nodiscard]] bool isLayered() const;
 
-        // Returns true if its keybind for a mouse button
-        bool isMouse() const;
+        KeyBindType getType() const;
 
     private:
-        int key = 0;
+        int16_t key = 0;
+        KeyBindType type;
         bool layered = true;
         bool shift = false;
         bool ctrl = false;
         bool alt = false;
+        bool isModifierDown() const;
         friend struct glz::meta<Keybind>;
     };
 
     struct ScreenParticle final
     {
-        const ScreenEmitter* emitter; // Function pointers are shared across all instances
         Point pos;                    // Current particles position
+        Point veloc;                  // Velocity
         Point emissionCenter;         // Center of the emission shape - for angular movement
+        const ScreenEmitter* emitter; // Function pointers are shared across all instances
+        float scale;                  // Current scale
+        Color color;                  // Current color
         int16_t p1;                   // RECT: width  / CIRCLE: radius
         int16_t p2;                   // RECT: height
-        float vx, vy;                 // Velocity
-        float scale;                  // Current scale
         uint16_t age;                 // Current age
         uint16_t lifeTime;            // Lifetime
         Shape shape;                  // Shape
-        uint8_t r, g, b, a;           // Current color
         bool angular = false;         // If gravity is angular or not
-
-        [[nodiscard]] Color getColor() const;
-        void setColor(const Color& color);
     };
 
     // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSaveData...)
@@ -806,52 +824,6 @@ namespace magique
         int size;   // The size of the data pointer in bytes
         friend void UnCompressImage(char*&, int&);
     };
-
-    // Array Iterator template
-    template <typename T>
-    class Iterator
-    {
-    public:
-        using value_type = T;
-        using difference_type = int64_t;
-        using pointer = T*;
-        explicit Iterator(pointer ptr) : ptr_(ptr) {}
-        T& operator*() { return *ptr_; }
-        const T& operator*() const { return *ptr_; }
-        pointer operator->() { return ptr_; }
-        Iterator& operator++()
-        {
-            ++ptr_;
-            return *this;
-        }
-        Iterator operator++(int)
-        {
-            Iterator tmp = *this;
-            ++ptr_;
-            return tmp;
-        }
-        Iterator& operator--()
-        {
-            --ptr_;
-            return *this;
-        }
-        Iterator operator--(int)
-        {
-            Iterator tmp = *this;
-            --ptr_;
-            return tmp;
-        }
-        Iterator operator+(difference_type offset) const { return Iterator(ptr_ + offset); }
-        Iterator operator-(difference_type offset) const { return Iterator(ptr_ - offset); }
-        difference_type operator-(const Iterator& other) const { return ptr_ - other.ptr_; }
-        T& operator[](difference_type index) const { return ptr_[index]; }
-        bool operator==(const Iterator& other) const { return ptr_ == other.ptr_; }
-        bool operator!=(const Iterator& other) const { return ptr_ != other.ptr_; }
-
-    private:
-        pointer ptr_;
-    };
-
 
 } // namespace magique
 

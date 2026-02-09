@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/controls/Window.h>
-#include <magique/ui/UI.h>
 
 #include "internal/globals/UIData.h"
 #include "internal/globals/EngineConfig.h"
-#include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {
@@ -44,17 +42,18 @@ namespace magique
     Rectangle Window::getBodyBounds() const
     {
         const auto& ui = global::UI_DATA;
-        Rectangle bounds{px, py + moverHeightP, pw, ph - moverHeightP};
+        Rect bounds{pBounds.x, pBounds.y + moverHeightP, pBounds.w, pBounds.h - moverHeightP};
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds;
+        return bounds.v();
     }
 
     Rectangle Window::getTopBarBounds() const
     {
         const auto& ui = global::UI_DATA;
-        Rectangle bounds{px, py, pw, moverHeightP};
+        Rect bounds = pBounds;
+        bounds.h = moverHeightP;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds;
+        return bounds.v();
     }
 
     bool Window::getIsDragged() const { return isDragged; }
@@ -66,7 +65,6 @@ namespace magique
         bool alreadyDragging = !IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && isDragged;
         bool startDrag = LayeredInput::IsMouseButtonDown(mouseButton) && contained;
         bool isDragging = startDrag || alreadyDragging;
-
         if (isDragging)
         {
             if (!isDragged)

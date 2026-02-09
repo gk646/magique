@@ -40,7 +40,7 @@ namespace magique
         Point targetPosition{0, 0};
         if (cameraEntity != entt::entity{UINT32_MAX}) [[unlikely]] // No camera assigned
         {
-            targetPosition = internal::REGISTRY.get<PositionC>(cameraEntity).getPosition().floor();
+            targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floor();
         }
 
         // Apply manual offset if specified
@@ -63,10 +63,6 @@ namespace magique
                 case Shape::CIRCLE:
                     targetPosition.x += coll->p1;
                     targetPosition.y += coll->p1;
-                    break;
-                case Shape::CAPSULE:
-                    targetPosition.x += coll->p1;
-                    targetPosition.y += coll->p2 / 2.0F;
                     break;
                 case Shape::TRIANGLE:
                     break;
@@ -99,7 +95,7 @@ namespace magique
 
             const auto& pos = group.get<const PositionC>(e);
             const auto& col = group.get<const CollisionC>(e);
-            if (!camBounds.contains(pos.getPosition()))
+            if (!camBounds.contains(pos.pos))
             {
                 continue;
             }
@@ -107,18 +103,16 @@ namespace magique
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
-                DrawRectangleLinesRot({pos.x + col.offX, pos.y + col.offY, col.p1, col.p2}, pos.rotation, col.anchorX,
+                DrawRectangleLinesRot(Rect{pos.pos + col.offset, {col.p1, col.p2}}.v(), pos.rotation, col.anchorX,
                                       col.anchorY, RED);
                 break;
             case Shape::CIRCLE:
-                DrawCircleLinesV({pos.x + col.p1, pos.y + col.p1}, col.p1, RED);
-                break;
-            case Shape::CAPSULE:
-                DrawCapsule2DLines(pos.x, pos.y, col.p1, col.p2, RED);
+                DrawCircleLinesV(pos.getMiddle(col).v(), col.p1, RED);
                 break;
             case Shape::TRIANGLE:
-                DrawTriangleLinesRot({pos.x, pos.y}, {pos.x + col.p1, pos.y + col.p2}, {pos.x + col.p3, pos.y + col.p4},
-                                     pos.rotation, col.anchorX, col.anchorY, RED);
+                DrawTriangleLinesRot({pos.pos.x, pos.pos.y}, {pos.pos.x + col.p1, pos.pos.y + col.p2},
+                                     {pos.pos.x + col.p3, pos.pos.y + col.p4}, pos.rotation, col.anchorX, col.anchorY,
+                                     RED);
                 break;
             }
         }
@@ -320,7 +314,6 @@ namespace magique
 
     inline void InternalRenderPost()
     {
-        RenderLighting(internal::REGISTRY);
         RenderOverlays();
         if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
             RenderHitboxes();
@@ -328,4 +321,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //RENDERUTIL_H
+#endif // RENDERUTIL_H

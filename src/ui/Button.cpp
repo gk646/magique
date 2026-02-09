@@ -7,11 +7,15 @@
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
 #include "magique/core/Core.h"
+#include "magique/core/Draw.h"
 #include "magique/util/RayUtils.h"
 
 namespace magique
 {
-    Button::Button(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
+    Button::Button(const float x, const float y, const float w, const float h, ScalingMode mode) :
+        UIObject(x, y, w, h, mode)
+    {
+    }
 
     Button::Button(const float w, const float h, const Anchor anchor, Point inset) : UIObject(w, h, anchor, inset) {}
 
@@ -56,7 +60,7 @@ namespace magique
         }
     }
 
-    void Button::drawDefault(const Rectangle& bounds) const
+    void Button::drawDefault(const Rectangle& bounds)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
@@ -80,6 +84,28 @@ namespace magique
         DrawRectFrameFilled(textRect, back, outline);
         mouse += Point{1, 2};
         DrawTextEx(fnt, hoverText.c_str(), mouse.v(), size, 1.0F, text);
+    }
+
+    TextButton::TextButton(const char* text, ScalingMode mode) : Button(0, 0, 50, 10, mode), text(text)
+    {
+    }
+
+    void TextButton::fitToText(const Font& font, float size)
+    {
+        setSize(Point{MeasureTextEx(font, text.c_str(), size, 1.0F)} + Point{2});
+    }
+
+    std::string& TextButton::getText() { return text; }
+
+    const std::string& TextButton::getText() const { return text; }
+
+    void TextButton::drawDefault(const Rectangle& bounds)
+    {
+        auto size = UIGetScaled(15);
+        const auto& font = GetEngineFont();
+        fitToText(font, size);
+        Button::drawDefault(bounds);
+        DrawTextCenteredRect(font, text.c_str(), size, bounds, 1.0F, global::ENGINE_CONFIG.theme.textActive);
     }
 
 

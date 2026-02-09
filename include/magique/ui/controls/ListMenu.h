@@ -60,7 +60,7 @@ namespace magique
         int getSelectedIndex() const;
         const char* getSelected() const;
         // Use -1 to clear
-        void setSelected(int index);
+        void setSelected(int index = -1);
 
         // Allows to set a custom callback called everytime a (new) value is selected
         void setOnSelect(const SelectFunc& func);

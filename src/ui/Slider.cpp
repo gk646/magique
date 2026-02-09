@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
+#include <algorithm>
 #include <raylib/raylib.h>
 
 #include <magique/ui/controls/Slider.h>
@@ -93,7 +94,7 @@ namespace magique
         if (isDragged && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             const auto delta = GetMouseDelta();
-            sliderPos = clamp(sliderPos + delta.x / bounds.width, 0.0F, 1.0F);
+            sliderPos = std::clamp(sliderPos + delta.x / bounds.width, 0.0F, 1.0F);
         }
         else
         {

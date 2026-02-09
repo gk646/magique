@@ -9,7 +9,6 @@
 #include <entt/entity/entity.hpp>
 
 
-
 //-----------------------------------------------
 // Engine Data
 //-----------------------------------------------
@@ -54,13 +53,13 @@ namespace magique
         std::vector<entt::entity> entityUpdateVec;   // Vector containing the entities to update for this tick
         std::vector<entt::entity> drawVec;           // Vector containing all entities to be drawn this tick
         std::vector<MapID> loadedMaps{};             // Currently loaded zones
-     std::vector<entt::entity> collisionVec;           // Vector containing the entities to check for collision
+        std::vector<entt::entity> collisionVec;      // Vector containing the entities to check for collision
         CameraShakeData cameraShake{};               // Data about the current camera shake
         GameConfig gameConfig{};                     // Global game config instance
         Camera2D camera{};                           // Current camera
         Game* gameInstance;                          // The game instance created by the user
         entt::entity cameraEntity{UINT32_MAX};       // Entity id of the camera
-        GameState gameState{INT32_MAX};              // Global gamestate
+        GameState gameState{UINT8_MAX};              // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX);          // Map the camera is in
         QueryData nearbyQueryData;                   // Caches the parameters of the last query to skip similar calls
         entt::entity playerEntity = entt::null;      // Manually set player entity
@@ -110,8 +109,8 @@ namespace magique
             if (shake.maxDist <= 0.1F && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
             {
                 shake.veloc = {0, 0};
-                //camera.target.x = 0;
-                //camera.target.y = 0;
+                // camera.target.x = 0;
+                // camera.target.y = 0;
             }
         }
     };
@@ -123,4 +122,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_ENGINE_DATA_H
+#endif // MAGIQUE_ENGINE_DATA_H

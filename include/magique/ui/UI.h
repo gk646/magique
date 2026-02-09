@@ -47,7 +47,7 @@ namespace magique
 
     // Sets the logical ui resolution in which all numbers are interpreted
     // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel art with fixed resolutions
-    void UISetSourceResolution(float width, float height);
+    void UISetSourceResolution(Point resolution);
 
     // Sets the resolution the UI scales TO - if set to (0,0) display resolution is used
     // Note: This is useful if your using different render targets
@@ -83,6 +83,10 @@ namespace magique
         static bool IsMouseButtonDown(int key);
         static bool IsMouseButtonReleased(int key);
 
+        static bool IsGamepadButtonPressed(int gamepad, int key);
+        static bool IsGamepadButtonDown(int gamepad, int key);
+        static bool IsGamepadButtonReleased(int gamepad, int key);
+
         // Consume the input for this tick - all input methods after this will return false
         static void ConsumeKey();
         static void ConsumeMouse();
@@ -106,4 +110,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_UI_H
+#endif // MAGIQUE_UI_H

@@ -7,16 +7,15 @@
 #include "fwd.hpp"
 
 // Assets
-#include "assets/AssetPacker.h"
-#include "assets/AssetManager.h"
+#include "assets/AssetContainer.h"
+#include "assets/AssetImport.h"
 #include "assets/AssetLoader.h"
-#include "assets/FileImports.h"
-#include "assets/HandleRegistry.h"
-#include "assets/container/AssetContainer.h"
+#include "assets/AssetPacker.h"
 #include "assets/types/Playlist.h"
 #include "assets/types/TileMap.h"
 #include "assets/types/TileSet.h"
 #include "assets/types/TileSheet.h"
+#include "assets/types/TextLines.h"
 
 // Core
 #include "core/Animations.h"
@@ -36,6 +35,7 @@
 #include "ecs/Components.h"
 #include "ecs/ECS.h"
 #include "ecs/Scripting.h"
+#include "ecs/GameSystems.h"
 
 // Gamedev
 #include "gamedev/Achievements.h"

@@ -91,11 +91,9 @@ namespace magique
         // Note: Default shape is Rect with dimensions (5,5)
 
         // Sets the emission shape to be a rect
-        // Pass the width and height of the rectangle
         EmitterBase& setParticleShapeRect(float width, float height);
 
-        // ets the emission shape to be a rect
-        // Pass the height and the radius of the capsule
+        // Sets the emission shape to be a circle
         EmitterBase& setParticleShapeCircle(float radius);
 
         // Sets the color of emitted particles

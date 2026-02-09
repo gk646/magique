@@ -50,7 +50,7 @@ namespace magique::internal
             return false;
         }
 
-        if (pl < 0 || pl > CRITICAL)
+        if (pl > CRITICAL)
         {
             LOG_WARNING("Tried to register task with invalid priority");
             return false;
@@ -233,7 +233,7 @@ namespace magique::internal
             {
                 return;
             }
-            LOG_INFO("Finished Task: Impact: %2d | Progress: %d/%d %.0f%%", task->impact, loadedImpact.load(),
+            LOG_INFO("Finished Task: Impact: %02d | Progress: %d/%d %.0f%%", task->impact, loadedImpact.load(),
                      totalImpact, getProgressPercent());
         }
 
@@ -252,4 +252,4 @@ namespace magique::internal
         friend struct ITask<T>;
     };
 } // namespace magique::internal
-#endif //MAGIQUE_TASKEXECUTOR_H_
+#endif // MAGIQUE_TASKEXECUTOR_H_

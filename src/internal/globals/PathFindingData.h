@@ -4,7 +4,6 @@
 
 #include <magique/core/Types.h>
 
-#include "external/cxstructs/cxstructs/PriorityQueue.h"
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/datastructures/PathFindingStructs.h"
@@ -38,7 +37,7 @@ namespace magique
         std::vector<Point> pathCache;
         StaticDenseLookupGrid<bool, 200> visited{};
         StaticDenseLookupGrid<float, 200> openCost{};
-        cxstructs::PriorityQueue<GridNode> frontier{500};
+        PriorityQueue<GridNode> frontier{500};
         GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_CAPACITY];
 
         // Lookup table for entity types and entities
@@ -192,7 +191,7 @@ namespace magique
                 nodePool[iteration] = frontier.top();
                 auto& current = nodePool[iteration];
 
-                float currentDistance = current.fCost;
+                const auto currentDistance = current.fCost;
                 if (currentDistance < bestDistance)
                 {
                     bestDistance = currentDistance;

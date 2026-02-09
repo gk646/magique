@@ -1,6 +1,7 @@
 #ifndef BATCHUTIL_H
 #define BATCHUTIL_H
 
+// TODO Probably remove as it does it internally
 namespace magique
 {
     struct BatchBuffer final
@@ -99,9 +100,7 @@ namespace magique
                 Message batchedMsg{};
                 batchedMsg.connection = message.connection;
                 batchedMsg.timeStamp = message.timeStamp;
-                batchedMsg.payload.size = size;
-                batchedMsg.payload.data = data + off;
-                batchedMsg.payload.type = type;
+                batchedMsg.payload = Payload{data+off, size, type};
 
                 if (type == MAGIQUE_LOBBY_PACKET_TYPE)
                 {

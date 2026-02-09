@@ -10,10 +10,10 @@ namespace magique
         global::UI_DATA.resetConsumed();
         global::TWEEN_DATA.update();
         global::CONSOLE_DATA.update();  // First in case needs to block input
-        InputSystem();                  // Before gametick per contract (scripting system)
         global::PARTICLE_DATA.update(); // Order doesnt matter
+        InputSystem();                  // Before gametick per contract (scripting system)
         LogicSystem(registry);          // Before gametick cause essential
-                                        //        global::PATH_DATA.updateDynamicGrid();
+
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
         if (config.showPerformanceOverlay)
@@ -49,7 +49,7 @@ namespace magique
 #elif MAGIQUE_LAN
         global::MP_DATA.update();
 #endif
-        global::UI_DATA.update(); // Before so we can layer input
+        global::UI_DATA.onUpdateTick(); // Before user tick so we can layer input
     }
 
     inline void InternalUpdatePost() // After user space update

@@ -23,7 +23,7 @@ struct glz::meta<Achievement>
 namespace magique
 {
     inline std::vector<Achievement> ACHIEVEMENTS{};
-    inline AchievementCallback CALL_BACK = nullptr;
+    inline AchievementCallback CALL_BACK;
 
     Achievement* GetAchievement(const std::string& name)
     {
@@ -55,7 +55,7 @@ namespace magique
 
         a->isFinished = true;
 
-        if (CALL_BACK != nullptr)
+        if (CALL_BACK)
             CALL_BACK(a->name);
 
         return true;

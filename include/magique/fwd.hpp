@@ -7,7 +7,7 @@
 
 //================= USER DEFINED =================//
 
-enum class GameState : int;     // Identifies different game states
+enum class GameState : uint8_t; // Identifies different game states
 enum EntityType : uint16_t;     // Identifies entity types       - uses uint16_t to be small for networking
 enum class MapID : uint8_t;     // Identifies maps               - uses uint8_t  to be small for networking
 enum class HandleID : int;      // Identifies handles
@@ -149,7 +149,7 @@ namespace entt
 
 namespace glz
 {
-    template<typename T>
+    template <typename T>
     struct meta;
 }
 

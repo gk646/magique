@@ -72,7 +72,8 @@ namespace magique
     // Either fills up in the given direction
     void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, const Color& tint);
 
-    void DrawCenteredTextRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
+    // Draws text horizontally & vertically centered inside the rectangle
+    void DrawTextCenteredRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
                               const Color& tint);
 
     // Draws a 2d rectangle with a shade at the bottom
@@ -110,7 +111,14 @@ namespace magique
         Point dragStartWorld{};
     };
 
+    Point GetGamePadLeftStick(int gamepad);
+    Point GetGamePadRightStick(int gamepad);
+
+    // Returns true if a gamepad was used in some way
+    // This is smart - e.g. if a gamepad is used returns true for as long as mouse+keyboard input is detected
+    // Then switches back when gamepad inputs are detected
+    bool IsUsingGamepad();
 
 } // namespace magique
 
-#endif //MAGIQUE_RAYUTILS_H
+#endif // MAGIQUE_RAYUTILS_H

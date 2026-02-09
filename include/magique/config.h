@@ -47,7 +47,7 @@
 // Sets the coarseness/size of the pathfinding grid
 // The smaller, the more accurate the pathing but the longer it takes to calculate
 // Note: Must be a power of two (16,32,64 -> shouldn't be bigger than that)
-#define MAGIQUE_PATHFINDING_CELL_SIZE (8)
+#define MAGIQUE_PATHFINDING_CELL_SIZE (16)
 
 // Controls the maximum amount of tiles that can be evaluated in a single search
 // Note: This is the total number of search iterations - you can specify a path length limit individually

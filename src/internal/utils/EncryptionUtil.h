@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_SECURITY_H
 #define MAGIQUE_SECURITY_H
 
+// TODO insert aes tiny c implemetation https://github.com/kokke/tiny-AES-c
+
 // Simple xor encryption with a 64-bit key - should generally be enough
 // https://reverseengineering.stackexchange.com/questions/2062/what-is-the-most-efficient-way-to-detect-and-to-break-xor-encryption
 

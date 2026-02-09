@@ -14,8 +14,6 @@
 
 namespace magique
 {
-    Payload CreatePayload(const void* data, const int size, const MessageType type) { return Payload{data, size, type}; }
-
     void BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
     {
         MAGIQUE_ASSERT(payload.size > 0, "Passed invalid input parameters");
@@ -33,6 +31,11 @@ namespace magique
         auto& data = global::MP_DATA;
         global::BATCHER.batchMessage(data.outMsgBuffer, conn, payload.data, payload.type, payload.size, flag);
         global::MP_DATA.statistics.addOutgoing(payload.type, payload.size);
+    }
+
+    void BatchToHost(const Payload payload, const SendFlag flag)
+    {
+        BatchMessage(GetCurrentConnections().front(), payload, flag);
     }
 
     void BatchMessageToAll(const Payload payload, const SendFlag flag)

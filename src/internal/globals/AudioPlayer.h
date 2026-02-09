@@ -5,8 +5,6 @@
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
 
-
-
 namespace magique
 {
     struct Track final

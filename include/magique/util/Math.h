@@ -17,10 +17,6 @@ namespace magique
 {
     //================= FUNCTIONS =================//
 
-    // Clamps the given value - returns low if values is smaller than it, high if value is bigger than it, else val itself
-    template <typename T>
-    constexpr T clamp(T val, T low, T high);
-
     // Returns the value at the given step (0 to 1) on the scale between min and max - linear interpolation
     //      - step: value between 0 and 1 (inclusive) of where on the scale the value is
     float Lerp(float min, float max, float step);
@@ -91,17 +87,17 @@ namespace magique
 
     // Returns the direction vector of the given angle
     //      - angle: 0-360 starting from the top clockwise
-    Point GetDirectionFromAngle(float angle);
+    Point GetDirFromAngle(float angle);
 
     // Returns a normalized direction vector that points from the current to the target position
     // This is useful for moving the entity towards the next tile (pos.x += direction.x * movementSpeed)
-    Point GetDirectionFromPoints(Point current, Point target);
+    Point GetDirFromPoints(Point current, Point target);
 
     // Returns the angle that spans from the current to target point
     float GetAngleFromPoints(Point current, Point target);
 
     // Returns the angle in which the direction vector points - starting at 0 at 12'o clock
-    float GetAngleFromDirection(Point dir);
+    float GetAngleFromDir(Point dir);
 
     // Returns the shortest possible distance to connect point p with rect r
     float GetShortestDistToRect(Point p, const Rectangle& r);
@@ -118,22 +114,9 @@ namespace magique
 
 //================= IMPLEMENTATION =================//
 
+
 namespace magique
 {
-
-    template <typename T>
-    constexpr T clamp(T val, T low, T high)
-    {
-        if (val < low)
-        {
-            return low;
-        }
-        if (val > high)
-        {
-            return high;
-        }
-        return val;
-    }
 
     template <typename T>
     const T* PickRandomElement(const std::vector<T>& pool)

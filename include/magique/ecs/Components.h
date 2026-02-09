@@ -21,18 +21,18 @@ namespace magique
     // MUST NOT be removed
     struct PositionC final
     {
-        float x, y;        // Position of the top left corner (care when using circles)!
+        Point pos;         // Position of the top left corner (care when using circles)!
         MapID map;         // The current map id of the entity
         EntityType type;   // Type of the entity
         uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
 
         [[nodiscard]] float getRotation() const;
 
-        // Returns the position as point
-        [[nodiscard]] Point getPosition() const;
-
         // Returns the middle point by factoring in the collision shape
-        [[nodiscard]] Point getMiddle(const CollisionC& collisionC) const;
+        [[nodiscard]] Point getMiddle(const CollisionC& col) const;
+
+        // Returns the bounding rectangle of the entity (a rect that fully contains its shape)
+        [[nodiscard]] Rect getBounds(const CollisionC& collisionC) const;
 
         bool operator==(const PositionC&) const;
     };
@@ -49,11 +49,11 @@ namespace magique
 
     struct CollisionC final
     {
-        float p1 = 0.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F; // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F; //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F; //                                                   / TRIANGLE: offsetY2
-        float offX, offY;
+        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
+        float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
+        float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
+        Point offset;              // Offset from top left
         int16_t anchorX = 0;       // Rotation anchor point for the hitbox
         int16_t anchorY = 0;       // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape

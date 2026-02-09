@@ -15,7 +15,7 @@ enum EntityType : uint16_t
     STATIC_CAMERA, // In this example the camera is static and not attached to a entity
 };
 
-enum class GameState
+enum class GameState : uint8_t
 {
     GAME,
     GAME_OVER,

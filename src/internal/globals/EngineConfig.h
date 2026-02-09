@@ -35,8 +35,8 @@ namespace magique
         Theme theme{};
         Font font{};                                // Font
         Timing timing;                              // Thread timing information
-        Vector2 cameraViewOff{};                    // Manual camera view offset
-        Vector2 cameraPositionOff{};                // Manual camera position offset
+        Point cameraViewOff{};                      // Manual camera view offset
+        Point cameraPositionOff{};                  // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
         float entityUpdateDistance = 2500;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
@@ -45,7 +45,6 @@ namespace magique
         int benchmarkTicks = 0;                     // Ticks to run the game for
         uint16_t entityCacheDuration = 300;         // Ticks entities are still updated after they are out of range
         LogLevel logLevel = LEVEL_INFO;             // All above info are visible
-        LightingMode lighting = LightingMode::NONE; // Current selected lighting mode
         bool showPerformanceOverlay = true;         // Status of the performance overlay
         bool showPerformanceOverlayExt = true;      // Status of the extended performance overlay
         bool showEntityOverlay = false;             // Status of the entity overlay
@@ -62,7 +61,7 @@ namespace magique
             Theme adwaita{};
             adwaita.textActive = WHITE;
             adwaita.textPassive = Color{163, 163, 163, 255};
-            adwaita.textSubject = Color{81,171,250,255};
+            adwaita.textSubject = Color{81, 171, 250, 255};
             adwaita.backSelected = Color{68, 68, 68, 255};
             adwaita.backLight = Color{48, 48, 48, 255};
             adwaita.backDark = Color{30, 30, 30, 255};
@@ -78,4 +77,4 @@ namespace magique
     }
 
 } // namespace magique
-#endif //MAGIQUE_ENGINE_CONFIG_H
+#endif // MAGIQUE_ENGINE_CONFIG_H

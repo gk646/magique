@@ -57,7 +57,7 @@ void TrollScript::onTick(entt::entity self, bool updated)
 {
     auto& pos = GetComponent<PositionC>(self);
     auto& col = GetComponent<CollisionC>(self);
-    for (const auto e : GetNearbyEntities(pos.map, pos.getPosition(), 1000))
+    for (const auto e : GetNearbyEntities(pos.map, pos.pos, 1000))
     {
         if (EntityIsActor(e))
         {

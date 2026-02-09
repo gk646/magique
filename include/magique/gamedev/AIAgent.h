@@ -200,6 +200,7 @@ namespace magique
         };
         memories.forLastN(5, func);
     }
+
     template <class StateEnum, class EventEnum>
     StateEnum AIAgent<StateEnum, EventEnum>::findBestState(EventEnum event)
     {

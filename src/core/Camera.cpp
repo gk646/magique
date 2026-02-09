@@ -77,7 +77,7 @@ namespace magique
         for (const auto actor : ComponentGetView<ActorC>())
         {
             const auto& pos = ComponentGet<PositionC>(actor);
-            bounds = {pos.x - bounds.width / 2, pos.y - bounds.height / 2, bounds.width, bounds.height};
+            bounds = {pos.pos.x - bounds.width / 2, pos.pos.y - bounds.height / 2, bounds.width, bounds.height};
             if (CheckCollisionPointRec(point.v(), bounds))
             {
                 return true;

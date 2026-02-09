@@ -72,7 +72,7 @@ namespace magique
     // Everything above 10s should be loaded as music (and compressed with .mp3) instead of sound!
     Music ImportMusic(const Asset& asset);
 
-    // Tries to load a playlist from the given assets - they all have to be supported raylib music types (.mp3, .wav, .ogg, ...)
+    // Tries to load a playlist from the given assets - they all have to be supported raylib music types
     Playlist ImportPlaylist(const std::vector<Asset>& assets);
 
     //================= Tiled Exports =================//

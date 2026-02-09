@@ -2,6 +2,8 @@
 #ifndef OPENGLUTIL_H
 #define OPENGLUTIL_H
 
+// TODO remove
+
 inline void CreateShadowQuads(std::vector<Vector3>& quads, Vector2 posA, Vector2 posB)
 {
     // Triangle 1

@@ -8,7 +8,7 @@
 
 namespace magique
 {
-    Game& GetGame()
+    Game& GameGet()
     {
         MAGIQUE_ASSERT(global::ENGINE_DATA.gameInstance != nullptr, "Called too early");
         return *global::ENGINE_DATA.gameInstance;
@@ -16,11 +16,6 @@ namespace magique
 
     GameState GetGameState()
     {
-        if (global::ENGINE_DATA.gameState == GameState{INT32_MAX})
-        {
-            LOG_WARNING("Gamestate has no been set by the user yet! Use SetGameState() to set one");
-            return GameState{INT32_MAX};
-        }
         return global::ENGINE_DATA.gameState;
     }
 
@@ -71,8 +66,6 @@ namespace magique
     float GetEngineTime() { return global::ENGINE_DATA.engineTime; }
 
     uint32_t GetEngineTick() { return global::ENGINE_DATA.engineTicks; }
-
-    void SetLightingMode(const LightingMode model) { global::ENGINE_CONFIG.lighting = model; }
 
     //----------------- GET -----------------//
 

@@ -397,7 +397,7 @@ struct Robo final : Game
 
 int main()
 {
-    CompileAssetImage("../res");
+    AssetPackCompile("../res");
     Robo game{};
     return game.run();
 }

@@ -4,7 +4,9 @@
 
 #include <string>
 #include <vector>
-#include <magique/persistence/types/DataTable.h>
+#include <cstring>
+#include <magique/internal/InternalTypes.h>
+#include <magique/util/Logging.h>
 
 //===============================================
 // GameSaveData
@@ -126,7 +128,7 @@ namespace magique
         if constexpr (std::is_same_v<T, unsigned char>)
         {
             auto* copy = new unsigned char[size];
-            memcpy(copy, cell->data, size);
+            std::memcpy(copy, cell->data, size);
             return DataPointer{copy, size};
         }
         else
@@ -178,4 +180,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_GAMESAVE_DATA_H
+#endif // MAGIQUE_GAMESAVE_DATA_H

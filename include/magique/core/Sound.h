@@ -28,15 +28,11 @@ namespace magique
     // GetMasterVolume() - raylib
 
     // Affects all Sound and Sound2D instances - clamped to (0.0 - 1.0)
-    void SoundSetMasterVolume(float volume);
-
-    // Returns the current sound volume - (0.0 - 1.0)
-    float SoundGetMasterVolume();
+    void SoundSetSoundVolume(float volume);
+    float SoundGetSoundVolume();
 
     // Affects all Music instance including playlists - clamped to (0.0 - 1.0)
     void SoundSetMusicVolume(float volume);
-
-    // Returns the current music volume - (0.0 - 1.0)
     float SoundGetMusicVolume();
 
     //================= SOUND & SOUND2D =================//
@@ -64,28 +60,28 @@ namespace magique
 
     // Plays the given music - multiple calls play it multiple times
     // fade controls both fade-in and fade-out
-    void SoundPlayMusic(const Music& music, float volume = 1.0F, bool fade = true);
+    void MusicPlay(const Music& music, float volume = 1.0F, bool fade = true);
 
     // Stops the first instance of this music
-    void SoundStopMusic(const Music& music);
+    void MusicStop(const Music& music);
 
     //================= PLAYLIST =================//
 
     // Starts to play the playlist at the last played track or the beginning - volume sets the playlist volume
     // Only pass a playlist with permanent storage (either use RegisterPlaylist() or allocate it)
     // A playlist cannot be played multiple times simultaneously - plays (loops) until stopped
-    void SoundPlayPlaylist(Playlist& playlist, float volume = 1.0F);
+    void PlaylistPlay(Playlist& playlist, float volume = 1.0F);
 
     // Stops playing the playlist
-    void SoundStopPlaylist(Playlist& playlist);
+    void PlaylistStop(Playlist& playlist);
 
     // Forwards the playlist manually
     // Progresses the tracks sequentially (looping) or calls the custom forward function to determine the next track
-    void SoundForwardPlaylist(Playlist& playlist);
+    void PlaylistForward(Playlist& playlist);
 
     // Sound, Sound2D, Music, Playlist
     // play, pause, resume, stop, volume, PreProcess
 
 } // namespace magique
 
-#endif //MAGIQUE_AUDIO_H
+#endif // MAGIQUE_AUDIO_H

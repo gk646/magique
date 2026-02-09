@@ -67,11 +67,11 @@ namespace magique
 
     template <class TypeHashGrid>
     void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, std::vector<StaticID>& collector,
-                    std::vector<StaticPair>& pairCollector, const ColliderType type,
+                       std::vector<StaticPair>& pairCollector, const ColliderType type,
                        const std::vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
     {
-        const auto bb = GetEntityBoundingBox(pos, col);
-        grid.query(collector, bb.x, bb.y, bb.width, bb.height);
+        const auto bb = pos.getBounds(col);
+        grid.query(collector, bb.x, bb.y, bb.w, bb.h);
         for (const auto num : collector)
         {
             const auto objectNum = StaticIDHelper::GetObjectNum(num);
@@ -189,4 +189,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_STATIC_COLLISION_SYSTEM_H
+#endif // MAGIQUE_STATIC_COLLISION_SYSTEM_H

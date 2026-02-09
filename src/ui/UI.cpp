@@ -67,6 +67,8 @@ namespace magique
 
     Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
 
+    void UISetSourceResolution(Point resolution) { global::UI_DATA.sourceRes = resolution; }
+
     Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
     Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
@@ -109,6 +111,21 @@ namespace magique
         return !global::UI_DATA.mouseConsumed && ::IsMouseButtonReleased(key);
     }
 
+    bool LayeredInput::IsGamepadButtonPressed(int gamepad, int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonPressed(gamepad, key);
+    }
+
+    bool LayeredInput::IsGamepadButtonDown(int gamepad, int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonDown(gamepad, key);
+    }
+
+    bool LayeredInput::IsGamepadButtonReleased(int gamepad, int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonReleased(gamepad, key);
+    }
+
     void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
 
     void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
@@ -127,8 +144,6 @@ namespace magique
     }
 
     UIMouseToWorld::~UIMouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
-
-    void UISetSourceResolution(float width, float height) { global::UI_DATA.sourceRes = {width, height}; }
 
     Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base)
     {

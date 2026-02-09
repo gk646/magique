@@ -2,9 +2,9 @@
 #ifndef MAGIQUE_TEXTFIELD_H
 #define MAGIQUE_TEXTFIELD_H
 
-#include <string>
 #include <magique/core/Core.h>
 #include <magique/ui/UIObject.h>
+#include <magique/ui/UI.h>
 M_IGNORE_WARNING(4100)
 
 //===============================================
@@ -47,7 +47,8 @@ namespace magique
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
-                updateInputs();
+                if (updateInputs() || getIsFocused())
+                    LayeredInput::ConsumeKey();
         }
 
         // Updates the text with the current inputs for this tick and updates the focused state
@@ -125,4 +126,4 @@ namespace magique
 
 M_UNIGNORE_WARNING()
 
-#endif //MAGIQUE_TEXTFIELD_H
+#endif // MAGIQUE_TEXTFIELD_H

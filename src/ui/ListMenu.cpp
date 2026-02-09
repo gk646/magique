@@ -131,7 +131,7 @@ namespace magique
         const auto& fnt = GetEngineFont();
         const auto size = UIGetScaled(15);
         const auto bounds = getBounds();
-        DrawRectangleRec({pos.x, pos.y, bounds.width, bounds.height}, backGround);
+        DrawRectangleRec({pos.x, pos.y, bounds.width, size}, backGround);
         DrawTextEx(fnt, txt, {pos.x + 2, pos.y + 1}, size, 1.0F, textColor);
         return size + 2;
     }
@@ -144,7 +144,7 @@ namespace magique
         for (int i = 0; i < (int)entries.size(); i++)
         {
             const auto& entry = entries[i];
-            Rectangle lineRect = {pos.x, pos.y, bounds.width, entry.height};
+            const Rectangle lineRect = {pos.x, pos.y, bounds.width, entry.height};
             if (CheckCollisionMouseRect(lineRect) && !LayeredInput::GetIsMouseConsumed())
             {
                 hovered = i;
@@ -162,7 +162,7 @@ namespace magique
             }
             pos.y += entry.height;
         }
-        setSize(bounds.width, pos.y - bounds.y);
+        setSize({bounds.width, pos.y - bounds.y});
     }
 
 } // namespace magique

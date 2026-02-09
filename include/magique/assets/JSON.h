@@ -3,19 +3,23 @@
 #define MAGIQUE_CSVREADER_H
 
 #include <glaze/json/write.hpp>
+#include <raylib/raylib.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/VirtualClock.h>
 #include <magique/assets/types/TextLines.h>
-#include <raylib/raylib.h>
+#include <magique/util/Datastructures.h>
 
 //===============================================
 // JSON Import/Exports
 //===============================================
 // ................................................................................
+// magique uses glaze for JSON importing and exporting
+// glaze allows to import/export defined types (and also generic JSON with glz::generic)
+// For standard types it's as easy as ExportJSON(myType, buffer); the serialization is defined automatically
 // Refer to https://stephenberry.github.io/glaze/json/ for more info on how to use the JSON library
+//
 // IMPORTANT: If you define custom parse/serialization rules etc. they need to be included BEFORE you call Import/Export
-
 // Notes: This also contains the serialization specializations for magique (and raylib) structs
 // ................................................................................
 
@@ -82,9 +86,64 @@ namespace glz
         static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
     };
 
+    template <>
+    struct meta<magique::KeyBindType>
+    {
+        using T = magique::KeyBindType;
+        static constexpr auto values = enumerate(T::Mouse, T::Keyboard, T::Controller);
+    };
+
+    template <typename K, typename V>
+    struct meta<magique::EnumVector<K, V>>
+    {
+        using T = magique::EnumVector<K, V>;
+        static constexpr auto value = &T::data_;
+    };
+
+    // template <typename Key, typename Value, int maxSize>
+    // struct from<JSON, EnumValueHolder<Key, Value, maxSize>>
+    // {
+    //     template <auto Opts>
+    //     static void op(EnumValueHolder<Key, Value, maxSize>& value, auto&&... args)
+    //     {
+    //         struct PairedData
+    //         {
+    //             Key key;
+    //             Value value;
+    //         };
+    //         std::vector<PairedData> pairedData;
+    //         pairedData.reserve(32);
+    //         parse<JSON>::op<Opts>(pairedData, args...);
+    //         for (auto& [key, val] : pairedData)
+    //         {
+    //             value.set(key, std::move(val));
+    //         }
+    //     }
+    // };
+    //
+    // template <typename Key, typename Value, int maxSize>
+    // struct to<JSON, EnumValueHolder<Key, Value, maxSize>>
+    // {
+    //     template <auto Opts>
+    //     static void op(EnumValueHolder<Key, Value, maxSize>& value, auto&&... args) noexcept
+    //     {
+    //         struct PairedData
+    //         {
+    //             Key key;
+    //             Value value;
+    //         };
+    //         std::vector<PairedData> pairedData;
+    //         pairedData.reserve(32);
+    //         for (int i = 0; i < EnumValueHolder<Key, Value, maxSize>::size; ++i)
+    //         {
+    //             const Key key = static_cast<Key>(i);
+    //             pairedData.emplace_back(key, value.get(key));
+    //         }
+    //         serialize<JSON>::op<Opts>(pairedData, args...);
+    //     }
+    // };
 
 } // namespace glz
-
 
 namespace magique
 {
@@ -271,4 +330,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_CSVREADER_H
+#endif // MAGIQUE_CSVREADER_H

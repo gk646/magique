@@ -18,7 +18,7 @@
 namespace magique
 {
     // Returns the current gamestate
-    // Default: if unset returns GameState(INT32_MAX)
+    // Default: if unset returns GameState(UINT8_MAX)
     GameState GetGameState();
 
     // Sets the current gamestate
@@ -38,12 +38,6 @@ namespace magique
 
     // Returns the current update range
     int GetEntityUpdateRange();
-
-    // Sets the current lighting mode - Entities need the Occluder and Emitter components!
-    // HardShadows (fast, looks nice), RayTracking (slow!,looks really nice) , None (very fast!, looks bland)
-    // Note: If disabled you can iterate the lighting components and render it with your own shader or co
-    // Default: None (others don't work yet)
-    void SetLightingMode(LightingMode model);
 
     // When entities leave the update range they are still updated for the cache duration
     // Default: 300 Ticks - Max: 65535

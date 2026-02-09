@@ -43,11 +43,11 @@ namespace magique
         const auto isPathSolid = pathData.getIsPathSolid(e, pos.type);
 
         cVec.push_back(e);
-        const auto bb = GetEntityBoundingBox(pos, col);
-        grid.insert(e, bb.x, bb.y, bb.width, bb.height);
+        const auto bb = pos.getBounds(col);
+        grid.insert(e, bb.x, bb.y, bb.w, bb.h);
         if (isPathSolid) [[unlikely]]
         {
-            pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
+            pathGrid.insert(bb.x, bb.y, bb.w, bb.h);
         }
     }
 
@@ -58,18 +58,16 @@ namespace magique
 #ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
-        const auto sWidth = static_cast<float>(GetScreenWidth());
-        const auto sHeight = static_cast<float>(GetScreenHeight());
-        data.camera.offset = {std::floor(sWidth / 2.0F), std::floor(sHeight / 2.0F)};
+        data.camera.offset = Vector2{(float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2};
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);
             data.cameraMap = pos.map;
             data.cameraEntity = e;
             const auto manualOff = global::ENGINE_CONFIG.cameraViewOff;
-            if (manualOff.x != 0 || manualOff.y != 0) // Use the custom offset if supplied
+            if (manualOff != 0) // Use the custom offset if supplied
             {
-                data.camera.offset = manualOff;
+                data.camera.offset = manualOff.v();
             }
 #ifdef MAGIQUE_DEBUG
             count++;
@@ -94,7 +92,7 @@ namespace magique
             MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
             actorMaps[static_cast<int>(pos.map)] = true;
-            actorRects[actorCount] = GetCenteredRect(pos.getPosition(), updateDist, updateDist);
+            actorRects[actorCount] = GetCenteredRect(pos.pos, updateDist, updateDist);
             actorDist.insertActorNum(pos.map, actorCount);
             actorCount++;
         }
@@ -139,7 +137,7 @@ namespace magique
             if (loadedMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
             {
                 // Check if inside the camera bounds already
-                if (map == cameraMap && camBound.contains(pos.getPosition()))
+                if (map == cameraMap && camBound.contains(pos.pos))
                 {
                     drawVec.push_back(e); // Should be drawn
                     cache[e] = cacheDuration;
@@ -159,7 +157,7 @@ namespace magique
                             break;
                         }
                         // Check if inside any update rect - rect is an enlarged rectangle
-                        if (actorRects[actorNum].contains(pos.getPosition()))
+                        if (actorRects[actorNum].contains(pos.pos))
                         {
                             cache[e] = cacheDuration;
                             if (group.contains(e))

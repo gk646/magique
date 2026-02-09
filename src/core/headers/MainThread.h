@@ -42,7 +42,7 @@ namespace magique::mainthread
                     PollInputEvents();
                 }
                 // Get the newest updates for the ui update
-                global::UI_DATA.updateBeginTick();
+                global::UI_DATA.onEachTick();
 
                 if (shouldUpdate >= 1.0)
                 {

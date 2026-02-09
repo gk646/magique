@@ -54,12 +54,10 @@
 #include <mach/mach.h>
 #include <unistd.h>
 #endif
+
 #include <raylib/raylib.h>
 
-#include <magique/util/Logging.h>
-
 #include "internal/utils/OSUtil.h"
-
 
 void WaitTime(const double destinationTime, double sleepSeconds)
 {

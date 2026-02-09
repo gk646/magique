@@ -26,12 +26,8 @@ namespace magique
 
     void ResetPerformanceData()
     {
-#if MAGIQUE_PROFILING == 1
-        global::PERF_DATA.drawTimes.clear();
-        global::PERF_DATA.logicTimes.clear();
-#else
-        LOG_WARNING("Calling BenchmarkFunction without profiling enabled. see config.h::MAGIQUE_PROFILING")
-#endif
+        global::PERF_DATA.drawTick.reset();
+        global::PERF_DATA.updateTick.reset();
     }
 
     inline static uint64_t START_TIMERS[MAGIQUE_MAX_SUPPORTED_TIMERS]{};

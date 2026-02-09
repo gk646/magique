@@ -86,11 +86,8 @@ namespace magique
                     particle.emissionCenter = pos;
                 }
                 break;
-            case Shape::CAPSULE: // Acts as point type
+            case Shape::TRIANGLE: // Acts as point type
                 particle.pos = pos;
-                break;
-            case Shape::TRIANGLE:
-                MAGIQUE_ASSERT(false, "Triangle not implemented");
                 break;
             }
             // Higher quality randomness should be worth it - and the random is pretty fast
@@ -122,7 +119,7 @@ namespace magique
             {
                 float angleOff = GetRandomFloat(-0.5F, 0.5F) * data.spreadAngle;
                 float newAngle = GetAngleFromPoints({}, direction) + angleOff;
-                direction = GetDirectionFromAngle(newAngle);
+                direction = GetDirFromAngle(newAngle);
             }
 
             // vx,vy - velocity
@@ -132,25 +129,18 @@ namespace magique
                 const float p = GetRandomFloat(0.0F, 1.0F);
                 velo = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
             }
-            particle.vx = velo * direction.x;
-            particle.vy = velo * direction.y;
+            particle.veloc = direction * velo;
 
             // Color
             if (data.poolSize > 0) // Use pool
             {
                 const int p = GetRandomValue(0, data.poolSize - 1);
                 const auto color = GetColor(data.colors[p]);
-                particle.r = color.r;
-                particle.g = color.g;
-                particle.b = color.b;
-                particle.a = color.a;
+                particle.color = color;
             }
             else
             {
-                particle.r = data.r;
-                particle.g = data.g;
-                particle.b = data.b;
-                particle.a = data.a;
+                particle.color = data.color;
             }
 
             // Rest
@@ -160,8 +150,7 @@ namespace magique
             if (data.angularVelocity.x != 0 || data.angularVelocity.y != 0 || data.angularGravity != 0)
             {
                 particle.angular = true;
-                particle.vx = data.angularVelocity.x * velo;
-                particle.vy = data.angularVelocity.y * velo;
+                particle.veloc = data.angularVelocity * velo;
             }
 
             global::PARTICLE_DATA.addParticle(particle);
@@ -183,7 +172,7 @@ namespace magique
 
         if (width == 0 && height == 0 && radius == 0)
         {
-            data.emShape = Shape::CAPSULE; // Denotes just the single emission point
+            data.emShape = Shape::TRIANGLE; // Denotes just the single emission point
             return *this;
         }
 
@@ -243,10 +232,7 @@ namespace magique
 
     EmitterBase& EmitterBase::setColor(const Color& color)
     {
-        data.r = color.r;
-        data.g = color.g;
-        data.b = color.b;
-        data.a = color.a;
+        data.color = color;
         data.poolSize = 0; // Signal not using color pool
         return *this;
     }
@@ -310,8 +296,7 @@ namespace magique
     EmitterBase& EmitterBase::setGravity(const float gravityX, const float gravityY)
     {
         constexpr float TICK_CONVERSION = 1.0F / MAGIQUE_LOGIC_TICKS;
-        data.gravX = gravityX * TICK_CONVERSION; // From pixel/s into pixel/tick
-        data.gravY = gravityY * TICK_CONVERSION;
+        data.gravity = Point{gravityX, gravityY} * TICK_CONVERSION; // From pixel/s into pixel/tick
         return *this;
     }
 
@@ -396,7 +381,10 @@ namespace magique
 
     EmitterBase::ScaleFunction EmitterBase::GetSmoothStep()
     {
-        return [](const float scale, const float t) -> float { return scale * (t * t * (3 - 2 * t)); };
+        return [](const float scale, const float t) -> float
+        {
+            return scale * (t * t * (3 - 2 * t));
+        };
     }
 
     const internal::EmitterData& EmitterBase::getData() const { return data; }

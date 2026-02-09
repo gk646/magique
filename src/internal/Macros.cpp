@@ -10,4 +10,5 @@ namespace magique
     {
         LogEx(LEVEL_FATAL, file, line, function, "Assert failed: %s: %s", expr, message);
     }
+
 } // namespace magique

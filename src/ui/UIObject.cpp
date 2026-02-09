@@ -11,19 +11,17 @@ namespace magique
     UIObject::UIObject(const float x, const float y, const float w, const float h, const ScalingMode scaling)
     {
         const auto& ui = global::UI_DATA;
-        px = x / ui.sourceRes.x;
-        py = y / ui.sourceRes.y;
-        if (w >= 0)
+        pBounds = {x, y, w, h};
+        if (scaling != ScalingMode::ABSOLUTE)
         {
-            pw = w / ui.sourceRes.x;
-        }
-        if (h >= 0)
-        {
-            ph = h / ui.sourceRes.y;
+            pBounds.x /= ui.sourceRes.x;
+            pBounds.y /= ui.sourceRes.y;
+            pBounds.w /= ui.sourceRes.x;
+            pBounds.h /= ui.sourceRes.y;
         }
         setScalingMode(scaling);
-        setStartPosition({px, py});
-        setStartDimensions({pw, ph});
+        setStartPosition(pBounds.pos());
+        setStartDimensions(pBounds.size());
         global::UI_DATA.registerObject(this);
     }
 
@@ -51,37 +49,40 @@ namespace magique
     Rectangle UIObject::getBounds() const
     {
         const auto& ui = global::UI_DATA;
-        Rectangle bounds{px, py, pw, ph};
+        auto bounds = pBounds;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds;
+        return bounds.v();
     }
 
     void UIObject::setPosition(const Point& pos)
     {
         const auto& dims = global::UI_DATA.targetRes;
-        px = pos.x / dims.x;
-        py = pos.y / dims.y;
+        if (scaleMode == ScalingMode::ABSOLUTE)
+        {
+            pBounds = pos;
+        }
+        else
+        {
+            pBounds = pos / dims;
+        }
     }
 
     Point UIObject::getPosition() const
     {
-        const auto& ui = global::UI_DATA;
-        Rectangle bounds{px, py, pw, ph};
-        ui.scaleBounds(bounds, scaleMode, inset, anchor);
+        auto bounds = getBounds();
         return {bounds.x, bounds.y};
     }
 
-    void UIObject::setSize(float width, float height)
+    void UIObject::setSize(Point size)
     {
         const auto& dims = global::UI_DATA.targetRes;
-        if (width >= 0)
+        auto coords = size;
+        if (scaleMode != ScalingMode::ABSOLUTE)
         {
-            pw = width / dims.x;
+            coords /= dims;
         }
-        if (height >= 0)
-        {
-            ph = height / dims.y;
-        }
+        pBounds.w = coords.x;
+        pBounds.h = coords.y;
     }
 
     void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point alignInset)
@@ -167,7 +168,7 @@ namespace magique
 
     bool UIObject::getIsPressed(int mouseButton) const
     {
-        return IsMouseButtonDown(mouseButton) && CheckCollisionPointRec(GetDragStartPosition().v(), getBounds());
+        return IsMouseButtonDown(mouseButton) && getIsHovered();
     }
 
     void UIObject::setAnchor(const Anchor newAnchor, const Point newInset)
@@ -199,6 +200,10 @@ namespace magique
     Point UIObject::getStartDimensions() const
     {
         const auto& ui = global::UI_DATA;
+        if (scaleMode == ScalingMode::ABSOLUTE)
+        {
+            return startDims;
+        }
         return startDims * ui.sourceRes;
     }
 

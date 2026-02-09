@@ -8,9 +8,7 @@ namespace magique::updater
 
     inline double EndTick(const double startTime)
     {
-        const double tickTime = GetTime() - startTime;
-        global::PERF_DATA.saveTickTime(UPDATE, static_cast<uint32_t>(tickTime * SEC_TO_NANOS));
-        return tickTime;
+        return global::PERF_DATA.updateTick.add(GetTime() - startTime);
     }
 
     inline double Tick(const double startTime, Game& game, const entt::registry& reg)

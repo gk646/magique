@@ -29,7 +29,6 @@
 #include "internal/globals/LoadingData.h"
 #include "internal/globals/PerformanceData.h"
 #include "internal/globals/PathFindingData.h"
-#include "internal/globals/ShaderData.h"
 #include "internal/globals/TextureAtlas.h"
 #include "internal/globals/AudioPlayer.h"
 #include "internal/globals/ScriptData.h"
@@ -58,7 +57,6 @@
 #include "internal/systems/DynamicCollisionSystem.h"
 #include "internal/systems/InputSystem.h"
 #include "internal/systems/LogicSystem.h"
-#include "internal/systems/LightingSystem.h"
 
 #include "core/headers/MainThreadUtil.h"
 #include "core/headers/UpdateUtil.h"
@@ -104,11 +102,15 @@ namespace magique
 #else
             global::ENGINE_CONFIG.font = GetFontDefault();
 #endif
-            global::SHADERS.init(); // Loads the shaders and buffers
             global::ENGINE_DATA.init();
             global::CONSOLE_DATA.init(); // Create default commands
             InitJobSystem();
-            LOG_INFO("Initialized magique %s", MAGIQUE_VERSION);
+
+#ifdef MAGIQUE_DEBUG
+            GameSystemSetBenchmark(true);
+#endif
+
+            LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
             return true;
         }
     } // namespace internal
@@ -170,7 +172,10 @@ namespace magique
         onStartup(*static_cast<AssetLoader*>(loader));
 
         // Load atlas to gpu - needs to be the last task
-        const auto loadAtlasGPU = [](AssetContainer&) { global::ATLAS_DATA.loadToGPU(); };
+        const auto loadAtlasGPU = [](AssetContainer&)
+        {
+            global::ATLAS_DATA.loadToGPU();
+        };
         static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, THREAD_MAIN, LOW, 1);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;

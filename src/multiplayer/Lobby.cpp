@@ -30,7 +30,7 @@ namespace magique
         buff[0] = (int8_t)LobbyPacketType::START_SIGNAL;
         buff[1] = (int8_t)value;
 
-        const auto payload = CreatePayload(buff, 2, MAGIQUE_LOBBY_PACKET_TYPE);
+        const auto payload = Payload(buff, 2, MAGIQUE_LOBBY_PACKET_TYPE);
         BatchMessageToAll(payload);
     }
 
@@ -53,7 +53,7 @@ namespace magique
         buff[0] = (int8_t)LobbyPacketType::CHAT;
         std::memcpy(buff + 1, message, len);
         buff[len + 1] = '\0';
-        const auto payload = CreatePayload(buff, 1 + len + 1, MAGIQUE_LOBBY_PACKET_TYPE);
+        const auto payload = Payload(buff, 1 + len + 1, MAGIQUE_LOBBY_PACKET_TYPE);
         BatchMessageToAll(payload);
     }
 
@@ -83,7 +83,7 @@ namespace magique
         std::memcpy(buff + 1 + keyLen + 1, value, valLen);
         buff[keyLen + 1 + valLen + 1] = '\0';
 
-        const auto payload = CreatePayload(buff, 1 + keyLen + 1 + valLen + 1, MAGIQUE_LOBBY_PACKET_TYPE);
+        const auto payload = Payload(buff, 1 + keyLen + 1 + valLen + 1, MAGIQUE_LOBBY_PACKET_TYPE);
         if (GetIsClient())
         {
             BatchMessage(GetCurrentConnections().front(), payload);

@@ -48,7 +48,6 @@ inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, cons
 
 namespace magique
 {
-
     struct MultiplayerData final
     {
         MultiplayerStatistics statistics{};

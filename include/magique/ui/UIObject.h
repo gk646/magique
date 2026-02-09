@@ -70,7 +70,7 @@ namespace magique
 
         // Sets new dimensions for this object - values are scaled to the CURRENT (target) resolution
         // Note: Negative values will be ignored
-        void setSize(float width, float height);
+        void setSize(Point size);
 
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
@@ -85,10 +85,10 @@ namespace magique
         // Returns true if the cursor is over the object
         bool getIsHovered() const;
 
-        // Returns true if specified mouse button is pressed while the object is hovered
+        // Returns true if mouse button is pressed while the object is hovered
         bool getIsClicked(int mouseButton = MOUSE_LEFT_BUTTON) const;
 
-        // Returns true if the is down AND the mouse was pressed initially inside the object
+        // Returns true if mouse button is down while the object is hovered
         bool getIsPressed(int mouseButton = MOUSE_LEFT_BUTTON) const;
 
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
@@ -125,7 +125,7 @@ namespace magique
         virtual ~UIObject();
 
     private:
-        float px = 0, py = 0, pw = 0, ph = 0;      // Percent values for the dimensions
+        Rect pBounds;
         Point inset{};                        // Inset - offset towards the middle of the screen
         Point startPos{};                          // Default position
         Point startDims{};                         // Default dimensions

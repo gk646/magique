@@ -6,7 +6,7 @@
 
 using namespace magique; // using namespace is recommended and allowed
 
-enum class GameState
+enum class GameState : uint8_t
 {
     MAIN_MENU,
     GAME,

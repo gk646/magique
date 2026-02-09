@@ -9,9 +9,9 @@
 
 namespace magique
 {
-    void SoundSetMasterVolume(float volume)
+    void SoundSetSoundVolume(float volume)
     {
-        volume = clamp(volume, 0.0F, 1.0F);
+        volume = std::clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
         ap.soundVolume = volume;
         for (auto& s : ap.sounds)
@@ -24,11 +24,11 @@ namespace magique
         }
     }
 
-    float SoundGetMasterVolume() { return global::AUDIO_PLAYER.soundVolume; }
+    float SoundGetSoundVolume() { return global::AUDIO_PLAYER.soundVolume; }
 
     void SoundSetMusicVolume(float volume)
     {
-        volume = clamp(volume, 0.0F, 1.0F);
+        volume = std::clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
         for (auto& t : ap.tracks)
@@ -59,7 +59,7 @@ namespace magique
         SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
         ::PlaySound(alias);
         auto& pos = EntityGetRegistry().get<PositionC>(entity);
-        global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
+       // global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
     }
 
     void SoundPlay2D(const Sound& sound, float& x, float& y, float volume)
@@ -113,14 +113,14 @@ namespace magique
         return false;
     }
 
-    void SoundPlayMusic(const Music& music, const float volume, const bool fade)
+    void MusicPlay(const Music& music, const float volume, const bool fade)
     {
         global::AUDIO_PLAYER.addTrack(music, volume, fade);
     }
 
-    void SoundStopMusic(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
+    void MusicStop(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }
 
-    void SoundPlayPlaylist(Playlist& playlist, const float volume)
+    void PlaylistPlay(Playlist& playlist, const float volume)
     {
         if (playlist.getSize() == 0)
         {
@@ -131,9 +131,9 @@ namespace magique
         global::AUDIO_PLAYER.startPlaylist(playlist);
     }
 
-    void SoundStopPlaylist(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }
+    void PlaylistStop(Playlist& playlist) { global::AUDIO_PLAYER.stopPlaylist(playlist); }
 
-    void SoundForwardPlaylist(Playlist& playlist)
+    void PlaylistForward(Playlist& playlist)
     {
         global::AUDIO_PLAYER.stopPlaylist(playlist);
         global::AUDIO_PLAYER.startPlaylist(playlist);
