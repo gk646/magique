@@ -3,7 +3,6 @@
 #define MAGIQUE_ENGINE_CONFIG_H
 
 #include <raylib/raylib.h>
-
 #include <magique/core/Types.h>
 #include <magique/ui/LoadingScreen.h>
 #include <magique/util/Logging.h>

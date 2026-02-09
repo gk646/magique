@@ -3,14 +3,11 @@
 #include <magique/ecs/ECS.h>
 #include <magique/core/Draw.h>
 #include <magique/ecs/Components.h>
-#include <magique/util/Logging.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 
 namespace magique
 {
-    float PositionC::getRotation() const { return rotation; }
-
     Point PositionC::getMiddle(const CollisionC& col) const { return pos + col.getMidOffset(); }
 
     Rect PositionC::getBounds(const CollisionC& col) const
@@ -25,11 +22,8 @@ namespace magique
                 }
                 else
                 {
-                    float pxs[4] = {0, col.p1, col.p1, 0};
-                    float pys[4] = {0, 0, col.p2, col.p2};
-                    RotatePoints4(pos.x + col.offset.x, pos.y + col.offset.y, pxs, pys, rotation, col.anchorX,
-                                  col.anchorY);
-                    return GetBBQuadrilateral(pxs, pys);
+                    RECT_ROTATE_POINTS(pa, (*this), col)
+                    return GetBBQuadrilateral(paX, paY);
                 }
             }
         case Shape::CIRCLE:
@@ -41,19 +35,13 @@ namespace magique
                 {
                     return GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4);
                 }
-                float txs[4] = {0, col.p1, col.p3, 0};
-                float tys[4] = {0, col.p2, col.p4, 0};
-                RotatePoints4(pos.x, pos.y, txs, tys, rotation, col.anchorX, col.anchorY);
-                return GetBBTriangle(txs[0], tys[0], txs[1], tys[1], txs[2], tys[2]);
+                TRI_ROTATE_POINTS(pa, (*this), col);
+                return GetBBTriangle(paX[0], paY[0], paX[1], paY[1], paX[2], paY[2]);
             }
         }
         return {};
     }
 
-    bool PositionC::operator==(const PositionC& other) const
-    {
-        return pos == other.pos && map == other.map && type == other.type && rotation == other.rotation;
-    }
 
     //----------------- ANIMATION -----------------//
 
@@ -119,50 +107,8 @@ namespace magique
         // 0101  - other layers
         //      &
         // 0100  - at least one 1 => not 0 so true
-        return ((uint8_t)mask & (uint8_t)other.layer) != 0;
+        return mask.isSet(other.layer.get());
     }
-
-    static bool IsValidLayer(const uint8_t layer)
-    {
-        // Binary: 1000  (-1)-> 0111 (& operator)-> 1000
-        //                                          0111   = 0 - Will never have any overlap if power of 2!
-        return layer != 0 && (layer & (layer - 1)) == 0;
-    }
-
-    static void SetBitflag(CollisionLayer& flag, const uint8_t mask, const bool set)
-    {
-        if (!IsValidLayer(mask)) [[unlikely]]
-            LOG_WARNING("Trying to assign invalid collision layer! Skipping");
-
-        if (set)
-        {
-            flag = CollisionLayer{static_cast<uint8_t>(static_cast<uint32_t>(flag) | mask)};
-        }
-        else
-        {
-            // 1010  layer
-            // 0111  flipped deletion layer (1000)
-            // 0010  only the deletion layer deleted
-            flag = CollisionLayer{static_cast<uint8_t>(static_cast<uint32_t>(flag) & ~mask)};
-        }
-    }
-
-    bool CollisionC::isLayerSet(const CollisionLayer newLayer) const
-    {
-        return ((uint8_t)layer & static_cast<uint8_t>(newLayer)) != 0;
-    }
-
-    void CollisionC::setLayer(const CollisionLayer newLayer, const bool enabled)
-    {
-        SetBitflag(layer, (uint8_t)newLayer, enabled);
-    }
-
-    bool CollisionC::isMaskSet(CollisionLayer newLayer) const
-    {
-        return ((uint8_t)mask & static_cast<uint8_t>(newLayer)) != 0;
-    }
-
-    void CollisionC::setMask(CollisionLayer newLayer, bool enabled) { SetBitflag(mask, (uint8_t)newLayer, enabled); }
 
     Point CollisionC::getMidOffset() const
     {

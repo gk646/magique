@@ -1,6 +1,7 @@
 #ifndef NODO_DATASTRUCTURES_H
 #define NODO_DATASTRUCTURES_H
 
+#include <span>
 #include <ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
@@ -37,10 +38,10 @@ namespace magique
         using StoreType = std::underlying_type_t<E>;
 
         EnumSet() = default;
+
         explicit EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
 
-        template <typename Iterable>
-        explicit EnumSet(const Iterable& data) : data_()
+        explicit EnumSet(const std::span<E>& data) : data_()
         {
             for (const auto flag : data)
             {
@@ -70,11 +71,11 @@ namespace magique
 
         E get() const noexcept { return static_cast<E>(data_); }
 
-        [[nodiscard]] bool isSet(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
+        bool isSet(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
 
         void assign(E flag) { data_ = static_cast<StoreType>(flag); }
 
-        [[nodiscard]] bool any() const noexcept { return data_ != 0; }
+        bool empty() const noexcept { return data_ == 0; }
 
         void clear() noexcept { data_ = 0; }
 
@@ -101,8 +102,7 @@ namespace magique
         }
 
         // Runtime check
-        template <typename Iterable>
-        [[nodiscard]] bool any_of(const Iterable& flags) const noexcept
+        [[nodiscard]] bool any_of(const std::span<E>& flags) const noexcept
         {
             for (auto flag : flags)
             {
@@ -115,8 +115,7 @@ namespace magique
         }
 
         // Runtime check
-        template <typename Iterable>
-        [[nodiscard]] bool all_of(const Iterable& flags) const noexcept
+        [[nodiscard]] bool all_of(const std::span<E>& flags) const noexcept
         {
             for (const auto flag : flags)
             {
@@ -127,6 +126,7 @@ namespace magique
             }
             return true;
         }
+        [[nodiscard]] bool all_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) == flag; }
 
         struct EnumSetIterator
         {

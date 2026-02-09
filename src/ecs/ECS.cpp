@@ -67,7 +67,7 @@ namespace magique
     }
 
     static entt::entity CreateEntityInternal(const entt::entity id, EntityType type, const Point& pos, const MapID map,
-                                             const int rotation, const bool withFunc)
+                                             const float rotation, const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -76,7 +76,7 @@ namespace magique
         auto& registry = internal::REGISTRY;
 
         const auto entity = registry.create(id != entt::null ? id : entt::entity{ecs.entityID++});
-        registry.emplace<PositionC>(entity, pos, map, type, static_cast<uint16_t>(rotation)); // PositionC is default
+        registry.emplace<PositionC>(entity, pos, map, type, rotation); // PositionC is default
 
         if (withFunc) [[likely]]
         {
@@ -101,12 +101,12 @@ namespace magique
         return entity;
     }
 
-    entt::entity EntityCreate(const EntityType type, Point pos, const MapID map, int rotation, const bool withFunc)
+    entt::entity EntityCreate(const EntityType type, Point pos, const MapID map, float rotation, const bool withFunc)
     {
         return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
     }
 
-    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const int rot,
+    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const float rot,
                                 const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
@@ -221,8 +221,7 @@ namespace magique
 
     CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
-        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(),
-                                                      static_cast<int16_t>(anchor.x), static_cast<int16_t>(anchor.y),
+        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(), anchor,
                                                       Shape::RECT);
     }
 
@@ -233,16 +232,12 @@ namespace magique
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, Point{}, static_cast<int16_t>(0),
-                                                      static_cast<int16_t>(0), Shape::CIRCLE);
+        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, Point{}, Point{}, Shape::CIRCLE);
     }
 
-    CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, const int anchorX,
-                                 const int anchorY)
+    CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, Point anchor)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{},
-                                                      static_cast<int16_t>(anchorX), static_cast<int16_t>(anchorY),
-                                                      Shape::TRIANGLE);
+        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{}, anchor, Shape::TRIANGLE);
     }
 
     void GiveCamera(const entt::entity entity)
@@ -306,7 +301,8 @@ namespace magique
         return set;
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,  const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,
+                                                               const FilterFunc& filter)
     {
         QueryLoadedEntitiesRectIMPL(map, origin - size, Point{size * 2});
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
@@ -325,7 +321,8 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,  const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,
+                                                             const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         QueryLoadedEntitiesRectIMPL(map, origin, size);
@@ -360,7 +357,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,  const FilterFunc& filter)
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
         set.clear();

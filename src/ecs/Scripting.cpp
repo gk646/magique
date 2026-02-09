@@ -11,8 +11,6 @@ namespace magique
         info.isAccumulated = true;
     }
 
-    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
-
     void ScriptingSetScript(const EntityType entity, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
@@ -57,5 +55,7 @@ namespace magique
     {
         return global::ENGINE_DATA.entityNScriptedSet.contains(entity);
     }
+
+    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
 
 } // namespace magique

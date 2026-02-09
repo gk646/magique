@@ -59,7 +59,6 @@
 
 namespace magique
 {
-    void CheckCollision(const PositionC&, const CollisionC&, const PositionC&, const CollisionC&, CollisionInfo& i);
     void HandleCollisionPairs();
     void CheckHashGridCells(float beginPercent, float endPercent, int thread);
 
@@ -200,7 +199,7 @@ namespace magique
 
                     if (secondInfo.getIsAccumulated())
                     {
-                        AccumulateInfo(col2, col2.shape, secondInfo);
+                        AccumulateInfo(col2, col1.shape, secondInfo);
                     }
                 }
             }

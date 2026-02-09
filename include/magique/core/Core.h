@@ -3,9 +3,9 @@
 #define MAGIQUE_CORE_H
 
 #include <vector>
+#include <functional>
 #include <entt/entity/fwd.hpp>
 #include <magique/core/Types.h>
-#include <functional>
 
 //===============================================
 // Core Module

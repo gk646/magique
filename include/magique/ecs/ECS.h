@@ -41,12 +41,12 @@ namespace magique
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
     // Failure: Returns entt::null
-    entt::entity EntityCreate(EntityType type, Point pos, MapID map, int rotation = 0, bool withFunc = true);
+    entt::entity EntityCreate(EntityType type, Point pos, MapID map, float rotation = 0, bool withFunc = true);
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
     // Note: You shouldnt use  this information - but entity ids start with 0 and go up until UINT32_MAX
-    entt::entity EntityCreateEx(entt::entity id, EntityType type, Point pos, MapID map, int rot, bool withFunc);
+    entt::entity EntityCreateEx(entt::entity id, EntityType type, Point pos, MapID map, float rotation, bool withFunc);
 
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
@@ -127,7 +127,7 @@ namespace magique
 
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
-    CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, int anchorX = 0, int anchorY = 0);
+    CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, Point anchor = {});
 
     // Makes the entity emit light according to the current lighting model
     EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);

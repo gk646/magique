@@ -67,7 +67,8 @@ namespace magique
         DrawRegion(region, center, false, tint);
     }
 
-    void DrawRegionPro(const TextureRegion& region, Rectangle dest, const float rotation, const Point anchor, const Color tint)
+    void DrawRegionPro(const TextureRegion& region, Rectangle dest, const float rotation, const Point anchor,
+                       const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -131,7 +132,7 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawSprite( SpriteSheet& sheet, float x, float y, const int frame, const bool flipX, const Color tint)
+    void DrawSprite(SpriteSheet& sheet, float x, float y, const int frame, const bool flipX, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(sheet.id > 0, "The texture for this region is invalid");
@@ -449,12 +450,11 @@ namespace magique
         DrawLineV({x + radius * 2, y + radius}, {x + radius * 2, y + height - radius}, tint);
     }
 
-    void DrawRectangleLinesRot(const Rectangle& rect, const float rotation, const float pivotX, const float pivotY,
-                               const Color color)
+    void DrawRectangleLinesRot(const Rectangle& rect, const float rotation, const Point anchor, const Color color)
     {
         float pxs[4] = {0, rect.width, rect.width, 0}; // top-left // top-right// bottom-right// bottom-left
         float pys[4] = {0, 0, rect.height, rect.height};
-        RotatePoints4(rect.x, rect.y, pxs, pys, rotation, pivotX, pivotY);
+        RotatePoints4(rect.x, rect.y, pxs, pys, rotation, anchor.x, anchor.y);
 
         for (int i = 0; i < 4; ++i)
         {
@@ -463,23 +463,23 @@ namespace magique
         }
     }
 
-    void DrawTriangleRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const float pivotX,
-                         const float pivotY, const Color color)
+    void DrawTriangleRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const Point anchor,
+                         const Color color)
     {
         float txs[4] = {0, p2.x - p1.x, p3.x - p1.x, 0};
         float tys[4] = {0, p2.y - p1.y, p3.y - p1.y, 0};
-        RotatePoints4(p1.x, p1.y, txs, tys, rot, pivotX, pivotY);
+        RotatePoints4(p1.x, p1.y, txs, tys, rot, anchor.x, anchor.y);
 
 
         DrawTriangle({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 
-    void DrawTriangleLinesRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const float pivotX,
-                              const float pivotY, const Color color)
+    void DrawTriangleLinesRot(const Vector2 p1, const Vector2 p2, const Vector2 p3, const float rot, const Point anchor,
+                              const Color color)
     {
         float txs[4] = {0, p2.x - p1.x, p3.x - p1.x, 0};
         float tys[4] = {0, p2.y - p1.y, p3.y - p1.y, 0};
-        RotatePoints4(p1.x, p1.y, txs, tys, rot, pivotX, pivotY);
+        RotatePoints4(p1.x, p1.y, txs, tys, rot, anchor.x, anchor.y);
         DrawTriangleLines({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 

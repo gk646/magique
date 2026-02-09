@@ -122,4 +122,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_COLLISION_SYSTEM_UTIL_H
+#endif // MAGIQUE_COLLISION_SYSTEM_UTIL_H

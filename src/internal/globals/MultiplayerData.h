@@ -125,7 +125,8 @@ namespace magique
             outMsgBuffer.clear();
             for (const auto msg : incMsgBuffer)
             {
-                msg->Release();
+                if (msg != nullptr)
+                    msg->Release();
             }
             incMsgVec.clear();
             incMsgBuffer.clear();

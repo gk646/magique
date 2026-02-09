@@ -103,16 +103,14 @@ namespace magique
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
-                DrawRectangleLinesRot(Rect{pos.pos + col.offset, {col.p1, col.p2}}.v(), pos.rotation, col.anchorX,
-                                      col.anchorY, RED);
+                DrawRectangleLinesRot(Rect{pos.pos + col.offset, {col.p1, col.p2}}.v(), pos.rotation, col.anchor, RED);
                 break;
             case Shape::CIRCLE:
                 DrawCircleLinesV(pos.getMiddle(col).v(), col.p1, RED);
                 break;
             case Shape::TRIANGLE:
                 DrawTriangleLinesRot({pos.pos.x, pos.pos.y}, {pos.pos.x + col.p1, pos.pos.y + col.p2},
-                                     {pos.pos.x + col.p3, pos.pos.y + col.p4}, pos.rotation, col.anchorX, col.anchorY,
-                                     RED);
+                                     {pos.pos.x + col.p3, pos.pos.y + col.p4}, pos.rotation, col.anchor, RED);
                 break;
             }
         }

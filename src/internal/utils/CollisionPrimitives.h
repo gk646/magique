@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_COLLISION_PRIMITIVES_H
 #define MAGIQUE_COLLISION_PRIMITIVES_H
 
+
+
 #if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
 #define MAGIQUE_SIMD 1
 #else
@@ -14,6 +16,8 @@
 
 #include <cmath>
 #include <limits>
+#include <algorithm>
+#include <magique/util/Math.h>
 
 //-----------------------------------------------
 // Collision Primitives with up to AVX2 intrinsics
@@ -26,6 +30,29 @@
 
 namespace magique
 {
+
+#define RECT_TO_POINTS(name, pos, col)                                                                                  \
+    const float name##X[4] = {pos.x + col.offset.x, pos.x + col.offset.x + col.p1, pos.x + col.offset.x + col.p1,       \
+                              pos.x + col.offset.x};                                                                    \
+    const float name##Y[4] = {pos.y + col.offset.y, pos.y + col.offset.y, pos.y + col.p2 + col.offset.y,                \
+                              pos.y + col.p2 + col.offset.y}
+
+#define RECT_ROTATE_POINTS(name, posc, col)                                                                             \
+    float name##X[4] = {0, col.p1, col.p1, 0};                                                                          \
+    float name##Y[4] = {0, 0, col.p2, col.p2};                                                                          \
+    RotatePoints4(posc.pos.x + col.offset.x, posc.pos.y + col.offset.y, name##X, name##Y, posc.rotation, col.anchor.x,  \
+                  col.anchor.y);
+
+#define TRI_TO_POINTS(name, pos, col)                                                                                   \
+    const float name##X[4] = {pos.x, pos.x + col.p1, pos.x + col.p3, pos.x};                                            \
+    const float name##Y[4] = {pos.y, pos.y + col.p2, pos.y + col.p4, pos.y};
+
+#define TRI_ROTATE_POINTS(name, posc, col)                                                                              \
+    float name##X[4] = {0, col.p1, col.p3, 0};                                                                          \
+    float name##Y[4] = {0, col.p2, col.p4, 0};                                                                          \
+    RotatePoints4(posc.pos.x, posc.pos.y, name##X, name##Y, posc.rotation, col.anchor.x, col.anchor.y);
+
+
     inline void SquareRoot(float& pIn)
     {
 #if MAGIQUE_SIMD == 1 // rsqrt is quite a bit faster
@@ -58,32 +85,13 @@ namespace magique
     //----------------- BOUNDING BOX -----------------//
 
     // returns the bounding box of a triangle given by the 3 points
-    inline Rectangle GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
+    inline Rect GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
                                    const float y3)
     {
-        float minX = x;
-        if (x2 < minX)
-            minX = x2;
-        if (x3 < minX)
-            minX = x3;
-
-        float minY = y;
-        if (y2 < minY)
-            minY = y2;
-        if (y3 < minY)
-            minY = y3;
-
-        float maxX = x;
-        if (x2 > maxX)
-            maxX = x2;
-        if (x3 > maxX)
-            maxX = x3;
-
-        float maxY = y;
-        if (y2 > maxY)
-            maxY = y2;
-        if (y3 > maxY)
-            maxY = y3;
+        const float minX = std::min({x, x2, x3});
+        const float minY = std::min({y, y2, y3});
+        const float maxX = std::max({x, x2, x3});
+        const float maxY = std::max({y, y2, y3});
 
         const float width = maxX - minX;
         const float height = maxY - minY;
@@ -91,7 +99,7 @@ namespace magique
     }
 
     // Given the 4x and 4y coordinates of a shape returns the bounding rectangle
-    inline Rectangle GetBBQuadrilateral(const float (&pxs)[4], const float (&pys)[4])
+    inline Rect GetBBQuadrilateral(const float (&pxs)[4], const float (&pys)[4])
     {
         float minX = pxs[0];
         if (pxs[1] < minX)
@@ -225,6 +233,13 @@ namespace magique
         info.collisionPoint.y = closestY;
     }
 
+    inline void CircleToRect(const float cx, const float cy, const float cr, const float rx, const float ry,
+                             const float rw, const float rh, CollisionInfo& info)
+    {
+        RectToCircle(rx, ry, rw, rh, cx, cy, cr, info);
+        info.normalVector = -info.normalVector;
+    }
+
     // --------- SAT -----------------//
 
     // checks 4 points against another 4 points
@@ -239,10 +254,10 @@ namespace magique
         }
         float minPenetration = std::numeric_limits<float>::max();
         Point bestAxis{};
-#if MAGIQUE_SIMD == 1
         const auto OverlapOnAxis = [](const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4],
-                                      const float (&p1ys)[4], float& axisX, float& axisY, float& penetration)
+                                      const float (&p1ys)[4], float& axisX, float& axisY, float& penetration) -> bool
         {
+#if MAGIQUE_SIMD == 1
             const auto project = [](const float (&pxs)[4], const float (&pys)[4], const float axisX, const float axisY,
                                     float& min, float& max)
             {
@@ -265,9 +280,6 @@ namespace magique
             project(pxs, pys, axisX, axisY, minA, maxA);
             project(p1xs, p1ys, axisX, axisY, minB, maxB);
 #else
-        const auto OverlapOnAxis = [](const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4],
-                                      const float (&p1ys)[4], float& axisX, float& axisY, float& penetration) -> bool
-        {
             float minA = pxs[0] * axisX + pys[0] * axisY;
             float maxA = minA;
             float projection = pxs[1] * axisX + pys[1] * axisY;
@@ -328,6 +340,7 @@ namespace magique
             }
             return false;
         };
+
         const auto processEdge = [&](const float x1, const float y1, const float x2, const float y2)
         {
             const float edgeX = x2 - x1;
@@ -363,7 +376,7 @@ namespace magique
         {
             return; // No collision detected
         }
-        info.normalVector = bestAxis; // already normalized
+        info.normalVector = -bestAxis; // already normalized
         info.penDepth = minPenetration;
         info.collisionPoint = {(pxs[0] + pxs[1] + pxs[2] + pxs[3]) / 4.0f, (pys[0] + pys[1] + pys[2] + pys[3]) / 4.0f};
     }
@@ -414,161 +427,68 @@ namespace magique
         {
             return; // quick bound check
         }
-#if MAGIQUE_SIMD == 1
-        const __m128 cx_vec = _mm_set1_ps(cx);
-        const __m128 cy_vec = _mm_set1_ps(cy);
-        const __m128 cr_sq_vec = _mm_set1_ps(cr * cr);
-        for (int i = 0; i < 4; ++i)
+
+        const auto getClosestPointOnLine = [](const Point& p, const Point& q, const Point& mid) -> Point
         {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-            const __m128 px_vec = _mm_set_ps(pxs[i], pxs[i], pxs[next], pxs[next]);
-            const __m128 py_vec = _mm_set_ps(pys[i], pys[i], pys[next], pys[next]);
-            const __m128 pqx_vec = _mm_sub_ps(_mm_shuffle_ps(px_vec, px_vec, _MM_SHUFFLE(1, 0, 3, 2)), px_vec);
-            const __m128 pqy_vec = _mm_sub_ps(_mm_shuffle_ps(py_vec, py_vec, _MM_SHUFFLE(1, 0, 3, 2)), py_vec);
-            const __m128 pcx_vec = _mm_sub_ps(cx_vec, px_vec);
-            const __m128 pcy_vec = _mm_sub_ps(cy_vec, py_vec);
-            const __m128 pq_dot_pc_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pcx_vec), _mm_mul_ps(pqy_vec, pcy_vec));
-            const __m128 pq_dot_pq_vec = _mm_add_ps(_mm_mul_ps(pqx_vec, pqx_vec), _mm_mul_ps(pqy_vec, pqy_vec));
-            __m128 t_vec = _mm_div_ps(pq_dot_pc_vec, pq_dot_pq_vec);
-            t_vec = _mm_max_ps(_mm_setzero_ps(), _mm_min_ps(_mm_set1_ps(1.0f), t_vec));
-            const __m128 closestX_vec = _mm_add_ps(px_vec, _mm_mul_ps(t_vec, pqx_vec));
-            const __m128 closestY_vec = _mm_add_ps(py_vec, _mm_mul_ps(t_vec, pqy_vec));
-            const __m128 dx_vec = _mm_sub_ps(closestX_vec, cx_vec);
-            const __m128 dy_vec = _mm_sub_ps(closestY_vec, cy_vec);
-            const __m128 dist_sq_vec = _mm_add_ps(_mm_mul_ps(dx_vec, dx_vec), _mm_mul_ps(dy_vec, dy_vec));
-            if (_mm_movemask_ps(_mm_cmple_ps(dist_sq_vec, cr_sq_vec)))
-            {
-                float closestX, closestY, dist_sq;
-                _mm_store_ss(&closestX, closestX_vec);
-                _mm_store_ss(&closestY, closestY_vec);
-                _mm_store_ss(&dist_sq, dist_sq_vec);
-                float distance = dist_sq;
-                SquareRoot(distance);
-                info.penDepth = cr - distance;
-                info.normalVector.x = (cx - closestX) / distance;
-                info.normalVector.y = (cy - closestY) / distance;
-                info.collisionPoint.x = closestX;
-                info.collisionPoint.y = closestY;
-                return;
-            }
+            const auto lineVec = q - p;
+            const auto pToMid = mid - p;
+            const auto dotLine = lineVec.dot(pToMid);
+            const auto dotMid = lineVec.dot(lineVec);
+            const float t = std::clamp(dotLine / dotMid, 0.0F, 1.0F);
+            return p + (lineVec * t);
+        };
+
+        const Point mid = {cx, cy};
+        const auto radiusSq = cr * cr;
+
+        const Point* closest = nullptr;
+        const auto closest1 = getClosestPointOnLine({pxs[0], pys[0]}, {pxs[1], pys[1]}, mid);
+        const auto closest2 = getClosestPointOnLine({pxs[1], pys[1]}, {pxs[2], pys[2]}, mid);
+        const auto closest3 = getClosestPointOnLine({pxs[2], pys[2]}, {pxs[3], pys[3]}, mid);
+        const auto closest4 = getClosestPointOnLine({pxs[3], pys[3]}, {pxs[0], pys[0]}, mid);
+
+        const auto dist1 = closest1.euclideanSqr(mid);
+        const auto dist2 = closest2.euclideanSqr(mid);
+        const auto dist3 = closest3.euclideanSqr(mid);
+        const auto dist4 = closest4.euclideanSqr(mid);
+
+        float minDist = dist1;
+        closest = &closest1;
+
+        if (dist2 < minDist)
+        {
+            minDist = dist2;
+            closest = &closest2;
         }
-        int windingNumber = 0;
-        for (int i = 0; i < 4; ++i)
+        if (dist3 < minDist)
         {
-            int next = i + 1;
-            if (next == 4)
-                next = 0;
-
-            if (pys[i] <= cy)
-            {
-                if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
-                    ++windingNumber;
-            }
-            else
-            {
-                if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
-                    --windingNumber;
-            }
+            minDist = dist3;
+            closest = &closest3;
         }
-        if (windingNumber != 0) // Circle center is inside the quadrilateral
+        if (dist4 < minDist)
         {
-            float minDist = std::numeric_limits<float>::max();
-            float closestX = 0.0f, closestY = 0.0f;
+            minDist = dist4;
+            closest = &closest4;
+        }
 
-            for (int i = 0; i < 4; ++i)
-            {
-                int const next = (i + 1) % 4;
-                const float dx = pxs[next] - pxs[i];
-                const float dy = pys[next] - pys[i];
-                float edgeLength = dx * dx + dy * dy;
-                SquareRoot(edgeLength);
-
-                float t = ((cx - pxs[i]) * dx + (cy - pys[i]) * dy) / (edgeLength * edgeLength);
-                t = std::max(0.0f, std::min(1.0f, t));
-
-                const float closestPx = pxs[i] + t * dx;
-                const float closestPy = pys[i] + t * dy;
-                const float distSquared = (closestPx - cx) * (closestPx - cx) + (closestPy - cy) * (closestPy - cy);
-                if (distSquared < minDist)
-                {
-                    minDist = distSquared;
-                    closestX = closestPx;
-                    closestY = closestPy;
-                }
-            }
+        if (minDist <= radiusSq)
+        {
             float distance = minDist;
             SquareRoot(distance);
             info.penDepth = cr - distance;
-            info.normalVector = {(cx - closestX) / distance, (cy - closestY) / distance};
-            info.collisionPoint = {closestX, closestY};
+            info.normalVector = GetDirFromPoints(*closest, mid);
+            info.collisionPoint = *closest;
         }
-#else
-        int windingNumber = 0;
-        for (int i = 0; i < 4; ++i)
-        {
-            int next = (i + 1) % 4;
-            if (pys[i] <= cy)
-            {
-                if (pys[next] > cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) > 0)
-                    ++windingNumber;
-            }
-            else
-            {
-                if (pys[next] <= cy && (pxs[next] - pxs[i]) * (cy - pys[i]) - (cx - pxs[i]) * (pys[next] - pys[i]) < 0)
-                    --windingNumber;
-            }
-        }
-        if (windingNumber != 0)
-        {
-            info.penDepth = cr;
-            info.normalVector.x = 0.0f;
-            info.normalVector.y = 0.0f;
-            info.collisionPoint.x = cx;
-            info.collisionPoint.y = cy;
-            return;
-        }
-
-        const auto DistanceSquaredPointToSegment =
-            [](const float px, const float py, const float qx, const float qy, const float cx, const float cy)
-        {
-            const float pqx = qx - px;
-            const float pqy = qy - py;
-            const float pcx = cx - px;
-            const float pcy = cy - py;
-
-            const float pq_dot_pc = pqx * pcx + pqy * pcy;
-            const float pq_dot_pq = pqx * pqx + pqy * pqy;
-            float t = pq_dot_pc / pq_dot_pq;
-            t = (t < 0) ? 0 : (t > 1) ? 1 : t;
-
-            const float closestX = px + t * pqx;
-            const float closestY = py + t * pqy;
-
-            const float dx = closestX - cx;
-            const float dy = closestY - cy;
-            return dx * dx + dy * dy;
-        };
-
-        for (int i = 0; i < 4; ++i)
-        {
-            int next = (i + 1) % 4;
-            const float distSq = DistanceSquaredPointToSegment(pxs[i], pys[i], pxs[next], pys[next], cx, cy);
-            if (distSq <= cr * cr)
-            {
-                float distance = distSq;
-                SquareRoot(distance);
-                info.penDepth = cr - distance;
-                info.normalVector.x = (cx - pxs[i]) / distance;
-                info.normalVector.y = (cy - pys[i]) / distance;
-                info.collisionPoint.x = pxs[i];
-                info.collisionPoint.y = pys[i];
-                return;
-            }
-        }
-#endif
     }
+
+    inline void QuadrilateralToCircle(const float (&pxs)[4], const float (&pys)[4], const float cx, const float cy,
+                                      const float cr, CollisionInfo& info)
+    {
+        // Inverted
+        CircleToQuadrilateral(cx, cy, cr, pxs, pys, info);
+        info.normalVector = -info.normalVector;
+    }
+
 
     //----------------- ROTATION -----------------//
 

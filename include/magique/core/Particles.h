@@ -16,7 +16,8 @@
 // the global Create() function with that emitter. An emitter can (and should) be reused as often as you like.
 // Note: Changing the emitter doesn't change already spawned particles (except the tick functions)
 // Uses the builder pattern for syntactic sugar.
-// To begin create a ScreenEmitter emitter; and customize it: emitter.setEmissionPosition(150,150).set...
+// To begin create a ScreenEmitter emitter; and customize it:
+//      - emitter.setEmissionPosition(150,150).setEmissionShape(Shape::RECT, 20,20);
 // Can currently handle well up to 250'000 screen particles at the same time on modern systems
 // .....................................................................
 

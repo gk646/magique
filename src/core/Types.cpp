@@ -2,21 +2,16 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "magique/core/Types.h"
 
-
 #include <cstdio>
 #include <utility>
 #include <cstring>
-#include <cctype>
 #include <string_view>
 #include <charconv>
 #include <algorithm>
 
 #include <raylib/raylib.h>
 
-#include <magique/core/Types.h>
 #include <magique/util/Logging.h>
-#include <magique/util/Math.h>
-#include <magique/internal/Macros.h>
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "magique/ui/UI.h"
@@ -25,6 +20,8 @@
 namespace magique
 {
     Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
+
+    Point Point::Random(float min, float max) { return {GetRandomFloat(min, max), GetRandomFloat(min, max)}; }
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
@@ -59,10 +56,6 @@ namespace magique
 
     Point Point::operator/(const Point& p) const { return {x / p.x, y / p.y}; }
 
-    Point Point::operator*(const float i) const { return {x * i, y * i}; }
-
-    bool Point::operator<(float num) const { return x < num && y < num; }
-
     bool Point::operator<(const Point& p) const { return x < p.x && y < p.y; }
 
     Point& Point::operator/=(const Point& p)
@@ -71,6 +64,12 @@ namespace magique
         y /= p.y;
         return *this;
     }
+
+    Point Point::operator-() const { return {-x, -y}; }
+
+    Point Point::operator*(const float i) const { return {x * i, y * i}; }
+
+    bool Point::operator<(float num) const { return x < num && y < num; }
 
     bool Point::operator<=(float num) const { return x <= num && y <= num; }
 
@@ -119,11 +118,9 @@ namespace magique
 
     float Point::manhattan(const Point& p) const { return std::abs(x - p.x) + std::abs(y - p.y); }
 
-    float Point::euclidean(const Point& p) const
-    {
-        float distSqr = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
-        return std::sqrt(distSqr);
-    }
+    float Point::euclidean(const Point& p) const { return std::sqrt(euclideanSqr(p)); }
+
+    float Point::euclideanSqr(const Point& p) const { return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y); }
 
     float Point::chebyshev(const Point& p) const
     {
@@ -138,8 +135,8 @@ namespace magique
     {
         constexpr auto D = 1.0F;
         constexpr auto D2 = 1.41421356237F;
-        const auto dx = abs(x - p.x);
-        const auto dy = abs(y - p.y);
+        const auto dx = std::abs(x - p.x);
+        const auto dy = std::abs(y - p.y);
         return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
 
@@ -211,6 +208,8 @@ namespace magique
         Point p = *this;
         return p.floor();
     }
+
+    Point Point::abs() const { return {std::abs(x), std::abs(y)}; }
 
     Point& Point::clamp(const float min, const float max)
     {
@@ -297,6 +296,8 @@ namespace magique
         return rect;
     }
 
+    Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
+
     Rect& Rect::operator+=(const Point& p)
     {
         x += p.x;
@@ -314,7 +315,6 @@ namespace magique
     bool Rect::operator==(const float num) const { return x == num && y == num && w == num && h == num; }
 
     Rectangle Rect::v() const { return Rectangle{x, y, w, h}; }
-
     Rect& Rect::floor()
     {
         x = std::floor(x);
@@ -331,6 +331,7 @@ namespace magique
         h = std::round(h);
         return *this;
     }
+
     Rect& Rect::zero()
     {
         x = 0.0F;
@@ -402,8 +403,6 @@ namespace magique
         rect.h = h + size;
         return rect;
     }
-
-    Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
 
     //----------------- SPRITE SHEET -----------------//
 

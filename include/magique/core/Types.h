@@ -27,6 +27,9 @@ namespace magique
         constexpr Point(float x, float y) : x(x), y(y) {}
         constexpr Point(float both) : x(both), y(both) {}
 
+        // Initializes both value randomly within the given range
+        static Point Random(float min, float max);
+
         // With other points
         bool operator==(const Point& p) const;
         bool operator!=(const Point& p) const;
@@ -39,6 +42,7 @@ namespace magique
         Point operator/(const Point& p) const;
         bool operator<(const Point& p) const; // For both
         Point& operator/=(const Point& p);
+        Point operator-()const;
 
         // With numbers
         [[nodiscard]] Point operator*(float i) const;
@@ -57,6 +61,7 @@ namespace magique
         // Distance functions
         float manhattan(const Point& p) const;
         float euclidean(const Point& p) const;
+        float euclideanSqr(const Point& p) const;
         float chebyshev(const Point& p) const;
         float octile(const Point& p) const;
 
@@ -90,6 +95,7 @@ namespace magique
         Point& ceil();
 
         Point floor() const;
+        Point abs() const;
 
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);

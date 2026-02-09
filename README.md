@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.7.1-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.9.3-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 `magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
@@ -18,6 +18,17 @@ your game project.
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
 Checkout my [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
 and tutorials.  
+
+#### Made with magique
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-around;">
+  <div style="text-align: center; margin: 10px;">
+    <img src=logos/turtles_journey.png alt="Turtle's Journey" style="width: 200px;"/>
+    <p><a href="https://github.com/gk646/turtles_journey">Turtle's Journey</a></p>
+  </div>
+  
+</div>
+
+
 I used `magique` in a 1-day game-jam to create the winning
 entry: [A turtle's journey](https://github.com/gk646/turtles_journey).
 

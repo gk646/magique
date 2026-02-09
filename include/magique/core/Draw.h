@@ -27,7 +27,8 @@ namespace magique
     // Draws the given texture region and scales it according to the destination rect
     // Note: Pass a negative width/height to mirror the texture horizontally/vertically
     // Rotation happens around the anchor (relative to the position)
-    void DrawRegionPro(const TextureRegion& region, Rectangle dest, float rotation = 0, Point anchor = {}, Color tint = WHITE);
+    void DrawRegionPro(const TextureRegion& region, Rectangle dest, float rotation = 0, Point anchor = {},
+                       Color tint = WHITE);
 
     // Draws the given frame from the sprite sheet
     void DrawSprite(const SpriteSheet& sheet, float x, float y, int frame, bool flipX = false, Color tint = WHITE);
@@ -41,7 +42,8 @@ namespace magique
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
 
     // Allows to specify the origin (zero point) and rectangle (of the tilemap) to draw
-    void DrawTileMapEx(const Point& origin, const Rectangle& rect ,const TileMap& tileMap, const TileSheet& tileSheet, int layer);
+    void DrawTileMapEx(const Point& origin, const Rectangle& rect, const TileMap& tileMap, const TileSheet& tileSheet,
+                       int layer);
 
     //================= TEXT =================//
 
@@ -78,14 +80,14 @@ namespace magique
     void DrawCapsule2DLines(float x, float y, float radius, float height, Color tint);
 
     // Draws the outlines of the given rectangle rotated
-    void DrawRectangleLinesRot(const Rectangle& rect, float rotation, float pivotX, float pivotY, Color color);
+    void DrawRectangleLinesRot(const Rectangle& rect, float rotation, Point anchor, Color color);
 
     // Draws a triangle - points must be provided in counter-clockwise order
-    void DrawTriangleRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, float pivotX, float pivotY, Color color);
+    void DrawTriangleRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, Point anchor, Color color);
 
     // Draw a triangle using lines - points must be provided in counter-clockwise order
-    void DrawTriangleLinesRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, float pivotX, float pivotY, Color color);
+    void DrawTriangleLinesRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, Point anchor, Color color);
 
 } // namespace magique
 
-#endif //MAGIQUE_DRAW_H
+#endif // MAGIQUE_DRAW_H

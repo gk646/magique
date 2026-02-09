@@ -2,7 +2,11 @@
 #ifndef MAGIQUE_COMPONENTS_H
 #define MAGIQUE_COMPONENTS_H
 
+#include "magique/core/Types.h"
+
+
 #include <magique/core/Types.h>
+#include <magique/util/Datastructures.h>
 
 //===============================================
 // Components Module
@@ -21,20 +25,16 @@ namespace magique
     // MUST NOT be removed
     struct PositionC final
     {
-        Point pos;         // Position of the top left corner (care when using circles)!
-        MapID map;         // The current map id of the entity
-        EntityType type;   // Type of the entity
-        uint16_t rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
-
-        [[nodiscard]] float getRotation() const;
+        Point pos;       // Position of the top left corner (care when using circles)!
+        MapID map;       // The current map id of the entity
+        EntityType type; // Type of the entity
+        float rotation;  // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
 
         // Returns the middle point by factoring in the collision shape
         [[nodiscard]] Point getMiddle(const CollisionC& col) const;
 
         // Returns the bounding rectangle of the entity (a rect that fully contains its shape)
         [[nodiscard]] Rect getBounds(const CollisionC& collisionC) const;
-
-        bool operator==(const PositionC&) const;
     };
 
     // Denotes an actor
@@ -54,27 +54,18 @@ namespace magique
         float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
         float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
         Point offset;              // Offset from top left
-        int16_t anchorX = 0;       // Rotation anchor point for the hitbox
-        int16_t anchorY = 0;       // Rotation anchor point for the hitbox
+        Point anchor;              // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape
 
         // https://www.youtube.com/watch?v=9k8cMzv0ZNo - same as Godot's layers
-        CollisionLayer layer = CollisionLayer{1}; // Which layers it occupies
-        CollisionLayer mask = CollisionLayer{1};  // Against which layers it collides
+        EnumSet<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
+        EnumSet<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
 
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         [[nodiscard]] bool detects(const CollisionC& other) const;
-
-        // Returns true if the entity has this layer is set
-        [[nodiscard]] bool isLayerSet(CollisionLayer layer) const;
-        void setLayer(CollisionLayer layer, bool enabled = true);
-
-        // Returns true if the entity looks for collision on the given layer
-        [[nodiscard]] bool isMaskSet(CollisionLayer layer) const;
-        void setMask(CollisionLayer layer, bool enabled = true);
 
         // Returns the offset from the position (top left) to the middle
         [[nodiscard]] Point getMidOffset() const;

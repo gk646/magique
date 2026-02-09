@@ -128,7 +128,8 @@ namespace magique
         {
             for (auto* msg : data.incMsgBuffer)
             {
-                msg->Release();
+                if (msg != nullptr)
+                    msg->Release();
             }
             data.incMsgBuffer.clear();
             data.incMsgVec.clear();
