@@ -31,7 +31,7 @@ namespace magique
         }
     }
 
-    void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func)
+    void SetGameStateChangeCallback(const GameStateCallback& func)
     {
         global::ENGINE_DATA.stateCallback = func;
     }

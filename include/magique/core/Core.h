@@ -24,9 +24,11 @@ namespace magique
     // Sets the current gamestate
     void SetGameState(GameState gameState);
 
+    using GameStateCallback = std::function<void(GameState oldState, GameState newState)>;
+
     // Sets the callback function that is called each time the gamestate is changed
     // Note: Called after the new gamestate has been assigned internally
-    void SetGameStateChangeCallback(const std::function<void(GameState oldState, GameState newState)>& func);
+    void SetGameStateChangeCallback(const GameStateCallback& func);
 
     //================= CORE BEHAVIOR =================//
 
@@ -90,8 +92,10 @@ namespace magique
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,  const FilterFunc& filter = {});
-    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,  const FilterFunc& filter = {});
+    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size,
+                                                         const FilterFunc& filter = {});
+    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size,
+                                                       const FilterFunc& filter = {});
 
     //================= UTILS =================//
 
@@ -124,4 +128,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_CORE_H
+#endif // MAGIQUE_CORE_H

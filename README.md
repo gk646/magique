@@ -5,7 +5,8 @@
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 `magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
-It combines your favourite game libraries (*[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
+It combines your favourite game libraries (
+*[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
 written modules** into a featureful standalone engine.
 With an **intutive and easy-to-learn API** and **extensive documenation** it is specifically designed to be the basis of
 your game project.
@@ -17,17 +18,13 @@ your game project.
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
 Checkout my [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
-and tutorials.  
+and tutorials.
 
 #### Made with magique
-<div style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-around;">
-  <div style="text-align: center; margin: 10px;">
-    <img src=logos/turtles_journey.png alt="Turtle's Journey" style="width: 200px;"/>
-    <p><a href="https://github.com/gk646/turtles_journey">Turtle's Journey</a></p>
-  </div>
-  
-</div>
 
+|                           [Turtle's Journey](https://github.com/gk646/turtles_journey)                            |
+|:-----------------------------------------------------------------------------------------------------------------:|
+| <img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> |
 
 I used `magique` in a 1-day game-jam to create the winning
 entry: [A turtle's journey](https://github.com/gk646/turtles_journey).
@@ -73,6 +70,7 @@ Most notable features:
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
+- **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection (often used in gamedev)
 
 ### Quickstart
 

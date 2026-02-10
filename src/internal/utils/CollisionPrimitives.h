@@ -2,14 +2,6 @@
 #ifndef MAGIQUE_COLLISION_PRIMITIVES_H
 #define MAGIQUE_COLLISION_PRIMITIVES_H
 
-
-
-#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86) || defined(_M_X64)
-#define MAGIQUE_SIMD 1
-#else
-#undef MAGIQUE_SIMD
-#define MAGIQUE_SIMD 0
-#endif
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
 #endif

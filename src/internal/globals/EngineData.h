@@ -6,8 +6,7 @@
 
 #include <magique/core/GameConfig.h>
 #include <magique/util/Datastructures.h>
-#include <entt/entity/entity.hpp>
-
+#include <magique/ecs/ECS.h>
 
 //-----------------------------------------------
 // Engine Data
@@ -20,22 +19,6 @@ namespace magique
 {
     static constexpr int COL_WORK_PARTS = MAGIQUE_WORKER_THREADS + 1; // Amount of parts to split collision work into
 
-    using EntityCache = HashMap<entt::entity, uint16_t>;
-    using StateCallback = std::function<void(GameState, GameState)>;
-
-    struct QueryData final
-    {
-        HashSet<entt::entity> cache;
-        Point origin{};
-        Point size{};
-        MapID map{};
-
-        [[nodiscard]] bool getIsSimilarParameters(MapID newMap, Point newOrigin, Point newSize) const
-        {
-            return map == newMap && origin == newOrigin && size == newSize;
-        }
-    };
-
     struct CameraShakeData final
     {
         Point direction;
@@ -47,40 +30,41 @@ namespace magique
 
     struct EngineData final
     {
-        StateCallback stateCallback{};               // Callback function for gamestate changes
-        EntityCache entityUpdateCache;               // Caches all entities for a set amount of ticks
-        HashSet<entt::entity> entityNScriptedSet;    // Contains all entities NOT scripted
-        std::vector<entt::entity> entityUpdateVec;   // Vector containing the entities to update for this tick
-        std::vector<entt::entity> drawVec;           // Vector containing all entities to be drawn this tick
-        std::vector<MapID> loadedMaps{};             // Currently loaded zones
-        std::vector<entt::entity> collisionVec;      // Vector containing the entities to check for collision
-        CameraShakeData cameraShake{};               // Data about the current camera shake
-        GameConfig gameConfig{};                     // Global game config instance
-        Camera2D camera{};                           // Current camera
-        Game* gameInstance;                          // The game instance created by the user
-        entt::entity cameraEntity{UINT32_MAX};       // Entity id of the camera
-        GameState gameState{UINT8_MAX};              // Global gamestate
-        MapID cameraMap = MapID(UINT8_MAX);          // Map the camera is in
-        QueryData nearbyQueryData;                   // Caches the parameters of the last query to skip similar calls
-        entt::entity playerEntity = entt::null;      // Manually set player entity
-        float engineTime = 0.0F;                     // Time since engine start
-        uint32_t engineTicks = 0;                    // Ticks since engine start
-        DestroyEntityCallback destroyEntityCallback; // Function to be called when any entity is destroyed
+        // Callbacks
+        GameStateCallback stateCallback; // Callback function for gamestate changes
+        EntityCallback destroyCallback;
+        EntityCallback createCallback;
+
+        // Datastructures
+        HashMap<entt::entity, uint16_t> entityUpdateCache; // Maps entity to cache duration
+        HashSet<entt::entity> entityNScriptedSet;          // Contains all entities NOT scripted
+        std::vector<entt::entity> entityUpdateVec;         // Vector containing the entities to update for this tick
+        std::vector<entt::entity> drawVec;                 // Vector containing all entities to be drawn this tick
+        std::vector<MapID> loadedMaps{};                   // Currently loaded zones
+        std::vector<entt::entity> collisionVec;            // Vector containing the entities to check for collision
+        HashSet<entt::entity> queryCache;
+
+        CameraShakeData cameraShake{};          // Data about the current camera shake
+        GameConfig gameConfig{};                // Global game config instance
+        Camera2D camera{};                      // Current camera
+        Game* gameInstance;                     // The game instance created by the user
+        entt::entity cameraEntity = entt::null; // Entity id of the camera
+        entt::entity playerEntity = entt::null; // Manually set player entity
+        GameState gameState{UINT8_MAX};         // Global gamestate
+        MapID cameraMap = MapID(UINT8_MAX);     // Map the camera is in
+        float engineTime = 0.0F;                // Time since engine start
+        uint32_t engineTicks = 0;               // Ticks since engine start
 
         void init()
         {
             camera.zoom = 1.0F;
-            destroyEntityCallback = nullptr;
             entityUpdateCache.reserve(1000);
             drawVec.reserve(1000);
             entityUpdateVec.reserve(1000);
             collisionVec.reserve(500);
-            nearbyQueryData.cache.reserve(100);
         }
 
-        [[nodiscard]] bool isEntityScripted(const entt::entity e) const { return !entityNScriptedSet.contains(e); }
-
-        void updateCameraShake()
+        void update()
         {
             return;
             auto& shake = cameraShake;
@@ -113,6 +97,8 @@ namespace magique
                 // camera.target.y = 0;
             }
         }
+
+        [[nodiscard]] bool isEntityScripted(const entt::entity e) const { return !entityNScriptedSet.contains(e); }
     };
 
     namespace global

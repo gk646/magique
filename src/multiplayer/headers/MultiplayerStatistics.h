@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <magique/core/Core.h>
 #endif
+#include "magique/internal/InternalTypes.h"
 
 struct MultiplayerStatistics final
 {
@@ -17,76 +18,56 @@ struct MultiplayerStatistics final
     }
     void addOutgoing(MessageType type, int size) { outgoing.add(type, size); }
     void addIncoming(MessageType type, int size) { incoming.add(type, size); }
-    void print() const
+
+    magique::internal::MultiplayerStatsData getStats() const
     {
-        const float passedTicks = magique::GetEngineTick() - startTick;
-        printf("Message Statistics:\n");
-        printf("--------------------------------------\n");
-        printf("Over %.2f seconds\n", passedTicks / MAGIQUE_LOGIC_TICKS);
-
-        printf("Incoming Messages:\n");
-        incoming.print(passedTicks);
-
-        printf("\nOutgoing Messages:\n");
-        outgoing.print(passedTicks);
+        return {incoming.getSorted(), outgoing.getSorted(), incoming.size, outgoing.size};
     }
+
+
 private:
     struct DirectionData final
     {
         uint32_t counts[UINT8_MAX]{};
         uint32_t size;
 
-        struct MessageCount
-        {
-            uint8_t type;
-            uint32_t count;
-        };
         void reset()
         {
             memset(counts, 0, sizeof(counts));
             size = 0;
-        }
-        void print(const float passed) const
-        {
-            MessageCount arr[UINT8_MAX];
-            for (int i = 0; i < UINT8_MAX; i++)
-            {
-                arr[i] = {(uint8_t)i, counts[i]};
-            }
-            auto compareDescending = [](const MessageCount& a, const MessageCount& b) { return a.count > b.count; };
-            std::sort(arr, arr + UINT8_MAX, compareDescending);
-
-            uint32_t total = 0;
-            for (const auto& entry : arr)
-            {
-                if (entry.count > 0)
-                {
-                    const float avg = static_cast<float>(entry.count) / passed;
-                    printf("  [%2d] %5d messages (%.2f/tick)\n", (int)entry.type, entry.count, avg);
-                }
-                total += entry.count;
-            }
-            printf("  Total:\n");
-            printf("    %u messages (%.2f/tick)\n", total, static_cast<float>(total) / passed);
-            printf("    %u bytes (%.2f/tick)\n", size, static_cast<float>(size) / passed);
-            const auto passedSeconds = passed / MAGIQUE_LOGIC_TICKS;
-            printf("    %.2f MB/h\n", ((static_cast<float>(size) / passedSeconds) * 60 * 60) / 1'000'000);
         }
         void add(MessageType type, int addSize)
         {
             counts[(int)type]++;
             size += addSize;
         }
+        std::array<magique::internal::MessageCount, UINT8_MAX> getSorted() const
+        {
+            std::array<magique::internal::MessageCount, UINT8_MAX> arr{};
+            for (int i = 0; i < UINT8_MAX; i++)
+            {
+                arr[i] = {(MessageType)i, counts[i]};
+            }
+            auto compareDescending =
+                [](const magique::internal::MessageCount& a, const magique::internal::MessageCount& b)
+            {
+                return a.count > b.count;
+            };
+            std::ranges::sort(arr, compareDescending);
+            return arr;
+        }
     };
     DirectionData incoming{};
     DirectionData outgoing{};
     uint32_t startTick = 0;
+
 #else
     void reset() {}
     void addOutgoing(MessageType type, int size) {}
     void addIncoming(MessageType type, int size) {}
     void print() { LOG_WARNING("Network stats only work in DEBUG"); }
+    magique::internal::MultiplayerStatsData getStats() const { return {}; }
 #endif
 };
 
-#endif //MAGEQUEST_MULTIPLAYERSTATISTICS_H
+#endif // MAGEQUEST_MULTIPLAYERSTATISTICS_H

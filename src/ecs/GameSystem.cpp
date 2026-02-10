@@ -81,7 +81,7 @@ namespace magique
             LOG_WARNING("Benchmark for gamesystems not enabled!");
             return;
         }
-        LOG_INFO("System Stats:");
+        LOG_INFO("Gamesystem Stats:");
         printf("\t%-25s || %10s | %10s | %10s \n", "System // Function (ms)", "DrawGame", "UpdateGame", "UpdateEnd");
         for (auto& system : SYSTEM_DATA.systems)
         {

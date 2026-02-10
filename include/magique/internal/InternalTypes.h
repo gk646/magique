@@ -4,7 +4,6 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
-#include <string>
 
 //===============================================
 // Public Internal Module
@@ -265,6 +264,21 @@ namespace magique::internal
         char name[MAGIQUE_MAX_NAMES_LENGTH]{};
         UIObject* object = nullptr;
     };
+
+    struct MessageCount
+    {
+        MessageType type;
+        uint32_t count;
+    };
+
+    struct MultiplayerStatsData
+    {
+        std::array<MessageCount, UINT8_MAX> incoming;
+        std::array<MessageCount, UINT8_MAX> outgoing;
+        uint32_t bytesIn;
+        uint32_t bytesOut;
+    };
+
 
 } // namespace magique::internal
 

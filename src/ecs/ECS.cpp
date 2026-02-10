@@ -16,7 +16,6 @@
 #include "internal/globals/PathFindingData.h"
 #include "internal/globals/ScriptData.h"
 
-
 namespace magique
 {
     bool EntityRegister(const EntityType type, const CreateFunc& createFunc)
@@ -48,6 +47,8 @@ namespace magique
         map.erase(type);
         return true;
     }
+
+    void EntitySetCreateCallback(const EntityCallback& callback) { global::ENGINE_DATA.createCallback = callback; }
 
     bool EntityExists(const entt::entity e) { return internal::REGISTRY.valid(e); }
 
@@ -89,6 +90,9 @@ namespace magique
             it->second(entity, type);
         }
 
+        if (data.createCallback)
+            data.createCallback(entity);
+
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
             ScriptingInvokeEvent<onCreate>(entity);
@@ -106,12 +110,14 @@ namespace magique
         return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
     }
 
-    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map, const float rot,
-                                const bool withFunc)
+    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map,
+                                const float rot, const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
         return CreateEntityInternal(id, type, pos, map, rot, withFunc);
     }
+
+    void EntitySetDestroyCallback(const EntityCallback& callback) { global::ENGINE_DATA.destroyCallback = callback; }
 
     bool EntityDestroy(const entt::entity entity)
     {
@@ -122,9 +128,9 @@ namespace magique
         if (registry.valid(entity)) [[likely]]
         {
             const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (data.destroyEntityCallback != nullptr)
+            if (data.destroyCallback)
             {
-                data.destroyEntityCallback(entity, pos);
+                data.destroyCallback(entity);
             }
             if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
             {
@@ -140,7 +146,7 @@ namespace magique
             global::PATH_DATA.solidEntities.erase(entity);
             if (entity == CameraGetEntity())
             {
-                data.cameraEntity = entt::entity{UINT32_MAX};
+                data.cameraEntity = entt::null;
             }
             registry.destroy(entity);
             return true;
@@ -160,9 +166,9 @@ namespace magique
             for (const auto e : group)
             {
                 const auto& pos = group.get<PositionC>(e);
-                if (data.destroyEntityCallback)
+                if (data.destroyCallback)
                 {
-                    data.destroyEntityCallback(e, pos);
+                    data.destroyCallback(e);
                 }
                 if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
@@ -170,15 +176,15 @@ namespace magique
                 }
             }
 
-            internal::REGISTRY.clear();
             data.entityUpdateCache.clear();
             data.drawVec.clear();
             data.entityUpdateVec.clear();
             data.collisionVec.clear();
             data.entityNScriptedSet.clear();
             dyCollData.mapEntityGrids.clear();
-            data.cameraEntity = entt::entity{UINT32_MAX};
+            internal::REGISTRY.clear();
             global::PATH_DATA.solidEntities.clear();
+            data.cameraEntity = entt::null;
             return;
         }
 
@@ -208,26 +214,21 @@ namespace magique
         }
     }
 
-    void EntitySetDestroyCallback(const DestroyEntityCallback callback)
-    {
-        global::ENGINE_DATA.destroyEntityCallback = callback;
-    }
-
     CollisionC& GiveCollisionRect(entt::entity entity, float width, float height)
     {
         const auto size = Point{width, height};
         return GiveCollisionRect(entity, Rect{{0, 0}, size}, size / 2);
     }
 
+    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
+    {
+        return GiveCollisionRect(entity, Rect{{0, 0}, dims}, anchor);
+    }
+
     CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
         return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(), anchor,
                                                       Shape::RECT);
-    }
-
-    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
-    {
-        return GiveCollisionRect(entity, Rect{{0, 0}, dims}, anchor);
     }
 
     CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
@@ -240,10 +241,10 @@ namespace magique
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{}, anchor, Shape::TRIANGLE);
     }
 
-    void GiveCamera(const entt::entity entity)
+    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
     {
-        internal::REGISTRY.emplace<CameraC>(entity);
-        global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(entity).map;
+        return internal::REGISTRY.emplace<EmitterC>(entity, static_cast<uint16_t>(intensity), color.r, color.g, color.b,
+                                                    color.a, style, true);
     }
 
     OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, const Shape shape)
@@ -252,10 +253,10 @@ namespace magique
                                                      shape);
     }
 
-    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
+    void GiveCamera(const entt::entity entity)
     {
-        return internal::REGISTRY.emplace<EmitterC>(entity, static_cast<uint16_t>(intensity), color.r, color.g, color.b,
-                                                    color.a, style, true);
+        internal::REGISTRY.emplace<CameraC>(entity);
+        global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(entity).map;
     }
 
     void GiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
@@ -284,19 +285,8 @@ namespace magique
     static HashSet<entt::entity>& QueryLoadedEntitiesRectIMPL(MapID map, Point origin, Point size)
     {
         auto& dynamicData = global::DY_COLL_DATA;
-        auto& data = global::ENGINE_DATA.nearbyQueryData;
-        auto& set = data.cache;
-
-        if (data.getIsSimilarParameters(map, origin, size))
-        {
-            return set;
-        }
-
-        data.origin = origin;
-        data.size = size;
-        data.map = map;
+        auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
-
         dynamicData.mapEntityGrids[map].query(set, origin.x, origin.y, size.x, size.y);
         return set;
     }
@@ -305,7 +295,7 @@ namespace magique
                                                                const FilterFunc& filter)
     {
         QueryLoadedEntitiesRectIMPL(map, origin - size, Point{size * 2});
-        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        auto& set = global::ENGINE_DATA.queryCache;
         for (auto it = set.begin(); it != set.end();)
         {
             if (CollisionC::GetMiddle(*it).euclidean(origin) > size || (filter && !filter(*it)))
@@ -317,14 +307,13 @@ namespace magique
                 ++it;
             }
         }
-        // This works because the hashset uses a vector as underlying storage type (stored without holes)
         return set.values();
     }
 
     const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,
                                                              const FilterFunc& filter)
     {
-        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        auto& set = global::ENGINE_DATA.queryCache;
         QueryLoadedEntitiesRectIMPL(map, origin, size);
         const Rect bounds{origin, size};
         for (auto it = set.begin(); it != set.end();)
@@ -343,7 +332,7 @@ namespace magique
 
     const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
     {
-        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
         for (const auto e : ComponentGetView<PositionC>())
         {
@@ -359,7 +348,7 @@ namespace magique
 
     const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, const FilterFunc& filter)
     {
-        auto& set = global::ENGINE_DATA.nearbyQueryData.cache;
+        auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
         const Rect bounds{origin, size};
         for (const auto e : ComponentGetView<PositionC>())

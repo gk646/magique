@@ -31,8 +31,7 @@ namespace magique::mainthread
         {
             while (!WindowShouldClose() && game.getIsRunning()) [[likely]]
             {
-                auto time = GetTime();
-                data.engineTime = static_cast<float>(time);
+                data.engineTime = static_cast<float>(GetTime());
 
                 WakeUpJobs();
 
@@ -47,8 +46,7 @@ namespace magique::mainthread
                 if (shouldUpdate >= 1.0)
                 {
                     UPDATE_WORK -= 1.0;
-                    UPDATE_TIME = updater::Tick(time, game, registry);
-                    time += UPDATE_TIME; // Avoids calling GetTime() multiple times
+                    UPDATE_TIME = updater::Tick(GetTime(), game, registry);
                     ++data.engineTicks;
                 }
 
@@ -60,8 +58,7 @@ namespace magique::mainthread
                 // WaitTime(NEXT_RENDER, 0); // Dont render too early
                 // time = GetTime();
 
-                RENDER_TIME = renderer::Tick(time, game, registry);
-                time += RENDER_TIME;
+                RENDER_TIME = renderer::Tick(GetTime(), game, registry);
 
                 UPDATE_WORK += config.workPerTick;
 
@@ -69,7 +66,7 @@ namespace magique::mainthread
                 const auto nextFrameTime = RENDER_TIME + (static_cast<double>(UPDATE_WORK >= 1.0) * UPDATE_TIME);
                 // How much of the time we sleep - round down to nearest millisecond as sleep accuracy is 1ms
                 const auto sleepTime = std::floor((config.sleepTime - nextFrameTime) * 1000) / 1000;
-                const auto target = time + (config.frameTarget - nextFrameTime); // How long we wait in total
+                const auto target = GetTime() + (config.frameTarget - nextFrameTime); // How long we wait in total
 
                 HibernateJobs(target, sleepTime);
                 WaitTime(target, sleepTime);
@@ -84,4 +81,4 @@ namespace magique::mainthread
 } // namespace magique::mainthread
 
 
-#endif //MAGIQUE_MAINTHREAD_H
+#endif // MAGIQUE_MAINTHREAD_H

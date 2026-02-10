@@ -42,7 +42,7 @@ namespace magique
         Point operator/(const Point& p) const;
         bool operator<(const Point& p) const; // For both
         Point& operator/=(const Point& p);
-        Point operator-()const;
+        Point operator-() const;
 
         // With numbers
         [[nodiscard]] Point operator*(float i) const;
@@ -444,9 +444,6 @@ namespace magique
         friend void SetIsAccumulated(CollisionInfo& info);
     };
 
-    // Called BEFORE the entity is destroyed with its info
-    using DestroyEntityCallback = void (*)(entt::entity entity, const PositionC& position);
-
     //================= GAMEDEV =================//
 
     enum class NoiseType
@@ -594,9 +591,9 @@ namespace magique
         int size;         // Valid size of the data
         MessageType type; // Type of the message (very useful for handling messages on the receiver)
 
-        // Constructor
+        // Automatically assigns size
         template <typename T>
-        Payload(const T&, MessageType type) : data(&data), size(sizeof(T)), type(type)
+        Payload(const T& data, MessageType type) : Payload(&data, sizeof(T), type)
         {
         }
 
@@ -605,8 +602,9 @@ namespace magique
         Payload() = default;
 
         // Cast the payload data to an object of the given type and returns it - uses *static_cast
+        // Should be used together with a switch(type) - and then you can handle each message typesafe
         template <typename T>
-        T getDataAs() const;
+        const T& getDataAs() const;
     };
 
     struct Message final
@@ -838,7 +836,7 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    T Payload::getDataAs() const
+    const T& Payload::getDataAs() const
     {
         return *static_cast<const T*>(data);
     }

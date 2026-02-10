@@ -2,9 +2,11 @@
 #ifndef MAGIQUE_MULTIPLAYER_H
 #define MAGIQUE_MULTIPLAYER_H
 
-#include <vector>
-#include <magique/core/Types.h>
 #include <functional>
+#include <magique/core/Core.h>
+#include <magique/util/Logging.h>
+#include <magique/internal/InternalTypes.h>
+#include <enchantum/enchantum.hpp>
 
 //===============================================
 // Multiplayer Module
@@ -140,8 +142,11 @@ namespace magique
     // Failure: -1 if connection is not valid
     int GetConnectionNum(Connection conn);
 
-    // Prints statistics on the amount of sent packages (since last time this method was called)
+    // Prints statistics on the amount of sent packages
     // Only works in debug mode
+    // Note: The definition of MessageType NEEDS to be included (so enum names can be printed)
+    //       Otherwise you get strange compiler errors...
+    template <typename T = MessageType>
     void PrintPacketStats();
 
     //================= CLIENT-MODE =================//
@@ -159,5 +164,64 @@ namespace magique
 
 } // namespace magique
 
+
+// IMPLEMENTATION
+
+
+namespace magique
+{
+
+    namespace internal
+    {
+        MultiplayerStatsData getStats();
+
+        template <typename T = MessageType>
+        void PrintDirectionStats(const std::array<MessageCount, UINT8_MAX>& stats, uint32_t bytes)
+        {
+            static_assert(std::is_enum_v<MessageType> && sizeof(MessageType) > 0,
+                          "Include the header where enum class MessageTypes is defined!");
+
+            uint32_t total = 0;
+            const auto ticks = GetEngineTick();
+
+            printf("\t%-25s || %10s | %10s\n", "Message // Stat", "Count", "Avg/tick");
+            for (const auto& entry : stats)
+            {
+                if (entry.count == 0)
+                    continue;
+                const float avg = static_cast<float>(entry.count) / ticks;
+
+                auto enumName = enchantum::to_string((T)entry.type);
+                if (enumName.empty())
+                {
+                    enumName = TextFormat("%d", (int)entry.type);
+                }
+                printf("\t%-25s || %10d | %10.2f \n", std::string{enumName}.c_str(), entry.count, avg);
+                total += entry.count;
+            }
+            puts("\t---------------------------------------------------");
+
+            printf("\t%-25s || %10d | %10.2f \n", "Total", (int)total, static_cast<float>(total) / ticks);
+            printf("\t%-25s || %10d | %10.2f", "Bytes", (int)bytes, static_cast<float>(bytes) / ticks);
+            const auto passedSeconds = ticks / MAGIQUE_LOGIC_TICKS;
+            printf(" => %.2f MB/h\n", ((static_cast<float>(bytes) / passedSeconds) * 60 * 60) / 1'000'000);
+        }
+
+    } // namespace internal
+
+    template <typename T>
+    void PrintPacketStats()
+    {
+        const auto data = internal::getStats();
+        if (data.bytesOut != 0 || data.bytesIn != 0)
+        {
+            LOG_INFO("Incoming Network Stats:");
+            internal::PrintDirectionStats(data.incoming, data.bytesIn);
+            LOG_INFO("Outgoing Network Stats:");
+            internal::PrintDirectionStats(data.outgoing, data.bytesOut);
+        }
+    }
+
+} // namespace magique
 
 #endif // MAGIQUE_MULTIPLAYER_H

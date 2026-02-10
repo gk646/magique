@@ -23,12 +23,15 @@ enum EntityType : uint16_t; // A unique type identifier handled by the user to d
 
 namespace magique
 {
+    using EntityCallback = std::function<void(entt::entity entity)>;
+
     // Returns the magique registry
     entt::registry& EntityGetRegistry();
 
     //============== ENTITIY ==============//
 
     using CreateFunc = std::function<void(entt::entity entity, EntityType type)>;
+
     // Registers an entity with the given create function - replaces the existing function if present
     // Failure: Returns false
     bool EntityRegister(EntityType type, const CreateFunc& createFunc);
@@ -45,8 +48,12 @@ namespace magique
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
-    // Note: You shouldnt use  this information - but entity ids start with 0 and go up until UINT32_MAX
+    // Note: You shouldn't use  this information - but entity ids start with 0 and go up until UINT32_MAX
     entt::entity EntityCreateEx(entt::entity id, EntityType type, Point pos, MapID map, float rotation, bool withFunc);
+
+    // Sets a function that is called each time AFTER the entity is created or BEFORE the entity is destroyed
+    void EntitySetDestroyCallback(const EntityCallback& callback);
+    void EntitySetCreateCallback(const EntityCallback& callback);
 
     // Returns true if the given entity exist in the registry
     bool EntityExists(entt::entity entity);
@@ -76,10 +83,6 @@ namespace magique
 
     // Iterates all enemies and destroys them if the function returns true
     void EntityDestroy(const std::function<bool(entt::entity)>& func);
-
-    // Sets a function that is called each time a entity is destroyed
-    // See core/Types.h for more info on the functino
-    void EntitySetDestroyCallback(DestroyEntityCallback callback);
 
     //================= COMPONENTS =================//
 

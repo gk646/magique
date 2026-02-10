@@ -131,18 +131,13 @@ namespace magique
                 blocks[block++].width = 0;
             }
 
-#if MAGIQUE_PROFILING == 1
             const auto currentMemory = GetMemoryWorkingSet();
             if (currentMemory > maxMemoryBytes)
                 maxMemoryBytes = currentMemory;
-#endif
         }
 
-        void printPerformanceStats()
+        void printPerformanceStats() const
         {
-#if MAGIQUE_PROFILING == 0
-            return;
-#endif
             LOG_INFO("Performance Stats:");
             auto* fmt = "\t%-10s: Draw: %.2f ms | Update: %.2f ms\n";
             printf(fmt, "Avg Ticks", updateTick.getAvgMillis(), drawTick.getAvgMillis());

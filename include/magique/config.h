@@ -29,7 +29,7 @@
 //================= PERFORMANCE =================//
 
 // Enables usage of SIMD (faster)
-#define MAGIQUE_SIMD 1
+#define MAGIQUE_SIMD (1)
 
 // Estimated number of unique maps - used as static buffer size (if above allocation happens)
 #define MAGIQUE_EXPECTED_MAPS (32)
@@ -55,7 +55,7 @@
 
 // Checks if the entity still exists before calling the collision method
 // This incurs some overhead but makes it easier to avoid accessing deleted entities
-#define MAGIQUE_CHECK_EXISTS_BEFORE_EVENT 1
+#define MAGIQUE_CHECK_EXISTS_BEFORE_EVENT (1)
 
 //================= ASSETS =================//
 
@@ -106,9 +106,6 @@
 //================= UI =================//
 
 //================= UTIL =================//
-
-// Enables profiling - generates average times for update and render ticks
-#define MAGIQUE_PROFILING 1
 
 // Maximum length of formats and string values (SetFormatValue()))
 #define MAGIQUE_MAX_FORMAT_LEN (64)

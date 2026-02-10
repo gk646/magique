@@ -38,7 +38,7 @@ namespace magique
         const auto cameraEntity = CameraGetEntity();
 
         Point targetPosition{0, 0};
-        if (cameraEntity != entt::entity{UINT32_MAX}) [[unlikely]] // No camera assigned
+        if (cameraEntity != entt::null) [[likely]]
         {
             targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floor();
         }

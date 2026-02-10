@@ -11,8 +11,10 @@ namespace magique
         global::TWEEN_DATA.update();
         global::CONSOLE_DATA.update();  // First in case needs to block input
         global::PARTICLE_DATA.update(); // Order doesnt matter
-        InputSystem();                  // Before gametick per contract (scripting system)
-        LogicSystem(registry);          // Before gametick cause essential
+        global::ENGINE_DATA.update();
+
+        InputSystem();         // Before gametick per contract (scripting system)
+        LogicSystem(registry); // Before gametick cause essential
 
         // Order doesnt matter
         auto& config = global::ENGINE_CONFIG;
@@ -36,11 +38,6 @@ namespace magique
         }
         ++achieveCounter;
 
-        // Reset nearby query
-        auto& data = global::ENGINE_DATA;
-        data.nearbyQueryData.size = 0;
-
-        data.updateCameraShake();
 
         // Before user tick so it gets new information
 #ifdef MAGIQUE_STEAM

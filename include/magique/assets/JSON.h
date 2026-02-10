@@ -3,11 +3,11 @@
 #define MAGIQUE_CSVREADER_H
 
 #include <glaze/json/write.hpp>
+#include <enchantum/enchantum.hpp>
 #include <raylib/raylib.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/VirtualClock.h>
-#include <magique/assets/types/TextLines.h>
 #include <magique/util/Datastructures.h>
 
 //===============================================
@@ -35,6 +35,17 @@ namespace magique
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
     template <typename T, bool prettify = true>
     bool ExportJSON(const T& data, std::string& buffer);
+
+    // Useful to reflect an enum - allows to import/export from JSON (with value names)
+#define REFLECT_ENUM(Enum)                                                                                              \
+    template <>                                                                                                         \
+    struct glz::meta<Enum>                                                                                              \
+    {                                                                                                                   \
+        using enum Enum;                                                                                                \
+        static constexpr auto value = enchantum::values<Enum>;                                                          \
+        static constexpr auto keys = enchantum::names<Enum>;                                                            \
+    };
+
 
 } // namespace magique
 
@@ -101,10 +112,10 @@ namespace glz
     };
 
     // template <typename Key, typename Value, int maxSize>
-    // struct from<JSON, EnumValueHolder<Key, Value, maxSize>>
+    // struct from<JSON, magique::EnumArray<Key, Value, maxSize>>
     // {
     //     template <auto Opts>
-    //     static void op(EnumValueHolder<Key, Value, maxSize>& value, auto&&... args)
+    //     static void op(magique::EnumArray<Key, Value, maxSize>& value, auto&&... args)
     //     {
     //         struct PairedData
     //         {
@@ -122,10 +133,10 @@ namespace glz
     // };
     //
     // template <typename Key, typename Value, int maxSize>
-    // struct to<JSON, EnumValueHolder<Key, Value, maxSize>>
+    // struct to<JSON, magique::EnumArray<Key, Value, maxSize>>
     // {
     //     template <auto Opts>
-    //     static void op(EnumValueHolder<Key, Value, maxSize>& value, auto&&... args) noexcept
+    //     static void op(magique::EnumArray<Key, Value, maxSize>& value, auto&&... args) noexcept
     //     {
     //         struct PairedData
     //         {
@@ -134,7 +145,7 @@ namespace glz
     //         };
     //         std::vector<PairedData> pairedData;
     //         pairedData.reserve(32);
-    //         for (int i = 0; i < EnumValueHolder<Key, Value, maxSize>::size; ++i)
+    //         for (int i = 0; i < magique::EnumArray<Key, Value, maxSize>::size; ++i)
     //         {
     //             const Key key = static_cast<Key>(i);
     //             pairedData.emplace_back(key, value.get(key));

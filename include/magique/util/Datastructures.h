@@ -436,7 +436,7 @@ namespace magique
     };
 
     // Useful when saving data that is uniquely identified by a enum value (or integral)
-    // But it's not sure if all values exists (if every value is set use EnumValueHolder)
+    // But it's not sure if all values exists (if every value is set use EnumArray)
     // e.g.
     template <typename Key, typename Value>
     struct EnumVector final
@@ -528,7 +528,7 @@ namespace magique
         }
 
     private:
-        Value* getImpl(const Key& key) const
+         Value* getImpl(const Key& key)
         {
             for (auto& entry : data_)
             {

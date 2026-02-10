@@ -48,7 +48,6 @@ namespace magique
                 dragStart = {mx, my};
             }
 
-
             // Here we are doing the updates for next tick (instead of right at the end of the draw tick)
             // Using fori to support deletions in the update methods
             for (size_t i = 0; i < containers.size(); ++i)

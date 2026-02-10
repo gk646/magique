@@ -259,17 +259,16 @@ namespace magique
 
     int GetConnectionNum(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
 
-    void PrintPacketStats()
-    {
-        global::MP_DATA.statistics.print();
-        global::MP_DATA.statistics.reset();
-    }
-
     void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
     void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
 
     bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
+
+    internal::MultiplayerStatsData internal::getStats()
+    {
+        return global::MP_DATA.statistics.getStats();
+    }
 
 } // namespace magique
 

@@ -96,7 +96,7 @@ namespace magique
                     LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
                 });
             global::LOG_DATA.init();
-            global::ENGINE_CONFIG.init();
+            global::ENGINE_CONFIG.onInit();
 #if MAGIQUE_INCLUDE_FONT == 1
             global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
 #else
@@ -139,10 +139,6 @@ namespace magique
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized %s: %s", gameName, getVersion());
-
-#if !defined(MAGIQUE_DEBUG) && MAGIQUE_PROFILING == 1
-        LOG_WARNING("Profiling enabled in Release mode. Disable for production build");
-#endif
     }
 
     Game::~Game()

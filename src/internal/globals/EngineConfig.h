@@ -53,7 +53,7 @@ namespace magique
         bool enableCollisionSystem = true;          // Enables the static and dynamic collision systems
         bool isClientMode = false;                  // Flag to disable certain engine tasks on multiplayer clients
 
-        void init()
+        void onInit()
         {
             loadingScreen = new LoadingScreen();
             // adwaita (Linux GNOME desktop) based colors

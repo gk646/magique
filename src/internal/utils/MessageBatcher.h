@@ -100,7 +100,9 @@ namespace magique
                 Message batchedMsg{};
                 batchedMsg.connection = message.connection;
                 batchedMsg.timeStamp = message.timeStamp;
-                batchedMsg.payload = Payload{data+off, size, type};
+                batchedMsg.payload.size = size;
+                batchedMsg.payload.data = data + off;
+                batchedMsg.payload.type = type;
 
                 if (type == MAGIQUE_LOBBY_PACKET_TYPE)
                 {

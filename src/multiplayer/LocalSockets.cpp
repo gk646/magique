@@ -24,8 +24,8 @@ namespace magique
 
     bool InitLocalMultiplayer()
     {
-#ifndef MAGIQUE_STEAM
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
+#ifndef MAGIQUE_STEAM
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg) ||
             !SteamNetworkingUtils()->SetGlobalConfigValuePtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
@@ -44,15 +44,10 @@ namespace magique
             LOG_WARNING("Cannot initialize local multiplayer: Steam not initialized call InitSteam()");
             return false;
         }
-        const auto res = SteamNetworkingSockets()->InitAuthentication();
+         SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
         global::MP_DATA.isInitialized = true;
-        if (res == k_ESteamNetworkingAvailability_Current)
-        {
-            global::MP_DATA.isInitialized = true;
-            return true;
-        }
-        return false;
+        return true;
 #endif
     }
 
