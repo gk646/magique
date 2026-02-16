@@ -37,7 +37,7 @@ namespace magique
     // Performs a collision check between the entity and the given rectangle
     void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
 
-    // Returns true if the enties collision shape contains or intersects the mouse
+    // Returns true if the entity collision shape contains or intersects the mouse pos
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
 
     //================= CIRCLE =================//
@@ -55,6 +55,7 @@ namespace magique
     //================= UTIL =================//
 
     // Rotates the given points by the angle (starting with 0 degrees at 12'o clock clockwise) around the given anchor
+    void RotatePoint(float angle, Point anchor, Point& p1);
     void RotatePoints(float angle, Point anchor, Point& p1, Point& p2, Point& p3, Point& p4);
 
 } // namespace magique

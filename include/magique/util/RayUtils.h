@@ -28,16 +28,6 @@ namespace magique
     // Returns the top left point to center a rectangle (width and height) within the rectangle 'within'
     Vector2 GetCenteredPos(const Rectangle& within, float width, float height);
 
-    // Returns the center point of the given rect
-    Vector2 GetRectCenter(const Rectangle& rect);
-
-    // Returns a rect with the given dimensions centered on the given position
-    Rectangle GetCenteredRect(const Point& center, float width, float height);
-
-    // Gets the enlarged rectangle - also adjusts x and y so it stays in the same relative spot
-    // Note: Also works in negative direction
-    Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height);
-
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
 
@@ -48,7 +38,7 @@ namespace magique
     // Loads a texture from memory (by first loading it as image)
     Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType = ".png");
 
-    // Draws the full texture at the specified position and scale
+    // Draws the full texture at the specified position and scaled
     void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint);
 
     // Draws a scaled render texture at the given position (automatically flips it)
@@ -73,8 +63,8 @@ namespace magique
     void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, const Color& tint);
 
     // Draws text horizontally & vertically centered inside the rectangle
-    void DrawTextCenteredRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
-                              const Color& tint);
+    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rectangle& bounds,
+                              float spacing = 1.0F, Color tint = WHITE);
 
     // Draws a 2d rectangle with a shade at the bottom
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);
@@ -89,12 +79,6 @@ namespace magique
     // Scales only with multiples and in a way such that both x and y dimension must fit within the screen
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
-
-    // Returns the original rectangle moved by x and y
-    Rectangle RectMove(const Rectangle& original, float x, float y);
-
-    // Applies std::floor all values of the rectangle
-    Rectangle RectFloor(const Rectangle& rect);
 
     struct MouseDragger final
     {

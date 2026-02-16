@@ -4,7 +4,6 @@
 
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
-M_IGNORE_WARNING(4100) // unreferenced formal parameter
 
 //===============================================
 // UIObject
@@ -20,7 +19,7 @@ M_IGNORE_WARNING(4100) // unreferenced formal parameter
 //      - Use align() with a direction to align the object outside another object
 //
 // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
-// Note: If you declare a UIObject statically you have to use trackObject() for it to be updated
+// Note: UIObjects should always be created with new Object() (or similar methods) - they need heap storage duration
 // .....................................................................
 
 namespace magique
@@ -151,7 +150,5 @@ namespace magique
     }
 } // namespace magique
 
-
-M_UNIGNORE_WARNING()
 
 #endif //MAGIQUE_UI_OBJECT_H

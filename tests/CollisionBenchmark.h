@@ -67,12 +67,12 @@ struct PlayerScript final : EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
     }
     void onKeyEvent(entt::entity self) override
     {
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (IsKeyDown(KEY_W))
             pos.y -= 2.5F;
         if (IsKeyDown(KEY_S))
@@ -84,7 +84,7 @@ struct PlayerScript final : EntityScript
     }
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = true;
         //  AccumulateCollision(info);
     }
@@ -94,12 +94,12 @@ struct ObjectScript final : EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
     }
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = true;
         //info.penDepth = 0;
         // info.normalVector = {0, 0};
@@ -177,7 +177,7 @@ struct Example final : Game
             {
                 GiveCollisionCapsule(e, 33, 15);
             }
-            GetComponent<PositionC>(e).rotation = GetRandomValue(0, 5);
+            ComponentGet<PositionC>(e).rotation = GetRandomValue(0, 5);
             GiveComponent<TestCompC>(e);
         };
         RegisterEntity(OBJECT, objFunc);
@@ -193,9 +193,9 @@ struct Example final : Game
         BeginMode2D(camera2D);
         for (const auto e : GetDrawEntities())
         {
-            const auto& pos = GetComponent<const PositionC>(e);
-            const auto& col = GetComponent<const CollisionC>(e);
-            const auto& test = GetComponent<const TestCompC>(e);
+            const auto& pos = ComponentGet<const PositionC>(e);
+            const auto& col = ComponentGet<const CollisionC>(e);
+            const auto& test = ComponentGet<const TestCompC>(e);
             const auto color = test.isColliding ? PURPLE : BLUE;
             switch (col.shape)
             {

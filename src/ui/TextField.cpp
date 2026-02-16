@@ -149,17 +149,17 @@ namespace magique
 
         if (!isFocused && text.empty() && hint != nullptr)
         {
-            DrawTextEx(font, hint, tPos.v(), fontSize, spacing, ColorAlpha(color, 0.75));
+            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.75));
         }
         else
         {
-            DrawTextEx(font, text.c_str(), tPos.v(), fontSize, spacing, color);
+            DrawTextEx(font, text.c_str(), tPos, fontSize, spacing, color);
         }
 
         if (hasSelection())
         {
             const auto highlight = ColorAlpha(cursor, 0.45F);
-            DrawTextHighlight(selectionStart, selectionEnd, font, text.c_str(), tPos.v(), fontSize, spacing, highlight);
+            DrawTextHighlight(selectionStart, selectionEnd, font, text.c_str(), tPos, fontSize, spacing, highlight);
         }
 
         if (!isFocused || blinkCounter > blinkDelay || !showCursor)

@@ -52,11 +52,11 @@ namespace magique
         setAnimationState(startState);
     }
 
-    void AnimationC::drawCurrentFrame(const float x, const float y, const float rotation) const
+    void AnimationC::drawCurrentFrame(const Point& pos, const float rotation) const
     {
-        const auto currentFrame = currentAnimation.getCurrentFrame((int)spriteCount);
+        const auto currentFrame = currentAnimation.getCurrentFrame(spriteCount);
         auto offset = entityAnimation->getOffset();
-        const Rectangle dest = {x + offset.x, y + offset.y,
+        const Rectangle dest = {pos.x + offset.x, pos.y + offset.y,
                                 static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
                                 static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)};
         DrawRegionPro(currentFrame, dest, rotation, entityAnimation->getAnchor());
@@ -93,6 +93,17 @@ namespace magique
 
     //----------------- COLLISION -----------------//
 
+    void CollisionC::setRectShape(const Rect& rect)
+    {
+        shape = Shape::RECT;
+        anchor = rect.size() / 2;
+        offset = rect.pos();
+        anchor.floor();
+        offset.floor();
+        p1 = rect.w;
+        p2 = rect.h;
+    }
+
     Point CollisionC::GetMiddle(const entt::entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
@@ -122,6 +133,12 @@ namespace magique
             break;
         }
         return {0, 0};
+    }
+
+    bool CollisionC::operator==(const CollisionC& other) const
+    {
+        return offset == other.offset && anchor == other.anchor && shape == other.shape && mask == other.mask &&
+            layer == other.layer && p1 == other.p1 && p2 == other.p2 && p3 == other.p3 && p4 == other.p4;
     }
 
 } // namespace magique

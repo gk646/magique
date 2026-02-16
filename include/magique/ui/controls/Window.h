@@ -36,7 +36,7 @@ namespace magique
     {
         // Creates a new window from coordinates in the logical UI resolution
         // If not specified the top bar is 10% of the total height
-        Window(float x, float y, float w, float h, float topBarHeight = 0.0);
+        Window(const char* name, float x, float y, float w, float h, float topBarHeight = 0.0);
 
     protected:
         // Same as ui/UIContainer.h
@@ -54,6 +54,9 @@ namespace magique
         void drawDefault(const Rectangle& bounds) const;
 
     public:
+        std::string& getName();
+        const char* getName() const;
+
         // Returns the bounds window body
         [[nodiscard]] Rectangle getBodyBounds() const;
 
@@ -69,6 +72,7 @@ namespace magique
         bool updateDrag(const Rect& area, int mouseButton = MOUSE_BUTTON_LEFT);
 
     private:
+        std::string name;
         Point clickOffset{};
         float moverHeightP = 0.10F;
         bool isDragged = false;
@@ -78,4 +82,4 @@ namespace magique
 
 M_UNIGNORE_WARNING()
 
-#endif //MAGIQUE_WINDOW_H
+#endif // MAGIQUE_WINDOW_H

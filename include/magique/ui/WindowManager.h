@@ -17,43 +17,35 @@
 namespace magique
 {
     // Returns the global instance of the window manager
-    WindowManager& GetWindowManager();
+    WindowManager& WindowManagerGet();
 
     struct WindowManager final
     {
         // Draws all managed windows that are visible
         void draw();
 
-        // Adds a new window to the window manager with the given name - is visible per default
-        // Passed string is copied - can (should) be temporary
+        // Adds a new window to the window manager - is visible per default
         // Note: takes ownership of the pointer as long as its managed
-        void addWindow(Window* window, const char* name);
+        void addWindow(Window* window);
 
         //================= ACCESSORS =================//
 
-        // Returns a managed window by name or index
+        // Returns a managed window by name
         // Failure: returns nullptr if no window was added with that name
         Window* getWindow(const char* name);
-
-        // Returns the name the window was added with
-        const char* getName(Window* window);
 
         // Returns true if the window was successfully removed - gives back ownership of the window!
         // Failure: returns false if no window matched the identifier
         bool removeWindow(Window* window);
-        bool removeWindow(const char* name);
 
         // Sets the shown status of the given window to the given value
         void setShown(Window* window, bool shown);
-        void setShown(const char* name, bool shown);
 
         // Returns the shown status of the given window
         bool getIsShown(Window* window);
-        bool getIsShown(const char* name);
 
         // Toggles the shown status of the given window
         void toggleShown(Window* window);
-        void toggleShown(const char* name);
 
         // Returns a vector that contains all managed windows - sorted from top to bottom, front to back
         const std::vector<Window*>& getWindows();
@@ -64,17 +56,14 @@ namespace magique
         // Note: This is not an immediate action - action will be saved and executed after the tick
         // When moving position at the wrong time immediately inifinte loops and other things can happen
         void moveInFrontOf(Window* moved, Window* inFrontOf);
-        void moveInFrontOf(const char* moved, const char* inFrontOf);
 
         //================= UTIL =================//
 
         // Returns true if the given window is covered by any other another window at the given position
         bool getIsCovered(Window* window, Point pos = GetMousePos());
-        bool getIsCovered(const char* window, Point pos = GetMousePos());
 
         // Makes the given window the top most window
         void makeTopMost(Window* window);
-        void makeTopMost(const char* name);
 
         // Returns a pointer to the window top most window that is also shown
         // Failre: returns nullptr if non exists
@@ -89,10 +78,10 @@ namespace magique
 
     private:
         void update();
-        friend WindowManager& GetWindowManager();
+        friend WindowManager& WindowManagerGet();
         friend void InternalUpdatePost();
     };
 
 } // namespace magique
 
-#endif //MAGIQUE_WINDOW_MANAGER_H
+#endif // MAGIQUE_WINDOW_MANAGER_H

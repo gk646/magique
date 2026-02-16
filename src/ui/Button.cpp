@@ -83,7 +83,7 @@ namespace magique
         Rectangle textRect = {mouse.x, mouse.y, dims.x + 4, dims.y + 2};
         DrawRectFrameFilled(textRect, back, outline);
         mouse += Point{1, 2};
-        DrawTextEx(fnt, hoverText.c_str(), mouse.v(), size, 1.0F, text);
+        DrawTextEx(fnt, hoverText.c_str(), mouse, size, 1.0F, text);
     }
 
     TextButton::TextButton(const char* text, ScalingMode mode) : Button(0, 0, 50, 10, mode), text(text)

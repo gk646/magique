@@ -4,8 +4,6 @@
 
 #include <vector>
 #include <magique/ui/UIObject.h>
-#include <magique/internal/InternalTypes.h>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // UIContainer
@@ -21,6 +19,12 @@ M_IGNORE_WARNING(4100)
 
 namespace magique
 {
+    struct ContainerChild
+    {
+        std::string name;
+        UIObject* object = nullptr;
+    };
+
     struct UIContainer : UIObject
     {
         // Creates the container from absolute dimensions in the logical UI resolution
@@ -53,19 +57,13 @@ namespace magique
         [[nodiscard]] UIObject* getChild(int index) const;
 
         // Returns a vector that contains all current children
-        [[nodiscard]] const std::vector<UIObject*>& getChildren() const;
-
-        // Changes the scaling of all children - doesn't change itself
-        void setScalingAll(ScalingMode scaling) const;
+        [[nodiscard]] const std::vector<ContainerChild>& getChildren() const;
 
         ~UIContainer() override = default;
 
     private:
-        std::vector<UIObject*> children;
-        std::vector<internal::UIContainerMapping> nameMapping;
+        std::vector<ContainerChild> children;
     };
 } // namespace magique
 
-M_UNIGNORE_WARNING()
-
-#endif //MAGIQUE_UI_CONTAINER_H
+#endif // MAGIQUE_UI_CONTAINER_H

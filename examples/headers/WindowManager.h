@@ -28,7 +28,7 @@ inline void DrawWindow(Window& window, Color color)
 
     const auto topBar = window.getTopBarBounds();
     // Check if the window is covered at the mouse position
-    if (CheckCollisionPointRec(GetMousePos().v(), topBar) && !GetWindowManager().getIsCovered(&window))
+    if (CheckCollisionPointRec(GetMousePos(), topBar) && !WindowManagerGet().getIsCovered(&window))
     {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) // Pressed
         {
@@ -57,19 +57,19 @@ inline void DrawWindow(Window& window, Color color)
 // Update windows - method for all windows to avoid duplication
 inline void UpdateWindow(Window* window)
 {
-    if (!GetWindowManager().getIsCovered(window)) // Check if the window is covered at the mouse position
+    if (!WindowManagerGet().getIsCovered(window)) // Check if the window is covered at the mouse position
     {
         auto* closeButton = window->getChild("CloseButton");
         if (closeButton->getIsClicked())
         {
-            GetWindowManager().setShown(window, false);
+            WindowManagerGet().setShown(window, false);
             UIInput::Consume();
         }
 
         const bool res = window->updateDrag(window->getTopBarBounds()); // Returns true if is dragged
         if (res || UIInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && window->getIsHovered())
         {
-            GetWindowManager().makeTopMost(window);
+            WindowManagerGet().makeTopMost(window);
             UIInput::Consume(); // Consume input if clicked or dragged
         }
     }
@@ -140,7 +140,7 @@ struct Example final : Game
     {
         float width = 250;
         float height = 350;
-        auto& wManager = GetWindowManager();
+        auto& wManager = WindowManagerGet();
         Window* newWindow = new BlueWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
         wManager.addWindow(newWindow, "BlueWindow");
         newWindow = new RedWindow(GetRandomFloat(0, 555), GetRandomFloat(0, 555), width, height);
@@ -153,7 +153,7 @@ struct Example final : Game
 
     void updateGame(GameState gameState) override
     {
-        auto wManager = GetWindowManager();
+        auto wManager = WindowManagerGet();
         if (IsKeyPressed(KEY_SPACE))
         {
             for (auto* window : wManager.getWindows())
@@ -172,7 +172,7 @@ struct Example final : Game
 
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
-        GetWindowManager().draw();
+        WindowManagerGet().draw();
         DrawText("Press SPACE to open all windows", 50, 50, 25, BLACK);
         DrawText("Press ESC to close all windows", 50, 100, 25, BLACK);
     }

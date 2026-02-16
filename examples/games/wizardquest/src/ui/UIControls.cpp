@@ -10,7 +10,7 @@ void PlayerHUD::onDraw(const Rectangle& bounds)
 {
     if (GetCameraEntity() == entt::entity(UINT32_MAX))
         return;
-    const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity()); // Player is always the camera in this example
+    const auto& stats = ComponentGet<EntityStatsC>(GetCameraEntity()); // Player is always the camera in this example
 
     const auto healthWidth = bounds.width * stats.getHealthPercent();
     const Rectangle health = {bounds.x, bounds.y, healthWidth, bounds.height / 2.0F};
@@ -31,7 +31,7 @@ void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
 {
     if (!isDrawn || GetCameraEntity() == entt::entity(UINT32_MAX)) // No need for update or no camera
         return;
-    const auto& stats = GetComponent<EntityStatsC>(GetCameraEntity());
+    const auto& stats = ComponentGet<EntityStatsC>(GetCameraEntity());
     SetFormatValue("P_HEALTH", (int)stats.health);
     SetFormatValue("P_MAX_HEALTH", (int)stats.maxHealth);
     SetFormatValue("P_MANA", (int)stats.mana);

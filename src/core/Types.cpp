@@ -21,6 +21,8 @@ namespace magique
 {
     Point::Point(const Vector2& vec) : x(vec.x), y(vec.y) {}
 
+    Point::operator Vector2() const { return Vector2{x, y}; }
+
     Point Point::Random(float min, float max) { return {GetRandomFloat(min, max), GetRandomFloat(min, max)}; }
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
@@ -140,8 +142,6 @@ namespace magique
         return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
 
-    Vector2 Point::v() const { return Vector2{x, y}; }
-
     int Point::intx() const { return (int)x; }
 
     int Point::inty() const { return (int)y; }
@@ -155,6 +155,12 @@ namespace magique
         x = -x;
         y = -y;
         return *this;
+    }
+
+    Point Point::inverse() const
+    {
+        Point p = *this;
+        return p.invert();
     }
 
     Point& Point::normalize()
@@ -284,7 +290,9 @@ namespace magique
 
     Rect::Rect(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {}
 
-    Rect Rect::FromSpanPoints(const Point& p1, const Point& p2)
+    Rect::operator Rectangle() const { return {x, y, w, h}; }
+
+    Rect Rect::FromPoints(const Point& p1, const Point& p2)
     {
         const Point smallest = {std::min(p1.x, p2.x), std::min(p1.y, p2.y)};
         const Point biggest = {std::max(p1.x, p2.x), std::max(p1.y, p2.y)};
@@ -297,6 +305,30 @@ namespace magique
     }
 
     Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
+
+    Rect Rect::Filled(const Rect& area, float fill, Direction direction)
+    {
+        Rect filledBounds = area;
+        if (direction == Direction::UP)
+        {
+            filledBounds.h *= fill;
+            filledBounds.y = area.y - filledBounds.h + area.h;
+        }
+        else if (direction == Direction::DOWN)
+        {
+            filledBounds.h *= fill;
+        }
+        else if (direction == Direction::LEFT)
+        {
+            filledBounds.w *= fill;
+            filledBounds.x = area.x - filledBounds.w + area.w;
+        }
+        else if (direction == Direction::RIGHT)
+        {
+            filledBounds.w *= fill;
+        }
+        return filledBounds;
+    }
 
     Rect& Rect::operator+=(const Point& p)
     {
@@ -314,7 +346,6 @@ namespace magique
 
     bool Rect::operator==(const float num) const { return x == num && y == num && w == num && h == num; }
 
-    Rectangle Rect::v() const { return Rectangle{x, y, w, h}; }
     Rect& Rect::floor()
     {
         x = std::floor(x);
@@ -323,6 +354,13 @@ namespace magique
         h = std::floor(h);
         return *this;
     }
+
+    Rect Rect::floor() const
+    {
+        auto ret = *this;
+        return ret.floor();
+    }
+
     Rect& Rect::round()
     {
         x = std::round(x);
@@ -408,13 +446,9 @@ namespace magique
 
     TextureRegion SpriteSheet::getRegion(const int frame) const
     {
-        TextureRegion region;
-        region.height = height;
-        region.width = width;
-        region.id = id;
-        region.offX = static_cast<uint16_t>(offX + (frame * width));
-        region.offY = offY; // Same as only continuous pictures are supported
-        return region;
+        TextureRegion ret = region;
+        ret.offX = static_cast<uint16_t>(region.offX + (frame * region.width));
+        return ret;
     }
 
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
@@ -445,7 +479,7 @@ namespace magique
         return static_cast<int>((float)duration / 1000.0F * MAGIQUE_LOGIC_TICKS);
     }
 
-    bool SpriteAnimation::isValid() const { return sheet.id != 0 && sheet.frames > 0; }
+    bool SpriteAnimation::isValid() const { return sheet.isValid() && sheet.frames > 0; }
 
 
     //----------------- TILE OBJECT PROPERTY -----------------//

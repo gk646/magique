@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <deque>
+#include <algorithm>
 
 #include <magique/ui/WindowManager.h>
 #include <magique/ui/controls/Window.h>
@@ -12,7 +13,6 @@ namespace magique
     struct WindowManagerData final
     {
         std::vector<Window*> windows;
-        std::vector<internal::WindowManagerMapping> nameMapping;
         HashSet<const Window*> shownSet;
         Window* hoveredWindow = nullptr;
 
@@ -22,54 +22,12 @@ namespace magique
             Window* inFrontOf;
         };
         std::deque<MoveCommand> moveFrontQueue;
-
-        void removeWindow(const Window* window)
-        {
-            for (auto it = windows.begin(); it != windows.end(); ++it)
-            {
-                if (*it == window)
-                {
-                    windows.erase(it);
-                    break;
-                }
-            }
-            // If pred evaluates to true the element gets deleted
-            auto pred = [&](internal::WindowManagerMapping& mapping)
-            {
-                return mapping.window == window;
-            };
-            std::erase_if(nameMapping, pred);
-        }
-
-        bool getNameExists(const char* name) const
-        {
-            for (const auto& m : nameMapping)
-            {
-                if (strcmp(m.name, name) == 0)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        bool getWindowExists(const Window* window) const
-        {
-            for (const auto* w : windows)
-            {
-                if (w == window)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     };
 
     inline WindowManagerData WINDOW_DATA{};
     inline WindowManager WINDOW_MANAGER{};
 
-    WindowManager& GetWindowManager() { return WINDOW_MANAGER; }
+    WindowManager& WindowManagerGet() { return WINDOW_MANAGER; }
 
     void WindowManager::draw()
     {
@@ -83,74 +41,34 @@ namespace magique
         }
     }
 
-    void WindowManager::addWindow(Window* window, const char* name)
+    void WindowManager::addWindow(Window* window)
     {
-        MAGIQUE_ASSERT(name != nullptr, "Passed name cannot be null");
-        auto& winData = WINDOW_DATA;
-        winData.windows.push_back(window);
-
-        // Add name mapping
-        const int len = static_cast<int>(strlen(name));
-        if (len + 1 > MAGIQUE_MAX_NAMES_LENGTH)
+        if (std::ranges::contains(WINDOW_DATA.windows, window))
         {
-            LOG_WARNING("Given name is longer than configured!: %s", name);
+            LOG_WARNING("Window already managed: %s", window->getName().c_str());
             return;
         }
-        for (const auto& mapping : winData.nameMapping)
-        {
-            if (strcmp(mapping.name, name) == 0)
-            {
-                LOG_ERROR("Given name already exists");
-                return;
-            }
-        }
-        internal::WindowManagerMapping mapping;
-        std::memcpy(mapping.name, name, len);
-        mapping.name[MAGIQUE_MAX_NAMES_LENGTH - 1] = '\0';
-        mapping.window = window;
-        winData.nameMapping.push_back(mapping);
+        WINDOW_DATA.windows.emplace_back(window);
         setShown(window, true);
     }
 
     Window* WindowManager::getWindow(const char* name)
     {
         MAGIQUE_ASSERT(name != nullptr, "Passed name cannot be null");
-        for (const auto& m : WINDOW_DATA.nameMapping)
+        auto it = std::ranges::find_if(WINDOW_DATA.windows, [&](Window* e) { return e->getName() == name; });
+        if (it != WINDOW_DATA.windows.end())
         {
-            if (strcmp(m.name, name) == 0) [[unlikely]]
-            {
-                return m.window;
-            }
+            return *it;
         }
-        LOG_WARNING("No window with such name: %s", name);
-        return nullptr;
-    }
-
-    const char* WindowManager::getName(Window* window)
-    {
-        for (const auto& m : WINDOW_DATA.nameMapping)
-        {
-            if (m.window == window) [[unlikely]]
-            {
-                return m.name;
-            }
-        }
+        LOG_WARNING("No tracked window with such name: %s", name);
         return nullptr;
     }
 
     bool WindowManager::removeWindow(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
-        if (!WINDOW_DATA.getWindowExists(window))
-        {
-            LOG_WARNING("Given window is not managed by the window manager");
-            return false;
-        }
-        WINDOW_DATA.removeWindow(window);
-        return true;
+        return std::erase(WINDOW_DATA.windows, window) > 0;
     }
-
-    bool WindowManager::removeWindow(const char* name) { return removeWindow(getWindow(name)); }
 
     void WindowManager::setShown(Window* window, const bool shown)
     {
@@ -168,15 +86,11 @@ namespace magique
         }
     }
 
-    void WindowManager::setShown(const char* name, const bool shown) { setShown(getWindow(name), shown); }
-
     bool WindowManager::getIsShown(Window* window)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
         return WINDOW_DATA.shownSet.contains(window);
     }
-
-    bool WindowManager::getIsShown(const char* name) { return getIsShown(getWindow(name)); }
 
     void WindowManager::toggleShown(Window* window)
     {
@@ -194,8 +108,6 @@ namespace magique
         }
     }
 
-    void WindowManager::toggleShown(const char* name) { toggleShown(getWindow(name)); }
-
     const std::vector<Window*>& WindowManager::getWindows() { return WINDOW_DATA.windows; }
 
     void WindowManager::moveInFrontOf(Window* moved, Window* inFrontOf)
@@ -207,34 +119,23 @@ namespace magique
         WINDOW_DATA.moveFrontQueue.push_back({moved, inFrontOf});
     }
 
-    void WindowManager::moveInFrontOf(const char* moved, const char* inFrontOf)
-    {
-        moveInFrontOf(getWindow(moved), getWindow(inFrontOf));
-    }
-
     bool WindowManager::getIsCovered(Window* window, const Point pos)
     {
         MAGIQUE_ASSERT(window != nullptr, "Passed window cannot be null");
         // Iterated in reverse - last drawn is the front most window - return as soon as we find obstruction
         for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
         {
-            if (WINDOW_DATA.shownSet.contains(*it)) // only search visible ones
+            if (getIsShown(*it)) // only search visible ones
             {
                 if (*it == window) // We found the given window - nothing is in front
                     return false;
-                const Rect bounds = (*it)->getBounds();
-                if (bounds.contains(pos))
+                if (Rect{(*it)->getBounds()}.contains(pos))
                 {
                     return true; // We found something, and it's not the given window - covered
                 }
             }
         }
         return false; // Found nothing?
-    }
-
-    bool WindowManager::getIsCovered(const char* window, const Point pos)
-    {
-        return getIsCovered(getWindow(window), pos);
     }
 
     void WindowManager::makeTopMost(Window* window)
@@ -247,8 +148,6 @@ namespace magique
         }
     }
 
-    void WindowManager::makeTopMost(const char* name) { makeTopMost(getWindow(name)); }
-
     Window* WindowManager::getTopShownWindow()
     {
         if (WINDOW_DATA.windows.empty())
@@ -256,12 +155,11 @@ namespace magique
             return nullptr;
         }
 
-        for (int i = (int)WINDOW_DATA.windows.size() - 1; i >= 0; --i)
+        for (auto it = WINDOW_DATA.windows.rbegin(); it != WINDOW_DATA.windows.rend(); ++it)
         {
-            auto* window = WINDOW_DATA.windows[i];
-            if (getIsShown(window))
+            if (getIsShown(*it))
             {
-                return window;
+                return *it;
             }
         }
         return nullptr;
@@ -271,9 +169,9 @@ namespace magique
 
     void WindowManager::hideAll()
     {
-        for (auto* w : WINDOW_DATA.windows)
+        for (auto* win : WINDOW_DATA.windows)
         {
-            setShown(w, false);
+            setShown(win, false);
         }
     }
 
@@ -293,13 +191,13 @@ namespace magique
         }
 
         bool foundMoved = false;
-        for (const auto* w : WINDOW_DATA.windows)
+        for (const auto* win : WINDOW_DATA.windows)
         {
-            if (w == moved)
+            if (win == moved)
             {
                 foundMoved = true;
             }
-            else if (w == inFrontOf)
+            else if (win == inFrontOf)
             {
                 if (foundMoved)
                 {

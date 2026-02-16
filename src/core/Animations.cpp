@@ -2,7 +2,6 @@
 #include <magique/core/Animations.h>
 
 
-
 namespace magique
 {
     //----------------- ENTITY ANIMATION -----------------//
@@ -63,6 +62,8 @@ namespace magique
         const auto& anim = animations[static_cast<int>(state)];
         return anim.isValid();
     }
+
+    const SparseRangeVector<SpriteAnimation>& EntityAnimation::getAnimations() const { return animations; }
 
 
 } // namespace magique

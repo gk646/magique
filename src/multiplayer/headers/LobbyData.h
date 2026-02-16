@@ -1,6 +1,8 @@
 #ifndef MAGEQUEST_LOBBYDATA_H
 #define MAGEQUEST_LOBBYDATA_H
 
+#include <magique/util/Datastructures.h>
+
 namespace magique
 {
     enum class LobbyPacketType : char

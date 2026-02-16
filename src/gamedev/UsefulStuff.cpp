@@ -24,8 +24,20 @@ namespace magique
 
     void Counter::setStep(uint32_t newStep) { step = newStep; }
 
-    uint32_t Counter::getStep() { return step; }
+    uint32_t Counter::getStep() const { return step; }
 
     void Counter::fill() { count = goal; }
+
+    void Counter::reset() { count = 0; }
+
+    inline Shader COLOR_SWAP{};
+
+    ColorSwapShader::ColorSwapShader(const std::array<ColorPair, 4>& pairs)
+    {
+    }
+
+    ColorSwapShader::~ColorSwapShader() {}
+
+    void ColorSwapShader::Init() {}
 
 } // namespace magique

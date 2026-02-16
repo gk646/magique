@@ -55,7 +55,6 @@
 
 #include "internal/systems/StaticCollisionSystem.h"
 #include "internal/systems/DynamicCollisionSystem.h"
-#include "internal/systems/InputSystem.h"
 #include "internal/systems/LogicSystem.h"
 
 #include "core/headers/MainThreadUtil.h"

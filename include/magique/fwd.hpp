@@ -7,13 +7,13 @@
 
 //================= USER DEFINED =================//
 
-enum class GameState : uint8_t; // Identifies different game states
-enum EntityType : uint16_t;     // Identifies entity types       - uses uint16_t to be small for networking
-enum class MapID : uint8_t;     // Identifies maps               - uses uint8_t  to be small for networking
-enum class HandleID : int;      // Identifies handles
-enum class ConfigID : int;      // Identifies stored config data
-enum class StorageID : int;     // Identifies stored game save data
-enum class TileClass : uint8_t; // Identifies different classes of tiles
+enum class GameState : uint8_t;   // Identifies different game states
+enum class EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
+enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
+enum class HandleID : int;        // Identifies handles
+enum class ConfigID : int;        // Identifies stored config data
+enum class StorageID : int;       // Identifies stored game save data
+enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
 enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
@@ -58,7 +58,7 @@ namespace magique
 
     //=================ECS=================//
     struct EntityScript;
-    enum EventType : uint8_t;
+    enum ScriptEvent : uint8_t;
     enum class CollisionLayer : uint8_t;
     enum class Shape : uint8_t;
     struct PositionC;  // Implicit position component
@@ -91,7 +91,10 @@ namespace magique
     struct ConsoleData;
     struct ParamParser;
     struct ConsoleHandler;
+    struct TextDrawer;
+    struct EventManager;
     struct VirtualClock;
+    using EventSubID = uint16_t;
 
     //================= Multiplayer =================//
 

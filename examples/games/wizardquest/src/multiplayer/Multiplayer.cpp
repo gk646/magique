@@ -59,7 +59,7 @@ void Multiplayer::init()
                     SpawnUpdate spawnUpdate{};
                     spawnUpdate.entity = e;
                     spawnUpdate.map = MapID(0);
-                    const auto& pos = GetComponent<PositionC>(e);
+                    const auto& pos = ComponentGet<PositionC>(e);
                     spawnUpdate.x = pos.x;
                     spawnUpdate.y = pos.y;
                     if (id == e) // If it's the network player itself send the player type (for the camera)
@@ -131,7 +131,7 @@ void Multiplayer::update()
 
             // Move the entity in our world
             // Note: Normally you would look up their movement speed or invoke a method to move it
-            auto& pos = GetComponent<PositionC>(entity);
+            auto& pos = ComponentGet<PositionC>(entity);
             if (inputUpdate.key == KEY_W)
             {
                 pos.y -= 2.5F;
@@ -163,7 +163,7 @@ void Multiplayer::update()
                 {
                     // Get the data
                     PositionUpdate positionUpdate = msg.payload.getDataAs<PositionUpdate>();
-                    auto& pos = GetComponent<PositionC>(positionUpdate.entity);
+                    auto& pos = ComponentGet<PositionC>(positionUpdate.entity);
                     pos.x = positionUpdate.x;
                     pos.y = positionUpdate.y;
                     pos.map = positionUpdate.map;
@@ -196,7 +196,7 @@ void Multiplayer::postUpdate()
         {
             for (const auto e : GetUpdateEntities())
             {
-                const auto& pos = GetComponent<const PositionC>(e);
+                const auto& pos = ComponentGet<const PositionC>(e);
 
                 // Create the data
                 PositionUpdate posUpdate{};

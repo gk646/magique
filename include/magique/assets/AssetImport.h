@@ -57,11 +57,7 @@ namespace magique
 
     // Only imports the given layers
     EntityAnimation ImportAsepriteEx(const Asset& asset, const std::vector<const char*>& layers, StateMapFunc func,
-                                     AtlasID atlas = {}, float scale = 1.0F, Point offset = {}, Point anchor = {});
-
-    // Imports a shader by loading the given assets as vertex and fragment shaders
-    // Note: Either one can be empty - its allowed to load with only a fragment, only a vertex or both
-    Shader ImportShader(const Asset& vertex, const Asset& fragment);
+                                     AtlasID atlas = {}, float scale = 1.0F, Point offset = {}, Point anchor = {-1});
 
     //================= Audio =================//
 
@@ -102,6 +98,14 @@ namespace magique
 
     //================= Other =================//
 
+    // Imports a font with the given basesize
+    // Note: Starts from character 32 onwards
+    Font ImportFont(const Asset& asset, int baseSize);
+
+    // Imports a shader by loading the given assets as vertex and fragment shaders
+    // Note: Either one can be empty - its allowed to load with only a fragment, only a vertex or both
+    Shader ImportShader(const Asset& vertex, const Asset& fragment);
+
     // Imports the given asset into a simple container
     // The file is separated and stored line-wise
     // Failure: Returns empty container
@@ -110,4 +114,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_ASSETMANAGER_H
+#endif // MAGIQUE_ASSETMANAGER_H

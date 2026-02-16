@@ -25,6 +25,16 @@ namespace magique
         {
             GameSystem* system = nullptr;
             EnumArray<Function, BenchmarkEntry> functions;
+
+            float getTotalMillis()
+            {
+                float total = 0;
+                for (auto& function : functions)
+                {
+                    total += function.value.getAvgMillis();
+                }
+                return total;
+            }
         };
         std::vector<SystemEntry> systems;
     };
@@ -58,15 +68,15 @@ namespace magique
 
     const char* GameSystem::getName() const { return name.c_str(); }
 
-    void GameSystemRegister(GameSystem* system, const std::string& name, const std::span<GameState>& validStates)
+    void GameSystemRegister(GameSystem* system, const std::string& name, std::initializer_list<GameState> stats)
     {
-        if (validStates.empty())
+        if (stats.size() == 0)
         {
             std::memset(system->validStates.data(), 1, sizeof(bool) * system->validStates.size());
         }
         else
         {
-            std::ranges::for_each(validStates, [&](GameState gs) { system->validStates[(int)gs] = true; });
+            std::ranges::for_each(stats, [&](GameState gs) { system->validStates[(int)gs] = true; });
         }
 
         system->name = name;
@@ -81,9 +91,13 @@ namespace magique
             LOG_WARNING("Benchmark for gamesystems not enabled!");
             return;
         }
+
+        auto copy = SYSTEM_DATA.systems;
+        std::ranges::sort(copy, [](auto& one, auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
+
         LOG_INFO("Gamesystem Stats:");
         printf("\t%-25s || %10s | %10s | %10s \n", "System // Function (ms)", "DrawGame", "UpdateGame", "UpdateEnd");
-        for (auto& system : SYSTEM_DATA.systems)
+        for (auto& system : copy)
         {
             auto& func = system.functions;
             printf("\t%-25s || %10.2f | %10.2f | %10.2f \n", system.system->getName(),
@@ -100,9 +114,9 @@ namespace magique
         {
             for (auto& system : SYSTEM_DATA.systems)
             {
-                for (auto& slot : system.functions.data())
+                for (auto& [key, val] : system.functions)
                 {
-                    slot.reset();
+                    val.reset();
                 }
             }
         }

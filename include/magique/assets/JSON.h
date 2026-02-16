@@ -25,7 +25,7 @@
 
 namespace magique
 {
-    // Deserializes the given json into the given c++ type
+    // Deserializes the given JSON into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
     template <typename T>
     bool ImportJSON(Asset asset, T& data);
@@ -37,7 +37,8 @@ namespace magique
     bool ExportJSON(const T& data, std::string& buffer);
 
     // Useful to reflect an enum - allows to import/export from JSON (with value names)
-#define REFLECT_ENUM(Enum)                                                                                              \
+    // Note: static analysis may show errors but code compiles (clang-tidy)
+#define MQ_REFLECT_ENUM(Enum)                                                                                           \
     template <>                                                                                                         \
     struct glz::meta<Enum>                                                                                              \
     {                                                                                                                   \
@@ -45,7 +46,6 @@ namespace magique
         static constexpr auto value = enchantum::values<Enum>;                                                          \
         static constexpr auto keys = enchantum::names<Enum>;                                                            \
     };
-
 
 } // namespace magique
 
@@ -104,55 +104,84 @@ namespace glz
         static constexpr auto values = enumerate(T::Mouse, T::Keyboard, T::Controller);
     };
 
-    template <typename K, typename V>
-    struct meta<magique::EnumVector<K, V>>
+    template <typename K, typename V, int maxSize>
+    struct from<JSON, magique::EnumArray<K, V, maxSize>>
     {
-        using T = magique::EnumVector<K, V>;
-        static constexpr auto value = &T::data_;
+        template <auto Opts>
+        static void op(magique::EnumArray<K, V, maxSize>& value, auto&&... args)
+        {
+            struct ValueHolder
+            {
+                K key;
+                V value;
+            };
+            std::vector<ValueHolder> vec;
+            parse<JSON>::op<Opts>(vec, args...);
+            value = magique::EnumArray<K, V, maxSize>{vec};
+        }
     };
 
-    // template <typename Key, typename Value, int maxSize>
-    // struct from<JSON, magique::EnumArray<Key, Value, maxSize>>
-    // {
-    //     template <auto Opts>
-    //     static void op(magique::EnumArray<Key, Value, maxSize>& value, auto&&... args)
-    //     {
-    //         struct PairedData
-    //         {
-    //             Key key;
-    //             Value value;
-    //         };
-    //         std::vector<PairedData> pairedData;
-    //         pairedData.reserve(32);
-    //         parse<JSON>::op<Opts>(pairedData, args...);
-    //         for (auto& [key, val] : pairedData)
-    //         {
-    //             value.set(key, std::move(val));
-    //         }
-    //     }
-    // };
-    //
-    // template <typename Key, typename Value, int maxSize>
-    // struct to<JSON, magique::EnumArray<Key, Value, maxSize>>
-    // {
-    //     template <auto Opts>
-    //     static void op(magique::EnumArray<Key, Value, maxSize>& value, auto&&... args) noexcept
-    //     {
-    //         struct PairedData
-    //         {
-    //             Key key;
-    //             Value value;
-    //         };
-    //         std::vector<PairedData> pairedData;
-    //         pairedData.reserve(32);
-    //         for (int i = 0; i < magique::EnumArray<Key, Value, maxSize>::size; ++i)
-    //         {
-    //             const Key key = static_cast<Key>(i);
-    //             pairedData.emplace_back(key, value.get(key));
-    //         }
-    //         serialize<JSON>::op<Opts>(pairedData, args...);
-    //     }
-    // };
+    template <typename K, typename V, int maxSize>
+    struct to<JSON, magique::EnumArray<K, V, maxSize>>
+    {
+        template <auto Opts>
+        static void op(magique::EnumArray<K, V, maxSize>& value, auto&&... args) noexcept
+        {
+            struct ValueHolder
+            {
+                K key;
+                V value;
+            };
+            std::vector<ValueHolder> vec;
+            for (const auto& [key, val] : value)
+            {
+                vec.emplace_back(key, val);
+            }
+            serialize<JSON>::op<Opts>(vec, args...);
+        }
+    };
+
+
+    template <typename K, typename V>
+    struct from<JSON, magique::HashMap<K, V>>
+    {
+        template <auto Opts>
+        static void op(magique::HashMap<K, V>& value, auto&&... args)
+        {
+            struct ValueHolder
+            {
+                K key;
+                V value;
+            };
+            std::vector<ValueHolder> vec;
+            parse<JSON>::op<Opts>(vec, args...);
+            for (auto& [key, val] : vec)
+            {
+                value[key] = std::move(val);
+            }
+        }
+    };
+
+    template <typename K, typename V>
+    struct to<JSON, magique::HashMap<K, V>>
+    {
+        template <auto Opts>
+        static void op(magique::HashMap<K, V>& value, auto&&... args) noexcept
+        {
+            struct ValueHolder
+            {
+                K key;
+                V value;
+            };
+            std::vector<ValueHolder> vec;
+            for (const auto& [key, val] : value)
+            {
+                vec.emplace_back(key, val);
+            }
+            serialize<JSON>::op<Opts>(vec, args...);
+        }
+    };
+
 
 } // namespace glz
 

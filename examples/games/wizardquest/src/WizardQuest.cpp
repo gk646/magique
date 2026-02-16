@@ -65,9 +65,9 @@ void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
         {
             if (EntityHasComponents<AnimationC>(entity))
             {
-                const auto& pos = GetComponent<PositionC>(entity);
-                const auto& anim = GetComponent<AnimationC>(entity);
-                const auto& mov = GetComponent<MovementC>(entity);
+                const auto& pos = ComponentGet<PositionC>(entity);
+                const auto& anim = ComponentGet<AnimationC>(entity);
+                const auto& mov = ComponentGet<MovementC>(entity);
                 anim.drawCurrentFrame(pos.x, pos.y, 0, mov.movedLeft);
             }
         }

@@ -1,16 +1,7 @@
 #ifndef MAGIQUE_COLLISION_EXAMPLE_H
 #define MAGIQUE_COLLISION_EXAMPLE_H
 
-
-
-#include <magique/core/Game.h>
-#include <magique/ecs/ECS.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/core/Core.h>
-#include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
-#include <magique/util/Logging.h>
-#include "magique/util/RayUtils.h"
+#include <magique/magique.hpp>
 
 // Recommended
 using namespace magique;
@@ -165,7 +156,7 @@ struct Example final : Game
                 {
                     auto origin = Point{col.p1, col.p2} / 2;
                     auto [x, y] = pos.pos + origin;
-                    DrawRectanglePro({x, y, col.p1, col.p2}, origin.v(), pos.rotation, color);
+                    DrawRectanglePro({x, y, col.p1, col.p2}, origin, pos.rotation, color);
                 }
                 break;
             case Shape::CIRCLE:

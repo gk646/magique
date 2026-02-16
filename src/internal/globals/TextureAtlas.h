@@ -106,11 +106,11 @@ namespace magique
     private:
         void assignSheet(SpriteSheet& sheet, const int tarW, const int tarH, const int frames) const
         {
-            sheet.width = static_cast<int16_t>(tarW);
-            sheet.height = static_cast<int16_t>(tarH);
-            sheet.offX = static_cast<uint16_t>(posX);
-            sheet.offY = static_cast<uint16_t>(posY);
-            sheet.id = id;
+            sheet.region.width = static_cast<int16_t>(tarW);
+            sheet.region.height = static_cast<int16_t>(tarH);
+            sheet.region.offX = static_cast<uint16_t>(posX);
+            sheet.region.offY = static_cast<uint16_t>(posY);
+            sheet.region.id = id;
             sheet.frames = static_cast<uint16_t>(frames);
         }
 
@@ -191,4 +191,4 @@ namespace magique
         inline AtlasData ATLAS_DATA{};
     }
 } // namespace magique
-#endif //TEXTURE_ATLAS_H
+#endif // TEXTURE_ATLAS_H

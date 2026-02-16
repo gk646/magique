@@ -26,6 +26,7 @@ namespace magique
         Point(const Vector2& vec);
         constexpr Point(float x, float y) : x(x), y(y) {}
         constexpr Point(float both) : x(both), y(both) {}
+        operator Vector2() const;
 
         // Initializes both value randomly within the given range
         static Point Random(float min, float max);
@@ -65,7 +66,6 @@ namespace magique
         float chebyshev(const Point& p) const;
         float octile(const Point& p) const;
 
-        Vector2 v() const; // Convert into raylib vector
         int intx() const;
         int inty() const;
 
@@ -78,6 +78,7 @@ namespace magique
 
         // Inverts the vectors direction
         Point& invert();
+        Point inverse() const;
 
         // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
@@ -112,6 +113,7 @@ namespace magique
 
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
+        // Note:
         static Point PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target);
     };
 
@@ -126,23 +128,26 @@ namespace magique
         Rect(const Rectangle& rect);
         Rect(const Point& topLeft, const Point& size);
         Rect(float x, float y, float w, float h);
+        operator Rectangle() const;
 
         // Returns the rect the is spanned by the two points
-        static Rect FromSpanPoints(const Point& p1, const Point& p2);
+        static Rect FromPoints(const Point& p1, const Point& p2);
 
         // Returns a rectangle that is centered on p with the given size
         static Rect CenteredOn(const Point& p, const Point& size);
+
+        // Returns the bounds of the filled area of a rectangle given by the fill direction and the amount
+        //      - fill [0-1] how much the rectangle is filled
+        static Rect Filled(const Rect& area, float fill, Direction direction);
 
         Rect& operator+=(const Point& p); // only x and y
         Rect& operator=(const Point& p);  // only x and y
 
         bool operator==(float num) const; // checks all
 
-        // Returns raylib rect
-        Rectangle v() const;
-
-        // Applies to all valeus
+        // Applies to all values
         Rect& floor();
+        Rect floor()const;
         Rect& round();
         Rect& zero();
 
@@ -211,14 +216,11 @@ namespace magique
 
     struct SpriteSheet final
     {
-        uint16_t offX;   // Horizontal offset from the top left of the atlas of the first frame
-        uint16_t offY;   // Vertical offset from the top left of the atlas of the first frame
-        int16_t width;   // Width of a frame
-        int16_t height;  // Height of a frame
-        uint16_t id;     // The texture id
+        TextureRegion region;
         uint16_t frames; // Total number of frames
         bool blank;      // True if all frames are fully transparent
 
+        bool isValid() const { return region.isValid(); }
         [[nodiscard]] TextureRegion getRegion(int frame) const;
     };
 

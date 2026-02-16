@@ -135,21 +135,21 @@ namespace magique
     void DrawSprite(SpriteSheet& sheet, float x, float y, const int frame, const bool flipX, const Color tint)
     {
         // Check if the region is valid
-        MAGIQUE_ASSERT(sheet.id > 0, "The texture for this region is invalid");
+        MAGIQUE_ASSERT(sheet.isValid() > 0, "The texture for this region is invalid");
         MAGIQUE_ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
 
         x = std::floor(x); // Flooring to avoid texture glitches
         y = std::floor(y);
 
-        const auto texWidth = static_cast<float>(sheet.width);
-        const auto texHeight = static_cast<float>(sheet.height);
+        const auto texWidth = static_cast<float>(sheet.region.width);
+        const auto texHeight = static_cast<float>(sheet.region.height);
 
-        const auto offsetX = static_cast<float>(sheet.offX + frame * sheet.width);
-        const auto offsetY = static_cast<float>(sheet.offY);
+        const auto offsetX = static_cast<float>(sheet.region.offX + frame * sheet.region.width);
+        const auto offsetY = static_cast<float>(sheet.region.offY);
 
         if (flipX) [[unlikely]]
         {
-            sheet.width *= -1;
+            sheet.region.width *= -1;
         }
 
         constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
@@ -160,7 +160,7 @@ namespace magique
         const float texCoordTop = offsetY / atlasHeight;
         const float texCoordBottom = (offsetY + texHeight) / atlasHeight;
 
-        rlSetTexture(sheet.id);
+        rlSetTexture(sheet.region.id);
         {
             rlBegin(RL_QUADS);
             {
@@ -253,38 +253,38 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawTextCentered(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+    void DrawTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const float fs, const float spc,
                           const Color c)
     {
-        const auto width = MeasureTextEx(f, txt, fs, spc).x;
-        DrawTextEx(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
+        const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
+        DrawTextEx(f, txt.data(), {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
     }
 
-    void DrawTextRightBound(const Font& f, const char* txt, const Vector2 pos, const float fs, const float spc,
+    void DrawTextRightBound(const Font& f, std::string_view txt, const Vector2 pos, const float fs, const float spc,
                             const Color c)
     {
-        const auto width = MeasureTextEx(f, txt, fs, spc).x;
-        DrawTextEx(f, txt, {std::round(pos.x - width), std::round(pos.y)}, fs, spc, c);
+        const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
+        DrawTextEx(f, txt.data(), {std::round(pos.x - width), std::round(pos.y)}, fs, spc, c);
     }
 
-    void DrawPixelText(const Font& f, const char* txt, Vector2 pos, const int fsm, const Color tint)
+    void DrawPixelText(const Font& f, std::string_view txt, Vector2 pos, const int fsm, const Color tint)
     {
         pos.x = std::round(pos.x);
         pos.y = std::round(pos.y);
-        DrawTextEx(f, txt, pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
+        DrawTextEx(f, txt.data(), pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
     }
 
-    void DrawPixelTextCentered(const Font& f, const char* txt, const Vector2 pos, const int fsm, const Color tint)
+    void DrawPixelTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const int fsm, const Color tint)
     {
         const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt, fs, 1.0F).x;
+        const auto width = MeasureTextEx(f, txt.data(), fs, 1.0F).x;
         DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
     }
 
-    void DrawPixelTextRightBound(const Font& f, const char* txt, Vector2 pos, int fsm, Color tint)
+    void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color tint)
     {
         const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt, fs, (float)fsm).x;
+        const auto width = MeasureTextEx(f, txt.data(), fs, (float)fsm).x;
         DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
     }
 
@@ -428,28 +428,6 @@ namespace magique
         }
     }
 
-    void DrawCapsule2D(const float x, const float y, const float radius, const float height, const Color tint)
-    {
-        MAGIQUE_ASSERT(radius > 0, "Math error. Radius is 0");
-        const Vector2 topCenter = {x + radius, y + radius};
-        const Vector2 bottomCenter = {x + radius, y + height - radius};
-        DrawCircleSector(topCenter, radius, 180.0f, 360.0f, 32, tint);
-        DrawCircleSector(bottomCenter, radius, 0.0f, 180.0f, 32, tint);
-        DrawRectangleRec({x, y + radius, 2 * radius, height - 2 * radius}, tint);
-    }
-
-    void DrawCapsule2DLines(const float x, const float y, const float radius, const float height, const Color tint)
-    {
-        MAGIQUE_ASSERT(radius > 0, "Math error. Radius is 0");
-        const Vector2 topCenter = {x + radius, y + radius};
-        const Vector2 bottomCenter = {x + radius, y + height - radius};
-        DrawCircleSectorLines(topCenter, radius, 180.0F, 360.0F, 32, tint);
-        DrawCircleSectorLines(bottomCenter, radius, 0.0F, 180.0F, 32, tint);
-
-        DrawLineV({x, y + radius}, {x, y + height - radius}, tint);
-        DrawLineV({x + radius * 2, y + radius}, {x + radius * 2, y + height - radius}, tint);
-    }
-
     void DrawRectangleLinesRot(const Rectangle& rect, const float rotation, const Point anchor, const Color color)
     {
         float pxs[4] = {0, rect.width, rect.width, 0}; // top-left // top-right// bottom-right// bottom-left
@@ -469,8 +447,6 @@ namespace magique
         float txs[4] = {0, p2.x - p1.x, p3.x - p1.x, 0};
         float tys[4] = {0, p2.y - p1.y, p3.y - p1.y, 0};
         RotatePoints4(p1.x, p1.y, txs, tys, rot, anchor.x, anchor.y);
-
-
         DrawTriangle({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 

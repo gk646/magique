@@ -36,7 +36,7 @@ struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override
     {
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (IsKeyDown(KEY_W))
             pos.y -= MOVE_SPEED;
         if (IsKeyDown(KEY_S))
@@ -79,12 +79,12 @@ struct HunterScript final : EntityScript
     void onTick(entt::entity self, bool updated) override
     {
 
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         const auto targetEntity = GetCameraEntity();
-        auto& tarPos = GetComponent<PositionC>(targetEntity); // Player is the camera holder here
+        auto& tarPos = ComponentGet<PositionC>(targetEntity); // Player is the camera holder here
 
-        auto mid = pos.getMiddle(GetComponent<CollisionC>(self));
-        auto target = tarPos.getMiddle(GetComponent<CollisionC>(targetEntity));
+        auto mid = pos.getMiddle(ComponentGet<CollisionC>(self));
+        auto target = tarPos.getMiddle(ComponentGet<CollisionC>(targetEntity));
 
         for (int i = 0; i < 200; ++i)
         {
@@ -151,8 +151,8 @@ struct Example final : Game
         {
             for (const auto e : GetDrawEntities())
             {
-                const auto& pos = GetComponent<const PositionC>(e);
-                const auto& col = GetComponent<const CollisionC>(e);
+                const auto& pos = ComponentGet<const PositionC>(e);
+                const auto& col = ComponentGet<const CollisionC>(e);
                 auto color = pos.type == OBSTACLE ? BLACK : pos.type == HUNTER ? RED : GREEN;
                 DrawRectangleRec({pos.x, pos.y, col.p1, col.p2}, color);
             }

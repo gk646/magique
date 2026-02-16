@@ -43,11 +43,11 @@ namespace magique
         if (getState())
         {
             const auto len = std::min(bounds.width, bounds.height) / 2 * 0.7F;
-            DrawCircleV(rect.mid().v(), len, YELLOW);
+            DrawCircleV(rect.mid(), len, YELLOW);
         }
         const auto size = UIGetScaled(15);
         const auto pos = Point{bounds.x - 2, bounds.y + (bounds.height - size) / 2};
-        DrawTextRightBound(GetEngineFont(), infoText.c_str(), pos.v(), size);
+        DrawTextRightBound(GetEngineFont(), infoText.c_str(), pos, size);
     }
 
 } // namespace magique

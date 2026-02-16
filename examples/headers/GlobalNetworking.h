@@ -1,23 +1,7 @@
 #ifndef MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
 #define MAGIQUE_STEAM_MULTIPLAYER_EXAMPLE_H
 
-#include <cassert>
-#include <magique/core/Game.h>
-#include <magique/ecs/ECS.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/core/Core.h>
-#include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
-#include <magique/multiplayer/Multiplayer.h>
-#include <magique/util/Logging.h>
-#include <magique/steam/Steam.h>
-#include <magique/steam/GlobalSockets.h>
-
-#include <ankerl/unordered_dense.h> // Exposes HashMap and HashSet
-#include <magique/core/Types.h>
-#include <magique/steam/Lobbies.h>
-#include <magique/util/RayUtils.h>
-
+#include <magique/magique.hpp>
 
 //-----------------------------------------------
 // Global/Steam Multiplayer Example
@@ -86,7 +70,7 @@ struct PlayerScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override
     {
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (IsKeyDown(KEY_W))
             pos.y -= 2.5F;
         if (IsKeyDown(KEY_S))
@@ -106,10 +90,10 @@ struct ObjectScript final : EntityScript // Moving platform
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
-        auto& test = GetComponent<TestCompC>(self);
-        auto& pos = GetComponent<PositionC>(self);
+        auto& test = ComponentGet<TestCompC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (test.counter > 100)
         {
             pos.x++;
@@ -127,7 +111,7 @@ struct ObjectScript final : EntityScript // Moving platform
 
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo&) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = true;
     }
 };
@@ -202,7 +186,7 @@ struct Test final : Game
                     SpawnUpdate spawnUpdate{};
                     spawnUpdate.entity = e;
                     spawnUpdate.map = MapID(0);
-                    const auto& pos = GetComponent<PositionC>(e);
+                    const auto& pos = ComponentGet<PositionC>(e);
                     spawnUpdate.x = pos.x;
                     spawnUpdate.y = pos.y;
                     if (id == e) // If it's the network player itself send the player type (for the camera)
@@ -259,9 +243,9 @@ struct Test final : Game
         DrawRectangle(250, 250, 50, 50, RED);
         for (const auto e : GetDrawEntities())
         {
-            const auto& pos = GetComponent<const PositionC>(e);
-            const auto& col = GetComponent<const CollisionC>(e);
-            const auto& test = GetComponent<const TestCompC>(e);
+            const auto& pos = ComponentGet<const PositionC>(e);
+            const auto& col = ComponentGet<const CollisionC>(e);
+            const auto& test = ComponentGet<const TestCompC>(e);
             const auto color = test.isColliding ? PURPLE : BLUE;
             switch (col.shape)
             {
@@ -318,7 +302,7 @@ struct Test final : Game
                     assert(networkPlayerMap.contains(msg.connection)); // Can only get updates from connected clients
                     const auto entity = networkPlayerMap[msg.connection];
 
-                    auto& pos = GetComponent<PositionC>(entity);
+                    auto& pos = ComponentGet<PositionC>(entity);
                     if (inputUpdate.key == KEY_W)
                     {
                         pos.y -= 2.5F;
@@ -350,7 +334,7 @@ struct Test final : Game
                         {
                             // Get the data
                             auto positionUpdate = msg.payload.getDataAs<PositionUpdate>();
-                            auto& pos = GetComponent<PositionC>(positionUpdate.entity);
+                            auto& pos = ComponentGet<PositionC>(positionUpdate.entity);
                             pos.x = positionUpdate.x;
                             pos.y = positionUpdate.y;
                         }
@@ -383,7 +367,7 @@ struct Test final : Game
             {
                 for (const auto e : GetUpdateEntities())
                 {
-                    const auto& pos = GetComponent<const PositionC>(e);
+                    const auto& pos = ComponentGet<const PositionC>(e);
 
                     // Create the data
                     PositionUpdate posUpdate{};

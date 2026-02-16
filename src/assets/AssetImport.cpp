@@ -224,7 +224,7 @@ namespace magique
         }
         if (none)
         {
-            //LOG_WARNING("No matching layer!");
+            // LOG_WARNING("No matching layer!");
         }
     }
 
@@ -246,6 +246,11 @@ namespace magique
         auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
         const auto width = import->w;
         const auto height = import->h;
+
+        if (anchor == -1)
+        {
+            anchor = Point{(float)width, (float)height} / 2;
+        }
 
         std::vector<Image> images;
         for (int i = 0; i < import->tag_count; ++i)
@@ -351,7 +356,7 @@ namespace magique
 
     struct TiledPropertyParser final
     {
-        //TODO is leaking memory with name and property value / is it bad?
+        // TODO is leaking memory with name and property value / is it bad?
 
         static void ParseProperty(TiledProperty& prop, const cute_tiled_property_t& tileProp)
         {
@@ -527,6 +532,11 @@ namespace magique
             return sheet;
         }
         return sheet;
+    }
+
+    Font ImportFont(const Asset& asset, int baseSize)
+    {
+        return LoadFontFromMemory(".ttf", asset.getUData(), asset.getSize(), baseSize, nullptr, 0);
     }
 
     TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset.getData(), delimiter}; }

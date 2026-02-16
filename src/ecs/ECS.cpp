@@ -26,7 +26,6 @@ namespace magique
             LOG_WARNING("Overriding existing create function for entity: %d (enum value)", static_cast<int>(type));
         map[type] = createFunc;
 
-        global::SCRIPT_DATA.padUpToEntity(type); // This assures it's always valid to index with type
         // Iterates all entities
         for (auto entity : internal::REGISTRY.view<entt::entity>())
         {
@@ -222,11 +221,19 @@ namespace magique
 
     CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
     {
+        if (anchor == -1)
+        {
+            anchor = dims / 2;
+        }
         return GiveCollisionRect(entity, Rect{{0, 0}, dims}, anchor);
     }
 
     CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
+        if (anchor == -1)
+        {
+            anchor = rect.size() / 2;
+        }
         return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(), anchor,
                                                       Shape::RECT);
     }

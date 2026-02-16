@@ -8,6 +8,37 @@ namespace magique
 {
     Tween::Tween(TweenMode mode, float seconds) : mode(mode) { setDuration(seconds); }
 
+    void Tween::reset()
+    {
+        global::TWEEN_DATA.remove(*this);
+        started = false;
+        step = 0.0F;
+    }
+
+    void Tween::forward()
+    {
+        isForward = true;
+        if (!started)
+        {
+            global::TWEEN_DATA.add(*this);
+            started = true;
+        }
+    }
+
+    void Tween::reverse()
+    {
+        isForward = false;
+        if (!started)
+        {
+            global::TWEEN_DATA.add(*this);
+            started = true;
+        }
+    }
+
+    void Tween::setOnTick(const std::function<void(const Tween&)>& newTickFunc) { this->tickFunc = newTickFunc; }
+
+    void Tween::setDuration(const float seconds) { stepWidth = 1.0F / (MAGIQUE_LOGIC_TICKS * seconds); }
+
     float Tween::getValue() const
     {
         switch (mode)
@@ -29,28 +60,22 @@ namespace magique
 
     float Tween::getStep() const { return step; }
 
-    void Tween::reset()
-    {
-        global::TWEEN_DATA.remove(*this);
-        started = false;
-        step = 0.0F;
-    }
+    void Tween::setStep(float value) { step = std::clamp(value, 0.0F, 1.0F); }
 
-    void Tween::start()
-    {
-        if (!started)
-        {
-            global::TWEEN_DATA.add(*this);
-            started = true;
-        }
-    }
-
-    void Tween::setOnTick(const std::function<void(const Tween&)>& newTickFunc) { this->tickFunc = newTickFunc; }
-
-    void Tween::setDuration(const float seconds) { stepWidth = 1.0F / (MAGIQUE_LOGIC_TICKS * seconds); }
-
-    bool Tween::isDone() const { return step >= 1.0F; }
+    bool Tween::isDone() const { return (isForward && step >= 1.0F) || (!isForward && step <= 0.0F); }
 
     bool Tween::isStarted() const { return started; }
+
+    void Tween::update()
+    {
+        if (isForward)
+        {
+            step = std::min(1.0F, step + stepWidth);
+        }
+        else
+        {
+            step = std::max(0.0F, step - stepWidth);
+        }
+    }
 
 } // namespace magique

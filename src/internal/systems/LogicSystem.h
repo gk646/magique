@@ -10,7 +10,7 @@ namespace magique
         static constexpr int8_t EMPTY_VALUE = -1;
         std::vector<int8_t> dataVec;
 
-        ActorMapDistribution() { dataVec.resize(MAGIQUE_EXPECTED_MAPS * MAGIQUE_MAX_PLAYERS, EMPTY_VALUE); }
+        ActorMapDistribution() { dataVec.resize(32 * MAGIQUE_MAX_PLAYERS, EMPTY_VALUE); }
 
         int8_t getActorNum(const MapID map, const int offset) const
         {
@@ -67,7 +67,7 @@ namespace magique
             const auto manualOff = global::ENGINE_CONFIG.cameraViewOff;
             if (manualOff != 0) // Use the custom offset if supplied
             {
-                data.camera.offset = manualOff.v();
+                data.camera.offset = manualOff;
             }
 #ifdef MAGIQUE_DEBUG
             count++;
@@ -92,7 +92,7 @@ namespace magique
             MAGIQUE_ASSERT(actorCount < MAGIQUE_MAX_PLAYERS, "More actors than configured!");
             const auto& pos = view.get<const PositionC>(actor);
             actorMaps[static_cast<int>(pos.map)] = true;
-            actorRects[actorCount] = GetCenteredRect(pos.pos, updateDist, updateDist);
+            actorRects[actorCount] = Rect::CenteredOn(pos.pos, updateDist);
             actorDist.insertActorNum(pos.map, actorCount);
             actorCount++;
         }

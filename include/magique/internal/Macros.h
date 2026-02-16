@@ -16,6 +16,59 @@ namespace magique::internal
     void AssertHandler(const char* expr, const char* file, int line, const char* function, const char* message);
 } // namespace magique::internal
 
+
+//================= EVENTS =================//
+
+#define MQ_EVENT_FUNC_DECLARE(name)                                                                                     \
+    virtual void on##name(entt::entity entity, const E##name##Data& data) {}
+
+#define MQ_EVENT_FUNC_CALL(name)                                                                                        \
+    if constexpr (event == GameEvent::name)                                                                             \
+    {                                                                                                                   \
+        handler->on##name(entity, data);                                                                                \
+    }                                                                                                                   \
+    else
+
+#define MQ_EVENT_TYPE_DECLARE(name) struct E##name##Data;
+
+#define MQ_EVENT_ENUM_DECLARE(name) name,
+
+#define MQ_EVENT_EMIT_CASE(name)                                                                                        \
+    template <>                                                                                                         \
+    inline void EventManager::emit<GameEvent::name, E##name##Data>(entt::entity entity, const E##name##Data& data)      \
+    {                                                                                                                   \
+        for (auto& subscriber : subscribers)                                                                            \
+        {                                                                                                               \
+            if (!subscriber.isValid(entity))                                                                            \
+            {                                                                                                           \
+                continue;                                                                                               \
+            }                                                                                                           \
+            if (!subscriber.handler->shouldBeCalled())                                                                  \
+            {                                                                                                           \
+                continue;                                                                                               \
+            }                                                                                                           \
+            subscriber.handler->on##name(entity, data);                                                                 \
+        }                                                                                                               \
+    }
+
+
+#define MQ_REGISTER_GAME_EVENTS(...)                                                                                    \
+    enum class GameEvent : uint8_t                                                                                      \
+    {                                                                                                                   \
+        FOR_EACH(MQ_EVENT_ENUM_DECLARE, __VA_ARGS__) COUNT                                                              \
+    };                                                                                                                  \
+    FOR_EACH(MQ_EVENT_TYPE_DECLARE, __VA_ARGS__)                                                                        \
+    namespace magique                                                                                                   \
+    {                                                                                                                   \
+        struct IEventHandler                                                                                            \
+        {                                                                                                               \
+            virtual ~IEventHandler() = default;                                                                         \
+            virtual bool shouldBeCalled() { return true; }                                                              \
+            FOR_EACH(MQ_EVENT_FUNC_DECLARE, __VA_ARGS__);                                                               \
+        };                                                                                                              \
+        FOR_EACH(MQ_EVENT_EMIT_CASE, __VA_ARGS__)                                                                       \
+    }
+
 //================= SCRIPTING =================//
 
 #define PARENS ()
@@ -33,8 +86,8 @@ namespace magique::internal
         script->eventType(std::forward<Args>(args)...);                                                                 \
     }
 
-#define REGISTER_EVENTS(...)                                                                                            \
-    template <EventType type, class Script, class... Args>                                                              \
+#define MQ_REGISTER_SCRIPT_EVENTS(...)                                                                                  \
+    template <ScriptEvent type, class Script, class... Args>                                                            \
     void Call(Script* script, Args... args)                                                                             \
     {                                                                                                                   \
         FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                            \
@@ -99,8 +152,8 @@ namespace magique::internal
 #define M_FRIEND(type) friend type;
 #define befriend(...) FOR_EACH(M_FRIEND, __VA_ARGS__)
 
-#define M_ENABLE_STEAM_ERROR(ret)\
-    LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");\
+#define M_ENABLE_STEAM_ERROR(ret)                                                                                       \
+    LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");                                                      \
     return ret;
 
 //================= BUILDING =================//
@@ -129,4 +182,4 @@ namespace magique::internal
 #endif
 
 
-#endif //MAGIQUE_MACROS_H
+#endif // MAGIQUE_MACROS_H

@@ -14,29 +14,23 @@ namespace magique
     void ScriptingSetScript(const EntityType entity, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
-        if ((int)scData.scripts.size() < entity + 1)
-        {
-            MAGIQUE_ASSERT(entity < UINT16_MAX, "Sanity check");
-            scData.scripts.resize(entity + 1, ScriptData::defaultScript);
-        }
         // Dont delete the default script
-        IGNORE_WARNING_GCC("-Wdelete-non-virtual-dtor")
         if (scData.scripts[entity] != ScriptData::defaultScript)
             delete scData.scripts[entity];
-        UNIGNORE_WARNING_GCC();
         scData.scripts[entity] = script;
     }
 
     EntityScript* ScriptingGetScript(const EntityType entity)
     {
-        auto& scriptData = global::SCRIPT_DATA;
-        MAGIQUE_ASSERT(scriptData.scripts.size() > entity,
+        const auto& scriptData = global::SCRIPT_DATA;
+        MAGIQUE_ASSERT(scriptData.scripts.width() > (size_t)entity,
                        "No script registered for this type! Did you call SetScript()?");
-        MAGIQUE_ASSERT(
-            scriptData.scripts[entity] != scriptData.defaultScript,
-            "No valid script exists for this entity! Did you call SetEntityScript() and pass a new Instance of your "
-            "ScriptClass?");
-        return scriptData.scripts[entity];
+        auto* script = scriptData.scripts[entity];
+        if (script == nullptr)
+        {
+            return scriptData.defaultScript;
+        }
+        return script;
     }
 
     void ScriptingSetScripted(const entt::entity entity, const bool val)

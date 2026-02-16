@@ -1,10 +1,7 @@
 #ifndef MAGIQUE_CONSOLE_EXAMPLE_H
 #define MAGIQUE_CONSOLE_EXAMPLE_H
 
-#include <magique/core/Core.h>
-#include <raylib/raylib.h>
-#include <magique/core/Game.h>
-#include <magique/gamedev/Console.h>
+#include <magique/magique.hpp>
 
 using namespace magique;
 
@@ -96,18 +93,18 @@ struct Example final : Game
                     }
                 });
 
-        RegisterConsoleCommand(greet);
-        RegisterConsoleCommand(addNumbers);
-        RegisterConsoleCommand(logMessages);
-        RegisterConsoleCommand(setDefaults);
-        RegisterConsoleCommand(broadcast);
-        RegisterConsoleCommand(printHello);
-        RegisterConsoleCommand(likes);
+        ConsoleRegisterCommand(greet);
+        ConsoleRegisterCommand(addNumbers);
+        ConsoleRegisterCommand(logMessages);
+        ConsoleRegisterCommand(setDefaults);
+        ConsoleRegisterCommand(broadcast);
+        ConsoleRegisterCommand(printHello);
+        ConsoleRegisterCommand(likes);
     }
 
-    void updateGame(GameState gameState) override {}
+    void onUpdateGame(GameState gameState) override {}
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         const char* helpText = R"(
 Open the console with PAGE_UP.
@@ -125,7 +122,7 @@ Look at the commands defined in the example and try to invoke them!
 	- "greet User Morning"
 	- "broadcast
         )";
-        DrawTextEx(GetFont(), helpText, {10, 250}, 18, 1, BLACK);
+        DrawTextEx(GetEngineFont(), helpText, {10, 250}, 18, 1, BLACK);
     }
 };
 

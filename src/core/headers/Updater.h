@@ -4,7 +4,10 @@
 
 namespace magique::updater
 {
-    inline void StartTick() {}
+    inline void StartTick()
+    {
+
+    }
 
     inline double EndTick(const double startTime)
     {

@@ -6,7 +6,6 @@
 #include <magique/multiplayer/Multiplayer.h>
 #include <magique/multiplayer/Lobby.h>
 #include <magique/internal/Macros.h>
-#include <magique/util/Datastructures.h>
 
 #include "multiplayer/headers/MultiplayerStatistics.h"
 #include "multiplayer/headers/LobbyData.h"
@@ -65,11 +64,11 @@ namespace magique
 
         MultiplayerData()
         {
-            incMsgVec.reserve(MAGIQUE_ESTIMATED_MESSAGES);
-            outMsgBuffer.reserve(MAGIQUE_ESTIMATED_MESSAGES);
-            incMsgBuffer.reserve(MAGIQUE_ESTIMATED_MESSAGES);
-            connections.reserve(MAGIQUE_MAX_PLAYERS + 1);
-            connectionMapping.reserve(MAGIQUE_MAX_PLAYERS + 1);
+            incMsgVec.reserve(150);
+            outMsgBuffer.reserve(150);
+            incMsgBuffer.reserve(150);
+            connections.reserve(8);
+            connectionMapping.reserve(8);
         }
 
         void close()

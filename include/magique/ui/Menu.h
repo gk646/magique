@@ -19,7 +19,7 @@
 //  - A menu can be active or not (if its drawn and the "shown" one)
 //      - If a submenu (or a submenu of a submenu) is active the menu itself is NOT active
 
-// Note: "getIsActive()" NEEDS to be check when drawing and updating (as menu switching takes place in updateInputs()
+// Note: "getIsActive()" NEEDS to be checked when drawing and updating (as menu switching takes place in updateInputs()
 //        Also the base functions need to be called
 // .....................................................................
 
@@ -34,8 +34,14 @@ namespace magique
         void addSubMenu(Menu* menu, const char* name);
         bool removeSubMenu(const char* name);
 
-        void switchToSubmenu(const char* name);
-        void switchToSubmenu(Menu* menu);
+        // Sets the given submenu active
+        bool switchToSubmenu(const char* name);
+        bool switchToSubmenu(Menu* menu);
+        // Iterates through the vector and tries to switch to the submenu at each level and repeat
+        // Allows to switch into deeper menus from the top
+        void switchToSubmenu(const std::initializer_list<std::string>& menus);
+
+        // Gives control back to the parent
         void switchToParent();
 
         // Returns true if this menu is a top menu (no parents)
@@ -44,13 +50,9 @@ namespace magique
         bool getIsActive() const;
 
     protected:
-        void onDraw(const Rectangle& bounds) override
-        {
-            if (subMenu != nullptr)
-            {
-                subMenu->draw();
-            }
-        }
+        // Needs to be called (as the first thing) in all implementing versions
+        // After that you should return if the current menu is not active (getIsActive())
+        void onDraw(const Rectangle& bounds) override;
 
         void onUpdate(const Rectangle& bounds, bool wasDrawn) override
         {
@@ -72,4 +74,4 @@ namespace magique
     };
 } // namespace magique
 
-#endif //MAGEQUEST_MENU_H
+#endif // MAGEQUEST_MENU_H

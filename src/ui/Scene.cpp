@@ -7,7 +7,7 @@ namespace magique
 {
     inline SceneManager SCENE_MANAGER{};
 
-    SceneManager& GetSceneManager() { return SCENE_MANAGER; }
+    SceneManager& SceneGetManager() { return SCENE_MANAGER; }
 
     void Scene::draw() const
     {
@@ -22,13 +22,9 @@ namespace magique
     {
         MAGIQUE_ASSERT(obj != nullptr, "Passed nullptr");
         objects.push_back(obj);
-        if (name != nullptr && strlen(name) < MAGIQUE_MAX_NAMES_LENGTH)
+        if (name != nullptr)
         {
-            auto& mapping = mappings.emplace_back();
-            auto len = strlen(name);
-            std::memcpy(mapping.name, name, len + 1);
-            mapping.name[len + 1] = '\0';
-            mapping.object = obj;
+            mappings.emplace_back(name, obj);
         }
         return obj;
     }
@@ -39,7 +35,7 @@ namespace magique
     {
         for (const auto& mapping : mappings)
         {
-            if (strcmp(mapping.name, name) == 0)
+            if (mapping.name == name)
             {
                 return mapping.object;
             }

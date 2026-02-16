@@ -47,7 +47,6 @@ namespace magique
         return point;
     }
 
-
     Point UIGetAnchor(const Anchor anchor, const Point size, const Point inset)
     {
         return UIGetAnchor(anchor, {}, global::UI_DATA.targetRes, size, inset);
@@ -69,10 +68,6 @@ namespace magique
 
     void UISetSourceResolution(Point resolution) { global::UI_DATA.sourceRes = resolution; }
 
-    Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
-
-    Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
-
     void UISetTargetResolution(Point resolution)
     {
         if (resolution == 0)
@@ -88,62 +83,9 @@ namespace magique
 
     Point UIGetTargetResolution() { return global::UI_DATA.targetRes; }
 
-    bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressed(key); }
+    Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
-    bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyDown(key); }
-
-    bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
-
-    bool LayeredInput::IsKeyPressedRepeat(int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key); }
-
-    bool LayeredInput::IsMouseButtonPressed(const int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonPressed(key);
-    }
-
-    bool LayeredInput::IsMouseButtonDown(const int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonDown(key);
-    }
-
-    bool LayeredInput::IsMouseButtonReleased(const int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonReleased(key);
-    }
-
-    bool LayeredInput::IsGamepadButtonPressed(int gamepad, int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonPressed(gamepad, key);
-    }
-
-    bool LayeredInput::IsGamepadButtonDown(int gamepad, int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonDown(gamepad, key);
-    }
-
-    bool LayeredInput::IsGamepadButtonReleased(int gamepad, int key)
-    {
-        return !global::UI_DATA.mouseConsumed && ::IsGamepadButtonReleased(gamepad, key);
-    }
-
-    void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
-
-    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
-
-    bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
-
-    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
-
-    void UISetShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
-
-    UIMouseToWorld::UIMouseToWorld()
-    {
-        prev = GetMousePosition();
-        auto worldMouse = GetScreenToWorld2D(prev.v(), magique::CameraGet());
-        SetMousePositionDirect(worldMouse.x, worldMouse.y);
-    }
-
-    UIMouseToWorld::~UIMouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
+    Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
 
     Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base)
     {
@@ -170,5 +112,62 @@ namespace magique
         }
         return rect;
     }
+
+    bool LayeredInput::IsKeyPressed(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressed(key); }
+
+    bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyDown(key); }
+
+    bool LayeredInput::IsKeyReleased(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
+
+    bool LayeredInput::IsKeyPressedRepeat(int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key); }
+
+    bool LayeredInput::IsMouseButtonPressed(const int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonPressed(key);
+    }
+
+    bool LayeredInput::IsMouseButtonDown(const int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonDown(key);
+    }
+
+    bool LayeredInput::IsMouseButtonReleased(const int key)
+    {
+        return !global::UI_DATA.mouseConsumed && ::IsMouseButtonReleased(key);
+    }
+
+    bool LayeredInput::IsGamepadButtonPressed(int gamepad, int key)
+    {
+        return !global::UI_DATA.keyConsumed && ::IsGamepadButtonPressed(gamepad, key);
+    }
+
+    bool LayeredInput::IsGamepadButtonDown(int gamepad, int key)
+    {
+        return !global::UI_DATA.keyConsumed && ::IsGamepadButtonDown(gamepad, key);
+    }
+
+    bool LayeredInput::IsGamepadButtonReleased(int gamepad, int key)
+    {
+        return !global::UI_DATA.keyConsumed && ::IsGamepadButtonReleased(gamepad, key);
+    }
+
+    void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
+
+    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
+
+    bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
+
+    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
+
+    void UISetShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
+
+    UIMouseToWorld::UIMouseToWorld()
+    {
+        prev = GetMousePosition();
+        auto worldMouse = GetScreenToWorld2D(prev, magique::CameraGet());
+        SetMousePositionDirect(worldMouse.x, worldMouse.y);
+    }
+
+    UIMouseToWorld::~UIMouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
 
 } // namespace magique

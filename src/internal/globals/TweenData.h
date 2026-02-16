@@ -7,42 +7,35 @@
 
 namespace magique
 {
-
     struct TweenData final
     {
         std::vector<Tween*> tweens;
 
         void update()
         {
-            for (auto it = tweens.begin(); it != tweens.end();)
-            {
-                auto& tween = **it;
-                tween.step = std::min(1.0F, tween.step + tween.stepWidth);
+            std::erase_if(tweens,
+                          [](Tween* tween)
+                          {
+                              tween->update();
 
-                if (tween.tickFunc)
-                {
-                    tween.tickFunc(tween);
-                }
+                              if (tween->tickFunc)
+                              {
+                                  tween->tickFunc(*tween);
+                              }
 
-                if (tween.isDone())
-                {
-                    tween.started = false;
-                    it = tweens.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
+                              if (tween->isDone())
+                              {
+                                  tween->started = false;
+                                  return true;
+                              }
+                              return false;
+                          });
         }
 
         void add(Tween& tween)
         {
-            if (std::ranges::contains(tweens, &tween))
-            {
-                return;
-            }
-            tweens.push_back(&tween);
+            if (!std::ranges::contains(tweens, &tween))
+                tweens.push_back(&tween);
         }
 
         void remove(Tween& tween) { std::erase(tweens, &tween); }

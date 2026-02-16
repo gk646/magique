@@ -14,19 +14,19 @@
 // Thus you only need to store the sprite progress and animation state for each entity
 // The intended workflow is:
 //                  1. Create a EntityAnimation and add animations for the states it has
-//                  2. Register the EntityAnimation to a EntityType
 //                  3. Now you can freely use it when creating entities via GiveAnimation(entity,type)
 // Notes: Frame duration is in millis
 // ................................................................................
 
 enum class AnimationState : uint8_t; // User implemented to denote different animation states - shared for all animations
+enum class AnimationLayer : uint8_t; // User implemented to denote different animation layers - shared for all animations
 
 namespace magique
 {
     struct EntityAnimation final
     {
         // Sets the scaling for the offset and anchor points
-         EntityAnimation(float scale = 1);
+        EntityAnimation(float scale = 1);
 
         // Sets the animation for this action state with the same duration for all frames
         void addAnimation(AnimationState state, SpriteSheet sheet, int frameMillis);
@@ -41,12 +41,15 @@ namespace magique
         // Returns the frame of the given state
         [[nodiscard]] SpriteAnimation getCurrentAnimation(AnimationState state) const;
 
+        // Sets/gets the draw offset applied to every frame
         [[nodiscard]] Point getOffset() const;
-        [[nodiscard]] Point getAnchor() const;
-
         void setOffset(Point offset);
 
+        // The rotation anchor
+        [[nodiscard]] Point getAnchor() const;
+
         bool hasAnimation(AnimationState state) const;
+        const SparseRangeVector<SpriteAnimation>& getAnimations() const;
 
     private:
         Point offset{};
@@ -55,7 +58,17 @@ namespace magique
         float scale = 1.0F;
         friend struct AnimationData;
     };
+
+
+    struct LayeredEntityAnimation final
+    {
+        LayeredEntityAnimation();
+
+    private:
+        SparseRangeVector<EntityAnimation> animations;
+    };
+
 } // namespace magique
 
 
-#endif //MAGIQUE_ANIMATIONS_H
+#endif // MAGIQUE_ANIMATIONS_H

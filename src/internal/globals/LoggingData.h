@@ -9,7 +9,7 @@ namespace magique
 
     struct LogData final
     {
-        static constexpr int CACHE_SIZE = 512;
+        static constexpr int CACHE_SIZE = 1024;
         LogCallbackFunc callback = nullptr;
         FILE* file = nullptr;
         SpinLock lock{};
@@ -30,7 +30,7 @@ namespace magique
 
             if (logToFile)
             {
-                file = fopen(TextFormat("./%s.log", GameGet().getName()), "wb");
+                file = fopen(TextFormat("./%s.log", GameGetInstance().getName()), "wb");
                 if (file == nullptr)
                 {
                     LOG_ERROR("Failed to open log file");

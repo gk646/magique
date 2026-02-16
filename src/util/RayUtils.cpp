@@ -81,21 +81,6 @@ namespace magique
                        std::floor(within.y + ((within.height - height) / 2.0F))};
     }
 
-    Vector2 GetRectCenter(const Rectangle& rect)
-    {
-        return Vector2{rect.x + rect.width / 2.0F, rect.y + rect.height / 2.0F};
-    }
-
-    Rectangle GetCenteredRect(const Point& center, const float width, const float height)
-    {
-        return Rectangle{center.x - width / 2.0F, center.y - height / 2.0F, width, height};
-    }
-
-    Rectangle GetEnlargedRect(const Rectangle& rect, float width, float height)
-    {
-        return Rectangle{rect.x - (width / 2), rect.y - (height / 2), rect.width + width, rect.height + height};
-    }
-
     float GetRoundness(const float radius, const Rectangle& bounds)
     {
         if (bounds.width > bounds.height)
@@ -154,8 +139,7 @@ namespace magique
         // First lighter outline
         // then dark outline
         // then border
-
-        const auto largeRect = GetEnlargedRect(bounds, 2, 2);
+        const auto largeRect = Rect{bounds}.enlarge(2);
         DrawRectangleRoundedLinesEx(largeRect, GetRoundness(radius + 1, largeRect), 30, 1, filler);
         DrawRectangleRoundedLinesEx(largeRect, GetRoundness(radius, largeRect), 30, 1, outline);
         const auto boundsRound = GetRoundness(radius, bounds);
@@ -164,7 +148,7 @@ namespace magique
 
     void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border)
     {
-        auto enlargedRect = GetEnlargedRect(bounds, 2, 2);
+        auto enlargedRect = Rect{bounds}.enlarge(2);
         DrawRectangleLinesEx(enlargedRect, 1, outline);
         DrawRectangleLinesEx(bounds, 1, border);
     }
@@ -181,34 +165,15 @@ namespace magique
 
     void DrawFilledRect(const Rectangle& bounds, const float fillPercent, const Direction dir, const Color& tint)
     {
-        Rectangle filledBounds = {bounds.x, bounds.y, bounds.width, bounds.height};
-        if (dir == Direction::UP)
-        {
-            filledBounds.height *= fillPercent;
-            filledBounds.y = bounds.y - filledBounds.height + bounds.height;
-        }
-        else if (dir == Direction::DOWN)
-        {
-            filledBounds.height *= fillPercent;
-        }
-        else if (dir == Direction::LEFT)
-        {
-            filledBounds.width *= fillPercent;
-            filledBounds.x = bounds.x - filledBounds.width + bounds.width;
-        }
-        else if (dir == Direction::RIGHT)
-        {
-            filledBounds.width *= fillPercent;
-        }
-        DrawRectangleRec(filledBounds, tint);
+        DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
     }
 
-    void DrawTextCenteredRect(const Font& fnt, const char* txt, float fs, const Rectangle& bounds, float spacing,
-                              const Color& tint)
+    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rectangle& bounds, float spacing,
+                              Color tint)
     {
-        const auto dims = MeasureTextEx(fnt, txt, fs, spacing);
+        const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
         const auto center = GetCenteredPos(bounds, dims.x, dims.y);
-        DrawTextEx(fnt, txt, center, fs, spacing, tint);
+        DrawTextEx(fnt, txt.data(), center, fs, spacing, tint);
     }
 
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)
@@ -259,9 +224,8 @@ namespace magique
 
     void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline)
     {
-        const auto final = RectFloor(bounds);
-        DrawRectangleRec(GetEnlargedRect(final, -2, -2), fill);
-        DrawRectFrame(final, outline);
+        DrawRectangleRec(Rect{bounds}.enlarge(-2), fill);
+        DrawRectFrame(Rect{bounds}.floor(), outline);
     }
 
     void DrawTruePixelartScale(RenderTexture texture)
@@ -282,21 +246,6 @@ namespace magique
         const auto drawPos = GetCenteredPos({0, 0, display.x, display.y}, canvas.x, canvas.y);
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, drawPos, scale.x, WHITE);
-    }
-
-    Rectangle RectMove(const Rectangle& original, float x, float y)
-    {
-        return {original.x + x, original.y + y, original.width, original.height};
-    }
-
-    Rectangle RectFloor(const Rectangle& rect)
-    {
-        Rectangle floored = rect;
-        floored.x = std::floor(floored.x);
-        floored.y = std::floor(floored.y);
-        floored.width = std::floor(floored.width);
-        floored.height = std::floor(floored.height);
-        return floored;
     }
 
     Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)

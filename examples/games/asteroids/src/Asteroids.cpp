@@ -148,7 +148,7 @@ void Asteroids::drawGame(GameState gameState, Camera2D& camera)
     auto& drawEntities = GetDrawEntities(); // Get the entities that need to be drawn
     for (const auto e : drawEntities)
     {
-        auto& pos = GetComponent<PositionC>(e); // Get the implicit position component
+        auto& pos = ComponentGet<PositionC>(e); // Get the implicit position component
         handle handle;
         switch (pos.type)
         {
@@ -191,7 +191,7 @@ void Asteroids::drawUI(GameState gameState)
 
 void PlayerScript::onKeyEvent(entt::entity self)
 {
-    auto& pos = GetComponent<PositionC>(self);
+    auto& pos = ComponentGet<PositionC>(self);
     if (IsKeyDown(KEY_W))
         pos.y -= 6;
     if (IsKeyDown(KEY_S))
@@ -203,7 +203,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
 
     if (IsKeyDown(KEY_SPACE))
     {
-        auto& shoot = GetComponent<PlayerStatsC>(self);
+        auto& shoot = ComponentGet<PlayerStatsC>(self);
         if (shoot.shootCounter == 0)
         {
             CreateEntity(BULLET, pos.x + 3, pos.y - 3, pos.map);
@@ -215,14 +215,14 @@ void PlayerScript::onKeyEvent(entt::entity self)
 
 void PlayerScript::onTick(entt::entity self, bool updated)
 {
-    auto& stats = GetComponent<PlayerStatsC>(self);
+    auto& stats = ComponentGet<PlayerStatsC>(self);
     if (stats.shootCounter > 0)
         stats.shootCounter--;
     if (stats.health <= 0)
     {
         SetGameState(GameState::GAME_OVER);
         // Move player (actor) to different map to avoid updating all entities and destroy all current ones
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         pos.map = MapID::GAME_OVER_LEVEL;
         DestroyEntities({ROCK, HOUSE}); // Destroy all rocks + houses
         ClearEntityCache();
@@ -231,14 +231,14 @@ void PlayerScript::onTick(entt::entity self, bool updated)
 
 void PlayerScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
 {
-    const auto& oPos = GetComponent<PositionC>(other);
+    const auto& oPos = ComponentGet<PositionC>(other);
     if (oPos.type != BULLET && oPos.type != HOUSE)
         AccumulateCollision(info);
 }
 
 void BulletScript::onTick(entt::entity self, bool updated)
 {
-    auto& pos = GetComponent<PositionC>(self);
+    auto& pos = ComponentGet<PositionC>(self);
     pos.y -= 8; // Bullets only fly straight up
 }
 
@@ -251,20 +251,20 @@ void RockScript::onDynamicCollision(entt::entity self, entt::entity other, Colli
 {
     if (!EntityExists(other))
         return;
-    auto& pos = GetComponent<PositionC>(self);
-    auto& col = GetComponent<CollisionC>(self);
-    auto& oPos = GetComponent<PositionC>(other);
+    auto& pos = ComponentGet<PositionC>(self);
+    auto& col = ComponentGet<CollisionC>(self);
+    auto& oPos = ComponentGet<PositionC>(other);
 
     ROCK_PARTICLES.setEmissionPosition(pos.x + col.p1 / 2.0F, pos.y + col.p2 / 2.0F); // Set to emit from the center
-    CreateScreenParticle(ROCK_PARTICLES, 100);                                        // Instantiate 100 times
+    ParticlesEmit(ROCK_PARTICLES, 100);                                        // Instantiate 100 times
     if (oPos.type == HOUSE)
     {
-        GetComponent<PlayerStatsC>(PLAYER_ID).health--; // Lower health when house is hit
+        ComponentGet<PlayerStatsC>(PLAYER_ID).health--; // Lower health when house is hit
         DestroyEntity(other);
     }
     else if (oPos.type == PLAYER)
     {
-        auto& stats = GetComponent<PlayerStatsC>(other);
+        auto& stats = ComponentGet<PlayerStatsC>(other);
         stats.health--;
     }
     else if (oPos.type == BULLET)
@@ -282,7 +282,7 @@ void RockScript::onStaticCollision(entt::entity self, ColliderInfo collider, Col
 
 void RockScript::onTick(entt::entity self, bool updated)
 {
-    auto& pos = GetComponent<PositionC>(self);
+    auto& pos = ComponentGet<PositionC>(self);
     pos.rotation++;
     pos.y += 1;
 }
@@ -292,7 +292,7 @@ void RockScript::onTick(entt::entity self, bool updated)
 void PlayerBarUI::onDraw(const Rectangle& bounds)
 {
     // Draw the health bar - first outline and then simple rects for each life left
-    const PlayerStatsC& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
+    const PlayerStatsC& stats = ComponentGet<PlayerStatsC>(PLAYER_ID);
     DrawRectangleRec({bounds.x, bounds.y, 152, 25}, ColorAlpha(DARKGRAY, 0.8F));
     DrawText("Player Health", bounds.x, bounds.y - 20, 20, WHITE);
     for (int i = 0; i < stats.health; ++i)
@@ -331,8 +331,8 @@ void GameOverUI::onClick(const Rectangle& bounds, int button)
     {
         CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
-    auto& stats = GetComponent<PlayerStatsC>(PLAYER_ID);
-    auto& pos = GetComponent<PositionC>(PLAYER_ID);
+    auto& stats = ComponentGet<PlayerStatsC>(PLAYER_ID);
+    auto& pos = ComponentGet<PositionC>(PLAYER_ID);
     stats.health = 5;
     pos.x = 640; // Reset player position
     pos.y = 480;

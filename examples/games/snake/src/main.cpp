@@ -61,7 +61,7 @@ struct SnakeScript : magique::EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& head = magique::GetComponent<SnakeC>(self);
+        auto& head = magique::ComponentGet<SnakeC>(self);
         if (magique::UIInput::IsKeyDown(KEY_W) && head.direction != DOWN)
         {
             head.direction = UP;
@@ -82,7 +82,7 @@ struct SnakeScript : magique::EntityScript
 
     void onDynamicCollision(entt::entity self, entt::entity other, magique::CollisionInfo& info) override
     {
-        const auto& oPos = magique::GetComponent<magique::PositionC>(other);
+        const auto& oPos = magique::ComponentGet<magique::PositionC>(other);
         if (oPos.type == SNAKE_TAIL)
         {
             GAMEOVER = true;
@@ -90,7 +90,7 @@ struct SnakeScript : magique::EntityScript
         else if (oPos.type == APPLE)
         {
             magique::DestroyEntity(other);
-            auto& head = magique::GetComponent<SnakeC>(self);
+            auto& head = magique::ComponentGet<SnakeC>(self);
 
             entt::entity tail = head.next;
             if (head.next == entt::null)
@@ -99,14 +99,14 @@ struct SnakeScript : magique::EntityScript
             }
             else
             {
-                while (magique::GetComponent<SnakeC>(tail).next != entt::null)
+                while (magique::ComponentGet<SnakeC>(tail).next != entt::null)
                 {
-                    tail = magique::GetComponent<SnakeC>(tail).next;
+                    tail = magique::ComponentGet<SnakeC>(tail).next;
                 }
             }
 
-            const auto& lastPos = magique::GetComponent<magique::PositionC>(tail);
-            const auto& lastSnake = magique::GetComponent<SnakeC>(tail);
+            const auto& lastPos = magique::ComponentGet<magique::PositionC>(tail);
+            const auto& lastSnake = magique::ComponentGet<SnakeC>(tail);
             float xAdd = 0;
             float yAdd = 0;
             if (lastSnake.direction == UP)
@@ -132,7 +132,7 @@ struct SnakeScript : magique::EntityScript
             }
             else
             {
-                magique::GetComponent<SnakeC>(tail).next = nextTail;
+                magique::ComponentGet<SnakeC>(tail).next = nextTail;
             }
             SCORE++;
         }
@@ -146,8 +146,8 @@ struct SnakeTailScript final : magique::EntityScript
 
 void MoveSnakeHead(entt::entity entity)
 {
-    auto& pos = magique::GetComponent<magique::PositionC>(entity);
-    auto& head = magique::GetComponent<SnakeC>(entity);
+    auto& pos = magique::ComponentGet<magique::PositionC>(entity);
+    auto& head = magique::ComponentGet<SnakeC>(entity);
     const auto limit = CELL_SIZE * FIELD_DIMS;
     if (head.direction == UP)
     {
@@ -255,14 +255,14 @@ struct Snake final : magique::Game
         if (head == entt::null)
             return;
 
-        magique::PositionC prevPos = magique::GetComponent<magique::PositionC>(head);
-        auto direction = magique::GetComponent<SnakeC>(head).direction;
+        magique::PositionC prevPos = magique::ComponentGet<magique::PositionC>(head);
+        auto direction = magique::ComponentGet<SnakeC>(head).direction;
         MoveSnakeHead(head);
-        entt::entity iter = magique::GetComponent<SnakeC>(head).next;
+        entt::entity iter = magique::ComponentGet<SnakeC>(head).next;
         while (iter != entt::null)
         {
-            auto& pos = magique::GetComponent<magique::PositionC>(iter);
-            auto& snake = magique::GetComponent<SnakeC>(iter);
+            auto& pos = magique::ComponentGet<magique::PositionC>(iter);
+            auto& snake = magique::ComponentGet<SnakeC>(iter);
             auto tempDirection = snake.direction;
             snake.direction = direction;
             direction = tempDirection;
@@ -294,7 +294,7 @@ struct Snake final : magique::Game
 
         for (const auto e : magique::GetDrawEntities())
         {
-            const auto& pos = magique::GetComponent<const magique::PositionC>(e);
+            const auto& pos = magique::ComponentGet<const magique::PositionC>(e);
             if (pos.type == SNAKE_HEAD)
             {
                 DrawRectangle((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, BLUE);

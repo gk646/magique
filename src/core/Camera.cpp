@@ -21,6 +21,8 @@ namespace magique
 
     void CameraSetSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
+    entt::entity CameraGetEntity() { return global::ENGINE_DATA.cameraEntity; }
+
     Camera2D& CameraGet() { return global::ENGINE_DATA.camera; }
 
     MapID CameraGetMap()
@@ -69,7 +71,7 @@ namespace magique
     {
         auto bounds = CameraGetBounds();
 
-        if (CheckCollisionPointRec(point.v(), bounds))
+        if (CheckCollisionPointRec(point, bounds))
         {
             return true;
         }
@@ -78,15 +80,13 @@ namespace magique
         {
             const auto& pos = ComponentGet<PositionC>(actor);
             bounds = {pos.pos.x - bounds.width / 2, pos.pos.y - bounds.height / 2, bounds.width, bounds.height};
-            if (CheckCollisionPointRec(point.v(), bounds))
+            if (CheckCollisionPointRec(point, bounds))
             {
                 return true;
             }
         }
         return false;
     }
-
-    entt::entity CameraGetEntity() { return global::ENGINE_DATA.cameraEntity; }
 
     void CameraAddShakeImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
     {

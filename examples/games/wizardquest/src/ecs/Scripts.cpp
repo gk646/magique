@@ -9,15 +9,15 @@
 
 void PlayerScript::onTick(entt::entity self, bool updated)
 {
-    auto& anim = GetComponent<AnimationC>(self);
+    auto& anim = ComponentGet<AnimationC>(self);
     if (anim.getCurrentState() == AnimationState::JUMP && anim.getHasAnimationPlayed())
         anim.setAnimationState(AnimationState::IDLE);
 }
 
 void PlayerScript::onKeyEvent(entt::entity self)
 {
-    auto& mov = GetComponent<MovementC>(self);
-    auto& stats = GetComponent<EntityStatsC>(self);
+    auto& mov = ComponentGet<MovementC>(self);
+    auto& stats = ComponentGet<EntityStatsC>(self);
     if (IsKeyDown(KEY_W))
         mov.baseVelocY -= stats.moveSpeed;
     if (IsKeyDown(KEY_S))
@@ -32,7 +32,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
     else if (mov.baseVelocX > 0)
         mov.movedLeft = false;
 
-    auto& anim = GetComponent<AnimationC>(self);
+    auto& anim = ComponentGet<AnimationC>(self);
 
     if (IsKeyPressed(KEY_SPACE))
     {
@@ -55,14 +55,14 @@ void PlayerScript::onKeyEvent(entt::entity self)
 
 void TrollScript::onTick(entt::entity self, bool updated)
 {
-    auto& pos = GetComponent<PositionC>(self);
-    auto& col = GetComponent<CollisionC>(self);
+    auto& pos = ComponentGet<PositionC>(self);
+    auto& col = ComponentGet<CollisionC>(self);
     for (const auto e : GetNearbyEntities(pos.map, pos.pos, 1000))
     {
         if (EntityIsActor(e))
         {
-            const auto& tarPos = GetComponent<PositionC>(e);
-            const auto& tarCol = GetComponent<CollisionC>(e);
+            const auto& tarPos = ComponentGet<PositionC>(e);
+            const auto& tarCol = ComponentGet<CollisionC>(e);
             if (tarPos.map != pos.map)
                 break;
             std::vector<Point> path;

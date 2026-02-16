@@ -1,7 +1,6 @@
 #ifndef NODO_DATASTRUCTURES_H
 #define NODO_DATASTRUCTURES_H
 
-#include <span>
 #include <ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
@@ -16,6 +15,7 @@
 namespace magique
 {
 
+    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
     template <typename K, typename V>
     using HashMap = ankerl::unordered_dense::map<K, V>;
 
@@ -41,7 +41,7 @@ namespace magique
 
         explicit EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
 
-        explicit EnumSet(const std::span<E>& data) : data_()
+        explicit EnumSet(const std::initializer_list<E>& data) : data_()
         {
             for (const auto flag : data)
             {
@@ -102,7 +102,7 @@ namespace magique
         }
 
         // Runtime check
-        [[nodiscard]] bool any_of(const std::span<E>& flags) const noexcept
+        [[nodiscard]] bool any_of(const std::initializer_list<E>& flags) const noexcept
         {
             for (auto flag : flags)
             {
@@ -115,7 +115,7 @@ namespace magique
         }
 
         // Runtime check
-        [[nodiscard]] bool all_of(const std::span<E>& flags) const noexcept
+        [[nodiscard]] bool all_of(const std::initializer_list<E>& flags) const noexcept
         {
             for (const auto flag : flags)
             {
@@ -224,7 +224,7 @@ namespace magique
     };
 
     // Useful if you want to map a type to a range of numbers but do not want to use a hashmap (so some sort of conversion)
-    // Only instantiate up to the maximum needed range
+    // Only instantiates up to the maximum needed range
     template <typename T>
     struct SparseRangeVector final
     {
@@ -237,6 +237,24 @@ namespace magique
             data[index] = value;
         }
 
+        template <typename Key>
+        T& operator[](Key key)
+        {
+            static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key bust be integral");
+            size_t index = static_cast<size_t>(key);
+            return (*this)[index];
+        }
+
+        template <typename Key>
+        const T& operator[](Key key) const
+        {
+            static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key bust be integral");
+            size_t index = static_cast<size_t>(key);
+            return (*this)[index];
+        }
+
+        const T& operator[](size_t index) const { return data[index]; }
+
         T& operator[](size_t index)
         {
             if (data.size() < index + 1)
@@ -245,13 +263,10 @@ namespace magique
             }
             return data[index];
         }
-
-        const T& operator[](size_t index) const { return data[index]; }
-
         void reserve(size_t size) { data.reserve(size); }
 
         size_t width() const { return data.size(); }
-
+        bool empty() const { return data.empty(); }
         void clear() { data.clear(); }
 
     private:
@@ -435,168 +450,62 @@ namespace magique
         Compare comp;
     };
 
-    // Useful when saving data that is uniquely identified by a enum value (or integral)
-    // But it's not sure if all values exists (if every value is set use EnumArray)
-    // e.g.
-    template <typename Key, typename Value>
-    struct EnumVector final
-    {
-        struct ValueHolder final
-        {
-            Key key;
-            Value value;
-        };
-
-        using T = ValueHolder;
-
-        EnumVector() = default;
-        EnumVector(const std::vector<T>& data) : data_(data) {}
-        EnumVector(std::vector<T>&& data) : data_(std::move(data)) {}
-
-        std::vector<T>& data() { return data_; }
-        const std::vector<T>& data() const { return data_; }
-
-        // Returns first matching value from the given container of keys otherwise "elseVal"
-        template <typename Iterable>
-        Value getOrElse(const Iterable& container, Value elseVal = {}) const
-        {
-            for (const auto& key : container)
-            {
-                auto* value = getImpl(key);
-                if (value != nullptr)
-                {
-                    return value;
-                }
-            }
-            return elseVal;
-        }
-
-        Value getOrElse(const Key& key, Value elseVal = {}) const
-        {
-            auto* value = getImpl(key);
-            if (value != nullptr)
-            {
-                return *value;
-            }
-            return elseVal;
-        }
-
-        Value& operator[](const Key& key)
-        {
-            auto* value = getImpl(key);
-            if (value != nullptr) [[likely]]
-            {
-                return *value;
-            }
-            LOG_FATAL("No such value: %d", (int)key);
-            return data_.front().value;
-        }
-
-        const Value& operator[](const Key& key) const
-        {
-            auto* value = getImpl(key);
-            if (value != nullptr) [[likely]]
-            {
-                return *value;
-            }
-            LOG_FATAL("No such value: %d", (int)key);
-            return data_.front().value;
-        }
-
-        bool hasKey(const Key& key) const { return getImpl(key) != nullptr; }
-
-        void add(Key key, const Value& value)
-        {
-            if (data_.size() <= (int)key)
-            {
-                data_.resize((int)key + 1);
-            }
-            auto& elem = data_[static_cast<int>(key)];
-            elem.value = value;
-            elem.key = key;
-        }
-
-        void add(Key key, Value&& value)
-        {
-            if (data_.size() <= (int)key)
-            {
-                data_.resize((int)key + 1);
-            }
-            auto& elem = data_[static_cast<int>(key)];
-            elem.value = std::move(value);
-            elem.key = key;
-        }
-
-    private:
-         Value* getImpl(const Key& key)
-        {
-            for (auto& entry : data_)
-            {
-                if (entry.key == key)
-                    return &entry.value;
-            }
-            return nullptr;
-        }
-
-        std::vector<T> data_;
-        friend glz::meta<EnumVector>;
-        static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-    };
-
     // Useful to map a enum to a value with direct indexing
     // Just a wrapped std::array<>
     // Supports loading from JSON
     // e.g. keybinds EnumArray<PlayerAction, magique::Keybind>
     // If no explicit size is given uses Enum::COUNT (should be the last defined value)
-    template <class Key, typename Value, int max_size = 0>
+    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
+    template <class Key, typename Value, int manual_size = 0>
     struct EnumArray final
     {
-        static constexpr int size = max_size == 0 ? (int)Key::COUNT : max_size;
-
-        struct ValueHolder final
+        struct ValueHolder final // This is persisted and loaded from JSON
         {
             Key key;
             Value value;
+            bool operator==(const ValueHolder& other) const = default;
         };
 
-        EnumArray() = default;
+        EnumArray() { initKeys(); }
 
-        constexpr EnumArray(const std::initializer_list<ValueHolder>& init)
+        template <typename Range>
+        constexpr EnumArray(const Range& init) : EnumArray()
         {
             for (const auto& value : init)
             {
-                int keyInt = static_cast<int>(value.key);
-                if (keyInt < 0 || keyInt >= size)
+                const auto keyInt = static_cast<size_t>(value.key);
+                if (keyInt < 0 || keyInt >= size())
                 {
                     LOG_ERROR("Invalid key");
                     continue;
                 }
-                data_[keyInt] = value.value;
+                data_[keyInt] = ValueHolder{value.key, value.value};
             }
         }
 
-        explicit EnumArray(const EnumVector<Key, Value>& init)
-        {
-            for (auto& [key, val] : init.data())
-            {
-                (*this)[key] = std::move(val);
-            }
-            if (init.size() < size)
-            {
-                LOG_WARNING("Not all values assigned");
-            }
-        }
+        const Value& operator[](Key key) const { return data_[static_cast<size_t>(key)].value; }
+        Value& operator[](Key key) { return data_[static_cast<size_t>(key)].value; }
 
-        const Value& operator[](Key key) const { return data_[static_cast<int>(key)]; }
+        auto begin() { return data_.begin(); }
+        auto end() { return data_.end(); }
+        auto begin() const { return data_.begin(); }
+        auto end() const { return data_.end(); }
 
-        Value& operator[](Key key) { return data_[static_cast<int>(key)]; }
+        size_t size() const { return data_.size(); }
 
-        std::array<Value, size>& data() { return data_; }
-        const std::array<Value, size>& data() const { return data_; }
+        bool operator==(const EnumArray& other) const = default;
 
     private:
+        void initKeys()
+        {
+            for (size_t i = 0; i < data_.size(); i++)
+            {
+                data_[i].key = (Key)i;
+            }
+        }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<Value, size> data_;
+        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data_;
+        friend glz::meta<EnumArray>;
     };
 
     // To prevent false sharing when accessed in multithread context

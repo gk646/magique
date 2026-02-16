@@ -51,7 +51,7 @@ namespace magique
         const auto& ui = global::UI_DATA;
         auto bounds = pBounds;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds.v();
+        return bounds;
     }
 
     void UIObject::setPosition(const Point& pos)
@@ -143,7 +143,7 @@ namespace magique
         switch (direction)
         {
         case Direction::LEFT:
-            pos.x -= offset.x;
+            pos.x = pos.x - getBounds().width + offset.x;
             pos.y += offset.y;
             break;
         case Direction::RIGHT:
@@ -166,10 +166,7 @@ namespace magique
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
-    bool UIObject::getIsPressed(int mouseButton) const
-    {
-        return IsMouseButtonDown(mouseButton) && getIsHovered();
-    }
+    bool UIObject::getIsPressed(int mouseButton) const { return IsMouseButtonDown(mouseButton) && getIsHovered(); }
 
     void UIObject::setAnchor(const Anchor newAnchor, const Point newInset)
     {

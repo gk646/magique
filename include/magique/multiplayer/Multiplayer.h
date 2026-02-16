@@ -91,7 +91,7 @@ namespace magique
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
     // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna store its information)
-    const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = MAGIQUE_ESTIMATED_MESSAGES);
+    const std::vector<Message>& ReceiveIncomingMessages(int maxMessages = 150);
 
     //================= UTIL =================//
 
@@ -136,7 +136,7 @@ namespace magique
     // Failure: Returns INVALID_CONNECTION if mapping exists for the given entity
     Connection GetConnectionEntityMapping(entt::entity entity);
 
-    // Returns the number of the connection - between 0 and MAGIQUE_MAX_PLAYERS-1
+    // Returns the number of the connection
     // This numbers stays the same for as long as the connection doesn't terminate (regardless of other disconnects or joins)
     // Note: This is very useful if you want to index into an array based on the connection
     // Failure: -1 if connection is not valid

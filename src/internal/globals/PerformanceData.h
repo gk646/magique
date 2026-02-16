@@ -8,9 +8,11 @@
 #include "external/raylib-compat/rlgl_compat.h"
 #include "internal/Shared.h"
 #include "internal/utils/OSUtil.h"
-#if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
-#include "external/networkingsockets/isteamnetworkingsockets.h"
-#include "external/networkingsockets/steamnetworkingtypes.h"
+#ifdef MAGIQUE_LAN
+#include "external/networkingsockets/steamnetworkingsockets.h"
+#include "external/networkingsockets/isteamnetworkingutils.h"
+#else MAGIQUE_STEAM
+#include <steam/steam_api.h>
 #endif
 
 namespace magique

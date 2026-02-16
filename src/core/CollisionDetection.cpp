@@ -223,8 +223,16 @@ namespace magique
         SAT(pxs, pys, qxs, qys, info);
     }
 
-    void RotatePoints(const float angle, const Point anchor, Point& p1, Point& p2, Point& p3, Point& p4)
+    void RotatePoint(float angle, Point anchor, Point& p1)
     {
+        anchor.floor();
+        Point p2, p3, p4;
+        RotatePoints(angle, anchor, p1, p2, p3, p4);
+    }
+
+    void RotatePoints(const float angle,  Point anchor, Point& p1, Point& p2, Point& p3, Point& p4)
+    {
+        anchor.floor();
         float pxs[4] = {p1.x, p2.x, p3.x, p4.x};
         float pys[4] = {p1.y, p2.y, p3.y, p4.y};
         RotatePoints4(0, 0, pxs, pys, angle, anchor.x, anchor.y);

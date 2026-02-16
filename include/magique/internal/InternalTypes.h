@@ -78,7 +78,6 @@ namespace magique::internal
         float angularGravity = 0.0F;
         Point angularVelocity{0, 0};
         uint16_t minLife = 100, maxLife = 100; // Total lifetime
-        bool resolutionScaling = true;         // resolution scaling
         uint8_t poolSize = 0;
         Shape shape = Shape::RECT;
         Shape emShape = Shape::TRIANGLE; // Default is point emission
@@ -248,20 +247,9 @@ namespace magique::internal
         }
     };
 
-    struct UIContainerMapping final
-    {
-        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
-        int index = 0;
-    };
-
-    struct WindowManagerMapping final
-    {
-        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
-        Window* window = nullptr;
-    };
     struct SceneManagerMapping final
     {
-        char name[MAGIQUE_MAX_NAMES_LENGTH]{};
+        std::string name;
         UIObject* object = nullptr;
     };
 

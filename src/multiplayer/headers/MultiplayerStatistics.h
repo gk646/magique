@@ -3,6 +3,7 @@
 
 #ifdef MAGIQUE_DEBUG
 #include <algorithm>
+#include <cstring>
 #include <magique/core/Core.h>
 #endif
 #include "magique/internal/InternalTypes.h"
@@ -33,7 +34,7 @@ private:
 
         void reset()
         {
-            memset(counts, 0, sizeof(counts));
+            std::memset(counts, 0, sizeof(counts));
             size = 0;
         }
         void add(MessageType type, int addSize)

@@ -18,26 +18,42 @@ namespace magique
 
     bool Menu::removeSubMenu(const char* name) { return removeChild(name); }
 
-    void Menu::switchToSubmenu(const char* name)
+    bool Menu::switchToSubmenu(const char* name)
     {
         auto* child = (Menu*)getChild(name);
-        switchToSubmenu(child);
+        return switchToSubmenu(child);
     }
 
-    void Menu::switchToSubmenu(Menu* menu)
+    bool Menu::switchToSubmenu(Menu* menu)
     {
         if (menu == nullptr)
         {
-            return;
+            return false;
         }
-        for (auto* child : getChildren())
+        for (auto& [name, child] : getChildren())
         {
             if (child == menu)
             {
                 subMenu = (Menu*)child;
                 subMenu->isActive = true;
                 isActive = false;
-                return;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void Menu::switchToSubmenu(const std::initializer_list<std::string>& menus)
+    {
+        Menu* menu = this;
+        for (auto& child : menus)
+        {
+            if (!menu->switchToSubmenu(child.c_str()))
+            {
+                break;
+            }else
+            {
+                menu = menu->getChild(child.c_str())->getAs<Menu>();
             }
         }
     }
@@ -57,6 +73,14 @@ namespace magique
 
     bool Menu::getIsActive() const { return isActive; }
 
+    void Menu::onDraw(const Rectangle& bounds)
+    {
+        if (subMenu != nullptr)
+        {
+            subMenu->draw();
+        }
+    }
+
     void Menu::onDrawUpdate(const Rectangle& bounds, bool wasDrawn)
     {
         UIContainer::onDrawUpdate(bounds, wasDrawn);
@@ -65,9 +89,10 @@ namespace magique
 
     void Menu::updateInputs()
     {
-        if (IsKeyPressed(KEY_ESCAPE))
+        if (LayeredInput::IsKeyPressed(KEY_ESCAPE))
         {
             switchToParent();
+            LayeredInput::ConsumeKey();
         }
     }
 

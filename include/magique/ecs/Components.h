@@ -35,6 +35,8 @@ namespace magique
 
         // Returns the bounding rectangle of the entity (a rect that fully contains its shape)
         [[nodiscard]] Rect getBounds(const CollisionC& collisionC) const;
+
+        bool operator==(const PositionC&) const = default;
     };
 
     // Denotes an actor
@@ -49,10 +51,10 @@ namespace magique
 
     struct CollisionC final
     {
-        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / CAPSULE: radius  / TRIANGLE: offsetX
-        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / CAPSULE: height  / TRIANGLE: offsetY
-        float p3 = 0.0F;           //                                                   / TRIANGLE: offsetX2
-        float p4 = 0.0F;           //                                                   / TRIANGLE: offsetY2
+        float p1 = 0.0F;           // RECT: width  / CIRCLE: radius  / TRIANGLE: offsetX
+        float p2 = 0.0F;           // RECT: height / CIRCLE: radius  / TRIANGLE: offsetY
+        float p3 = 0.0F;           //                                / TRIANGLE: offsetX2
+        float p4 = 0.0F;           //                                / TRIANGLE: offsetY2
         Point offset;              // Offset from top left
         Point anchor;              // Rotation anchor point for the hitbox
         Shape shape = Shape::RECT; // Shape
@@ -61,15 +63,20 @@ namespace magique
         EnumSet<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
         EnumSet<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
 
+        // Sets the values to be a rectangle
+        // x and y = offset / size = size / anchor = size/2
+        void setRectShape(const Rect& rect);
+
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
-        [[nodiscard]] bool detects(const CollisionC& other) const;
+        bool detects(const CollisionC& other) const;
 
         // Returns the offset from the position (top left) to the middle
-        [[nodiscard]] Point getMidOffset() const;
+        Point getMidOffset() const;
 
+        bool operator==(const CollisionC& other) const;
         // Should NOT be modified
         Point resolutionVec{}; // Accumulated normals * depth
         float dirs[4]{};       // X coordinates of rectangle collision - to fix sticky edges bug
@@ -82,7 +89,7 @@ namespace magique
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
-        void drawCurrentFrame(float x, float y, float rotation = 0) const;
+        void drawCurrentFrame(const Point& pos, float rotation = 0) const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();

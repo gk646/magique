@@ -28,7 +28,7 @@ namespace magique
         const auto now = std::chrono::system_clock::now();
         const std::time_t now_time = std::chrono::system_clock::to_time_t(now);
         const std::tm tm = *std::localtime(&now_time);
-        const auto* game = GameGet().getName();
+        const auto* game = GameGetInstance().getName();
         std::string date(64, '\0');
         // Cannot use TextFormat as we cant include raylib and windows in the same translation unit...
         sprintf(date.data(), "%02d.%02d.%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
@@ -261,7 +261,7 @@ namespace magique
 #endif
         std::string crashData;
         crashData.reserve(1024);
-        auto& game = magique::GameGet();
+        auto& game = magique::GameGetInstance();
         crashData += "magique CrashLog File\n";
         crashData += "Exception received: " + signalName + "\n\n";
         crashData += "magique version: " + std::string{MAGIQUE_VERSION} + "\n";

@@ -1,7 +1,9 @@
 #ifndef MAGEQUEST_USEFULSTUFF_H
 #define MAGEQUEST_USEFULSTUFF_H
 
+#include <array>
 #include <cstdint>
+#include <raylib/raylib.h>
 
 //===============================================
 // Useful Stuff
@@ -28,10 +30,13 @@ namespace magique
         bool isGoalReached();
 
         void setStep(uint32_t newStep);
-        uint32_t getStep();
+        uint32_t getStep() const;
 
         // Sets count to goal such that tick() returns true on next call
         void fill();
+
+        // Sets count to 0
+        void reset();
 
     private:
         uint32_t count = 0;
@@ -39,6 +44,27 @@ namespace magique
         uint32_t step;
     };
 
+    // A shader that swaps a given color to a target color - the color must match exactly
+    // Useful for reskinning textures
+    struct ColorSwapShader final
+    {
+        struct ColorPair
+        {
+            Color from{};
+            Color to{};
+        };
+
+        // Activates the shader and swaps up 4 colors - using BeginShaderMode
+        ColorSwapShader(const std::array<ColorPair, 4>& pairs);
+        // Ends the shader using EndShaderMode
+        ~ColorSwapShader();
+
+    private:
+        static void Init();
+        friend struct Game;
+    };
+
+
 } // namespace magique
 
-#endif //MAGEQUEST_USEFULSTUFF_H
+#endif // MAGEQUEST_USEFULSTUFF_H

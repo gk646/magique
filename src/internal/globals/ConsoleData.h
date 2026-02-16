@@ -631,7 +631,7 @@ namespace magique
         const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
         const Rectangle cRect = {0, 0, cWidth, cHeight};
         const auto wheelMove = GetMouseWheelMove() * 10.0F;
-        if (wheelMove != 0 && CheckCollisionPointRec(GetMousePos().v(), cRect))
+        if (wheelMove != 0 && CheckCollisionPointRec(GetMousePos(), cRect))
         {
             data.scrollOffset = std::max(0.0F, data.scrollOffset + wheelMove);
             LayeredInput::ConsumeMouse();

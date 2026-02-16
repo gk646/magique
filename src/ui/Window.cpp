@@ -6,8 +6,8 @@
 
 namespace magique
 {
-    Window::Window(const float x, const float y, const float w, const float h, const float moverHeight) :
-        UIObject(x, y, w, h)
+    Window::Window(const char* name, const float x, const float y, const float w, const float h,
+                   const float moverHeight) : UIObject(x, y, w, h), name(name)
     {
         const auto& ui = global::UI_DATA;
         if (moverHeight == 0.0F)
@@ -32,19 +32,22 @@ namespace magique
 
         // Top bar
         const auto topBar = getTopBarBounds();
-        const auto isHovered = CheckCollisionPointRec(GetMousePos().v(), topBar) || isDragged;
+        const auto isHovered = CheckCollisionPointRec(GetMousePos(), topBar) || isDragged;
         const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
         const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(topBar, 0.2F, 30, body);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }
+    std::string& Window::getName() { return name; }
+
+    const char* Window::getName() const { return name.c_str(); }
 
     Rectangle Window::getBodyBounds() const
     {
         const auto& ui = global::UI_DATA;
         Rect bounds{pBounds.x, pBounds.y + moverHeightP, pBounds.w, pBounds.h - moverHeightP};
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds.v();
+        return bounds;
     }
 
     Rectangle Window::getTopBarBounds() const
@@ -53,7 +56,7 @@ namespace magique
         Rect bounds = pBounds;
         bounds.h = moverHeightP;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
-        return bounds.v();
+        return bounds;
     }
 
     bool Window::getIsDragged() const { return isDragged; }

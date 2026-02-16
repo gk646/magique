@@ -26,7 +26,7 @@ namespace magique
     private:
         double latest = 0;
         double accumulated = 0.0;
-        double ticks = 0.0;
+        double ticks = 0.01;
     };
 
 } // namespace magique

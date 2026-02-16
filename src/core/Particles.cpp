@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
 #include <raylib/raylib.h>
+#include <algorithm>
 
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
@@ -19,7 +20,7 @@ namespace magique
 
     void ParticlesSetAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
 
-    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& pos, int amount)
+    void ParticlesEmit(const ScreenEmitter& emitter, const Point& pos, int amount)
     {
         const auto& data = emitter.data;
         data.emissionPos = pos;
@@ -188,9 +189,9 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setEmissionRotation(const int angle)
+    EmitterBase& EmitterBase::setEmissionRotation(const float angle)
     {
-        data.rotation = static_cast<float>(angle % 360);
+        data.rotation = std::clamp(angle, 0.0F, 360.0F);
         return *this;
     }
 
@@ -368,12 +369,6 @@ namespace magique
     {
         delete (TickFunction*)data.tickFunc;
         data.tickFunc = (void*)new std::function(func);
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setResolutionScaling(const bool val)
-    {
-        data.resolutionScaling = val;
         return *this;
     }
 

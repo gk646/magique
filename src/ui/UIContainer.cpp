@@ -21,55 +21,22 @@ namespace magique
 
     UIObject* UIContainer::addChild(UIObject* child, const char* name)
     {
-        for (const auto oldChild : children)
+        auto compFunc = [&](auto& e)
         {
-            if (oldChild == child)
-            {
-                LOG_ERROR("Given child already exists");
-                return nullptr;
-            }
-        }
-        if (name != nullptr)
+            return e.object == child || (name != nullptr && e.name == name);
+        };
+        if (std::ranges::find_if(children, compFunc) != children.end())
         {
-            const int len = static_cast<int>(strlen(name));
-            if (len + 1 > MAGIQUE_MAX_NAMES_LENGTH)
-            {
-                LOG_WARNING("Given name is longer than configured!: %s", name);
-                return nullptr;
-            }
-
-            for (const auto& mapping : nameMapping)
-            {
-                if (strcmp(mapping.name, name) == 0)
-                {
-                    LOG_ERROR("Given name already exists");
-                    return nullptr;
-                }
-            }
-            internal::UIContainerMapping mapping;
-            memcpy(mapping.name, name, len);
-            mapping.name[MAGIQUE_MAX_NAMES_LENGTH - 1] = '\0';
-            mapping.index = static_cast<int>(children.size());
-            nameMapping.push_back(mapping);
+            return nullptr;
         }
-        children.push_back(child);
+        children.push_back({name != nullptr ? name : "", child});
         return child;
     }
 
     bool UIContainer::removeChild(const char* name)
     {
         MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
-        for (auto it = nameMapping.begin(); it != nameMapping.end(); ++it)
-        {
-            if (strcmp(it->name, name) == 0)
-            {
-                children.erase(children.begin() + it->index);
-                nameMapping.erase(it);
-                return true;
-            }
-        }
-        LOG_WARNING("Child with name '%s' not found in container", name);
-        return false;
+        return std::erase_if(children, [name](auto& e) { return e.name == name; }) > 0;
     }
 
     bool UIContainer::removeChild(const int index)
@@ -84,19 +51,19 @@ namespace magique
         return true;
     }
 
-    bool UIContainer::removeChild(UIObject* child) { return std::erase(children, child) > 0; }
+    bool UIContainer::removeChild(UIObject* child)
+    {
+        return std::erase_if(children, [&](auto& e) { return e.object == child; }) > 0;
+    }
 
     UIObject* UIContainer::getChild(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
-        for (const auto& mapping : nameMapping)
+        auto it = std::ranges::find_if(children, [&](auto& e) { return e.name == name; });
+        if (it != children.end())
         {
-            if (strcmp(mapping.name, name) == 0)
-            {
-                return children[mapping.index];
-            }
+            return it->object;
         }
-        LOG_WARNING("No child named '%s' in this container", name);
         return nullptr;
     }
 
@@ -107,17 +74,10 @@ namespace magique
             LOG_WARNING("Child with index %d is out of bounds", index);
             return nullptr;
         }
-        return children[index];
+        return children[index].object;
     }
 
-    const std::vector<UIObject*>& UIContainer::getChildren() const { return children; }
+    const std::vector<ContainerChild>& UIContainer::getChildren() const { return children; }
 
-    void UIContainer::setScalingAll(const ScalingMode scaling) const
-    {
-        for (auto obj : children)
-        {
-            obj->setScalingMode(scaling);
-        }
-    }
 
 } // namespace magique

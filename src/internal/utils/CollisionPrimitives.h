@@ -5,10 +5,10 @@
 #if MAGIQUE_SIMD == 1
 #include <immintrin.h>
 #endif
-
 #include <cmath>
 #include <limits>
 #include <algorithm>
+
 #include <magique/util/Math.h>
 
 //-----------------------------------------------
@@ -78,7 +78,7 @@ namespace magique
 
     // returns the bounding box of a triangle given by the 3 points
     inline Rect GetBBTriangle(const float x, const float y, const float x2, const float y2, const float x3,
-                                   const float y3)
+                              const float y3)
     {
         const float minX = std::min({x, x2, x3});
         const float minY = std::min({y, y2, y3});
@@ -489,7 +489,7 @@ namespace magique
     inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], const float rotation,
                               const float anchorX, const float anchorY)
     {
-#if MAGIQUE_SIMD == 1
+#if MAGIQUE_SIMD == 0
         const float cosTheta = cosf(rotation * DEG2RAD);
         const float sinTheta = sinf(rotation * DEG2RAD);
 

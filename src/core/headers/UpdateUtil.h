@@ -13,7 +13,6 @@ namespace magique
         global::PARTICLE_DATA.update(); // Order doesnt matter
         global::ENGINE_DATA.update();
 
-        InputSystem();         // Before gametick per contract (scripting system)
         LogicSystem(registry); // Before gametick cause essential
 
         // Order doesnt matter
@@ -38,7 +37,6 @@ namespace magique
         }
         ++achieveCounter;
 
-
         // Before user tick so it gets new information
 #ifdef MAGIQUE_STEAM
         global::MP_DATA.update();
@@ -60,7 +58,7 @@ namespace magique
             ResolveCollisions();
         }
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
-        GetWindowManager().update();
+        WindowManagerGet().update();
     }
 } // namespace magique
 

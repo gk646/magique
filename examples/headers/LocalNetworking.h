@@ -1,17 +1,7 @@
 #ifndef MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
 #define MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
 
-#include <cassert> // For asserts
-
-#include <magique/core/Game.h>
-#include <magique/ecs/ECS.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/core/Core.h>
-#include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
-#include <magique/multiplayer/LocalSockets.h>
-#include <magique/multiplayer/Multiplayer.h>
-#include <magique/util/Logging.h>
+#include <magique/magique.hpp>
 
 //-----------------------------------------------
 // Local Multiplayer Test
@@ -54,7 +44,7 @@ struct TestCompC final
 struct PositionUpdate final // Position update from ane entity in the host world
 {
     entt::entity entity;
-    float x, y;
+    Point pos;
 };
 
 struct InputUpdate final // Inputs from the client to the host
@@ -64,7 +54,7 @@ struct InputUpdate final // Inputs from the client to the host
 
 struct SpawnUpdate final // Entity spawned in the host world
 {
-    float x, y;
+    Point pos;
     entt::entity entity;
     EntityType type;
     MapID map;
@@ -74,9 +64,9 @@ struct SpawnUpdate final // Entity spawned in the host world
 
 struct PlayerScript final : EntityScript
 {
-    void onKeyEvent(entt::entity self) override
+    void onTick(entt::entity self, bool updated) override
     {
-        auto& pos = GetComponent<PositionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (IsKeyDown(KEY_W))
             pos.y -= 2.5F;
         if (IsKeyDown(KEY_S))
@@ -96,10 +86,10 @@ struct ObjectScript final : EntityScript // Moving platform
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
-        auto& test = GetComponent<TestCompC>(self);
-        auto& pos = GetComponent<PositionC>(self);
+        auto& test = ComponentGet<TestCompC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         if (test.counter > 100)
         {
             pos.x++;
@@ -117,7 +107,7 @@ struct ObjectScript final : EntityScript // Moving platform
 
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo&) override
     {
-        auto& myComp = GetComponent<TestCompC>(self);
+        auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = true;
     }
 };
@@ -140,7 +130,7 @@ struct Example final : Game
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
-        RegisterEntity(Player, playerFunc);
+        EntityRegister(PLAYER, playerFunc);
 
         // Other players
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
@@ -149,7 +139,7 @@ struct Example final : Game
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
-        RegisterEntity(NET_PLAYER, netPlayerFunc);
+        EntityRegister(NET_PLAYER, netPlayerFunc);
 
         // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
@@ -157,17 +147,17 @@ struct Example final : Game
             GiveCollisionRect(e, 25, 25);
             GiveComponent<TestCompC>(e);
         };
-        RegisterEntity(OBJECT, objectFunc);
+        EntityRegister(OBJECT, objectFunc);
 
-        SetEntityScript(Player, new PlayerScript());
+        SetEntityScript(PLAYER, new PlayerScript());
         SetEntityScript(NET_PLAYER, new NetPlayerScript());
         SetEntityScript(OBJECT, new ObjectScript());
 
         // Create some entities
-        CreateEntity(Player, 0, 0, MapID(0));
+        EntityCreate(PLAYER, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
+            EntityCreate(OBJECT, GetRandomValue(1, 1000), GetRandomValue(1, 1000), MapID(0));
         }
 
         InitLocalMultiplayer();
@@ -178,26 +168,25 @@ struct Example final : Game
             {
                 if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
                 {
-                    const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
+                    const auto id = EntityCreate(NET_PLAYER, {}, MapID(0)); // Create a new netplayer
                     SetConnectionEntityMapping(conn, id);
 
                     // Send the new client the current world state - iterate all entities
-                    for (const auto e : GetRegistry().view<PositionC>())
+                    for (const auto e : EntityGetRegistry().view<PositionC>())
                     {
                         SpawnUpdate spawnUpdate{};
                         spawnUpdate.entity = e;
                         spawnUpdate.map = MapID(0);
-                        const auto& pos = GetComponent<PositionC>(e);
-                        spawnUpdate.x = pos.x;
-                        spawnUpdate.y = pos.y;
+                        const auto& pos = ComponentGet<PositionC>(e);
+                        spawnUpdate.pos = pos.pos;
                         if (id == e) // If it's the network player itself send the player type (for the camera)
-                            spawnUpdate.type = Player;
-                        else if (pos.type == Player) // Filter out the host - the host is a network player on the client
+                            spawnUpdate.type = PLAYER;
+                        else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
                             spawnUpdate.type = NET_PLAYER;
                         else
                             spawnUpdate.type = pos.type;
 
-                        const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
+                        const auto payload = Payload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
 
                         BatchMessage(conn, payload);
                     }
@@ -205,12 +194,12 @@ struct Example final : Game
                 else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
                 {
                     EnterClientMode();
-                    DestroyEntities({}); // Pass an empty list - destroys all entities as we enter the hosts world now
+                    EntityDestroy({}); // Pass an empty list - destroys all entities as we enter the hosts world now
                 }
             });
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         if (GetIsClient())
             DrawText("You are a client", 50, 100, 25, BLACK);
@@ -226,9 +215,9 @@ struct Example final : Game
         DrawRectangle(250, 250, 50, 50, RED);
         for (const auto e : GetDrawEntities())
         {
-            const auto& pos = GetComponent<const PositionC>(e);
-            const auto& col = GetComponent<const CollisionC>(e);
-            const auto& test = GetComponent<const TestCompC>(e);
+            const auto& pos = ComponentGet<const PositionC>(e);
+            const auto& col = ComponentGet<const CollisionC>(e);
+            const auto& test = ComponentGet<const TestCompC>(e);
             const auto color = test.isColliding ? PURPLE : BLUE;
             switch (col.shape)
             {
@@ -237,9 +226,6 @@ struct Example final : Game
                 break;
             case Shape::CIRCLE:
                 DrawCircleV({pos.x + col.p1, pos.y + col.p1}, col.p1, color);
-                break;
-            case Shape::CAPSULE:
-                DrawCapsule2D(pos.x, pos.y, col.p1, col.p2, color);
                 break;
             case Shape::TRIANGLE:
                 DrawTriangleRot({pos.x, pos.y}, {pos.x + col.p1, pos.y + col.p2}, {pos.x + col.p3, pos.y + col.p4},
@@ -250,7 +236,7 @@ struct Example final : Game
         EndMode2D();
     }
 
-    void updateGame(GameState gameState) override
+    void onUpdateGame(GameState gameState) override
     {
         // Enter a session
         if (!GetInMultiplayerSession())
@@ -284,22 +270,22 @@ struct Example final : Game
                     const auto entity = GetConnectionEntityMapping(msg.connection);
                     MAGIQUE_ASSERT(entity != entt::null, "Entity must be registered");
 
-                    auto& pos = GetComponent<PositionC>(entity);
+                    auto& pos = ComponentGet<PositionC>(entity);
                     if (inputUpdate.key == KEY_W)
                     {
-                        pos.y -= 2.5F;
+                        pos.pos.y -= 2.5F;
                     }
                     else if (inputUpdate.key == KEY_S)
                     {
-                        pos.y += 2.5F;
+                        pos.pos.y += 2.5F;
                     }
                     else if (inputUpdate.key == KEY_A)
                     {
-                        pos.x -= 2.5F;
+                        pos.pos.x -= 2.5F;
                     }
                     else if (inputUpdate.key == KEY_D)
                     {
-                        pos.x += 2.5F;
+                        pos.pos.x += 2.5F;
                     }
                 }
             }
@@ -316,9 +302,8 @@ struct Example final : Game
                         {
                             // Get the data
                             auto positionUpdate = msg.payload.getDataAs<PositionUpdate>();
-                            auto& pos = GetComponent<PositionC>(positionUpdate.entity);
-                            pos.x = positionUpdate.x;
-                            pos.y = positionUpdate.y;
+                            auto& pos = ComponentGet<PositionC>(positionUpdate.entity);
+                            pos.pos = positionUpdate.pos;
                         }
                         break;
                     case MessageType::INPUT_UPDATE:
@@ -326,11 +311,11 @@ struct Example final : Game
                         break;
                     case MessageType::SPAWN_UPDATE:
                         {
-                            auto [x, y, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
+                            auto [pos, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
                             // Entity MUST not exist already!
                             MAGIQUE_ASSERT(!EntityExists(entity), "Entity exists");
                             // Create a new entity with a preset entity id
-                            CreateEntityEx(entity, type, x, y, map, 0, true);
+                            EntityCreateEx(entity, type, pos, map, 0, true);
                         }
                         break;
                     default:
@@ -342,7 +327,7 @@ struct Example final : Game
         }
     }
 
-    void postTickUpdate(GameState gameState) override
+    void onUpdateEnd(GameState gameState) override
     {
         // Here we send out the data for this tick
         if (GetInMultiplayerSession())
@@ -354,16 +339,15 @@ struct Example final : Game
             {
                 for (const auto e : GetUpdateEntities())
                 {
-                    const auto& pos = GetComponent<const PositionC>(e);
+                    const auto& pos = ComponentGet<const PositionC>(e);
 
                     // Create the data
                     PositionUpdate posUpdate{};
-                    posUpdate.x = pos.x;
-                    posUpdate.y = pos.y;
+                    posUpdate.pos = pos.pos;
                     posUpdate.entity = e;
 
                     // Create the payload
-                    const auto payload = CreatePayload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
+                    const auto payload = Payload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
 
                     // Use batching to avoid the overhead of sending multiple times - send to all connected clients
                     BatchMessageToAll(payload);
@@ -381,7 +365,7 @@ struct Example final : Game
                     {
                         InputUpdate inputUpdate{};
                         inputUpdate.key = key;
-                        BatchMessage(host, CreatePayload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
+                        BatchMessage(host, Payload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
                     }
                 }
             }
@@ -393,4 +377,4 @@ struct Example final : Game
     }
 };
 
-#endif //MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H
+#endif // MAGIQUE_LOCAL_MULTIPLAYER_EXAMPLE_H

@@ -39,7 +39,7 @@ struct LocalizationDemo final : Game
         }
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         const auto* msg = Localize("greeting");
         const auto text = TextFormat("Current Language: %s", GetLocalizationLanguage().c_str());

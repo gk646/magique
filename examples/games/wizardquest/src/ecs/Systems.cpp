@@ -19,8 +19,8 @@ void MovementSystem::update()
     {
         if (!EntityHasComponents<PositionC, MovementC>(e))
             continue;
-        auto& pos = GetComponent<PositionC>(e);
-        auto& mov = GetComponent<MovementC>(e);
+        auto& pos = ComponentGet<PositionC>(e);
+        auto& mov = ComponentGet<MovementC>(e);
         const auto [x, y] = mov.getVelocity();
         pos.x += x;
         pos.y += y;
@@ -34,7 +34,7 @@ void AnimationSystem::update()
     {
         if (EntityHasComponents<AnimationC>(e))
         {
-            auto& anim = GetComponent<AnimationC>(e);
+            auto& anim = ComponentGet<AnimationC>(e);
             anim.update();
         }
     }
@@ -90,9 +90,9 @@ void TeleportSystem::update()
     {
         if (!EntityHasComponents<CollisionC, MovementC>(e))
             continue;
-        auto& pos = GetComponent<PositionC>(e); // All entities have the Position component
-        auto& col = GetComponent<CollisionC>(e);
-        auto& mov = GetComponent<MovementC>(e);
+        auto& pos = ComponentGet<PositionC>(e); // All entities have the Position component
+        auto& col = ComponentGet<CollisionC>(e);
+        auto& mov = ComponentGet<MovementC>(e);
 
         if (mov.teleportCooldownCounter < MovementC::TELEPORT_COOLDOWN)
             continue;

@@ -74,6 +74,7 @@ namespace magique
         data.camera.target.y = Lerp(data.camera.target.y, targetPosition.y, smoothing);
         data.camera.target.x = std::floor(data.camera.target.x);
         data.camera.target.y = std::floor(data.camera.target.y);
+
     }
 
     inline void RenderHitboxes()
@@ -103,10 +104,10 @@ namespace magique
             switch (col.shape)
             {
             [[likely]] case Shape::RECT:
-                DrawRectangleLinesRot(Rect{pos.pos + col.offset, {col.p1, col.p2}}.v(), pos.rotation, col.anchor, RED);
+                DrawRectangleLinesRot(Rect{pos.pos + col.offset, {col.p1, col.p2}}, pos.rotation, col.anchor, RED);
                 break;
             case Shape::CIRCLE:
-                DrawCircleLinesV(pos.getMiddle(col).v(), col.p1, RED);
+                DrawCircleLinesV(pos.getMiddle(col), col.p1, RED);
                 break;
             case Shape::TRIANGLE:
                 DrawTriangleLinesRot({pos.pos.x, pos.pos.y}, {pos.pos.x + col.p1, pos.pos.y + col.p2},

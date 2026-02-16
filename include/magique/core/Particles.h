@@ -38,12 +38,12 @@ namespace magique
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     // Sets the position of the emission shape - top left for rect, middle point for circle
-    void CreateScreenParticle(const ScreenEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
+    void ParticlesEmit(const ScreenEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
 
     // Adds an entity particle to the ECS
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     // Sets the position of the emission shape - top left for rect, middle point for circle
-    entt::entity CreateEntityParticle(const EntityEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
+    entt::entity ParticlesEmit(const EntityEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
 
     //================= EMITTERS =================//
 
@@ -77,7 +77,7 @@ namespace magique
         // Sets the angle of rotation - rotates around the anchor point
         // Note: only works for RECT - angle starts at 12 and clockwise until 360 degrees
         // Default: 0
-        EmitterBase& setEmissionRotation(int angle);
+        EmitterBase& setEmissionRotation(float angle);
 
         // Sets the anchor point around which the rotation occurs
         // Default: (0,0)
@@ -156,10 +156,6 @@ namespace magique
         // Default: 1
         EmitterBase& setVelocityRange(float minVeloc, float maxVeloc = 0);
 
-        // True: Scales the base dimensions with the resolution (Base resolution: 1920x1080)
-        // Default: True
-        EmitterBase& setResolutionScaling(bool val);
-
         //================= FUNCTIONS =================//
 
         // Sets the coloring function to dynamically set the particles color depending on the time
@@ -185,7 +181,7 @@ namespace magique
     private:
         internal::EmitterData data{};
         friend struct ParticleData;
-        friend void CreateScreenParticle(const ScreenEmitter&, const Point&, int);
+        friend void ParticlesEmit(const ScreenEmitter&, const Point&, int);
         friend TickFunction;
     };
 
@@ -211,4 +207,4 @@ namespace magique
 
 } // namespace magique
 // namespace magique
-#endif //MAGIQUE_PARTICLES_H
+#endif // MAGIQUE_PARTICLES_H

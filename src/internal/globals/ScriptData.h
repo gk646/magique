@@ -4,22 +4,12 @@
 
 #include <magique/ecs/Scripting.h>
 
-
 namespace magique
 {
     struct ScriptData final
     {
         inline static auto* defaultScript = new EntityScript();
-        std::vector<EntityScript*> scripts;
-
-        void padUpToEntity(const EntityType entity)
-        {
-            const auto newSize = (size_t)entity + 1U;
-            if (scripts.size() < newSize)
-            {
-                scripts.resize(newSize, defaultScript);
-            }
-        }
+        SparseRangeVector<EntityScript*> scripts;
     };
 
     namespace global

@@ -31,7 +31,7 @@ namespace magique
 
     // Returns the global game instance
     // IMPORTANT: only valid after the game constructor finished (so before game.run(), ... so pretty early)
-    Game& GameGet();
+    Game& GameGetInstance();
 
     struct Game
     {

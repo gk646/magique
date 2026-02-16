@@ -19,7 +19,7 @@
 //       => So adding entities mid-tick will not get them collision check this tick
 // ................................................................................
 
-enum EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
+enum class EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
 
 namespace magique
 {
@@ -121,8 +121,8 @@ namespace magique
     // Pass the width and height of the rectangle
     // By passing a rect, an X and Y offset (from the position) can also be specified
     CollisionC& GiveCollisionRect(entt::entity entity, float width, float height);
-    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor = {});
-    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor = {});
+    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor = {-1});
+    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor = {-1});
 
     // Makes the entity collidable with others - Shape: CIRCLE (vertical)
     // Pass the height and the radius of the capsule - circles always rotated around their middle point!

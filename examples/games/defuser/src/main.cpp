@@ -48,8 +48,8 @@ struct RobotScript final : EntityScript
 {
     void onKeyEvent(entt::entity self) override
     {
-        auto& pos = GetComponent<PositionC>(self);
-        auto& col = GetComponent<CollisionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
+        auto& col = ComponentGet<CollisionC>(self);
         if (UIInput::IsKeyDown(KEY_W))
         {
             pos.y -= 1;
@@ -77,8 +77,8 @@ struct RobotScript final : EntityScript
                 if (entity == self)
                     continue;
 
-                auto& oPos = GetComponent<PositionC>(entity);
-                auto& oCol = GetComponent<CollisionC>(entity);
+                auto& oPos = ComponentGet<PositionC>(entity);
+                auto& oCol = ComponentGet<CollisionC>(entity);
 
                 if (oPos.getMiddle(oCol).euclidean(mid) < minDist && oPos.type == MINE)
                 {
@@ -89,7 +89,7 @@ struct RobotScript final : EntityScript
 
             if (closest != entt::null)
             {
-                auto& oPos = GetComponent<PositionC>(closest);
+                auto& oPos = ComponentGet<PositionC>(closest);
 
                 if (oPos.type == TARGET)
                 {
@@ -107,7 +107,7 @@ struct RobotScript final : EntityScript
 
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        auto& oPos = GetComponent<PositionC>(other);
+        auto& oPos = ComponentGet<PositionC>(other);
         if (oPos.type == MINE)
         {
             SetGameState(GameState::GAME_OVER);
@@ -121,9 +121,9 @@ struct PingScript final : EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& info = GetComponent<PingInfoC>(self);
-        auto& col = GetComponent<CollisionC>(self);
-        auto& pos = GetComponent<PositionC>(self);
+        auto& info = ComponentGet<PingInfoC>(self);
+        auto& col = ComponentGet<CollisionC>(self);
+        auto& pos = ComponentGet<PositionC>(self);
         info.radius += 2.5;
         col.p1 = info.radius;
         pos.x -= 2.5;
@@ -143,7 +143,7 @@ struct MineScript final : EntityScript
 {
     void onTick(entt::entity self, bool updated) override
     {
-        auto& mineInfo = GetComponent<MineInfoC>(self);
+        auto& mineInfo = ComponentGet<MineInfoC>(self);
         if (mineInfo.visibleCounter > 0)
         {
             mineInfo.visibleCounter--;
@@ -156,7 +156,7 @@ struct MineScript final : EntityScript
 
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
-        auto& oPos = GetComponent<PositionC>(other);
+        auto& oPos = ComponentGet<PositionC>(other);
         if (oPos.type == TARGET)
         {
             DestroyEntity(self);
@@ -164,7 +164,7 @@ struct MineScript final : EntityScript
 
         if (oPos.type != PING)
             return;
-        auto& mineInfo = GetComponent<MineInfoC>(self);
+        auto& mineInfo = ComponentGet<MineInfoC>(self);
         mineInfo.visibleCounter = 100;
         SetEntityPathSolid(self, true);
     }
@@ -291,10 +291,10 @@ struct Robo final : Game
 
         if (STATS.automatic)
         {
-            auto& pos = GetComponent<PositionC>(GetCameraEntity());
-            auto& col = GetComponent<CollisionC>(GetCameraEntity());
-            auto& oPos = GetComponent<PositionC>(TARGET_ENT);
-            auto& oCol = GetComponent<CollisionC>(TARGET_ENT);
+            auto& pos = ComponentGet<PositionC>(GetCameraEntity());
+            auto& col = ComponentGet<CollisionC>(GetCameraEntity());
+            auto& oPos = ComponentGet<PositionC>(TARGET_ENT);
+            auto& oCol = ComponentGet<CollisionC>(TARGET_ENT);
 
             auto current = pos.getMiddle(col);
             auto next = GetNextOnPath(current, oPos.getMiddle(oCol), MapID::LEVEL_1, 25000);
@@ -321,8 +321,8 @@ struct Robo final : Game
 
         for (const auto entity : GetDrawEntities())
         {
-            const auto& pos = GetComponent<PositionC>(entity);
-            const auto& col = GetComponent<CollisionC>(entity);
+            const auto& pos = ComponentGet<PositionC>(entity);
+            const auto& col = ComponentGet<CollisionC>(entity);
 
             if (entity == GetCameraEntity())
             {
@@ -332,7 +332,7 @@ struct Robo final : Game
 
             if (EntityHasComponents<PingInfoC>(entity))
             {
-                const auto& info = GetComponent<PingInfoC>(entity);
+                const auto& info = ComponentGet<PingInfoC>(entity);
                 DrawCircleLinesV({pos.x + col.p1, pos.y + col.p1}, info.radius, GRAY);
             }
             else if (pos.type == TARGET)
@@ -341,7 +341,7 @@ struct Robo final : Game
             }
             else if (EntityHasComponents<MineInfoC>(entity))
             {
-                if (GetComponent<MineInfoC>(entity).visibleCounter == 0)
+                if (ComponentGet<MineInfoC>(entity).visibleCounter == 0)
                     continue;
                 DrawCircleV({pos.x + col.p1, pos.y + col.p1}, col.p1, GRAY);
             }

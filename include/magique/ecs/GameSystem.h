@@ -67,7 +67,7 @@ namespace magique
     // Registers the given system - systems are called in the order they are added
     // Note: Methods are only called when the current gamestate is part of the passed "validStates"
     //       empty means all states
-    void GameSystemRegister(GameSystem* system, const std::string& name, const std::span<GameState>& validStates = {});
+    void GameSystemRegister(GameSystem* system, const std::string& name, std::initializer_list<GameState> stats = {});
 
     // Prints a table that show average time of each function call for each system
     // Default: Called on Game::onShutdown()
