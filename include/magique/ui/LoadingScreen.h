@@ -18,11 +18,11 @@ namespace magique
 {
     // Sets the loading screen instance to handle different loading scenarios
     // Note: The given pointer will be valid until a new loading screen is set
-    void SetLoadingScreen(LoadingScreen* loadingScreen);
+    void LoadingScreenSet(LoadingScreen* loadingScreen);
 
     // Returns a pointer to the current loading screen - feel free to cast to your custom type
     // Returned pointer will always be valid
-    LoadingScreen* GetLoadingScreen();
+    LoadingScreen* LoadingScreenGet();
 
     struct LoadingScreen
     {

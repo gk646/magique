@@ -6,14 +6,14 @@
 
 namespace magique
 {
-    void SetLoadingScreen(LoadingScreen* loadingScreen)
+    void LoadingScreenSet(LoadingScreen* loadingScreen)
     {
         MAGIQUE_ASSERT(loadingScreen != nullptr, "Passed nullptr");
         delete global::ENGINE_CONFIG.loadingScreen;
         global::ENGINE_CONFIG.loadingScreen = loadingScreen;
     }
 
-    LoadingScreen* GetLoadingScreen()
+    LoadingScreen* LoadingScreenGet()
     {
         return global::ENGINE_CONFIG.loadingScreen;
     }

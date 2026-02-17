@@ -23,4 +23,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_COMPRESSION_H
+#endif // MAGIQUE_COMPRESSION_H

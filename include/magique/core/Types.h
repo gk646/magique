@@ -562,10 +562,10 @@ namespace magique
 
     enum class Connection : uint32_t
     {
-        INVALID_CONNECTION = 0,
+        INVALID = 0,
     };
 
-    enum class MultiplayerEvent : uint8_t
+    enum class NetworkEvent : uint8_t
     {
         //================= HOST =================//
         // Posted after we accept a new client connection
@@ -634,9 +634,10 @@ namespace magique
 
     enum class SteamLobbyID : uint64_t; // Steam lobby ID - internally is just a SteamID
 
-    enum class SteamID : uint64_t; // SteamID
-
-    using SteamOverlayCallback = void (*)(bool isOpening);
+    enum class SteamID : uint64_t // SteamID
+    {
+        INVALID = 0
+    };
 
     enum class SteamLobbyType
     {

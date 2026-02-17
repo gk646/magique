@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#define _CRT_SECURE_NO_WARNINGS
 #include <random> // Needed for non-deterministic hardware randomness
 
 #include <raylib/config.h>
@@ -10,12 +9,7 @@
 #include <magique/core/Engine.h>
 #include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
-#include <magique/core/EngineUtil.h>
-#include <magique/core/Collision.h>
 #include <magique/ecs/ECS.h>
-#include <magique/ecs/Components.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/ui/UI.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/JobSystem.h>
 #include <magique/util/Logging.h>
@@ -42,7 +36,7 @@
 
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 #elif MAGIQUE_LAN
 #include "internal/globals/MultiplayerData.h"
 #endif
@@ -106,7 +100,7 @@ namespace magique
             InitJobSystem();
 
 #ifdef MAGIQUE_DEBUG
-            GameSystemEnableStatistics(true);
+            GameSystemEnableStats(true);
 #endif
 
             LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
@@ -160,8 +154,10 @@ namespace magique
         auto& loader = global::LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
 
-        auto& config = global::ENGINE_DATA.gameConfig;
-        config = GameConfig::LoadFromFile(configPath, encryptionKey);
+        if (global::ENGINE_CONFIG.useGameConfig)
+        {
+            GameConfig::FromFile(global::ENGINE_DATA.gameConfig, configPath, "GameConfig", encryptionKey);
+        }
 
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader));
@@ -184,7 +180,10 @@ namespace magique
         onShutDown();
         mainthread::Close();
 
-        GameConfig::SaveToFile(config, configPath, encryptionKey);
+        if (global::ENGINE_CONFIG.useGameConfig)
+        {
+            GameConfig::ToFile(global::ENGINE_DATA.gameConfig, configPath, "GameConfig", encryptionKey);
+        }
         global::PERF_DATA.printPerformanceStats();
         return 0;
     }

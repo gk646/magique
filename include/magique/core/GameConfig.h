@@ -2,10 +2,7 @@
 #ifndef MAGIQUE_GAME_CONFIG_H
 #define MAGIQUE_GAME_CONFIG_H
 
-#include <vector>
-#include <string>
-#include <cstring>
-#include <magique/internal/InternalTypes.h>
+#include <magique/assets/JSON.h>
 
 //===============================================
 // GameConfig
@@ -21,62 +18,56 @@
 // Note: The game config is persisted automatically when the game is shutdown gracefully
 // .....................................................................
 
-enum class ConfigID; // User implemented - used as direct index
+enum class ConfigSlot; // User implemented
 
 namespace magique
 {
-
     // Returns the global GameConfig instance
     // Note: Only valid to call inside and after Game::onStartup() - will crash earlier
-    GameConfig& GetGameConfig();
+    GameConfig& GameConfigGet();
 
-    struct GameConfig
+    // Allows to enable or disable the game config creation/loading
+    // Note: Must be set BEFORE the Game::run() is called (so usually in main.cpp)
+    void GameConfigEnable(bool value);
+
+    struct GameConfig final : internal::StorageContainer
     {
         //================= SAVE =================//
 
         // Saves a keybind at the given id
         // Example: saveKeyBind(ConfigID::OPEN_MAP, Keybind{KEY_M});
-        void saveKeybind(ConfigID id, Keybind keybind);
+        void saveKeybind(std::string_view slot, Keybind keybind);
 
         // Saves a string
         // Note: String is passed by value and moved
-        void saveString(ConfigID id, const std::string& string);
+        void saveString(std::string_view slot, const std::string_view& string);
 
         // Saves any plain old data type up to 8 bytes
         template <typename T>
-        void saveValue(ConfigID id, T val);
+        void saveValue(std::string_view slot, T val);
 
         //================= GET =================//
 
         // If present returns a copy to the keybind at the given id
         // Failure: if the value is not present returns the default
-        Keybind getKeybindOrElse(ConfigID id, Keybind defaultKeybind = Keybind{});
+        Keybind getKeybindOrElse(std::string_view slot, Keybind elseVal = Keybind{});
 
         // If present returns a copy to the string at the given id
         // Failure: if the value is not present returns the default
-        [[nodiscard]] std::string getStringOrElse(ConfigID id, const std::string& defaultString = "");
+        [[nodiscard]] std::string getStringOrElse(std::string_view slot, const std::string& elseVal = "");
 
         // If present returns a copy to the value at the given id
         // Failure: if the value is not present returns the default
         template <typename T>
-        T getValueOrElse(ConfigID id, const T& defaultValue = {});
+        T getValueOrElse(std::string_view slot, const T& defaultValue = {});
 
-        //================= REMOVE =================//
+        //================= UTIL =================//
 
-        // Erases the storage with the given id
-        void erase(ConfigID id);
-
-        // Erases all storage slots
         void clear();
-
-    private:
-        static GameConfig LoadFromFile(const char* filePath, uint64_t key = 0);
-        static void SaveToFile(const GameConfig& config, const char* filePath, uint64_t key = 0);
-        internal::StorageCell* getCell(ConfigID id);
-        std::vector<internal::StorageCell> storage; // Saves all types except string
-        bool loaded = false;
-        befriend(Game, GameConfig& GetGameConfig())
+        void erase(std::string_view slot);
+        StorageType getSlotType(std::string_view slot);
     };
+
 } // namespace magique
 
 //================= IMPLEMENTATION =================//
@@ -84,36 +75,37 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    void GameConfig::saveValue(const ConfigID id, T val)
+    void GameConfig::saveValue(std::string_view slot, T val)
     {
-        auto* cell = getCell(id);
-        if (cell == nullptr)
+        struct Value
         {
-            internal::StorageCell newCell{id};
-            newCell.assign(reinterpret_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
-            storage.push_back(newCell);
-        }
-        else
-        {
-            cell->assign(reinterpret_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
-        }
+            T val;
+        };
+        auto& cell = getCellOrNew(slot, StorageType::VALUE);
+        Value value{val};
+        JSONExport(value, cell.data);
     }
+
     template <typename T>
-    T GameConfig::getValueOrElse(const ConfigID id, const T& defaultValue)
+    T GameConfig::getValueOrElse(std::string_view slot, const T& defaultValue)
     {
-        const auto* cell = getCell(id);
+        const auto* cell = getCell(slot);
         if (cell == nullptr)
         {
             return defaultValue;
         }
-        if (cell->type != StorageType::KEY_BIND)
+        if (cell->type != StorageType::VALUE)
         {
             return defaultValue;
         }
-        T val;
-        memcpy(&val, cell->buffer, sizeof(T));
-        return val;
+        struct Value
+        {
+            T val;
+        };
+        Value value{};
+        JSONImport(cell->data, value);
+        return value.val;
     }
 } // namespace magique
 
-#endif //MAGIQUE_GAME_CONFIG_H
+#endif // MAGIQUE_GAME_CONFIG_H

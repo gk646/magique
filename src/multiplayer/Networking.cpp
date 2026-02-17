@@ -8,7 +8,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/internal/Macros.h>
 
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 #include "internal/globals/EngineConfig.h"
 #include "headers/MultiplayerStatistics.h"
 
@@ -95,10 +95,17 @@ namespace magique
                 message.connection = static_cast<Connection>(msg->m_conn);
                 message.timeStamp = msg->m_usecTimeReceived;
 
-                data.incMsgVec.push_back(message);
+                if (message.payload.type == MAGIQUE_LOBBY_PACKET_TYPE)
+                {
+                    global::MP_DATA.lobby.handleLobbyPacket(message);
+                }
+                else
+                {
+                    data.incMsgVec.push_back(message);
 #ifdef MAGIQUE_DEBUG
-                global::MP_DATA.statistics.addIncoming(message.payload);
+                    global::MP_DATA.statistics.addIncoming(message.payload);
 #endif
+                }
             }
         };
 
@@ -181,7 +188,7 @@ namespace magique
                 return mapping.conn;
             }
         }
-        return Connection::INVALID_CONNECTION;
+        return Connection::INVALID;
     }
 
     int NetworkGetConnNumber(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }

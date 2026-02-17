@@ -65,7 +65,7 @@ namespace magique
         std::memcpy(header, str, sizeof(VERSION) + sizeof(CHECKSUM_TYPE));
         header[3] = '=';
         header[4] = '\0';
-        DecodeBase64(header);
+        StringFromBase64(header);
 
         ShareCode test{header, nullptr};
         const auto version = test.getVersion();
@@ -84,7 +84,7 @@ namespace magique
         base64Str[len] = '\0';
 
         // Get binary length and copy it
-        DecodeBase64(base64Str);
+        StringFromBase64(base64Str);
         int binaryLength = 0;
         for (int i = len - 1; i > -1; --i)
         {
@@ -101,7 +101,7 @@ namespace magique
         binary[binaryLength] = '\0';
 
         // Encode base64 back
-        EncodeBase64(base64Str, binaryLength, base64Str, len + 1);
+        //EncodeBase64(base64Str, binaryLength, base64Str, len + 1);
         base64 = base64Str;
         binaryCode = binary;
     }
@@ -337,7 +337,7 @@ namespace magique
 
         // Allocate the base64 length already
         const int binaryBytes = static_cast<int>(std::ceil(static_cast<float>(totalDataBits) / BYTE_TO_BITS));
-        const int base64Bytes = GetBase64EncodedLength(binaryBytes);
+        const int base64Bytes = 3;
         auto* binary = new char[binaryBytes + 1];
         auto* base64 = new char[base64Bytes + 1];
         binary[binaryBytes] = '\0';
@@ -403,7 +403,7 @@ namespace magique
 
         // Copy binary to base64 and encode
         std::memcpy(base64, binary, binaryBytes);
-        EncodeBase64(base64, binaryBytes, base64, base64Bytes + 1);
+       // EncodeBase64(base64, binaryBytes, base64, base64Bytes + 1);
         return ShareCode{binary, base64};
     }
 

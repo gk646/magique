@@ -159,14 +159,14 @@ namespace magique::internal
 #define M_GAMESAVE_TYPE_MISMATCH(expected, ret)                                                                         \
     if (cell->type != StorageType::expected)                                                                            \
     {                                                                                                                   \
-        LOG_ERROR("Storage slot type mismatch: Expected: %s Have (enum id): %d", #expected, id);                        \
+        LOG_ERROR("Storage slot type mismatch: Expected: %s Have (enum id): %d", #expected, slot);                      \
         return ret;                                                                                                     \
     }
 
 #define M_GAMESAVE_SLOT_MISSING(ret)                                                                                    \
     if (cell == nullptr) [[unlikely]]                                                                                   \
     {                                                                                                                   \
-        LOG_WARNING("Storage with given id does not exist!");                                                           \
+        LOG_WARNING("No such storage slot: %s", slot.data());                                                           \
         return ret;                                                                                                     \
     }
 

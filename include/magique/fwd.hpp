@@ -11,7 +11,7 @@ enum class GameState : uint8_t;   // Identifies different game states
 enum class EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
 enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
 enum class HandleID : int;        // Identifies handles
-enum class ConfigID : int;        // Identifies stored config data
+enum class ConfigSlot : int;        // Identifies stored config data
 enum class GameSaveSlot : int;       // Identifies stored game save data
 enum class TileClass : uint8_t;   // Identifies different classes of tiles
 

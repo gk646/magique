@@ -23,7 +23,6 @@ namespace magique
         {
             const auto type = LobbyPacketType{((const int8_t*)msg.payload.data)[0]};
             const auto data = ((const char*)msg.payload.data) + 1;
-
             if (type == LobbyPacketType::CHAT)
             {
                 MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LEN, "Missing null terminator");
@@ -34,8 +33,8 @@ namespace magique
             }
             else if (type == LobbyPacketType::METADATA)
             {
-                const auto *key = data;
-                const auto *value = data + strlen(key) + 1;
+                const auto* key = data;
+                const auto* value = data + strlen(key) + 1;
                 if (metadataCallback)
                 {
                     metadataCallback(msg.connection, key, value);
@@ -61,11 +60,6 @@ namespace magique
             metadata.clear();
         }
     };
-
-    namespace global
-    {
-        inline LobbyData LOBBY_DATA{};
-    } // namespace global
 } // namespace magique
 // namespace magique
-#endif //MAGEQUEST_LOBBYDATA_H
+#endif // MAGEQUEST_LOBBYDATA_H

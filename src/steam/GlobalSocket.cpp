@@ -12,7 +12,7 @@ namespace magique
     bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) }
 } // namespace magique
 #else
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 #include "internal/globals/SteamData.h"
 
 namespace magique
@@ -77,7 +77,7 @@ namespace magique
         if (!steamID.IsValid())
         {
             LOG_WARNING("Cannot connect to invalid SteamID");
-            return Connection::INVALID_CONNECTION;
+            return Connection::INVALID;
         }
 
         // Creates networking identity
@@ -88,7 +88,7 @@ namespace magique
         if (conn == k_HSteamNetConnection_Invalid)
         {
             LOG_WARNING("Failed to connect to global socket");
-            return Connection::INVALID_CONNECTION;
+            return Connection::INVALID;
         }
         data.goOnline(false, static_cast<Connection>(conn));
         return data.connections[0];
@@ -97,7 +97,7 @@ namespace magique
     bool GlobalSocketDisconnect(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
+        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID)
             return false;
 
         const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);

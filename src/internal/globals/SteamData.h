@@ -3,7 +3,8 @@
 #define MAGIQUE_STEAMDATA_H
 
 #include <functional>
-#include "internal/globals/MultiplayerData.h"
+#include <magique/steam/Steam.h>
+#include "internal/globals/NetworkingData.h"
 
 #ifdef MAGIQUE_STEAM
 namespace magique

@@ -33,7 +33,7 @@ namespace magique::mainthread
             {
                 data.engineTime = static_cast<float>(GetTime());
 
-                WakeUpJobs();
+                JobsWakeUp();
 
                 const auto shouldUpdate = UPDATE_WORK >= 1.0F;
                 if (shouldUpdate >= 1.0F)
@@ -68,14 +68,14 @@ namespace magique::mainthread
                 const auto sleepTime = std::floor((config.sleepTime - nextFrameTime) * 1000) / 1000;
                 const auto target = GetTime() + (config.frameTarget - nextFrameTime); // How long we wait in total
 
-                HibernateJobs(target, sleepTime);
+                JobsSleep(target, sleepTime);
                 WaitTime(target, sleepTime);
                 config.frameCounter++;
             }
             PollInputEvents(); // Somehow needed to prevent crash on wayland
             game.onCloseEvent();
         }
-        WakeUpJobs(); // To finish all saving tasks
+        JobsWakeUp(); // To finish all saving tasks
     }
 
 } // namespace magique::mainthread

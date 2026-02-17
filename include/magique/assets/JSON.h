@@ -54,6 +54,9 @@ namespace magique
 // IMPLEMENTATION
 
 
+MQ_REFLECT_ENUM(magique::KeyBindType)
+MQ_REFLECT_ENUM(magique::StorageType)
+
 namespace glz
 {
     template <>
@@ -98,14 +101,12 @@ namespace glz
         static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
     };
 
-    MQ_REFLECT_ENUM(magique::KeyBindType)
-    MQ_REFLECT_ENUM(magique::StorageType)
 
     template <>
     struct meta<magique::internal::StorageCell>
     {
         using T = magique::internal::StorageCell;
-        static constexpr auto values = object(&T::id, &T::type, &T::data);
+        static constexpr auto values = object(&T::name, &T::type, &T::data);
     };
 
     template <typename K, typename V, int maxSize>

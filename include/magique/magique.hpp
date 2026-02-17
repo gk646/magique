@@ -18,11 +18,11 @@
 #include "assets/types/TextLines.h"
 
 // Core
-#include "core/Animations.h"
-#include "core/CollisionDetection.h"
-#include "core/Core.h"
+#include "core/Animation.h"
+#include "core/Collision.h"
+#include "core/Engine.h"
+#include "core/EngineUtil.h"
 #include "core/Camera.h"
-#include "core/Debug.h"
 #include "core/Draw.h"
 #include "core/Game.h"
 #include "core/GameConfig.h"
@@ -35,7 +35,7 @@
 #include "ecs/Components.h"
 #include "ecs/ECS.h"
 #include "ecs/Scripting.h"
-#include "ecs/GameSystems.h"
+#include "ecs/GameSystem.h"
 
 // Gamedev
 #include "gamedev/Achievements.h"
@@ -46,24 +46,23 @@
 #include "gamedev/Procedural.h"
 #include "gamedev/ShareCode.h"
 #include "gamedev/VirtualClock.h"
+#include "gamedev/UsefulStuff.h"
 
 // Multiplayer
 #ifdef MAGIQUE_LAN
 #include "multiplayer/Multiplayer.h"
-#include "multiplayer/LocalSockets.h"
+#include "multiplayer/LocalSocket.h"
 #endif
 
 // Persistence
-#include "persistence/TaskInterface.h"
-#include "persistence/GameSaveData.h"
+#include "persistence/GameSave.h"
+#include "persistence/SaveLoader.h"
 
 // Steam
 #ifdef MAGIQUE_STEAM
 #include "steam/Steam.h"
-#include "steam/Lobbies.h"
-#include "steam/GlobalSockets.h"
-#include "multiplayer/Multiplayer.h"
-#include "multiplayer/LocalSockets.h"
+#include "steam/Matchmaking.h"
+#include "steam/GlobalSocket.h"
 #endif
 
 // UI

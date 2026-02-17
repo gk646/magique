@@ -389,7 +389,7 @@ namespace magique
 
     void TextField::updateSelection(float fSize, const Font& font, float spacing)
     {
-        auto dragStart = GetDragStartPosition();
+        auto dragStart = UIGetDragStart();
         if (dragStart == -1)
         {
             return;

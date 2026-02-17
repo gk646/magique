@@ -83,6 +83,11 @@ namespace magique
         steamData.lobbyEventCallback = callback;
     }
 
+    void SteamSetConnMapping(Connection conn, SteamID id)
+    {
+
+    }
+
     bool SteamOpenInviteDialog()
     {
         auto& steam = global::STEAM_DATA;

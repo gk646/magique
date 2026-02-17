@@ -16,79 +16,62 @@
 // Note: All save calls overwrite the existing data of the slot. They are NOT additive.
 // .....................................................................
 
-enum class GameSaveSlot : int; // User implemented to identify different slots
-
 namespace magique
 {
     // Persists the given save to disk
     // Failure: Returns false
-    bool GameSaveToFile(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+    bool GameSaveToFile(GameSave& save, const char* path, uint64_t key = 0);
 
     // Loads an existing save from disk or creates one at the given path
     // Note: When using steam combine with SteamGetUserDataLocation() to access to correct location
     // Failure: Returns false
-    bool GameSaveFromFile(GameSave& save, const char* filePath, uint64_t encryptionKey = 0);
+    bool GameSaveFromFile(GameSave& save, const char* filePath, uint64_t key = 0);
 
-    struct GameSave final
+    struct GameSave final : internal::StorageContainer
     {
         //================= SAVING =================//
 
         // Saves a string value to the specified slot
-        void saveString(GameSaveSlot id, const std::string& string);
+        void saveString(std::string_view slot, const std::string_view& string);
 
         // Saves arbitrary data to the specified slot
-        void saveBytes(GameSaveSlot id, const void* data, int bytes);
+        void saveBytes(std::string_view slot, const void* data, int bytes);
 
         // Saves the vector to the specified slot
         // Note: the value-type of the vector should be a POD type (see module header)
         template <typename T>
-        void saveVector(GameSaveSlot id, const std::vector<T>& vector);
+        void saveVector(std::string_view slot, const std::vector<T>& vector);
 
         // Serializes the given object to JSON using assets/JSON.h
         template <typename T>
-        void saveJSON(GameSaveSlot id, const T& obj);
+        void saveJSON(std::string_view slot, const T& obj);
 
         //================= GETTING =================//
 
         // If the storage exists AND stores a string returns a copy of it
         // Failure: else returns the given default value
-        std::string getStringOrElse(GameSaveSlot id, const std::string& defaultVal = "");
+        std::string getStringOrElse(std::string_view slot, const std::string& defaultVal = "");
 
         // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
         // Failure: returns {nullptr,0} if the storage doesn't exist or type doesn't match
         template <typename T = unsigned char>
-        DataPointer<T> getBytes(GameSaveSlot id);
+        DataPointer<T> getBytes(std::string_view slot);
 
         // Returns a copy of the vector stored at this slot
         // Failure: returns an empty vector
         template <typename T>
-        std::vector<T> getVector(GameSaveSlot id);
+        std::vector<T> getVector(std::string_view slot);
 
         // Parses the data from the JSON into the given object using assets/JSON.h
         template <typename T>
-        void getJSON(GameSaveSlot id, T& obj);
+        void getJSON(std::string_view slot, T& obj);
 
         //================= UTIL =================//
 
-        // Returns the storage type of the specified id
-        // Failure: if the storage doesn't exist or is empty returns StorageType::EMPTY
-        StorageType getStorageInfo(GameSaveSlot id);
-
-        GameSave() = default;
-        GameSave(const GameSave& other) = delete;            // Involves potentially copying a lot of data
-        GameSave& operator=(const GameSave& other) = delete; // Involves potentially copying a lot of data
-        GameSave(GameSave&& other) noexcept = default;
-        GameSave& operator=(GameSave&& other) noexcept = default;
-        ~GameSave(); // Will clean itself up automatically
-
-    private:
-        M_MAKE_PUB()
-        internal::StorageCell* getCell(GameSaveSlot id);
-        internal::StorageCell* getCellOrNew(GameSaveSlot id, StorageType type);
-        void assignDataImpl(GameSaveSlot id, const void* data, int bytes, StorageType type);
-        std::vector<internal::StorageCell> storage; // Internal data holder
-        bool isPersisted = false;                   // If the game save has been saved to disk
+        void clear();
+        void erase(std::string_view slot);
+        StorageType getSlotType(std::string_view slot);
     };
 
 } // namespace magique
@@ -98,20 +81,22 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    void GameSave::saveVector(const GameSaveSlot id, const std::vector<T>& vector)
+    void GameSave::saveVector(const std::string_view slot, const std::vector<T>& vector)
     {
-        assignDataImpl(id, vector.data(), static_cast<int>(vector.size() * sizeof(T)), StorageType::VECTOR);
+        assignDataImpl(slot, vector.data(), static_cast<int>(vector.size() * sizeof(T)), StorageType::VECTOR);
     }
+
     template <typename T>
-    void GameSave::saveJSON(GameSaveSlot id, const T& obj)
+    void GameSave::saveJSON(std::string_view slot, const T& obj)
     {
-        auto* cell = getCellOrNew(id, StorageType::JSON);
+        auto* cell = getCellOrNew(slot, StorageType::JSON);
         JSONExport(obj, cell->data);
     }
+
     template <typename T>
-    DataPointer<T> GameSave::getBytes(const GameSaveSlot id)
+    DataPointer<T> GameSave::getBytes(const std::string_view slot)
     {
-        const auto* cell = getCell(id);
+        const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING(DataPointer<T>(nullptr, 0));
         M_GAMESAVE_TYPE_MISMATCH(DATA, DataPointer<T>(nullptr, 0));
         const auto size = (int)cell->data.size();
@@ -136,9 +121,9 @@ namespace magique
         }
     }
     template <typename T>
-    std::vector<T> GameSave::getVector(const GameSaveSlot id)
+    std::vector<T> GameSave::getVector(const std::string_view slot)
     {
-        const auto* cell = getCell(id);
+        const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING({});
         M_GAMESAVE_TYPE_MISMATCH(VECTOR, {});
         std::vector<T> ret(cell->data.size() / sizeof(T));
@@ -146,12 +131,12 @@ namespace magique
         return ret;
     }
     template <typename T>
-    void GameSave::getJSON(GameSaveSlot id, T& obj)
+    void GameSave::getJSON(std::string_view slot, T& obj)
     {
-        const auto* cell = getCell(id);
+        const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING();
         M_GAMESAVE_TYPE_MISMATCH(JSON, );
-        JSONImport( cell->data, obj);
+        JSONImport(cell->data, obj);
     }
 
 

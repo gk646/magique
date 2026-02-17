@@ -123,12 +123,12 @@ namespace magique
         va_end(args);
     }
 
-    void SetLogLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
+    void LoggingSetLevel(const LogLevel level) { global::ENGINE_CONFIG.logLevel = level; }
 
-    void SetLogCallback(const LogCallbackFunc func) { global::LOG_DATA.callback = func; }
+    void LoggingSetCallback(const LogCallbackFunc func) { global::LOG_DATA.callback = func; }
 
-    void SetLogToFile(bool value) { global::LOG_DATA.logToFile = value; }
+    void LoggingEnableFile(bool value) { global::LOG_DATA.logToFile = value; }
 
-    void EnableCrashLogs(bool value) { global::LOG_DATA.crashLog = value; }
+    void LoggingEnableCrashLog(bool value) { global::LOG_DATA.crashLog = value; }
 
 } // namespace magique

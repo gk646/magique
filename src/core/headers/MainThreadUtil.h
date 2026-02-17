@@ -6,7 +6,6 @@
 
 extern "C"
 {
-
     void SetTargetFPS(const int fps)
     {
         if (fps < MAGIQUE_LOGIC_TICKS)
@@ -59,11 +58,6 @@ extern "C"
         const auto& perf = magique::global::PERF_DATA;
         return perf.drawTick.last();
     }
-}
-
-namespace magique
-{
-    inline static constexpr float SEC_TO_NANOS = 1'000'000'000.0F;
 }
 
 #endif // MAGIQUE_MAIN_THREAD_UTIL_H

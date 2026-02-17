@@ -75,11 +75,11 @@ namespace magique
             float beginPercent = 0.0F;
             for (int j = 0; j < COL_WORK_PARTS - 1; ++j)
             {
-                handles[j] = AddJob(CreateExplicitJob(CheckHashGridCells, beginPercent, beginPercent + workerPart, j));
+                handles[j] = JobAdd(JobCreateEx(CheckHashGridCells, beginPercent, beginPercent + workerPart, j));
                 beginPercent += workerPart;
             }
             CheckHashGridCells(beginPercent, 1.0F, COL_WORK_PARTS - 1);
-            AwaitJobs(handles);
+            JobAwaits(handles);
         }
         else
         {

@@ -1,10 +1,8 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Engine.h>
-#include <magique/assets/AssetImport.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
-#include "internal/globals/DynamicCollisionData.h"
 
 namespace magique
 {
@@ -73,14 +71,10 @@ namespace magique
 
     const std::vector<MapID>& EngineGetActiveMaps() { return global::ENGINE_DATA.loadedMaps; }
 
-    // implemented in ECS.cpp cause of includes
-    // const std::vector<entt::entity>& GetNearbyEntities(entt::entity entity, float radius){}
-
     const std::vector<entt::entity>& EngineGetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
     void EngineSetPlayer(entt::entity entity) { global::ENGINE_DATA.playerEntity = entity; }
 
     entt::entity EngineGetPlayer() { return global::ENGINE_DATA.playerEntity; }
-
 
 } // namespace magique

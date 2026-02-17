@@ -80,6 +80,8 @@ namespace magique
         return true;
     }
 
+    std::string_view SteamGetLaunchParam(std::string_view key) { return SteamApps()->GetLaunchQueryParam(key.data()); }
+
     SteamID SteamGetID()
     {
         auto& steamData = global::STEAM_DATA;
@@ -91,15 +93,11 @@ namespace magique
 
     const char* SteamGetName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
 
-    void SteamSetOverlayCallback(SteamOverlayCallback steamOverlayCallback)
-    {
-        global::STEAM_DATA.overlayCallback = steamOverlayCallback;
-    }
-
-    static char TEMP[256]{};
+    void SteamSetOverlayCallback(const SteamOverlayCallback& callback) { global::STEAM_DATA.overlayCallback = callback; }
 
     const char* SteamGetUserDataLocation()
     {
+        static char TEMP[512]{};
         MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized");
         SteamUser()->GetUserDataFolder(TEMP, 512);
         return TEMP;

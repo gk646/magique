@@ -71,13 +71,18 @@ namespace magique
 
     int VirtualTime::toSeconds() const { return ((day * 24 + hour) * 60 + minute) * 60 + second; }
 
-    int VirtualTime::getSecond() const { return second; }
+    int VirtualTime::getSeconds() const { return second; }
 
-    int VirtualTime::getMinute() const { return minute; }
+    int VirtualTime::getMinutes() const { return minute; }
 
-    int VirtualTime::getHour() const { return hour; }
+    int VirtualTime::getHours() const { return hour; }
 
-    int VirtualTime::getDay() const { return day; }
+    int VirtualTime::getDays() const { return day; }
+
+    std::string VirtualTime::toString() const
+    {
+        return TextFormat("%id:%ih:%im:%is", getDays(), getHours(), getMinutes(), getSeconds());
+    }
 
     VirtualClock::VirtualClock(const int realMinutes) { setRealMinutes(realMinutes); }
 
@@ -88,6 +93,12 @@ namespace magique
 #define realDaySeconds (realSecondSeconds * DAY_SECONDS)
 #define realHourSeconds (realSecondSeconds * HOUR_SECONDS)
 #define realMinuteSeconds (realSecondSeconds * MIN_SECONDS)
+
+    void VirtualClock::update()
+    {
+        if (!isPaused)
+            ticks += 1.0F * timeScale;
+    }
 
     int VirtualClock::getDay() const
     {
@@ -187,6 +198,10 @@ namespace magique
 
     bool VirtualClock::getIsPaused() const { return isPaused; }
 
+    void VirtualClock::setTimeScale(const float scale) { timeScale = scale; }
+
+    void VirtualClock::setByTicks(double newTicks) { ticks = newTicks; }
+
     double VirtualClock::getTicks() const { return ticks; }
 
     void VirtualClock::syncTimeOfDay()
@@ -199,16 +214,6 @@ namespace magique
         const int minutes = localTime->tm_min;
         const int seconds = localTime->tm_sec;
         setTime(hours, minutes, seconds);
-    }
-
-    void VirtualClock::setTimeScale(const float scale) { timeScale = scale; }
-
-    void VirtualClock::setByTicks(double newTicks) { ticks = newTicks; }
-
-    void VirtualClock::update()
-    {
-        if (!isPaused)
-            ticks += 1.0F * timeScale;
     }
 
     double VirtualClock::getRealPassedSeconds() const

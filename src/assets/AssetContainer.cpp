@@ -128,7 +128,7 @@ namespace magique
         std::ranges::sort(assets, comparator);
     }
 
-    void AssetContainer::forEach(const char* name, const std::function<void(Asset)>& func) const
+    void AssetContainer::forEachIn(const char* name, const std::function<void(Asset)>& func) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         const int size = static_cast<int>(strlen(name));

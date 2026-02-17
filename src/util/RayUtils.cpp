@@ -263,7 +263,7 @@ namespace magique
             camera.zoom = std::max(camera.zoom + move * zoomMult, min);
         }
 
-        if (GetDragStartPosition() == -1)
+        if (UIGetDragStart() == -1)
         {
             dragStartScreen = GetMousePos();
             dragStartWorld = camera.target;
@@ -285,7 +285,7 @@ namespace magique
     {
         // When dragging we have to reset drag position when zooming
         // otherwise target jumps as diff is made with different zoom levels
-        if (GetDragStartPosition() == -1)
+        if (UIGetDragStart() == -1)
         {
             return;
         }

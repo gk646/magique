@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <chrono>
-
 #include <magique/core/EngineUtil.h>
 
 #include "internal/globals/EngineConfig.h"

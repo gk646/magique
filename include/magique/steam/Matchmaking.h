@@ -19,7 +19,7 @@
 
 namespace magique
 {
-    //================= SETUP =================//
+    //================= LOBBIES =================//
 
     // Returns true if the async call trying to create a lobby was successful
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
@@ -38,8 +38,6 @@ namespace magique
 
     // Returns true if the lobby invite was successfully sent to the given user
     bool SteamSendLobbyInvite(SteamID userID);
-
-    //================= INFO =================//
 
     // Returns true if your currently in a lobby
     bool SteamIsInLobby();
@@ -60,6 +58,12 @@ namespace magique
 
     // Sets the callback that is called for various events that happen in regard to lobbies
     void SteamSetLobbyCallback(const SteamLobbyCallback& callback);
+
+    // Manual interface that allows to map connections with a steam id
+    void SteamSetConnMapping(Connection conn, SteamID id);
+    Connection SteamGetConnMapping(SteamID id);
+    SteamID SteamGetConnMapping(Connection conn);
+
 
 } // namespace magique
 

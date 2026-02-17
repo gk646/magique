@@ -73,7 +73,7 @@ namespace magique
 
     // Called with the current even and the affected connection
     // ClientEntity mappings will be deleted after the callback (on disconnect)
-    using NetworkCallback = std::function<void(MultiplayerEvent event, Connection conn)>;
+    using NetworkCallback = std::function<void(NetworkEvent event, Connection conn)>;
 
     // Sets the callback function that is called on various multiplayer events
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered

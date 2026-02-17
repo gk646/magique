@@ -41,10 +41,10 @@ namespace magique
             {
                 const int start = end;
                 end = start + partSize;
-                handles[j] = AddJob(CreateExplicitJob(CheckStaticCollisionRange, j, start, end));
+                handles[j] = JobAdd(JobCreateEx(CheckStaticCollisionRange, j, start, end));
             }
             CheckStaticCollisionRange(COL_WORK_PARTS - 1, end, size);
-            AwaitJobs(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
+            JobAwaits(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
         // Handle unique pairs - we can share the pair set with dynamic
         HandleCollisionPairs(staticData.pairCollector, global::DY_COLL_DATA.pairSet);

@@ -9,7 +9,7 @@
 
 namespace magique
 {
-    jobHandle AddJob(IJob* job)
+    jobHandle JobAdd(IJob* job)
     {
         auto& scd = global::SCHEDULER;
         const auto handle = scd.getNextHandle();
@@ -22,7 +22,7 @@ namespace magique
     }
 
     template <typename Iterable>
-    void AwaitJobs(const Iterable& handles)
+    void JobAwaits(const Iterable& handles)
     {
         auto& scd = global::SCHEDULER;
         while (scd.currentJobsSize > 0)
@@ -50,11 +50,11 @@ namespace magique
     }
 
     using WorkArray = std::array<jobHandle, MAGIQUE_WORKER_THREADS + 1>;
-    template void AwaitJobs<WorkArray>(const WorkArray& container);
-    template void AwaitJobs<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
-    template void AwaitJobs<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
+    template void JobAwaits<WorkArray>(const WorkArray& container);
+    template void JobAwaits<std::vector<jobHandle>>(const std::vector<jobHandle>& container);
+    template void JobAwaits<std::initializer_list<jobHandle>>(const std::initializer_list<jobHandle>& container);
 
-    void AwaitAllJobs()
+    void JobAwaitAll()
     {
         auto& scd = global::SCHEDULER;
         while (scd.currentJobsSize > 0)
@@ -63,13 +63,13 @@ namespace magique
         }
     }
 
-    void WakeUpJobs()
+    void JobsWakeUp()
     {
         auto& scd = global::SCHEDULER;
         scd.isHibernate = false;
     }
 
-    void HibernateJobs(const double target, const double sleepTime)
+    void JobsSleep(const double target, const double sleepTime)
     {
         auto& scd = global::SCHEDULER;
         scd.targetTime = target;

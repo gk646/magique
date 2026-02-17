@@ -251,7 +251,7 @@ namespace magique
 
             Command showUIHitbox{"mq.setUIHitboxOverlay", "Turns the hitboxes for UI elements on/off"};
             showUIHitbox.addParam("value", {ParamType::BOOL});
-            showUIHitbox.setFunction([](const ParamList& params) { UISetShowHitboxes(params.back().getBool()); });
+            showUIHitbox.setFunction([](const ParamList& params) { UIShowHitboxes(params.back().getBool()); });
             ConsoleRegisterCommand(showUIHitbox);
 
 #ifndef MAGIQUE_TEST_MODE
@@ -281,7 +281,7 @@ namespace magique
             };
             std::ranges::sort(suggestions, pred);
 
-            auto chunks = SplitString(line, ' ');
+            auto chunks = StringSplit(line, ' ');
             parsedCommand = ParamParser::ParseCommand(chunks);
         }
 
@@ -307,7 +307,7 @@ namespace magique
         void submit() const
         {
             // Must be separated by spaces
-            auto chunks = SplitString(line, ' ');
+            auto chunks = StringSplit(line, ' ');
             const Command* cmd = ParamParser::ParseCommand(chunks);
             if (cmd == nullptr)
             {

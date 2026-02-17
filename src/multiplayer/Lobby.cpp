@@ -1,14 +1,17 @@
 #include <magique/multiplayer/Lobby.h>
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 namespace magique
 {
-    void LobbySetChatCallback(const LobbyChatCallback& callback) { global::LOBBY_DATA.chatCallback = callback; }
+    void LobbySetChatCallback(const LobbyChatCallback& callback)
+    {
+        global::MP_DATA.lobby.chatCallback = callback;
+    }
 
     void LobbySetMetadataCallback(const LobbyMetadataCallback& callback)
     {
-        global::LOBBY_DATA.metadataCallback = callback;
+       global::MP_DATA.lobby.metadataCallback = callback;
     }
 
     inline Lobby LOBBY{};
@@ -24,7 +27,7 @@ namespace magique
     void Lobby::setStartSignal(const bool value)
     {
         MG_SESSION_LOCK()
-        global::LOBBY_DATA.startSignal = value;
+       global::MP_DATA.lobby.startSignal = value;
 
         char buff[2]; // 1 type + signal
         buff[0] = (int8_t)LobbyPacketType::START_SIGNAL;
@@ -34,7 +37,7 @@ namespace magique
         NetworkSendAll(payload);
     }
 
-    bool Lobby::getStartSignal() const { return global::LOBBY_DATA.startSignal; }
+    bool Lobby::getStartSignal() const { return global::MP_DATA.lobby.startSignal; }
 
     void Lobby::sendChatMessage(const char* message)
     {
@@ -73,7 +76,7 @@ namespace magique
             LOG_WARNING("Passed empty strings");
             return;
         }
-        global::LOBBY_DATA.metadata[key] = value;
+       global::MP_DATA.lobby.metadata[key] = value;
 
         char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 3]; // Message + 2 null terminators + 1 type
 
@@ -94,7 +97,7 @@ namespace magique
         }
     }
 
-    const std::string& Lobby::getMetadata(const char* key) { return global::LOBBY_DATA.metadata[key]; }
+    const std::string& Lobby::getMetadata(const char* key) { return global::MP_DATA.lobby.metadata[key]; }
 
 } // namespace magique
 #else

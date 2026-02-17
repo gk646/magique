@@ -29,25 +29,30 @@ namespace magique
     //  - search is empty
     // This is very useful for finding the best matching entry to a user input (list of items, spells...)
     // In this case original would be the item name, and compare the search string
-    bool TextIsSimilar(std::string_view original, std::string_view search, float tolerance = 0.9);
+    bool StringIsSimilar(std::string_view original, std::string_view search, float tolerance = 0.9);
 
     //================= OPERATIONS =================//
 
     // Replaces all occurrences of the given keyword inside buffer with the replacement string in-place
     // Returns the total amount of replacements
-    int ReplaceInBuffer(char* buffer, int bufferSize, const char* keyword, const char* replacement);
+    int StringReplace(char* buffer, int bufferSize, const char* keyword, const char* replacement);
 
     // Replaces spaces with newlines such that each line is drawn within the specified width in-place
     // Note: Does NOT change the size of the buffer
     // Returns: the number of linebreak inserted
-    int InsertNewlines(char* buffer, int bufferSize, float width, const Font& font, float fontSize);
+    int StringSetNewlines(char* buffer, int bufferSize, float width, const Font& font, float fontSize);
 
     // Returns a vector of string containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-    std::vector<std::string> SplitString(std::string_view s, char delim);
+    std::vector<std::string> StringSplit(std::string_view s, char delim);
 
-    // Removes any leading whitespace in-place and returns the string
-    std::string& TrimLeadingWhitespace(std::string& s);
+    // Returns true if the given string conforms to:
+    //  - At least "minLen" but not longer than "maxLen"
+    //  - Characters are only:
+    //      - Letters a-zA-Z
+    //      - Numbers 0-9
+    // That means no symbols like "%!?-_" or spaces
+    bool StringIsValidName(const char* text, int minLen = 3, int maxLen = 16);
 
     // Returns true if the given strings match regardless of case
     // string-compare-no-case
@@ -61,38 +66,15 @@ namespace magique
     // https://en.cppreference.com/w/c/string/byte/strstr
     char* strstrnc(const char* haystack, const char* needle);
 
-    // Returns true if the given string conforms to:
-    //  - At least "minLen" but not longer than "maxLen"
-    //  - Characters are only:
-    //      - Letters a-zA-Z
-    //      - Numbers 0-9
-    // That means no symbols like "%!?-_" or spaces
-    bool TextIsPlayerName(const char* text, int minLen = 3, int maxLen = 16);
-
     //================= ENCODING =================//
 
-    // Returns the size of the base64 representation of the bytes - useful to allocate an array that can hold it
-    int GetBase64EncodedLength(int bytes);
+    // Encodes the given string into base64 representation
+    std::string StringToBase64(std::string_view input);
 
-    // Encodes the given string 's' into base64 representation
-    //      - inputLen : length of the binary portion
-    //      - outputLen: valid length of the output pointer
-    // Note: Allows inplace modification of the input string (e.g. input and output being the same array)
-    void EncodeBase64(const char* input, int inputLen, char* output, int outputLen);
-
-    // Returns the base64 encoded input as string
-    std::string EncodeBase64(std::string input);
-
-    // Decodes the given base64 input inplace
-    void DecodeBase64(char* input);
-
-    // Returns the decoded base64 input as string - makes a single copy
-    std::string DecodeBase64(std::string input);
+    // Returns the decoded base64 input as string
+    std::string StringFromBase64(std::string_view input);
 
     //================= FORMATTING =================//
-
-    // Returns the time string in d:h:m:s (day, hour, minute, second) based on passed seconds
-    const char* GetTimeString(int seconds);
 
     // Formats a float number so its nicely readable
     // If it's lower than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
@@ -108,8 +90,8 @@ namespace magique
     //================= HASHING =================//
 
     // Uses fnav32a1 to hash the string - aimed to be fast not secure!
-    constexpr uint32_t HashString(char const* s) noexcept;
-    constexpr uint32_t HashString(const char* s, size_t len) noexcept;
+    constexpr uint32_t StringHash(char const* s) noexcept;
+    constexpr uint32_t StringHash(const char* s, size_t len) noexcept;
 
     // Useful for passing to a hashmap for to enable transparent lookups (avoids conversion)
     struct StringHashFunc
@@ -137,7 +119,7 @@ namespace magique
 
 namespace magique
 {
-    constexpr uint32_t HashString(char const* s) noexcept
+    constexpr uint32_t StringHash(char const* s) noexcept
     {
         uint32_t hash = 2166136261U;
         while (*s != 0)
@@ -148,7 +130,7 @@ namespace magique
         return hash;
     }
 
-    constexpr uint32_t HashString(const char* s, const size_t len) noexcept
+    constexpr uint32_t StringHash(const char* s, const size_t len) noexcept
     {
         uint32_t hash = 2166136261U;
         size_t counter = 0;
@@ -162,4 +144,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_STRINGS_H
+#endif // MAGIQUE_STRINGS_H

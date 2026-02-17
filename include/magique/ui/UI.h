@@ -43,7 +43,7 @@ namespace magique
 
     // Returns the position where the left mouse button was first pressed - resets when the button is released
     // Failure: returns {-1,-1} if the mouse was not yet pressed or was released
-    Point GetDragStartPosition();
+    Point UIGetDragStart();
 
     // Sets the logical ui resolution in which all numbers are interpreted
     // IMPORTANT: this likely completely changes all your UI - should only be done when using pixel art with fixed resolutions
@@ -65,7 +65,7 @@ namespace magique
     // Returns a rectangle that adjusted to be on the screen (target resolution) by picking which corner the mouse is
     // Default its bottom right corner is the mouse position - can be offset manually
     // Note: Useful for tooltips
-    Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePos());
+    Rectangle UIGetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePos());
 
     // Getters for input that allows for consumption - when consumed all methods return false
     // The consumed state is automatically reset at the beginning of each update tick
@@ -94,15 +94,15 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    // If enables shows the hitboxes off all ui elements in BLUE
-    void UISetShowHitboxes(bool value);
+    // If enabled, shows the hitboxes off all ui elements in BLUE
+    void UIShowHitboxes(bool value);
 
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space
     // Destructor resets it back to original screen pos
-    struct UIMouseToWorld
+    struct MouseToWorld
     {
-        UIMouseToWorld();
-        ~UIMouseToWorld();
+        MouseToWorld();
+        ~MouseToWorld();
 
     private:
         Point prev;

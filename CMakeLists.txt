@@ -7,7 +7,7 @@ project(magique LANGUAGES CXX C)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_STANDARD 23)
-set(MAGIQUE_VERSION "0.9.6")
+set(MAGIQUE_VERSION "0.9.7)
 
 # Set CMake modules directory - path searched when using include()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

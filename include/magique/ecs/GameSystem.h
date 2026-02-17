@@ -1,7 +1,6 @@
 #ifndef MAGIQUE_GAMESYSTEMS_H
 #define MAGIQUE_GAMESYSTEMS_H
 
-#include <span>
 #include <string>
 #include <functional>
 #include <magique/fwd.hpp>
@@ -75,7 +74,7 @@ namespace magique
 
     // If true all systems are benchmarked - existing data is cleared on enabling
     // Default: Enabled if in debug mode (MAGIQUE_DEBUG)
-    void GameSystemEnableStatistics(bool value);
+    void GameSystemEnableStats(bool value);
 
 } // namespace magique
 

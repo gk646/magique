@@ -107,7 +107,7 @@ namespace magique
         }
     }
 
-    void GameSystemEnableStatistics(bool value)
+    void GameSystemEnableStats(bool value)
     {
         SYSTEM_DATA.benchmark = value;
         if (value)

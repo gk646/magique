@@ -30,40 +30,40 @@ namespace magique
     // Creates a new job from a lambda or function
     // Note: Only use the returned job pointer to submit jobs
     template <typename Callable>
-    IJob* CreateJob(Callable callable);
+    IJob* JobCreate(Callable callable);
 
     // Creates a new job with explicitly given arguments
     // Note: Only use the returned job pointer to submit jobs
     template <typename Callable, typename... Args>
-    IJob* CreateExplicitJob(Callable callable, Args... args);
+    IJob* JobCreateEx(Callable callable, Args... args);
 
     //================= ADDING =================//
     // Note: Takes ownership of all passed pointers (should not be accessed after)
 
     // Adds a new job to the global queue
-    jobHandle AddJob(IJob* job);
+    jobHandle JobAdd(IJob* job);
 
     //================= WAITING =================//
 
     // Waits till the specified job is completed if it exists
-    void AwaitJob(jobHandle handle);
+    void JobAwait(jobHandle handle);
 
     // Awaits the completion of all given handles if they exist
     // Allows for std::vector<>, std::array<>, and std::initializer_list<>
     template <typename Iterable>
-    void AwaitJobs(const Iterable& handles);
+    void JobAwaits(const Iterable& handles);
 
     // Awaits the completion of all current tasks
-    void AwaitAllJobs();
+    void JobAwaitAll();
 
     //================= LIFECYCLE =================//
     // Note: Called automatically when using the game template - ONLY call if your not using the game template!
 
     // Brings all workers back to speed (out of hibernate)
-    void WakeUpJobs();
+    void JobsWakeUp();
 
     // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
-    void HibernateJobs(double target, double sleepTime);
+    void JobsSleep(double target, double sleepTime);
 
     //================= JOBS =================//
 
@@ -119,7 +119,7 @@ namespace magique
     } // namespace internal
 
     template <typename Callable>
-    IJob* CreateJob(Callable callable)
+    IJob* JobCreate(Callable callable)
     {
         constexpr auto size = sizeof(Job<Callable>);
         void* ptr = internal::GetJobMemory(size);
@@ -127,7 +127,7 @@ namespace magique
     }
 
     template <typename Callable, typename... Args>
-    IJob* CreateExplicitJob(Callable callable, Args... args)
+    IJob* JobCreateEx(Callable callable, Args... args)
     {
         constexpr auto size = sizeof(ExplicitJob<Callable, Args...>);
         void* ptr = internal::GetJobMemory(size);

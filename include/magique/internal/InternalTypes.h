@@ -2,6 +2,8 @@
 #ifndef MAGIQUE_INTERNAL_TYPES_H
 #define MAGIQUE_INTERNAL_TYPES_H
 
+#include <cstring>
+#include <vector>
 #include <magique/core/Types.h>
 #include <magique/internal/Macros.h>
 
@@ -15,17 +17,78 @@
 
 namespace magique::internal
 {
-    template <typename T>
-    static constexpr uint64_t SizeOf()
-    {
-        return sizeof(T);
-    }
-
     struct StorageCell final
     {
-        GameSaveSlot id;
         StorageType type = StorageType::EMPTY;
+        std::string name;
         std::string data;
+    };
+
+    struct StorageContainer
+    {
+        StorageContainer() = default;
+        StorageContainer(const StorageContainer& other) = delete; // Involves potentially copying a lot of data
+        StorageContainer&
+        operator=(const StorageContainer& other) = delete; // Involves potentially copying a lot of data
+        StorageContainer(StorageContainer&& other) noexcept = default;
+        StorageContainer& operator=(StorageContainer&& other) noexcept = default;
+        ~StorageContainer(); // Will clean itself up automatically
+
+    protected:
+        M_MAKE_PUB()
+        static bool ToFile(StorageContainer& container, std::string_view path, std::string_view name, uint64_t key);
+        static bool FromFile(StorageContainer& container, std::string_view path, std::string_view name, uint64_t key);
+
+        // Erases the storage with the given id
+        void eraseImpl(std::string_view slot);
+        // Erases all storage slots
+        void clearImpl() { cells.clear(); }
+
+        StorageType getSlotTypeImpl(std::string_view slot)
+        {
+            const auto* cell = getCell(slot);
+            if (cell == nullptr)
+            {
+                return StorageType::EMPTY;
+            }
+            return cell->type;
+        }
+
+        StorageCell* getCell(std::string_view slot)
+        {
+            for (auto& cell : cells)
+            {
+                if (cell.name == slot)
+                {
+                    return &cell;
+                }
+            }
+            return nullptr;
+        }
+
+        StorageCell& getCellOrNew(std::string_view slot, StorageType type)
+        {
+            auto* cell = getCell(slot);
+            if (cell == nullptr)
+            {
+                cell = &cells.emplace_back(type);
+                cell->name = slot;
+                return *cell;
+            }
+            cell->type = type;
+            return *cell;
+        }
+
+        void assignDataImpl(std::string_view slot, const void* data, const int bytes, const StorageType type)
+        {
+            auto& cell = getCellOrNew(slot, type);
+            cell.data.resize(bytes);
+            std::memcpy(cell.data.data(), data, bytes);
+        }
+
+        std::vector<StorageCell> cells;
+        bool isLoaded = false;
+        bool isSaved = false;
     };
 
     struct EmitterData final

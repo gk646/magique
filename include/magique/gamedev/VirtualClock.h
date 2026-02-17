@@ -36,10 +36,12 @@ namespace magique
         // The whole time converted to seconds
         int toSeconds() const;
 
-        int getSecond() const;
-        int getMinute() const;
-        int getHour() const;
-        int getDay() const;
+        int getSeconds() const;
+        int getMinutes() const;
+        int getHours() const;
+        int getDays() const;
+
+        std::string toString() const;
 
     private:
         int day;
@@ -127,4 +129,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_VIRTUAL_CLOCK_H
+#endif // MAGIQUE_VIRTUAL_CLOCK_H

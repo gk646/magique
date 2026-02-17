@@ -64,7 +64,7 @@ namespace magique
 
     Point UIGetScaling() { return global::UI_DATA.scaling; }
 
-    Point GetDragStartPosition() { return global::UI_DATA.dragStart; }
+    Point UIGetDragStart() { return global::UI_DATA.dragStart; }
 
     void UISetSourceResolution(Point resolution) { global::UI_DATA.sourceRes = resolution; }
 
@@ -87,7 +87,7 @@ namespace magique
 
     Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
 
-    Rectangle GetRectOnScreen(const Point& offset, float width, float height, Point base)
+    Rectangle UIGetRectOnScreen(const Point& offset, float width, float height, Point base)
     {
         Rectangle rect = {base.x + offset.x, base.y + offset.y, width, height};
 
@@ -159,15 +159,15 @@ namespace magique
 
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
-    void UISetShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
+    void UIShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
 
-    UIMouseToWorld::UIMouseToWorld()
+    MouseToWorld::MouseToWorld()
     {
         prev = GetMousePosition();
         auto worldMouse = GetScreenToWorld2D(prev, magique::CameraGet());
         SetMousePositionDirect(worldMouse.x, worldMouse.y);
     }
 
-    UIMouseToWorld::~UIMouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
+    MouseToWorld::~MouseToWorld() { SetMousePositionDirect(prev.x, prev.y); }
 
 } // namespace magique

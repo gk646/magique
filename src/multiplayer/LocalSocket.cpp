@@ -17,7 +17,7 @@
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #endif
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 
 namespace magique
 {
@@ -106,7 +106,7 @@ namespace magique
         if (!addr.ParseString(TextFormat("%s:%d", ip, port)))
         {
             LOG_WARNING("Given IP or port is not valid: %s:%d", ip, port);
-            return Connection::INVALID_CONNECTION;
+            return Connection::INVALID;
         }
 
         const auto conn = SteamNetworkingSockets()->ConnectByIPAddress(addr, 0, nullptr);
@@ -115,7 +115,7 @@ namespace magique
             char buffer[128];
             addr.ToString(buffer, 128, true);
             LOG_WARNING("Failed to connect to local socket with ip", buffer);
-            return Connection::INVALID_CONNECTION;
+            return Connection::INVALID;
         }
         data.goOnline(false, static_cast<Connection>(conn));
         return data.connections[0];
@@ -126,7 +126,7 @@ namespace magique
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
-        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
+        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID)
         {
             return false;
         }

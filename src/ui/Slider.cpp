@@ -60,7 +60,7 @@ namespace magique
     {
         if (getIsHovered())
         {
-            const auto dragStart = GetDragStartPosition();
+            const auto dragStart = UIGetDragStart();
             const auto sliderKnob = getKnobPosition();
             const auto radius = UIGetScaled(15);
             const auto knobVec = Vector2{sliderKnob.x, sliderKnob.y};

@@ -17,7 +17,7 @@ namespace magique
         {
             for (auto& savedConn : conns)
             {
-                if (savedConn == Connection::INVALID_CONNECTION)
+                if (savedConn == Connection::INVALID)
                 {
                     savedConn = conn;
                     return;
@@ -32,7 +32,7 @@ namespace magique
             {
                 if (savedConn == conn)
                 {
-                    savedConn = Connection::INVALID_CONNECTION;
+                    savedConn = Connection::INVALID;
                     return;
                 }
             }
@@ -55,10 +55,10 @@ namespace magique
         {
             for (auto& conn : conns)
             {
-                conn = Connection::INVALID_CONNECTION;
+                conn = Connection::INVALID;
             }
         }
     };
 
 } // namespace magique
-#endif //MAGEQUEST_CONNECTIONMAPPING_H
+#endif // MAGEQUEST_CONNECTIONMAPPING_H

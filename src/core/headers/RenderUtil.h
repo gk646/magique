@@ -74,12 +74,10 @@ namespace magique
         data.camera.target.y = Lerp(data.camera.target.y, targetPosition.y, smoothing);
         data.camera.target.x = std::floor(data.camera.target.x);
         data.camera.target.y = std::floor(data.camera.target.y);
-
     }
 
     inline void RenderHitboxes()
     {
-        BeginMode2D(CameraGet());
         const auto& group = internal::POSITION_GROUP;
         const auto& staticData = global::STATIC_COLL_DATA;
 
@@ -175,7 +173,6 @@ namespace magique
             DrawRectangleLinesEx(r3, 2, RED);
             DrawRectangleLinesEx(r4, 2, RED);
         }
-        EndMode2D();
     }
 
     inline void RenderOverlays()
@@ -302,21 +299,19 @@ namespace magique
             if (config.showCompassOverlay)
                 drawCompass(BLACK);
 
+            if (config.showEntityOverlay)
+                drawEntityGrid();
+
             if (config.showPathFindingOverlay)
                 drawPathFindingGrid();
 
-            if (config.showEntityOverlay)
-                drawEntityGrid();
+            if (config.showHitboxes)
+                RenderHitboxes();
         }
         EndMode2D();
     }
 
-    inline void InternalRenderPost()
-    {
-        RenderOverlays();
-        if (global::ENGINE_CONFIG.showHitboxes) [[unlikely]]
-            RenderHitboxes();
-    }
+    inline void InternalRenderPost() { RenderOverlays(); }
 
 } // namespace magique
 

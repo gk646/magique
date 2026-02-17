@@ -81,7 +81,7 @@ namespace magique
 
     int TextDrawer::withNewLines(char* str) const
     {
-        return InsertNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.w - off.x, font, font.baseSize);
+        return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.w - off.x, font, font.baseSize);
     }
 
     void TextDrawer::setMod(const int fsm, Color highlight, Point offset)
@@ -114,7 +114,7 @@ namespace magique
         {
             txt = TextFormat("%s", txt.data());
             const auto lineEnd = bounds.w - off.x - cursor.x - modOffset.x;
-            newLines = InsertNewlines((char*)txt.data(), MAX_TEXT_BUFFER_LENGTH, lineEnd, font, fntSize);
+            newLines = StringSetNewlines((char*)txt.data(), MAX_TEXT_BUFFER_LENGTH, lineEnd, font, fntSize);
         }
 
         if (modHighlightColor.a > 0)

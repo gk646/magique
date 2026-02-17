@@ -118,7 +118,7 @@ namespace magique::internal
                 if (!cpuTasks[currentLevel].empty())
                 {
                     cpuWorking = true;
-                    AddJob(CreateJob(
+                    JobAdd(JobCreate(
                         [this, &res]
                         {
                             loadTasks(cpuTasks[currentLevel], res, false);

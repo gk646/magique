@@ -1,76 +1,73 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <cstring>
-
 #include <magique/internal/InternalTypes.h>
-#include <magique/internal/Macros.h>
-#include <magique/util/Logging.h>
+#include <magique/assets/JSON.h>
+
+#include "internal/utils/EncryptionUtil.h"
 
 namespace magique::internal
 {
-
-    // TODO rewrite and simplfy API and remove all of this
-
-    void GameSaveStorageCell::grow(const int newSize)
+    StorageContainer::~StorageContainer()
     {
-        if (newSize > allocatedSize)
+        if (!isSaved && !cells.empty())
         {
-            const int newAllocatedSize = newSize;
-            auto* newData = new char[newAllocatedSize];
-            if (data != nullptr)
-            {
-                std::memcpy(newData, data, size);
-                delete[] data;
-            }
-            data = newData;
-            allocatedSize = newAllocatedSize;
+            LOG_WARNING("StorageContainer is destroyed without being saved!");
         }
     }
 
-    void GameSaveStorageCell::free()
+    bool StorageContainer::ToFile(StorageContainer& container, std::string_view path, std::string_view name,
+                                  uint64_t key)
     {
-        delete[] data;
-        data = nullptr;
-        size = 0;
-        allocatedSize = 0;
-        type = StorageType::EMPTY;
+        std::string buffer;
+        JSONExport(container.cells, buffer);
+        SymmetricEncrypt(buffer.data(), buffer.size(), key);
+
+        FILE* file = fopen(path.data(), "wb");
+        if (file == nullptr)
+        {
+            LOG_ERROR("Failed to open file for writing: %s", path.data());
+            return false;
+        }
+
+        setvbuf(file, nullptr, _IONBF, 0);
+        fwrite(buffer.data(), buffer.size(), 1, file);
+        fclose(file);
+        LOG_INFO("Saved %s: %s | Size: %.2fkb", name.data(), path.data(), (float)buffer.size() / 1000.0F);
+        container.isSaved = true;
+        return true;
     }
 
-    void GameSaveStorageCell::assign(const char* ptr, const int bytes, const StorageType newType)
+    bool StorageContainer::FromFile(StorageContainer& container, std::string_view path, std::string_view name,
+                                    uint64_t key)
     {
-        grow(bytes);
-        std::memcpy(data, ptr, bytes);
-        size = bytes;
-        type = newType;
+        MAGIQUE_ASSERT(container.isLoaded == false, "Can only load from empty save!");
+        MAGIQUE_ASSERT(container.cells.empty(), "Can only load from empty save!");
+        container.isLoaded = true;
+
+        FILE* file = fopen(path.data(), "rb");
+        if (file == nullptr)
+        {
+            LOG_WARNING("File does not exist. Will be created once you save: %s", path.data());
+            return false;
+        }
+
+        fseek(file, 0, SEEK_END);
+        const auto totalSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        std::string buffer(totalSize, '\0');
+        fread(buffer.data(), totalSize, 1, file);
+        fclose(file);
+
+        SymmetricEncrypt(buffer.data(), totalSize, key);
+        JSONImport(buffer, container.cells);
+
+        LOG_INFO("Loaded %s: %s | Size: %.2fkb", name.data(), path.data(), static_cast<float>(totalSize) / 1000.0F);
+        return true;
     }
 
-    void GameConfigStorageCell::assign(const char* data, const int size, const StorageType newType, const Keybind bind)
+    void StorageContainer::eraseImpl(std::string_view slot)
     {
-        if (type == StorageType::STRING) // If it was a string delete it
-        {
-            delete[] string;
-            string = nullptr;
-        }
-
-        if (newType == StorageType::STRING)
-        {
-            string = new char[size + 1];
-            std::memcpy(string, data, size);
-            string[size] = '\0';
-        }
-        else if (newType == StorageType::KEY_BIND)
-        {
-            keybind = bind;
-        }
-        else if (newType == StorageType::VALUE)
-        {
-            MAGIQUE_ASSERT(size <= 8, "Cannot save value bigger than 8 bytes!");
-            std::memcpy(buffer, data, size);
-        }
-        else
-        {
-            LOG_ERROR("Passed wrong type!");
-        }
-        type = newType;
+        std::erase_if(cells, [&](const auto& cell) { return cell.name == slot; });
     }
 
 } // namespace magique::internal

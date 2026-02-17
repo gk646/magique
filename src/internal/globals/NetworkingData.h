@@ -45,10 +45,11 @@ inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, cons
 
 namespace magique
 {
-    struct MultiplayerData final
+    struct NetworkingData final
     {
+        LobbyData lobby;
         MultiplayerStatistics statistics{};
-        NetworkCallback callback;                                   // Callback
+        NetworkCallback callback;                                       // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
@@ -57,10 +58,10 @@ namespace magique
         ConnNumberMapping numberMapping{};                              // Maps connection to a consistent number
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
-        bool inSession = false;                                       // If program is part of multiplayer activity
+        bool inSession = false;                                         // If program is part of multiplayer activity
         bool isInitialized = false;                                     // Manual flag to give clean error msg
 
-        MultiplayerData()
+        NetworkingData()
         {
             incMsgVec.reserve(150);
             outMsgBuffer.reserve(150);
@@ -90,13 +91,13 @@ namespace magique
 #endif
         }
 
-        void goOnline(const bool asHost, Connection conn = Connection::INVALID_CONNECTION)
+        void goOnline(const bool asHost, Connection conn = Connection::INVALID)
         {
             if (asHost) // For client deferred until host actually accepts
             {
                 inSession = true;
             }
-            else if (conn != Connection::INVALID_CONNECTION)
+            else if (conn != Connection::INVALID)
             {
                 connections.push_back(conn);
                 numberMapping.addConnection(conn);
@@ -131,7 +132,7 @@ namespace magique
             isHost = false;
             inSession = false;
             numberMapping.clear();
-            global::LOBBY_DATA.closeLobby();
+            lobby.closeLobby();
         }
 
         void update() const
@@ -175,7 +176,7 @@ namespace magique
                             numberMapping.addConnection(conn);
                             if (callback)
                             {
-                                callback(MultiplayerEvent::HOST_NEW_CONNECTION, conn);
+                                callback(NetworkEvent::HOST_NEW_CONNECTION, conn);
                             }
                             LOG_INFO("Host accepted a new client connection");
                         }
@@ -198,7 +199,7 @@ namespace magique
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
                     {
-                        callback(MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED, conn);
+                        callback(NetworkEvent::CLIENT_CONNECTION_ACCEPTED, conn);
                     }
                 }
             }
@@ -213,7 +214,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(MultiplayerEvent::HOST_CLIENT_DISCONNECTED, conn);
+                        callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn);
                     }
                     onClientDisconnected(conn);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
@@ -222,7 +223,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(MultiplayerEvent::CLIENT_CONNECTION_CLOSED, conn);
+                        callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn);
                     }
                     goOffline();
                     LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
@@ -240,7 +241,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(MultiplayerEvent::HOST_LOCAL_PROBLEM, conn);
+                        callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn);
                     }
                     onClientDisconnected(conn);
                     LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
@@ -249,7 +250,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(MultiplayerEvent::CLIENT_LOCAL_PROBLEM, conn);
+                        callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn);
                     }
                     goOffline();
                     LOG_INFO("Local problem with connection. Closed session: %s", errStr);
@@ -260,7 +261,7 @@ namespace magique
 
     namespace global
     {
-        inline MultiplayerData MP_DATA{};
+        inline NetworkingData MP_DATA{};
     } // namespace global
 
     inline void OnConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
