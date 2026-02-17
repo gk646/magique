@@ -1,6 +1,6 @@
 #include <magique/ui/controls/Checkbox.h>
 
-#include "magique/core/Core.h"
+#include "magique/core/Engine.h"
 #include "magique/core/Draw.h"
 #include "magique/ui/UI.h"
 #include "magique/util/RayUtils.h"
@@ -47,7 +47,7 @@ namespace magique
         }
         const auto size = UIGetScaled(15);
         const auto pos = Point{bounds.x - 2, bounds.y + (bounds.height - size) / 2};
-        DrawTextRightBound(GetEngineFont(), infoText.c_str(), pos, size);
+        DrawTextRightBound(EngineGetFont(), infoText.c_str(), pos, size);
     }
 
 } // namespace magique

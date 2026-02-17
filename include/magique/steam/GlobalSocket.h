@@ -22,28 +22,28 @@ namespace magique
 {
     // Returns true if global multiplayer was initialized successfully
     // Note: HAS to be called MANUALLY before any other global multiplayer methods
-    bool InitGlobalMultiplayer();
+    bool GlobalSocketInit();
 
     //================= HOST =================//
 
     // Creates a global steam sockets so others can connect to you - makes you the host
     // Returns true if it was successful
-    bool CreateGlobalSocket();
+    bool GlobalSocketCreate();
 
     // Closes the listening socket - optionally specify a close code or string that can be read on the receiver
     // Returns true if an existing connection was closed successfully
-    bool CloseGlobalSocket(int closeCode = 0, const char* closeReason = nullptr);
+    bool GlobalSocketClose(int closeCode = 0, const char* closeReason = nullptr);
 
     //================= CLIENT =================//
 
     // Connects to a global socket via the steam id
     // Note: To get the steam id of the clients you usually have to create a lobby
-    Connection ConnectToGlobalSocket(SteamID steamID);
+    Connection GlobalSocketConnect(SteamID steamID);
 
     // Disconnects from the socket (if any)
     // Optionally specify a close code or string that can be read on the receiver
     // Returns true if an existing connection was closed successfully
-    bool DisconnectFromGlobalSocket(int closeCode = 0, const char* closeReason = nullptr);
+    bool GlobalSocketDisconnect(int closeCode = 0, const char* closeReason = nullptr);
 
 } // namespace magique
 

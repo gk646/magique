@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <raylib/raylib.h>
 
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
-#include <magique/core/Animations.h>
+#include <magique/core/Animation.h>
 #include <magique/core/Camera.h>
 
 #include "internal/globals/ECSData.h"
@@ -289,23 +289,21 @@ namespace magique
         reg.emplace<CameraC>(target);
     }
 
-    static HashSet<entt::entity>& QueryLoadedEntitiesRectIMPL(MapID map, Point origin, Point size)
+    static HashSet<entt::entity>& QueryLoadedIMPL(MapID map, const Rect& area)
     {
         auto& dynamicData = global::DY_COLL_DATA;
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
-        dynamicData.mapEntityGrids[map].query(set, origin.x, origin.y, size.x, size.y);
+        dynamicData.mapEntityGrids[map].query(set, area.x, area.y, area.w, area.h);
         return set;
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesCircle(MapID map, Point origin, float size,
-                                                               const FilterFunc& filter)
+    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
     {
-        QueryLoadedEntitiesRectIMPL(map, origin - size, Point{size * 2});
-        auto& set = global::ENGINE_DATA.queryCache;
+        auto& set = QueryLoadedIMPL(map, Rect{mid - radius, Point{radius * 2}});
         for (auto it = set.begin(); it != set.end();)
         {
-            if (CollisionC::GetMiddle(*it).euclidean(origin) > size || (filter && !filter(*it)))
+            if (CollisionC::GetMiddle(*it).euclidean(mid) > radius || (filter && !filter(*it)))
             {
                 it = set.erase(it);
             }
@@ -317,15 +315,12 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryLoadedEntitiesRect(MapID map, Point origin, Point size,
-                                                             const FilterFunc& filter)
+    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter)
     {
-        auto& set = global::ENGINE_DATA.queryCache;
-        QueryLoadedEntitiesRectIMPL(map, origin, size);
-        const Rect bounds{origin, size};
+        auto& set = QueryLoadedIMPL(map, rect);
         for (auto it = set.begin(); it != set.end();)
         {
-            if (!bounds.contains(CollisionC::GetMiddle(*it)) || (filter && !filter(*it)))
+            if (!rect.contains(CollisionC::GetMiddle(*it)) || (filter && !filter(*it)))
             {
                 it = set.erase(it);
             }
@@ -337,7 +332,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesCircle(MapID map, Point origin, float size, const FilterFunc& filter)
+    const std::vector<entt::entity>& EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
@@ -353,15 +348,14 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& QueryEntitiesRect(MapID map, Point origin, Point size, const FilterFunc& filter)
+    const std::vector<entt::entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
-        const Rect bounds{origin, size};
         for (const auto e : ComponentGetView<PositionC>())
         {
             const auto& pos = ComponentGet<PositionC>(e);
-            if (pos.map != map || !bounds.contains(pos.pos) || (filter && !filter(e))) [[likely]]
+            if (pos.map != map || !rect.contains(pos.pos) || (filter && !filter(e))) [[likely]]
             {
                 continue;
             }

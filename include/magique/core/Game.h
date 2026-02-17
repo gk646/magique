@@ -64,7 +64,7 @@ namespace magique
         virtual void onCloseEvent() { shutDown(); }
 
         // Called once before the game closes
-        virtual void onShutDown() { GameSystemPrintBenchmark(); }
+        virtual void onShutDown() { GameSystemPrintStats(); }
 
         //================= CORE =================//
 

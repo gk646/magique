@@ -2,7 +2,7 @@
 #define MAGIQUE_EXAMPLE_CAMERASHAKE_H
 
 #include <magique/core/Camera.h>
-#include <magique/core/Debug.h>
+#include <magique/core/EngineUtil.h>
 #include <magique/util/Logging.h>
 #include <magique/core/Game.h>
 #include <raylib/raylib.h>

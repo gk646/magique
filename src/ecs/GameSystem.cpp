@@ -3,7 +3,7 @@
 #include <magique/ecs/GameSystem.h>
 #include <magique/util/Datastructures.h>
 #include <magique/core/Camera.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 
 #include "internal/Shared.h"
 
@@ -42,7 +42,7 @@ namespace magique
     inline GameSystemData SYSTEM_DATA{};
 
 #define CALL_FUNCTIONS(function, call)                                                                                  \
-    const auto state = GetGameState();                                                                                  \
+    const auto state = EngineGetState();                                                                                \
     for (auto& slot : SYSTEM_DATA.systems)                                                                              \
     {                                                                                                                   \
         if (slot.system->validStates[(int)state] && slot.system->shouldBeCalled())                                      \
@@ -84,7 +84,7 @@ namespace magique
         SYSTEM_DATA.systems.emplace_back(system);
     }
 
-    void GameSystemPrintBenchmark()
+    void GameSystemPrintStats()
     {
         if (!SYSTEM_DATA.benchmark)
         {
@@ -107,7 +107,7 @@ namespace magique
         }
     }
 
-    void GameSystemSetBenchmark(bool value)
+    void GameSystemEnableStatistics(bool value)
     {
         SYSTEM_DATA.benchmark = value;
         if (value)

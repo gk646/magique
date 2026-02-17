@@ -191,7 +191,7 @@ struct Example final : Game
     void drawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
-        for (const auto e : GetDrawEntities())
+        for (const auto e : EngineGetDrawEntities())
         {
             const auto& pos = ComponentGet<const PositionC>(e);
             const auto& col = ComponentGet<const CollisionC>(e);

@@ -2,7 +2,7 @@
 
 #include <magique/gamedev/GameEvents.h>
 
-#include <magique/multiplayer/Multiplayer.h>
+#include <magique/multiplayer/Networking.h>
 #include <magique/ecs/ECS.h>
 
 namespace magique

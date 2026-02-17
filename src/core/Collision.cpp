@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <raylib/raylib.h>
 
-#include <magique/core/CollisionDetection.h>
+#include <magique/core/Collision.h>
 #include <magique/ecs/Components.h>
 #include <magique/internal/Macros.h>
 

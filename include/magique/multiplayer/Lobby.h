@@ -47,15 +47,15 @@ namespace magique
 
     // Sets the callback that is called on each new chat message sent in the lobby
     // Note: This will also be called for your OWN message - so you don't have to make a special case for those
-    void SetLobbyChatCallback(const LobbyChatCallback& callback);
+    void LobbySetChatCallback(const LobbyChatCallback& callback);
 
     using LobbyMetadataCallback = std::function<void(Connection sender, const char* key, const char* val)>;
 
     // Sets the callback for any metadata actions
-    void SetLobbyMetadataCallback(const LobbyMetadataCallback& callback);
+    void LobbySetMetadataCallback(const LobbyMetadataCallback& callback);
 
     // Returns the global lobby object
-    Lobby& GetLobby();
+    Lobby& LobbyGet();
 
     struct Lobby final
     {

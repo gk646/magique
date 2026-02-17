@@ -40,7 +40,7 @@ namespace magique
                 {
                     metadataCallback(msg.connection, key, value);
                 }
-                if (GetIsClient())
+                if (NetworkIsClient())
                 {
                     metadata[key] = value;
                 }

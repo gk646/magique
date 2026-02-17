@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_TEXTFIELD_H
 #define MAGIQUE_TEXTFIELD_H
 
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #include <magique/ui/UIObject.h>
 #include <magique/ui/UI.h>
 M_IGNORE_WARNING(4100)
@@ -57,7 +57,7 @@ namespace magique
         bool updateInputs(bool allowInput = true);
 
         // Draws the text and updates the selection
-        void drawText(float size, Color txt, Color cursor, const Font& font = GetEngineFont(), float spacing = 1,
+        void drawText(float size, Color txt, Color cursor, const Font& font = EngineGetFont(), float spacing = 1,
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
@@ -90,7 +90,7 @@ namespace magique
 
         // Adjust the bounds such that the text fits inside
         // Keeps the top left the same
-        void fitBoundsToText(float size = 14, const Font& font = GetEngineFont(), float spacing = 1,
+        void fitBoundsToText(float size = 14, const Font& font = EngineGetFont(), float spacing = 1,
                              bool heightOnly = false);
 
     private:

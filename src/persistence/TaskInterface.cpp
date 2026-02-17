@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/persistence/TaskInterface.h>
+#include <magique/persistence/SaveLoader.h>
 
 namespace magique
 {
-    TaskInterface::TaskInterface(const bool mainOnly) : mainOnly(mainOnly) {}
+    SaveLoader::SaveLoader(const bool mainOnly) : mainOnly(mainOnly) {}
 
-    bool TaskInterface::registerTask(ITask<GameSaveData>* task, const PriorityLevel pl, const int impact)
+    bool SaveLoader::registerTask(ITask<GameSave>* task, const PriorityLevel pl, const int impact)
     {
         return addTask(task, pl, mainOnly ? THREAD_MAIN : THREAD_ANY, impact);
     }
 
-    bool TaskInterface::registerTask(const GameLoadFunc& func, const PriorityLevel pl, const int impact)
+    bool SaveLoader::registerTask(const GameLoadFunc& func, const PriorityLevel pl, const int impact)
     {
         return addLambdaTask(func, pl, mainOnly ? THREAD_MAIN : THREAD_ANY, impact);
     }
 
-    void TaskInterface::invoke(GameSaveData& save, const char* name)
+    void SaveLoader::invoke(GameSave& save, const char* name)
     {
         if (totalTasks == 0)
         {
@@ -34,6 +34,6 @@ namespace magique
         reset(); // Reset the loader so it can be reused
     }
 
-    bool TaskInterface::step() { return true; }
+    bool SaveLoader::step() { return true; }
 
 } // namespace magique

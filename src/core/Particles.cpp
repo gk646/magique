@@ -5,10 +5,10 @@
 
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 
 #include "internal/globals/ParticleData.h"
-#include "magique/core/CollisionDetection.h"
+#include "magique/core/Collision.h"
 #include "magique/util/Math.h"
 #include "magique/util/RayUtils.h"
 

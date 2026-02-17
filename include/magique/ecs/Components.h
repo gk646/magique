@@ -2,9 +2,6 @@
 #ifndef MAGIQUE_COMPONENTS_H
 #define MAGIQUE_COMPONENTS_H
 
-#include "magique/core/Types.h"
-
-
 #include <magique/core/Types.h>
 #include <magique/util/Datastructures.h>
 

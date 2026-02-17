@@ -16,26 +16,28 @@ namespace magique
 {
     // Returns true if the initialization of steam was successful
     // If specified creates a test steam_appid.txt file with the id 480 (test project)
-    bool InitSteam(bool createAppIDFile = true);
+    bool SteamInit(bool createAppIDFile = true);
 
     //================= USER =================//
 
     // Returns your own steam id
-    SteamID GetUserSteamID();
+    SteamID SteamGetID();
 
-    // Returns the name of this steam user - copy the string if you want to save it
-    const char* GetSteamUserName();
+    // Returns the name of this steam user
+    const char* SteamGetUserName();
+
+    const char* SteamGetName(SteamID id);
 
     // Sets the callback function called when the steam overlay is opened or closed
-    void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback);
+    void SteamSetOverlayCallback(SteamOverlayCallback steamOverlayCallback);
 
     //================= PERSISTENCE =================//
 
-    // Returns the location of the local user data folder specific to the game and steam id
+    // Returns the path of the local user data folder specific to the game and steam id
     // Note: This should be used to load and store local data for steam games - automatically adjusts to game and user
-    const char* GetSteamUserDataLocation();
+    const char* SteamGetUserDataLocation();
 
 } // namespace magique
 
 
-#endif //MAGIQUE_STEAM_H
+#endif // MAGIQUE_STEAM_H

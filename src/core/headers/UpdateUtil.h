@@ -32,7 +32,7 @@ namespace magique
         static int achieveCounter = 0;
         if (achieveCounter > 30)
         {
-            CheckAchievements();
+            AchievementPoll();
             achieveCounter = 0;
         }
         ++achieveCounter;

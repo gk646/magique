@@ -60,7 +60,7 @@ namespace magique
     //================= UTIL =================//
 
     // Returns true if the given point is inside any actors view bounds (using the camera bounds)
-    bool IsInsideAnyActorViewBounds(Point pos);
+    bool CameraInsideAnyViewBounds (Point pos);
 
     //================= SHAKE =================//
 
@@ -70,7 +70,7 @@ namespace magique
     //      - velocity: how far the shake changes each tick in pixels/s
     //      - decay: how much the maxDistance is reduced in pixels/s
     // Note: the shake stops when maxDistance is 0 - the direction of multiple impulses adds up, the rest overwrites
-    void CameraAddShakeImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
+    void CameraShakeAddImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
 
 } // namespace magique
 

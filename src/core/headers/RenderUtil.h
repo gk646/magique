@@ -20,7 +20,7 @@ namespace magique
                 if (isStartup)
                 {
                     game.onLoadingFinished();
-                    ResetPerformanceData();
+                    EngineResetBenchmark();
                 }
             }
         }
@@ -87,7 +87,7 @@ namespace magique
         const auto map = CameraGetMap();
 
         // Dynamic entities
-        for (const auto e : GetDrawEntities())
+        for (const auto e : EngineGetDrawEntities())
         {
             if (!EntityHasComponents<CollisionC>(e))
             {

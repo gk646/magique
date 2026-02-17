@@ -147,7 +147,7 @@ namespace magique
 
         // Applies to all values
         Rect& floor();
-        Rect floor()const;
+        Rect floor() const;
         Rect& round();
         Rect& zero();
 
@@ -306,7 +306,7 @@ namespace magique
 
     private:
         int tileId = 0;
-        char* name = nullptr;
+        const char* name = nullptr;
         int id = INT32_MAX;
         TiledProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES];
         friend TileMap ImportTileMap(const Asset& asset);
@@ -626,6 +626,7 @@ namespace magique
         DATA_TABLE, // Saves data for a magique::DataTable
         KEY_BIND,   // Stores a key bind (used only by GameConfig)
         VALUE,      // Stores an 8 bytes value (used only by GameConfig)
+        JSON,       // Stores JSON
         EMPTY,      // Storage is empty
     };
 

@@ -67,7 +67,7 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    bool IsInsideAnyActorViewBounds(Point point)
+    bool CameraInsideAnyViewBounds(Point point)
     {
         auto bounds = CameraGetBounds();
 
@@ -88,7 +88,7 @@ namespace magique
         return false;
     }
 
-    void CameraAddShakeImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
+    void CameraShakeAddImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
     {
         auto& shake = global::ENGINE_DATA.cameraShake;
         shake.decay = decay;

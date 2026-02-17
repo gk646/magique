@@ -5,7 +5,7 @@
 #include <entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
 #include <magique/internal/Macros.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 
 //===============================
 // ECS Module
@@ -89,11 +89,11 @@ namespace magique
     // Retrieves the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view
     template <typename T>
-    T& ComponentGet(entt::entity entity = GetPlayerEntity());
+    T& ComponentGet(entt::entity entity = EngineGetPlayer());
 
     // Returns one or more of the specified components from the entity
     template <typename... T>
-    auto ComponentsGet(entt::entity entity = GetPlayerEntity());
+    auto ComponentsGet(entt::entity entity = EngineGetPlayer());
 
     // Tries to retrieve the specified component from the global registry
     // Note: When using views to iterate over entities it's faster to access components over the view

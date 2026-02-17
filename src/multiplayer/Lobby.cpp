@@ -4,19 +4,19 @@
 #include "internal/globals/MultiplayerData.h"
 namespace magique
 {
-    void SetLobbyChatCallback(const LobbyChatCallback& callback) { global::LOBBY_DATA.chatCallback = callback; }
+    void LobbySetChatCallback(const LobbyChatCallback& callback) { global::LOBBY_DATA.chatCallback = callback; }
 
-    void SetLobbyMetadataCallback(const LobbyMetadataCallback& callback)
+    void LobbySetMetadataCallback(const LobbyMetadataCallback& callback)
     {
         global::LOBBY_DATA.metadataCallback = callback;
     }
 
     inline Lobby LOBBY{};
 
-    Lobby& GetLobby() { return LOBBY; }
+    Lobby& LobbyGet() { return LOBBY; }
 
 #define MG_SESSION_LOCK()                                                                                               \
-    if (!GetInMultiplayerSession())                                                                                     \
+    if (!NetworkInSession())                                                                                     \
     {                                                                                                                   \
         return;                                                                                                         \
     }
@@ -31,7 +31,7 @@ namespace magique
         buff[1] = (int8_t)value;
 
         const auto payload = Payload(buff, 2, MAGIQUE_LOBBY_PACKET_TYPE);
-        BatchMessageToAll(payload);
+        NetworkSendAll(payload);
     }
 
     bool Lobby::getStartSignal() const { return global::LOBBY_DATA.startSignal; }
@@ -54,7 +54,7 @@ namespace magique
         std::memcpy(buff + 1, message, len);
         buff[len + 1] = '\0';
         const auto payload = Payload(buff, 1 + len + 1, MAGIQUE_LOBBY_PACKET_TYPE);
-        BatchMessageToAll(payload);
+        NetworkSendAll(payload);
     }
 
     void Lobby::setMetadata(const char* key, const char* value)
@@ -84,13 +84,13 @@ namespace magique
         buff[keyLen + 1 + valLen + 1] = '\0';
 
         const auto payload = Payload(buff, 1 + keyLen + 1 + valLen + 1, MAGIQUE_LOBBY_PACKET_TYPE);
-        if (GetIsClient())
+        if (NetworkIsClient())
         {
-            BatchMessage(GetCurrentConnections().front(), payload);
+            NetworkSendHost( payload);
         }
         else
         {
-            BatchMessageToAll(payload);
+            NetworkSendAll(payload);
         }
     }
 

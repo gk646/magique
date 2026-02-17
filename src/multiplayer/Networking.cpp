@@ -3,7 +3,7 @@
 #include <vector>
 #include <magique/core/Types.h>
 #include <entt/entity/entity.hpp>
-#include <magique/multiplayer/Multiplayer.h>
+#include <magique/multiplayer/Networking.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/internal/Macros.h>
@@ -14,114 +14,55 @@
 
 namespace magique
 {
-    void BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
-    {
-        MAGIQUE_ASSERT(payload.size > 0, "Passed invalid input parameters");
-        MAGIQUE_ASSERT(flag == SendFlag::UNRELIABLE || flag == SendFlag::RELIABLE, "Passed invalid input parameters");
-        if (!GetInMultiplayerSession() || conn == Connection::INVALID_CONNECTION) [[unlikely]]
-        {
-            return;
-        }
-        // This can cause runtime crash
-        if (payload.data == nullptr || payload.size > BatchBuffer::BUFF_SIZE) [[unlikely]]
-        {
-            LOG_WARNING("Invalid payload data");
-            return;
-        }
-        auto& data = global::MP_DATA;
-        global::BATCHER.batchMessage(data.outMsgBuffer, conn, payload.data, payload.type, payload.size, flag);
-        global::MP_DATA.statistics.addOutgoing(payload.type, payload.size);
-    }
-
-    void BatchToHost(const Payload payload, const SendFlag flag)
-    {
-        BatchMessage(GetCurrentConnections().front(), payload, flag);
-    }
-
-    void BatchMessageToAll(const Payload payload, const SendFlag flag)
-    {
-        for (const auto conn : GetCurrentConnections())
-        {
-            BatchMessage(conn, payload, flag);
-        }
-    }
-
-    void BatchMessageToAll(Payload payload, SendFlag flag, Connection exclude)
-    {
-        for (const auto conn : GetCurrentConnections())
-        {
-            if (conn != exclude)
-            {
-                BatchMessage(conn, payload, flag);
-            }
-        }
-    }
-
-    void SendBatch()
-    {
-        auto& data = global::MP_DATA;
-        global::BATCHER.sendAll(data.outMsgBuffer);
-        if (data.outMsgBuffer.empty())
-        {
-            [[unlikely]] return;
-        }
-        const auto size = data.outMsgBuffer.size();
-        SteamNetworkingSockets()->SendMessages(size, data.outMsgBuffer.data(), nullptr);
-        data.outMsgBuffer.clear();
-    }
-
-    static char MESSAGE_BUFFER[1500]{}; // To insert the message type before the actual data
-
-    bool SendMessage(Connection conn, Payload payload, SendFlag flag)
+    bool NetworkSend(Connection conn, Payload payload, SendFlag flag)
     {
         MAGIQUE_ASSERT(static_cast<int>(conn) != k_HSteamNetConnection_Invalid, "Invalid connection");
         MAGIQUE_ASSERT(flag <= SendFlag::RELIABLE, "Invalid flag");
 
-        if (payload.data == nullptr) [[unlikely]] // This can cause runtime crash
-        {
-            LOG_WARNING("Invalid payload data");
-            return false;
-        }
-        if (!GetInMultiplayerSession()) [[unlikely]]
+        if (payload.data == nullptr || !NetworkInSession()) [[unlikely]] // This can cause runtime crash
         {
             return false;
         }
-        const int totalSize = payload.size + 1;
-        char* buffer = MESSAGE_BUFFER;
-        if (static_cast<int>(sizeof(MESSAGE_BUFFER)) < totalSize)
-        {
-            buffer = new char[totalSize];
-        }
-        buffer[0] = static_cast<char>(payload.type);
-        std::memcpy(buffer + 1, payload.data, payload.size);
 
-        global::MP_DATA.statistics.addOutgoing(payload.type, payload.size);
-        const auto res = SteamNetworkingSockets()->SendMessageToConnection(static_cast<int>(conn), buffer, totalSize,
-                                                                           static_cast<int>(flag), nullptr);
-        if (buffer != MESSAGE_BUFFER)
-        {
-            delete[] buffer;
-        }
-        return res == k_EResultOK;
+        auto* msg = SteamNetworkingUtils()->AllocateMessage(payload.size + 1);
+
+        // Reserved message type
+        static_cast<char*>(msg->m_pData)[0] = static_cast<char>(payload.type);
+        std::memcpy(static_cast<char*>(msg->m_pData) + 1, payload.data, payload.size);
+
+        // set the flags
+        msg->m_nFlags = static_cast<int>(flag);
+        msg->m_conn = static_cast<HSteamNetConnection>(conn);
+
+        global::MP_DATA.statistics.addOutgoing(payload);
+        SteamNetworkingSockets()->SendMessages(1, &msg, nullptr);
+        return true;
     }
 
-    void SendMessageToAll(const Payload payload, const SendFlag flag)
+    bool NetworkSendAll(const Payload payload, const SendFlag flag)
     {
-        for (const auto conn : GetCurrentConnections())
+        bool success = true;
+        for (const auto conn : NetworkGetConnections())
         {
-            SendMessage(conn, payload, flag);
+            success &= NetworkSend(conn, payload, flag);
         }
+        return success;
     }
 
-    void FlushMessages()
+    bool NetworkSendHost(Payload payload, SendFlag flag)
     {
-        for (const auto conn : GetCurrentConnections())
+        return NetworkSend(NetworkGetConnections().front(), payload, flag);
+    }
+
+    void NetworkFlush()
+    {
+        for (const auto conn : NetworkGetConnections())
         {
             SteamNetworkingSockets()->FlushMessagesOnConnection(static_cast<int>(conn));
         }
     }
 
-    const std::vector<Message>& ReceiveIncomingMessages(const int max)
+    const std::vector<Message>& NetworkReceive(const int max)
     {
         auto& data = global::MP_DATA;
         if (!data.incMsgBuffer.empty()) [[likely]]
@@ -135,7 +76,7 @@ namespace magique
             data.incMsgVec.clear();
         }
 
-        if (!GetInMultiplayerSession()) [[unlikely]]
+        if (!NetworkInSession()) [[unlikely]]
         {
             return data.incMsgVec;
         }
@@ -154,23 +95,11 @@ namespace magique
                 message.connection = static_cast<Connection>(msg->m_conn);
                 message.timeStamp = msg->m_usecTimeReceived;
 
-                // Batched message
-                if (message.payload.type == MAGIQUE_BATCHED_PACKET_TYPE) [[likely]]
-                {
-                    global::BATCHER.handleBatchedPacket(data.incMsgVec, message);
-                }
-                else
-                {
-                    data.incMsgVec.push_back(message);
-                }
-            }
+                data.incMsgVec.push_back(message);
 #ifdef MAGIQUE_DEBUG
-            for (size_t i = start; i < data.incMsgVec.size(); ++i)
-            {
-                auto& msg = data.incMsgVec[i];
-                global::MP_DATA.statistics.addIncoming(msg.payload.type, msg.payload.size);
-            }
+                global::MP_DATA.statistics.addIncoming(message.payload);
 #endif
+            }
         };
 
         MAGIQUE_ASSERT(data.incMsgBuffer.empty(), "Must be empty by now");
@@ -193,24 +122,22 @@ namespace magique
         return data.incMsgVec;
     }
 
-    const std::vector<Connection>& GetCurrentConnections() { return global::MP_DATA.connections; }
+    const std::vector<Connection>& NetworkGetConnections() { return global::MP_DATA.connections; }
 
     //----------------- UTIL -----------------//
 
-    void SetMultiplayerCallback(const MultiplayerCallback& func) { global::MP_DATA.callback = func; }
+    void NetworkSetCallback(const NetworkCallback& func) { global::MP_DATA.callback = func; }
 
-    bool GetInMultiplayerSession() { return global::MP_DATA.isInSession; }
+    bool NetworkInSession() { return global::MP_DATA.inSession; }
 
-    bool GetIsHost() { return global::MP_DATA.isInSession && global::MP_DATA.isHost; }
+    bool NetworkIsHost() { return global::MP_DATA.inSession && global::MP_DATA.isHost; }
 
-    bool GetIsActiveHost() { return GetIsHost() && !global::MP_DATA.connections.empty(); }
+    bool NetworkIsClient() { return global::MP_DATA.inSession && !global::MP_DATA.isHost; }
 
-    bool GetIsClient() { return global::MP_DATA.isInSession && !global::MP_DATA.isHost; }
-
-    void SetConnectionEntityMapping(const Connection conn, const entt::entity entity)
+    void NetworkSetConnMapping(const Connection conn, const entt::entity entity)
     {
         auto& data = global::MP_DATA;
-        if (!GetInMultiplayerSession())
+        if (!NetworkInSession())
         {
             LOG_WARNING("Cant set mapping - not in multiplayer session");
             return;
@@ -231,7 +158,7 @@ namespace magique
         data.connectionMapping.push_back(ConnMapping{conn, entity});
     }
 
-    entt::entity GetConnectionEntityMapping(const Connection conn)
+    entt::entity NetworkGetConnMapping(const Connection conn)
     {
         auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
@@ -244,7 +171,7 @@ namespace magique
         return entt::null;
     }
 
-    Connection GetConnectionEntityMapping(const entt::entity entity)
+    Connection NetworkGetConnMapping(const entt::entity entity)
     {
         auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
@@ -257,18 +184,15 @@ namespace magique
         return Connection::INVALID_CONNECTION;
     }
 
-    int GetConnectionNum(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
+    int NetworkGetConnNumber(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
 
-    void EnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
+    void NetworkEnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 
-    void ExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
+    void NetworkExitClientMode() { global::ENGINE_CONFIG.isClientMode = false; }
 
-    bool GetIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
+    bool NetworkIsClientMode() { return global::ENGINE_CONFIG.isClientMode; }
 
-    internal::MultiplayerStatsData internal::getStats()
-    {
-        return global::MP_DATA.statistics.getStats();
-    }
+    internal::MultiplayerStatsData internal::getStats() { return global::MP_DATA.statistics.getStats(); }
 
 } // namespace magique
 
@@ -290,13 +214,13 @@ namespace magique
         (void)flag;
     }
 
-    void BatchMessageToAll(const Payload payload, const SendFlag flag)
+    void NetworkSendAll(const Payload payload, const SendFlag flag)
     {
         (void)payload;
         (void)flag;
     }
 
-    void BatchMessageToAll(Payload payload, SendFlag flag, Connection exclude)
+    void NetworkSendAll(Payload payload, SendFlag flag, Connection exclude)
     {
         (void)payload;
         (void)flag;

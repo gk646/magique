@@ -40,11 +40,6 @@ namespace magique
     // Sets the position of the emission shape - top left for rect, middle point for circle
     void ParticlesEmit(const ScreenEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
 
-    // Adds an entity particle to the ECS
-    // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
-    // Sets the position of the emission shape - top left for rect, middle point for circle
-    entt::entity ParticlesEmit(const EntityEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
-
     //================= EMITTERS =================//
 
     struct EmitterBase

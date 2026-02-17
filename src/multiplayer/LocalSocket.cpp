@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 
-#include <magique/multiplayer/LocalSockets.h>
+#include <magique/multiplayer/LocalSocket.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -22,7 +22,7 @@
 namespace magique
 {
 
-    bool InitLocalMultiplayer()
+    bool LocalSocketInit()
     {
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
 #ifndef MAGIQUE_STEAM
@@ -53,10 +53,10 @@ namespace magique
 
     //----------------- HOST -----------------//
 
-    bool CreateLocalSocket(const uint16_t port)
+    bool LocalSocketCreate(const uint16_t port)
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
         MAGIQUE_ASSERT(port < UINT16_MAX, "Port has to be smaller than 65536");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
@@ -74,11 +74,11 @@ namespace magique
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
-    bool CloseLocalSocket(const int closeCode, const char* closeReason)
+    bool LocalSocketClose(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
-        if (!data.isInSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
         {
             return false;
         }
@@ -94,10 +94,10 @@ namespace magique
 
     //----------------- CLIENT -----------------//
 
-    Connection ConnectToLocalSocket(const char* ip, const uint16_t port)
+    Connection LocalSocketConnect(const char* ip, const uint16_t port)
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
         MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
@@ -121,12 +121,12 @@ namespace magique
         return data.connections[0];
     }
 
-    bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
+    bool LocalSocketDisconnect(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
 
-        if (!data.isInSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
+        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
         {
             return false;
         }
@@ -139,7 +139,7 @@ namespace magique
 
     static std::string IP_ADDR{};
 
-    const char* GetLocalIP()
+    const char* LocalSocketGetIP()
     {
         if (!IP_ADDR.empty())
         {

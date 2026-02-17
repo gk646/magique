@@ -6,7 +6,7 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
-#include "magique/core/Core.h"
+#include "magique/core/Engine.h"
 #include "magique/core/Draw.h"
 #include "magique/util/RayUtils.h"
 
@@ -68,7 +68,7 @@ namespace magique
         const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawHoverText(GetEngineFont(), UIGetScaled(15), DARKGRAY, GRAY, WHITE);
+        drawHoverText(EngineGetFont(), UIGetScaled(15), DARKGRAY, GRAY, WHITE);
     }
 
     void Button::drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const
@@ -102,7 +102,7 @@ namespace magique
     void TextButton::drawDefault(const Rectangle& bounds)
     {
         auto size = UIGetScaled(15);
-        const auto& font = GetEngineFont();
+        const auto& font = EngineGetFont();
         fitToText(font, size);
         Button::drawDefault(bounds);
         DrawTextCenteredRect(font, text.c_str(), size, bounds, 1.0F, global::ENGINE_CONFIG.theme.textActive);

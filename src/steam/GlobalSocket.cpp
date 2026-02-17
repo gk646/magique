@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
-#include <magique/steam/GlobalSockets.h>
+#include <magique/steam/GlobalSocket.h>
 #ifndef MAGIQUE_STEAM
 #include "magique/util/Logging.h"
 namespace magique
@@ -19,7 +19,7 @@ namespace magique
 {
     //----------------- HOST -----------------//
 
-    bool InitGlobalMultiplayer()
+    bool GlobalSocketInit()
     {
         if (!global::STEAM_DATA.isInitialized)
         {
@@ -31,10 +31,10 @@ namespace magique
         return res == k_ESteamNetworkingAvailability_Current;
     }
 
-    bool CreateGlobalSocket()
+    bool GlobalSocketCreate()
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.isInSession, "Already in a session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in a session. Close any existing connections or sockets first!");
 
         data.listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
         if (data.listenSocket == k_HSteamListenSocket_Invalid)
@@ -46,10 +46,10 @@ namespace magique
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
-    bool CloseGlobalSocket(const int closeCode, const char* closeReason)
+    bool GlobalSocketClose(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.isInSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
             return false;
 
         for (const auto conn : data.connections)
@@ -68,10 +68,10 @@ namespace magique
 
     //----------------- CLIENT -----------------//
 
-    Connection ConnectToGlobalSocket(const SteamID magiqueSteamID)
+    Connection GlobalSocketConnect(const SteamID magiqueSteamID)
     {
         auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(!data.isInSession, "Already in session. Close any existing connections or sockets first!");
+        MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
 
         const CSteamID steamID{static_cast<uint64>(magiqueSteamID)};
         if (!steamID.IsValid())
@@ -94,10 +94,10 @@ namespace magique
         return data.connections[0];
     }
 
-    bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason)
+    bool GlobalSocketDisconnect(const int closeCode, const char* closeReason)
     {
         auto& data = global::MP_DATA;
-        if (!data.isInSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
+        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID_CONNECTION)
             return false;
 
         const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);

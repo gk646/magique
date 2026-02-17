@@ -22,7 +22,6 @@ namespace magique
 
 namespace magique
 {
-
     static void SteamDebugCallback(int isWarning, const char* text)
     {
         if (isWarning == 1)
@@ -35,7 +34,7 @@ namespace magique
         }
     }
 
-    bool InitSteam(const bool createFile)
+    bool SteamInit(const bool createFile)
     {
         auto& steamData = global::STEAM_DATA;
         if (createFile)
@@ -74,30 +73,32 @@ namespace magique
 
         // Cache the steam id - will stay the same
         const auto id = SteamUser()->GetSteamID();
-        memcpy(&steamData.userID, &id, sizeof(id));
+        std::memcpy(&steamData.userID, &id, sizeof(id));
 
         steamData.isInitialized = true;
         LOG_INFO("Initialized steam");
         return true;
     }
 
-    SteamID GetUserSteamID()
+    SteamID SteamGetID()
     {
         auto& steamData = global::STEAM_DATA;
         MAGIQUE_ASSERT(steamData.isInitialized, "Steam is not initialized");
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
     }
 
-    const char* GetSteamUserName() { return SteamFriends()->GetPersonaName(); }
+    const char* SteamGetUserName() { return SteamFriends()->GetPersonaName(); }
 
-    void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback)
+    const char* SteamGetName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
+
+    void SteamSetOverlayCallback(SteamOverlayCallback steamOverlayCallback)
     {
         global::STEAM_DATA.overlayCallback = steamOverlayCallback;
     }
 
     static char TEMP[256]{};
 
-    const char* GetSteamUserDataLocation()
+    const char* SteamGetUserDataLocation()
     {
         MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized");
         SteamUser()->GetUserDataFolder(TEMP, 512);

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_STATIC_COLLISION_SYSTEM_H
 #define MAGIQUE_STATIC_COLLISION_SYSTEM_H
-#include "magique/core/CollisionDetection.h"
+#include "magique/core/Collision.h"
 
 //-----------------------------------------------
 // Static Collision System

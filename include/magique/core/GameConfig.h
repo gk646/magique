@@ -72,8 +72,8 @@ namespace magique
     private:
         static GameConfig LoadFromFile(const char* filePath, uint64_t key = 0);
         static void SaveToFile(const GameConfig& config, const char* filePath, uint64_t key = 0);
-        internal::GameConfigStorageCell* getCell(ConfigID id);
-        std::vector<internal::GameConfigStorageCell> storage; // Saves all types except string
+        internal::StorageCell* getCell(ConfigID id);
+        std::vector<internal::StorageCell> storage; // Saves all types except string
         bool loaded = false;
         befriend(Game, GameConfig& GetGameConfig())
     };
@@ -89,7 +89,7 @@ namespace magique
         auto* cell = getCell(id);
         if (cell == nullptr)
         {
-            internal::GameConfigStorageCell newCell{id};
+            internal::StorageCell newCell{id};
             newCell.assign(reinterpret_cast<const char*>(&val), sizeof(T), StorageType::VALUE);
             storage.push_back(newCell);
         }

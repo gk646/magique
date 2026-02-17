@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <magique/ui/UIObject.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #include <functional>
 
 //===============================================

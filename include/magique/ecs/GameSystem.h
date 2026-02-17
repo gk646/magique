@@ -71,11 +71,11 @@ namespace magique
 
     // Prints a table that show average time of each function call for each system
     // Default: Called on Game::onShutdown()
-    void GameSystemPrintBenchmark();
+    void GameSystemPrintStats();
 
     // If true all systems are benchmarked - existing data is cleared on enabling
     // Default: Enabled if in debug mode (MAGIQUE_DEBUG)
-    void GameSystemSetBenchmark(bool value);
+    void GameSystemEnableStatistics(bool value);
 
 } // namespace magique
 

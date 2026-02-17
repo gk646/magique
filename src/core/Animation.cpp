@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/core/Animations.h>
+#include <magique/core/Animation.h>
 
 
 namespace magique

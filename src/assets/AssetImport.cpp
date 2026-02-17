@@ -12,7 +12,7 @@
 
 #include "internal/globals/TextureAtlas.h"
 #include "assets/headers/AssetUtil.h"
-#include "magique/core/Animations.h"
+#include "magique/core/Animation.h"
 
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #define CUTE_TILED_NO_EXTERNAL_TILESET_WARNING

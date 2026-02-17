@@ -3,7 +3,7 @@
 #define MAGIQUE_MULTIPLAYER_DATA_H
 
 #include <magique/util/Logging.h>
-#include <magique/multiplayer/Multiplayer.h>
+#include <magique/multiplayer/Networking.h>
 #include <magique/multiplayer/Lobby.h>
 #include <magique/internal/Macros.h>
 
@@ -21,8 +21,6 @@
 #endif
 
 using MessageVec = std::vector<SteamNetworkingMessage_t*>;
-
-#include "internal/utils/MessageBatcher.h"
 
 inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
 {
@@ -50,7 +48,7 @@ namespace magique
     struct MultiplayerData final
     {
         MultiplayerStatistics statistics{};
-        MultiplayerCallback callback;                                   // Callback
+        NetworkCallback callback;                                   // Callback
         std::vector<Connection> connections;                            // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
@@ -59,7 +57,7 @@ namespace magique
         ConnNumberMapping numberMapping{};                              // Maps connection to a consistent number
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
-        bool isInSession = false;                                       // If program is part of multiplayer activity
+        bool inSession = false;                                       // If program is part of multiplayer activity
         bool isInitialized = false;                                     // Manual flag to give clean error msg
 
         MultiplayerData()
@@ -96,7 +94,7 @@ namespace magique
         {
             if (asHost) // For client deferred until host actually accepts
             {
-                isInSession = true;
+                inSession = true;
             }
             else if (conn != Connection::INVALID_CONNECTION)
             {
@@ -104,7 +102,6 @@ namespace magique
                 numberMapping.addConnection(conn);
             }
             isHost = asHost;
-            global::BATCHER.clear();
             statistics.reset();
         }
 
@@ -132,10 +129,9 @@ namespace magique
             connections.clear();
             connectionMapping.clear();
             isHost = false;
-            isInSession = false;
+            inSession = false;
             numberMapping.clear();
             global::LOBBY_DATA.closeLobby();
-            global::BATCHER.clear();
         }
 
         void update() const
@@ -151,7 +147,6 @@ namespace magique
         // Called if host and a client disconnects or is removed
         void onClientDisconnected(Connection client)
         {
-            global::BATCHER.clearConBuffer(client);
             numberMapping.removeConnection(client);
             std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == client; });
             std::erase(connections, client);
@@ -199,7 +194,7 @@ namespace magique
                      pParam->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute) &&
                     pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
                 {
-                    isInSession = true; // Deferred until here - could be just connection build up
+                    inSession = true; // Deferred until here - could be just connection build up
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
                     {

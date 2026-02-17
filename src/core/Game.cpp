@@ -7,11 +7,11 @@
 #include <raylib/rlgl.h>
 
 #include <magique/core/Game.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
-#include <magique/core/Debug.h>
-#include <magique/core/CollisionDetection.h>
+#include <magique/core/EngineUtil.h>
+#include <magique/core/Collision.h>
 #include <magique/ecs/ECS.h>
 #include <magique/ecs/Components.h>
 #include <magique/ecs/Scripting.h>
@@ -74,7 +74,7 @@ namespace magique
 {
     namespace internal
     {
-        bool InitMagique()
+        bool MagiqueInit()
         {
             static bool initCalled = false;
             if (initCalled)
@@ -106,7 +106,7 @@ namespace magique
             InitJobSystem();
 
 #ifdef MAGIQUE_DEBUG
-            GameSystemSetBenchmark(true);
+            GameSystemEnableStatistics(true);
 #endif
 
             LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
@@ -134,7 +134,7 @@ namespace magique
         SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
 
         // Setup magique
-        internal::InitMagique();
+        internal::MagiqueInit();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized %s: %s", gameName, getVersion());

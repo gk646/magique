@@ -12,7 +12,7 @@ enum class EntityType : uint16_t; // Identifies entity types       - uses uint16
 enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
 enum class HandleID : int;        // Identifies handles
 enum class ConfigID : int;        // Identifies stored config data
-enum class StorageID : int;       // Identifies stored game save data
+enum class GameSaveSlot : int;       // Identifies stored game save data
 enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
@@ -38,9 +38,9 @@ namespace magique
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
-    struct TaskInterface; // Handles loading individual world state and player save - MainMenu -> Game
+    struct SaveLoader; // Handles loading individual world state and player save - MainMenu -> Game
     struct GameSaver;     // Handles saving the session and resetting the state  - Game -> MainMenu
-    struct GameSaveData;  // The game save object
+    struct GameSave;  // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config
@@ -52,9 +52,6 @@ namespace magique
         template <typename T>
         struct TaskExecutor;
     }
-
-    template <typename... Columns>
-    struct DataTable; // Type-safe database-like interface to save game data
 
     //=================ECS=================//
     struct EntityScript;

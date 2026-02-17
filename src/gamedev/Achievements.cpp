@@ -37,7 +37,7 @@ namespace magique
         return nullptr;
     }
 
-    bool AddAchievement(const std::string& name, const std::function<bool()>& constraint)
+    bool AchievementAdd(const std::string& name, const std::function<bool()>& constraint)
     {
         const auto* existing = GetAchievement(name);
         if (existing != nullptr)
@@ -47,7 +47,7 @@ namespace magique
         return true;
     }
 
-    bool TriggerAchievement(const std::string& name)
+    bool AchievementTrigger(const std::string& name)
     {
         auto* a = GetAchievement(name);
         if (a == nullptr)
@@ -63,7 +63,7 @@ namespace magique
 
     void SetAchievementCallback(const AchievementCallback callback) { CALL_BACK = callback; }
 
-    void CheckAchievements()
+    void AchievementPoll()
     {
         for (auto& a : ACHIEVEMENTS)
         {
@@ -76,7 +76,7 @@ namespace magique
         }
     }
 
-    std::string ExportAchievementsState()
+    std::string AchievementExport()
     {
         if (ACHIEVEMENTS.empty())
         {
@@ -85,14 +85,14 @@ namespace magique
         }
 
         std::string buffer;
-        if (!ExportJSON(ACHIEVEMENTS, buffer))
+        if (!JSONExport(ACHIEVEMENTS, buffer))
         {
             LOG_WARNING("Failed to export achievements");
         }
         return buffer;
     }
 
-    bool ImportAchievementsState(std::string_view data)
+    bool AchievementImport(std::string_view data)
     {
         if (data.empty())
         {
@@ -101,7 +101,7 @@ namespace magique
         }
 
         std::vector<Achievement> imports;
-        if (!ImportJSON(data, imports))
+        if (!JSONImport(data, imports))
         {
             LOG_WARNING("Failed to import achievements");
             return false;

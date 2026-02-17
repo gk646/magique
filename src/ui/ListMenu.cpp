@@ -3,7 +3,7 @@
 #include <magique/ui/controls/ListMenu.h>
 #include "magique/ui/UI.h"
 #include <magique/util/RayUtils.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 
 namespace magique
 {
@@ -128,7 +128,7 @@ namespace magique
         {
             backGround = GRAY;
         }
-        const auto& fnt = GetEngineFont();
+        const auto& fnt = EngineGetFont();
         const auto size = UIGetScaled(15);
         const auto bounds = getBounds();
         DrawRectangleRec({pos.x, pos.y, bounds.width, size}, backGround);

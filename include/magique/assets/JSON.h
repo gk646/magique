@@ -6,9 +6,9 @@
 #include <enchantum/enchantum.hpp>
 #include <raylib/raylib.h>
 #include <magique/assets/types/Asset.h>
-#include <magique/util/Logging.h>
 #include <magique/gamedev/VirtualClock.h>
 #include <magique/util/Datastructures.h>
+#include <magique/internal/InternalTypes.h>
 
 //===============================================
 // JSON Import/Exports
@@ -25,16 +25,17 @@
 
 namespace magique
 {
+
     // Deserializes the given JSON into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
     template <typename T>
-    bool ImportJSON(Asset asset, T& data);
+    bool JSONImport(Asset asset, T& data);
     template <typename T>
-    bool ImportJSON(std::string_view json, T& data);
+    bool JSONImport(std::string_view json, T& data);
 
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
     template <typename T, bool prettify = true>
-    bool ExportJSON(const T& data, std::string& buffer);
+    bool JSONExport(const T& data, std::string& buffer);
 
     // Useful to reflect an enum - allows to import/export from JSON (with value names)
     // Note: static analysis may show errors but code compiles (clang-tidy)
@@ -97,11 +98,14 @@ namespace glz
         static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
     };
 
+    MQ_REFLECT_ENUM(magique::KeyBindType)
+    MQ_REFLECT_ENUM(magique::StorageType)
+
     template <>
-    struct meta<magique::KeyBindType>
+    struct meta<magique::internal::StorageCell>
     {
-        using T = magique::KeyBindType;
-        static constexpr auto values = enumerate(T::Mouse, T::Keyboard, T::Controller);
+        using T = magique::internal::StorageCell;
+        static constexpr auto values = object(&T::id, &T::type, &T::data);
     };
 
     template <typename K, typename V, int maxSize>
@@ -327,7 +331,7 @@ namespace magique
     }
 
     template <typename T>
-    bool ImportJSON(Asset asset, T& data)
+    bool JSONImport(Asset asset, T& data)
     {
         std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
         auto ec = glz::read_json(data, buff);
@@ -341,7 +345,7 @@ namespace magique
     }
 
     template <typename T>
-    bool ImportJSON(std::string_view json, T& data)
+    bool JSONImport(std::string_view json, T& data)
     {
         const auto ec = glz::read_json(data, json);
         if (ec)
@@ -354,9 +358,10 @@ namespace magique
     }
 
     template <typename T, bool prettify>
-    bool ExportJSON(const T& data, std::string& buffer)
+    bool JSONExport(const T& data, std::string& buffer)
     {
         buffer.clear();
+        buffer.reserve(256);
         const auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);
         if (ec)
         {

@@ -156,6 +156,20 @@ namespace magique::internal
     LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");                                                      \
     return ret;
 
+#define M_GAMESAVE_TYPE_MISMATCH(expected, ret)                                                                         \
+    if (cell->type != StorageType::expected)                                                                            \
+    {                                                                                                                   \
+        LOG_ERROR("Storage slot type mismatch: Expected: %s Have (enum id): %d", #expected, id);                        \
+        return ret;                                                                                                     \
+    }
+
+#define M_GAMESAVE_SLOT_MISSING(ret)                                                                                    \
+    if (cell == nullptr) [[unlikely]]                                                                                   \
+    {                                                                                                                   \
+        LOG_WARNING("Storage with given id does not exist!");                                                           \
+        return ret;                                                                                                     \
+    }
+
 //================= BUILDING =================//
 
 #if defined(MAGIQUE_TEST_MODE) || defined(MAGIQUE_IMPLEMENTATION)

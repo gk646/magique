@@ -22,7 +22,7 @@ namespace magique
 
 namespace magique
 {
-    bool CreateSteamLobby(const SteamLobbyType type, const int maxPlayers)
+    bool SteamCreateLobby(const SteamLobbyType type, const int maxPlayers)
     {
         SteamAPICall_t hSteamAPICall = k_uAPICallInvalid;
         hSteamAPICall = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>((int)type), maxPlayers);
@@ -31,9 +31,9 @@ namespace magique
         return hSteamAPICall != k_uAPICallInvalid;
     }
 
-    void JoinSteamLobby(SteamLobbyID lobbyID)
+    void SteamJoinLobby(SteamLobbyID lobbyID)
     {
-        if (GetInSteamLobby())
+        if (SteamIsInLobby())
         {
             LOG_WARNING("Cant join a lobby when in a lobby");
             return;
@@ -41,9 +41,9 @@ namespace magique
         SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyID)));
     }
 
-    bool LeaveSteamLobby()
+    bool SteamLeaveLobby()
     {
-        if (!GetInSteamLobby())
+        if (!SteamIsInLobby())
             return false;
         const auto& steam = global::STEAM_DATA;
         SteamMatchmaking()->LeaveLobby(steam.lobbyID);
@@ -56,12 +56,12 @@ namespace magique
         return true;
     }
 
-    bool GetInSteamLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }
+    bool SteamIsInLobby() { return global::STEAM_DATA.lobbyID.IsValid(); }
 
-    bool GetIsSteamLobbyOwner()
+    bool SteamIsLobbyOwner()
     {
         const auto& steamData = global::STEAM_DATA;
-        if (GetInSteamLobby())
+        if (SteamIsInLobby())
         {
             const auto owner = SteamMatchmaking()->GetLobbyOwner(steamData.lobbyID);
             return owner == steamData.userID;
@@ -69,24 +69,24 @@ namespace magique
         return false;
     }
 
-    SteamLobbyID GetSteamLobbyID() { return static_cast<SteamLobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
+    SteamLobbyID SteamGetLobbyID() { return static_cast<SteamLobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
 
-    SteamID GetSteamLobbyOwner()
+    SteamID SteamGetLobbyOwner()
     {
-        MAGIQUE_ASSERT(GetInSteamLobby(), "Cant get the lobby owner when not in a lobby");
+        MAGIQUE_ASSERT(SteamIsInLobby(), "Cant get the lobby owner when not in a lobby");
         return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(global::STEAM_DATA.lobbyID).ConvertToUint64());
     }
 
-    void SetSteamLobbyCallback(const SteamLobbyCallback& callback)
+    void SteamSetLobbyCallback(const SteamLobbyCallback& callback)
     {
         auto& steamData = global::STEAM_DATA;
         steamData.lobbyEventCallback = callback;
     }
 
-    bool OpenSteamLobbyInviteDialogue()
+    bool SteamOpenInviteDialog()
     {
         auto& steam = global::STEAM_DATA;
-        if (GetInSteamLobby())
+        if (SteamIsInLobby())
         {
             SteamFriends()->ActivateGameOverlayInviteDialog(steam.lobbyID);
             return true;
@@ -94,9 +94,9 @@ namespace magique
         return false;
     }
 
-    bool InviteToSteamLobby(SteamID userID)
+    bool SteamSendLobbyInvite(SteamID userID)
     {
-        MAGIQUE_ASSERT(GetInSteamLobby(), "Cant invite others to lobby if not in a lobby");
+        MAGIQUE_ASSERT(SteamIsInLobby(), "Cant invite others to lobby if not in a lobby");
         return SteamMatchmaking()->InviteUserToLobby(global::STEAM_DATA.lobbyID, SteamIDFromMagique(userID));
     }
 

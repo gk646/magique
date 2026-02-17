@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <raylib/config.h>
 
-#include <magique/core/Debug.h>
+#include <magique/core/EngineUtil.h>
 #include <magique/ui/UI.h>
 #include <magique/core/Game.h>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #include <magique/gamedev/Console.h>
 #include <magique/util/RayUtils.h>
 #include <magique/util/Math.h>
@@ -207,17 +207,17 @@ namespace magique
 
             Command showHitboxes{"mq.setHitboxesOverlay", "Turns entity hitboxes on/off"};
             showHitboxes.addParam("value", {ParamType::BOOL})
-                .setFunction([](const ParamList& params) { SetShowHitboxes(params.back().getBool()); });
+                .setFunction([](const ParamList& params) { EngineShowHitboxes(params.back().getBool()); });
             ConsoleRegisterCommand(showHitboxes);
 
             Command showEntityGrid{"mq.setEntityOverlay", "Turns the debug entity overlay on/off"};
             showEntityGrid.addParam("value", {ParamType::BOOL})
-                .setFunction([](const ParamList& params) { SetShowEntityGridOverlay(params.back().getBool()); });
+                .setFunction([](const ParamList& params) { EngineShowEntityOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(showEntityGrid);
 
             Command showPathGrid{"mq.setPathfindingOverlay", "Turns the debug pathfinding overlay on/off"};
             showPathGrid.addParam("value", {ParamType::BOOL})
-                .setFunction([](const ParamList& params) { SetShowPathFindingOverlay(params.back().getBool()); });
+                .setFunction([](const ParamList& params) { EngineShowPathfindingOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(showPathGrid);
 
             Command setFps{"mq.setFps", "Sets the FPS limit - 0 for unlimited"};
@@ -241,12 +241,12 @@ namespace magique
             ConsoleRegisterCommand(version);
 
             Command uptime{"mq.uptime", "Prints the current uptime"};
-            uptime.setFunction([](const ParamList& params) { ConsoleAddStringF("Uptime: %.2f sec", GetEngineTime()); });
+            uptime.setFunction([](const ParamList& params) { ConsoleAddStringF("Uptime: %.2f sec", EngineGetTime()); });
             ConsoleRegisterCommand(uptime);
 
             Command perfOverlay{"mq.setPerfOverlay", "Open the performance overlay"};
             perfOverlay.addParam("value", {ParamType::BOOL});
-            perfOverlay.setFunction([](const ParamList& params) { SetShowPerformanceOverlay(params.back().getBool()); });
+            perfOverlay.setFunction([](const ParamList& params) { EngineShowPerformanceOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(perfOverlay);
 
             Command showUIHitbox{"mq.setUIHitboxOverlay", "Turns the hitboxes for UI elements on/off"};

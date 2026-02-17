@@ -379,7 +379,7 @@ struct Test final : Game
                     const auto payload = CreatePayload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
 
                     // Use batching to avoid the overhead of sending multiple times - send to all connected clients
-                    BatchMessageToAll(payload);
+                    NetworkSendAll(payload);
                 }
             }
 

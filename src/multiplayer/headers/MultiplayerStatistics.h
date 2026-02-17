@@ -4,7 +4,7 @@
 #ifdef MAGIQUE_DEBUG
 #include <algorithm>
 #include <cstring>
-#include <magique/core/Core.h>
+#include <magique/core/Engine.h>
 #endif
 #include "magique/internal/InternalTypes.h"
 
@@ -13,18 +13,17 @@ struct MultiplayerStatistics final
 #ifdef MAGIQUE_DEBUG
     void reset()
     {
-        startTick = magique::GetEngineTick();
+        startTick = magique::EngineGetTick();
         incoming.reset();
         outgoing.reset();
     }
-    void addOutgoing(MessageType type, int size) { outgoing.add(type, size); }
-    void addIncoming(MessageType type, int size) { incoming.add(type, size); }
+    void addOutgoing(const magique::Payload& payload) { outgoing.add(payload.type, payload.size); }
+    void addIncoming(const magique::Payload& payload) { incoming.add(payload.type, payload.size); }
 
     magique::internal::MultiplayerStatsData getStats() const
     {
         return {incoming.getSorted(), outgoing.getSorted(), incoming.size, outgoing.size};
     }
-
 
 private:
     struct DirectionData final
