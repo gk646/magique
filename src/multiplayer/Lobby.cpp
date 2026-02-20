@@ -4,14 +4,11 @@
 #include "internal/globals/NetworkingData.h"
 namespace magique
 {
-    void LobbySetChatCallback(const LobbyChatCallback& callback)
-    {
-        global::MP_DATA.lobby.chatCallback = callback;
-    }
+    void LobbySetChatCallback(const LobbyChatCallback& callback) { global::MP_DATA.lobby.chatCallback = callback; }
 
     void LobbySetMetadataCallback(const LobbyMetadataCallback& callback)
     {
-       global::MP_DATA.lobby.metadataCallback = callback;
+        global::MP_DATA.lobby.metadataCallback = callback;
     }
 
     inline Lobby LOBBY{};
@@ -19,7 +16,7 @@ namespace magique
     Lobby& LobbyGet() { return LOBBY; }
 
 #define MG_SESSION_LOCK()                                                                                               \
-    if (!NetworkInSession())                                                                                     \
+    if (!NetworkInSession())                                                                                            \
     {                                                                                                                   \
         return;                                                                                                         \
     }
@@ -27,7 +24,7 @@ namespace magique
     void Lobby::setStartSignal(const bool value)
     {
         MG_SESSION_LOCK()
-       global::MP_DATA.lobby.startSignal = value;
+        global::MP_DATA.lobby.startSignal = value;
 
         char buff[2]; // 1 type + signal
         buff[0] = (int8_t)LobbyPacketType::START_SIGNAL;
@@ -39,65 +36,56 @@ namespace magique
 
     bool Lobby::getStartSignal() const { return global::MP_DATA.lobby.startSignal; }
 
-    void Lobby::sendChatMessage(const char* message)
+    void Lobby::sendChatMessage(std::string_view message)
     {
         MG_SESSION_LOCK()
-        const auto len = strnlen(message, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
-        if (len > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
+        if (message.size() > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
             LOG_WARNING("Sent message longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
-        if (len == 0)
+        if (message.empty())
         {
             return;
         }
+
         char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 2]; // Message + 1 null terminators + 1 type
         buff[0] = (int8_t)LobbyPacketType::CHAT;
-        std::memcpy(buff + 1, message, len);
-        buff[len + 1] = '\0';
-        const auto payload = Payload(buff, 1 + len + 1, MAGIQUE_LOBBY_PACKET_TYPE);
+        std::memcpy(buff + 1, message.data(), message.size());
+        buff[1 + message.size() + 1] = '\0';
+        const auto payload = Payload(buff, 1 + message.size() + 1, MAGIQUE_LOBBY_PACKET_TYPE);
         NetworkSendAll(payload);
     }
 
-    void Lobby::setMetadata(const char* key, const char* value)
+    void Lobby::setMetadata(std::string_view key, std::string_view value)
     {
         MG_SESSION_LOCK()
-        const auto keyLen = strnlen(key, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
-        const auto valLen = strnlen(value, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
-        if ((keyLen + valLen) > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
+        if ((key.size() + value.size()) > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
             LOG_WARNING("Combined metadata longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
-
-        if (keyLen == 0 || valLen == 0)
+        if (key.empty())
         {
-            LOG_WARNING("Passed empty strings");
+            LOG_WARNING("Empty key not allowed");
             return;
         }
-       global::MP_DATA.lobby.metadata[key] = value;
+
+        global::MP_DATA.lobby.metadata[key] = value;
 
         char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 3]; // Message + 2 null terminators + 1 type
 
         buff[0] = (int8_t)LobbyPacketType::METADATA;
-        std::memcpy(buff + 1, key, keyLen);
-        buff[keyLen + 1] = '\0';
-        std::memcpy(buff + 1 + keyLen + 1, value, valLen);
-        buff[keyLen + 1 + valLen + 1] = '\0';
+        std::memcpy(buff + 1, key.data(), key.size());
+        buff[key.size() + 1] = '\0';
+        std::memcpy(buff + 1 + key.size() + 1, value.data(), value.size());
+        buff[key.size() + 1 + value.size() + 1] = '\0';
 
-        const auto payload = Payload(buff, 1 + keyLen + 1 + valLen + 1, MAGIQUE_LOBBY_PACKET_TYPE);
-        if (NetworkIsClient())
-        {
-            NetworkSendHost( payload);
-        }
-        else
-        {
-            NetworkSendAll(payload);
-        }
+        const auto payload = Payload(buff, key.size() + 1 + value.size() + 1 + 1, MAGIQUE_LOBBY_PACKET_TYPE);
+        NetworkSendAll(payload);
     }
 
-    const std::string& Lobby::getMetadata(const char* key) { return global::MP_DATA.lobby.metadata[key]; }
+    const std::string& Lobby::getMetadata(std::string_view key) { return global::MP_DATA.lobby.metadata[key]; }
 
 } // namespace magique
 #else

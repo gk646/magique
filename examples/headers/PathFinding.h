@@ -56,14 +56,14 @@ struct PlayerScript final : EntityScript
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             if (GetNearbyEntities({}, {worldMouse.x, worldMouse.y}, 1).empty())
-                CreateEntity(OBSTACLE, worldMouse.x, worldMouse.y, {});
+                EntityCreate(OBSTACLE, worldMouse.x, worldMouse.y, {});
         }
         else if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
             auto& vec = GetNearbyEntities({}, {worldMouse.x, worldMouse.y}, 1);
             for (const auto e : vec)
             {
-                DestroyEntity(e);
+                EntityDestroy(e);
             }
         }
     }
@@ -118,27 +118,27 @@ struct Example final : Game
         // Define the objects and how they are created
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e); // Don't forget to give your player the actor component!
-            GiveCamera(e);
+            ComponentGiveActor(e); // Don't forget to give your player the actor component!
+            ComponentGiveCamera(e);
             GiveCollisionRect(e, 25, 25);
         };
-        RegisterEntity(Player, playerFunc);
+        EntityRegister(Player, playerFunc);
 
         const auto hunterFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 25, 25); };
-        RegisterEntity(HUNTER, hunterFunc);
+        EntityRegister(HUNTER, hunterFunc);
 
         const auto objFunc = [](entt::entity e, EntityType type) { GiveCollisionRect(e, 50, 50); };
-        RegisterEntity(OBSTACLE, objFunc);
+        EntityRegister(OBSTACLE, objFunc);
 
         // Set the scripts
-        SetEntityScript(Player, new PlayerScript());
-        SetEntityScript(HUNTER, new HunterScript());
-        SetEntityScript(OBSTACLE, new ObstacleScript());
+        ScriptingSetScript(Player, new PlayerScript());
+        ScriptingSetScript(HUNTER, new HunterScript());
+        ScriptingSetScript(OBSTACLE, new ObstacleScript());
 
         // Create some objects
         const MapID map = MapID::DEFAULT;
-        CreateEntity(Player, 50, 300, map);
-        CreateEntity(HUNTER, 50, 50, map);
+        EntityCreate(Player, 50, 300, map);
+        EntityCreate(HUNTER, 50, 50, map);
 
         SetShowCompassOverlay(true);
         SetShowPathFindingOverlay(true);

@@ -59,8 +59,8 @@ namespace magique
     // Sets the callback that is called for various events that happen in regard to lobbies
     void SteamSetLobbyCallback(const SteamLobbyCallback& callback);
 
-    // Manual interface that allows to map connections with a steam id
-    void SteamSetConnMapping(Connection conn, SteamID id);
+    // Retrieve the associated connection with the given steam id
+    // Note: Automatically updated whenever possible (e.g. before a network event is fired)
     Connection SteamGetConnMapping(SteamID id);
     SteamID SteamGetConnMapping(Connection conn);
 

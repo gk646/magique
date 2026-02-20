@@ -10,7 +10,7 @@
 #include <magique/assets/AssetContainer.h>
 #include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
-#include <magique/internal/Macros.h>
+
 
 #include "internal/utils/EncryptionUtil.h"
 

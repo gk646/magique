@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/LoadingScreen.h>
-#include <magique/internal/Macros.h>
+
 
 #include "internal/globals/EngineConfig.h"
 

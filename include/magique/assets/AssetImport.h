@@ -3,16 +3,14 @@
 #define MAGIQUE_ASSETMANAGER_H
 
 #include <vector>
-#include <magique/core/Types.h>
-#include <magique/assets/types/TextLines.h>
 #include <raylib/raylib.h>
+#include <magique/core/Types.h>
 
 //===============================================
-// Asset Management Module
+// Asset Import
 //===============================================
 // ................................................................................
 // This modules allows to import asset and load them into usable types
-
 // Textures are automatically stitched into the default atlas or the specified one
 // Try to group all textures that are drawn together into the same atlas
 // Note: If you load many texture you have to specify a custom AtlasID's or else the default one will be full -> error
@@ -30,6 +28,9 @@ namespace magique
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
     TextureRegion ImportTexture(const Asset& asset, AtlasID atlas = {}, float scale = 1);
+
+    // Loads the asset as image
+    Image ImportImage(const Asset& asset);
 
     //================= Animations =================//
 

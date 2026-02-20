@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
+#include <magique/steam/Steam.h>
+
 #ifndef MAGIQUE_STEAM
 #include "magique/core/Types.h"
 #include "magique/util/Logging.h"
 namespace magique
 {
-    bool InitSteam(const bool createFile) { return false; };
-    SteamID GetUserSteamID() { M_ENABLE_STEAM_ERROR({}) };
-    const char* GetSteamUserName() { M_ENABLE_STEAM_ERROR({}); };
-    void SetSteamOverlayCallback(SteamOverlayCallback steamOverlayCallback) { M_ENABLE_STEAM_ERROR() }
-    const char* GetSteamUserDataLocation() { M_ENABLE_STEAM_ERROR({}) };
+    bool SteamInit(const bool createFile) { return false; };
+    SteamID SteamGetID() { M_ENABLE_STEAM_ERROR({}) };
+    const char* SteamGetUserName() { M_ENABLE_STEAM_ERROR({}); };
+    void SteamSetOverlayCallback(const SteamOverlayCallback& steamOverlayCallback) { M_ENABLE_STEAM_ERROR() }
+    const char* SteamGetUserDataLocation() { M_ENABLE_STEAM_ERROR({}) };
 } // namespace magique
 #else
 #include <fstream>
 
-#include <magique/steam/Steam.h>
 #include <magique/util/Logging.h>
-#include <magique/internal/Macros.h>
+
 
 #include "internal/globals/SteamData.h"
 
@@ -69,6 +70,8 @@ namespace magique
         }
 
         SteamUtils()->SetWarningMessageHook(SteamDebugCallback);
+        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
+
         steamData.init();
 
         // Cache the steam id - will stay the same
@@ -89,9 +92,9 @@ namespace magique
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
     }
 
-    const char* SteamGetUserName() { return SteamFriends()->GetPersonaName(); }
+    const char* SteamGetLocalName() { return SteamFriends()->GetPersonaName(); }
 
-    const char* SteamGetName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
+    const char* SteamGetUserName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
 
     void SteamSetOverlayCallback(const SteamOverlayCallback& callback) { global::STEAM_DATA.overlayCallback = callback; }
 

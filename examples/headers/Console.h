@@ -9,7 +9,7 @@ struct Example final : Game
 {
     void onStartup(AssetLoader& loader) override
     {
-        SetGameState({}); // Set empty gamestate - needs to be set in a real game
+        EngineSetState({}); // Set empty gamestate - needs to be set in a real game
 
         // printName Command
         Command printHello{"printHello"};
@@ -122,7 +122,7 @@ Look at the commands defined in the example and try to invoke them!
 	- "greet User Morning"
 	- "broadcast
         )";
-        DrawTextEx(GetEngineFont(), helpText, {10, 250}, 18, 1, BLACK);
+        DrawTextEx(EngineGetFont(), helpText, {10, 250}, 18, 1, BLACK);
     }
 };
 

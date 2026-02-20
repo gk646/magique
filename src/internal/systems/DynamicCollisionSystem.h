@@ -66,6 +66,7 @@ namespace magique
 
     inline void DynamicCollisionSystem()
     {
+#if MAGIQUE_WORKER_THREADS > 0
         const int size = global::ENGINE_DATA.collisionVec.size();
         if (size > 500) // Multithreading over certain amount
         {
@@ -82,6 +83,7 @@ namespace magique
             JobAwaits(handles);
         }
         else
+#endif
         {
             CheckHashGridCells(0.0F, 1.0F, COL_WORK_PARTS - 1);
         }
@@ -210,4 +212,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //DYNAMIC_COLLISION_SYSTEM_H
+#endif // DYNAMIC_COLLISION_SYSTEM_H

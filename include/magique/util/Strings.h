@@ -78,14 +78,14 @@ namespace magique
 
     // Formats a float number so its nicely readable
     // If it's lower than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
-    const char* FormatFloat(float num, float cutoff = 100.0F, bool withSign = false);
+    const char* StringFromFloat(float num, float cutoff = 100.0F, bool withSign = false);
 
     // Formats the given number for displaying it in gameplay context:
     // Shortens to at most 5 digits: 3 before dot, 2 after
     // Uses K/M/B to shorten thousands, millions and billions
     // e.g. 2.4 / 32.45K / 332.53K / 233.41M / 33.52B
-    const char* FormatGameplayNumber(float num);
-    const char* FormatGameplayNumber(int64_t num);
+    const char* StringFromGameNumber(float num);
+    const char* StringFromGameNumber(int64_t num);
 
     //================= HASHING =================//
 

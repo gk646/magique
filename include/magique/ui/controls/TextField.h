@@ -5,7 +5,6 @@
 #include <magique/core/Engine.h>
 #include <magique/ui/UIObject.h>
 #include <magique/ui/UI.h>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // TextField
@@ -35,16 +34,15 @@ namespace magique
     {
         // Creates the textfield from absolute dimensions in the logical UI resolution
         // Optionally specify an anchor point the object is anchored to and a scaling mode
-        TextField(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        TextField(float w, float h, Anchor anchor = Anchor::NONE, ScalingMode scaling = ScalingMode::FULL);
+        TextField(Rect bounds, Anchor anchor = Anchor::NONE, Point insert = {}, ScalingMode scaling = ScalingMode::FULL);
 
     protected:
         // Same as ui/UIObject.h
         // Note: Text needs to be drawn manually
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         // Same as ui/UIObject.h
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 if (updateInputs() || getIsFocused())
@@ -123,7 +121,5 @@ namespace magique
     };
 
 } // namespace magique
-
-M_UNIGNORE_WARNING()
 
 #endif // MAGIQUE_TEXTFIELD_H

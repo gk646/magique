@@ -1,10 +1,9 @@
 #ifndef MAGIQUE_GAMESYSTEMS_H
 #define MAGIQUE_GAMESYSTEMS_H
 
+#include <array>
 #include <string>
-#include <functional>
 #include <magique/fwd.hpp>
-#include <magique/internal/Macros.h>
 
 //===============================================
 // Gamesystem Module
@@ -21,7 +20,19 @@
 
 namespace magique
 {
-    using GameSystemValidFunc = std::function<bool()>;
+    // Registers the given system - systems are called in the order they are added
+    // Note: Methods are only called when the current gamestate is part of the passed "validStates"
+    //       empty means all states
+    void GameSystemRegister(GameSystem* system,  std::string_view name, std::initializer_list<GameState> stats = {});
+
+    // Prints a table that show average time of each function call for each system
+    //      - cutoff: Minimal duration of the system in milliseconds in order to be printed
+    // Default: Called on Game::onShutdown()
+    void GameSystemPrintStats(float cutoff = 0.01);
+
+    // If true all systems are benchmarked - existing data is cleared on enabling
+    // Default: Enabled if in debug mode (MAGIQUE_DEBUG)
+    void GameSystemEnableStats(bool value);
 
     struct GameSystem
     {
@@ -62,19 +73,6 @@ namespace magique
         std::string name;
         std::array<bool, UINT8_MAX + 1> validStates;
     };
-
-    // Registers the given system - systems are called in the order they are added
-    // Note: Methods are only called when the current gamestate is part of the passed "validStates"
-    //       empty means all states
-    void GameSystemRegister(GameSystem* system, const std::string& name, std::initializer_list<GameState> stats = {});
-
-    // Prints a table that show average time of each function call for each system
-    // Default: Called on Game::onShutdown()
-    void GameSystemPrintStats();
-
-    // If true all systems are benchmarked - existing data is cleared on enabling
-    // Default: Enabled if in debug mode (MAGIQUE_DEBUG)
-    void GameSystemEnableStats(bool value);
 
 } // namespace magique
 

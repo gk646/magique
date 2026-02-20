@@ -3,19 +3,10 @@
 #define MAGIQUE_ASSET_UTIL_H
 
 #include <cstring>
-
 #include <raylib/config.h>
-#include <magique/assets/types/Asset.h>
-#include <magique/internal/Macros.h>
 
 namespace magique
 {
-    inline bool AssetBaseCheck(const Asset& asset)
-    {
-        MAGIQUE_ASSERT(asset.path != nullptr && asset.data != nullptr, "Internal error");
-        return asset.path != nullptr && asset.data != nullptr && asset.size > 0;
-    }
-
     inline bool IsSupportedImageFormat(const char* fileType)
     {
         if (fileType == nullptr)
@@ -73,14 +64,6 @@ namespace magique
         );
     }
 
-    inline Image LoadImage(const Asset& asset)
-    {
-        const auto* ext = asset.getExtension();
-        MAGIQUE_ASSERT(IsSupportedImageFormat(ext), "No valid extension");
-        const auto img = LoadImageFromMemory(ext, (unsigned char*)asset.data, asset.size);
-        MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
-        return img;
-    }
 
 
 } // namespace magique

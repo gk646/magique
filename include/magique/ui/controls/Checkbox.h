@@ -4,7 +4,6 @@
 #include <string>
 #include <magique/ui/UIObject.h>
 #include <functional>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // Checkbox
@@ -21,13 +20,11 @@ namespace magique
 
     struct CheckBox : UIObject
     {
+        CheckBox(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
-        CheckBox(float x, float y, float w, float h);
-        CheckBox(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {});
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
-
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateInputs();
@@ -58,4 +55,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGEQUEST_SWITCHBUTTON_H
+#endif // MAGEQUEST_SWITCHBUTTON_H

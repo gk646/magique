@@ -28,7 +28,7 @@ namespace magique
         const auto& data = global::ENGINE_DATA;
         auto& staticData = global::STATIC_COLL_DATA;
         const int size = data.collisionVec.size(); // Multithread over certain amount
-        if (size < 100)
+        if (size < 100 || MAGIQUE_WORKER_THREADS == 0)
         {
             CheckStaticCollisionRange(0, 0, size);
         }
@@ -71,7 +71,7 @@ namespace magique
                        const std::vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
     {
         const auto bb = pos.getBounds(col);
-        grid.query(collector, bb.x, bb.y, bb.w, bb.h);
+        grid.query(collector, bb.x, bb.y, bb.width, bb.height);
         for (const auto num : collector)
         {
             const auto objectNum = StaticIDHelper::GetObjectNum(num);

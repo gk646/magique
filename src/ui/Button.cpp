@@ -3,21 +3,17 @@
 
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>
+#include <magique/core/Engine.h>
 
-#include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
-#include "magique/core/Engine.h"
-#include "magique/core/Draw.h"
 #include "magique/util/RayUtils.h"
 
 namespace magique
 {
-    Button::Button(const float x, const float y, const float w, const float h, ScalingMode mode) :
-        UIObject(x, y, w, h, mode)
+    Button::Button(Rect bounds, const Anchor anchor, Point inset, ScalingMode mode) :
+        UIObject(bounds, anchor, inset, mode)
     {
     }
-
-    Button::Button(const float w, const float h, const Anchor anchor, Point inset) : UIObject(w, h, anchor, inset) {}
 
     void Button::setOnClick(const ClickFunc& func) { clickFunc = func; }
 
@@ -38,12 +34,13 @@ namespace magique
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
-                    if (IsMouseButtonPressed(i) && !isDisabled)
+                    if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
                     {
                         onClick(bounds, i);
                         if (clickFunc)
                         {
                             clickFunc(bounds, i);
+                            LayeredInput::ConsumeMouse();
                         }
                     }
                 }
@@ -86,7 +83,8 @@ namespace magique
         DrawTextEx(fnt, hoverText.c_str(), mouse, size, 1.0F, text);
     }
 
-    TextButton::TextButton(const char* text, ScalingMode mode) : Button(0, 0, 50, 10, mode), text(text)
+    TextButton::TextButton(const char* txt, Anchor anchor, Point inset, ScalingMode mod) :
+        Button({}, anchor, inset, mod), text(txt)
     {
     }
 

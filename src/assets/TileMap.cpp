@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
 #include <magique/assets/types/TileMap.h>
-#include <magique/internal/Macros.h>
+
 
 namespace magique
 {

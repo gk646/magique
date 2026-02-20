@@ -293,7 +293,7 @@ namespace magique
 
     std::string StringFromBase64(std::string_view input) { return glz::read_base64(input); }
 
-    const char* FormatFloat(float num, float cutoff, bool withSign)
+    const char* StringFromFloat(float num, float cutoff, bool withSign)
     {
         if (withSign)
         {
@@ -319,7 +319,7 @@ namespace magique
         }
     }
 
-    const char* FormatGameplayNumber(float num)
+    const char* StringFromGameNumber(float num)
     {
         if (num < 1e3)
         {
@@ -339,13 +339,13 @@ namespace magique
         }
     }
 
-    const char* FormatGameplayNumber(int64_t num)
+    const char* StringFromGameNumber(int64_t num)
     {
         if (num < 1000)
         {
             return TextFormat("%d", num);
         }
-        return FormatGameplayNumber((float)num);
+        return StringFromGameNumber((float)num);
     }
 
     std::size_t StringHashFunc::operator()(const std::string& key) const { return StringHash(key.c_str()); }

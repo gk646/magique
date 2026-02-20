@@ -2,7 +2,7 @@
 #ifndef STATIC_COLLISION_DATA_H
 #define STATIC_COLLISION_DATA_H
 
-#include <magique/internal/Macros.h>
+
 #include <magique/util/Datastructures.h>
 
 #include "internal/datastructures/MultiResolutionGrid.h"

@@ -62,6 +62,14 @@ namespace magique
     // Return the world mouse pos using CameraGet()
     Point GetWorldMousePos();
 
+    // If enabled, shows the hitboxes off all ui elements in BLUE
+    void UIShowHitboxes(bool value);
+
+    // Returns true a gamepad is the currently used input method
+    // This is smart - e.g. if keyboard input is detected, switches to keyboard until (any) gamepad input is detected
+    // Note: This is useful for deciding which UI hints to draw or what input device to pick
+    bool UIUsingGamepad();
+
     // Returns a rectangle that adjusted to be on the screen (target resolution) by picking which corner the mouse is
     // Default its bottom right corner is the mouse position - can be offset manually
     // Note: Useful for tooltips
@@ -94,9 +102,6 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    // If enabled, shows the hitboxes off all ui elements in BLUE
-    void UIShowHitboxes(bool value);
-
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space
     // Destructor resets it back to original screen pos
     struct MouseToWorld
@@ -107,6 +112,7 @@ namespace magique
     private:
         Point prev;
     };
+
 
 } // namespace magique
 

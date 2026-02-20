@@ -9,12 +9,11 @@
 // Animation Module
 //===============================
 // ................................................................................
-// This module allows to define animations that are shared across all entities of that type
-// Every skeleton has the same underlying spritesheets, but each instance can be in a different state or progress
-// Thus you only need to store the sprite progress and animation state for each entity
+// This module allows to define animations, which means mapping animation states to a sprite sheet
+// This animation data is meant to be shared across entities as it contains no state just data
 // The intended workflow is:
-//                  1. Create a EntityAnimation and add animations for the states it has
-//                  3. Now you can freely use it when creating entities via GiveAnimation(entity,type)
+//                  1. Create a EntityAnimation and add animations for the states it has (save it globally)
+//                  2. Use ComponentGive<AnimationC>(entity, animation) or else to pass them a reference of the data
 // Notes: Frame duration is in millis
 // ................................................................................
 

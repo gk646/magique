@@ -6,7 +6,7 @@
 #include "ui/UIControls.h"
 #include "ecs/Components.h"
 
-void PlayerHUD::onDraw(const Rectangle& bounds)
+void PlayerHUD::onDraw(const magique::Rect& bounds)
 {
     if (GetCameraEntity() == entt::entity(UINT32_MAX))
         return;
@@ -38,7 +38,7 @@ void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
     SetFormatValue("P_MAX_MANA", (int)stats.maxMana);
 }
 
-void HotbarSlot::onDraw(const Rectangle& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
+void HotbarSlot::onDraw(const magique::Rect& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
 
 PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor::BOTTOM_CENTER,0, ScalingMode::KEEP_RATIO)
 {
@@ -48,7 +48,7 @@ PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor:
     }
 }
 
-void PlayerHotbar::onDraw(const Rectangle& bounds)
+void PlayerHotbar::onDraw(const magique::Rect& bounds)
 {
     DrawRectangleLinesEx(bounds, 2, DARKGRAY);
 

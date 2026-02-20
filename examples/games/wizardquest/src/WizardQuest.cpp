@@ -34,7 +34,7 @@ void WizardQuest::onLoadingFinished()
     // Set the initial map
     auto map = MapID::LOBBY;
     // Create the player
-    CreateEntity(PLAYER, 24 * 24, 24 * 24, map);
+    EntityCreate(PLAYER, 24 * 24, 24 * 24, map);
 
     // Load the global tileset - the tileset defines the collision (and other) attributes for tiles
     // Mark all tiles with class 1 as solid
@@ -45,7 +45,7 @@ void WizardQuest::onLoadingFinished()
     AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
 
     // Start the game in game state
-    SetGameState(GameState::GAME);
+    EngineSetState(GameState::GAME);
 }
 
 void WizardQuest::drawGame(GameState gameState, Camera2D& camera)

@@ -4,7 +4,6 @@
 
 #include <entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
-#include <magique/internal/Macros.h>
 #include <magique/core/Engine.h>
 
 //===============================
@@ -19,7 +18,7 @@
 //       => So adding entities mid-tick will not get them collision check this tick
 // ................................................................................
 
-enum class EntityType : uint16_t; // A unique type identifier handled by the user to distinguish different types of game objects
+enum class EntityType : uint16_t; // A unique identifier handled by the user for different game objects
 
 namespace magique
 {
@@ -42,7 +41,7 @@ namespace magique
 
     // Creates a new entity by calling the registered function for that type
     // Note: All entities have the PositionC auto assigned per default!
-    //      - withFunc: if true looks for and requires RegisterEntity to be called first with a creation function
+    //      - withFunc: if true looks for and requires EntityRegister to be called first with a creation function
     // Failure: Returns entt::null
     entt::entity EntityCreate(EntityType type, Point pos, MapID map, float rotation = 0, bool withFunc = true);
 
@@ -109,40 +108,29 @@ namespace magique
     template <typename... Args>
     auto ComponentGetView();
 
-    //============== GIVE ==============//
-
     // Uses emplace_back to add the component to the given entity
     // Args are the constructor arguments (if any)
     // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
     template <typename Component, typename... Args>
-    Component& GiveComponent(entt::entity entity, Args... args);
+    Component& ComponentGive(entt::entity entity, Args... args);
 
     // Makes the entity collidable with others - Shape: RECT
-    // Pass the width and height of the rectangle
-    // By passing a rect, an X and Y offset (from the position) can also be specified
-    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height);
-    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor = {-1});
-    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor = {-1});
+    // x & y of the rect is offset from the position - anchor is set to the mid-point unless specified (relative to offset)
+    CollisionC& ComponentGiveCollisionRect(entt::entity entity, Rect rect, Point anchor = {-1});
 
-    // Makes the entity collidable with others - Shape: CIRCLE (vertical)
-    // Pass the height and the radius of the capsule - circles always rotated around their middle point!
-    CollisionC& GiveCollisionCircle(entt::entity entity, float radius);
+    // Makes the entity collidable with others - Shape: CIRCLE
+    // Circles always rotated around their middle point!
+    CollisionC& ComponentGiveCollisionCircle(entt::entity entity, float radius);
 
     // Makes the entity collidable with others - Shape: TRIANGLE
     // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
-    CollisionC& GiveCollisionTri(entt::entity entity, Point p2, Point p3, Point anchor = {});
-
-    // Makes the entity emit light according to the current lighting model
-    EmitterC& GiveEmitter(entt::entity entity, Color color, int intensity = 100, LightStyle style = POINT_LIGHT_SOFT);
-
-    // Makes the entity occlude light and throw shadows according to the current lighting model
-    OccluderC& GiveOccluder(entt::entity entity, int width, int height, Shape shape = Shape::RECT);
+    CollisionC& ComponentGiveCollisionTri(entt::entity entity, Point p2, Point p3, Point anchor = {});
 
     // Adds the camera component
-    void GiveCamera(entt::entity entity);
+    void ComponentGiveCamera(entt::entity entity);
 
     // Adds components such that the given entity is an actor
-    void GiveActor(entt::entity entity);
+    void ComponentGiveActor(entt::entity entity);
 
 } // namespace magique
 
@@ -190,7 +178,7 @@ namespace magique
     }
 
     template <class Component, typename... Args>
-    Component& GiveComponent(entt::entity entity, Args... args)
+    Component& ComponentGive(entt::entity entity, Args... args)
     {
         return internal::REGISTRY.emplace<Component>(entity, args...);
     }

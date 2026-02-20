@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include <magique/assets/types/Asset.h>
-#include <magique/internal/Macros.h>
+
 
 namespace magique
 {
@@ -60,7 +60,7 @@ namespace magique
         return found != nullptr;
     }
 
-    bool Asset::isValid() const { return data != nullptr; }
+    bool Asset::isValid() const { return data != nullptr && path != nullptr; }
 
     const char* Asset::getFileName(const bool extension) const
     {

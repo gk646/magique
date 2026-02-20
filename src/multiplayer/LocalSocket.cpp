@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-
 #include <magique/multiplayer/LocalSocket.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #ifdef _WIN32
@@ -21,10 +20,8 @@
 
 namespace magique
 {
-
     bool LocalSocketInit()
     {
-        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
 #ifndef MAGIQUE_STEAM
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg) ||
@@ -44,14 +41,13 @@ namespace magique
             LOG_WARNING("Cannot initialize local multiplayer: Steam not initialized call InitSteam()");
             return false;
         }
-         SteamNetworkingSockets()->InitAuthentication();
+        SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
+        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         global::MP_DATA.isInitialized = true;
         return true;
 #endif
     }
-
-    //----------------- HOST -----------------//
 
     bool LocalSocketCreate(const uint16_t port)
     {
@@ -91,8 +87,6 @@ namespace magique
         data.goOffline();
         return res;
     }
-
-    //----------------- CLIENT -----------------//
 
     Connection LocalSocketConnect(const char* ip, const uint16_t port)
     {
@@ -216,36 +210,36 @@ namespace magique
 #else
 namespace magique
 {
-    bool InitLocalMultiplayer() { return false; }
+    bool LocalSocketInit() { return false; }
 
-    bool CreateLocalSocket(const uint16_t port)
+    bool LocalSocketCreate(const uint16_t port)
     {
         (void)port;
         return false;
     }
 
-    bool CloseLocalSocket(const int closeCode, const char* closeReason)
+    bool LocalSocketClose(const int closeCode, const char* closeReason)
     {
         (void)closeCode;
         (void)closeReason;
         return false;
     }
 
-    Connection ConnectToLocalSocket(const char* ip, const uint16_t port)
+    Connection LocalSocketConnect(const char* ip, const uint16_t port)
     {
         (void)ip;
         (void)port;
-        return Connection::INVALID_CONNECTION;
+        return Connection::INVALID;
     }
 
-    bool DisconnectFromLocalSocket(const int closeCode, const char* closeReason)
+    bool LocalSocketDisconnect(const int closeCode, const char* closeReason)
     {
         (void)closeCode;
         (void)closeReason;
         return false;
     }
 
-    const char* GetLocalIP() { return nullptr; }
+    const char* LocalSocketGetIP() { return nullptr; }
 
 } // namespace magique
 #endif

@@ -4,6 +4,7 @@
 
 #include <cstdint> // My favourite header
 #include <magique/config.h>
+#include <magique/internal/Macros.h>
 
 //================= USER DEFINED =================//
 
@@ -11,8 +12,6 @@ enum class GameState : uint8_t;   // Identifies different game states
 enum class EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
 enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
 enum class HandleID : int;        // Identifies handles
-enum class ConfigSlot : int;        // Identifies stored config data
-enum class GameSaveSlot : int;       // Identifies stored game save data
 enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
@@ -32,6 +31,7 @@ namespace magique
     struct EmitterData;      // Data for particle emitters
     struct Point;            // Floating point point
     struct TileInfo;
+    struct GameSystem;
     enum class Direction : uint8_t;
 
     //================= LOADING & SAVING =================//
@@ -39,8 +39,8 @@ namespace magique
     struct AssetContainer; // Asset list loaded from a compiled asset pack
 
     struct SaveLoader; // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSaver;     // Handles saving the session and resetting the state  - Game -> MainMenu
-    struct GameSave;  // The game save object
+    struct GameSaver;  // Handles saving the session and resetting the state  - Game -> MainMenu
+    struct GameSave;   // The game save object
 
     struct ConfigLoader; // Handles loading the config
     struct ConfigSaver;  // Handles saving the config
@@ -71,7 +71,8 @@ namespace magique
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
     struct Playlist;              // Stores multiple music objects to easily play and loop them
     struct TileObject;            // TileObject imported from the Tile Editor
-    struct CSVImport;             // CSV file import data
+    struct TextLines;             // Text import
+
     using TileClassMapFunc = TileClass (*)(const char*);
 
     //================= GAMEDEV =================//
@@ -127,7 +128,7 @@ namespace magique
 } // namespace magique
 
 
-//=================RAYLIB=================//
+//================= RAYLIB =================//
 struct Camera2D;
 struct Font;
 struct Vector2;
@@ -139,8 +140,7 @@ struct Music;
 struct Rectangle;
 struct RenderTexture;
 
-#define MOUSE_LEFT_BUTTON 0
-//=================RAYLIB=================//
+//================= EXTERNAL =================//
 
 namespace entt
 {

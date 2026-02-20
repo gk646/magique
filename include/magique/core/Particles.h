@@ -38,7 +38,7 @@ namespace magique
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
     // Sets the position of the emission shape - top left for rect, middle point for circle
-    void ParticlesEmit(const ScreenEmitter& emitter, const Point& position = {0, 0}, int amount = 1);
+    void ParticlesEmit(const ScreenEmitter& emitter, Point position = {}, int amount = 1);
 
     //================= EMITTERS =================//
 
@@ -122,7 +122,7 @@ namespace magique
         // Sets the gravity (pixels/s**2) in both x and y direction
         // Note: Gravity is applied every tick to the particles velocity
         // Default: (0,0)
-        EmitterBase& setGravity(float gravityX, float gravityY);
+        EmitterBase& setGravity(Point gravity);
 
         // Sets the min and max scale of the emitted particle(s) - randomly chosen when created
         // Note: Scaling is applied to the default dimensions of the particle
@@ -174,10 +174,8 @@ namespace magique
         const internal::EmitterData& getData() const;
 
     private:
+        M_MAKE_PUB()
         internal::EmitterData data{};
-        friend struct ParticleData;
-        friend void ParticlesEmit(const ScreenEmitter&, const Point&, int);
-        friend TickFunction;
     };
 
 

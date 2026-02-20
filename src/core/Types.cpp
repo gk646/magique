@@ -25,6 +25,20 @@ namespace magique
 
     Point Point::Random(float min, float max) { return {GetRandomFloat(min, max), GetRandomFloat(min, max)}; }
 
+    Point Point::PerpendicularTowardsPoint(Point startPoint, Point direction, Point target)
+    {
+        const auto diff = target - startPoint;
+        const float crossProduct = direction.cross(diff);
+        if (crossProduct > 0)
+        {
+            return direction.perpendicular(true);
+        }
+        else
+        {
+            return direction.perpendicular(false);
+        }
+    }
+
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
 
     bool Point::operator!=(const Point& other) const { return x != other.x || y != other.y; }
@@ -142,9 +156,7 @@ namespace magique
         return D * (dx + dy) + (D2 - 2 * D) * std::min(dx, dy);
     }
 
-    int Point::intx() const { return (int)x; }
-
-    int Point::inty() const { return (int)y; }
+    float Point::sum() const { return x + y; }
 
     float Point::dot(const Point& p) const { return (x * p.x) + (y * p.y); }
 
@@ -168,7 +180,7 @@ namespace magique
         auto magnitude = x * x + y * y;
         if (magnitude != 0) [[likely]]
         {
-            SquareRoot(magnitude);
+            magnitude = std::sqrt(magnitude);
             x /= magnitude;
             y /= magnitude;
         }
@@ -268,29 +280,17 @@ namespace magique
         y = std::min(y, other.y);
     }
 
-    Point Point::PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target)
-    {
-        const auto diff = target - startPoint;
-        const float crossProduct = direction.cross(diff);
-        if (crossProduct > 0)
-        {
-            return direction.perpendicular(true);
-        }
-        else
-        {
-            return direction.perpendicular(false);
-        }
-    }
-
     //----------------- RECT -----------------//
 
-    Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), w(rect.width), h(rect.height) {}
+    Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), width(rect.width), height(rect.height) {}
 
-    Rect::Rect(const Point& topLeft, const Point& size) : x(topLeft.x), y(topLeft.y), w(size.x), h(size.y) {}
+    Rect::Rect(const Point& topLeft, const Point& size) : x(topLeft.x), y(topLeft.y), width(size.x), height(size.y) {}
 
-    Rect::Rect(float x, float y, float w, float h) : x(x), y(y), w(w), h(h) {}
+    Rect::Rect(float width, float height) : x(0.0F), y(0.0F), width(width), height(height) {}
 
-    Rect::operator Rectangle() const { return {x, y, w, h}; }
+    Rect::Rect(float x, float y, float width, float height) : x(x), y(y), width(width), height(height) {}
+
+    Rect::operator Rectangle() const { return {x, y, width, height}; }
 
     Rect Rect::FromPoints(const Point& p1, const Point& p2)
     {
@@ -299,33 +299,33 @@ namespace magique
         Rect rect;
         rect.x = smallest.x;
         rect.y = smallest.y;
-        rect.w = biggest.x - smallest.x;
-        rect.h = biggest.y - smallest.y;
+        rect.width = biggest.x - smallest.x;
+        rect.height = biggest.y - smallest.y;
         return rect;
     }
 
-    Rect Rect::CenteredOn(const Point& p, const Point& size) { return {p - size / 2, size}; }
+    Rect Rect::CenteredOn(const Point& p, const Point& size) { return Rect{p - size / 2, size}; }
 
     Rect Rect::Filled(const Rect& area, float fill, Direction direction)
     {
         Rect filledBounds = area;
         if (direction == Direction::UP)
         {
-            filledBounds.h *= fill;
-            filledBounds.y = area.y - filledBounds.h + area.h;
+            filledBounds.height *= fill;
+            filledBounds.y = area.y - filledBounds.height + area.height;
         }
         else if (direction == Direction::DOWN)
         {
-            filledBounds.h *= fill;
+            filledBounds.height *= fill;
         }
         else if (direction == Direction::LEFT)
         {
-            filledBounds.w *= fill;
-            filledBounds.x = area.x - filledBounds.w + area.w;
+            filledBounds.width *= fill;
+            filledBounds.x = area.x - filledBounds.width + area.width;
         }
         else if (direction == Direction::RIGHT)
         {
-            filledBounds.w *= fill;
+            filledBounds.width *= fill;
         }
         return filledBounds;
     }
@@ -337,6 +337,14 @@ namespace magique
         return *this;
     }
 
+    Rect Rect::operator+(const Point& p) const
+    {
+        auto ret = *this;
+        ret.x += p.x;
+        ret.y += p.y;
+        return ret;
+    }
+
     Rect& Rect::operator=(const Point& p)
     {
         x = p.x;
@@ -344,14 +352,14 @@ namespace magique
         return *this;
     }
 
-    bool Rect::operator==(const float num) const { return x == num && y == num && w == num && h == num; }
+    bool Rect::operator==(const float num) const { return x == num && y == num && width == num && height == num; }
 
     Rect& Rect::floor()
     {
         x = std::floor(x);
         y = std::floor(y);
-        w = std::floor(w);
-        h = std::floor(h);
+        width = std::floor(width);
+        height = std::floor(height);
         return *this;
     }
 
@@ -365,39 +373,45 @@ namespace magique
     {
         x = std::round(x);
         y = std::round(y);
-        w = std::round(w);
-        h = std::round(h);
+        width = std::round(width);
+        height = std::round(height);
         return *this;
+    }
+
+    Rect Rect::round() const
+    {
+        auto ret = *this;
+        return ret.round();
     }
 
     Rect& Rect::zero()
     {
         x = 0.0F;
         y = 0.0F;
-        w = 0.0F;
-        h = 0.0F;
+        width = 0.0F;
+        height = 0.0F;
         return *this;
     }
 
-    Point Rect::random() const { return Point{x + GetRandomFloat(0, w), y + GetRandomFloat(0, h)}; }
+    Point Rect::random() const { return Point{x + GetRandomFloat(0, width), y + GetRandomFloat(0, height)}; }
 
-    bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, w, h); }
+    bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, width, height); }
 
-    bool Rect::intersects(const Rect& r) const { return RectToRect(x, y, w, h, r.x, r.y, r.w, r.h); }
+    bool Rect::intersects(const Rect& r) const { return RectToRect(x, y, width, height, r.x, r.y, r.width, r.height); }
 
-    float Rect::area() const { return w * h; }
+    float Rect::area() const { return width * height; }
 
     Point Rect::pos() const { return Point{x, y}; }
 
-    Point Rect::size() const { return Point{w, h}; }
+    Point Rect::size() const { return Point{width, height}; }
 
-    Point Rect::mid() const { return Point{x + w / 2, y + h / 2}; }
+    Point Rect::mid() const { return Point{x + width / 2, y + height / 2}; }
 
     Point Rect::closestInside(const Point& p) const
     {
         Point closest{};
-        closest.x = std::clamp(p.x, x, x + w);
-        closest.y = std::clamp(p.y, y, y + h);
+        closest.x = std::clamp(p.x, x, x + width);
+        closest.y = std::clamp(p.y, y, y + height);
         return closest;
     }
 
@@ -406,9 +420,9 @@ namespace magique
         auto inside = closestInside(p);
 
         const auto distUp = std::abs(y - inside.y);
-        const auto distDown = std::abs((y + h) - inside.y);
+        const auto distDown = std::abs((y + height) - inside.y);
         const auto distLeft = std::abs(x - inside.x);
-        const auto distRight = std::abs((x + w) - inside.x);
+        const auto distRight = std::abs((x + width) - inside.x);
 
         const auto minDist = std::min({distUp, distDown, distLeft, distRight});
         if (minDist == distUp)
@@ -417,7 +431,7 @@ namespace magique
         }
         else if (minDist == distDown)
         {
-            return {inside.x, y + h};
+            return {inside.x, y + height};
         }
         else if (minDist == distLeft)
         {
@@ -425,11 +439,11 @@ namespace magique
         }
         else
         {
-            return {x + w, inside.y};
+            return {x + width, inside.y};
         }
     }
 
-    Rect Rect::scale(const float factor) const { return {x * factor, y * factor, w * factor, h * factor}; }
+    Rect Rect::scale(const float factor) const { return {x * factor, y * factor, width * factor, height * factor}; }
 
     Rect Rect::enlarge(const float size) const
     {
@@ -437,10 +451,12 @@ namespace magique
         Rect rect;
         rect.x = x - change;
         rect.y = y - change;
-        rect.w = w + size;
-        rect.h = h + size;
+        rect.width = width + size;
+        rect.height = height + size;
         return rect;
     }
+
+    Rect Rect::shrink(float size) const { return this->enlarge(-size); }
 
     //----------------- SPRITE SHEET -----------------//
 

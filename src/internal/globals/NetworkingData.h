@@ -5,7 +5,7 @@
 #include <magique/util/Logging.h>
 #include <magique/multiplayer/Networking.h>
 #include <magique/multiplayer/Lobby.h>
-#include <magique/internal/Macros.h>
+
 
 #include "multiplayer/headers/MultiplayerStatistics.h"
 #include "multiplayer/headers/LobbyData.h"
@@ -22,36 +22,29 @@
 
 using MessageVec = std::vector<SteamNetworkingMessage_t*>;
 
-inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
-{
-    if (eType == k_ESteamNetworkingSocketsDebugOutputType_Msg)
-    {
-        LOG_INFO(pszMsg);
-    }
-    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Warning)
-    {
-        LOG_WARNING(pszMsg);
-    }
-    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Important)
-    {
-        LOG_WARNING(pszMsg);
-    }
-    else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Error ||
-             eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
-    {
-        LOG_ERROR(pszMsg);
-    }
-}
 
 namespace magique
 {
+    struct ConnMapping final
+    {
+        Connection conn;
+        entt::entity entity;
+    };
+
+    struct SteamMapping final
+    {
+        Connection conn;
+        SteamID steam;
+    };
+
     struct NetworkingData final
     {
         LobbyData lobby;
         MultiplayerStatistics statistics{};
-        NetworkCallback callback;                                       // Callback
-        std::vector<Connection> connections;                            // Holds all current valid connections
-        std::vector<ConnMapping> connectionMapping;                     // Holds all the manually set mappings
+        NetworkCallback callback;                   // Callback
+        std::vector<Connection> connections;        // Holds all current valid connections
+        std::vector<ConnMapping> connectionMapping; // Holds all the manually set mappings
+        std::vector<SteamMapping> steamMapping;
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
         MessageVec outMsgBuffer;                                        // Outgoing message buffer
         MessageVec incMsgBuffer;                                        // Incoming message buffer
@@ -68,6 +61,7 @@ namespace magique
             incMsgBuffer.reserve(150);
             connections.reserve(8);
             connectionMapping.reserve(8);
+            steamMapping.reserve(8);
         }
 
         void close()
@@ -129,6 +123,7 @@ namespace magique
             incMsgBuffer.clear();
             connections.clear();
             connectionMapping.clear();
+            steamMapping.clear();
             isHost = false;
             inSession = false;
             numberMapping.clear();
@@ -150,11 +145,14 @@ namespace magique
         {
             numberMapping.removeConnection(client);
             std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == client; });
+            std::erase_if(steamMapping, [&](auto& mapping) { return mapping.conn == client; });
             std::erase(connections, client);
         }
 
+
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
         {
+            const auto steamId = static_cast<SteamID>(pParam->m_info.m_identityRemote.GetSteamID64());
             const auto conn = static_cast<Connection>(pParam->m_hConn);
             if (isHost)
             {
@@ -174,9 +172,12 @@ namespace magique
                         {
                             connections.push_back(conn);
                             numberMapping.addConnection(conn);
+#ifdef MAGIQUE_STEAM
+steamMapping.push_back({conn, steamId});
+#endif
                             if (callback)
                             {
-                                callback(NetworkEvent::HOST_NEW_CONNECTION, conn);
+                                callback(NetworkEvent::HOST_NEW_CONNECTION, conn, steamId);
                             }
                             LOG_INFO("Host accepted a new client connection");
                         }
@@ -199,7 +200,7 @@ namespace magique
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
                     if (callback)
                     {
-                        callback(NetworkEvent::CLIENT_CONNECTION_ACCEPTED, conn);
+                        callback(NetworkEvent::CLIENT_CONNECTION_ACCEPTED, conn, steamId);
                     }
                 }
             }
@@ -214,7 +215,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn);
+                        callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn, steamId);
                     }
                     onClientDisconnected(conn);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
@@ -223,7 +224,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn);
+                        callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn, steamId);
                     }
                     goOffline();
                     LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
@@ -241,7 +242,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn);
+                        callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn, steamId);
                     }
                     onClientDisconnected(conn);
                     LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
@@ -250,7 +251,7 @@ namespace magique
                 {
                     if (callback)
                     {
-                        callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn);
+                        callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn, steamId);
                     }
                     goOffline();
                     LOG_INFO("Local problem with connection. Closed session: %s", errStr);
@@ -258,6 +259,26 @@ namespace magique
             }
         }
     };
+
+    inline void DebugOutput(const ESteamNetworkingSocketsDebugOutputType eType, const char* pszMsg)
+    {
+        if (eType == k_ESteamNetworkingSocketsDebugOutputType_Msg)
+        {
+        }
+        else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Warning)
+        {
+            LOG_WARNING(pszMsg);
+        }
+        else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Important)
+        {
+            LOG_WARNING(pszMsg);
+        }
+        else if (eType == k_ESteamNetworkingSocketsDebugOutputType_Error ||
+                 eType == k_ESteamNetworkingSocketsDebugOutputType_Bug)
+        {
+            LOG_ERROR(pszMsg);
+        }
+    }
 
     namespace global
     {

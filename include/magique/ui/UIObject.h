@@ -3,7 +3,7 @@
 #define MAGIQUE_UI_OBJECT_H
 
 #include <magique/core/Types.h>
-#include <magique/internal/Macros.h>
+
 
 //===============================================
 // UIObject
@@ -28,9 +28,7 @@ namespace magique
     {
         // Creates the object from absolute dimensions in the logical UI resolution (see ui/UI.h)
         // Optionally specify an anchor point the object is anchored to and a scaling mode
-        UIObject(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIObject(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {},
-                 ScalingMode scaling = ScalingMode::FULL);
+        UIObject(Rect size, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         //================= CORE =================//
 
@@ -40,28 +38,28 @@ namespace magique
     protected:
         // Controls how the object is visualized - should only be used to draw
         // Called with getBounds()
-        virtual void onDraw(const Rectangle& bounds) {}
+        virtual void onDraw(const Rect& bounds) {}
 
         // Controls how the object is updated - called automatically before each update tick
         // The call order is sorted after draw order dynamically - the elements on top (drawn last) are updated first
         //      - wasDrawn: if the object was drawn last tick
         // Note: This allows for objects to be updated regardless if they are drawn or not (background task,...)
         // Note: All UIContainers are updated separately and before objects
-        virtual void onUpdate(const Rectangle& bounds, bool wasDrawn) {}
+        virtual void onUpdate(const Rect& bounds, bool wasDrawn) {}
 
         // Same as onUpdate() but called at the beginning of the draw tick (before the update tick)
         // This is essential for real time behavior of components (like dragging windows)
-        virtual void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) {}
+        virtual void onDrawUpdate(const Rect& bounds, bool wasDrawn) {}
 
         // Called each time the window wasn't drawn prior but drawn now (before its drawn this tick)
-        virtual void onShown(const Rectangle& bounds) {}
+        virtual void onShown(const Rect& bounds) {}
 
         // Called each time the window was drawn but isn't anymore (at end of update tick if it wasn't drawn)
-        virtual void onHide(const Rectangle& bounds) {}
+        virtual void onHide(const Rect& bounds) {}
 
     public:
         // Returns the bounds of this object
-        [[nodiscard]] Rectangle getBounds() const;
+        Rect getBounds() const;
 
         // Sets a new position for this object - values are scaled to the CURRENT (target) resolution
         void setPosition(const Point& pos);
@@ -85,38 +83,34 @@ namespace magique
         bool getIsHovered() const;
 
         // Returns true if mouse button is pressed while the object is hovered
-        bool getIsClicked(int mouseButton = MOUSE_LEFT_BUTTON) const;
+        bool getIsClicked(int mouseButton = MOUSE_BUTTON_LEFT) const;
 
         // Returns true if mouse button is down while the object is hovered
-        bool getIsPressed(int mouseButton = MOUSE_LEFT_BUTTON) const;
+        bool getIsPressed(int mouseButton = MOUSE_BUTTON_LEFT) const;
 
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
         // Note: Anchoring is updated each tick automatically
         // Default: NONE
         void setAnchor(Anchor anchor, Point inset = {});
-        [[nodiscard]] Anchor getAnchor() const;
-        [[nodiscard]] Point getInset() const;
+        Anchor getAnchor() const;
+        Point getInset() const;
 
         // Controls the scaling mode of the object
         // Note: Check the ScalingMode enum (core/Types.h) for more info on how scaling is applied
         // Default: FULL
         void setScalingMode(ScalingMode scaling);
-        [[nodiscard]] ScalingMode getScalingMode() const;
+        ScalingMode getScalingMode() const;
 
         // Returns true if the object was drawn in the last tick
-        [[nodiscard]] bool getWasDrawn() const;
+        bool getWasDrawn() const;
 
         // Returns the UIObject cast to the given type
         template <typename T>
         T* getAs();
 
-        // Sets or gets the start position - set per default to the initial position
-        void setStartPosition(const Point& pos);
-        [[nodiscard]] Point getStartPosition() const;
-
-        // Sets or gets the start position - set per default to the initial position
-        void setStartDimensions(const Point& dims);
-        [[nodiscard]] Point getStartDimensions() const;
+        // Gets the bounds the object was initialized with
+        // Note: Will always be the absolute coordinates it was created with
+        Rect getStartBounds() const;
 
         // Starts a scissor mode with the current bounds - has to be stopped manually!
         void beginBoundsScissor() const;
@@ -125,21 +119,22 @@ namespace magique
 
     private:
         Rect pBounds;
-        Point inset{};                        // Inset - offset towards the middle of the screen
-        Point startPos{};                          // Default position
-        Point startDims{};                         // Default dimensions
+        Rect startBounds;                          // Bounds object started with
+        Point inset{};                             // Inset - offset towards the middle of the screen
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;
         bool drawnThisTick = false;
         bool isContainer = false;
-        befriend(UIData, Window)
+        friend UIData;
+        friend Window;
     };
 
 } // namespace magique
 
 
 // IMPLEMENTATION
+
 
 namespace magique
 {
@@ -151,4 +146,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_UI_OBJECT_H
+#endif // MAGIQUE_UI_OBJECT_H

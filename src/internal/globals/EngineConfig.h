@@ -37,7 +37,7 @@ namespace magique
         Point cameraViewOff{};                      // Manual camera view offset
         Point cameraPositionOff{};                  // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr;     // The loading screen instance
-        float entityUpdateDistance = 2500;          // Update distance
+        float entityUpdateDist = 2500;          // Update distance
         float cameraCullPadding = 250;              // Padding around the cameras native bounds
         float fontSize = 15;                        // Font size of engine UI elements - scales automatically
         float cameraSmoothing = 0.4f;               // How fast the camera catches up to the holder position

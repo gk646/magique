@@ -29,36 +29,36 @@ void TileLoader::execute(AssetContainer& res)
 
 void EntityLoader::execute(AssetContainer& res)
 {
-    SetEntityScript(PLAYER, new PlayerScript());
-    RegisterEntity(PLAYER,
+    ScriptingSetScript(PLAYER, new PlayerScript());
+    EntityRegister(PLAYER,
                    [](entt::entity e, EntityType type)
                    {
-                       GiveActor(e);
-                       GiveCamera(e);
+                       ComponentGiveActor(e);
+                       ComponentGiveCamera(e);
                        GiveCollisionRect(e, 20, 30);
-                       GiveComponent<EntityStatsC>(e);
-                       GiveComponent<MovementC>(e);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
                        GiveAnimation(e, type, AnimationState::IDLE);
                    });
 
-    SetEntityScript(TROLL, new TrollScript());
-    RegisterEntity(TROLL,
+    ScriptingSetScript(TROLL, new TrollScript());
+    EntityRegister(TROLL,
                    [](entt::entity e, EntityType type)
                    {
                        GiveCollisionRect(e, 20, 30);
-                       GiveComponent<EntityStatsC>(e);
-                       GiveComponent<MovementC>(e);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
                        GiveAnimation(e, type, AnimationState::IDLE);
                    });
 
-    SetEntityScript(NET_PLAYER, new NetPlayerScript());
-    RegisterEntity(NET_PLAYER,
+    ScriptingSetScript(NET_PLAYER, new NetPlayerScript());
+    EntityRegister(NET_PLAYER,
                    [](entt::entity e, EntityType type)
                    {
-                       GiveActor(e);
+                       ComponentGiveActor(e);
                        GiveCollisionRect(e, 20, 30);
-                       GiveComponent<EntityStatsC>(e);
-                       GiveComponent<MovementC>(e);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
                        GiveAnimation(e, type, AnimationState::IDLE);
                    });
 }

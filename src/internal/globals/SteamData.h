@@ -171,4 +171,4 @@ namespace magique
 } // namespace magique
 #endif
 
-#endif //MAGIQUE_STEAMDATA_H
+#endif // MAGIQUE_STEAMDATA_H

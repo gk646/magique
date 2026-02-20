@@ -48,10 +48,11 @@
 #include "gamedev/VirtualClock.h"
 #include "gamedev/UsefulStuff.h"
 
-// Multiplayer
-#ifdef MAGIQUE_LAN
-#include "multiplayer/Multiplayer.h"
+// Networking
+#if defined( MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
+#include "multiplayer/Networking.h"
 #include "multiplayer/LocalSocket.h"
+#include "multiplayer/Lobby.h"
 #endif
 
 // Persistence
@@ -72,6 +73,11 @@
 #include "ui/controls/Button.h"
 #include "ui/controls/Window.h"
 #include "ui/controls/TextField.h"
+#include "ui/controls/Slider.h"
+#include "ui/controls/Checkbox.h"
+#include "ui/controls/ListMenu.h"
+#include "ui/controls/ScrollPane.h"
+#include "ui/controls/DropDown.h"
 
 // Util
 #include "util/Logging.h"

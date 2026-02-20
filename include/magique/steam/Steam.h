@@ -29,11 +29,11 @@ namespace magique
     // Returns your own steam id
     SteamID SteamGetID();
 
-    // Returns the name of this steam user
-    const char* SteamGetUserName();
+    // Returns the name of current steam user
+    const char* SteamGetLocalName();
 
     // Returns the name of the user with the given id (only works if it's your friend or in a common lobby etc.)
-    const char* SteamGetName(SteamID id);
+    const char* SteamGetUserName(SteamID id);
 
     using SteamOverlayCallback = std::function<void(bool isOpening)>;
 

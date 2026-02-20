@@ -5,7 +5,7 @@
 
 namespace magique
 {
-    Menu::Menu() : UIContainer(0, 0) {}
+    Menu::Menu() : UIContainer(Rect{}) {}
 
     void Menu::addSubMenu(Menu* menu, const char* name)
     {
@@ -73,7 +73,7 @@ namespace magique
 
     bool Menu::getIsActive() const { return isActive; }
 
-    void Menu::onDraw(const Rectangle& bounds)
+    void Menu::onDraw(const magique::Rect& bounds)
     {
         if (subMenu != nullptr)
         {
@@ -81,7 +81,7 @@ namespace magique
         }
     }
 
-    void Menu::onDrawUpdate(const Rectangle& bounds, bool wasDrawn)
+    void Menu::onDrawUpdate(const Rect& bounds, bool wasDrawn)
     {
         UIContainer::onDrawUpdate(bounds, wasDrawn);
         setSize(UIGetTargetResolution());

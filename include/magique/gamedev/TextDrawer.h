@@ -21,38 +21,47 @@
 
 namespace magique
 {
-
-    using CustomTextFunc = std::function<Point(TextDrawer& drawer)>;
-
     struct TextDrawer
     {
-        explicit TextDrawer(const Font& font, const Rect& bounds, Point off = Point{2});
+        // off is offset from the bounds - gap is horizontal and vertical spacing between actions
+        explicit TextDrawer(const Font& font, const Rect& bounds, Point off = Point{2}, Point gap = {2});
 
         // Draw text and resets mods
         // move cursor to the right of the text
         void left(const std::string_view& txt, Color tint);
         void center(const std::string_view& txt, Color tint);
-        // moves cursor to the left of the text
+        // moves right end of line to the left of the text
+        // following calls will align to the left of the previous (only for right() calls)
         void right(const std::string_view& txt, Color tint);
-
-        // Executes the custom function and moves the cursor for the returned size
-        void custom(const CustomTextFunc& func);
 
         // Images
         void icon(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
 
         // Move cursor
-        void gap(bool vertical = true, float mult = 1.0F);
         // moves cursor to the beginning of the next line and resets mods
-        void linebreak(float amount = 1.0F);
-        // Moves the cursor
-        void move(Point pos);
+        TextDrawer& linebreak(float amount = 1.0F);
+
+        // Moves the cursor arbitrarily
+        TextDrawer& move(Point pos);
+
+        // moves the cursor either vertical or horizontal by the initial gap multiplied with a factor
+        // Negative gap for horizontal moves the right end of line cursor
+        TextDrawer& gapH(float mult = 1.0F);
+        TextDrawer& gapV(float mult = 1.0F);
+
+        // Temporary mod only for the next action
+        TextDrawer& mod(int fsm);
+        // Highlights numbers in a different color
+        TextDrawer& mod(Color numberHighlight);
+        TextDrawer& mod(Point offset);
 
         // Helpers
-        int withNewLines(char* str) const;
-        void setMod(int fsm = 1, Color highlight = WHITE, Point offset = {});
         float textWidth(const std::string_view& txt) const;
 
+        // Returns the new lines added inplace to the given string
+        int withNewLines(char* str) const;
+
+        // getters
         Point getCursor() const;
         Rect& getBounds();
         Rect getBounds() const;
@@ -62,7 +71,8 @@ namespace magique
         void resetMods();
 
         Rect bounds;
-        Point off;            // Initial offset from bounds
+        Point gapp;
+        Point off;
         Point cursor;         // Where next action happens
         float cursorEndX = 0; // offset from line end
 

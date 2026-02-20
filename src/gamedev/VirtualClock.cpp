@@ -2,59 +2,42 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <ctime>
 #include <cmath>
+#include <cstdlib>
 
 #include <magique/gamedev/VirtualClock.h>
-#include <magique/internal/Macros.h>
+
 
 namespace magique
 {
-    VirtualTime::VirtualTime(int hours, int minutes) : day(0), hour(hours % 24), minute(minutes % 60), second(0) {}
-
-    VirtualTime VirtualTime::operator+(const VirtualTime& other) const
+    VirtualTime::VirtualTime(int seconds, int minutes, int hours, int days)
     {
-        VirtualTime result;
-        result.second = second + other.second;
-        result.minute = minute + other.minute;
-        result.hour = hour + other.hour;
-        result.day = day + other.day;
+        seconds = ((days * 24 + hours) * 60 + minutes) * 60 + seconds;
+        div_t daysrem = div(seconds, 24 * 60 * 60);
+        day = daysrem.quot;
 
-        result.minute += result.second / 60;
-        result.second %= 60;
+        div_t hoursrem = div(daysrem.rem, 60 * 60);
+        hour = hoursrem.quot;
 
-        result.hour += result.minute / 60;
-        result.minute %= 60;
+        div_t minutesrem = div(hoursrem.rem, 60);
+        minute = minutesrem.quot;
 
-        result.day += result.hour / 24;
-        result.hour %= 24;
-
-        return result;
+        second = minutesrem.rem;
     }
 
-    VirtualTime VirtualTime::operator-(const VirtualTime& other) const
+    VirtualTime VirtualTime::operator+(const VirtualTime& other) const { return {toSeconds() + other.toSeconds()}; }
+
+    VirtualTime VirtualTime::operator-(const VirtualTime& other) const { return {toSeconds() - other.toSeconds()}; }
+
+    VirtualTime& VirtualTime::operator+=(const VirtualTime& other)
     {
-        VirtualTime result;
-        result.second = second - other.second;
-        result.minute = minute - other.minute;
-        result.hour = hour - other.hour;
-        result.day = day - other.day;
+        *this = *this + other;
+        return *this;
+    }
 
-        if (result.second < 0)
-        {
-            result.second += 60;
-            result.minute--;
-        }
-        if (result.minute < 0)
-        {
-            result.minute += 60;
-            result.hour--;
-        }
-        if (result.hour < 0)
-        {
-            result.hour += 24;
-            result.day--;
-        }
-
-        return result;
+    VirtualTime& VirtualTime::operator-=(const VirtualTime& other)
+    {
+        *this = *this - other;
+        return *this;
     }
 
     bool VirtualTime::operator==(const VirtualTime& other) const { return toSeconds() == other.toSeconds(); }
@@ -68,6 +51,18 @@ namespace magique
     bool VirtualTime::operator<=(const VirtualTime& other) const { return toSeconds() <= other.toSeconds(); }
 
     bool VirtualTime::operator>=(const VirtualTime& other) const { return toSeconds() >= other.toSeconds(); }
+
+    VirtualTime& VirtualTime::operator*=(float scale)
+    {
+        *this = *this * scale;
+        return *this;
+    }
+
+    VirtualTime VirtualTime::operator*(float scale) const
+    {
+        const float seconds = (float)toSeconds() * scale;
+        return {(int)std::round(seconds)};
+    }
 
     int VirtualTime::toSeconds() const { return ((day * 24 + hour) * 60 + minute) * 60 + second; }
 

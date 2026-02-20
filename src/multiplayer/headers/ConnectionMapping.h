@@ -3,11 +3,6 @@
 
 namespace magique
 {
-    struct ConnMapping final
-    {
-        Connection conn;
-        entt::entity entity;
-    };
 
     struct ConnNumberMapping final
     {

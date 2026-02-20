@@ -63,8 +63,8 @@ private:
 
 #else
     void reset() {}
-    void addOutgoing(MessageType type, int size) {}
-    void addIncoming(MessageType type, int size) {}
+    void addOutgoing(const magique::Payload& payload) {}
+    void addIncoming(const magique::Payload& payload) {}
     void print() { LOG_WARNING("Network stats only work in DEBUG"); }
     magique::internal::MultiplayerStatsData getStats() const { return {}; }
 #endif

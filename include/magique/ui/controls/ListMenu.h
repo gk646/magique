@@ -29,13 +29,12 @@ namespace magique
     struct ListMenu : UIObject
     {
         // Creates a new ListMenu from coordinates in the logical UI resolution
-        ListMenu(float x, float y, float w, float h);
-        ListMenu(float w, float h, Anchor anchor = Anchor::NONE, Point inset ={});
+        ListMenu(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
         // Draws all entries by calling drawEntryDefault or if set a custom draw function
-        void onDraw(const Rectangle& bounds) override;
+        void onDraw(const Rect& bounds) override;
 
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateState();
@@ -91,4 +90,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGEQUEST_LISTMENU_H
+#endif // MAGEQUEST_LISTMENU_H

@@ -5,7 +5,6 @@
 #include <cstring>
 #include <vector>
 #include <magique/core/Types.h>
-#include <magique/internal/Macros.h>
 
 //===============================================
 // Public Internal Module

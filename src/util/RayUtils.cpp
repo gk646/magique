@@ -5,8 +5,10 @@
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
+#include <magique/ui/UI.h>
+#include <magique/util/Logging.h>
+
 #include "external/raylib-compat/rcore_compat.h"
-#include "magique/ui/UI.h"
 
 namespace magique
 {
@@ -155,7 +157,7 @@ namespace magique
 
     bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
-    void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint)
+    void DrawTextCenteredureV(const Texture& texture, const Vector2& pos, const Color& tint)
     {
         auto center = pos;
         center.x -= (float)texture.width / 2.0F;
@@ -222,10 +224,10 @@ namespace magique
         DrawLineV(rightStart, rightEnd, tint);
     }
 
-    void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline)
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(Rect{bounds}.enlarge(-2), fill);
-        DrawRectFrame(Rect{bounds}.floor(), outline);
+        DrawRectangleRec(bounds.floor().enlarge(-2), fill);
+        DrawRectFrame(bounds.floor(), outline);
     }
 
     void DrawTruePixelartScale(RenderTexture texture)
@@ -299,23 +301,23 @@ namespace magique
         dragStartScreen = GetMousePos();
     }
 
-    Point GetGamePadLeftStick(int gamepad)
+    Point GetGamePadLeftStick(int gamepad, float deadZone)
     {
-        Point p;
-        p.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_X);
-        p.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_Y);
+        Point p{GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_X),
+                GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_LEFT_Y)};
+        if (p.abs().sum() < deadZone)
+            return {};
         return p;
     }
 
-    Point GetGamePadRightStick(int gamepad)
+    Point GetGamePadRightStick(int gamepad, float deadZone)
     {
-        Point p;
-        p.x = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_X);
-        p.y = GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_Y);
+        Point p{GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_X),
+               GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_Y)};
+        if (p.abs().sum() < deadZone)
+            return {};
         return p;
     }
 
-
-    bool IsUsingGamepad() { return false; }
 
 } // namespace magique

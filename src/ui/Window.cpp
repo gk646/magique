@@ -6,13 +6,12 @@
 
 namespace magique
 {
-    Window::Window(const char* name, const float x, const float y, const float w, const float h,
-                   const float moverHeight) : UIObject(x, y, w, h), name(name)
+    Window::Window(const char* name, Rect bounds, const float moverHeight) : UIObject(bounds), name(name)
     {
         const auto& ui = global::UI_DATA;
         if (moverHeight == 0.0F)
         {
-            moverHeightP = (h * 0.10F) / ui.sourceRes.y;
+            moverHeightP = (bounds.height * 0.10F) / ui.sourceRes.y;
         }
         else
         {
@@ -45,7 +44,7 @@ namespace magique
     Rectangle Window::getBodyBounds() const
     {
         const auto& ui = global::UI_DATA;
-        Rect bounds{pBounds.x, pBounds.y + moverHeightP, pBounds.w, pBounds.h - moverHeightP};
+        Rect bounds{pBounds.x, pBounds.y + moverHeightP, pBounds.width, pBounds.height - moverHeightP};
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
         return bounds;
     }
@@ -54,7 +53,7 @@ namespace magique
     {
         const auto& ui = global::UI_DATA;
         Rect bounds = pBounds;
-        bounds.h = moverHeightP;
+        bounds.height = moverHeightP;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
         return bounds;
     }

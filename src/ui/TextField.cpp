@@ -26,12 +26,8 @@ namespace magique
     inline constexpr int SELECT = KEY_A;
     inline constexpr int CUT = KEY_X;
 
-    TextField::TextField(float x, float y, float w, float h, ScalingMode scaling) : UIObject(x, y, w, h, scaling)
-    {
-        text.reserve(64);
-    }
-
-    TextField::TextField(float w, float h, Anchor anchor, ScalingMode scaling) : UIObject(w, h, anchor, {}, scaling)
+    TextField::TextField(Rect bounds, Anchor anchor, Point inset, ScalingMode scaling) :
+        UIObject(bounds, anchor, inset, scaling)
     {
         text.reserve(64);
     }
@@ -74,7 +70,7 @@ namespace magique
     void TextField::fitBoundsToText(float size, const Font& font, float spacing, bool heightOnly)
     {
         const auto dims = MeasureTextEx(font, text.c_str(), size, spacing);
-        const auto startDims = getStartDimensions();
+        const auto startDims = getStartBounds();
         const auto height = std::max(dims.y, startDims.y);
         if (heightOnly)
         {

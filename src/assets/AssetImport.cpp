@@ -3,11 +3,12 @@
 #include <raylib/raylib.h>
 
 #include <magique/assets/AssetImport.h>
+#include <magique/assets/types/TextLines.h>
+#include <magique/assets/types/Asset.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 #include <magique/assets/types/TileSet.h>
 #include <magique/assets/types/Playlist.h>
-#include <magique/internal/Macros.h>
 #include <magique/core/Types.h>
 
 #include "internal/globals/TextureAtlas.h"
@@ -35,12 +36,22 @@ namespace magique
     TextureRegion ImportTexture(const Asset& asset, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
-        const Image image = LoadImage(asset);
+        const Image image = ImportImage(asset);
         const int tarWidth = static_cast<int>(static_cast<float>(image.width) * scale);
         const int tarHeight = static_cast<int>(static_cast<float>(image.height) * scale);
         auto& atlas = global::ATLAS_DATA.getAtlas(at);
         const auto region = atlas.addTexture(image, tarWidth, tarHeight);
         return region;
+    }
+
+    Image ImportImage(const Asset& asset)
+    {
+        ASSET_CHECK(asset);
+        const auto* ext = asset.getExtension();
+        MAGIQUE_ASSERT(IsSupportedImageFormat(ext), "No valid extension");
+        const auto img = LoadImageFromMemory(ext, asset.getUData(), asset.getSize());
+        MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
+        return img;
     }
 
     SpriteSheet ImportSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas, float scale)
@@ -56,7 +67,7 @@ namespace magique
 
         // Load first image to check dimensions
         ASSET_CHECK(assets[0]);
-        Image firstImage = LoadImage(assets[0]);
+        Image firstImage = ImportImage(assets[0]);
         if (firstImage.data == nullptr)
         {
             LOG_WARNING("Failed to load first image: %s", assets[0].getFileName(true));
@@ -82,7 +93,7 @@ namespace magique
         for (size_t i = 1; i < assets.size(); ++i)
         {
             ASSET_CHECK(assets[i]);
-            Image loadedImage = LoadImage(assets[i]);
+            Image loadedImage = ImportImage(assets[i]);
             if (loadedImage.data == nullptr)
             {
                 LOG_WARNING("Failed to load image: %s", assets[i].getFileName(true));
@@ -420,7 +431,7 @@ namespace magique
                     object.tileId = objectPtr->gid;
                     if (object.tileId != 0)
                     {
-                        object.bounds.y -= object.bounds.h;
+                        object.bounds.y -= object.bounds.height;
                     }
 
                     // Parsing properties for objects

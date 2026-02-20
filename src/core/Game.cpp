@@ -38,7 +38,7 @@
 #include "internal/globals/SteamData.h"
 #include "internal/globals/NetworkingData.h"
 #elif MAGIQUE_LAN
-#include "internal/globals/MultiplayerData.h"
+#include "internal/globals/NetworkingData.h"
 #endif
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/OSUtil.h"

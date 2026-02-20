@@ -10,11 +10,7 @@
 
 namespace magique
 {
-    Slider::Slider(const float x, const float y, const float w, const float h) : UIObject(x, y, w, h) {}
-
-    Slider::Slider(const float w, const float h, const Anchor anchor, const float inset) : UIObject(w, h, anchor, Point{inset})
-    {
-    }
+    Slider::Slider(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode) {}
 
     void Slider::setScaleBalanced(const float min, const float max)
     {

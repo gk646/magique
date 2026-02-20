@@ -10,7 +10,7 @@
 //===============================================
 // ................................................................................
 // Here are all the magique drawing function that take its custom types
-// Generally you cant really use raylib types anymore as texture are stored into atlases
+// For textures you can use raylib types anymore as texture are stored into atlases (e.g. TextureRegion & SpriteSheet)
 // Rotation is always a value in degree clockwise starting from the top with 0
 // Note: Take a look at the raylib cheatsheet for all draw functions: https://www.raylib.com/cheatsheet/cheatsheet.html
 // .............................................................
@@ -50,13 +50,12 @@ namespace magique
 
     // Draws the given text centered around the given position
     // Drop in replacement for DrawTextEx()
-    void DrawTextCentered(const Font& f, std::string_view txt, Vector2 pos, float fs, float spc = 1.0F,
+    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
                           Color tint = WHITE);
 
     // Draws the given text aligned so that it ends on the given x positions
     // Drop in replacement for DrawTextEx()
-    void DrawTextRightBound(const Font& f, std::string_view txt, Vector2 pos, float fs, float spc = 1.0F,
-                            Color tint = WHITE);
+    void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F, Color tint = WHITE);
 
     // Returns the amount of characters drawn until the given width is reached (not overstepped)
     int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);
@@ -71,8 +70,8 @@ namespace magique
                               Color numbers = GRAY);
 
     // Draws a rectangle over the text block defined by "from" and "to" so it looks like its highlighted
-    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs,
-                           float spc = 1.0F, Color highlight = ColorAlpha(BLUE, 0.4F));
+    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F,
+                           Color highlight = ColorAlpha(BLUE, 0.4F));
 
     //================= SHAPES =================//
 

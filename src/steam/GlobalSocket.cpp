@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/GlobalSocket.h>
 #ifndef MAGIQUE_STEAM
 #include "magique/util/Logging.h"
 namespace magique
 {
-    bool InitGlobalMultiplayer() { M_ENABLE_STEAM_ERROR(false) }
-    bool CreateGlobalSocket() { M_ENABLE_STEAM_ERROR(false) }
-    bool CloseGlobalSocket(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) };
-    Connection ConnectToGlobalSocket(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}) }
-    bool DisconnectFromGlobalSocket(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) }
+    bool GlobalSocketInit() { M_ENABLE_STEAM_ERROR(false) }
+    bool GlobalSocketCreate() { M_ENABLE_STEAM_ERROR(false) }
+    bool GlobalSocketClose(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) };
+    Connection GlobalSocketConnect(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}) }
+    bool GlobalSocketDisconnect(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) }
 } // namespace magique
 #else
 #include "internal/globals/NetworkingData.h"
@@ -21,6 +20,7 @@ namespace magique
 
     bool GlobalSocketInit()
     {
+        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         if (!global::STEAM_DATA.isInitialized)
         {
             LOG_WARNING("Cannot initialize global multiplayer: Steam not initialized / call InitSteam()");
@@ -60,7 +60,6 @@ namespace magique
                 LOG_ERROR("Failed to close existing connections when closing the global socket");
             }
         }
-
         const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
         data.goOffline();
         return res;

@@ -9,7 +9,7 @@ namespace magique
 {
     inline EventManager EVENT_HANDLER{};
 
-    EventManager& GameEventManager()
+    EventManager& GameEventsGet()
     {
         return EVENT_HANDLER;
     }

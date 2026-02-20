@@ -3,7 +3,7 @@
 
 #include <magique/core/Collision.h>
 #include <magique/ecs/Components.h>
-#include <magique/internal/Macros.h>
+
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "magique/core/Camera.h"
@@ -187,12 +187,13 @@ namespace magique
         }
     }
 
-    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
+    bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
     {
         // Avoids doubling logic - like offset handling
         const PositionC posR{r.pos()};
-        const CollisionC colR{r.w, r.h, 0, 0, {}, {}, Shape::RECT};
+        const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
         CheckCollisionEntities(pos, col, posR, colR, info);
+        return info.isColliding();
     }
 
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)

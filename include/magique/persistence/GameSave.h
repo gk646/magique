@@ -89,8 +89,8 @@ namespace magique
     template <typename T>
     void GameSave::saveJSON(std::string_view slot, const T& obj)
     {
-        auto* cell = getCellOrNew(slot, StorageType::JSON);
-        JSONExport(obj, cell->data);
+        auto& cell = getCellOrNew(slot, StorageType::JSON);
+        JSONExport<T, false>(obj, cell.data);
     }
 
     template <typename T>

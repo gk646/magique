@@ -6,7 +6,7 @@
 #include <magique/core/Types.h>
 
 //===============================================
-// Assetpacker Module
+// AssetPacker
 //===============================================
 // ................................................................................
 // The asset management in magique expects an all resources in a single folder!

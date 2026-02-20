@@ -45,15 +45,15 @@ namespace magique
         Layout left() const
         {
             auto ret = getArea();
-            ret.w = ret.w * split;
+            ret.width = ret.width * split;
             return ret;
         }
 
         Layout right() const
         {
             auto ret = getArea();
-            ret.x += ret.w * split;
-            ret.w = getArea().w * (1.0F - split);
+            ret.x += ret.width * split;
+            ret.width = getArea().width * (1.0F - split);
             return ret;
         }
 
@@ -69,15 +69,15 @@ namespace magique
         Layout upper() const
         {
             auto ret = getArea();
-            ret.h = ret.h * split;
+            ret.height = ret.height * split;
             return ret;
         }
 
         Layout lower() const
         {
             auto ret = getArea();
-            ret.y += ret.h * split;
-            ret.h = ret.h * (1.0F - split);
+            ret.y += ret.height * split;
+            ret.height = ret.height * (1.0F - split);
             return ret;
         }
 

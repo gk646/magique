@@ -10,7 +10,7 @@ using namespace magique;
 struct PlayerHUD final : UIObject
 {
     PlayerHUD() : UIObject(25, 50, 200, 50) {}
-    void onDraw(const Rectangle& bounds) override;
+    void onDraw(const Rect& bounds) override;
     void onUpdate(const Rectangle& bounds, bool isDrawn) override;
 };
 
@@ -18,14 +18,14 @@ struct HotbarSlot final : UIObject
 {
     inline static float size = 50;
     HotbarSlot() : UIObject(0, 0, size, size, ScalingMode::KEEP_RATIO) {}
-    void onDraw(const Rectangle& bounds) override;
+    void onDraw(const Rect& bounds) override;
 };
 
 struct PlayerHotbar final : UIContainer
 {
     inline static int slots = 4;
     PlayerHotbar();
-    void onDraw(const Rectangle& bounds) override;
+    void onDraw(const magique::Rect& bounds) override;
 };
 
 struct MiniWindowButtons final : UIObject

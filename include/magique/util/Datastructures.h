@@ -38,34 +38,29 @@ namespace magique
         using StoreType = std::underlying_type_t<E>;
 
         EnumSet() = default;
-
-        explicit EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
-
-        explicit EnumSet(const std::initializer_list<E>& data) : data_()
+        constexpr EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
+        EnumSet(const std::initializer_list<E>& data) : data_()
         {
             for (const auto flag : data)
             {
-                set(flag);
+                setFlag(flag, true);
             }
         }
 
         bool operator==(const EnumSet& other) const { return data_ == other.data_; }
-
         EnumSet& operator=(E data)
         {
             assign(data);
             return *this;
         }
-
         EnumSet& operator-=(E data)
         {
-            unset(data);
+            setFlag(data, false);
             return *this;
         }
-
         EnumSet& operator+=(E data)
         {
-            set(data);
+            setFlag(data, true);
             return *this;
         }
 
@@ -79,15 +74,29 @@ namespace magique
 
         void clear() noexcept { data_ = 0; }
 
-        void set(E flag) noexcept { data_ |= static_cast<StoreType>(flag); }
+        void setFlag(E flag, bool value) noexcept
+        {
+            if (value)
+            {
+                data_ |= static_cast<StoreType>(flag);
+            }
+            else
+            {
+                data_ &= ~static_cast<StoreType>(flag);
+            }
+        }
 
-        void unset(E flag) noexcept { data_ &= ~static_cast<StoreType>(flag); }
+        void toggleFlag(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
 
-        void toggle(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
+        bool all_of(const EnumSet& other) const noexcept { return all_of(other.get()); }
+        bool all_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) == flag; }
+
+        bool any_of(const EnumSet& other) const noexcept { return any_of(other.get()); }
+        bool any_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
 
         // Compile time check(unfolding)
         template <E... Flags>
-        [[nodiscard]] constexpr bool any_of() const noexcept
+        constexpr bool any_of() const noexcept
         {
             E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
             return (data_ & compositeFlag) != 0;
@@ -95,38 +104,11 @@ namespace magique
 
         // Compile time check(unfolding)
         template <E... Flags>
-        [[nodiscard]] constexpr bool all_of() const noexcept
+        constexpr bool all_of() const noexcept
         {
             E compositeFlag = (0 | ... | static_cast<StoreType>(Flags));
             return (data_ & compositeFlag) == compositeFlag;
         }
-
-        // Runtime check
-        [[nodiscard]] bool any_of(const std::initializer_list<E>& flags) const noexcept
-        {
-            for (auto flag : flags)
-            {
-                if (isSet(flag))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Runtime check
-        [[nodiscard]] bool all_of(const std::initializer_list<E>& flags) const noexcept
-        {
-            for (const auto flag : flags)
-            {
-                if (!isSet(flag))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-        [[nodiscard]] bool all_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) == flag; }
 
         struct EnumSetIterator
         {
@@ -137,9 +119,7 @@ namespace magique
                     current = current << 1;
                 }
             }
-
             E operator*() const noexcept { return static_cast<E>(current); }
-
             EnumSetIterator& operator++() noexcept
             {
                 current = current << 1;
@@ -149,16 +129,13 @@ namespace magique
                 }
                 return *this;
             }
-
             EnumSetIterator operator++(int) noexcept
             {
                 EnumSetIterator tmp = *this;
                 ++(*this);
                 return tmp;
             }
-
             bool operator==(const EnumSetIterator& other) const noexcept { return current == other.current; }
-
             bool operator!=(const EnumSetIterator& other) const noexcept { return !(*this == other); }
 
         private:
@@ -167,7 +144,6 @@ namespace magique
         };
 
         EnumSetIterator begin() const noexcept { return EnumSetIterator(data_, 1); }
-
         EnumSetIterator end() const noexcept { return EnumSetIterator(data_, 0); }
 
     private:
@@ -346,14 +322,14 @@ namespace magique
             }
         }
 
-        [[nodiscard]] bool insideGrid(int x, int y) const
+        bool insideGrid(int x, int y) const
         {
             x /= reduction;
             y /= reduction;
             return x >= 0 && y >= 0 && x < cols && y < rows;
         }
 
-        [[nodiscard]] bool insideGrid(const Point& point) const
+        bool insideGrid(const Point& point) const
         {
             const int x = static_cast<int>(point.x / reduction);
             const int y = static_cast<int>(point.y / reduction);
@@ -450,6 +426,7 @@ namespace magique
         Compare comp;
     };
 
+
     // Useful to map a enum to a value with direct indexing
     // Just a wrapped std::array<>
     // Supports loading from JSON
@@ -466,10 +443,9 @@ namespace magique
             bool operator==(const ValueHolder& other) const = default;
         };
 
-        EnumArray() { initKeys(); }
+        EnumArray() { initKeys(); };
 
-        template <typename Range>
-        constexpr EnumArray(const Range& init) : EnumArray()
+        constexpr EnumArray(const std::initializer_list<ValueHolder>& init) : EnumArray()
         {
             for (const auto& value : init)
             {
@@ -479,33 +455,33 @@ namespace magique
                     LOG_ERROR("Invalid key");
                     continue;
                 }
-                data_[keyInt] = ValueHolder{value.key, value.value};
+                data[keyInt] = ValueHolder{value.key, value.value};
             }
+            initKeys();
         }
 
-        const Value& operator[](Key key) const { return data_[static_cast<size_t>(key)].value; }
-        Value& operator[](Key key) { return data_[static_cast<size_t>(key)].value; }
+        const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].value; }
+        Value& operator[](Key key) { return data[static_cast<size_t>(key)].value; }
 
-        auto begin() { return data_.begin(); }
-        auto end() { return data_.end(); }
-        auto begin() const { return data_.begin(); }
-        auto end() const { return data_.end(); }
+        auto begin() { return data.begin(); }
+        auto end() { return data.end(); }
+        auto begin() const { return data.begin(); }
+        auto end() const { return data.end(); }
 
-        size_t size() const { return data_.size(); }
+        size_t size() const { return data.size(); }
 
         bool operator==(const EnumArray& other) const = default;
 
     private:
         void initKeys()
         {
-            for (size_t i = 0; i < data_.size(); i++)
+            for (size_t i = 0; i < data.size(); i++)
             {
-                data_[i].key = (Key)i;
+                data[i].key = (Key)i;
             }
         }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data_;
-        friend glz::meta<EnumArray>;
+        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data;
     };
 
     // To prevent false sharing when accessed in multithread context

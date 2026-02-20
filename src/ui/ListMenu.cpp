@@ -7,11 +7,11 @@
 
 namespace magique
 {
-    ListMenu::ListMenu(float x, float y, float w, float h) : UIObject(x, y, w, h) {}
+    ListMenu::ListMenu(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
+    {
+    }
 
-    ListMenu::ListMenu(float w, float h, Anchor anchor, Point inset) : UIObject(w, h, anchor, inset) {}
-
-    void ListMenu::onDraw(const Rectangle& bounds)
+    void ListMenu::onDraw(const magique::Rect& bounds)
     {
         Point pos = {bounds.x, bounds.y};
         for (int i = 0; i < (int)entries.size(); i++)

@@ -24,8 +24,7 @@ namespace magique
 {
     struct ScrollPane : UIObject
     {
-        ScrollPane(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {});
-        ScrollPane(float x, float y, float w, float h);
+        ScrollPane(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
         // Sets the width of the scroller
         void setScrollerWidth(float width);
@@ -50,13 +49,13 @@ namespace magique
         bool getInvertVertScroll() const;
 
     protected:
-        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateInputs();
         }
 
-        void onDraw(const Rectangle& bounds) override
+        void onDraw(const Rect& bounds) override
         {
             drawContent();
             drawDefault(bounds);
@@ -79,10 +78,10 @@ namespace magique
     private:
         struct Scroller final
         {
-            bool isHorizontal = false;  // If scroller is horizontal
-            float offset = 0.0F;        // Offset in px of the scroller
+            bool isHorizontal = false;   // If scroller is horizontal
+            float offset = 0.0F;         // Offset in px of the scroller
             float scrollerWidth = 0.05F; // How wide the scroller is
-            float moveFactor = 1.0F;    // How much content moves for 1px of scroller
+            float moveFactor = 1.0F;     // How much content moves for 1px of scroller
             bool invertScroll = false;
 
             // Drag state
@@ -102,4 +101,4 @@ namespace magique
     };
 } // namespace magique
 
-#endif //MAGEQUEST_SCROLL_PANE_H
+#endif // MAGEQUEST_SCROLL_PANE_H

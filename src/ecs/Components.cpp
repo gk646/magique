@@ -18,7 +18,7 @@ namespace magique
             {
                 if (rotation == 0) [[likely]]
                 {
-                    return {pos + col.offset, {col.p1, col.p2}};
+                    return Rect{pos + col.offset, {col.p1, col.p2}};
                 }
                 else
                 {
@@ -28,7 +28,7 @@ namespace magique
             }
         case Shape::CIRCLE:
             // Top left and diameter as w and h
-            return {pos + col.offset, {col.p1 * 2.0F, col.p1 * 2.0F}};
+            return Rect{pos + col.offset, {col.p1 * 2.0F, col.p1 * 2.0F}};
         case Shape::TRIANGLE:
             {
                 if (rotation == 0)
@@ -93,15 +93,19 @@ namespace magique
 
     //----------------- COLLISION -----------------//
 
-    void CollisionC::setRectShape(const Rect& rect)
+    void CollisionC::setRectShape(const Rect& rect, Point newAnchor)
     {
         shape = Shape::RECT;
-        anchor = rect.size() / 2;
+        if (newAnchor == -1)
+        {
+            newAnchor = rect.size() / 2;
+        }
+        anchor = newAnchor;
         offset = rect.pos();
         anchor.floor();
         offset.floor();
-        p1 = rect.w;
-        p2 = rect.h;
+        p1 = rect.width;
+        p2 = rect.height;
     }
 
     Point CollisionC::GetMiddle(const entt::entity e)
@@ -118,7 +122,7 @@ namespace magique
         // 0101  - other layers
         //      &
         // 0100  - at least one 1 => not 0 so true
-        return mask.isSet(other.layer.get());
+        return mask.any_of(other.layer);
     }
 
     Point CollisionC::getMidOffset() const

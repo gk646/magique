@@ -126,47 +126,47 @@ struct Test final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetGameState({});      // Set empty gamestate - needs to be set in a real game
+        EngineSetState({});      // Set empty gamestate - needs to be set in a real game
         InitSteam();           // Initialize steam
         SetShowHitboxes(true); // Draws a RED outline around the collision shape of all entities
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
+            ComponentGiveActor(e);
 
-            GiveCamera(e);
+            ComponentGiveCamera(e);
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
-        RegisterEntity(Player, playerFunc);
+        EntityRegister(Player, playerFunc);
 
         // Other players
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
+            ComponentGiveActor(e);
 
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
-        RegisterEntity(NET_PLAYER, netPlayerFunc);
+        EntityRegister(NET_PLAYER, netPlayerFunc);
 
         // Objects
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
-        RegisterEntity(OBJECT, objectFunc);
+        EntityRegister(OBJECT, objectFunc);
 
-        SetEntityScript(Player, new PlayerScript());
-        SetEntityScript(NET_PLAYER, new NetPlayerScript());
-        SetEntityScript(OBJECT, new ObjectScript());
+        ScriptingSetScript(Player, new PlayerScript());
+        ScriptingSetScript(NET_PLAYER, new NetPlayerScript());
+        ScriptingSetScript(OBJECT, new ObjectScript());
 
         // Create some entities
-        CreateEntity(Player, 0, 0, MapID(0));
+        EntityCreate(Player, 0, 0, MapID(0));
         for (int i = 0; i < 25; ++i)
         {
-            CreateEntity(OBJECT, GetRandomFloat(1, 1000), GetRandomFloat(1, 1000), MapID(0));
+            EntityCreate(OBJECT, GetRandomFloat(1, 1000), GetRandomFloat(1, 1000), MapID(0));
         }
 
         InitGlobalMultiplayer();
@@ -176,7 +176,7 @@ struct Test final : Game
         {
             if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
             {
-                const auto id = CreateEntity(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
+                const auto id = EntityCreate(NET_PLAYER, 0, 0, MapID(0)); // Create a new netplayer
                 const auto lastConnection = GetCurrentConnections().back();
                 networkPlayerMap[lastConnection] = id; // Save the mapping
 
@@ -221,7 +221,7 @@ struct Test final : Game
 
                 // Enter client mode - server has authority now
                 EnterClientMode();
-                DestroyEntities({});
+                EntityDestroy({});
             }
         };
         SetLobbyEventCallback(lobbyCallback);

@@ -19,11 +19,17 @@ namespace magique
     struct VirtualTime final
     {
         VirtualTime() = default;
-        // Values outside valid range wrap around and start at the beginning: hour=25 => hour=1
-        VirtualTime(int hour, int minute);
+
+        // Initializes the time from the total time given by all parameteres
+        // 5 days 25 hours => 6 days 1 hour
+        // 72 seconds => 1min 12s
+        VirtualTime(int seconds, int minutes = 0, int hours = 0, int days = 0);
+
 
         VirtualTime operator+(const VirtualTime& other) const;
         VirtualTime operator-(const VirtualTime& other) const;
+        VirtualTime& operator+=(const VirtualTime& other);
+        VirtualTime& operator-=(const VirtualTime& other);
         bool operator==(const VirtualTime& other) const;
         bool operator!=(const VirtualTime& other) const;
         // True if this is before - to the left on the time axis
@@ -32,6 +38,8 @@ namespace magique
         bool operator>(const VirtualTime& other) const;
         bool operator<=(const VirtualTime& other) const;
         bool operator>=(const VirtualTime& other) const;
+        VirtualTime& operator*=(float scale);
+        VirtualTime operator*(float scale)const;
 
         // The whole time converted to seconds
         int toSeconds() const;

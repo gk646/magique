@@ -6,7 +6,7 @@
 #include <magique/core/Types.h>
 
 //===============================================
-// Static Collision Module
+// StaticCollision
 //===============================================
 // ................................................................................
 // This module is for defining and controlling static collision elements
@@ -16,8 +16,6 @@
 //      - TileSet     : Allows to define certain tile-indices as collidable  (you then also need to load the maps)
 //      - Groups      : User managed groups that can be added and removed manually
 // Note: The methods can be used in any combination, they all work together and do NOT have runtime overhead when ignored
-// Note: Collideable means that a collision is detected and the event method called. Simulating something as solid is done
-//       through calling AccumulateCollision() in the EntityScript
 // ................................................................................
 
 namespace magique

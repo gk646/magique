@@ -38,6 +38,8 @@ namespace magique
 
     void Playlist::setForwardFunction(const ForwardFunction func) { forwardFunction = func; }
 
+    void Playlist::setVolume(const float newVolume) { volume = newVolume; }
+
     int Playlist::getNextTrack()
     {
         currentTrack++;
@@ -49,7 +51,5 @@ namespace magique
         }
         return currentTrack;
     }
-
-    void Playlist::setVolume(const float newVolume) { volume = newVolume; }
 
 } // namespace magique

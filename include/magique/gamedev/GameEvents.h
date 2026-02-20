@@ -55,7 +55,7 @@ namespace magique
     struct IEventHandler;
 
     // Returns the global event manager instance
-    EventManager& GameEventManager();
+    EventManager& GameEventsGet();
 
     struct EventManager final
     {

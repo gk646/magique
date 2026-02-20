@@ -11,7 +11,7 @@ namespace magique
 
     bool GameSaveFromFile(GameSave& save, const char* filePath, const uint64_t key)
     {
-        return internal::StorageContainer::ToFile(save, filePath, "GameSave", key);
+        return internal::StorageContainer::FromFile(save, filePath, "GameSave", key);
     }
 
     void GameSave::saveString(std::string_view slot, const std::string_view& string)

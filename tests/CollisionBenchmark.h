@@ -3,13 +3,7 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/core/Game.h>
-#include <magique/util/Logging.h>
-#include <magique/ecs/ECS.h>
-#include <magique/ecs/Scripting.h>
-#include <magique/core/Core.h>
-#include <magique/core/Debug.h>
-#include <magique/core/Draw.h>
+#include <magique/magique.hpp>
 
 //-----------------------------------------------
 // Collision Benchmark
@@ -52,7 +46,7 @@
 
 using namespace magique;
 
-enum EntityType : uint16_t
+enum class EntityType : uint16_t
 {
     PLAYER,
     OBJECT,
@@ -70,18 +64,7 @@ struct PlayerScript final : EntityScript
         auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
     }
-    void onKeyEvent(entt::entity self) override
-    {
-        auto& pos = ComponentGet<PositionC>(self);
-        if (IsKeyDown(KEY_W))
-            pos.y -= 2.5F;
-        if (IsKeyDown(KEY_S))
-            pos.y += 2.5F;
-        if (IsKeyDown(KEY_A))
-            pos.x -= 2.5F;
-        if (IsKeyDown(KEY_D))
-            pos.x += 2.5F;
-    }
+
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         auto& myComp = ComponentGet<TestCompC>(self);
@@ -101,7 +84,7 @@ struct ObjectScript final : EntityScript
     {
         auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = true;
-        //info.penDepth = 0;
+        // info.penDepth = 0;
         // info.normalVector = {0, 0};
         // AccumulateCollision(info);
     }
@@ -114,10 +97,10 @@ void benchmarkSetup()
 {
     for (int i = 0; i < 50'000; ++i)
     {
-        CreateEntity(OBJECT, GetRandomValue(0, 4000), GetRandomValue(0, 4000), MapID(0));
+        EntityCreate(EntityType::OBJECT, Point::Random(0,4000), MapID(0));
     }
-    CreateEntity(PLAYER, 2500, 2500, MapID(0));
-    SetBenchmarkTicks(300);
+    EntityCreate(EntityType::PLAYER, {2500, 2500}, MapID(0));
+    EngineSetBenchmarkTicks(300);
 }
 
 void pyramid()
@@ -131,12 +114,12 @@ void pyramid()
         float start = 0 - int(currWidth / 2) * OBJECT_SIZE;
         for (int j = 0; j < currWidth; ++j)
         {
-            CreateEntity(OBJECT, start + OBJECT_SIZE * j, OBJECT_SIZE * i, MapID(0));
+            EntityCreate(EntityType::OBJECT, {start + OBJECT_SIZE * j, OBJECT_SIZE * i}, MapID(0));
             total++;
         }
         currWidth += 2;
     }
-    CreateEntity(PLAYER, 0, -50, MapID(0));
+    EntityCreate(EntityType::PLAYER, {0, -50}, MapID(0));
     LOG_INFO("Spawned %d boxes", total);
 }
 
@@ -151,13 +134,13 @@ struct Example final : Game
         // SetShowHitboxes(true);
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
+            ComponentGiveActor(e);
 
-            GiveCamera(e);
+            ComponentGiveCamera(e);
             GiveCollisionRect(e, 15, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
-        RegisterEntity(PLAYER, playerFunc);
+        EntityRegister(EntityType::PLAYER, playerFunc);
         const auto objFunc = [](entt::entity e, EntityType type)
         {
             const auto val = GetRandomValue(0, MAX_SHAPE);
@@ -167,28 +150,25 @@ struct Example final : Game
             }
             else if (val < 50)
             {
-                GiveCollisionTri(e, {-15, 15}, {15, 15});
-            }
-            else if (val < 75)
-            {
-                GiveCollisionCircle(e, 24);
+                ComponentGiveCollision(e, {-15, 15}, {15, 15});
             }
             else
             {
-                GiveCollisionCapsule(e, 33, 15);
+                ComponentGiveCollision(e, 24);
             }
+
             ComponentGet<PositionC>(e).rotation = GetRandomValue(0, 5);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
-        RegisterEntity(OBJECT, objFunc);
-        SetEntityScript(PLAYER, new PlayerScript());
-        SetEntityScript(OBJECT, new ObjectScript());
+        EntityRegister(EntityType::OBJECT, objFunc);
+        ScriptingSetScript(EntityType::PLAYER, new PlayerScript());
+        ScriptingSetScript(EntityType::OBJECT, new ObjectScript());
 
         benchmarkSetup();
-        //pyramid();
+        // pyramid();
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         BeginMode2D(camera2D);
         for (const auto e : EngineGetDrawEntities())
@@ -200,27 +180,24 @@ struct Example final : Game
             switch (col.shape)
             {
             [[likely]] case Shape::RECT: // Missing rotation anchor
-                DrawRectanglePro({pos.x, pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
+                DrawRectanglePro({pos.pos.x, pos.pos.y, col.p1, col.p2}, {0, 0}, pos.rotation, color);
                 break;
             case Shape::CIRCLE:
-                DrawCircleV({pos.x + col.p1, pos.y + col.p1}, col.p1, color);
-                break;
-            case Shape::CAPSULE:
-                DrawCapsule2D(pos.x, pos.y, col.p1, col.p2, color);
+                DrawCircleV({pos.pos.x + col.p1, pos.pos.y + col.p1}, col.p1, color);
                 break;
             case Shape::TRIANGLE:
-                DrawTriangleRot({pos.x, pos.y}, {pos.x + col.p1, pos.y + col.p2}, {pos.x + col.p3, pos.y + col.p4},
-                                pos.rotation, col.anchorX, col.anchorY, color);
+                DrawTriangleRot({pos.pos.x, pos.pos.y}, {pos.pos.x + col.p1, pos.pos.y + col.p2},
+                                {pos.pos.x + col.p3, pos.pos.y + col.p4}, pos.rotation, col.anchor, color);
                 break;
             }
         }
         EndMode2D();
     }
 
-    void updateGame(GameState gameState) override
+    void onUpdateGame(GameState gameState) override
     {
-        //printf("Loaded Objects: %d\n", GetUpdateEntities().size());
+        printf("Loaded Objects: %d\n", EngineGetUpdateEntities().size());
     }
 };
 
-#endif //COLLISION_BENCHMARK_H
+#endif // COLLISION_BENCHMARK_H

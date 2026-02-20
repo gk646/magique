@@ -6,11 +6,11 @@
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
 #include <magique/core/Engine.h>
+#include <magique/util/Math.h>
+#include <magique/util/RayUtils.h>
+#include <magique/core/Collision.h>
 
 #include "internal/globals/ParticleData.h"
-#include "magique/core/Collision.h"
-#include "magique/util/Math.h"
-#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -20,7 +20,7 @@ namespace magique
 
     void ParticlesSetAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
 
-    void ParticlesEmit(const ScreenEmitter& emitter, const Point& pos, int amount)
+    void ParticlesEmit(const ScreenEmitter& emitter, Point pos, int amount)
     {
         const auto& data = emitter.data;
         data.emissionPos = pos;
@@ -294,10 +294,10 @@ namespace magique
 
     //----------------- ADDITIONALS -----------------//
 
-    EmitterBase& EmitterBase::setGravity(const float gravityX, const float gravityY)
+    EmitterBase& EmitterBase::setGravity(Point gravity)
     {
         constexpr float TICK_CONVERSION = 1.0F / MAGIQUE_LOGIC_TICKS;
-        data.gravity = Point{gravityX, gravityY} * TICK_CONVERSION; // From pixel/s into pixel/tick
+        data.gravity = gravity * TICK_CONVERSION; // From pixel/s into pixel/tick
         return *this;
     }
 

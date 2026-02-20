@@ -82,13 +82,13 @@ struct HouseScript final : EntityScript
 struct PlayerBarUI final : UIObject
 {
     PlayerBarUI() : UIObject(50, 70, 200, 50) {}
-    void onDraw(const Rectangle& bounds) override;
+    void onDraw(const magique::Rect& bounds) override;
 };
 
 struct ScoreCounter final : UIObject
 {
     ScoreCounter() : UIObject(200, 50, Anchor::TOP_CENTER) {}
-    void onDraw(const Rectangle& bounds) override;
+    void onDraw(const magique::Rect& bounds) override;
 };
 
 struct GameOverUI final : Button

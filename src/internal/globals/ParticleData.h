@@ -61,7 +61,6 @@ namespace magique
 
             rlEnd();
             rlSetTexture(0);
-            rlDrawRenderBatchActive();
         }
 
         void update()

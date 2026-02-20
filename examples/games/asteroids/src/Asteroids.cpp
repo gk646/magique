@@ -53,23 +53,23 @@ void Asteroids::onStartup(AssetLoader& loader)
     loader.registerTask(loadTextures, THREAD_MAIN);
 
     // Set the entity scripts
-    SetEntityScript(PLAYER, new PlayerScript());
-    SetEntityScript(BULLET, new BulletScript());
-    SetEntityScript(ROCK, new RockScript());
-    SetEntityScript(HOUSE, new HouseScript());
+    ScriptingSetScript(PLAYER, new PlayerScript());
+    ScriptingSetScript(BULLET, new BulletScript());
+    ScriptingSetScript(ROCK, new RockScript());
+    ScriptingSetScript(HOUSE, new HouseScript());
 
     // Register the player entity
-    RegisterEntity(PLAYER,
+    EntityRegister(PLAYER,
                    [](entt::entity entity, EntityType type)
                    {
-                       GiveActor(entity);
-                       GiveComponent<PlayerStatsC>(entity);
+                       ComponentGiveActor(entity);
+                       ComponentGive<PlayerStatsC>(entity);
                        // Texture dimensions scaled with 3 - and rotate around the middle
                        GiveCollisionRect(entity, 36, 36, 18, 18);
                    });
 
     // Register the bullet entity
-    RegisterEntity(BULLET,
+    EntityRegister(BULLET,
                    [](entt::entity entity, EntityType type)
                    {
                        // Texture dimensions scaled with 3 - and rotate around the middle
@@ -77,7 +77,7 @@ void Asteroids::onStartup(AssetLoader& loader)
                    });
 
     // Register the house entity
-    RegisterEntity(HOUSE,
+    EntityRegister(HOUSE,
                    [](entt::entity entity, EntityType type)
                    {
                        // Texture dimensions scaled with 3 - and rotate around the middle
@@ -85,7 +85,7 @@ void Asteroids::onStartup(AssetLoader& loader)
                    });
 
     // Register the rock entity
-    RegisterEntity(ROCK,
+    EntityRegister(ROCK,
                    [](entt::entity entity, EntityType type)
                    {
                        // Texture dimensions scaled with 3 - and rotate around the middle
@@ -93,31 +93,31 @@ void Asteroids::onStartup(AssetLoader& loader)
                    });
 
     // Register the invisible static camera
-    RegisterEntity(STATIC_CAMERA,
+    EntityRegister(STATIC_CAMERA,
                    [](entt::entity entity, EntityType type)
                    {
                        SetIsEntityScripted(entity, false); // Make it non scripted
-                       GiveCamera(entity);
+                       ComponentGiveCamera(entity);
                    });
 
-    PLAYER_ID = CreateEntity(PLAYER, 640, 480, MapID::LEVEL_1); // Create a player
+    PLAYER_ID = EntityCreate(PLAYER, 640, 480, MapID::LEVEL_1); // Create a player
 
     // Create the static camera in the middle of the screen
-    auto entity = CreateEntity(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
+    auto entity = EntityCreate(STATIC_CAMERA, GetScreenWidth() / 2, GetScreenHeight() / 2, MapID::LEVEL_1);
     SetIsEntityScripted(entity, false); // Camera is not a scripted entity
 
     // Create houses
     auto y = (float)GetScreenHeight() - 45;
     for (int x = 17; x < GetScreenWidth() - 45; x += 50)
     {
-        CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
+        EntityCreate(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
 
     // Configure emitter - make particles white - spread all around and different lifetime, scale and start velocity
     ROCK_PARTICLES.setColor(WHITE).setLifetime(35, 50).setSpread(360);
     ROCK_PARTICLES.setVelocity(2, 3.5).setScale(0.75, 1.5F);
 
-    SetGameState(GameState::GAME); // Set the initial gamestate
+    EngineSetState(GameState::GAME); // Set the initial gamestate
     // As we use a static camera with no collision component we offset by the player half the player dimensions
     // So the camera is centered on the player middle and no the top left
     SetCameraPositionOffset(18, 18);
@@ -129,7 +129,7 @@ void Asteroids::updateGame(GameState gameState)
         return;
     if (ROCK_COUNTER >= ROCK_SPAWN_DELAY)
     {
-        CreateEntity(ROCK, GetRandomValue(0, 1280), 0, MapID::LEVEL_1);
+        EntityCreate(ROCK, GetRandomValue(0, 1280), 0, MapID::LEVEL_1);
         ROCK_COUNTER = 0;
     }
     ROCK_COUNTER++; // Spawn a rock all 80 ticks
@@ -206,7 +206,7 @@ void PlayerScript::onKeyEvent(entt::entity self)
         auto& shoot = ComponentGet<PlayerStatsC>(self);
         if (shoot.shootCounter == 0)
         {
-            CreateEntity(BULLET, pos.x + 3, pos.y - 3, pos.map);
+            EntityCreate(BULLET, pos.x + 3, pos.y - 3, pos.map);
             PlaySound(GetSound(GetHash("BULLET_1")), 0.5F);
             shoot.shootCounter = PlayerStatsC::SHOOT_COOLDOWN;
         }
@@ -220,11 +220,11 @@ void PlayerScript::onTick(entt::entity self, bool updated)
         stats.shootCounter--;
     if (stats.health <= 0)
     {
-        SetGameState(GameState::GAME_OVER);
+        EngineSetState(GameState::GAME_OVER);
         // Move player (actor) to different map to avoid updating all entities and destroy all current ones
         auto& pos = ComponentGet<PositionC>(self);
         pos.map = MapID::GAME_OVER_LEVEL;
-        DestroyEntities({ROCK, HOUSE}); // Destroy all rocks + houses
+        EntityDestroy({ROCK, HOUSE}); // Destroy all rocks + houses
         ClearEntityCache();
     }
 }
@@ -244,7 +244,7 @@ void BulletScript::onTick(entt::entity self, bool updated)
 
 void BulletScript::onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
 {
-    DestroyEntity(self); // Destroy on static collision
+    EntityDestroy(self); // Destroy on static collision
 }
 
 void RockScript::onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
@@ -260,7 +260,7 @@ void RockScript::onDynamicCollision(entt::entity self, entt::entity other, Colli
     if (oPos.type == HOUSE)
     {
         ComponentGet<PlayerStatsC>(PLAYER_ID).health--; // Lower health when house is hit
-        DestroyEntity(other);
+        EntityDestroy(other);
     }
     else if (oPos.type == PLAYER)
     {
@@ -269,15 +269,15 @@ void RockScript::onDynamicCollision(entt::entity self, entt::entity other, Colli
     }
     else if (oPos.type == BULLET)
     {
-        DestroyEntity(other);
+        EntityDestroy(other);
         SCORE++;
     }
-    DestroyEntity(self);
+    EntityDestroy(self);
 }
 
 void RockScript::onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
 {
-    DestroyEntity(self); // Destroy rock on static collision
+    EntityDestroy(self); // Destroy rock on static collision
 }
 
 void RockScript::onTick(entt::entity self, bool updated)
@@ -289,7 +289,7 @@ void RockScript::onTick(entt::entity self, bool updated)
 
 /// UI
 
-void PlayerBarUI::onDraw(const Rectangle& bounds)
+void PlayerBarUI::onDraw(const magique::Rect& bounds)
 {
     // Draw the health bar - first outline and then simple rects for each life left
     const PlayerStatsC& stats = ComponentGet<PlayerStatsC>(PLAYER_ID);
@@ -301,7 +301,7 @@ void PlayerBarUI::onDraw(const Rectangle& bounds)
     }
 }
 
-void ScoreCounter::onDraw(const Rectangle& bounds)
+void ScoreCounter::onDraw(const magique::Rect& bounds)
 {
     DrawRectangleLinesEx(bounds, 2, WHITE);
     SetFormatValue("Score", SCORE); // Update the format value
@@ -311,7 +311,7 @@ void ScoreCounter::onDraw(const Rectangle& bounds)
     DrawText(text, middlePos.x, middlePos.y, FONT_SIZE, WHITE);
 }
 
-void GameOverUI::onDraw(const Rectangle& bounds)
+void GameOverUI::onDraw(const magique::Rect& bounds)
 {
     drawDefault(bounds);
     const char* gameOver = "Game Over";
@@ -329,7 +329,7 @@ void GameOverUI::onClick(const Rectangle& bounds, int button)
     auto y = (float)GetScreenHeight() - 45;
     for (int x = 17; x < GetScreenWidth() - 45; x += 50)
     {
-        CreateEntity(HOUSE, (float)x, y, MapID::LEVEL_1);
+        EntityCreate(HOUSE, (float)x, y, MapID::LEVEL_1);
     }
     auto& stats = ComponentGet<PlayerStatsC>(PLAYER_ID);
     auto& pos = ComponentGet<PositionC>(PLAYER_ID);
@@ -338,5 +338,5 @@ void GameOverUI::onClick(const Rectangle& bounds, int button)
     pos.y = 480;
     pos.map = MapID::LEVEL_1;
     SCORE = 0;
-    SetGameState(GameState::GAME);
+    EngineSetState(GameState::GAME);
 }

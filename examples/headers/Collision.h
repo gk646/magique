@@ -87,16 +87,16 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetGameState({});               // Set empty gamestate - needs to be set in a real game
+        EngineSetState({});               // Set empty gamestate - needs to be set in a real game
         SetShowHitboxes(true);          // Show all collision hitboxes
         SetShowEntityGridOverlay(true); // Shows the size and entity count of each cell in the entity collision grid
         // Create the player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
-            GiveCamera(e);
+            ComponentGiveActor(e);
+            ComponentGiveCamera(e);
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
             auto& pos = ComponentGet<PositionC>(e);
             pos.rotation = 10;
         };
@@ -112,14 +112,14 @@ struct Example final : Game
             }
             else if (shapeNum < 50)
             {
-                GiveCollisionTri(e, {-33, 33}, {33, 33});
+                ComponentGiveCollision(e, {-33, 33}, {33, 33});
             }
             else if (shapeNum <= 100)
             {
-                GiveCollisionCircle(e, 25);
+                ComponentGiveCollision(e, 25);
             }
             ComponentGet<PositionC>(e).rotation = GetRandomValue(0, 360);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
         EntityRegister(OBJECT, objFunc);
 
@@ -139,7 +139,7 @@ struct Example final : Game
         BeginMode2D(camera2D); // Start drawing in respect to the camera
 
         DrawRectangle(250, 250, 250, 75, RED);
-        auto& font = GetEngineFont();
+        auto& font = EngineGetFont();
         DrawTextEx(font, "This is stationary object\n for reference", {250, 250}, 17, 1, WHITE);
         DrawTextEx(font, "Shape and Rotation of all objects is random", {0, -25}, 17, 1, BLACK);
         DrawTextEx(font, "Press SPACE to toggle moving obstacles", {0, -50}, 17, 1, BLACK);

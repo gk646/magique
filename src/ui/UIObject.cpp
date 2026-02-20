@@ -8,27 +8,20 @@
 
 namespace magique
 {
-    UIObject::UIObject(const float x, const float y, const float w, const float h, const ScalingMode scaling)
+    UIObject::UIObject(Rect bounds, const Anchor anchor, const Point inset, const ScalingMode scaling) :
+        pBounds(bounds), startBounds(bounds)
     {
         const auto& ui = global::UI_DATA;
-        pBounds = {x, y, w, h};
         if (scaling != ScalingMode::ABSOLUTE)
         {
             pBounds.x /= ui.sourceRes.x;
             pBounds.y /= ui.sourceRes.y;
-            pBounds.w /= ui.sourceRes.x;
-            pBounds.h /= ui.sourceRes.y;
+            pBounds.width /= ui.sourceRes.x;
+            pBounds.height /= ui.sourceRes.y;
         }
         setScalingMode(scaling);
-        setStartPosition(pBounds.pos());
-        setStartDimensions(pBounds.size());
-        global::UI_DATA.registerObject(this);
-    }
-
-    UIObject::UIObject(const float w, const float h, const Anchor anchor, const Point inset, const ScalingMode scaling) :
-        UIObject(0, 0, w, h, scaling)
-    {
         setAnchor(anchor, inset);
+        global::UI_DATA.registerObject(this);
     }
 
     void UIObject::draw()
@@ -46,7 +39,7 @@ namespace magique
 
     //----------------- UTIL -----------------//
 
-    Rectangle UIObject::getBounds() const
+    Rect UIObject::getBounds() const
     {
         const auto& ui = global::UI_DATA;
         auto bounds = pBounds;
@@ -81,8 +74,8 @@ namespace magique
         {
             coords /= dims;
         }
-        pBounds.w = coords.x;
-        pBounds.h = coords.y;
+        pBounds.width = coords.x;
+        pBounds.height = coords.y;
     }
 
     void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point alignInset)
@@ -184,24 +177,9 @@ namespace magique
 
     bool UIObject::getWasDrawn() const { return wasDrawnLastTick; }
 
-    void UIObject::setStartPosition(const Point& pos) { startPos = pos; }
-
-    Point UIObject::getStartPosition() const
+    Rect UIObject::getStartBounds() const
     {
-        const auto& ui = global::UI_DATA;
-        return startDims * ui.sourceRes;
-    }
-
-    void UIObject::setStartDimensions(const Point& dims) { startDims = dims; }
-
-    Point UIObject::getStartDimensions() const
-    {
-        const auto& ui = global::UI_DATA;
-        if (scaleMode == ScalingMode::ABSOLUTE)
-        {
-            return startDims;
-        }
-        return startDims * ui.sourceRes;
+        return startBounds;
     }
 
     void UIObject::beginBoundsScissor() const

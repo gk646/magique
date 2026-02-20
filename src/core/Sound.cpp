@@ -2,7 +2,7 @@
 #include <magique/core/Sound.h>
 #include <magique/ecs/ECS.h>
 #include <magique/util/Logging.h>
-#include <magique/internal/Macros.h>
+
 #include <magique/util/Math.h>
 
 #include "internal/globals/AudioPlayer.h"

@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
-#include <magique/internal/Macros.h>
+#include <magique/fwd.hpp>
 
 //===============================================
 // Asset
@@ -64,4 +64,4 @@ namespace magique
     };
 
 } // namespace magique
-#endif //MAGIQUE_ASSET_H
+#endif // MAGIQUE_ASSET_H

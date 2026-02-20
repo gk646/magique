@@ -56,7 +56,7 @@ namespace magique
     bool CheckCollisionMouseRect(const Rectangle& bounds);
 
     // Draws a horizontally centered texture
-    void DrawCenteredTextureV(const Texture& texture, const Vector2& pos, const Color& tint);
+    void DrawTextCenteredureV(const Texture& texture, const Vector2& pos, const Color& tint);
 
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
@@ -73,7 +73,7 @@ namespace magique
     void DrawRectFrame(const Rectangle& bounds, const Color& tint);
 
     // Draws a frame but filled
-    void DrawRectFrameFilled(const Rectangle& bounds, const Color& fill, const Color& outline);
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline);
 
     // Scales and draws the given render texture at the correct position to fill most of the screen
     // Scales only with multiples and in a way such that both x and y dimension must fit within the screen
@@ -95,13 +95,8 @@ namespace magique
         Point dragStartWorld{};
     };
 
-    Point GetGamePadLeftStick(int gamepad);
-    Point GetGamePadRightStick(int gamepad);
-
-    // Returns true if a gamepad was used in some way
-    // This is smart - e.g. if a gamepad is used returns true for as long as mouse+keyboard input is detected
-    // Then switches back when gamepad inputs are detected
-    bool IsUsingGamepad();
+    Point GetGamePadLeftStick(int gamepad, float deadZone = 0.2F);
+    Point GetGamePadRightStick(int gamepad, float deadZone = 0.2F);
 
 } // namespace magique
 

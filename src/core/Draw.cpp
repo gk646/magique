@@ -5,7 +5,7 @@
 
 #include <magique/core/Camera.h>
 #include <magique/core/Draw.h>
-#include <magique/internal/Macros.h>
+
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 
@@ -253,14 +253,13 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const float fs, const float spc,
-                          const Color c)
+    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, const float fs, const float spc, const Color c)
     {
         const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
         DrawTextEx(f, txt.data(), {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
     }
 
-    void DrawTextRightBound(const Font& f, std::string_view txt, const Vector2 pos, const float fs, const float spc,
+    void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, const float fs, const float spc,
                             const Color c)
     {
         const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;

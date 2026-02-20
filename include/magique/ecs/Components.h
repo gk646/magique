@@ -60,9 +60,9 @@ namespace magique
         EnumSet<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
         EnumSet<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
 
-        // Sets the values to be a rectangle
+        // Sets the values to be a rectangle - anchor is relative to the offset
         // x and y = offset / size = size / anchor = size/2
-        void setRectShape(const Rect& rect);
+        void setRectShape(const Rect& rect, Point anchor = {-1});
 
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);
@@ -82,7 +82,7 @@ namespace magique
     // Animation component references an animation and saves its current state
     struct AnimationC final
     {
-        explicit AnimationC(const EntityAnimation& animation, AnimationState start);
+        explicit AnimationC(const EntityAnimation& animation, AnimationState start = {});
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
@@ -120,26 +120,6 @@ namespace magique
         AnimationState lastState;
         AnimationState currentState;
         bool flipX, flipY;
-    };
-
-
-    // If added entity will emit light
-    struct EmitterC final
-    {
-        // float radius = 50.0F; // Radius of the light
-        uint16_t intensity; // Style dependant - the size of the light
-        uint8_t r, g, b, a; // 0 - 255, a = transparency
-        LightStyle style;
-        bool active = true;
-    };
-
-    // If added entity will throw shadows
-    // Can be different dimensions and shape than collision
-    struct OccluderC final
-    {
-        int16_t width;
-        int16_t height;
-        Shape shape;
     };
 
 } // namespace magique

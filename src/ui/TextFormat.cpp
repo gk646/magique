@@ -4,7 +4,7 @@
 #include <magique/config.h>
 #include <magique/ui/TextFormat.h>
 #include <magique/util/Datastructures.h>
-#include <magique/internal/Macros.h>
+
 
 // Note: This implementation uses separate vectors to store values without memory overhead
 //       Inserting new values, and overwriting values from the same type is fast.

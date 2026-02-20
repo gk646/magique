@@ -3,8 +3,6 @@
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 
 #include <magique/ecs/ECS.h>
-#include <magique/internal/Macros.h>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // Internal Scripting Module
@@ -117,9 +115,9 @@ namespace magique
 
 } // namespace magique
 
-M_UNIGNORE_WARNING()
 
 //================= IMPLEMENTATION =================//
+
 
 namespace magique
 {

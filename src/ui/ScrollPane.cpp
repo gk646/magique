@@ -8,14 +8,9 @@
 
 namespace magique
 {
-    ScrollPane::ScrollPane(float w, float h, Anchor anchor, Point inset) : UIObject(w, h, anchor, inset)
+    ScrollPane::ScrollPane(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
     {
-        setScrollerWidth(w * 0.05F);
-    }
-
-    ScrollPane::ScrollPane(float x, float y, float w, float h) : UIObject(x, y, w, h)
-    {
-        setScrollerWidth(w * 0.05F);
+        setScrollerWidth(bounds.width * 0.05F);
     }
 
     void ScrollPane::setScrollerWidth(float width)

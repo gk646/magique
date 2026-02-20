@@ -7,11 +7,6 @@ set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
 set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
-set(SUPPORT_MODULE_RAUDIO ON)
-
-if (NOT APPLE)
-    set(OPENGL_VERSION "4.3")
-endif ()
 
 if (UNIX)
     set(GLFW_BUILD_X11 ON)
@@ -27,11 +22,11 @@ add_subdirectory(src/external/raylib)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # For both modes
     target_compile_options(raylib PRIVATE
-            -Wall -march=native -fno-exceptions -fvisibility=hidden
+            -Wall -march=haswell -fno-exceptions -fvisibility=hidden
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >
-            $<$<CONFIG:Release>:-Ofast -funroll-loops -DNDEBUG>
+            $<$<CONFIG:Release>:-Ofast -DNDEBUG>
     )
     target_link_options(raylib PRIVATE)
 elseif (MSVC)

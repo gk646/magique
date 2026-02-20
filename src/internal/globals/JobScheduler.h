@@ -6,13 +6,11 @@
 #include <thread>
 #include <raylib/raylib.h>
 
-#include <magique/internal/Macros.h>
+
 
 #include "internal/utils/OSUtil.h"
 #include "internal/types/SpinLock.h"
 #include "external/cxstructs/cxallocator/SlotAllocator.h"
-
-M_IGNORE_WARNING(4324) // structure was padded due to alignment specifier
 
 namespace magique
 {
@@ -116,8 +114,7 @@ namespace magique
     {
         inline Scheduler SCHEDULER{};
     }
-} // namespace magique
 
-M_UNIGNORE_WARNING()
+} // namespace magique
 
 #endif // MAGIQUE_JOB_SCHEDULER_H

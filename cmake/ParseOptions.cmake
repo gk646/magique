@@ -62,8 +62,6 @@ else ()
     message(STATUS "    GlobalSockets: Unsupported")
 endif ()
 
-add_compile_definitions(MAGIQUE_VERSION="${MAGIQUE_VERSION}")
-
 # Set parameters
 set(MAGIQUE_PUBLIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(MAGIQUE_PRIVATE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src)

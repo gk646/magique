@@ -49,7 +49,7 @@ void Multiplayer::init()
         {
             if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
             {
-                const auto id = CreateEntity(NET_PLAYER, 24 * 24, 24 * 24, MapID(0)); // Create a new netplayer
+                const auto id = EntityCreate(NET_PLAYER, 24 * 24, 24 * 24, MapID(0)); // Create a new netplayer
                 const auto lastConnection = GetCurrentConnections().back();
                 networkPlayerMap[lastConnection] = id; // Save the mapping
 
@@ -77,7 +77,7 @@ void Multiplayer::init()
             else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
             {
                 EnterClientMode();
-                DestroyEntities({}); // Destroy all entities in our world as we enter the hosts world
+                EntityDestroy({}); // Destroy all entities in our world as we enter the hosts world
             }
             else if (event == MultiplayerEvent::CLIENT_CONNECTION_CLOSED)
             {

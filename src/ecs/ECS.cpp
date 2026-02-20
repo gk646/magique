@@ -213,60 +213,30 @@ namespace magique
         }
     }
 
-    CollisionC& GiveCollisionRect(entt::entity entity, float width, float height)
+    CollisionC& ComponentGiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
-        const auto size = Point{width, height};
-        return GiveCollisionRect(entity, Rect{{0, 0}, size}, size / 2);
+        auto& col = internal::REGISTRY.emplace<CollisionC>(entity);
+        col.setRectShape(rect, anchor);
+        return col;
     }
 
-    CollisionC& GiveCollisionRect(entt::entity entity, Point dims, Point anchor)
-    {
-        if (anchor == -1)
-        {
-            anchor = dims / 2;
-        }
-        return GiveCollisionRect(entity, Rect{{0, 0}, dims}, anchor);
-    }
-
-    CollisionC& GiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
-    {
-        if (anchor == -1)
-        {
-            anchor = rect.size() / 2;
-        }
-        return internal::REGISTRY.emplace<CollisionC>(entity, rect.w, rect.h, 0.0F, 0.0F, rect.pos(), anchor,
-                                                      Shape::RECT);
-    }
-
-    CollisionC& GiveCollisionCircle(const entt::entity e, const float radius)
+    CollisionC& ComponentGiveCollisionCircle(const entt::entity e, const float radius)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, Point{}, Point{}, Shape::CIRCLE);
     }
 
-    CollisionC& GiveCollisionTri(const entt::entity e, const Point p2, const Point p3, Point anchor)
+    CollisionC& ComponentGiveCollisionTri(const entt::entity e, const Point p2, const Point p3, Point anchor)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{}, anchor, Shape::TRIANGLE);
     }
 
-    EmitterC& GiveEmitter(const entt::entity entity, const Color color, const int intensity, LightStyle style)
-    {
-        return internal::REGISTRY.emplace<EmitterC>(entity, static_cast<uint16_t>(intensity), color.r, color.g, color.b,
-                                                    color.a, style, true);
-    }
-
-    OccluderC& GiveOccluder(const entt::entity entity, const int width, const int height, const Shape shape)
-    {
-        return internal::REGISTRY.emplace<OccluderC>(entity, static_cast<int16_t>(width), static_cast<int16_t>(height),
-                                                     shape);
-    }
-
-    void GiveCamera(const entt::entity entity)
+    void ComponentGiveCamera(const entt::entity entity)
     {
         internal::REGISTRY.emplace<CameraC>(entity);
         global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(entity).map;
     }
 
-    void GiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
+    void ComponentGiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
 
     //----------------- CORE -----------------//
 
@@ -294,7 +264,7 @@ namespace magique
         auto& dynamicData = global::DY_COLL_DATA;
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
-        dynamicData.mapEntityGrids[map].query(set, area.x, area.y, area.w, area.h);
+        dynamicData.mapEntityGrids[map].query(set, area.x, area.y, area.width, area.height);
         return set;
     }
 

@@ -13,12 +13,10 @@
 //   - Keybinds (if they are not game-save specific)
 //   - Global User Statistics or System
 //   - ...
-// magique automatically loads (or creates) a config based on the given path in Game::run()
-// This global instance can be accessed freely with GetGameConfig() - You should only need this single config per game
+// magique automatically loads (or creates) a config based on the given path in Game::run() (if enabled)
+// This global instance can be accessed freely with GameConfigGet()
 // Note: The game config is persisted automatically when the game is shutdown gracefully
 // .....................................................................
-
-enum class ConfigSlot; // User implemented
 
 namespace magique
 {
@@ -75,7 +73,7 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    void GameConfig::saveValue(std::string_view slot, T val)
+    void GameConfig::saveValue(const std::string_view slot, T val)
     {
         struct Value
         {
@@ -87,7 +85,7 @@ namespace magique
     }
 
     template <typename T>
-    T GameConfig::getValueOrElse(std::string_view slot, const T& defaultValue)
+    T GameConfig::getValueOrElse(const std::string_view slot, const T& defaultValue)
     {
         const auto* cell = getCell(slot);
         if (cell == nullptr)

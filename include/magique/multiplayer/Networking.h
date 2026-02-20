@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef MAGIQUE_MULTIPLAYER_H
-#define MAGIQUE_MULTIPLAYER_H
+#ifndef MAGIQUE_NETWORKING_H
+#define MAGIQUE_NETWORKING_H
 
 #include <functional>
 #include <magique/core/Engine.h>
@@ -9,7 +9,7 @@
 #include <enchantum/enchantum.hpp>
 
 //===============================================
-// Multiplayer Module
+// Networking Module
 //===============================================
 // .....................................................................
 // Note: You might want to look at Lobby.h if you want more high level features like chat or metadata
@@ -73,7 +73,8 @@ namespace magique
 
     // Called with the current even and the affected connection
     // ClientEntity mappings will be deleted after the callback (on disconnect)
-    using NetworkCallback = std::function<void(NetworkEvent event, Connection conn)>;
+    // SteamID will be SteamID::INVALID when using LocalSocket
+    using NetworkCallback = std::function<void(NetworkEvent event, Connection conn, SteamID steam)>;
 
     // Sets the callback function that is called on various multiplayer events
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered
@@ -161,12 +162,12 @@ namespace magique
                     continue;
                 const float avg = static_cast<float>(entry.count) / ticks;
 
-                auto enumName = enchantum::to_string((T)entry.type);
+                auto enumName = enchantum::to_string(static_cast<T>(entry.type));
                 if (enumName.empty())
                 {
                     enumName = TextFormat("%d", (int)entry.type);
                 }
-                printf("\t%-25s || %10d | %10.2f \n", std::string{enumName}.c_str(), entry.count, avg);
+                printf("\t%-25s || %10d | %10.2f \n", enumName.data(), entry.count, avg);
                 total += entry.count;
             }
             puts("\t---------------------------------------------------");
@@ -194,4 +195,4 @@ namespace magique
 
 } // namespace magique
 
-#endif // MAGIQUE_MULTIPLAYER_H
+#endif // MAGIQUE_NETWORKING_H

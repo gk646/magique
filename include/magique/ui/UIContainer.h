@@ -29,14 +29,12 @@ namespace magique
     {
         // Creates the container from absolute dimensions in the logical UI resolution
         // Optionally specify an anchor point the object is anchored to and a scaling mode
-        UIContainer(float x, float y, float w, float h, ScalingMode scaling = ScalingMode::FULL);
-        UIContainer(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {},
-                    ScalingMode scaling = ScalingMode::FULL);
+        UIContainer(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
     protected:
         // Controls how the container including all of its children are visualized!
         // Note: It's the containers responsibility to draw all of its children!
-        void onDraw(const Rectangle& bounds) override {}
+        void onDraw(const Rect& bounds) override {}
 
     public:
         // Adds a new child to the container with an optional name identifier

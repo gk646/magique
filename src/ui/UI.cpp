@@ -17,7 +17,7 @@ namespace magique
             point = {topLeft.x + inset.x, topLeft.y + inset.y};
             break;
         case Anchor::TOP_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + inset.y};
+            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + inset.y};
             break;
         case Anchor::TOP_RIGHT:
             point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + inset.y};
@@ -35,7 +35,7 @@ namespace magique
             point = {topLeft.x + inset.x, topLeft.y + bounds.y - size.y - inset.y};
             break;
         case Anchor::BOTTOM_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + bounds.y - size.y - inset.y};
+            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + bounds.y - size.y - inset.y};
             break;
         case Anchor::BOTTOM_RIGHT:
             point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + bounds.y - size.y - inset.y};
@@ -160,6 +160,8 @@ namespace magique
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
 
     void UIShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
+
+    bool UIUsingGamepad() { return global::UI_DATA.usingGamepad; }
 
     MouseToWorld::MouseToWorld()
     {

@@ -5,7 +5,6 @@
 #include <magique/ui/UIObject.h>
 #include <functional>
 #include <string>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // Button
@@ -22,8 +21,7 @@ namespace magique
     struct Button : UIObject
     {
         // Creates a new button from coordinates in the logical UI resolution
-        Button(float x, float y, float w, float h, ScalingMode mode = ScalingMode::FULL);
-        Button(float w, float h, Anchor anchor = Anchor::NONE, Point inset = {});
+        Button(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
         // Sets a function that is called on click - same as onClick but without needing to override the button class
         void setOnClick(const ClickFunc& func);
@@ -37,10 +35,10 @@ namespace magique
         const char* getHoverText() const;
 
     protected:
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         // Called each tick on update thread
-        void onUpdate(const Rectangle& bounds, bool isDrawn) override
+        void onUpdate(const Rect& bounds, bool isDrawn) override
         {
             if (isDrawn)
                 updateActions(bounds);
@@ -59,7 +57,7 @@ namespace magique
         // Draws a default graphical representation of this button
         virtual void drawDefault(const Rectangle& bounds);
 
-        // Draws the hovered text at the mouse leftbound
+        // Draws the hovered text at the mouse left bound
         void drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const;
 
     private:
@@ -71,7 +69,7 @@ namespace magique
 
     struct TextButton : Button
     {
-        TextButton(const char* text, ScalingMode mode = ScalingMode::FULL);
+        TextButton(const char* txt, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mod = ScalingMode::FULL);
 
         // Fits the width and height to the text height
         void fitToText(const Font& font, float size);
@@ -80,7 +78,7 @@ namespace magique
         const std::string& getText() const;
 
     protected:
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         void drawDefault(const Rectangle& bounds) override;
 
@@ -90,6 +88,5 @@ namespace magique
 
 } // namespace magique
 
-M_UNIGNORE_WARNING()
 
 #endif // MAGIQUE_BUTTON_H

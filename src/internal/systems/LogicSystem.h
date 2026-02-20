@@ -44,10 +44,10 @@ namespace magique
 
         cVec.push_back(e);
         const auto bb = pos.getBounds(col);
-        grid.insert(e, bb.x, bb.y, bb.w, bb.h);
+        grid.insert(e, bb.x, bb.y, bb.width, bb.height);
         if (isPathSolid) [[unlikely]]
         {
-            pathGrid.insert(bb.x, bb.y, bb.w, bb.h);
+            pathGrid.insert(bb.x, bb.y, bb.width, bb.height);
         }
     }
 
@@ -84,7 +84,7 @@ namespace magique
                            int& actorCount)
     {
         const auto& registry = internal::REGISTRY;
-        const auto updateDist = global::ENGINE_CONFIG.entityUpdateDistance;
+        const auto updateDist = global::ENGINE_CONFIG.entityUpdateDist;
         const auto view = registry.view<const ActorC, const PositionC>();
 
         for (const auto actor : view)

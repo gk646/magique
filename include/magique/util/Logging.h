@@ -3,7 +3,6 @@
 #define MAGIQUE_LOGGING_H
 
 #include <cstdarg>
-#include <magique/internal/Macros.h>
 
 //===============================================
 // Logging Module

@@ -73,7 +73,7 @@ namespace magique
     //      - undef: STRING
     //           - removes the environment param with the given name
     //   namespaces:
-    //      - m: Contains various functions that call magique API functions of the same (similar) name
+    //      - mq: Contains various functions that call magique API functions of the same (similar) name
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)

@@ -2,8 +2,6 @@
 #ifndef MAGIQUE_ENGINE_UTIL_H
 #define MAGIQUE_ENGINE_UTIL_H
 
-#include <magique/fwd.hpp>
-
 //===============================================
 // Debug Module
 //===============================================
@@ -32,7 +30,7 @@ namespace magique
     void EngineShowEntityOverlay(bool val);
 
     // If enabled, draws the current state of the pathfinding grid
-    // Transparent (not solid), grey (solid from static source), black (solid from dynamic source)
+    // Transparent (not solid), gray (solid from static source), black (solid from dynamic source)
     // Note: draws the state of the map returned by GetCameraMap() (needs an active camera)
     void EngineShowPathfindingOverlay(bool val);
 

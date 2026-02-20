@@ -52,15 +52,15 @@ namespace magique
     protected:
         // Needs to be called (as the first thing) in all implementing versions
         // After that you should return if the current menu is not active (getIsActive())
-        void onDraw(const Rectangle& bounds) override;
+        void onDraw(const Rect& bounds) override;
 
-        void onUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateInputs();
         }
 
-        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override;
+        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override;
 
         // Updates the default inputs:
         //      - ESC: Switch to parent

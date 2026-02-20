@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#define _CRT_SECURE_NO_WARNINGS
 #ifndef MAGIQUE_STEAM
 #include "magique/steam/Matchmaking.h"
 #include "magique/core/Types.h"
 #include "magique/util/Logging.h"
 namespace magique
 {
-    bool CreateSteamLobby(const SteamLobbyType type, const int maxPlayers) { M_ENABLE_STEAM_ERROR(false) }
-    void JoinSteamLobby(SteamLobbyID lobbyID) { M_ENABLE_STEAM_ERROR() }
-    bool LeaveSteamLobby() { M_ENABLE_STEAM_ERROR(false) }
-    bool GetInSteamLobby() { M_ENABLE_STEAM_ERROR(false); }
-    bool OpenSteamLobbyInviteDialogue() { M_ENABLE_STEAM_ERROR(false); }
-    bool InviteToSteamLobby(SteamID userID) { M_ENABLE_STEAM_ERROR(false); }
-    void SetSteamLobbyCallback(const SteamLobbyCallback& callback) { }
+    bool SteamCreateLobby(const SteamLobbyType type, const int maxPlayers) { M_ENABLE_STEAM_ERROR(false) }
+    void SteamJoinLobby(SteamLobbyID lobbyID) { M_ENABLE_STEAM_ERROR() }
+    bool SteamLeaveLobby() { M_ENABLE_STEAM_ERROR(false) }
+    bool SteamIsInLobby() { M_ENABLE_STEAM_ERROR(false); }
+    bool SteamIsLobbyOwner() { M_ENABLE_STEAM_ERROR(false); }
+    SteamLobbyID SteamGetLobbyID() { M_ENABLE_STEAM_ERROR({}); }
+    bool SteamOpenInviteDialog() { M_ENABLE_STEAM_ERROR(false); }
+    bool SteamSendLobbyInvite(SteamID userID) { M_ENABLE_STEAM_ERROR(false); }
+    void SteamSetLobbyCallback(const SteamLobbyCallback& callback) {}
 } // namespace magique
 #else
 #include <magique/steam/Matchmaking.h>
-#include <magique/internal/Macros.h>
+
 
 #include "internal/globals/SteamData.h"
 
@@ -83,9 +84,28 @@ namespace magique
         steamData.lobbyEventCallback = callback;
     }
 
-    void SteamSetConnMapping(Connection conn, SteamID id)
+    Connection SteamGetConnMapping(SteamID id)
     {
+        for (auto& mapping : global::MP_DATA.steamMapping)
+        {
+            if (mapping.steam == id)
+            {
+                return mapping.conn;
+            }
+        }
+        return Connection::INVALID;
+    }
 
+    SteamID SteamGetConnMapping(Connection conn)
+    {
+        for (auto& mapping : global::MP_DATA.steamMapping)
+        {
+            if (mapping.conn == conn)
+            {
+                return mapping.steam;
+            }
+        }
+        return SteamID::INVALID;
     }
 
     bool SteamOpenInviteDialog()

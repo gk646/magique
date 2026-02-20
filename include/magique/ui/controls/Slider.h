@@ -3,7 +3,6 @@
 #define MAGIQUE_SLIDER_H
 
 #include <magique/ui/UIObject.h>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // Slider
@@ -18,13 +17,12 @@ namespace magique
     struct Slider : UIObject
     {
         // Creates a new slider from coordinates in the logical UI resolution
-        Slider(float x, float y, float w, float h);
-        Slider(float w, float h, Anchor anchor, float inset = 0.0F);
+        Slider(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         // Called each tick on update thread
-        void onUpdate(const Rectangle& bounds, bool isDrawn) override
+        void onUpdate(const Rect& bounds, bool isDrawn) override
         {
             if (isDrawn)
                 updateActions(bounds);
@@ -73,6 +71,4 @@ namespace magique
 
 } // namespace magique
 
-M_UNIGNORE_WARNING()
-
-#endif //MAGIQUE_SLIDER_H
+#endif // MAGIQUE_SLIDER_H

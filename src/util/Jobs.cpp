@@ -14,10 +14,16 @@ namespace magique
         auto& scd = global::SCHEDULER;
         const auto handle = scd.getNextHandle();
         job->handle = handle;
+#if MAGIQUE_WORKER_THREADS == 0
+        scd.addWorkedJob(job);
+        job->run();
+        scd.removeWorkedJob(job);
+#else
         scd.queueLock.lock();
         scd.jobQueue.push_back(job);
         scd.queueLock.unlock();
         scd.addWorkedJob(job);
+#endif
         return handle;
     }
 

@@ -1,7 +1,6 @@
-#include "magique/ui/controls/Slider.h"
 #include <magique/magique.hpp>
 
-enum EntityType : uint16_t
+enum class EntityType : uint16_t
 {
     SNAKE_HEAD,
     SNAKE_TAIL,
@@ -24,7 +23,7 @@ int CELL_SIZE = 15;
 int DELAY = 30;
 int APPLE_DELAY = 90;
 bool GAMEOVER = false;
-magique::Slider SPEED_SLIDER{150, 50, magique::Anchor::TOP_RIGHT, 50};
+magique::Slider SPEED_SLIDER{{150, 50}, magique::Anchor::TOP_RIGHT, 50};
 
 void resetGame()
 {
@@ -32,18 +31,17 @@ void resetGame()
     MOVES = 0;
     GAMEOVER = false;
     SPEED_SLIDER.setSliderPercent(0.5);
-    magique::DestroyEntities({SNAKE_TAIL, SNAKE_HEAD, APPLE});
-    magique::CreateEntity(SNAKE_HEAD, GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE,
-                          GetRandomValue(0, FIELD_DIMS - 1) * CELL_SIZE, {});
+    magique::EntityDestroy({EntityType::SNAKE_TAIL, EntityType::SNAKE_HEAD, EntityType::APPLE});
+    magique::EntityCreate(EntityType::SNAKE_HEAD, magique::Point ::Random(0, FIELD_DIMS - 1) * CELL_SIZE, {});
 }
 
 struct RestartButton : magique::Button
 {
-    RestartButton() : Button(100, 100, magique::Anchor::MID_CENTER) {}
-    void onDraw(const Rectangle& bounds) override
+    RestartButton() : Button({100, 100}, magique::Anchor::MID_CENTER) {}
+    void onDraw(const magique::Rect& bounds) override
     {
         drawDefault(bounds);
-        magique::DrawCenteredText(magique::GetEngineFont(), "Restart", magique::GetRectCenter(bounds), 20);
+        magique::DrawTextCentered(magique::EngineGetFont(), "Restart", bounds.mid(), 20);
     }
     void onClick(const Rectangle& bounds, int button) override { resetGame(); }
 };
@@ -62,19 +60,19 @@ struct SnakeScript : magique::EntityScript
     void onTick(entt::entity self, bool updated) override
     {
         auto& head = magique::ComponentGet<SnakeC>(self);
-        if (magique::UIInput::IsKeyDown(KEY_W) && head.direction != DOWN)
+        if (magique::LayeredInput::IsKeyDown(KEY_W) && head.direction != DOWN)
         {
             head.direction = UP;
         }
-        else if (magique::UIInput::IsKeyDown(KEY_A) && head.direction != RIGHT)
+        else if (magique::LayeredInput::IsKeyDown(KEY_A) && head.direction != RIGHT)
         {
             head.direction = LEFT;
         }
-        else if (magique::UIInput::IsKeyDown(KEY_S) && head.direction != UP)
+        else if (magique::LayeredInput::IsKeyDown(KEY_S) && head.direction != UP)
         {
             head.direction = DOWN;
         }
-        else if (magique::UIInput::IsKeyDown(KEY_D) && head.direction != LEFT)
+        else if (magique::LayeredInput::IsKeyDown(KEY_D) && head.direction != LEFT)
         {
             head.direction = RIGHT;
         }
@@ -83,13 +81,13 @@ struct SnakeScript : magique::EntityScript
     void onDynamicCollision(entt::entity self, entt::entity other, magique::CollisionInfo& info) override
     {
         const auto& oPos = magique::ComponentGet<magique::PositionC>(other);
-        if (oPos.type == SNAKE_TAIL)
+        if (oPos.type == EntityType::SNAKE_TAIL)
         {
             GAMEOVER = true;
         }
-        else if (oPos.type == APPLE)
+        else if (oPos.type == EntityType::APPLE)
         {
-            magique::DestroyEntity(other);
+            magique::EntityDestroy(other);
             auto& head = magique::ComponentGet<SnakeC>(self);
 
             entt::entity tail = head.next;
@@ -125,7 +123,7 @@ struct SnakeScript : magique::EntityScript
             {
                 xAdd = -CELL_SIZE;
             }
-            const auto nextTail = magique::CreateEntity(SNAKE_TAIL, lastPos.x + xAdd, lastPos.y + yAdd, {});
+            const auto nextTail = magique::EntityCreate(EntityType::SNAKE_TAIL, lastPos.x + xAdd, lastPos.y + yAdd, {});
             if (head.next == entt::null)
             {
                 head.next = nextTail;
@@ -198,37 +196,38 @@ struct Snake final : magique::Game
     void onStartup(magique::AssetLoader& loader) override
     {
         SetWindowState(FLAG_WINDOW_RESIZABLE);
-        magique::RegisterEntity(SNAKE_HEAD,
+        magique::EntityRegister(EntityType::SNAKE_HEAD,
                                 [](entt::entity entity, EntityType type)
                                 {
-                                    magique::GiveActor(entity);
-                                    magique::GiveComponent<SnakeC>(entity);
+                                    magique::ComponentGiveActor(entity);
+                                    magique::ComponentGive<SnakeC>(entity);
                                     magique::GiveCollisionRect(entity, CELL_SIZE, CELL_SIZE);
                                 });
-        magique::RegisterEntity(SNAKE_TAIL,
+        magique::EntityRegister(EntityType::SNAKE_TAIL,
                                 [](entt::entity entity, EntityType type)
                                 {
-                                    magique::GiveComponent<SnakeC>(entity);
+                                    magique::ComponentGive<SnakeC>(entity);
                                     magique::GiveCollisionRect(entity, CELL_SIZE, CELL_SIZE);
                                 });
-        magique::RegisterEntity(CAMERA, [](entt::entity entity, EntityType type) { magique::GiveCamera(entity); });
+        magique::EntityRegister(EntityType::CAMERA,
+                                [](entt::entity entity, EntityType type) { magique::ComponentGiveCamera(entity); });
 
-        magique::RegisterEntity(APPLE, [](entt::entity entity, EntityType type)
+        magique::EntityRegister(EntityType::APPLE, [](entt::entity entity, EntityType type)
                                 { magique::GiveCollisionRect(entity, CELL_SIZE, CELL_SIZE); });
 
-        magique::SetEntityScript(SNAKE_HEAD, new SnakeScript());
-        magique::SetEntityScript(CAMERA, new CameraScript());
-        magique::SetEntityScript(SNAKE_TAIL, new SnakeTailScript());
-        magique::SetEntityScript(APPLE, new AppleScript());
+        magique::ScriptingSetScript(EntityType::SNAKE_HEAD, new SnakeScript());
+        magique::ScriptingSetScript(EntityType::CAMERA, new CameraScript());
+        magique::ScriptingSetScript(EntityType::SNAKE_TAIL, new SnakeTailScript());
+        magique::ScriptingSetScript(EntityType::APPLE, new AppleScript());
 
         const auto limit = FIELD_DIMS * CELL_SIZE;
-        magique::CreateEntity(CAMERA, limit / 2, limit / 2, {});
+        magique::EntityCreate(EntityType::CAMERA, limit / 2, limit / 2, {});
         SPEED_SLIDER.setScaleImblanced(0, 1, 10);
     }
 
     void onLoadingFinished() override { resetGame(); }
 
-    void updateGame(GameState gameState) override
+    void onUpdateGame(GameState gameState) override
     {
         if (GAMEOVER)
         {
@@ -242,7 +241,7 @@ struct Snake final : magique::Game
             appleCounter = 0;
             auto x = GetRandomValue(0, FIELD_DIMS - 1);
             auto y = GetRandomValue(0, FIELD_DIMS - 1);
-            magique::CreateEntity(APPLE, x * CELL_SIZE, y * CELL_SIZE, {});
+            magique::EntityCreate(EntityType::APPLE, x * CELL_SIZE, y * CELL_SIZE, {});
         }
 
         static int counter = 0;
@@ -251,7 +250,7 @@ struct Snake final : magique::Game
             return;
         counter = 0;
 
-        auto head = magique::GetEntity(SNAKE_HEAD);
+        auto head = magique::GetEntity(EntityType::SNAKE_HEAD);
         if (head == entt::null)
             return;
 
@@ -275,36 +274,36 @@ struct Snake final : magique::Game
         MOVES++;
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         auto text = std::string{std::string("Score: ") + std::to_string(SCORE)}.c_str();
-        magique::DrawCenteredText(magique::GetEngineFont(), text, Vector2{GetScreenWidth() / 2.0F, 50}, 20);
+        magique::DrawTextCentered(magique::EngineGetFont(), text, Vector2{GetScreenWidth() / 2.0F, 50}, 20);
 
         text = std::string{std::string("Moves: ") + std::to_string(MOVES)}.c_str();
-        magique::DrawCenteredText(magique::GetEngineFont(), text, Vector2{GetScreenWidth() / 2.0F, 75}, 20);
+        magique::DrawTextCentered(magique::EngineGetFont(), text, Vector2{GetScreenWidth() / 2.0F, 75}, 20);
 
         text = std::string{std::string("Speed: ") + std::to_string(SPEED_SLIDER.getSliderValue())}.c_str();
         const auto textPos = magique::GetUIAnchor(magique::Anchor::TOP_RIGHT, 0, 0, 100);
-        magique::DrawCenteredText(magique::GetEngineFont(), text, Vector2{textPos.x, textPos.y}, 20);
+        magique::DrawTextCentered(magique::EngineGetFont(), text, Vector2{textPos.x, textPos.y}, 20);
 
 
         BeginMode2D(camera2D);
         const auto limit = FIELD_DIMS * CELL_SIZE;
         DrawRectangle(0, 0, limit, limit, GRAY);
 
-        for (const auto e : magique::GetDrawEntities())
+        for (const auto e : magique::EngineGetDrawEntities())
         {
             const auto& pos = magique::ComponentGet<const magique::PositionC>(e);
-            if (pos.type == SNAKE_HEAD)
+            if (pos.type == EntityType::SNAKE_HEAD)
             {
                 DrawRectangle((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, BLUE);
             }
-            else if (pos.type == SNAKE_TAIL)
+            else if (pos.type == EntityType::SNAKE_TAIL)
             {
                 DrawRectangle((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, GREEN);
                 DrawRectangleLines((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, GRAY);
             }
-            else if (pos.type == APPLE)
+            else if (pos.type == EntityType::APPLE)
             {
                 DrawRectangle((int)pos.x, (int)pos.y, CELL_SIZE, CELL_SIZE, RED);
             }
@@ -312,7 +311,7 @@ struct Snake final : magique::Game
         EndMode2D();
     }
 
-    void drawUI(GameState gameState) override
+    void onDrawUI(GameState gameState) override
     {
         SPEED_SLIDER.draw();
         if (GAMEOVER)

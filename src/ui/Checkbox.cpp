@@ -9,9 +9,9 @@
 namespace magique
 {
 
-    CheckBox::CheckBox(float x, float y, float w, float h) : UIObject(x, y, w, h) {}
-
-    CheckBox::CheckBox(float w, float h, Anchor anchor, Point inset) : UIObject(w, h, anchor, inset) {}
+    CheckBox::CheckBox(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
+    {
+    }
 
     void CheckBox::setOnClick(const SwitchFunc& clickFunc) { func = clickFunc; }
 

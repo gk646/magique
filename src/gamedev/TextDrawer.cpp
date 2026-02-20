@@ -6,8 +6,8 @@
 namespace magique
 {
 
-    TextDrawer::TextDrawer(const Font& font, const Rect& bounds, const Point off) :
-        bounds(bounds), off(off), cursor(off), font(font)
+    TextDrawer::TextDrawer(const Font& font, const Rect& bounds, const Point off, Point gap) :
+        bounds(bounds), gapp(gap), off(off), cursor(off), font(font)
     {
         resetMods();
     }
@@ -17,26 +17,24 @@ namespace magique
         const auto width = textWidth(txt);
         const auto pos = bounds.pos() + cursor + modOffset;
         drawText(pos, txt, tint);
-        cursor.x += width + off.x;
+        cursor.x += width + gapp.x;
     }
 
     void TextDrawer::center(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
-        const auto pos = Point{bounds.x + (bounds.w - width) / 2.0F, bounds.y + cursor.y} + modOffset;
+        const auto pos = Point{bounds.x + (bounds.width - width) / 2.0F, bounds.y + cursor.y} + modOffset;
         drawText(pos, txt, tint);
     }
 
     void TextDrawer::right(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
-        const auto lineEnd = bounds.x + bounds.w - off.x;
+        const auto lineEnd = bounds.x + bounds.width - off.x;
         const auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOffset;
         drawText(pos, txt, tint);
-        cursorEndX += width + off.x;
+        cursorEndX += width + gapp.x;
     }
-
-    void TextDrawer::custom(const CustomTextFunc& func) { cursor += func(*this); }
 
     void TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
     {
@@ -48,52 +46,67 @@ namespace magique
         pos.floor();
         DrawRegion(img, pos);
         if (moveCursor)
-            cursor.x += img.width + off.x;
+            cursor.x += img.width + gapp.x;
     }
 
-    void TextDrawer::gap(bool vertical, float mult)
+    TextDrawer& TextDrawer::linebreak(const float amount)
     {
-        if (vertical)
+        cursor.x = off.x;
+        cursor.y += amount * (2 + (float)font.baseSize);
+        resetMods();
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::move(Point pos)
+    {
+        cursor += pos;
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::gapH(float mult)
+    {
+        if (mult > 0)
         {
-            cursor.y += mult * off.y;
+            cursor.x += mult * gapp.x;
         }
         else
         {
-            if (mult > 0)
-            {
-                cursor.x += mult * off.x;
-            }
-            else
-            {
-                cursorEndX += -mult * off.x;
-            }
+            cursorEndX += -mult * gapp.x;
         }
+        return *this;
     }
 
-    void TextDrawer::linebreak(const float amount)
+    TextDrawer& TextDrawer::gapV(float mult)
     {
-        cursor.x = off.x;
-        cursor.y += amount * (off.y + (float)font.baseSize);
-        resetMods();
+        cursor.y += mult * gapp.y;
+        return *this;
     }
-
-    void TextDrawer::move(Point pos) { cursor += pos; }
-
-    int TextDrawer::withNewLines(char* str) const
+    TextDrawer& TextDrawer::mod(int fsm)
     {
-        return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.w - off.x, font, font.baseSize);
+        modSizeMult = fsm;
+        return *this;
     }
 
-    void TextDrawer::setMod(const int fsm, Color highlight, Point offset)
+    TextDrawer& TextDrawer::mod(Color numberHighlight)
+    {
+        modHighlightColor = numberHighlight;
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::mod(Point offset)
     {
         modOffset = offset;
-        modSizeMult = fsm;
-        modHighlightColor = highlight;
+        return *this;
     }
 
     float TextDrawer::textWidth(const std::string_view& txt) const
     {
         return MeasureTextEx(font, txt.data(), (float)font.baseSize * (float)modSizeMult, (float)modSizeMult).x;
+    }
+
+    int TextDrawer::withNewLines(char* str) const
+    {
+        return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.width - off.x, font, font.baseSize);
     }
 
     Point TextDrawer::getCursor() const { return cursor; }
@@ -110,10 +123,10 @@ namespace magique
         pos.floor();
 
         int newLines = 0;
-        if (width >= bounds.w)
+        if (width >= bounds.width)
         {
             txt = TextFormat("%s", txt.data());
-            const auto lineEnd = bounds.w - off.x - cursor.x - modOffset.x;
+            const auto lineEnd = bounds.width - off.x - cursor.x - modOffset.x;
             newLines = StringSetNewlines((char*)txt.data(), MAX_TEXT_BUFFER_LENGTH, lineEnd, font, fntSize);
         }
 

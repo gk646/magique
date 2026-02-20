@@ -4,7 +4,6 @@
 
 #include <raylib/raylib.h>
 #include <magique/ui/UIContainer.h>
-M_IGNORE_WARNING(4100)
 
 //===============================================
 // Window
@@ -36,15 +35,15 @@ namespace magique
     {
         // Creates a new window from coordinates in the logical UI resolution
         // If not specified the top bar is 10% of the total height
-        Window(const char* name, float x, float y, float w, float h, float topBarHeight = 0.0);
+        Window(const char* name, Rect bounds, float topBarHeight = 0.0);
 
     protected:
         // Same as ui/UIContainer.h
         // Note: The window is responsible to draw all its children!
-        void onDraw(const Rectangle& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         // Same as ui/UIObject.h
-        void onDrawUpdate(const Rectangle& bounds, bool wasDrawn) override
+        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override
         {
             if (wasDrawn)
                 updateDrag(getTopBarBounds());
@@ -79,7 +78,5 @@ namespace magique
     };
 
 } // namespace magique
-
-M_UNIGNORE_WARNING()
 
 #endif // MAGIQUE_WINDOW_H

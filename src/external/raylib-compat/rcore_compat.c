@@ -22,10 +22,11 @@ int GetPreviousMousePositionY() { return CORE.Input.Mouse.previousPosition.y; }
 
 int GetTextLineSpacing() { return 2; }
 
-
-
 void SetMousePositionDirect(float x, float y)
 {
     CORE.Input.Mouse.currentPosition.x = x;
     CORE.Input.Mouse.currentPosition.y = y;
 }
+
+char* GetCurrentGamepadState() { return CORE.Input.Gamepad.currentButtonState[0]; }
+char* GetPreviousGamepadState() { return CORE.Input.Gamepad.previousButtonState[0]; }

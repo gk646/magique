@@ -105,7 +105,7 @@ namespace magique::internal
 #if defined(_MSC_VER)
 #define M_FUNCTION __FUNCSIG__
 #elif defined(__clang__) || defined(__GNUC__)
-#define M_FUNCTION __PRETTY_FUNCTION__
+#define M_FUNCTION __FUNCTION__
 #else
 #define M_FUNCTION __func__
 #endif
@@ -113,7 +113,7 @@ namespace magique::internal
 //================= ASSET LOADING =================//
 
 #define ASSET_CHECK(asset)                                                                                              \
-    if (!AssetBaseCheck(asset))                                                                                         \
+    if (!asset.isValid())                                                                                         \
         return {};
 
 #define ASSET_IS_SUPPORTED_IMAGE_TYPE(asset)                                                                            \
@@ -149,9 +149,6 @@ namespace magique::internal
         return;                                                                                                         \
     }
 
-#define M_FRIEND(type) friend type;
-#define befriend(...) FOR_EACH(M_FRIEND, __VA_ARGS__)
-
 #define M_ENABLE_STEAM_ERROR(ret)                                                                                       \
     LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");                                                      \
     return ret;
@@ -176,14 +173,6 @@ namespace magique::internal
 #define M_MAKE_PUB() public:
 #else
 #define M_MAKE_PUB()
-#endif
-
-#ifdef _MSC_VER
-#define M_IGNORE_WARNING(num) __pragma(warning(push)) __pragma(warning(disable : num))
-#define M_UNIGNORE_WARNING() __pragma(warning(pop))
-#else
-#define M_IGNORE_WARNING(num)
-#define M_UNIGNORE_WARNING()
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)

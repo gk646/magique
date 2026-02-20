@@ -93,13 +93,13 @@ struct RobotScript final : EntityScript
 
                 if (oPos.type == TARGET)
                 {
-                    SetGameState(GameState::GAME_OVER);
+                    EngineSetState(GameState::GAME_OVER);
                     STATS.successful = true;
                     if (STATS.finalTime == 0)
                         STATS.finalTime = StopTimer(0);
                 }
 
-                DestroyEntity(closest);
+                EntityDestroy(closest);
                 STATS.defuses -= 1;
             }
         }
@@ -110,7 +110,7 @@ struct RobotScript final : EntityScript
         auto& oPos = ComponentGet<PositionC>(other);
         if (oPos.type == MINE)
         {
-            SetGameState(GameState::GAME_OVER);
+            EngineSetState(GameState::GAME_OVER);
             if (STATS.finalTime == 0)
                 STATS.finalTime = StopTimer(0);
         }
@@ -130,7 +130,7 @@ struct PingScript final : EntityScript
         pos.y -= 2.5;
         if (info.radius > 200)
         {
-            DestroyEntity(self);
+            EntityDestroy(self);
         }
     }
 
@@ -159,7 +159,7 @@ struct MineScript final : EntityScript
         auto& oPos = ComponentGet<PositionC>(other);
         if (oPos.type == TARGET)
         {
-            DestroyEntity(self);
+            EntityDestroy(self);
         }
 
         if (oPos.type != PING)
@@ -171,7 +171,7 @@ struct MineScript final : EntityScript
 
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override
     {
-        DestroyEntity(self);
+        EntityDestroy(self);
     }
 };
 
@@ -185,19 +185,19 @@ void resetGame()
     STATS.finalTime = 0;
     STATS.automatic = false;
 
-    DestroyEntities({});
-    CreateEntity(ROBOT, 25 * 24, 37 * 24, MapID::LEVEL_1);
-    TARGET_ENT = CreateEntity(TARGET, 34 * 24, 14 * 24, MapID::LEVEL_1);
+    EntityDestroy({});
+    EntityCreate(ROBOT, 25 * 24, 37 * 24, MapID::LEVEL_1);
+    TARGET_ENT = EntityCreate(TARGET, 34 * 24, 14 * 24, MapID::LEVEL_1);
     for (int i = 0; i < 35; ++i)
     {
         for (int j = 0; j < 50; ++j)
         {
             if (GetRandomFloat(0, 1) > 0.4)
                 continue;
-            CreateEntity(MINE, j * 24, i * 24, MapID::LEVEL_1);
+            EntityCreate(MINE, j * 24, i * 24, MapID::LEVEL_1);
         }
     }
-    SetGameState(GameState::PLAY);
+    EngineSetState(GameState::PLAY);
     StopTimer(0);
     StartTimer(0);
 }
@@ -219,36 +219,36 @@ struct Robo final : Game
             },
             THREAD_MAIN);
 
-        RegisterEntity(ROBOT,
+        EntityRegister(ROBOT,
                        [](entt::entity entity, EntityType type)
                        {
-                           GiveActor(entity);
-                           GiveCamera(entity);
+                           ComponentComponentGiveActor(entity);
+                           ComponentGiveCamera(entity);
                            GiveCollisionRect(entity, 20, 20);
                        });
-        SetEntityScript(ROBOT, new RobotScript());
-        RegisterEntity(PING,
+        ScriptingSetScript(ROBOT, new RobotScript());
+        EntityRegister(PING,
                        [](entt::entity entity, EntityType type)
                        {
-                           GiveComponent<PingInfoC>(entity);
-                           GiveCollisionCircle(entity, 10);
+                           ComponentGive<PingInfoC>(entity);
+                           ComponentGiveCollision(entity, 10);
                        });
-        SetEntityScript(PING, new PingScript());
-        RegisterEntity(MINE,
+        ScriptingSetScript(PING, new PingScript());
+        EntityRegister(MINE,
                        [](entt::entity entity, EntityType type)
                        {
-                           GiveComponent<MineInfoC>(entity);
-                           GiveCollisionCircle(entity, 10);
+                           ComponentGive<MineInfoC>(entity);
+                           ComponentGiveCollision(entity, 10);
                        });
-        SetEntityScript(MINE, new MineScript());
+        ScriptingSetScript(MINE, new MineScript());
 
-        RegisterEntity(TARGET,
+        EntityRegister(TARGET,
                        [](entt::entity entity, EntityType type)
                        {
-                           GiveComponent<MineInfoC>(entity);
-                           GiveCollisionCircle(entity, 15);
+                           ComponentGive<MineInfoC>(entity);
+                           ComponentGiveCollision(entity, 15);
                        });
-        SetEntityScript(TARGET, new MineScript());
+        ScriptingSetScript(TARGET, new MineScript());
     }
 
     void onLoadingFinished() override
@@ -277,7 +277,7 @@ struct Robo final : Game
         if (UIInput::IsKeyPressed(KEY_SPACE) & STATS.energy > 0)
         {
             auto camPos = GetCameraPosition();
-            CreateEntity(PING, camPos.x, camPos.y, MapID::LEVEL_1);
+            EntityCreate(PING, camPos.x, camPos.y, MapID::LEVEL_1);
             STATS.energy -= 1;
         }
         static int counter = 0;

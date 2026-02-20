@@ -3,8 +3,8 @@
 #define MAGIQUE_LOBBY_H
 
 #include <string>
-#include <magique/core/Types.h>
 #include <functional>
+#include <magique/core/Types.h>
 
 //===============================================
 // Lobby Module
@@ -38,7 +38,7 @@
 //      6. Continuously send game updates
 //          - New joining clients read the metadata and immediately join the game
 //
-// Note: The lobby only works if you call ReceiveIncomingMessages() (each tick) - lobby packets are filtered and handled automatically
+// Note: The lobby only works if you call NetworkReceive() (each tick) - lobby packets are filtered and handled automatically
 // .....................................................................
 
 namespace magique
@@ -69,16 +69,16 @@ namespace magique
 
         // Sends a new chat message in the lobby chat
         // Note: requires you to be in a lobby - callback not called for sent messages
-        void sendChatMessage(const char* message);
+        void sendChatMessage(std::string_view message);
 
         // Sets the metadata - behavior differs from clients vs hosts
         // Host:   Immediately sets the value and sends the update to all clients
         // Client: Sent the change only to the host - host then decides what to do with it
-        // Note: metadat is automatically cleared if the multiplayer session closes
-        void setMetadata(const char* key, const char* value);
+        // Note: metadata is automatically cleared if the multiplayer session closes
+        void setMetadata(std::string_view key, std::string_view value);
 
         // Gets the value for the given key
-        const std::string& getMetadata(const char* key);
+        const std::string& getMetadata(std::string_view key);
     };
 
 } // namespace magique

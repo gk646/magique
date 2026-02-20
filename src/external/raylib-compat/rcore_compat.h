@@ -2,32 +2,35 @@
 #ifndef RCORE_COMPAT_H
 #define RCORE_COMPAT_H
 
-extern "C" {
+extern "C"
+{
+    int GetCharPressedQueueCount();
+    int GetKeyPressedQueueCount();
 
-int GetCharPressedQueueCount();
-int GetKeyPressedQueueCount();
+    int* GetCharPressedQueue();
 
-int* GetCharPressedQueue();
+    char* GetCurrentKeyState();
+    char* GetPreviousKeyState();
 
-char* GetCurrentKeyState();
-char* GetPreviousKeyState();
-
-char* GetCurrentButtonState();
-char* GetPreviousButtonState();
+    char* GetCurrentButtonState();
+    char* GetPreviousButtonState();
 
 
-int GetCurrentMousePositionX();
-int GetCurrentMousePositionY();
+    int GetCurrentMousePositionX();
+    int GetCurrentMousePositionY();
 
-int GetPreviousMousePositionX();
-int GetPreviousMousePositionY();
+    int GetPreviousMousePositionX();
+    int GetPreviousMousePositionY();
 
-int GetFBOWidth();
-int GetFBOHeight();
+    int GetFBOWidth();
+    int GetFBOHeight();
 
-int GetTextLineSpacing();
+    int GetTextLineSpacing();
 
-void SetMousePositionDirect(float x, float y);
+    void SetMousePositionDirect(float x, float y);
+
+    char* GetCurrentGamepadState();
+    char* GetPreviousGamepadState();
 }
 
 #endif // RCORE_COMPAT_H

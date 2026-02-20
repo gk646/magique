@@ -81,7 +81,7 @@ struct CloseButton final : UIObject
 {
     CloseButton() : UIObject(topBarHeight, topBarHeight) {}
 
-    void onDraw(const Rectangle& bounds) override
+    void onDraw(const Rect& bounds) override
     {
         const Vector2 topLeft = {bounds.x + 1, bounds.y + 1};
         const Vector2 bottomRight = {bounds.x + bounds.width - 1, bounds.y + bounds.height - 1};
@@ -99,7 +99,7 @@ struct BlueWindow final : Window
     {
         addChild(new CloseButton(), "CloseButton");
     }
-    void onDraw(const Rectangle& bounds) override { DrawWindow(*this, BLUE); }
+    void onDraw(const Rect& bounds) override { DrawWindow(*this, BLUE); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
@@ -109,7 +109,7 @@ struct RedWindow final : Window
     {
         addChild(new CloseButton(), "CloseButton");
     }
-    void onDraw(const Rectangle& bounds) override { DrawWindow(*this, RED); }
+    void onDraw(const Rect& bounds) override { DrawWindow(*this, RED); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
@@ -119,7 +119,7 @@ struct PurpleWindow final : Window
     {
         addChild(new CloseButton(), "CloseButton");
     }
-    void onDraw(const Rectangle& bounds) override { DrawWindow(*this, PURPLE); }
+    void onDraw(const Rect& bounds) override { DrawWindow(*this, PURPLE); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 
@@ -129,7 +129,7 @@ struct GreenWindow final : Window
     {
         addChild(new CloseButton(), "CloseButton");
     }
-    void onDraw(const Rectangle& bounds) override { DrawWindow(*this, GREEN); }
+    void onDraw(const magique::Rect& bounds) override { DrawWindow(*this, GREEN); }
     void onDrawUpdate(const Rectangle& bounds) override { UpdateWindow(this); }
 };
 

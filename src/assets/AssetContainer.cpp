@@ -4,7 +4,6 @@
 #include <cstring>
 
 #include <magique/util/Logging.h>
-#include <magique/internal/Macros.h>
 #include <magique/assets/AssetContainer.h>
 
 struct Sorter

@@ -12,10 +12,7 @@ namespace magique
         return *global::ENGINE_DATA.gameInstance;
     }
 
-    GameState EngineGetState()
-    {
-        return global::ENGINE_DATA.gameState;
-    }
+    GameState EngineGetState() { return global::ENGINE_DATA.gameState; }
 
     void EngineSetState(const GameState newGameState)
     {
@@ -29,17 +26,14 @@ namespace magique
         }
     }
 
-    void EngineSetStateCallback(const GameStateCallback& func)
-    {
-        global::ENGINE_DATA.stateCallback = func;
-    }
+    void EngineSetStateCallback(const GameStateCallback& func) { global::ENGINE_DATA.stateCallback = func; }
 
     void EngineSetUpdateRange(const int distance)
     {
-        global::ENGINE_CONFIG.entityUpdateDistance = static_cast<float>(distance);
+        global::ENGINE_CONFIG.entityUpdateDist = static_cast<float>(distance);
     }
 
-    int EngineGetUpdateRange() { return (int)global::ENGINE_CONFIG.entityUpdateDistance; }
+    int EngineGetUpdateRange() { return (int)global::ENGINE_CONFIG.entityUpdateDist; }
 
     void EngineSetCacheDuration(const int ticks)
     {
@@ -76,5 +70,7 @@ namespace magique
     void EngineSetPlayer(entt::entity entity) { global::ENGINE_DATA.playerEntity = entity; }
 
     entt::entity EngineGetPlayer() { return global::ENGINE_DATA.playerEntity; }
+
+    bool EngineHasPlayer() { return global::ENGINE_DATA.playerEntity != entt::null; }
 
 } // namespace magique

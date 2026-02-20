@@ -6,7 +6,6 @@
 #include <magique/multiplayer/Networking.h>
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #define _CRT_SECURE_NO_WARNINGS
-#include <magique/internal/Macros.h>
 
 #include "internal/globals/NetworkingData.h"
 #include "internal/globals/EngineConfig.h"
@@ -84,7 +83,6 @@ namespace magique
         // Lambda to process received messages
         auto processMessages = [&](const int startIdx, const int count)
         {
-            const auto start = data.incMsgVec.size();
             for (int i = startIdx; i < startIdx + count; ++i)
             {
                 const auto* msg = data.incMsgBuffer[i];
@@ -206,37 +204,7 @@ namespace magique
 #else
 namespace magique
 {
-    Payload CreatePayload(const void* data, const int size, const MessageType type)
-    {
-        (void)data;
-        (void)size;
-        (void)type;
-        return {};
-    }
-
-    void BatchMessage(const Connection conn, const Payload payload, const SendFlag flag)
-    {
-        (void)conn;
-        (void)payload;
-        (void)flag;
-    }
-
-    void NetworkSendAll(const Payload payload, const SendFlag flag)
-    {
-        (void)payload;
-        (void)flag;
-    }
-
-    void NetworkSendAll(Payload payload, SendFlag flag, Connection exclude)
-    {
-        (void)payload;
-        (void)flag;
-        (void)exclude;
-    }
-
-    void SendBatch() {}
-
-    bool SendMessage(Connection conn, Payload payload, SendFlag flag)
+    bool NetworkSend(Connection conn, Payload payload, SendFlag flag)
     {
         (void)conn;
         (void)payload;
@@ -244,15 +212,23 @@ namespace magique
         return false;
     }
 
-    void SendMessageToAll(const Payload payload, const SendFlag flag)
+    bool NetworkSendAll(const Payload payload, const SendFlag flag)
     {
         (void)payload;
         (void)flag;
+        return false;
     }
 
-    void FlushMessages() {}
+    bool NetworkSendHost(Payload payload, SendFlag flag)
+    {
+        (void)payload;
+        (void)flag;
+        return false;
+    }
 
-    const std::vector<Message>& ReceiveIncomingMessages(const int max)
+    void NetworkFlush() {}
+
+    const std::vector<Message>& NetworkReceive(const int max)
     {
         (void)max;
         static std::vector<Message> empty;
@@ -265,47 +241,45 @@ namespace magique
         return empty;
     }
 
-    void SetMultiplayerCallback(const MultiplayerCallback& func) { (void)func; }
+    void NetworkSetCallback(const NetworkCallback& func) { (void)func; }
 
-    bool GetInMultiplayerSession() { return false; }
+    bool NetworkInSession() { return false; }
 
-    bool GetIsHost() { return false; }
+    bool NetworkIsHost() { return false; }
 
-    bool GetIsActiveHost() { return false; }
+    bool NetworkIsClient() { return false; }
 
-    bool GetIsClient() { return false; }
-
-    void SetConnectionEntityMapping(const Connection conn, const entt::entity entity)
+    void NetworkSetConnMapping(const Connection conn, const entt::entity entity)
     {
         (void)conn;
         (void)entity;
     }
 
-    entt::entity GetConnectionEntityMapping(const Connection conn)
+    entt::entity NetworkGetConnMapping(const Connection conn)
     {
         (void)conn;
         return entt::null;
     }
 
-    Connection GetConnectionEntityMapping(const entt::entity entity)
+    Connection NetworkGetConnMapping(const entt::entity entity)
     {
         (void)entity;
-        return Connection::INVALID_CONNECTION;
+        return Connection::INVALID;
     }
 
-    int GetConnectionNum(const Connection conn)
+    int NetworkGetConnNumber(const Connection conn)
     {
         (void)conn;
         return -1;
     }
 
-    void PrintPacketStats() {}
+    void NetworkEnterClientMode() {}
 
-    void EnterClientMode() {}
+    void NetworkExitClientMode() {}
 
-    void ExitClientMode() {}
+    bool NetworkIsClientMode() { return false; }
 
-    bool GetIsClientMode() { return false; }
+    internal::MultiplayerStatsData internal::getStats() { return {}; }
 
 } // namespace magique
 #endif

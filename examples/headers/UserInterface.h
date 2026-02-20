@@ -24,7 +24,7 @@ struct TextFieldWindow final : Window
 
     TextFieldWindow() : Window(150, 150, 250, 250) {}
 
-    void onDraw(const Rectangle& bounds) override
+    void onDraw(const Rect& bounds) override
     {
         drawDefault(bounds);
         textField1.align(Anchor::TOP_CENTER, *this, 50);

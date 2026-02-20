@@ -118,7 +118,7 @@ namespace magique
                         outBytes += info.m_flOutBytesPerSec;
                         ping += (float)info.m_nPing;
                     }
-                    ping /= (float)NetworkGetConnections().size();
+                    ping /= std::max((float)NetworkGetConnections().size(), 1.0F);
                 }
 
                 UPDATE_BLOCK((int)inBytes, "In: %d");
@@ -141,7 +141,7 @@ namespace magique
         void printPerformanceStats() const
         {
             LOG_INFO("Performance Stats:");
-            auto* fmt = "\t%-10s: Draw: %.2f ms | Update: %.2f ms\n";
+            auto* fmt = "\t%-10s: Update: %.2f ms | Draw: %.2f ms\n";
             printf(fmt, "Avg Ticks", updateTick.getAvgMillis(), drawTick.getAvgMillis());
             fmt = "\t%-10s: Max: %.2f mb\n";
             printf(fmt, "Memory", maxMemoryBytes / 1'000'000.0F);

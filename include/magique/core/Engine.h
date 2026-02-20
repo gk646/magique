@@ -92,6 +92,7 @@ namespace magique
     // Failure: Returns entt::null if not set - assignment is fully MANUAL!
     void EngineSetPlayer(entt::entity entity);
     entt::entity EngineGetPlayer();
+    bool EngineHasPlayer();
 
     // Sets the engine font for performance-overlay and console
     void EngineSetFont(const Font& font);

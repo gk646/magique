@@ -31,7 +31,7 @@ struct TextButton final : Button
 
     TextButton(std::string text, float x, float y) : Button(x, y, 150, 150), text(std::move(text)) {}
 
-    void onDraw(const Rectangle& bounds) override
+    void onDraw(const Rect& bounds) override
     {
         drawDefault(bounds);
         DrawText(text.c_str(), bounds.x, bounds.y, 25, BLACK);

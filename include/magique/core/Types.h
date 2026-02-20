@@ -31,6 +31,10 @@ namespace magique
         // Initializes both value randomly within the given range
         static Point Random(float min, float max);
 
+        // Given two points in world space returns a direction vector that is perpendicular to the given direction
+        // Useful when you want to knock things out of your way
+        static Point PerpendicularTowardsPoint( Point startPoint,  Point direction,  Point target);
+
         // With other points
         bool operator==(const Point& p) const;
         bool operator!=(const Point& p) const;
@@ -62,12 +66,11 @@ namespace magique
         // Distance functions
         float manhattan(const Point& p) const;
         float euclidean(const Point& p) const;
-        float euclideanSqr(const Point& p) const;
+        float euclideanSqr(const Point& p) const; // euclidean without square root
         float chebyshev(const Point& p) const;
         float octile(const Point& p) const;
 
-        int intx() const;
-        int inty() const;
+        float sum() const;
 
         // How much vectors point in the same direction - positive if less than 90 degrees - negative if more
         float dot(const Point& p) const;
@@ -110,24 +113,20 @@ namespace magique
         // Assigns x to the max of "this.x" and "other.x"; same for y (separate check)
         void max(const Point& other);
         void min(const Point& other);
-
-        // Given two points in world space returns a direction vector that is perpendicular to the given direction
-        // Useful when you want to knock things out of your way
-        // Note:
-        static Point PerpendicularTowardsPoint(const Point& startPoint, const Point& direction, const Point& target);
     };
 
     struct Rect final
     {
         float x;
         float y;
-        float w;
-        float h;
+        float width;
+        float height;
 
         Rect() = default;
         Rect(const Rectangle& rect);
-        Rect(const Point& topLeft, const Point& size);
-        Rect(float x, float y, float w, float h);
+        Rect(const Point& pos, const Point& size);
+        Rect(float width, float height);
+        Rect(float x, float y, float width, float height);
         operator Rectangle() const;
 
         // Returns the rect the is spanned by the two points
@@ -140,8 +139,9 @@ namespace magique
         //      - fill [0-1] how much the rectangle is filled
         static Rect Filled(const Rect& area, float fill, Direction direction);
 
-        Rect& operator+=(const Point& p); // only x and y
-        Rect& operator=(const Point& p);  // only x and y
+        Rect& operator+=(const Point& p);     // only x and y
+        Rect operator+(const Point& p) const; // only x and y
+        Rect& operator=(const Point& p);      // only x and y
 
         bool operator==(float num) const; // checks all
 
@@ -149,6 +149,7 @@ namespace magique
         Rect& floor();
         Rect floor() const;
         Rect& round();
+        Rect round() const;
         Rect& zero();
 
         // Returns random point inside the rect
@@ -179,6 +180,7 @@ namespace magique
 
         // Enlarges the rect in x and y direction by size such that it stays centered on its current center
         Rect enlarge(float size) const;
+        Rect shrink(float size) const;
     };
 
     //================= CORE =================//

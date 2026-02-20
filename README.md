@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.9.3-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.9.9-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 `magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
@@ -85,8 +85,8 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
   using namespace magique; // Recommended and officially supported
   struct MyGame final : Game
   {
-      void updateGame(GameState gameState) override { printf("Hello World!\n"); }
-      void drawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
+      void onUpdateGame(GameState gameState) override { printf("Hello World!\n"); }
+      void onDrawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
   };
   
   int main()
@@ -234,3 +234,4 @@ This approach allows for any custom type inside C++, while keeping the configura
 - [raylib wiki](https://github.com/raysan5/raylib/wiki)
 - [raylib cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html) *(all methods)*
 - [entt wiki](https://github.com/skypjack/entt/wiki)
+- [glaze wiki](https://stephenberry.github.io/glaze/json/)

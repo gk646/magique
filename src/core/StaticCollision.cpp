@@ -49,7 +49,7 @@ namespace magique
             const Rect scaled = obj.bounds.scale(scale);
             const auto num = data.colliderStorage.insert(scaled);
             const auto staticID = StaticIDHelper::CreateID(num, obj.getTileClass());
-            grid.insert(staticID, scaled.x, scaled.y, scaled.w, scaled.h);
+            grid.insert(staticID, scaled.x, scaled.y, scaled.width, scaled.height);
             info.objectIds.push_back(num); // So we can uniquely delete later
         }
 
@@ -158,16 +158,16 @@ namespace magique
                         const auto& info = infoIt->second;
                         auto scaled = info.bounds.scale(data.tileSetScale);
                         scaled += Point{(float)j, (float)i} * tileSize;
-                        if (scaled.w == 0) // rect is 0 if not assigned - so adding to x and y is always valid
+                        if (scaled.width == 0) // rect is 0 if not assigned - so adding to x and y is always valid
                         {
-                            scaled.w = tileSize;
-                            scaled.h = tileSize;
+                            scaled.width = tileSize;
+                            scaled.height = tileSize;
                         }
                         const auto objectNum = data.colliderStorage.insert(scaled);
                         tileVec.push_back(objectNum);
                         const auto tileClass = infoIt->second.tileClass;
-                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), scaled.x, scaled.y, scaled.w,
-                                    scaled.h);
+                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), scaled.x, scaled.y, scaled.width,
+                                    scaled.height);
                     }
                 }
             }

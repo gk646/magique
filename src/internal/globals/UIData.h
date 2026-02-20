@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_UI_DATA_H
 #define MAGIQUE_UI_DATA_H
-
 #include <cmath>
 #include <algorithm>
 #include <raylib/raylib.h>
+#include <raylib/config.h>
 
 #include <magique/ui/UIObject.h>
 #include <magique/ui/UI.h>
 #include <magique/util/Datastructures.h>
+
+#include "external/raylib-compat/rcore_compat.h"
 
 namespace magique
 {
@@ -25,6 +27,7 @@ namespace magique
         bool mouseConsumed = false;
         bool customTargetRes = false;
         bool showHitboxes = false;
+        bool usingGamepad = false;
 
         void resetConsumed()
         {
@@ -95,6 +98,30 @@ namespace magique
             {
                 dragStart = {-1, -1};
             }
+
+            bool prevStat = usingGamepad;
+            if (usingGamepad)
+            {
+                usingGamepad = GetKeyPressedQueueCount() == 0 && Point{GetMouseDelta()} == 0;
+            }
+            else
+            {
+
+                usingGamepad = std::memcmp(GetCurrentGamepadState(), GetPreviousGamepadState(),
+                                           MAX_GAMEPADS * MAX_GAMEPAD_BUTTONS) != 0;
+            }
+
+            if (prevStat != usingGamepad)
+            {
+                if (usingGamepad)
+                {
+                    DisableCursor();
+                }
+                else
+                {
+                    EnableCursor();
+                }
+            }
         }
 
         // All objects are registered in their ctor
@@ -163,14 +190,14 @@ namespace magique
             case ScalingMode::FULL:
                 bounds.x *= sx;
                 bounds.y *= sy;
-                bounds.w *= sx;
-                bounds.h *= sy;
+                bounds.width *= sx;
+                bounds.height *= sy;
                 break;
             case ScalingMode::KEEP_RATIO:
                 bounds.x *= sx;
                 bounds.y *= sy;
-                bounds.w = bounds.w * sourceRes.x / sourceRes.y * sy;
-                bounds.h *= sy;
+                bounds.width = bounds.width * sourceRes.x / sourceRes.y * sy;
+                bounds.height *= sy;
                 break;
             case ScalingMode::ABSOLUTE:
                 break;
@@ -185,8 +212,8 @@ namespace magique
             // Floating points...
             bounds.x = std::floor(bounds.x + 0.01F);
             bounds.y = std::floor(bounds.y + 0.01F);
-            bounds.w = std::floor(bounds.w + 0.01F);
-            bounds.h = std::floor(bounds.h + 0.01F);
+            bounds.width = std::floor(bounds.width + 0.01F);
+            bounds.height = std::floor(bounds.height + 0.01F);
         }
     };
 

@@ -3,16 +3,16 @@
 #include <raylib/raylib.h>
 
 #include <magique/assets/types/TileSheet.h>
+#include <magique/assets/types/Asset.h>
+#include <magique/assets/AssetImport.h>
 #include <magique/core/Types.h>
 #include <magique/util/Logging.h>
-
-#include "assets/headers/AssetUtil.h"
 
 namespace magique
 {
     TileSheet::TileSheet(const Asset& asset, const int textureSize, const float scale)
     {
-        const auto img = LoadImage(asset);
+        const auto img = ImportImage(asset);
         const Point scaledDims = {(float)img.width * scale, (float)img.height * scale};
 
         Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};

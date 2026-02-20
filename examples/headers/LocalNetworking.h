@@ -120,24 +120,24 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        SetGameState({}); // Set empty gamestate - needs to be set in a real game
+        EngineSetState({}); // Set empty gamestate - needs to be set in a real game
         SetShowHitboxes(true);
         // Player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
-            GiveCamera(e);
+            ComponentGiveActor(e);
+            ComponentGiveCamera(e);
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
         EntityRegister(PLAYER, playerFunc);
 
         // Other players
         const auto netPlayerFunc = [](entt::entity e, EntityType type)
         {
-            GiveActor(e);
+            ComponentGiveActor(e);
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
         EntityRegister(NET_PLAYER, netPlayerFunc);
 
@@ -145,13 +145,13 @@ struct Example final : Game
         const auto objectFunc = [](entt::entity e, EntityType type)
         {
             GiveCollisionRect(e, 25, 25);
-            GiveComponent<TestCompC>(e);
+            ComponentGive<TestCompC>(e);
         };
         EntityRegister(OBJECT, objectFunc);
 
-        SetEntityScript(PLAYER, new PlayerScript());
-        SetEntityScript(NET_PLAYER, new NetPlayerScript());
-        SetEntityScript(OBJECT, new ObjectScript());
+        ScriptingSetScript(PLAYER, new PlayerScript());
+        ScriptingSetScript(NET_PLAYER, new NetPlayerScript());
+        ScriptingSetScript(OBJECT, new ObjectScript());
 
         // Create some entities
         EntityCreate(PLAYER, 0, 0, MapID(0));

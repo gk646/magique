@@ -6,7 +6,7 @@
 #include <magique/assets/AssetContainer.h>
 
 //===============================================
-// Asset Loader
+// AssetLoader
 //===============================================
 // ................................................................................
 // Allows to register tasks that operate on all assets loaded from disk

@@ -68,7 +68,7 @@ namespace magique
 
     const char* GameSystem::getName() const { return name.c_str(); }
 
-    void GameSystemRegister(GameSystem* system, const std::string& name, std::initializer_list<GameState> stats)
+    void GameSystemRegister(GameSystem* system, std::string_view name, std::initializer_list<GameState> stats)
     {
         if (stats.size() == 0)
         {
@@ -84,7 +84,7 @@ namespace magique
         SYSTEM_DATA.systems.emplace_back(system);
     }
 
-    void GameSystemPrintStats()
+    void GameSystemPrintStats(float cutoff)
     {
         if (!SYSTEM_DATA.benchmark)
         {
@@ -100,6 +100,10 @@ namespace magique
         for (auto& system : copy)
         {
             auto& func = system.functions;
+            if (system.getTotalMillis() < cutoff)
+            {
+                continue; // Too small
+            }
             printf("\t%-25s || %10.2f | %10.2f | %10.2f \n", system.system->getName(),
                    func[GameSystemData::Function::DrawGame].getAvgMillis(),
                    func[GameSystemData::Function::UpdateGame].getAvgMillis(),

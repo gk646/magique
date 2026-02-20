@@ -205,17 +205,17 @@ namespace magique
             shutdown.setFunction([](const ParamList& /**/) { global::ENGINE_DATA.gameInstance->shutDown(); });
             ConsoleRegisterCommand(shutdown);
 
-            Command showHitboxes{"mq.setHitboxesOverlay", "Turns entity hitboxes on/off"};
+            Command showHitboxes{"mq.showHitboxes", "Turns entity hitboxes on/off"};
             showHitboxes.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { EngineShowHitboxes(params.back().getBool()); });
             ConsoleRegisterCommand(showHitboxes);
 
-            Command showEntityGrid{"mq.setEntityOverlay", "Turns the debug entity overlay on/off"};
+            Command showEntityGrid{"mq.showEntityGrid", "Turns the debug entity overlay on/off"};
             showEntityGrid.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { EngineShowEntityOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(showEntityGrid);
 
-            Command showPathGrid{"mq.setPathfindingOverlay", "Turns the debug pathfinding overlay on/off"};
+            Command showPathGrid{"mq.showPathGrid", "Turns the debug pathfinding overlay on/off"};
             showPathGrid.addParam("value", {ParamType::BOOL})
                 .setFunction([](const ParamList& params) { EngineShowPathfindingOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(showPathGrid);
@@ -240,16 +240,21 @@ namespace magique
             version.setFunction([](const ParamList& params) { ConsoleAddString(MAGIQUE_VERSION); });
             ConsoleRegisterCommand(version);
 
+            Command tickrate{"mq.tickrate", "Prints the tickrate"};
+            tickrate.setFunction([](const ParamList& params) { ConsoleAddStringF("Tickrate: %d", MAGIQUE_LOGIC_TICKS); });
+            ConsoleRegisterCommand(tickrate);
+
             Command uptime{"mq.uptime", "Prints the current uptime"};
             uptime.setFunction([](const ParamList& params) { ConsoleAddStringF("Uptime: %.2f sec", EngineGetTime()); });
             ConsoleRegisterCommand(uptime);
 
-            Command perfOverlay{"mq.setPerfOverlay", "Open the performance overlay"};
+            Command perfOverlay{"mq.showFPS", "Open the performance overlay"};
             perfOverlay.addParam("value", {ParamType::BOOL});
-            perfOverlay.setFunction([](const ParamList& params) { EngineShowPerformanceOverlay(params.back().getBool()); });
+            perfOverlay.setFunction([](const ParamList& params)
+                                    { EngineShowPerformanceOverlay(params.back().getBool()); });
             ConsoleRegisterCommand(perfOverlay);
 
-            Command showUIHitbox{"mq.setUIHitboxOverlay", "Turns the hitboxes for UI elements on/off"};
+            Command showUIHitbox{"mq.showUIHitboxes", "Turns the hitboxes for UI elements on/off"};
             showUIHitbox.addParam("value", {ParamType::BOOL});
             showUIHitbox.setFunction([](const ParamList& params) { UIShowHitboxes(params.back().getBool()); });
             ConsoleRegisterCommand(showUIHitbox);
