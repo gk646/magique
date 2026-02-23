@@ -11,7 +11,7 @@ namespace magique
     {
     }
 
-    const std::string* TextLines::getRandomLine() const { return PickRandomElement(lines); }
+    const std::string* TextLines::getRandomLine() const { return MathPickRandom(lines); }
 
     const std::vector<std::string>& TextLines::getLines() const { return lines; }
 

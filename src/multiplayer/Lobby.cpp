@@ -92,9 +92,9 @@ namespace magique
 
 namespace magique
 {
-    void SetLobbyChatCallback(const LobbyChatCallback& callback) { (void)callback; }
+    void LobbySetChatCallback(const LobbyChatCallback& callback) { (void)callback; }
 
-    void SetLobbyMetadataCallback(const LobbyMetadataCallback& callback) { (void)callback; }
+    void LobbySetMetadataCallback(const LobbyMetadataCallback& callback) { (void)callback; }
 
     inline Lobby LOBBY{};
 
@@ -104,19 +104,20 @@ namespace magique
 
     bool Lobby::getStartSignal() const { return false; }
 
-    void Lobby::sendChatMessage(const char* message) { (void)message; }
+    void Lobby::sendChatMessage(std::string_view message) { (void)message; }
 
-    void Lobby::setMetadata(const char* key, const char* value)
+    void Lobby::setMetadata(std::string_view key, std::string_view value)
     {
         (void)key;
         (void)value;
     }
 
-    const std::string& Lobby::getMetadata(const char* key)
+    const std::string& Lobby::getMetadata(std::string_view key)
     {
         (void)key;
         static std::string empty;
         return empty;
     }
+
 } // namespace magique
 #endif

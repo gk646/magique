@@ -74,7 +74,7 @@ namespace magique
         // Default: 0
         EmitterBase& setEmissionRotation(float angle);
 
-        // Sets the anchor point around which the rotation occurs
+        // Sets the anchor point (relative to the emission pos) around which the rotation occurs
         // Default: (0,0)
         EmitterBase& setEmissionRotationAnchor(const Point& anchor);
 
@@ -87,7 +87,7 @@ namespace magique
         // Note: Default shape is Rect with dimensions (5,5)
 
         // Sets the emission shape to be a rect
-        EmitterBase& setParticleShapeRect(float width, float height);
+        EmitterBase& setParticleShapeRect(Point dims);
 
         // Sets the emission shape to be a circle
         EmitterBase& setParticleShapeCircle(float radius);

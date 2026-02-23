@@ -1,6 +1,8 @@
 #include <cstring>
 #include <raylib/raylib.h>
 #include <magique/ui/controls/ListMenu.h>
+
+#include "internal/globals/EngineConfig.h"
 #include "magique/ui/UI.h"
 #include <magique/util/RayUtils.h>
 #include <magique/core/Engine.h>
@@ -11,7 +13,7 @@ namespace magique
     {
     }
 
-    void ListMenu::onDraw(const magique::Rect& bounds)
+    void ListMenu::onDraw(const Rect& bounds)
     {
         Point pos = {bounds.x, bounds.y};
         for (int i = 0; i < (int)entries.size(); i++)
@@ -40,7 +42,7 @@ namespace magique
 
     bool ListMenu::empty() const { return entries.empty(); }
 
-    void ListMenu::add(const char* item, int index)
+    void ListMenu::add(std::string_view item, int index)
     {
         if (index < hovered)
         {
@@ -53,11 +55,11 @@ namespace magique
 
         if (index == -1)
         {
-            entries.emplace_back(item);
+            entries.emplace_back(std::string{item});
         }
         else
         {
-            entries.emplace(entries.begin() + index, item);
+            entries.emplace(entries.begin() + index, std::string{item});
         }
     }
 
@@ -116,24 +118,35 @@ namespace magique
 
     void ListMenu::setSelected(int index) { selected = index; }
 
+    void ListMenu::setSelected(std::string_view item)
+    {
+        for (int i = 0; i < (int)entries.size(); i++)
+        {
+            auto& entry = entries[i];
+            if (entry.text == item)
+            {
+                selected = i;
+                return;
+            }
+        }
+    }
+
     void ListMenu::setOnSelect(const SelectFunc& func) { selectFunc = func; }
 
     void ListMenu::setDrawEntryFunc(const DrawEntryFunc& func) { drawFunc = func; }
 
-    float ListMenu::drawDefaultEntry(const Point& pos, const char* txt, bool hovered, bool selected) const
+    float ListMenu::drawDefaultEntry(const Point& pos, const char* txt, bool isHovered, bool isSelected) const
     {
-        Color backGround = DARKGRAY;
-        const Color textColor = LIGHTGRAY;
-        if (hovered || selected)
-        {
-            backGround = GRAY;
-        }
+        const auto& theme = global::ENGINE_CONFIG.theme;
+        const Color backGround = theme.getBodyColor(isHovered, isSelected);
+        const Color outline = theme.getOutlineColor(isHovered, isSelected);
+        const Color textColor = theme.getTextColor(isSelected, isHovered);
         const auto& fnt = EngineGetFont();
-        const auto size = UIGetScaled(15);
+        const float fsize = UIGetScaled(fnt.baseSize);
         const auto bounds = getBounds();
-        DrawRectangleRec({pos.x, pos.y, bounds.width, size}, backGround);
-        DrawTextEx(fnt, txt, {pos.x + 2, pos.y + 1}, size, 1.0F, textColor);
-        return size + 2;
+        DrawRectFrameFilled({pos.x, pos.y, bounds.width, fsize + 2.0F}, backGround, outline);
+        DrawTextEx(fnt, txt, {pos.x + 2, pos.y + 1}, fsize, 1.0F, textColor);
+        return fsize + 2.0F;
     }
 
     void ListMenu::updateState()
@@ -158,11 +171,12 @@ namespace magique
                             selectFunc(entries[i].text);
                         }
                     }
+                    LayeredInput::ConsumeMouse();
                 }
             }
             pos.y += entry.height;
         }
-        setSize({bounds.width, pos.y - bounds.y});
+        setSize({bounds.width, std::max(pos.y - bounds.y, getStartBounds().height)});
     }
 
 } // namespace magique

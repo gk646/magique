@@ -50,7 +50,7 @@ namespace magique
         }
 
         // Default visuals
-        void drawDefault(const Rectangle& bounds) const;
+        void drawDefault(const Rect& bounds) const;
 
     public:
         std::string& getName();

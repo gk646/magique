@@ -45,7 +45,7 @@ namespace magique
         bool empty() const;
 
         // Inserts a new value at the specified position
-        void add(const char* item, int index = -1);
+        void add(std::string_view item, int index = -1);
 
         // Removes the value with the given name
         bool remove(const char* item);
@@ -58,19 +58,20 @@ namespace magique
 
         int getSelectedIndex() const;
         const char* getSelected() const;
-        // Use -1 to clear
+        // Use -1 to clear - does NOT call the callback
         void setSelected(int index = -1);
+        void setSelected(std::string_view item);
 
         // Allows to set a custom callback called everytime a (new) value is selected
         void setOnSelect(const SelectFunc& func);
 
-        // Sets a custom function to draw entries
+        // Sets a custom function to draw items
         // Default: Uses drawDefaultEntry
         void setDrawEntryFunc(const DrawEntryFunc& func);
 
     protected:
         // Draws a default representation of an entry
-        float drawDefaultEntry(const Point& pos, const char* txt, bool hovered, bool selected) const;
+        float drawDefaultEntry(const Point& pos, const char* txt, bool isHovered, bool isSelected) const;
 
         // Updates hovered and selected items and sets the height based on element count
         void updateState();
@@ -86,6 +87,7 @@ namespace magique
         std::vector<Entry> entries;
         int hovered = -1;
         int selected = -1;
+        friend struct Dropdown;
     };
 } // namespace magique
 

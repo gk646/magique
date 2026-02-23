@@ -297,7 +297,7 @@ namespace magique
     {
         if (withSign)
         {
-            if (num < cutoff && !IsWholeNumber(num))
+            if (num < cutoff && !MathIsWhole(num))
             {
                 return TextFormat("%+.1f", num);
             }
@@ -308,7 +308,7 @@ namespace magique
         }
         else
         {
-            if (num < cutoff && !IsWholeNumber(num))
+            if (num < cutoff && !MathIsWhole(num))
             {
                 return TextFormat("%.1f", num);
             }

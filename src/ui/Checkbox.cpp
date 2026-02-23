@@ -1,10 +1,8 @@
 #include <magique/ui/controls/Checkbox.h>
-
-#include "magique/core/Engine.h"
-#include "magique/core/Draw.h"
-#include "magique/ui/UI.h"
-#include "magique/util/RayUtils.h"
-#include "raylib/raylib.h"
+#include <magique/core/Engine.h>
+#include <magique/ui/UI.h>
+#include <magique/util/RayUtils.h>
+#include <magique/core/Draw.h>
 
 namespace magique
 {
@@ -13,7 +11,7 @@ namespace magique
     {
     }
 
-    void CheckBox::setOnClick(const SwitchFunc& clickFunc) { func = clickFunc; }
+    void CheckBox::setOnChange(const ChangeFunc& clickFunc) { func = clickFunc; }
 
     bool CheckBox::getState() const { return state; }
 
@@ -21,7 +19,13 @@ namespace magique
 
     const std::string& CheckBox::getInfoText() const { return infoText; }
 
-    void CheckBox::setInfoText(const std::string& text) { infoText = text; }
+    Direction CheckBox::getInfoDirection() const { return infoDir; }
+
+    void CheckBox::setInfoText(const std::string& text, Direction dir)
+    {
+        infoText = text;
+        infoDir = dir;
+    }
 
     void CheckBox::updateInputs()
     {
@@ -35,19 +39,36 @@ namespace magique
         }
     }
 
-    void CheckBox::drawDefault(const Rectangle& bounds) const
+    void CheckBox::drawDefault(const Rect& bounds) const
     {
-        Color base = getIsHovered() ? DARKGRAY : BLANK;
-        DrawRectFrameFilled(bounds, base, DARKGRAY);
-        Rect rect{bounds};
+        const auto theme = EngineGetTheme();
+        Color base = getIsHovered() ? theme.backHighlight : BLANK;
+        DrawRectFrameFilled(bounds, base, theme.backOutline);
         if (getState())
         {
             const auto len = std::min(bounds.width, bounds.height) / 2 * 0.7F;
-            DrawCircleV(rect.mid(), len, YELLOW);
+            DrawCircleV(bounds.mid(), len, theme.text);
         }
-        const auto size = UIGetScaled(15);
-        const auto pos = Point{bounds.x - 2, bounds.y + (bounds.height - size) / 2};
-        DrawTextRightBound(EngineGetFont(), infoText.c_str(), pos, size);
+
+        Point textPos = bounds.pos();
+        const auto fSize = EngineGetFont().baseSize * (int)UIGetScaled(1);
+        const auto dims = MeasureTextEx(EngineGetFont(), infoText.c_str(), fSize, 1.0F);
+        switch (infoDir)
+        {
+        case Direction::LEFT:
+            textPos -= Point{dims.x + 2, 0};
+            break;
+        case Direction::RIGHT:
+            textPos += Point{dims.x + bounds.width + 2, 0};
+            break;
+        case Direction::UP:
+            textPos -= Point{0, dims.y + 2};
+            break;
+        case Direction::DOWN:
+            textPos += Point{0, bounds.height + 2};
+            break;
+        }
+        DrawTextEx(EngineGetFont(), infoText.c_str(), textPos, fSize, 1.0F, theme.text);
     }
 
 } // namespace magique

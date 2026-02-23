@@ -49,11 +49,18 @@ namespace magique
         TextDrawer& gapH(float mult = 1.0F);
         TextDrawer& gapV(float mult = 1.0F);
 
+        // ===== MODS ======//
         // Temporary mod only for the next action
-        TextDrawer& mod(int fsm);
+
+        TextDrawer& sizeMult(int fsm);
+
         // Highlights numbers in a different color
-        TextDrawer& mod(Color numberHighlight);
-        TextDrawer& mod(Point offset);
+        TextDrawer& highlight(Color numberHighlight);
+        TextDrawer& offset(Point offset);
+
+        // shades the next drawn text the given color
+        TextDrawer& shade(Color shade);
+
 
         // Helpers
         float textWidth(const std::string_view& txt) const;
@@ -72,13 +79,14 @@ namespace magique
 
         Rect bounds;
         Point gapp;
-        Point off;
+        Point offf;
         Point cursor;         // Where next action happens
         float cursorEndX = 0; // offset from line end
 
         // Mods that can be set
         Color modHighlightColor = BLANK;
         Point modOffset{};
+        Color shadeColor{};
         int modSizeMult = 1;
         Font font;
     };

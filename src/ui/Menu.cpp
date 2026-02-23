@@ -1,4 +1,5 @@
 #include <magique/ui/Menu.h>
+#include <magique/util/Strings.h>
 
 #include "magique/ui/UI.h"
 #include "raylib/raylib.h"
@@ -7,7 +8,7 @@ namespace magique
 {
     Menu::Menu() : UIContainer(Rect{}) {}
 
-    void Menu::addSubMenu(Menu* menu, const char* name)
+    void Menu::addSubMenu(Menu* menu, std::string_view name)
     {
         if (menu != nullptr)
         {
@@ -16,15 +17,15 @@ namespace magique
         }
     }
 
-    bool Menu::removeSubMenu(const char* name) { return removeChild(name); }
+    bool Menu::removeSubMenu(std::string_view name) { return removeChild(name); }
 
-    bool Menu::switchToSubmenu(const char* name)
+    bool Menu::activateSubmenu(std::string_view name)
     {
         auto* child = (Menu*)getChild(name);
-        return switchToSubmenu(child);
+        return activateSubmenu(child);
     }
 
-    bool Menu::switchToSubmenu(Menu* menu)
+    bool Menu::activateSubmenu(Menu* menu)
     {
         if (menu == nullptr)
         {
@@ -43,22 +44,25 @@ namespace magique
         return false;
     }
 
-    void Menu::switchToSubmenu(const std::initializer_list<std::string>& menus)
+    void Menu::activateNested(std::string_view nestedMenu)
     {
+        auto parts = StringSplit(nestedMenu, ':');
         Menu* menu = this;
-        for (auto& child : menus)
+        for (auto& child : parts)
         {
-            if (!menu->switchToSubmenu(child.c_str()))
+            if (!menu->activateSubmenu(child))
             {
                 break;
-            }else
+            }
+            else
             {
-                menu = menu->getChild(child.c_str())->getAs<Menu>();
+                menu = menu->getChild(child)->getAs<Menu>();
             }
         }
     }
 
-    void Menu::switchToParent()
+
+    void Menu::activateParent()
     {
         if (parent != nullptr)
         {
@@ -66,7 +70,15 @@ namespace magique
             subMenu = nullptr;
             parent->subMenu = nullptr;
             parent->isActive = true;
+            inactivateChildren();
         }
+    }
+
+    void Menu::activate()
+    {
+        inactivateChildren();
+        isActive = true;
+        subMenu = nullptr;
     }
 
     bool Menu::getIsTopLevel() const { return parent == nullptr; }
@@ -87,13 +99,27 @@ namespace magique
         setSize(UIGetTargetResolution());
     }
 
-    void Menu::updateInputs()
+    void Menu::updateInputs(KeyboardKey key, GamepadButton button)
     {
-        if (LayeredInput::IsKeyPressed(KEY_ESCAPE))
+        if (LayeredInput::IsKeyPressed(key) || LayeredInput::IsGamepadButtonPressed(0, button))
         {
-            switchToParent();
+            if (onExitRequest())
+            {
+                activateParent();
+            }
             LayeredInput::ConsumeKey();
         }
     }
+
+    void Menu::inactivateChildren()
+    {
+        for (auto& [name, child] : getChildren())
+        {
+            child->getAs<Menu>()->subMenu = nullptr;
+            child->getAs<Menu>()->isActive = false;
+            child->getAs<Menu>()->inactivateChildren();
+        }
+    }
+
 
 } // namespace magique

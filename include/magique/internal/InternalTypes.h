@@ -97,17 +97,11 @@ namespace magique::internal
         ScaleFunction scaleFunc = nullptr;
         ColorFunction colorFunc = nullptr;
         void* tickFunc = nullptr;
-
-        //================= EMISSION SHAPE =================//
         mutable Point emissionPos{0, 0}; // RECT: width/height  / CIRCLE: radius
         Point emissionDims{1, 1};        // RECT: width/height  / CIRCLE: radius
-        Point anchor;
-
-        //================= PARTICLE =================//
-        float p1 = 5.0F; // RECT: width  / CIRCLE: radius  / CAPSULE: radius
-        float p2 = 5.0F; // RECT: height                   / CAPSULE: height
-
-        int colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{}; // Color pool
+        Point emissionAnchor;
+        Point particleDims;
+        Color colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{}; // Color pool
         float minScale = 1, maxScale = 1;              // Scale
         float minInitVeloc = 1, maxInitVeloc = 1;      // Initial velocity
         Point direction{};                             // Direction

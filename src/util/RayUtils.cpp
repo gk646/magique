@@ -68,15 +68,6 @@ namespace magique
         return MeasureTextUpTo(text, index, font, static_cast<float>(font.baseSize * mult), 1.0F);
     }
 
-    float GetRandomFloat(const float min, const float max)
-    {
-        constexpr float ACCURACY = 100'000.0F;
-        const int minI = static_cast<int>(min * ACCURACY);
-        const int maxI = static_cast<int>(max * ACCURACY);
-        const auto val = static_cast<float>(GetRandomValue(minI, maxI));
-        return val / ACCURACY;
-    }
-
     Vector2 GetCenteredPos(const Rectangle& within, const float width, const float height)
     {
         return Vector2{std::floor(within.x + ((within.width - width) / 2.0F)),
@@ -102,7 +93,7 @@ namespace magique
     {
         if (!IsWindowFullscreen())
         {
-            prevRes = {(float)GetScreenWidth(), (float)GetScreenHeight()};
+            prevRes = GetScreenDims();
             MaximizeWindow();
             const auto monitor = GetCurrentMonitor();
             SetWindowSize(GetMonitorWidth(monitor), GetMonitorHeight(monitor));
@@ -226,14 +217,14 @@ namespace magique
 
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(bounds.floor().enlarge(-2), fill);
+        DrawRectangleRec(bounds.shrink(2).floor(), fill);
         DrawRectFrame(bounds.floor(), outline);
     }
 
     void DrawTruePixelartScale(RenderTexture texture)
     {
         auto canvas = Point{(float)texture.texture.width, (float)texture.texture.height};
-        const auto display = Point{(float)GetScreenWidth(), (float)GetScreenHeight()};
+        const auto display = GetScreenDims();
         auto scale = display / canvas;
         if (scale <= 0)
         {
@@ -249,6 +240,8 @@ namespace magique
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, drawPos, scale.x, WHITE);
     }
+
+    Point GetScreenDims() { return {(float)GetScreenWidth(), (float)GetScreenHeight()}; }
 
     Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)
     {
@@ -313,7 +306,7 @@ namespace magique
     Point GetGamePadRightStick(int gamepad, float deadZone)
     {
         Point p{GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_X),
-               GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_Y)};
+                GetGamepadAxisMovement(gamepad, GAMEPAD_AXIS_RIGHT_Y)};
         if (p.abs().sum() < deadZone)
             return {};
         return p;

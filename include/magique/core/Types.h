@@ -33,7 +33,10 @@ namespace magique
 
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
-        static Point PerpendicularTowardsPoint( Point startPoint,  Point direction,  Point target);
+        static Point PerpendicularTowardsPoint(Point startPoint, Point direction, Point target);
+
+        // Returns the normalized direction vector of the given angle
+        static Point FromRotation(const Rotation& a);
 
         // With other points
         bool operator==(const Point& p) const;
@@ -70,6 +73,7 @@ namespace magique
         float chebyshev(const Point& p) const;
         float octile(const Point& p) const;
 
+        // Returns the sum of the values
         float sum() const;
 
         // How much vectors point in the same direction - positive if less than 90 degrees - negative if more
@@ -78,6 +82,15 @@ namespace magique
         // Returns the relative orientation of two vectors (and the area of the parallelogram they span)
         // Positive if second vector is to the left, negative if to the right (from the first)
         float cross(const Point& p) const;
+
+        // Returns the normalized direction vector from this to p
+        Point dir(const Point& p) const;
+
+        // Returns the angle from this point to p
+        Rotation angle(const Point& p) const;
+
+        // Returns the rotation of this point as direction vector
+        Rotation rotation() const;
 
         // Inverts the vectors direction
         Point& invert();
@@ -93,12 +106,13 @@ namespace magique
 
         // uses std::round() to round to the nearest whole number
         Point& round();
+        Point floor() const;
+
         // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
         Point& floor();
         // uses std::ceil()
         Point& ceil();
 
-        Point floor() const;
         Point abs() const;
 
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
@@ -125,6 +139,7 @@ namespace magique
         Rect() = default;
         Rect(const Rectangle& rect);
         Rect(const Point& pos, const Point& size);
+        Rect(const Point& size);
         Rect(float width, float height);
         Rect(float x, float y, float width, float height);
         operator Rectangle() const;
@@ -142,6 +157,8 @@ namespace magique
         Rect& operator+=(const Point& p);     // only x and y
         Rect operator+(const Point& p) const; // only x and y
         Rect& operator=(const Point& p);      // only x and y
+        Rect operator-(const Point& p) const; // only x and y
+        Rect& operator-=(const Point& p) ; // only x and y
 
         bool operator==(float num) const; // checks all
 
@@ -181,9 +198,60 @@ namespace magique
         // Enlarges the rect in x and y direction by size such that it stays centered on its current center
         Rect enlarge(float size) const;
         Rect shrink(float size) const;
+
+        // Returns the shortest possible distance to connect point p with rect r
+        float shortestDist(const Point& p) const;
+    };
+
+    // Represents a rotation angle - 0 degree is looking up, rotates clockwise
+    struct Rotation final
+    {
+        float rotation;
+
+        Rotation() = default;
+        Rotation(float angle);
+
+        operator float() const; // Automatically converted
+
+        Rotation& operator+=(const Rotation& other);
+        Rotation& operator-=(const Rotation& other);
+
+        // Returns the shortest difference between the two angles in degrees (always positive)
+        float diff(Rotation other) const;
+
+        // Returns the shortest distance one has to go from this angle to the other angle in degrees
+        // Note: Can return negative values
+        float distance(Rotation other) const;
+
+        // Changes this rotation to be the same as target (in the quickest way) but at maximum max degrees per call
+        // Note: This is a helper function - useful for rotating things at capped rate (Tank Turret, Vehicle, ...)
+        void modulate(Rotation target, float max = 4.0F);
     };
 
     //================= CORE =================//
+
+    // Used by magique - Good starting point for own projects to use these base colors
+    // Note: dark and light are relative, but they describe the purpose of the color here
+    struct Theme
+    {
+        Color backOutline;   // To outline elements : Very dark, visible against background
+        Color background;    // Standard background : Lighter then backOutline
+        Color backActive;    // To show activated state :  Lighter than background
+        Color backHighlight; // To gain attention : Lighter then backActive
+
+        Color textPassive;   // Secondary text : Lighter than backHighlight
+        Color text;          // Default text : Lighter than textPassive
+        Color textHighlight; // Highlighted text : Lighter than text
+
+        Color warning;
+        Color error;
+
+        // Colors for controls
+        Color getBodyColor(bool hovered, bool pressed) const;
+        Color getOutlineColor(bool hovered, bool pressed) const;
+
+        Color getTextColor(bool selected, bool hovered) const;
+    };
 
     //================= ASSETS =================//
 
@@ -283,7 +351,7 @@ namespace magique
         };
         friend TileInfo;
         friend TileObject;
-        friend TiledPropertyParser;
+        friend struct TiledPropertyParser;
     };
 
     // Objects defined inside the tile editor
@@ -548,6 +616,14 @@ namespace magique
     using PathFindHeuristicFunc = float (*)(const Point& curr, const Point& end);
     using PathFindMoveCostFunc = float (*)(const Point& dir);
 
+    enum class Language : uint8_t
+    {
+        English,
+        German,
+        Italian,
+        French,
+    };
+
     //================= MULTIPLAYER =================//
 
     enum class SendFlag : uint8_t
@@ -576,6 +652,8 @@ namespace magique
         HOST_CLIENT_DISCONNECTED,
         // Posted if a local problem terminated a client connection (usually because client leaves not gracefully)
         HOST_LOCAL_PROBLEM,
+        // Posted when accepting an incoming connection would bring the player count over MAGIQUE_MAX_PLAYERS
+        HOST_TOO_MANY_CONNECTIONS,
 
         //================= CLIENT =================//
         // Posted after the host accepted our connection
@@ -643,9 +721,9 @@ namespace magique
 
     enum class SteamLobbyType
     {
-        PRIVATE,
-        FRIENDS_ONLY,
-        PUBLIC,
+        Private,
+        FriendsOnly,
+        Public,
     };
 
     enum class SteamLobbyEvent
@@ -778,13 +856,14 @@ namespace magique
         Point emissionCenter;         // Center of the emission shape - for angular movement
         const ScreenEmitter* emitter; // Function pointers are shared across all instances
         float scale;                  // Current scale
-        Color color;                  // Current color
-        int16_t p1;                   // RECT: width  / CIRCLE: radius
-        int16_t p2;                   // RECT: height
-        uint16_t age;                 // Current age
-        uint16_t lifeTime;            // Lifetime
-        Shape shape;                  // Shape
-        bool angular = false;         // If gravity is angular or not
+        float emissionRotation;
+        Color color;          // Current color
+        int16_t p1;           // RECT: width  / CIRCLE: radius
+        int16_t p2;           // RECT: height
+        uint16_t age;         // Current age
+        uint16_t lifeTime;    // Lifetime
+        Shape shape;          // Shape
+        bool angular = false; // If gravity is angular or not
     };
 
     // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSaveData...)

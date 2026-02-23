@@ -169,14 +169,15 @@ namespace magique
         DrawTextEx(font, "|", {tPos.x + cursorOffX, tPos.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
-    void TextField::drawDefault(const Rectangle& bounds, float fontSize)
+    void TextField::drawDefault(const Rect& bounds, float fontSize)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        const Color body = getIsFocused() ? theme.backSelected : getIsHovered() ? theme.backLight : theme.backDark;
-        const Color outline = theme.backDark;
+
+        const Color body = theme.getBodyColor(getIsHovered(),getIsFocused());
+        const Color outline = theme.backOutline;
         DrawRectangleRounded(bounds, 0.1F, 20, body);
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-        drawText(fontSize, getIsFocused() ? theme.textActive : theme.textPassive, theme.textPassive);
+        drawText(fontSize, getIsFocused() ? theme.textHighlight : theme.text, theme.textPassive);
     }
 
     void TextField::setOnEnter(const EnterFunc& func) { enterFunc = func; }
@@ -472,7 +473,7 @@ namespace magique
         }
     }
 
-    Point TextField::getCenteredTextPos(const Rectangle& bounds, float fontSize) const
+    Point TextField::getCenteredTextPos(const Rect& bounds, float fontSize) const
     {
         const auto textHeight = (int)fontSize * lineCount + GetTextLineSpacing() * (lineCount - 1);
         return Point{bounds.x + 2, bounds.y + (bounds.height - (float)textHeight) / 2.0F}.floor();

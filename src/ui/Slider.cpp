@@ -32,18 +32,18 @@ namespace magique
     {
         if (mode == SliderMode::BALANCED)
         {
-            return Lerp(min, max, sliderPos);
+            return MathLerp(min, max, sliderPos);
         }
 
         if (mode == SliderMode::IMBALANCED)
         {
             if (sliderPos < 0.5)
             {
-                const auto newPos = LerpInverse(0.0F, 0.5F, sliderPos);
-                return Lerp(min, mid, newPos);
+                const auto newPos = MathLerpInverse(0.0F, 0.5F, sliderPos);
+                return MathLerp(min, mid, newPos);
             }
-            const auto newPos = LerpInverse(0.5F, 1.0F, sliderPos);
-            return Lerp(mid, max, newPos);
+            const auto newPos = MathLerpInverse(0.5F, 1.0F, sliderPos);
+            return MathLerp(mid, max, newPos);
         }
         return 0.0F;
     }
@@ -52,7 +52,7 @@ namespace magique
 
     void Slider::setSliderPercent(const float value) { sliderPos = value; }
 
-    void Slider::updateActions(const Rectangle& bounds)
+    void Slider::updateActions(const Rect& bounds)
     {
         if (getIsHovered())
         {
@@ -98,12 +98,12 @@ namespace magique
         }
     }
 
-    void Slider::drawDefault(const Rectangle& bounds) const
+    void Slider::drawDefault(const Rect& bounds) const
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
-        Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backLight;
+         Color body = theme.getBodyColor( isHovered, isHovered && mouseDown);
+         Color outline = theme.getOutlineColor( isHovered, isHovered && mouseDown);
         const auto bodyHeight = bounds.height / 4.0F;
 
         outline.a = 150;

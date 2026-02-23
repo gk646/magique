@@ -360,7 +360,7 @@ namespace magique
         {
             const float distance = std::sqrt(minDist);
             info.penDepth = cr - distance;
-            info.normalVector = GetDirFromPoints(*closest, mid);
+            info.normalVector = closest->dir(mid);
             info.collisionPoint = *closest;
         }
     }

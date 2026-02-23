@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.9
+        VERSION 0.9.10
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 
@@ -28,7 +28,7 @@ option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_PATH)" OFF)
 option(MAGIQUE_LAN "Enable local networking" OFF)
 option(MAGIQUE_SHARED "Build Magique as a shared library (experimental)" OFF)
 option(MAGIQUE_SANITIZER "Compile with address sanitizer" OFF)
-set(MAGIQUE_LOGIC_TICKS (60) CACHE STRING "Logic ticks per second")
+set(MAGIQUE_LOGIC_TICKS 60 CACHE STRING "Logic ticks per second")
 # 0 threads is supported - then all jobs will be executed on the main thread instantly
 # This is more efficient for the CPU and saves battery (preferred for mobile devices)
 set(MAGIQUE_WORKER_THREADS 2 CACHE STRING "Number of worker threads")
@@ -49,7 +49,6 @@ set(MAGIQUE_MAX_SUPPORTED_TIMERS 4 CACHE STRING "Maximum amount of timers suppor
 set(MAGIQUE_INCLUDE_FONT 1 CACHE BOOL "Include the default magique font: Cascadia Code")
 
 include(ParseOptions)      # Parses options and sets parameters
-
 
 # ----------------------------------------------------------------------
 # Collect and Organize Object Files

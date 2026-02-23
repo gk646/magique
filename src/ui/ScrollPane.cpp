@@ -8,7 +8,8 @@
 
 namespace magique
 {
-    ScrollPane::ScrollPane(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
+    ScrollPane::ScrollPane(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
+        UIObject(bounds, anchor, inset, mode)
     {
         setScrollerWidth(bounds.width * 0.05F);
     }
@@ -57,19 +58,20 @@ namespace magique
         EndScissorMode();
     }
 
-    void ScrollPane::drawDefault(const Rectangle& bounds)
+    void ScrollPane::drawDefault(const Rect& bounds)
     {
         auto& theme = global::ENGINE_CONFIG.theme;
-        DrawRectangleLinesEx(bounds, 1, theme.backDark);
+        DrawRectangleLinesEx(bounds, 1, theme.backOutline);
         Color color;
         {
             const auto scroller = getVerticalScrollBounds();
-            color = (CheckCollisionMouseRect(scroller) || vertical.isDragging) ? theme.backSelected : theme.backLight;
+            color = (CheckCollisionMouseRect(scroller) || vertical.isDragging) ? theme.backHighlight : theme.backActive;
             DrawRectangleRec(scroller, color);
         }
         {
             const auto scroller = getHorizontalScrollBounds();
-            color = (CheckCollisionMouseRect(scroller) || horizontal.isDragging) ? theme.backSelected : theme.backLight;
+            color =
+                (CheckCollisionMouseRect(scroller) || horizontal.isDragging) ? theme.backHighlight : theme.backActive;
             DrawRectangleRec(scroller, color);
         }
     }
@@ -143,7 +145,7 @@ namespace magique
 
         // The factor of the scroll size relative to the pane size
         // Gets smaller the bigger the difference
-        const auto sizeFactor = ExponentialDecay(contentSize, paneSize, 0.1F, 0.005F);
+        const auto sizeFactor = MathDecayExp(contentSize, paneSize, 0.1F, 0.005F);
         const float scrollerSize = std::floor(paneSize * sizeFactor);
 
         // How much we actually have to scroll - only what comes on top of the pane size

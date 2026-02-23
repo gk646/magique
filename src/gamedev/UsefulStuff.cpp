@@ -1,40 +1,56 @@
+#include <algorithm>
+
 #include <magique/gamedev/UsefulStuff.h>
 
 namespace magique
 {
-    Counter::Counter(uint32_t goal, uint32_t step) : goal(goal), step(step) {}
+    Counter::Counter(float goal, float step, float begin) : count(begin), goal(goal), begin(begin), step(step) {}
 
     bool Counter::tick()
     {
         update();
-        return isGoalReached();
-    }
-
-    void Counter::update() { count += step; }
-
-    bool Counter::isGoalReached()
-    {
-        if (count >= goal)
+        if (isGoalReached())
         {
-            count = 0;
+            reset();
             return true;
         }
         return false;
     }
 
-    void Counter::setStep(uint32_t newStep) { step = newStep; }
+    void Counter::update()
+    {
+        if (step > 0)
+        {
+            count = std::min(count + step, goal);
+        }
+        else
+        {
+            count = std::max(count + step, goal);
+        }
+    }
 
-    uint32_t Counter::getStep() const { return step; }
+    bool Counter::isGoalReached() const
+    {
+        return count == goal;
+    }
+
+    void Counter::setStep(float newStep) { step = newStep; }
+
+    float Counter::getStep() const { return step; }
+
+    void Counter::setBegin(float newBegin) { begin = newBegin; }
+
+    float Counter::getBegin() const { return begin; }
+
+    float Counter::getCount() const { return count; }
 
     void Counter::fill() { count = goal; }
 
-    void Counter::reset() { count = 0; }
+    void Counter::reset() { count = begin; }
 
     inline Shader COLOR_SWAP{};
 
-    ColorSwapShader::ColorSwapShader(const std::array<ColorPair, 4>& pairs)
-    {
-    }
+    ColorSwapShader::ColorSwapShader(const std::array<ColorPair, 4>& pairs) {}
 
     ColorSwapShader::~ColorSwapShader() {}
 

@@ -28,7 +28,7 @@ namespace magique
                 rectangles.push_back(sp);
                 break;
             case Shape::CIRCLE:
-                LOG_FATAL("Method not implemented");
+                circles.push_back(sp);
                 break;
             case Shape::TRIANGLE:
                 LOG_ERROR("Shape not supported");
@@ -58,8 +58,13 @@ namespace magique
                 rlVertex2f(p.pos.x + p.p1 * p.scale, p.pos.y + p.p2 * p.scale);
                 rlVertex2f(p.pos.x + p.p1 * p.scale, p.pos.y);
             }
-
             rlEnd();
+
+            for (const auto& p : circles)
+            {
+                DrawCircleSector(p.pos, p.p1, 0, 360, 9, p.color);
+            }
+
             rlSetTexture(0);
         }
 
@@ -97,7 +102,7 @@ namespace magique
                         else
                         {
                             p.pos += p.veloc;
-                            p.veloc+= emitter.gravity;// already changed from pixel/s into pixel/tick
+                            p.veloc += emitter.gravity; // already changed from pixel/s into pixel/tick
                         }
 
                         if (emitter.scaleFunc != nullptr)

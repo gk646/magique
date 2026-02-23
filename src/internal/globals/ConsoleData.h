@@ -100,7 +100,7 @@ namespace magique
                             switch (param.getType())
                             {
                             case ParamType::NUMBER:
-                                if (IsWholeNumber(param.getFloat()))
+                                if (MathIsWhole(param.getFloat()))
                                 {
                                     ConsoleAddStringF("%d", param.getInt());
                                 }
@@ -170,7 +170,7 @@ namespace magique
                             {
                                 const auto val = params.back().getFloat();
                                 ConsoleSetEnvParam(name, TextFormat("%f", val));
-                                if (IsWholeNumber(val))
+                                if (MathIsWhole(val))
                                     LOG_INFO("Set environmental param: %s to %d | %s", name, (int)val, typeStr);
                                 else
                                     LOG_INFO("Set environmental param: %s to %.3f | %s", name, val, typeStr);
@@ -241,7 +241,8 @@ namespace magique
             ConsoleRegisterCommand(version);
 
             Command tickrate{"mq.tickrate", "Prints the tickrate"};
-            tickrate.setFunction([](const ParamList& params) { ConsoleAddStringF("Tickrate: %d", MAGIQUE_LOGIC_TICKS); });
+            tickrate.setFunction([](const ParamList& params)
+                                 { ConsoleAddStringF("Tickrate: %d", MAGIQUE_LOGIC_TICKS); });
             ConsoleRegisterCommand(tickrate);
 
             Command uptime{"mq.uptime", "Prints the current uptime"};
@@ -321,10 +322,6 @@ namespace magique
             }
 
             auto params = ParamParser::ParseParams(*cmd, chunks);
-            if (params.empty())
-            {
-                return;
-            }
             if (!ParamParser::ValidateParams(*cmd, params))
             {
                 return;
@@ -437,30 +434,27 @@ namespace magique
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const auto& font = global::ENGINE_CONFIG.font;
-        const auto fsize = global::ENGINE_CONFIG.fontSize;
+        const auto fsize = font.baseSize * 2;
         const auto lineHeight = fsize * 1.3F;
         const auto inputOff = MeasureTextEx(font, "> ", fsize, SPACING).x;
 
-        const auto cWidth = static_cast<float>(GetScreenWidth());
-        const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
-        const Rectangle cRect = {0, 0, cWidth, cHeight};
-        const Rectangle inputBox = {0, cHeight - lineHeight, cWidth, lineHeight};
+        const Rect cRect = Rect{GetScreenDims() * Point{1, HEIGHT_P}};
+        const Rectangle inputBox = {0, cRect.height - lineHeight, cRect.width, lineHeight};
 
         // Draw shape
-        DrawRectangleRec(cRect, ColorAlpha(theme.backDark, 0.85F));
-        DrawRectangleLinesEx(cRect, 2.0F, ColorAlpha(theme.backDark, 0.85F));
-        DrawRectangleRec(inputBox, ColorAlpha(theme.backLight, 0.35F));
+        DrawRectFrameFilled(cRect, ColorAlpha(theme.background, 0.85F), ColorAlpha(theme.backOutline, 0.85F));
+        DrawRectFrameFilled(inputBox, ColorAlpha(theme.backActive, 0.35F), ColorAlpha(theme.backHighlight, 0.35F));
 
         // Draw input texty
-        Vector2 textPos = {5, cHeight - lineHeight};
+        Vector2 textPos = {5, cRect.height - lineHeight};
 
         DrawTextEx(font, "> ", textPos, fsize, SPACING, theme.textPassive);
-        DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.textActive);
+        DrawTextEx(font, data.line.c_str(), {textPos.x + inputOff, textPos.y}, fsize, SPACING, theme.textHighlight);
 
         float offset = MeasureTextUpTo(data.line.c_str(), data.cursorPos, font, fsize, SPACING) - fsize * 0.2F;
         if (data.showCursor)
         {
-            DrawTextEx(font, "|", {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.textPassive);
+            DrawTextEx(font, "|", {textPos.x + offset + inputOff + 2, textPos.y}, fsize, SPACING, theme.textPassive);
         }
 
         if (data.parsedCommand != nullptr)
@@ -470,7 +464,7 @@ namespace magique
             DrawTextEx(font, info, {textPos.x + offset + inputOff, textPos.y}, fsize, SPACING, theme.textPassive);
         }
 
-        BeginScissorMode(0, 0, (int)cWidth, (int)cHeight - (int)lineHeight);
+        BeginScissorMode(0, 0, (int)cRect.width, (int)cRect.height - (int)lineHeight);
         {
             // Draw console text
             textPos.y -= lineHeight - data.scrollOffset; // Start one line up for console strings
@@ -493,13 +487,13 @@ namespace magique
             };
             std::ranges::for_each(data.suggestions, measureFunc);
 
-            textPos = {textPos.x, cHeight - 2 * lineHeight}; // Reset text pos
+            textPos = {textPos.x, cRect.height - 2 * lineHeight}; // Reset text pos
             for (int i = 0; i < (int)data.suggestions.size(); i++)
             {
                 const Rectangle sBox = {textPos.x, textPos.y, maxWidth, lineHeight};
                 const auto isSelected = i == data.suggestionPos;
-                const Color& text = isSelected ? theme.textActive : theme.textPassive;
-                const Color& back = isSelected ? theme.backLight : theme.backDark;
+                const Color text =  isSelected ? theme.textHighlight : theme.text;
+                const Color back = isSelected ? theme.backHighlight : theme.backActive;
 
                 DrawRectangleRec(sBox, back);
                 DrawTextEx(font, getSuggestionText(*data.suggestions[i]), textPos, fsize, SPACING, text);

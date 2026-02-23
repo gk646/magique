@@ -32,6 +32,11 @@
 namespace magique
 {
 
+    struct LocalizedString final
+    {
+
+    };
+
     // Returns the localized string for the given keyword
     // Failure: if no language is set or doesn't exist or the keyword is not translated, the keyword itself is returned
     const char* Localize(const char* keyword);
@@ -61,4 +66,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_LOCALIZATION_H
+#endif // MAGIQUE_LOCALIZATION_H

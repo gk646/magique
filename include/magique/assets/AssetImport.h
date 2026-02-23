@@ -99,9 +99,9 @@ namespace magique
 
     //================= Other =================//
 
-    // Imports a font with the given basesize
+    // Imports a font with the given basesize and amount of characters
     // Note: Starts from character 32 onwards
-    Font ImportFont(const Asset& asset, int baseSize);
+    Font ImportFont(const Asset& asset, int baseSize, int characters = 0);
 
     // Imports a shader by loading the given assets as vertex and fragment shaders
     // Note: Either one can be empty - its allowed to load with only a fragment, only a vertex or both

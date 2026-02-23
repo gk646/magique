@@ -31,21 +31,27 @@ namespace magique
         Menu();
 
         // Note: Adds the menu as children to the UIContainer
-        void addSubMenu(Menu* menu, const char* name);
-        bool removeSubMenu(const char* name);
+        void addSubMenu(Menu* menu, std::string_view name);
+        bool removeSubMenu(std::string_view name);
 
         // Sets the given submenu active
-        bool switchToSubmenu(const char* name);
-        bool switchToSubmenu(Menu* menu);
-        // Iterates through the vector and tries to switch to the submenu at each level and repeat
+        bool activateSubmenu(std::string_view name);
+        bool activateSubmenu(Menu* menu);
+
+        // Splits the string at ":" and tries to call activateSubmenu for each entry with new submenu that is activated
         // Allows to switch into deeper menus from the top
-        void switchToSubmenu(const std::initializer_list<std::string>& menus);
+        // Note: switchToNested("Play:Lobby") - first switches to Play menu, then switches to Lobby inside the Play menu
+        void activateNested(std::string_view nestedMenu);
 
         // Gives control back to the parent
-        void switchToParent();
+        void activateParent();
+
+        // Sets this menu active - sets all children inactive
+        void activate();
 
         // Returns true if this menu is a top menu (no parents)
         bool getIsTopLevel() const;
+
         // Returns true if this menu is currently active
         bool getIsActive() const;
 
@@ -56,7 +62,7 @@ namespace magique
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
-            if (wasDrawn)
+            if (wasDrawn && getIsActive())
                 updateInputs();
         }
 
@@ -65,9 +71,15 @@ namespace magique
         // Updates the default inputs:
         //      - ESC: Switch to parent
         // Consumes mouse and key as nothing should come after it
-        void updateInputs();
+        void updateInputs(KeyboardKey key = KEY_ESCAPE, GamepadButton button = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
+
+
+        // Called when menu is active and exit button is pressed to switch to parent
+        // If returns false action will be blocked
+        virtual bool onExitRequest() { return true; }
 
     private:
+        void inactivateChildren();
         Menu* parent = nullptr;
         Menu* subMenu = nullptr;
         bool isActive = true;

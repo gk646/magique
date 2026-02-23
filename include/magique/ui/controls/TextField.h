@@ -59,7 +59,7 @@ namespace magique
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rectangle& bounds, float fontSize = 14);
+        void drawDefault(const Rect& bounds, float fontSize = 14);
 
     public:
         // Called everytime the textfield is focused and enter is pressed
@@ -96,7 +96,7 @@ namespace magique
         bool updateControls();
         void updateSelection(float fSize, const Font& font, float spacing);
         void updateLineState();
-        Point getCenteredTextPos(const Rectangle& bounds, float fontSize) const;
+        Point getCenteredTextPos(const Rect& bounds, float fontSize) const;
 
         // Returns if change occurred
         bool removeSelectionContent();

@@ -22,9 +22,9 @@ and tutorials.
 
 #### Made with magique
 
-|                           [Turtle's Journey](https://github.com/gk646/turtles_journey)                            |
-|:-----------------------------------------------------------------------------------------------------------------:|
-| <img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> |
+|                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> |
 
 I used `magique` in a 1-day game-jam to create the winning
 entry: [A turtle's journey](https://github.com/gk646/turtles_journey).

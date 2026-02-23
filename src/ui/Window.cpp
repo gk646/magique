@@ -19,21 +19,19 @@ namespace magique
         }
     }
 
-    void Window::drawDefault(const Rectangle& bounds) const
+    void Window::drawDefault(const Rect& bounds) const
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
 
         // Body
-        DrawRectangleRounded(bounds, 0.1F, 30, theme.backLight);
-        DrawRectangleRoundedLinesEx(bounds, 0.1F, 30, 2, theme.backDark);
-
+        DrawRectFrameFilled(bounds, theme.background, theme.backOutline);
         const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
 
         // Top bar
         const auto topBar = getTopBarBounds();
         const auto isHovered = CheckCollisionPointRec(GetMousePos(), topBar) || isDragged;
-        const Color body = isHovered && mouseDown ? theme.backSelected : isHovered ? theme.backLight : theme.backDark;
-        const Color outline = isHovered && mouseDown ? theme.backLight : isHovered ? theme.backDark : theme.backDark;
+        Color body = theme.getBodyColor(isHovered, isHovered && mouseDown);
+        Color outline = theme.getOutlineColor(isHovered, isHovered && mouseDown);
         DrawRectangleRounded(topBar, 0.2F, 30, body);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }

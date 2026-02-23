@@ -75,7 +75,8 @@ namespace magique
     // Note: The returned vector is only valid until this method is called again (single instance)
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter = {});
+    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius,
+                                                       const FilterFunc& filter = {});
     const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = {});
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
@@ -97,6 +98,9 @@ namespace magique
     // Sets the engine font for performance-overlay and console
     void EngineSetFont(const Font& font);
     const Font& EngineGetFont();
+
+    void EngineSetTheme(const Theme& theme);
+    Theme EngineGetTheme();
 
     // Returns the seconds since startup - updated at the start of each tick
     float EngineGetTime();

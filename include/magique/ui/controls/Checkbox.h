@@ -16,7 +16,7 @@ namespace magique
 {
 
     // Called with the new state after a change
-    using SwitchFunc = std::function<void(bool state)>;
+    using ChangeFunc = std::function<void(bool state)>;
 
     struct CheckBox : UIObject
     {
@@ -31,25 +31,27 @@ namespace magique
         }
 
         // Sets the function called when the state changes
-        void setOnClick(const SwitchFunc& func);
+        void setOnChange(const ChangeFunc& func);
 
         // Returns the current state of the checkbox
         bool getState() const;
         void setState(bool state);
 
         const std::string& getInfoText() const;
-        void setInfoText(const std::string& text);
+         Direction getInfoDirection() const;
+        void setInfoText(const std::string& text, Direction dir = Direction::RIGHT);
 
     protected:
         // Updates the click state
         void updateInputs();
 
         // Draws a default representation
-        void drawDefault(const Rectangle& bounds) const;
+        void drawDefault(const Rect& bounds) const;
 
     private:
-        SwitchFunc func;
+        ChangeFunc func;
         std::string infoText;
+        Direction infoDir = Direction::RIGHT;
         bool state = false;
     };
 

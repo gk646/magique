@@ -53,10 +53,10 @@ namespace magique
 
         // Updates the action state and calls onHover() and onClick() if necessary
         // Note: You can conditionally NOT call this based on LayeredInput.isConsumed() to respect layers
-        void updateActions(const Rectangle& bounds);
+        void updateActions(const Rect& bounds);
 
         // Draws a default graphical representation of this button
-        void drawDefault(const Rectangle& bounds) const;
+        void drawDefault(const Rect& bounds) const;
 
     private:
         Point getKnobPosition() const;

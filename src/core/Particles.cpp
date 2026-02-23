@@ -29,14 +29,15 @@ namespace magique
         {
             ScreenParticle particle;
             particle.emitter = &emitter;
+            particle.emissionRotation = emitter.data.rotation;
 
             // x,y
             switch (data.emShape) //  No triangle emission shape
             {
             case Shape::RECT:
                 {
-                    const auto ran1 = GetRandomFloat(0.0F, 1.0F);
-                    const auto ran2 = GetRandomFloat(0.0F, 1.0F);
+                    const auto ran1 = MathRandom(0.0F, 1.0F);
+                    const auto ran2 = MathRandom(0.0F, 1.0F);
                     if (data.volume == 1.0F)
                     {
                         particle.pos = {ran1 * data.emissionDims.x, ran2 * data.emissionDims.y};
@@ -71,24 +72,29 @@ namespace magique
                         }
                     }
                     particle.pos += pos;
-                    particle.emissionCenter = {pos.x + data.emissionDims.x / 2, pos.y + data.emissionDims.y / 2};
+                    particle.emissionCenter = pos + data.emissionDims / 2;
                     if (data.rotation != 0)
                     {
-                        RotatePoints(data.rotation, data.anchor + pos, particle.pos, particle.pos, particle.pos,
-                                     particle.pos);
+                        RotatePoint(data.rotation, pos + data.emissionAnchor, particle.pos);
+                        RotatePoint(data.rotation, pos + data.emissionAnchor, particle.emissionCenter);
                     }
                 }
                 break;
             case Shape::CIRCLE:
                 {
-                    const float angle = GetRandomFloat(0, 360) * (PI / 180.0f);
-                    const float dist = data.emissionDims.x - data.emissionDims.x * data.volume * GetRandomFloat(0, 1.0F);
+                    const float angle = MathRandom(0, 360) * (PI / 180.0f);
+                    const float dist = data.emissionDims.x - data.emissionDims.x * data.volume * MathRandom(0, 1.0F);
                     particle.pos = {pos.x + dist * std::cos(angle), pos.y + dist * std::sin(angle)};
                     particle.emissionCenter = pos;
                 }
                 break;
             case Shape::TRIANGLE: // Acts as point type
                 particle.pos = pos;
+                if (data.rotation != 0)
+                {
+                    RotatePoint(data.rotation, pos + data.emissionAnchor, particle.pos);
+                    RotatePoint(data.rotation, pos + data.emissionAnchor, particle.emissionCenter);
+                }
                 break;
             }
             // Higher quality randomness should be worth it - and the random is pretty fast
@@ -98,19 +104,19 @@ namespace magique
             particle.scale = data.minScale;
             if (data.minScale != data.maxScale)
             {
-                const float p = GetRandomFloat(0, 1.0F);
+                const float p = MathRandom(0, 1.0F);
                 particle.scale = data.minScale + (data.maxScale - data.minScale) * p;
             }
 
             // p1,p2,p3,p4
-            particle.p1 = static_cast<int16_t>(std::round(data.p1));
-            particle.p2 = static_cast<int16_t>(std::round(data.p2));
+            particle.p1 = static_cast<int16_t>(std::round(data.particleDims.x));
+            particle.p2 = static_cast<int16_t>(std::round(data.particleDims.y));
 
             // Lifetime
             particle.lifeTime = data.minLife;
             if (data.minLife != data.maxLife)
             {
-                const float p = GetRandomFloat(0, 1.0F);
+                const float p = MathRandom(0, 1.0F);
                 particle.lifeTime = static_cast<uint16_t>((float)(data.minLife + (data.maxLife - data.minLife)) * p);
             }
 
@@ -118,16 +124,15 @@ namespace magique
             Point direction = data.direction;
             if (data.spreadAngle > 0)
             {
-                float angleOff = GetRandomFloat(-0.5F, 0.5F) * data.spreadAngle;
-                float newAngle = GetAngleFromPoints({}, direction) + angleOff;
-                direction = GetDirFromAngle(newAngle);
+                float angleOff = MathRandom(-0.5F, 0.5F) * data.spreadAngle;
+                direction = Point::FromRotation(direction.rotation() + angleOff);
             }
 
             // vx,vy - velocity
             float velo = data.minInitVeloc;
             if (data.minInitVeloc != data.maxInitVeloc)
             {
-                const float p = GetRandomFloat(0.0F, 1.0F);
+                const float p = MathRandom(0.0F, 1.0F);
                 velo = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
             }
             particle.veloc = direction * velo;
@@ -136,7 +141,7 @@ namespace magique
             if (data.poolSize > 0) // Use pool
             {
                 const int p = GetRandomValue(0, data.poolSize - 1);
-                const auto color = GetColor(data.colors[p]);
+                const auto color = data.colors[p];
                 particle.color = color;
             }
             else
@@ -157,8 +162,6 @@ namespace magique
             global::PARTICLE_DATA.addParticle(particle);
         }
     }
-
-    entt::entity CreateEntityParticle(const EntityEmitter& emitter, const int amount) { return entt::null; }
 
     //----------------- EMITTER -----------------//
 
@@ -199,7 +202,7 @@ namespace magique
 
     EmitterBase& EmitterBase::setEmissionRotationAnchor(const Point& anchor)
     {
-        data.anchor = anchor;
+        data.emissionAnchor = anchor.floor();
         return *this;
     }
 
@@ -216,18 +219,17 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setParticleShapeRect(const float width, const float height)
+    EmitterBase& EmitterBase::setParticleShapeRect(Point dims)
     {
         data.shape = Shape::RECT;
-        data.p1 = width;
-        data.p2 = height;
+        data.particleDims = dims;
         return *this;
     }
 
     EmitterBase& EmitterBase::setParticleShapeCircle(const float radius)
     {
         data.shape = Shape::CIRCLE;
-        data.p1 = radius;
+        data.particleDims = radius;
         return *this;
     }
 
@@ -256,7 +258,7 @@ namespace magique
         {
             if (i >= 5)
                 break;
-            data.colors[i] = ColorToInt(c);
+            data.colors[i] = c;
             ++i;
         }
         data.poolSize = static_cast<uint8_t>(colors.size());

@@ -13,6 +13,44 @@
 
 namespace magique
 {
+    bool NetworkCloseSocket(const int closeCode, std::string_view reason)
+    {
+        auto& data = global::MP_DATA;
+        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
+        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
+        {
+            return false;
+        }
+        for (const auto conn : data.connections)
+        {
+            const auto steamConn = static_cast<HSteamNetConnection>(conn);
+            if (!SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, reason.data(), true))
+            {
+                LOG_ERROR("Failed to close existing connections when closing the global socket");
+            }
+            SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, reason.data(), true);
+        }
+        const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
+        data.goOffline();
+        return res;
+    }
+
+    bool NetworkCloseConnection(Connection conn, int code, std::string_view reason)
+    {
+        auto& data = global::MP_DATA;
+        if (!data.inSession || conn == Connection::INVALID)
+        {
+            return false;
+        }
+        const auto steamConn = static_cast<HSteamNetConnection>(conn);
+        const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, code, reason.data(), true);
+        if (data.connections.empty())
+        {
+            data.goOffline();
+        }
+        return res;
+    }
+
     bool NetworkSend(Connection conn, Payload payload, SendFlag flag)
     {
         MAGIQUE_ASSERT(static_cast<int>(conn) != k_HSteamNetConnection_Invalid, "Invalid connection");
@@ -138,6 +176,8 @@ namespace magique
     bool NetworkIsHost() { return global::MP_DATA.inSession && global::MP_DATA.isHost; }
 
     bool NetworkIsClient() { return global::MP_DATA.inSession && !global::MP_DATA.isHost; }
+
+    bool NetworkIsLocalPlayer() { return !NetworkInSession() || NetworkIsHost(); }
 
     void NetworkSetConnMapping(const Connection conn, const entt::entity entity)
     {

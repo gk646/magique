@@ -65,7 +65,7 @@ namespace magique
         void drawContent() const;
 
         // Draws a default representation of scrollers
-        void drawDefault(const Rectangle& bounds);
+        void drawDefault(const Rect& bounds);
 
         // Updates the dragging for the mouse input and aligns the content
         void updateInputs();

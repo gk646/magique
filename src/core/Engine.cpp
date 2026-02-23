@@ -55,6 +55,10 @@ namespace magique
 
     const Font& EngineGetFont() { return global::ENGINE_CONFIG.font; }
 
+    void EngineSetTheme(const Theme& theme) { global::ENGINE_CONFIG.theme = theme; }
+
+    Theme EngineGetTheme() { return global::ENGINE_CONFIG.theme; }
+
     float EngineGetTime() { return global::ENGINE_DATA.engineTime; }
 
     uint32_t EngineGetTick() { return global::ENGINE_DATA.engineTicks; }

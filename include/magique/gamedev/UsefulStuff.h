@@ -2,7 +2,6 @@
 #define MAGEQUEST_USEFULSTUFF_H
 
 #include <array>
-#include <cstdint>
 #include <raylib/raylib.h>
 
 //===============================================
@@ -18,31 +17,39 @@ namespace magique
     // A simple counter struct to clean up counter code
     struct Counter final
     {
-        Counter(uint32_t goal, uint32_t step = 1);
+        Counter(float goal, float step = 1, float begin = 0);
 
-        // update() + isGoalReached()
+        // Update the count -  returns true if the goal is reached AND resets back to 0 ELSE return false
+        // update() + isGoalReached() + reset()
         bool tick();
 
         // Increases the counter by "step"
         void update();
 
-        // Returns true if goal is reached - resets count to 0 if true
-        bool isGoalReached();
+        // Returns true if goal is reached
+        bool isGoalReached() const;
 
-        void setStep(uint32_t newStep);
-        uint32_t getStep() const;
+        void setStep(float newStep);
+        float getStep() const;
+
+        void setBegin(float newBegin);
+        float getBegin() const;
+
+        float getCount() const;
 
         // Sets count to goal such that tick() returns true on next call
         void fill();
 
-        // Sets count to 0
+        // Sets count to begin
         void reset();
 
     private:
-        uint32_t count = 0;
-        uint32_t goal;
-        uint32_t step;
+        float count = 0;
+        float goal;
+        float begin;
+        float step;
     };
+
 
     // A shader that swaps a given color to a target color - the color must match exactly
     // Useful for reskinning textures

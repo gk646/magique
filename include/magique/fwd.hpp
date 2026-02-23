@@ -11,7 +11,6 @@
 enum class GameState : uint8_t;   // Identifies different game states
 enum class EntityType : uint16_t; // Identifies entity types       - uses uint16_t to be small for networking
 enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
-enum class HandleID : int;        // Identifies handles
 enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
@@ -27,23 +26,18 @@ namespace magique
     struct ScreenEmitter;    // Particle emitter for screen (simple) particles
     struct EntityEmitter;    // Particle emitter for entity (complex) particles
     struct EntityAnimation;  // Shared animation data for a specific entity
-    enum class LightingMode; // Raytracing, Static Shadows, None
     struct EmitterData;      // Data for particle emitters
     struct Point;            // Floating point point
     struct TileInfo;
+    struct Rotation;
     struct GameSystem;
     enum class Direction : uint8_t;
 
     //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
-
     struct SaveLoader; // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSaver;  // Handles saving the session and resetting the state  - Game -> MainMenu
     struct GameSave;   // The game save object
-
-    struct ConfigLoader; // Handles loading the config
-    struct ConfigSaver;  // Handles saving the config
     struct GameConfig;   // The config persistence object
 
     struct IExecutor; // Task loading interface
@@ -65,7 +59,6 @@ namespace magique
     struct Asset;                 // Memory container for any asset
     struct TextureRegion;         // All textures are stitched into an atlas, you can only retrieve their region
     struct SpriteSheet;           // Identifies a sprite sheet
-    enum class handle : uint32_t; // Resource handle
     struct TileMap;               // Defines which textures to draw at each tile with a number
     struct TileSet;               // Defines the details for all tiles in a project - collision ...
     struct TileSheet;             // Stores the textures (id's) for all tiles in a project
@@ -76,10 +69,6 @@ namespace magique
     using TileClassMapFunc = TileClass (*)(const char*);
 
     //================= GAMEDEV =================//
-    template <typename CustomData = int>
-    struct BehaviorTree;
-    template <typename CustomData = int>
-    struct TreeBuilder;
     struct ShareCodeFormat;
     struct ShareCodeData;
     struct ShareCode;
@@ -104,15 +93,11 @@ namespace magique
     struct UIContainer;
     struct UIData; // Internal
     struct LoadingScreen;
-    enum class AnchorPosition : int;
-    enum class UILayer : uint8_t;
-    struct UIScene;
     struct Window;
     struct WindowManager;
-    struct WindowButton;
     struct SceneManager;
     struct Menu;
-    struct MenuManager;
+    struct Popup;
 
     //================= UTIL =================//
     enum LogLevel : int;
@@ -123,7 +108,6 @@ namespace magique
     //================= INTERNAL =================//
     struct AudioPlayer;
     struct TweenData;
-    struct TiledPropertyParser;
 
 } // namespace magique
 

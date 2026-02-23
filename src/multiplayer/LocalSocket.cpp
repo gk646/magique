@@ -22,6 +22,7 @@ namespace magique
 {
     bool LocalSocketInit()
     {
+        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
 #ifndef MAGIQUE_STEAM
         SteamDatagramErrMsg errMsg;
         if (!GameNetworkingSockets_Init(nullptr, errMsg) ||
@@ -43,7 +44,6 @@ namespace magique
         }
         SteamNetworkingSockets()->InitAuthentication();
         SteamNetworkingUtils()->InitRelayNetworkAccess();
-        SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
         global::MP_DATA.isInitialized = true;
         return true;
 #endif
@@ -68,24 +68,6 @@ namespace magique
         LOG_INFO("Created listen socket on port %d", port);
         data.goOnline(true);
         return data.listenSocket != k_HSteamListenSocket_Invalid;
-    }
-
-    bool LocalSocketClose(const int closeCode, const char* closeReason)
-    {
-        auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
-        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
-        {
-            return false;
-        }
-        for (const auto conn : data.connections)
-        {
-            const auto steamConn = static_cast<HSteamNetConnection>(conn);
-            SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
-        }
-        const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
-        data.goOffline();
-        return res;
     }
 
     Connection LocalSocketConnect(const char* ip, const uint16_t port)
@@ -113,22 +95,6 @@ namespace magique
         }
         data.goOnline(false, static_cast<Connection>(conn));
         return data.connections[0];
-    }
-
-    bool LocalSocketDisconnect(const int closeCode, const char* closeReason)
-    {
-        auto& data = global::MP_DATA;
-        MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
-
-        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID)
-        {
-            return false;
-        }
-
-        const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);
-        const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
-        data.goOffline();
-        return res;
     }
 
     static std::string IP_ADDR{};

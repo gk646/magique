@@ -12,6 +12,7 @@
 // .....................................................................
 // This module allows for advanced and useful string operations in the context of games.
 // Check raylib for some more fundamental text options like number parsing etc.
+// Note: Formatting uses TextFormat() from raylib
 // .....................................................................
 
 namespace magique

@@ -22,9 +22,6 @@ namespace magique
     // Measure text functions for pixel fonts - mult is the multiple of the base font size
     float MeasurePixelText(const char* text, const Font& font, int mult = 1);
 
-    // Returns a random float using raylib's GetRandomValue() - min and max included
-    float GetRandomFloat(float min, float max);
-
     // Returns the top left point to center a rectangle (width and height) within the rectangle 'within'
     Vector2 GetCenteredPos(const Rectangle& within, float width, float height);
 
@@ -79,6 +76,8 @@ namespace magique
     // Scales only with multiples and in a way such that both x and y dimension must fit within the screen
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
+
+    Point GetScreenDims();
 
     struct MouseDragger final
     {

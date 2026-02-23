@@ -51,6 +51,12 @@ namespace magique::internal
         }                                                                                                               \
     }
 
+#define MQ_EVENT_EMIT_CASE_NO_DATA(name)                                                                                \
+    template <>                                                                                                         \
+    inline void EventManager::emit<GameEvent::name>(entt::entity entity)                                                \
+    {                                                                                                                   \
+        emit<GameEvent::name, E##name##Data>(entity, E##name##Data{});                                                  \
+    }
 
 #define MQ_REGISTER_GAME_EVENTS(...)                                                                                    \
     enum class GameEvent : uint8_t                                                                                      \
@@ -66,7 +72,8 @@ namespace magique::internal
             virtual bool shouldBeCalled() { return true; }                                                              \
             FOR_EACH(MQ_EVENT_FUNC_DECLARE, __VA_ARGS__);                                                               \
         };                                                                                                              \
-        FOR_EACH(MQ_EVENT_EMIT_CASE, __VA_ARGS__)                                                                       \
+        FOR_EACH(MQ_EVENT_EMIT_CASE, __VA_ARGS__);                                                                      \
+        FOR_EACH(MQ_EVENT_EMIT_CASE_NO_DATA, __VA_ARGS__);                                                              \
     }
 
 //================= SCRIPTING =================//
@@ -113,7 +120,7 @@ namespace magique::internal
 //================= ASSET LOADING =================//
 
 #define ASSET_CHECK(asset)                                                                                              \
-    if (!asset.isValid())                                                                                         \
+    if (!asset.isValid())                                                                                               \
         return {};
 
 #define ASSET_IS_SUPPORTED_IMAGE_TYPE(asset)                                                                            \

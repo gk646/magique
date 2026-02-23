@@ -1,6 +1,7 @@
 #ifndef NODO_DATASTRUCTURES_H
 #define NODO_DATASTRUCTURES_H
 
+#include <span>
 #include <ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
@@ -15,13 +16,14 @@
 namespace magique
 {
 
-    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
+    // Serialized as an array of objects with "key" and "value" values [ {"key" : {} , "value" : {}}, ...] in json
     template <typename K, typename V>
     using HashMap = ankerl::unordered_dense::map<K, V>;
 
     template <typename K, typename V, typename Hash, typename Equals>
     using HashMapEx = ankerl::unordered_dense::map<K, V, Hash, Equals>;
 
+    // Serialized as an array of objects [ {}, {}, ... ]
     template <typename K>
     using HashSet = ankerl::unordered_dense::set<K>;
 
@@ -445,7 +447,7 @@ namespace magique
 
         EnumArray() { initKeys(); };
 
-        constexpr EnumArray(const std::initializer_list<ValueHolder>& init) : EnumArray()
+        constexpr EnumArray(const std::span<const ValueHolder>& init) : EnumArray()
         {
             for (const auto& value : init)
             {
@@ -455,10 +457,11 @@ namespace magique
                     LOG_ERROR("Invalid key");
                     continue;
                 }
-                data[keyInt] = ValueHolder{value.key, value.value};
+                data[keyInt] = ValueHolder{(Key)keyInt, value.value};
             }
-            initKeys();
         }
+
+        constexpr EnumArray(std::initializer_list<ValueHolder> init) : EnumArray(std::span{init.begin(), init.end()}) {}
 
         const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].value; }
         Value& operator[](Key key) { return data[static_cast<size_t>(key)].value; }

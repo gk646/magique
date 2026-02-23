@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
-#include "magique/core/Types.h"
-
 #include <cstdio>
-#include <utility>
 #include <cstring>
 #include <string_view>
 #include <charconv>
@@ -11,11 +8,11 @@
 
 #include <raylib/raylib.h>
 
+#include <magique/core/Types.h>
 #include <magique/util/Logging.h>
+#include <magique/ui/UI.h>
 
 #include "internal/utils/CollisionPrimitives.h"
-#include "magique/ui/UI.h"
-#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -23,7 +20,7 @@ namespace magique
 
     Point::operator Vector2() const { return Vector2{x, y}; }
 
-    Point Point::Random(float min, float max) { return {GetRandomFloat(min, max), GetRandomFloat(min, max)}; }
+    Point Point::Random(float min, float max) { return {MathRandom(min, max), MathRandom(min, max)}; }
 
     Point Point::PerpendicularTowardsPoint(Point startPoint, Point direction, Point target)
     {
@@ -37,6 +34,12 @@ namespace magique
         {
             return direction.perpendicular(false);
         }
+    }
+
+    Point Point::FromRotation(const Rotation& a)
+    {
+        const float radians = (a.rotation + 180) * DEG2RAD;
+        return {-sinf(radians), cosf(radians)};
     }
 
     bool Point::operator==(const Point& other) const { return x == other.x && y == other.y; }
@@ -162,6 +165,34 @@ namespace magique
 
     float Point::cross(const Point& p) const { return (x * p.x) - (y * p.y); }
 
+    Point Point::dir(const Point& p) const
+    {
+        auto diff = p - *this;
+        return diff.normalize();
+    }
+
+    Rotation Point::angle(const Point& p) const
+    {
+        auto diff = p - *this;
+        if (diff == 0)
+        {
+            return {0.0F};
+        }
+        return diff.rotation();
+    }
+
+    Rotation Point::rotation() const
+    {
+        const float angle = std::atan2f(y, x);
+        const float angleDegrees = angle * RAD2DEG;
+        float gameAngleDegrees = 90.0F + angleDegrees;
+        if (gameAngleDegrees < 0)
+        {
+            gameAngleDegrees += 360.0F;
+        }
+        return gameAngleDegrees;
+    }
+
     Point& Point::invert()
     {
         x = -x;
@@ -207,6 +238,12 @@ namespace magique
         return *this;
     }
 
+    Point Point::floor() const
+    {
+        Point p = *this;
+        return p.floor();
+    }
+
     Point& Point::floor()
     {
         x = std::floor(x);
@@ -219,12 +256,6 @@ namespace magique
         x = std::ceil(x);
         y = std::ceil(y);
         return *this;
-    }
-
-    Point Point::floor() const
-    {
-        Point p = *this;
-        return p.floor();
     }
 
     Point Point::abs() const { return {std::abs(x), std::abs(y)}; }
@@ -285,6 +316,8 @@ namespace magique
     Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), width(rect.width), height(rect.height) {}
 
     Rect::Rect(const Point& topLeft, const Point& size) : x(topLeft.x), y(topLeft.y), width(size.x), height(size.y) {}
+
+    Rect::Rect(const Point& size) : x(0.0F), y(0.0F), width(size.x), height(size.y) {}
 
     Rect::Rect(float width, float height) : x(0.0F), y(0.0F), width(width), height(height) {}
 
@@ -352,6 +385,15 @@ namespace magique
         return *this;
     }
 
+    Rect Rect::operator-(const Point& p) const { return {x - p.x, y - p.y, width, height}; }
+
+    Rect& Rect::operator-=(const Point& p)
+    {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
     bool Rect::operator==(const float num) const { return x == num && y == num && width == num && height == num; }
 
     Rect& Rect::floor()
@@ -393,7 +435,7 @@ namespace magique
         return *this;
     }
 
-    Point Rect::random() const { return Point{x + GetRandomFloat(0, width), y + GetRandomFloat(0, height)}; }
+    Point Rect::random() const { return Point{x + MathRandom(0, width), y + MathRandom(0, height)}; }
 
     bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, width, height); }
 
@@ -458,6 +500,119 @@ namespace magique
 
     Rect Rect::shrink(float size) const { return this->enlarge(-size); }
 
+    float Rect::shortestDist(const Point& p) const
+    {
+        const auto rectPoint = closestInside(p);
+        return rectPoint.euclidean(p);
+    }
+
+    //----------------- ROTATION -----------------//
+
+    Rotation::Rotation(float angle) : rotation(angle)
+    {
+        if (rotation >= 360)
+        {
+            rotation -= 360;
+        }
+        else if (rotation < 0)
+        {
+            rotation += 360;
+        }
+    }
+
+    Rotation::operator float() const { return rotation; }
+
+    Rotation& Rotation::operator+=(const Rotation& other)
+    {
+        *this = Rotation{rotation + other.rotation};
+        return *this;
+    }
+
+    Rotation& Rotation::operator-=(const Rotation& other)
+    {
+        *this = Rotation{rotation - other.rotation};
+        return *this;
+    }
+
+    float Rotation::diff(Rotation other) const
+    {
+        const float diff = std::abs(rotation - other.rotation);
+        if (diff > 180.0F)
+        {
+            return std::abs(diff - 360.0F);
+        }
+        else
+        {
+            return diff;
+        }
+    }
+
+    float Rotation::distance(Rotation other) const
+    {
+        const float dist = other.rotation - rotation;
+        if (dist < -180.0F)
+        {
+            return dist + 360.0F;
+        }
+        else if (dist > 180.0F)
+        {
+            return dist - 360.0F;
+        }
+        return dist;
+    }
+
+    void Rotation::modulate(Rotation target, float max)
+    {
+        const auto dist = distance(target);
+        if (dist > 0.0F)
+        {
+            *this += std::min(dist, max);
+        }
+        else if (dist < 0.0F)
+        {
+            *this += std::max(dist, -max);
+        }
+    }
+
+    Color Theme::getBodyColor(bool hovered, bool pressed) const
+    {
+        if (pressed)
+        {
+            return backOutline;
+        }
+        if (hovered)
+        {
+            return backActive;
+        }
+        return background;
+    }
+
+    Color Theme::getOutlineColor(bool hovered, bool pressed) const
+    {
+        if (pressed)
+        {
+            return backActive;
+        }
+        if (hovered)
+        {
+            return backOutline;
+        }
+        return backOutline;
+    }
+
+    Color Theme::getTextColor(bool selected, bool hovered) const
+    {
+        if (selected)
+        {
+            return textHighlight;
+        }
+        if (hovered)
+        {
+            return text;
+        }
+        return textPassive;
+    }
+
     //----------------- SPRITE SHEET -----------------//
 
     TextureRegion SpriteSheet::getRegion(const int frame) const
@@ -470,7 +625,7 @@ namespace magique
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {
         MAGIQUE_ASSERT(maxDuration > 0 && sheet.frames > 0, "Empty Animation");
-        const int count = (int)millis % maxDuration;
+        const int count = static_cast<int>(millis) % maxDuration;
         int frame = 0;
         uint16_t millisCount = 0;
         for (const auto duration : durations)
@@ -492,7 +647,7 @@ namespace magique
         {
             duration += durations[i];
         }
-        return static_cast<int>((float)duration / 1000.0F * MAGIQUE_LOGIC_TICKS);
+        return static_cast<int>(static_cast<float>(duration) / 1000.0F * MAGIQUE_LOGIC_TICKS);
     }
 
     bool SpriteAnimation::isValid() const { return sheet.isValid() && sheet.frames > 0; }

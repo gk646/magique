@@ -39,7 +39,7 @@ namespace magique
         }
 
     private:
-        static void DrawDefault(bool isIntro, float progressPercent);
+        static void DrawDefault(bool isIntro, float progress);
     };
 
 } // namespace magique

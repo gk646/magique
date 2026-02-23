@@ -921,7 +921,7 @@ static Font LoadFont_CascadiaCode()
 {
     Font font = {};
 
-    font.baseSize = 32;
+    font.baseSize = 8;
     font.glyphCount = 95;
     font.glyphPadding = 4;
 

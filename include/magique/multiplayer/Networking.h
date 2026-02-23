@@ -44,7 +44,17 @@
 
 namespace magique
 {
-    //================= MESSAGES =================//
+    // Closes an open global OR local socket (if any)
+    // Optionally specify a close code or string that can be read on the receiver
+    // Returns true if an existing connection was closed successfully
+    bool NetworkCloseSocket(int code = 0, std::string_view reason = {});
+
+    // Disconnects the given connection - if no connections remain closes the network sessions
+    // Optionally specify a close code or string that can be read on the receiver
+    // Returns true if the connection was closed successfully
+    bool NetworkCloseConnection(Connection conn, int code = 0, std::string_view reason = {});
+
+    //================= SENDING =================//
 
     // Directly sends the message - should only be used for single messages else use BatchMessage() and SendBatch()
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
@@ -89,11 +99,9 @@ namespace magique
     // Returns true if currently in a session as a client
     bool NetworkIsClient();
 
-    // True if EITHER host or client in a local socket environment
-    bool NetworkInLocalSession();
-
-    // True if either host or client in a global socket environment
-    bool NetworkInGlobalSession();
+    // Returns true if NOT in a session OR NetworkIsHost()
+    // Note: This is useful with the p2p model, as UI and logic should work if either not in session (single player) or the host
+    bool NetworkIsLocalPlayer();
 
     // Sets the entity for the given connection - allows to create a mapping between the remote client and a local entity
     // Note: Needs to be manually set BUT is automatically deleted AFTER the connection is disconnected or session is closed

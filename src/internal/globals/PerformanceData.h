@@ -4,6 +4,7 @@
 
 #include <magique/multiplayer/Networking.h>
 #include <magique/gamedev/UsefulStuff.h>
+#include <magique/util/RayUtils.h>
 
 #include "external/raylib-compat/rlgl_compat.h"
 #include "internal/Shared.h"
@@ -39,33 +40,29 @@ namespace magique
 
         void draw() const
         {
+            const auto drawBlock = [](const char* text, const Vector2 pos, const float w)
+            {
+                const auto& config = global::ENGINE_CONFIG;
+                const Vector2 textPosition = {pos.x + 3, pos.y + 1};
+                const Rectangle container = {pos.x, pos.y, w, config.font.baseSize * 2.0F};
+
+                DrawRectangleRec(container, config.theme.background);
+                DrawRectangleLinesEx(container, 1, config.theme.backOutline);
+                DrawTextEx(config.font, text, textPosition, config.font.baseSize * 2, 0.5F, config.theme.textPassive);
+                return w;
+            };
+
             const auto& config = global::ENGINE_CONFIG;
             if (!config.showPerformanceOverlay)
                 return;
 
-            const auto drawBlock = [](const char* text, const Font& f, const float fs, const Vector2 pos, const float w)
-            {
-                const auto& theme = global::ENGINE_CONFIG.theme;
-                const float blockHeight = fs * 1.15F;
-                const float borderWidth = fs * 0.1F;
-                const Vector2 textPosition = {pos.x + w * 0.07F, pos.y + (blockHeight - fs) / 2};
-
-                const Rectangle container = {pos.x, pos.y, w, blockHeight};
-                DrawRectangleRec(container, theme.backLight);
-                DrawRectangleLinesEx(container, borderWidth, theme.backDark);
-                DrawTextEx(f, text, textPosition, fs, 0.5F, theme.textPassive);
-                return w;
-            };
-
             Vector2 position = {0, 0};
-            const auto& font = config.font;
-            const auto fs = config.fontSize;
 
             for (const auto& block : blocks)
             {
                 if (block.width == 0)
                     continue;
-                position.x += drawBlock(block.text, font, fs, position, block.width);
+                position.x += drawBlock(block.text, position, block.width);
                 if (!config.showPerformanceOverlayExt) // Only draw FPS in simple mode
                     break;
             }
@@ -79,12 +76,11 @@ namespace magique
             }
 
             const auto& font = global::ENGINE_CONFIG.font;
-            const auto fs = global::ENGINE_CONFIG.fontSize;
 
             int block = 0;
 #define UPDATE_BLOCK(value, fmt)                                                                                        \
     snprintf(blocks[block].text, 32, fmt, value);                                                                       \
-    blocks[block].width = MeasureTextEx(font, blocks[block].text, fs, 1.0F).x * 1.1F;                                   \
+    blocks[block].width = MeasureTextEx(font, blocks[block].text, font.baseSize * 2, 1.0F).x + 1;                       \
     block++;
 
             UPDATE_BLOCK(GetFPS(), "FPS: %d");

@@ -54,6 +54,9 @@ namespace magique
     void UISetTargetResolution(Point resolution);
     Point UIGetTargetResolution();
 
+    void UISetPopup(Popup* popup);
+    Popup UIGetPopup();
+
     //================= UTIL =================//
 
     // Same as raylib's but returns a magique::Point
@@ -68,6 +71,7 @@ namespace magique
     // Returns true a gamepad is the currently used input method
     // This is smart - e.g. if keyboard input is detected, switches to keyboard until (any) gamepad input is detected
     // Note: This is useful for deciding which UI hints to draw or what input device to pick
+    // Note: If true, mouse cursor is disabled (hidden)
     bool UIUsingGamepad();
 
     // Returns a rectangle that adjusted to be on the screen (target resolution) by picking which corner the mouse is

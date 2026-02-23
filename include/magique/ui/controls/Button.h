@@ -16,7 +16,7 @@
 
 namespace magique
 {
-    using ClickFunc = std::function<void(const Rectangle& bounds, int mouseButton)>;
+    using ClickFunc = std::function<void(const Rect& bounds, int mouseButton)>;
 
     struct Button : UIObject
     {
@@ -45,17 +45,17 @@ namespace magique
         }
 
         // Called once when the mouse position enters the button
-        virtual void onHover(const Rectangle& bounds) {}
+        virtual void onHover(const Rect& bounds) {}
 
         // Called on click
-        virtual void onClick(const Rectangle& bounds, int mouseButton) {}
+        virtual void onClick(const Rect& bounds, int mouseButton) {}
 
         // Updates the action state and calls onHover() and onClick() if necessary
         // Note: You can conditionally NOT call this based on LayeredInput.isConsumed() to respect layers
-        void updateActions(const Rectangle& bounds);
+        void updateActions(const Rect& bounds);
 
         // Draws a default graphical representation of this button
-        virtual void drawDefault(const Rectangle& bounds);
+        virtual void drawDefault(const Rect& bounds);
 
         // Draws the hovered text at the mouse left bound
         void drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const;
@@ -80,7 +80,7 @@ namespace magique
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
-        void drawDefault(const Rectangle& bounds) override;
+        void drawDefault(const Rect& bounds) override;
 
     private:
         std::string text;

@@ -14,7 +14,6 @@
 //  - If you have only a few distinct classes that make up the whole thing use a UIObject with UIObject members
 //  - If you have many members and need to access them programmatically (loops, ...) use UIContainer
 // Note: UIContainer::onUpdate() is called before its children
-// Note: UIContainer is a subclass of UIObject and has its functionality (onDraw(), onUpdate(), ...)
 // .....................................................................
 
 namespace magique
@@ -41,17 +40,17 @@ namespace magique
         // Pass a new instance of your class new MyClass() - the name will be copied if specified
         // Note: the container takes ownership of the child pointer
         // Returns: the added child if successful, otherwise nullptr
-        UIObject* addChild(UIObject* child, const char* name = nullptr);
+        UIObject* addChild(UIObject* child, std::string_view name = {});
 
         // Returns true the child associated with the given name or index was removed
         // Failure: returns wrong if no child with the given name or index exists
-        bool removeChild(const char* name);
+        bool removeChild(std::string_view name);
         bool removeChild(int index);
         bool removeChild(UIObject* child);
 
         // Returns a pointer to the child associated with the given name (if any)
         // Failure: returns nullptr if the name doesn't exist
-        [[nodiscard]] UIObject* getChild(const char* name) const;
+        [[nodiscard]] UIObject* getChild(std::string_view name) const;
         [[nodiscard]] UIObject* getChild(int index) const;
 
         // Returns a vector that contains all current children

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <magique/fwd.hpp>
+#include <entt/entity/entity.hpp>
 
 //===============================================
 // Events
@@ -71,6 +72,10 @@ namespace magique
         // Immediately emits the event and calls all handler functions
         template <GameEvent event, typename Data>
         void emit(entt::entity entity, const Data& data = {});
+
+        // Emit an event with optional entity and default initialized data
+        template <GameEvent event>
+        void emit(entt::entity entity = entt::null);
 
     private:
         struct EventSubscription final

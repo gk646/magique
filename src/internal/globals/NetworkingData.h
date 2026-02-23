@@ -22,7 +22,6 @@
 
 using MessageVec = std::vector<SteamNetworkingMessage_t*>;
 
-
 namespace magique
 {
     struct ConnMapping final
@@ -149,7 +148,6 @@ namespace magique
             std::erase(connections, client);
         }
 
-
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
         {
             const auto steamId = static_cast<SteamID>(pParam->m_info.m_identityRemote.GetSteamID64());
@@ -161,26 +159,29 @@ namespace magique
                     pParam->m_eOldState == k_ESteamNetworkingConnectionState_None &&
                     pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
                 {
+                    if (connections.size() == MAGIQUE_MAX_PLAYERS - 1)
+                    {
+                        if (callback)
+                        {
+                            callback(NetworkEvent::HOST_TOO_MANY_CONNECTIONS, conn, steamId);
+                        }
+                        LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d",
+                                    MAGIQUE_MAX_PLAYERS - 1);
+                        return;
+                    }
+
                     if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK)
                     {
-                        if (connections.size() == MAGIQUE_MAX_PLAYERS - 1)
-                        {
-                            LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS - 1: %d",
-                                        MAGIQUE_MAX_PLAYERS - 1);
-                        }
-                        else
-                        {
-                            connections.push_back(conn);
-                            numberMapping.addConnection(conn);
+                        connections.push_back(conn);
+                        numberMapping.addConnection(conn);
 #ifdef MAGIQUE_STEAM
-steamMapping.push_back({conn, steamId});
+                        steamMapping.push_back({conn, steamId});
 #endif
-                            if (callback)
-                            {
-                                callback(NetworkEvent::HOST_NEW_CONNECTION, conn, steamId);
-                            }
-                            LOG_INFO("Host accepted a new client connection");
+                        if (callback)
+                        {
+                            callback(NetworkEvent::HOST_NEW_CONNECTION, conn, steamId);
                         }
+                        LOG_INFO("Host accepted a new client connection");
                     }
                     else
                     {

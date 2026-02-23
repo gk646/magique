@@ -24,13 +24,13 @@ namespace magique
     struct Layout
     {
         Layout() = default;
-        Layout(const Rect& area) : area(area) {}
+        Layout(const Rect& area);
 
-        const Rect& getArea() const { return area; }
+        const Rect& getArea() const;
 
         // Automatically converted to rect where needed
-        operator Rect() const { return area; }
-        operator Rectangle() const { return area; };
+        operator Rect() const;
+        operator Rectangle() const;
 
     private:
         Rect area{};
@@ -38,48 +38,29 @@ namespace magique
 
 
     // Splits the given area into two pieces by making a vertical slice at the given width (in percent of the total width)
+    // gap specifies the width of a gap in the middle that's kept free - for left side on the right, for right side on the left
     struct VerticalSplit : Layout
     {
-        VerticalSplit(const Rect& area, float where = 0.5F) : Layout(area), split(where) {};
+        VerticalSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
 
-        Layout left() const
-        {
-            auto ret = getArea();
-            ret.width = ret.width * split;
-            return ret;
-        }
+        Layout left() const;
 
-        Layout right() const
-        {
-            auto ret = getArea();
-            ret.x += ret.width * split;
-            ret.width = getArea().width * (1.0F - split);
-            return ret;
-        }
+        Layout right() const;
 
     private:
+        float gap = 0.0F;
         float split = 0.5F;
     };
+
 
     // Splits the given area into two pieces by making a horizontal slice at the given height (in percent of the total height)
     struct HorizontalSplit : Layout
     {
-        HorizontalSplit(const Rect& area, float where = 0.5F) : Layout(area), split(where) {};
+        HorizontalSplit(const Rect& area, float where = 0.5F);
 
-        Layout upper() const
-        {
-            auto ret = getArea();
-            ret.height = ret.height * split;
-            return ret;
-        }
+        Layout upper() const;
 
-        Layout lower() const
-        {
-            auto ret = getArea();
-            ret.y += ret.height * split;
-            ret.height = ret.height * (1.0F - split);
-            return ret;
-        }
+        Layout lower() const;
 
     private:
         float split = 0.5F;

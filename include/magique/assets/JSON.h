@@ -85,7 +85,7 @@ namespace glz
     struct meta<magique::Keybind>
     {
         using T = magique::Keybind;
-        static constexpr auto value = object(&T::key, &T::layered, &T::shift, &T::ctrl, &T::alt);
+        static constexpr auto value = object(&T::key, &T::type, &T::layered, &T::shift, &T::ctrl, &T::alt);
     };
 
     template <>
@@ -109,6 +109,32 @@ namespace glz
         static constexpr auto values = object(&T::name, &T::type, &T::data);
     };
 
+    template <typename K, typename V, int maxSize>
+    struct from<JSON, magique::EnumArray<K, V, maxSize>>
+    {
+        template <auto Opts>
+        static void op(magique::EnumArray<K, V, maxSize>& value, auto&&... args)
+        {
+            std::vector<typename magique::EnumArray<K, V, maxSize>::ValueHolder> vec;
+            parse<JSON>::op<Opts>(vec, args...);
+            value = magique::EnumArray<K, V, maxSize>{vec};
+        }
+    };
+
+    template <typename K, typename V, int maxSize>
+    struct to<JSON, magique::EnumArray<K, V, maxSize>>
+    {
+        template <auto Opts>
+        static void op(const magique::EnumArray<K, V, maxSize>& value, auto&&... args) noexcept
+        {
+            std::vector<typename magique::EnumArray<K, V, maxSize>::ValueHolder> vec;
+            for (const auto& [key, val] : value)
+            {
+                vec.emplace_back(key, val);
+            }
+            serialize<JSON>::op<Opts>(vec, args...);
+        }
+    };
 
     template <typename K, typename V>
     struct from<JSON, magique::HashMap<K, V>>
@@ -150,6 +176,31 @@ namespace glz
         }
     };
 
+    template <typename V>
+    struct from<JSON, magique::HashSet<V>>
+    {
+        template <auto Opts>
+        static void op(magique::HashSet<V>& value, auto&&... args)
+        {
+            std::vector<V> vec;
+            parse<JSON>::op<Opts>(vec, args...);
+            for (auto& val : vec)
+            {
+                value.insert(std::move(val));
+            }
+        }
+    };
+
+    template <typename V>
+    struct to<JSON, magique::HashSet<V>>
+    {
+        template <auto Opts>
+        static void op(const magique::HashSet< V>& value, auto&&... args) noexcept
+        {
+            const std::vector<V>& vec = value.values();
+            serialize<JSON>::op<Opts>(vec, args...);
+        }
+    };
 
 } // namespace glz
 
@@ -159,7 +210,7 @@ namespace magique
     bool JSONImport(Asset asset, T& data)
     {
         std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
-        auto ec = glz::read_json(data, buff);
+        auto ec = glz::read_jsonc(data, buff);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath(), glz::format_error(ec, buff).c_str());
@@ -171,7 +222,7 @@ namespace magique
     template <typename T>
     bool JSONImport(std::string_view json, T& data)
     {
-        const auto ec = glz::read_json(data, json);
+        const auto ec = glz::read_jsonc(data, json);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON:%s", glz::format_error(ec, json).c_str());

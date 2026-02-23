@@ -39,7 +39,7 @@ endif ()
 
 # Includes for raylib
 target_include_directories(raylib PRIVATE ${MAGIQUE_PUBLIC_INCLUDE}/raylib src/external/raylib-compat)
-target_compile_definitions(raylib PRIVATE SUPPORT_CUSTOM_FRAME_CONTROL)
+target_compile_definitions(raylib PRIVATE SUPPORT_CUSTOM_FRAME_CONTROL MAX_TEXTFORMAT_BUFFERS=5)
 
 # ----------------------------------------------------------------------
 # Link raylib

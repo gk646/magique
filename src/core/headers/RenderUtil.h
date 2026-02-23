@@ -70,8 +70,8 @@ namespace magique
             }
         }
 
-        data.camera.target.x = Lerp(data.camera.target.x, targetPosition.x, smoothing);
-        data.camera.target.y = Lerp(data.camera.target.y, targetPosition.y, smoothing);
+        data.camera.target.x = MathLerp(data.camera.target.x, targetPosition.x, smoothing);
+        data.camera.target.y = MathLerp(data.camera.target.y, targetPosition.y, smoothing);
         data.camera.target.x = std::floor(data.camera.target.x);
         data.camera.target.y = std::floor(data.camera.target.y);
     }
@@ -189,7 +189,7 @@ namespace magique
             const auto& grid = dynamic.mapEntityGrids[currentMap];
             const auto bounds = CameraGetBounds();
             constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
-            const float fontSize = config.fontSize;
+            const float fontSize = config.font.baseSize;
             const float textOff = MAGIQUE_COLLISION_CELL_SIZE / 2.0F - fontSize / 2.0F;
             const int startX = static_cast<int>(bounds.x) / cellSize;
             const int startY = static_cast<int>(bounds.y) / cellSize;

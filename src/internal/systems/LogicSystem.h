@@ -58,7 +58,7 @@ namespace magique
 #ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
-        data.camera.offset = Vector2{(float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2};
+        data.camera.offset = GetScreenDims() / 2;
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);

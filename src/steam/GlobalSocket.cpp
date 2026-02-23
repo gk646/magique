@@ -6,9 +6,7 @@ namespace magique
 {
     bool GlobalSocketInit() { M_ENABLE_STEAM_ERROR(false) }
     bool GlobalSocketCreate() { M_ENABLE_STEAM_ERROR(false) }
-    bool GlobalSocketClose(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) };
     Connection GlobalSocketConnect(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}) }
-    bool GlobalSocketDisconnect(const int closeCode, const char* closeReason) { M_ENABLE_STEAM_ERROR(false) }
 } // namespace magique
 #else
 #include "internal/globals/NetworkingData.h"
@@ -16,8 +14,6 @@ namespace magique
 
 namespace magique
 {
-    //----------------- HOST -----------------//
-
     bool GlobalSocketInit()
     {
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
@@ -46,27 +42,6 @@ namespace magique
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
-    bool GlobalSocketClose(const int closeCode, const char* closeReason)
-    {
-        auto& data = global::MP_DATA;
-        if (!data.inSession || !data.isHost || data.listenSocket == k_HSteamListenSocket_Invalid)
-            return false;
-
-        for (const auto conn : data.connections)
-        {
-            const auto steamConn = static_cast<HSteamNetConnection>(conn);
-            if (!SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true))
-            {
-                LOG_ERROR("Failed to close existing connections when closing the global socket");
-            }
-        }
-        const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
-        data.goOffline();
-        return res;
-    }
-
-    //----------------- CLIENT -----------------//
-
     Connection GlobalSocketConnect(const SteamID magiqueSteamID)
     {
         auto& data = global::MP_DATA;
@@ -93,16 +68,5 @@ namespace magique
         return data.connections[0];
     }
 
-    bool GlobalSocketDisconnect(const int closeCode, const char* closeReason)
-    {
-        auto& data = global::MP_DATA;
-        if (!data.inSession || data.isHost || data.connections[0] == Connection::INVALID)
-            return false;
-
-        const auto steamConn = static_cast<HSteamNetConnection>(data.connections[0]);
-        const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, closeReason, true);
-        data.goOffline();
-        return res;
-    }
 } // namespace magique
 #endif

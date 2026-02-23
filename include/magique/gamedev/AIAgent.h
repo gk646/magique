@@ -166,15 +166,15 @@ namespace magique
         float diff = learnRate * (memory.reward + progressiveness * maxFutureQ - currentQ);
 
         // Scale the diff based on how much it was from the total value range - strengthen higher learning impacts
-        float scale = std::pow(1.0F + LerpInverse(0.0F, valueRange, std::abs(diff)), 2);
+        float scale = std::pow(1.0F + MathLerpInverse(0.0F, valueRange, std::abs(diff)), 2);
         diff *= scale;
 
         // Keep the total qscore within value range
         const float newTempQ = currentQ + diff;
         if (diff >= 0 && newTempQ >= 0)
-            diff *= 1.0F - LerpInverse(0.0F, valueRange, newTempQ);
+            diff *= 1.0F - MathLerpInverse(0.0F, valueRange, newTempQ);
         else if (diff < 0 && newTempQ < 0)
-            diff *= LerpInverse(-valueRange, 0.0F, newTempQ);
+            diff *= MathLerpInverse(-valueRange, 0.0F, newTempQ);
 
         // Apply change
         qMatrix(memory.getCausingEvent(), memory.getState()) = currentQ + diff;

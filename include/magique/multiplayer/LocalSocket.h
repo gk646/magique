@@ -20,30 +20,15 @@ namespace magique
     // Note: HAS to be called MANUALLY before any other local multiplayer methods
     bool LocalSocketInit();
 
-    //================= HOST =================//
-
     // Creates a LAN-socket so others can connect to you on the given port - makes you the host
     // Returns true if it was successful
     bool LocalSocketCreate(uint16_t port = 60000);
-
-    // Closes the listening socket - optionally specify a close code or string that can be read on the receiver
-    // Returns true if an existing connection was closed successfully
-    bool LocalSocketClose(int closeCode = 0, const char* closeReason = nullptr);
-
-    //================= CLIENT =================//
 
     // Connects to an open local socket at the given ip and port
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
     //      - port: a number between 0 and 65536
     // Note: On success the connection is stored internally as well and can be accessed via GetCurrentConnections()
     Connection LocalSocketConnect(const char* ip, uint16_t port = 60000);
-
-    // Disconnects from the socket (if any)
-    // Optionally specify a close code or string that can be read on the receiver
-    // Returns true if an existing connection was closed successfully
-    bool LocalSocketDisconnect(int closeCode = 0, const char* closeReason = nullptr);
-
-    //================= UTIL =================//
 
     // Returns a pointer to the local ip as a string - always save to access and cached after the first call
     // Failure: returns nullptr if it's not possible to retrieve the ip

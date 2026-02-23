@@ -13,23 +13,23 @@ namespace magique
         global::UI_DATA.registerObject(this, true);
     }
 
-    UIObject* UIContainer::addChild(UIObject* child, const char* name)
+    UIObject* UIContainer::addChild(UIObject* child, std::string_view name)
     {
         auto compFunc = [&](auto& e)
         {
-            return e.object == child || (name != nullptr && e.name == name);
+            return e.object == child || (!name.empty() && e.name == name);
         };
         if (std::ranges::find_if(children, compFunc) != children.end())
         {
             return nullptr;
         }
-        children.push_back({name != nullptr ? name : "", child});
+        children.push_back({std::string{!name.empty() ? name : ""}, child});
         return child;
     }
 
-    bool UIContainer::removeChild(const char* name)
+    bool UIContainer::removeChild(std::string_view name)
     {
-        MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
+        MAGIQUE_ASSERT(!name.empty(), "Name must be non-null");
         return std::erase_if(children, [name](auto& e) { return e.name == name; }) > 0;
     }
 
@@ -50,9 +50,9 @@ namespace magique
         return std::erase_if(children, [&](auto& e) { return e.object == child; }) > 0;
     }
 
-    UIObject* UIContainer::getChild(const char* name) const
+    UIObject* UIContainer::getChild(std::string_view name) const
     {
-        MAGIQUE_ASSERT(name != nullptr, "Name must be non-null");
+        MAGIQUE_ASSERT(!name.empty(), "Name must be non-null");
         auto it = std::ranges::find_if(children, [&](auto& e) { return e.name == name; });
         if (it != children.end())
         {

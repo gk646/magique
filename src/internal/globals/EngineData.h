@@ -66,6 +66,7 @@ namespace magique
 
         void update()
         {
+
             return;
             auto& shake = cameraShake;
             auto& target = camera.target;

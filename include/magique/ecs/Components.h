@@ -22,10 +22,10 @@ namespace magique
     // MUST NOT be removed
     struct PositionC final
     {
-        Point pos;       // Position of the top left corner (care when using circles)!
-        MapID map;       // The current map id of the entity
-        EntityType type; // Type of the entity
-        float rotation;  // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
+        Point pos;         // Position of the top left corner (care when using circles)!
+        MapID map;         // The current map id of the entity
+        EntityType type;   // Type of the entity
+        Rotation rotation; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
 
         // Returns the middle point by factoring in the collision shape
         [[nodiscard]] Point getMiddle(const CollisionC& col) const;

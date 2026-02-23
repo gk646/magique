@@ -81,8 +81,8 @@ namespace magique
         [[nodiscard]] bool getIsMarked(const float x, const float y) const
         {
             // < -1 0 < 1
-            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
-            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
+            const int cellX = floordiv<mainGridSize>(x);
+            const int cellY = floordiv<mainGridSize>(y);
             const auto pathCell = GetVisitedCell(cellX, cellY);
             const auto it = visited.find(pathCell);
             if (it != visited.end()) // Get the position within the subgrid
@@ -96,8 +96,8 @@ namespace magique
 
         void setMarked(const float x, const float y)
         {
-            const int cellX = floordiv<mainGridSize>(static_cast<int>(x));
-            const int cellY = floordiv<mainGridSize>(static_cast<int>(y));
+            const int cellX = floordiv<mainGridSize>(x);
+            const int cellY = floordiv<mainGridSize>(y);
             const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
             const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
             const auto cell = GetVisitedCell(cellX, cellY);
@@ -107,7 +107,9 @@ namespace magique
         void insert(const float x, const float y, const float w, const float h)
         {
             auto insertFunc = [this](const int cellX, const int cellY)
-            { setMarked((cellX * MAGIQUE_PATHFINDING_CELL_SIZE), (cellY * MAGIQUE_PATHFINDING_CELL_SIZE)); };
+            {
+                setMarked((cellX * MAGIQUE_PATHFINDING_CELL_SIZE), (cellY * MAGIQUE_PATHFINDING_CELL_SIZE));
+            };
             RasterizeRect<mainGridBaseSize>(insertFunc, x, y, w, h);
         }
 
@@ -161,4 +163,4 @@ namespace magique
 
 
 } // namespace magique
-#endif //PATHFINDINGSTRUCTS_H
+#endif // PATHFINDINGSTRUCTS_H

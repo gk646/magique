@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #ifndef MAGIQUE_UI_DATA_H
 #define MAGIQUE_UI_DATA_H
+
 #include <cmath>
 #include <algorithm>
 #include <raylib/raylib.h>
@@ -9,6 +10,7 @@
 #include <magique/ui/UIObject.h>
 #include <magique/ui/UI.h>
 #include <magique/util/Datastructures.h>
+#include <magique/util/RayUtils.h>
 
 #include "external/raylib-compat/rcore_compat.h"
 
@@ -40,8 +42,7 @@ namespace magique
         {
             if (!customTargetRes)
             {
-                targetRes.x = static_cast<float>(GetScreenWidth());
-                targetRes.y = static_cast<float>(GetScreenHeight());
+                targetRes = GetScreenDims();
             }
             scaling = targetRes / sourceRes;
             const auto [mx, my] = GetMousePos();

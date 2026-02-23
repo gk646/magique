@@ -545,9 +545,9 @@ namespace magique
         return sheet;
     }
 
-    Font ImportFont(const Asset& asset, int baseSize)
+    Font ImportFont(const Asset& asset, int baseSize, int characters)
     {
-        return LoadFontFromMemory(".ttf", asset.getUData(), asset.getSize(), baseSize, nullptr, 0);
+        return LoadFontFromMemory(".ttf", asset.getUData(), asset.getSize(), baseSize, nullptr, characters);
     }
 
     TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset.getData(), delimiter}; }

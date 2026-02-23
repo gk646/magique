@@ -7,7 +7,7 @@ namespace magique
 {
 
     TextDrawer::TextDrawer(const Font& font, const Rect& bounds, const Point off, Point gap) :
-        bounds(bounds), gapp(gap), off(off), cursor(off), font(font)
+        bounds(bounds), gapp(gap), offf(off), cursor(off), font(font)
     {
         resetMods();
     }
@@ -30,7 +30,7 @@ namespace magique
     void TextDrawer::right(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
-        const auto lineEnd = bounds.x + bounds.width - off.x;
+        const auto lineEnd = bounds.x + bounds.width - offf.x;
         const auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOffset;
         drawText(pos, txt, tint);
         cursorEndX += width + gapp.x;
@@ -51,7 +51,7 @@ namespace magique
 
     TextDrawer& TextDrawer::linebreak(const float amount)
     {
-        cursor.x = off.x;
+        cursor.x = offf.x;
         cursor.y += amount * (2 + (float)font.baseSize);
         resetMods();
         return *this;
@@ -81,21 +81,27 @@ namespace magique
         cursor.y += mult * gapp.y;
         return *this;
     }
-    TextDrawer& TextDrawer::mod(int fsm)
+    TextDrawer& TextDrawer::sizeMult(int fsm)
     {
         modSizeMult = fsm;
         return *this;
     }
 
-    TextDrawer& TextDrawer::mod(Color numberHighlight)
+    TextDrawer& TextDrawer::highlight(Color numberHighlight)
     {
         modHighlightColor = numberHighlight;
         return *this;
     }
 
-    TextDrawer& TextDrawer::mod(Point offset)
+    TextDrawer& TextDrawer::offset(Point offset)
     {
         modOffset = offset;
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::shade(Color shade)
+    {
+        shadeColor = shade;
         return *this;
     }
 
@@ -106,7 +112,7 @@ namespace magique
 
     int TextDrawer::withNewLines(char* str) const
     {
-        return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.width - off.x, font, font.baseSize);
+        return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.width - offf.x, font, font.baseSize);
     }
 
     Point TextDrawer::getCursor() const { return cursor; }
@@ -126,8 +132,13 @@ namespace magique
         if (width >= bounds.width)
         {
             txt = TextFormat("%s", txt.data());
-            const auto lineEnd = bounds.width - off.x - cursor.x - modOffset.x;
+            const auto lineEnd = bounds.width - offf.x - cursor.x - modOffset.x;
             newLines = StringSetNewlines((char*)txt.data(), MAX_TEXT_BUFFER_LENGTH, lineEnd, font, fntSize);
+        }
+
+        if (shadeColor.a > 0)
+        {
+            DrawPixelText(font, txt, pos + Point{1, 0}, modSizeMult, shadeColor);
         }
 
         if (modHighlightColor.a > 0)
@@ -138,6 +149,7 @@ namespace magique
         {
             DrawPixelText(font, txt, pos, modSizeMult, tint);
         }
+
 
         if (newLines > 0)
         {
@@ -152,6 +164,7 @@ namespace magique
         modHighlightColor = BLANK;
         modSizeMult = 1;
         cursorEndX = 0;
+        shadeColor = BLANK;
     }
 
 } // namespace magique

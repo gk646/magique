@@ -30,10 +30,11 @@ inline CellID GetCellID(const int cellX, const int cellY)
 // -0.99 -> -1
 // The template is used to allow compiler optimization for power of two divisors
 template <int div>
-int floordiv(const int x)
+int floordiv(const float x)
 {
-    const int res = x / div;
-    if (x < 0) [[unlikely]]
+    const int intx = static_cast<int>(x);
+    const int res = intx / div;
+    if (intx < 0) [[unlikely]]
     {
         return res - 1;
     }
@@ -43,10 +44,10 @@ int floordiv(const int x)
 template <int cellSize, typename Func>
 static void RasterizeRect(Func func, const float x, const float y, const float w, const float h)
 {
-    const int x1 = floordiv<cellSize>(static_cast<int>(x));
-    const int y1 = floordiv<cellSize>(static_cast<int>(y));
-    const int x2 = floordiv<cellSize>(static_cast<int>(x + w));
-    const int y2 = floordiv<cellSize>(static_cast<int>(y + h));
+    const int x1 = floordiv<cellSize>(x);
+    const int y1 = floordiv<cellSize>(y);
+    const int x2 = floordiv<cellSize>(x + w);
+    const int y2 = floordiv<cellSize>(y + h);
     const bool differentX = x1 != x2;
     const bool differentY = y1 != y2;
 
@@ -75,8 +76,8 @@ static void RasterizeRect(Func func, const float x, const float y, const float w
     // 4 corners, the 4 middle points of the edges and the middle point -> 9 potential cells
     if (w < cellSize * 2 && h < cellSize * 2) [[likely]]
     {
-        const int xhalf = floordiv<cellSize>(static_cast<int>(x + (w / 2.0F)));
-        const int yhalf = floordiv<cellSize>(static_cast<int>(y + (h / 2.0F)));
+        const int xhalf = floordiv<cellSize>(x + (w / 2.0F));
+        const int yhalf = floordiv<cellSize>(y + (h / 2.0F));
 
         // Process the corners
         func(x1, y1); // Top-left
@@ -136,7 +137,6 @@ static void RasterizeRect(Func func, const float x, const float y, const float w
 template <typename T, int capacity>
 struct DataBlock final
 {
-
     template <typename Container>
     void append(Container& elems) const
     {
@@ -437,4 +437,4 @@ struct MapHolder final
     }
 };
 
-#endif //MULTI_RESOLUTION_GRID_H
+#endif // MULTI_RESOLUTION_GRID_H
