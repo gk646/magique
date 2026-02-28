@@ -44,10 +44,7 @@ namespace magique
         }
         const auto steamConn = static_cast<HSteamNetConnection>(conn);
         const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, code, reason.data(), true);
-        if (data.connections.empty())
-        {
-            data.goOffline();
-        }
+        data.onConnectionDisconnect(conn);
         return res;
     }
 

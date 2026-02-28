@@ -29,7 +29,7 @@ namespace magique
 
     Point ScrollPane::getScrollOffset() const { return {horizontal.getScaledOffset(), vertical.getScaledOffset()}; }
 
-    void ScrollPane::setContent(UIObject* newContent) { content = newContent; }
+    void ScrollPane::setContent(UIObject& newContent) { content = &newContent; }
 
     UIObject* ScrollPane::getContent() const { return content; }
 
@@ -61,7 +61,7 @@ namespace magique
     void ScrollPane::drawDefault(const Rect& bounds)
     {
         auto& theme = global::ENGINE_CONFIG.theme;
-        DrawRectangleLinesEx(bounds, 1, theme.backOutline);
+        DrawRectFrameFilled(bounds,  theme.background, theme.backOutline);
         Color color;
         {
             const auto scroller = getVerticalScrollBounds();

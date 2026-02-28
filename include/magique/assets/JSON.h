@@ -27,11 +27,13 @@
 namespace magique
 {
 
-    // Deserializes the given JSON into the given c++ type
+    // Deserializes the given JSON string into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
-    template <typename T>
+    //      - append: appends the data instead of replacing if T==std::vector (or others that support it)
+    template <typename T, bool append = false>
     bool JSONImport(Asset asset, T& data);
-    template <typename T>
+
+    template <typename T, bool append = false>
     bool JSONImport(std::string_view json, T& data);
 
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
@@ -45,6 +47,7 @@ namespace magique
     struct glz::meta<Enum>                                                                                              \
     {                                                                                                                   \
         using enum Enum;                                                                                                \
+        static constexpr std::string_view name = #Enum;                                                                \
         static constexpr auto value = enchantum::values<Enum>;                                                          \
         static constexpr auto keys = enchantum::names<Enum>;                                                            \
     };
@@ -195,7 +198,7 @@ namespace glz
     struct to<JSON, magique::HashSet<V>>
     {
         template <auto Opts>
-        static void op(const magique::HashSet< V>& value, auto&&... args) noexcept
+        static void op(const magique::HashSet<V>& value, auto&&... args) noexcept
         {
             const std::vector<V>& vec = value.values();
             serialize<JSON>::op<Opts>(vec, args...);
@@ -206,11 +209,12 @@ namespace glz
 
 namespace magique
 {
-    template <typename T>
+    template <typename T, bool append>
     bool JSONImport(Asset asset, T& data)
     {
         std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
-        auto ec = glz::read_jsonc(data, buff);
+        glz::context ctx{};
+        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(data, buff, ctx);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath(), glz::format_error(ec, buff).c_str());
@@ -219,10 +223,11 @@ namespace magique
         return true;
     }
 
-    template <typename T>
+    template <typename T, bool append>
     bool JSONImport(std::string_view json, T& data)
     {
-        const auto ec = glz::read_jsonc(data, json);
+        glz::context ctx{};
+        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(data, json, ctx);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON:%s", glz::format_error(ec, json).c_str());

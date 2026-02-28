@@ -11,13 +11,21 @@ namespace magique
         info.isAccumulated = true;
     }
 
-    void ScriptingSetScript(const EntityType entity, EntityScript* script)
+    void ScriptingSetScript(const EntityType type, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
         // Dont delete the default script
-        if (scData.scripts[entity] != ScriptData::defaultScript)
-            delete scData.scripts[entity];
-        scData.scripts[entity] = script;
+        if (scData.scripts[type] != ScriptData::defaultScript)
+            delete scData.scripts[type];
+        scData.scripts[type] = script;
+    }
+
+    void ScriptingSetScript(std::initializer_list<EntityType> types, EntityScript* script)
+    {
+        for (auto type : types)
+        {
+            ScriptingSetScript(type, script);
+        }
     }
 
     EntityScript* ScriptingGetScript(const EntityType entity)

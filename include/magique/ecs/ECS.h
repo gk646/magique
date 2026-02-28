@@ -31,9 +31,10 @@ namespace magique
 
     using CreateFunc = std::function<void(entt::entity entity, EntityType type)>;
 
-    // Registers an entity with the given create function - replaces the existing function if present
+    // Registers an entity (or multiple) with the given create function - replaces the existing function if present
     // Failure: Returns false
     bool EntityRegister(EntityType type, const CreateFunc& createFunc);
+    bool EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc);
 
     // Unregisters an entity
     // Failure: Returns false
@@ -101,6 +102,7 @@ namespace magique
     T* ComponentTryGet(entt::entity entity);
 
     // Tries to remove the specified components from the given entities
+    // Note: If CollisionC is removed, immediately removes the entity from internal collision caches
     template <typename... Args>
     void ComponentRemove(entt::entity entity);
 
@@ -108,11 +110,15 @@ namespace magique
     template <typename... Args>
     auto ComponentGetView();
 
-    // Uses emplace_back to add the component to the given entity
-    // Args are the constructor arguments (if any)
+    // Uses emplace_back to add the component to the given entity - Args are the constructor arguments (if any)
+    // Note: If the entity already has the component will crash
     // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
     template <typename Component, typename... Args>
     Component& ComponentGive(entt::entity entity, Args... args);
+
+    // Same as ComponentGive but if the entity already has the component returns the existing one
+    template <typename Component, typename... Args>
+    Component& ComponentTryGive(entt::entity entity, Args... args);
 
     // Makes the entity collidable with others - Shape: RECT
     // x & y of the rect is offset from the position - anchor is set to the mid-point unless specified (relative to offset)
@@ -143,6 +149,8 @@ namespace magique
     {
         inline entt::registry REGISTRY{};                                     // The used registry
         inline auto POSITION_GROUP = REGISTRY.group<PositionC, CollisionC>(); // Pos + Collision group
+
+        void OnRemoveCollisionC(entt::entity e);
 
     } // namespace internal
     inline entt::registry& EntityGetRegistry() { return internal::REGISTRY; }
@@ -183,11 +191,16 @@ namespace magique
         return internal::REGISTRY.emplace<Component>(entity, args...);
     }
 
-    template <typename... Args>
-    void ComponentRemove(entt::entity entity)
+    template <typename Component, typename... Args>
+    Component& ComponentTryGive(entt::entity entity, Args... args)
     {
-        internal::REGISTRY.remove<Args...>(entity);
+        return internal::REGISTRY.get_or_emplace<Component>(entity, args...);
     }
+
+    template <typename T, typename... Args>
+    struct contains : std::disjunction<std::is_same<T, Args>...>
+    {
+    };
 
     template <typename Func>
     bool EntityIfExists(entt::entity entity, const Func& func)
@@ -204,6 +217,16 @@ namespace magique
     bool EntityHasComponents(const entt::entity entity)
     {
         return internal::REGISTRY.all_of<Args...>(entity);
+    }
+
+    template <typename... Args>
+    void ComponentRemove(entt::entity entity)
+    {
+        internal::REGISTRY.remove<Args...>(entity);
+        if constexpr (contains<CollisionC, Args...>::value)
+        {
+            internal::OnRemoveCollisionC(entity);
+        }
     }
 
     template <typename... Args>

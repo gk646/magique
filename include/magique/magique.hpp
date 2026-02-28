@@ -75,7 +75,8 @@
 #include "ui/controls/TextField.h"
 #include "ui/controls/Slider.h"
 #include "ui/controls/Checkbox.h"
-#include "ui/controls/ListMenu.h"
+#include "ui/controls/ListChooser.h"
+#include "ui/controls/GridChooser.h"
 #include "ui/controls/ScrollPane.h"
 #include "ui/controls/DropDown.h"
 

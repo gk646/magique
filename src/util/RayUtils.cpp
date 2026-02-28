@@ -12,6 +12,9 @@
 
 namespace magique
 {
+
+    Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
+
     float MeasureTextUpTo(const char* text, const int index, const Font& f, const float fontSize, const float spacing)
     {
         char* nonConstText = const_cast<char*>(text);

@@ -34,7 +34,7 @@ namespace magique
         Point getScrollOffset() const;
 
         // Adds content that will be drawn
-        void setContent(UIObject* content);
+        void setContent(UIObject& content);
         UIObject* getContent() const;
 
         // Sets the base anchor position of the content
@@ -57,8 +57,8 @@ namespace magique
 
         void onDraw(const Rect& bounds) override
         {
-            drawContent();
             drawDefault(bounds);
+            drawContent();
         }
 
         // Correctly aligns and draws the content

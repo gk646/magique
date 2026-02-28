@@ -1,5 +1,5 @@
-#ifndef MAGEQUEST_LISTMENU_H
-#define MAGEQUEST_LISTMENU_H
+#ifndef MAGEQUEST_LIST_CHOOSER_H
+#define MAGEQUEST_LIST_CHOOSER_H
 
 #include <string>
 #include <vector>
@@ -8,30 +8,31 @@
 #include <functional>
 
 //===============================================
-// List Menu
+// List Chooser
 //===============================================
 // .....................................................................
-// List menu is a control that holds a list of string values stacked vertically for the user to choose from
-// If entry is clicked its selected. Selection is persistent (until changed) and can be queried and cleared
-// Its very customizable with a DrawEntryFunc - using this you can completely customize the entry:
+// ListChooser is a control that holds a list of string values stacked vertically for the user to choose from
+// If an entry is clicked, it's selected. Selection is persistent (until changed) and can be queried and cleared
+// It's very customizable through DrawEntryFunc - using this you can completely customize the entry:
 //  - Drawing icons, animations or multiline text, ...
 // .....................................................................
 
 namespace magique
 {
 
-    using SelectFunc = std::function<void(const std::string&)>;
+    template <typename T>
+    using SelectFunc = std::function<void(const T& item)>;
 
     // How to draw an item - returns the height of the entry - called for all entries
     // Called with top left position of entry, text , index and status
-    using DrawEntryFunc = std::function<float(Point pos, const char* txt, int idx, bool hovered, bool selected)>;
+    using DrawItemFunc = std::function<float(Point pos, std::string_view txt, int idx, bool hovered, bool selected)>;
 
-    struct ListMenu : UIObject
+    struct ListChooser : UIObject
     {
         // Creates a new ListMenu from coordinates in the logical UI resolution
-        ListMenu(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
+        ListChooser(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
-        // Draws all entries by calling drawEntryDefault or if set a custom draw function
+        // Draws all entries by calling drawEntryDefault or (if set) uses a custom draw function
         void onDraw(const Rect& bounds) override;
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
@@ -63,22 +64,22 @@ namespace magique
         void setSelected(std::string_view item);
 
         // Allows to set a custom callback called everytime a (new) value is selected
-        void setOnSelect(const SelectFunc& func);
+        void setOnSelect(const SelectFunc<std::string>& func);
 
         // Sets a custom function to draw items
         // Default: Uses drawDefaultEntry
-        void setDrawEntryFunc(const DrawEntryFunc& func);
+        void setDrawEntryFunc(const DrawItemFunc& func);
 
     protected:
         // Draws a default representation of an entry
-        float drawDefaultEntry(const Point& pos, const char* txt, bool isHovered, bool isSelected) const;
+        float drawDefaultEntry(const Point& pos, std::string_view txt, bool isHovered, bool isSelected) const;
 
         // Updates hovered and selected items and sets the height based on element count
         void updateState();
 
     private:
-        SelectFunc selectFunc;
-        DrawEntryFunc drawFunc;
+        SelectFunc<std::string> selectFunc;
+        DrawItemFunc drawFunc;
         struct Entry final
         {
             std::string text;
@@ -92,4 +93,4 @@ namespace magique
 } // namespace magique
 
 
-#endif // MAGEQUEST_LISTMENU_H
+#endif // MAGEQUEST_LIST_CHOOSER_H

@@ -31,7 +31,6 @@ namespace magique
                     return;
                 }
             }
-            LOG_ERROR("Connection could not be removed?!");
         }
 
         [[nodiscard]] int getNum(Connection conn) const

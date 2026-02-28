@@ -16,7 +16,7 @@
 namespace magique
 {
     // Returns a random float using raylib's GetRandomValue() - min and max included
-    float MathRandom(float min, float max);
+    float MathRandom(float min  = 0.0F, float max = 1.0F);
 
     // Returns the value at the given step (0 to 1) on the scale between min and max - linear interpolation
     //      - step: value between 0 and 1 (inclusive) of where on the scale the value is

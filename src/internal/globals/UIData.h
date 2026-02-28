@@ -116,7 +116,7 @@ namespace magique
             {
                 if (usingGamepad)
                 {
-                    DisableCursor();
+                    HideCursor();
                 }
                 else
                 {

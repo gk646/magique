@@ -8,7 +8,7 @@ namespace magique::internal
 {
     StorageContainer::~StorageContainer()
     {
-        if (!cells.empty() && (!isLoaded || !isSaved))
+        if (!cells.empty() && !(isLoaded || isSaved))
         {
             LOG_WARNING("GameSave/GameConfig is not empty and destroyed without usage!");
         }

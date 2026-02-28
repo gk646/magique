@@ -108,6 +108,13 @@ namespace magique
         p2 = rect.height;
     }
 
+    void CollisionC::setCircleShape(float radius)
+    {
+        p1 = radius;
+        p2 = radius;
+        shape = Shape::CIRCLE;
+    }
+
     Point CollisionC::GetMiddle(const entt::entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
@@ -130,9 +137,9 @@ namespace magique
         switch (shape)
         {
         case Shape::RECT:
-            return (Point{p1, p2} / 2.0F) + offset;
+            return Point{p1, p2} / 2.0F + offset;
         case Shape::CIRCLE:
-            return Point{p1, p2} + offset;
+            return Point{p1, p1} + offset;
         case Shape::TRIANGLE:
             break;
         }

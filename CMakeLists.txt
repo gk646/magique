@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.10
+        VERSION 0.9.11
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 

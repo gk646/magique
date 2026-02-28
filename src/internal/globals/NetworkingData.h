@@ -40,7 +40,7 @@ namespace magique
     {
         LobbyData lobby;
         MultiplayerStatistics statistics{};
-        NetworkCallback callback;                   // Callback
+        NetworkCallback callback = {};              // Callback
         std::vector<Connection> connections;        // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping; // Holds all the manually set mappings
         std::vector<SteamMapping> steamMapping;
@@ -84,9 +84,9 @@ namespace magique
 #endif
         }
 
-        void goOnline(const bool asHost, Connection conn = Connection::INVALID)
+        void goOnline(const bool host, Connection conn = Connection::INVALID)
         {
-            if (asHost) // For client deferred until host actually accepts
+            if (host) // For client deferred until host actually accepts
             {
                 inSession = true;
             }
@@ -95,7 +95,7 @@ namespace magique
                 connections.push_back(conn);
                 numberMapping.addConnection(conn);
             }
-            isHost = asHost;
+            isHost = host;
             statistics.reset();
         }
 
@@ -106,7 +106,6 @@ namespace magique
                 SteamNetworkingSockets()->CloseListenSocket(listenSocket);
                 listenSocket = k_HSteamListenSocket_Invalid;
             }
-            MAGIQUE_ASSERT(listenSocket == k_HSteamListenSocket_Invalid, "Socket wasnt closed!");
             // Release the batch if exists
             for (const auto msg : outMsgBuffer)
             {
@@ -118,8 +117,8 @@ namespace magique
                 if (msg != nullptr)
                     msg->Release();
             }
-            incMsgVec.clear();
             incMsgBuffer.clear();
+            incMsgVec.clear();
             connections.clear();
             connectionMapping.clear();
             steamMapping.clear();
@@ -139,19 +138,24 @@ namespace magique
 #endif
         }
 
-        // Called if host and a client disconnects or is removed
-        void onClientDisconnected(Connection client)
+        // Called a connection is disconnected
+        void onConnectionDisconnect(Connection conn)
         {
-            numberMapping.removeConnection(client);
-            std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == client; });
-            std::erase_if(steamMapping, [&](auto& mapping) { return mapping.conn == client; });
-            std::erase(connections, client);
+            numberMapping.removeConnection(conn);
+            std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == conn; });
+            std::erase_if(steamMapping, [&](auto& mapping) { return mapping.conn == conn; });
+            std::erase(connections, conn);
+            if (inSession && !isHost && connections.empty()) // For client no point with no connections
+            {
+                goOffline();
+            }
         }
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
         {
             const auto steamId = static_cast<SteamID>(pParam->m_info.m_identityRemote.GetSteamID64());
             const auto conn = static_cast<Connection>(pParam->m_hConn);
+            const NetworkEventData eventData{steamId, pParam->m_info.m_eEndReason, pParam->m_info.m_szEndDebug};
             if (isHost)
             {
                 // New connection arriving at a listen socket
@@ -161,12 +165,8 @@ namespace magique
                 {
                     if (connections.size() == MAGIQUE_MAX_PLAYERS - 1)
                     {
-                        if (callback)
-                        {
-                            callback(NetworkEvent::HOST_TOO_MANY_CONNECTIONS, conn, steamId);
-                        }
-                        LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d",
-                                    MAGIQUE_MAX_PLAYERS - 1);
+                        callback(NetworkEvent::HOST_TOO_MANY_CONNECTIONS, conn, eventData);
+                        LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d", MAGIQUE_MAX_PLAYERS);
                         return;
                     }
 
@@ -177,10 +177,7 @@ namespace magique
 #ifdef MAGIQUE_STEAM
                         steamMapping.push_back({conn, steamId});
 #endif
-                        if (callback)
-                        {
-                            callback(NetworkEvent::HOST_NEW_CONNECTION, conn, steamId);
-                        }
+                        callback(NetworkEvent::HOST_NEW_CONNECTION, conn, eventData);
                         LOG_INFO("Host accepted a new client connection");
                     }
                     else
@@ -189,8 +186,7 @@ namespace magique
                     }
                 }
             }
-
-            if (!isHost)
+            else
             {
                 // Connection has been accepted by the remote host
                 if ((pParam->m_eOldState == k_ESteamNetworkingConnectionState_Connecting ||
@@ -198,11 +194,8 @@ namespace magique
                     pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
                 {
                     inSession = true; // Deferred until here - could be just connection build up
+                    callback(NetworkEvent::CLIENT_CONNECTION_ACCEPTED, conn, eventData);
                     LOG_INFO("A connection initiated by us was accepted by the remote host.");
-                    if (callback)
-                    {
-                        callback(NetworkEvent::CLIENT_CONNECTION_ACCEPTED, conn, steamId);
-                    }
                 }
             }
 
@@ -214,22 +207,15 @@ namespace magique
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
                 if (isHost)
                 {
-                    if (callback)
-                    {
-                        callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn, steamId);
-                    }
-                    onClientDisconnected(conn);
+                    callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn, eventData);
                     LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
                 }
                 else // If you're a client and the host disconnects
                 {
-                    if (callback)
-                    {
-                        callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn, steamId);
-                    }
-                    goOffline();
+                    callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn, eventData);
                     LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
                 }
+                onConnectionDisconnect(conn);
             }
 
             // Connection closed locally due to a problem
@@ -241,22 +227,15 @@ namespace magique
                 const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
-                    if (callback)
-                    {
-                        callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn, steamId);
-                    }
-                    onClientDisconnected(conn);
+                    callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn, eventData);
                     LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
                 }
                 else
                 {
-                    if (callback)
-                    {
-                        callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn, steamId);
-                    }
-                    goOffline();
+                    callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn, eventData);
                     LOG_INFO("Local problem with connection. Closed session: %s", errStr);
                 }
+                onConnectionDisconnect(conn);
             }
         }
     };

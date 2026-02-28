@@ -13,7 +13,7 @@ namespace magique
 
     bool Dropdown::getIsOpen() const { return isOpen; }
 
-    ListMenu& Dropdown::getList() { return list; }
+    ListChooser& Dropdown::getList() { return list; }
 
     void Dropdown::updateInputs()
     {

@@ -23,7 +23,6 @@ namespace magique
 
     void DrawRegion(const TextureRegion& region, const Point& pos, const bool flipX, const Color tint)
     {
-        // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
 
         const auto texWidth = static_cast<float>(region.width);
@@ -62,9 +61,8 @@ namespace magique
 
     void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint)
     {
-        auto center = pos;
-        center.x -= std::floor((float)region.width / 2.0F);
-        DrawRegion(region, center, false, tint);
+        const auto center = pos - region.getSize() / 2;
+        DrawRegion(region, center.floor(), false, tint);
     }
 
     void DrawRegionPro(const TextureRegion& region, Rectangle dest, const float rotation, const Point anchor,

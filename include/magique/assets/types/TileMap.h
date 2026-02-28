@@ -57,11 +57,11 @@ namespace magique
         const TiledProperty* getProperty(const char* name) const;
 
     private:
+        M_MAKE_PUB();
         std::vector<std::vector<TileObject>> objectLayers;
         std::vector<std::vector<int16_t>> tileLayers; // Contiguous array for map data
         std::vector<TiledProperty> properties;
         int width = 0, height = 0;
-        friend TileMap ImportTileMap(const Asset&);
     };
 
 } // namespace magique

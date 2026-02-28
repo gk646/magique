@@ -5,6 +5,9 @@
 
 #include <entt/entity/entity.hpp>
 #include <magique/core/Particles.h>
+
+#include "enchantum/enchantum.hpp"
+
 #include <magique/core/Engine.h>
 #include <magique/util/Math.h>
 #include <magique/util/RayUtils.h>
@@ -14,13 +17,13 @@
 
 namespace magique
 {
-    void ParticlesDraw() { global::PARTICLE_DATA.render(); }
+    void ParticlesDraw(ParticleLayer layer) { global::PARTICLE_DATA.render(layer); }
 
     float ParticlesGetAmountScale() { return global::PARTICLE_DATA.scale; }
 
     void ParticlesSetAmountScale(float amount) { global::PARTICLE_DATA.scale = amount; }
 
-    void ParticlesEmit(const ScreenEmitter& emitter, Point pos, int amount)
+    void ParticlesEmit(const ScreenEmitter& emitter, Point pos, int amount, ParticleLayer layer)
     {
         const auto& data = emitter.data;
         data.emissionPos = pos;
@@ -29,6 +32,7 @@ namespace magique
         {
             ScreenParticle particle;
             particle.emitter = &emitter;
+            particle.layer = layer;
             particle.emissionRotation = emitter.data.rotation;
 
             // x,y
@@ -40,7 +44,7 @@ namespace magique
                     const auto ran2 = MathRandom(0.0F, 1.0F);
                     if (data.volume == 1.0F)
                     {
-                        particle.pos = {ran1 * data.emissionDims.x, ran2 * data.emissionDims.y};
+                        particle.pos = Point{ran1 * (data.emissionDims.x), ran2 * (data.emissionDims.y)};
                     }
                     else
                     {
@@ -97,6 +101,13 @@ namespace magique
                 }
                 break;
             }
+
+            if (emitter.data.shape == Shape::CIRCLE)
+            {
+                particle.pos += emitter.data.particleDims / 2;
+            }
+            particle.pos.floor();
+
             // Higher quality randomness should be worth it - and the random is pretty fast
             // So we call GetRandomValue() often instead of once
 
@@ -113,12 +124,8 @@ namespace magique
             particle.p2 = static_cast<int16_t>(std::round(data.particleDims.y));
 
             // Lifetime
-            particle.lifeTime = data.minLife;
-            if (data.minLife != data.maxLife)
-            {
-                const float p = MathRandom(0, 1.0F);
-                particle.lifeTime = static_cast<uint16_t>((float)(data.minLife + (data.maxLife - data.minLife)) * p);
-            }
+            float lifeSecs = MathRandom(0, 1.0F) * (data.lifeTime.y - data.lifeTime.x) + data.lifeTime.x;
+            particle.lifeTime = (int)std::round(lifeSecs * (float)MAGIQUE_LOGIC_TICKS);
 
             // Spread
             Point direction = data.direction;
@@ -137,17 +144,18 @@ namespace magique
             }
             particle.veloc = direction * velo;
 
-            // Color
-            if (data.poolSize > 0) // Use pool
+            Color best = data.colors.front().color;
+            float maxWeight = 0.0F;
+            for (auto& wColor : data.colors)
             {
-                const int p = GetRandomValue(0, data.poolSize - 1);
-                const auto color = data.colors[p];
-                particle.color = color;
+                auto weight = MathRandom() * wColor.weight ;
+                if (weight > maxWeight)
+                {
+                    maxWeight = weight;
+                    best = wColor.color;
+                }
             }
-            else
-            {
-                particle.color = data.color;
-            }
+            particle.color = best;
 
             // Rest
             particle.age = 0;
@@ -233,52 +241,46 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setColor(const Color& color)
+    EmitterBase& EmitterBase::setColors(const std::vector<Color>& colors)
     {
-        data.color = color;
-        data.poolSize = 0; // Signal not using color pool
-        return *this;
-    }
-
-    EmitterBase& EmitterBase::setColorPool(const std::initializer_list<Color>& colors)
-    {
-        if (colors.size() == 0)
+        if (colors.empty())
         {
             LOG_ERROR("Skipping! You have to pass at least 1 color!");
             return *this;
         }
-
-        if (colors.size() > 5)
+        data.colors.clear();
+        for (auto& color : colors)
         {
-            LOG_WARNING("Passing more than 5 colors! Skipping rest");
+            data.colors.emplace_back(color, 0.5F);
         }
-
-        int i = 0;
-        for (const auto c : colors)
-        {
-            if (i >= 5)
-                break;
-            data.colors[i] = c;
-            ++i;
-        }
-        data.poolSize = static_cast<uint8_t>(colors.size());
         return *this;
     }
 
-    EmitterBase& EmitterBase::setLifetime(const int min, int max)
+    EmitterBase& EmitterBase::setColorsWeighted(const std::vector<WeightedColor>& colors)
     {
-        if (max == 0)
+        if (colors.empty())
         {
-            max = min;
-        }
-
-        if (min > max)
-        {
-            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %d | Max: %d", min, max);
+            LOG_ERROR("Skipping! You have to pass at least 1 color!");
             return *this;
         }
-        data.minLife = static_cast<uint16_t>(min);
-        data.maxLife = static_cast<uint16_t>(max);
+        data.colors = colors;
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setLifetime(Point lifetime)
+    {
+        if (lifetime.y == 0)
+        {
+            lifetime.x = 0;
+        }
+
+        if (lifetime.x > lifetime.y)
+        {
+            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %.2f | Max: %.2f", lifetime.x,
+                      lifetime.y);
+            return *this;
+        }
+        data.lifeTime = lifetime;
         return *this;
     }
 

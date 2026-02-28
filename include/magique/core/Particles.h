@@ -3,7 +3,6 @@
 #define MAGIQUE_PARTICLES_H
 
 #include <initializer_list>
-#include <entt/entity/fwd.hpp>
 #include <magique/internal/InternalTypes.h>
 #include <functional>
 
@@ -15,6 +14,9 @@
 // You create an emitter first (either Entity or Screen) and then create the particle effect by calling
 // the global Create() function with that emitter. An emitter can (and should) be reused as often as you like.
 // Note: Changing the emitter doesn't change already spawned particles (except the tick functions)
+// ParticleLayer can be used distinguish emitted particles later when drawing. This is useful to avoid redrawing
+// game particles in an overlapping menu (or when using particles inside the menu).
+//
 // Uses the builder pattern for syntactic sugar.
 // To begin create a ScreenEmitter emitter; and customize it:
 //      - emitter.setEmissionPosition(150,150).setEmissionShape(Shape::RECT, 20,20);
@@ -23,9 +25,9 @@
 
 namespace magique
 {
-    // Renders all active particles
-    // Note: Needs to be called manually - so you can control at which layer particles are rendered
-    void ParticlesDraw();
+
+    // Immediately renders all particles in that layer
+    void ParticlesDraw(ParticleLayer layer = {});
 
     // Allows to set a global modifier to the amount of particles created
     // Useful cause of single point of truth - modifies all calls
@@ -37,8 +39,9 @@ namespace magique
 
     // Creates new particle(s) from the given emitter - evokes the emitter "amount" many times
     // IMPORTANT: Passed emitter reference has to outlive all particles created by it! (don't pass stack values)
-    // Sets the position of the emission shape - top left for rect, middle point for circle
-    void ParticlesEmit(const ScreenEmitter& emitter, Point position = {}, int amount = 1);
+    // Sets the position of the emission shape - TOP_LEFT for rect, MIDDLE point for circle
+    // Specifying the layer allows to later conditionally only draw certain particles
+    void ParticlesEmit(const ScreenEmitter& emitter, Point position = {}, int amount = 1, ParticleLayer layer = {});
 
     //================= EMITTERS =================//
 
@@ -92,18 +95,15 @@ namespace magique
         // Sets the emission shape to be a circle
         EmitterBase& setParticleShapeCircle(float radius);
 
-        // Sets the color of emitted particles
-        // Default: RED
-        EmitterBase& setColor(const Color& color);
+        // Sets the pool of colors from which one is randomly chosen - must contain at least 1 color
+        EmitterBase& setColors(const std::vector<Color>& colors = {RED});
 
-        // Sets the pool of colors from which one is randomly chosen - up to 5 colors
-        // If set will override the value of setColor() - using setColor() after will override the pool!
-        // Default: empty
-        EmitterBase& setColorPool(const std::initializer_list<Color>& colors);
+        // Same as setColors but allows to specify a weight for each color
+        // Weight is 0.5 per default - all weights are multiplied with random number, highest is picked
+        EmitterBase& setColorsWeighted(const std::vector<WeightedColor>& colors);
 
-        // Sets the lifetime in game ticks - randomly chosen between the min and max
-        // Default: 100
-        EmitterBase& setLifetime(int minLife, int maxLife = 0);
+        // Sets the lifetime in seconds - randomly chosen between the min (x) and max (y)
+        EmitterBase& setLifetime(Point lifetime = {0, 1.0F});
 
         //================= ADDITIONALS =================//
 

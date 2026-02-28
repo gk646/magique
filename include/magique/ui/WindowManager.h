@@ -60,7 +60,7 @@ namespace magique
         //================= UTIL =================//
 
         // Returns true if the given window is covered by any other another window at the given position
-        bool getIsCovered(Window* window, Point pos = GetMousePos());
+        bool getIsCovered(Window* window, Point pos = GetMousePosition());
 
         // Makes the given window the top most window
         void makeTopMost(Window* window);

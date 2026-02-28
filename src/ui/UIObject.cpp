@@ -78,9 +78,47 @@ namespace magique
         pBounds.height = coords.y;
     }
 
+    void UIObject::setBounds(const Rect& dims)
+    {
+        setPosition(dims.pos());
+        setSize(dims.size());
+    }
+
     void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point alignInset)
     {
-        const auto [relX, relY, relWidth, relHeight] = relativeTo.getBounds();
+        align(alignAnchor, relativeTo.getBounds(), alignInset);
+    }
+
+    void UIObject::align(const Direction direction, const UIObject& relativeTo, Point offset)
+    {
+        const auto otherBounds = relativeTo.getBounds();
+        Point pos = {otherBounds.x, otherBounds.y};
+        offset = {UIGetScaled(offset.x), UIGetScaled(offset.y)};
+        switch (direction)
+        {
+        case Direction::LEFT:
+            pos.x = pos.x - getBounds().width + offset.x;
+            pos.y += offset.y;
+            break;
+        case Direction::RIGHT:
+            pos.x += otherBounds.width + offset.x;
+            pos.y += offset.y;
+            break;
+        case Direction::UP:
+            pos.x += offset.x;
+            pos.y -= offset.y;
+            break;
+        case Direction::DOWN:
+            pos.x += offset.x;
+            pos.y += otherBounds.height + offset.y;
+            break;
+        }
+        setPosition(pos);
+    }
+
+    void UIObject::align(Anchor alignAnchor, const Rect& relativeTo, Point alignInset)
+    {
+        const auto [relX, relY, relWidth, relHeight] = relativeTo;
         const auto [myX, myY, myWidth, myHeight] = getBounds();
         Point pos = {relX, relY};
         alignInset = UIGetScaled(alignInset);
@@ -128,34 +166,7 @@ namespace magique
         setPosition(pos);
     }
 
-    void UIObject::align(const Direction direction, const UIObject& relativeTo, Point offset)
-    {
-        const auto otherBounds = relativeTo.getBounds();
-        Point pos = {otherBounds.x, otherBounds.y};
-        offset = {UIGetScaled(offset.x), UIGetScaled(offset.y)};
-        switch (direction)
-        {
-        case Direction::LEFT:
-            pos.x = pos.x - getBounds().width + offset.x;
-            pos.y += offset.y;
-            break;
-        case Direction::RIGHT:
-            pos.x += otherBounds.width + offset.x;
-            pos.y += offset.y;
-            break;
-        case Direction::UP:
-            pos.x += offset.x;
-            pos.y -= offset.y;
-            break;
-        case Direction::DOWN:
-            pos.x += offset.x;
-            pos.y += otherBounds.height + offset.y;
-            break;
-        }
-        setPosition(pos);
-    }
-
-    bool UIObject::getIsHovered() const { return CheckCollisionMouseRect(getBounds()); }
+    bool UIObject::getIsHovered() const { return getBounds().contains(GetMousePos()); }
 
     bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
 
@@ -177,10 +188,7 @@ namespace magique
 
     bool UIObject::getWasDrawn() const { return wasDrawnLastTick; }
 
-    Rect UIObject::getStartBounds() const
-    {
-        return startBounds;
-    }
+    Rect UIObject::getStartBounds() const { return startBounds; }
 
     void UIObject::beginBoundsScissor() const
     {

@@ -1,19 +1,21 @@
 #include <cstring>
 #include <raylib/raylib.h>
-#include <magique/ui/controls/ListMenu.h>
 
-#include "internal/globals/EngineConfig.h"
-#include "magique/ui/UI.h"
+#include <magique/ui/controls/ListChooser.h>
 #include <magique/util/RayUtils.h>
 #include <magique/core/Engine.h>
+#include <magique/ui/UI.h>
+
+#include "internal/globals/EngineConfig.h"
 
 namespace magique
 {
-    ListMenu::ListMenu(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
+    ListChooser::ListChooser(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
+        UIObject(bounds, anchor, inset, mode)
     {
     }
 
-    void ListMenu::onDraw(const Rect& bounds)
+    void ListChooser::onDraw(const Rect& bounds)
     {
         Point pos = {bounds.x, bounds.y};
         for (int i = 0; i < (int)entries.size(); i++)
@@ -26,23 +28,23 @@ namespace magique
             }
             else
             {
-                entrySize = drawDefaultEntry(pos, entry.text.c_str(), hovered == i, selected == i);
+                entrySize = drawDefaultEntry(pos, entry.text, hovered == i, selected == i);
             }
             pos.y += entrySize;
             entry.height = entrySize;
         }
     }
 
-    void ListMenu::clear()
+    void ListChooser::clear()
     {
         hovered = -1;
         selected = -1;
         entries.clear();
     }
 
-    bool ListMenu::empty() const { return entries.empty(); }
+    bool ListChooser::empty() const { return entries.empty(); }
 
-    void ListMenu::add(std::string_view item, int index)
+    void ListChooser::add(std::string_view item, int index)
     {
         if (index < hovered)
         {
@@ -63,7 +65,7 @@ namespace magique
         }
     }
 
-    bool ListMenu::remove(const char* item)
+    bool ListChooser::remove(const char* item)
     {
         for (int i = 0; i < (int)entries.size(); i++)
         {
@@ -76,7 +78,7 @@ namespace magique
         return false;
     }
 
-    bool ListMenu::remove(int index)
+    bool ListChooser::remove(int index)
     {
         if (index >= 0 && index < (int)entries.size())
         {
@@ -94,9 +96,9 @@ namespace magique
         return false;
     }
 
-    int ListMenu::getHoveredIndex() const { return hovered; }
+    int ListChooser::getHoveredIndex() const { return hovered; }
 
-    const char* ListMenu::getHovered() const
+    const char* ListChooser::getHovered() const
     {
         if (hovered != -1)
         {
@@ -105,9 +107,9 @@ namespace magique
         return nullptr;
     }
 
-    int ListMenu::getSelectedIndex() const { return selected; }
+    int ListChooser::getSelectedIndex() const { return selected; }
 
-    const char* ListMenu::getSelected() const
+    const char* ListChooser::getSelected() const
     {
         if (selected != -1)
         {
@@ -116,9 +118,9 @@ namespace magique
         return nullptr;
     }
 
-    void ListMenu::setSelected(int index) { selected = index; }
+    void ListChooser::setSelected(int index) { selected = index; }
 
-    void ListMenu::setSelected(std::string_view item)
+    void ListChooser::setSelected(std::string_view item)
     {
         for (int i = 0; i < (int)entries.size(); i++)
         {
@@ -131,33 +133,33 @@ namespace magique
         }
     }
 
-    void ListMenu::setOnSelect(const SelectFunc& func) { selectFunc = func; }
+    void ListChooser::setOnSelect(const SelectFunc<std::string>& func) { selectFunc = func; }
 
-    void ListMenu::setDrawEntryFunc(const DrawEntryFunc& func) { drawFunc = func; }
+    void ListChooser::setDrawEntryFunc(const DrawItemFunc& func) { drawFunc = func; }
 
-    float ListMenu::drawDefaultEntry(const Point& pos, const char* txt, bool isHovered, bool isSelected) const
+    float ListChooser::drawDefaultEntry(const Point& pos, std::string_view txt, bool isHovered, bool isSelected) const
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const Color backGround = theme.getBodyColor(isHovered, isSelected);
         const Color outline = theme.getOutlineColor(isHovered, isSelected);
-        const Color textColor = theme.getTextColor(isSelected, isHovered);
+        const Color textColor = theme.getTextColor(isHovered, isSelected);
         const auto& fnt = EngineGetFont();
         const float fsize = UIGetScaled(fnt.baseSize);
         const auto bounds = getBounds();
         DrawRectFrameFilled({pos.x, pos.y, bounds.width, fsize + 2.0F}, backGround, outline);
-        DrawTextEx(fnt, txt, {pos.x + 2, pos.y + 1}, fsize, 1.0F, textColor);
+        DrawTextEx(fnt, txt.data(), {pos.x + 2, pos.y + 1}, fsize, 1.0F, textColor);
         return fsize + 2.0F;
     }
 
-    void ListMenu::updateState()
+    void ListChooser::updateState()
     {
         const auto& bounds = getBounds();
-        Point pos = {bounds.x, bounds.y};
+        Point pos = bounds.pos();
         hovered = -1;
         for (int i = 0; i < (int)entries.size(); i++)
         {
             const auto& entry = entries[i];
-            const Rectangle lineRect = {pos.x, pos.y, bounds.width, entry.height};
+            const Rect lineRect = {pos, {bounds.width, entry.height}};
             if (CheckCollisionMouseRect(lineRect) && !LayeredInput::GetIsMouseConsumed())
             {
                 hovered = i;
@@ -167,9 +169,7 @@ namespace magique
                     {
                         selected = i;
                         if (selectFunc)
-                        {
                             selectFunc(entries[i].text);
-                        }
                     }
                     LayeredInput::ConsumeMouse();
                 }

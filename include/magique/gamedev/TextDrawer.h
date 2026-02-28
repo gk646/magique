@@ -52,17 +52,21 @@ namespace magique
         // ===== MODS ======//
         // Temporary mod only for the next action
 
-        TextDrawer& sizeMult(int fsm);
+        TextDrawer& modSize(int fsm);
+
+        TextDrawer& modOffset(Point offset);
 
         // Highlights numbers in a different color
-        TextDrawer& highlight(Color numberHighlight);
-        TextDrawer& offset(Point offset);
+        TextDrawer& modHighlight(Color numberHighlight);
 
         // shades the next drawn text the given color
-        TextDrawer& shade(Color shade);
+        TextDrawer& modShade(Color shade);
 
+        // Centers the text action vertically inside bounds
+        TextDrawer& modCenterV();
 
-        // Helpers
+        // ===== Helpers ======//
+
         float textWidth(const std::string_view& txt) const;
 
         // Returns the new lines added inplace to the given string
@@ -70,8 +74,9 @@ namespace magique
 
         // getters
         Point getCursor() const;
-        Rect& getBounds();
+        Rect getBounds();
         Rect getBounds() const;
+        Rect getGap() const;
 
     private:
         void drawText(Point pos, std::string_view txt, Color tint);
@@ -85,9 +90,11 @@ namespace magique
 
         // Mods that can be set
         Color modHighlightColor = BLANK;
-        Point modOffset{};
+        Point modOfffset{};
         Color shadeColor{};
         int modSizeMult = 1;
+        bool modCenterVert = false;
+
         Font font;
     };
 

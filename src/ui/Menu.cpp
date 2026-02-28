@@ -8,20 +8,22 @@ namespace magique
 {
     Menu::Menu() : UIContainer(Rect{}) {}
 
-    void Menu::addSubMenu(Menu* menu, std::string_view name)
+    Menu* Menu::addSubMenu(Menu* menu, std::string_view name)
     {
         if (menu != nullptr)
         {
             menu->parent = this;
             addChild(menu, name);
+            return menu;
         }
+        return nullptr;
     }
 
     bool Menu::removeSubMenu(std::string_view name) { return removeChild(name); }
 
     bool Menu::activateSubmenu(std::string_view name)
     {
-        auto* child = (Menu*)getChild(name);
+        auto* child = static_cast<Menu*>(getChild(name));
         return activateSubmenu(child);
     }
 
@@ -35,9 +37,9 @@ namespace magique
         {
             if (child == menu)
             {
-                subMenu = (Menu*)child;
-                subMenu->isActive = true;
+                subMenu = static_cast<Menu*>(child);
                 isActive = false;
+                subMenu->activate();
                 return true;
             }
         }
@@ -57,20 +59,17 @@ namespace magique
             else
             {
                 menu = menu->getChild(child)->getAs<Menu>();
+                menu->inactivateChildren();
             }
         }
     }
 
 
-    void Menu::activateParent()
+    void Menu::activateParent() const
     {
         if (parent != nullptr)
         {
-            isActive = false;
-            subMenu = nullptr;
-            parent->subMenu = nullptr;
-            parent->isActive = true;
-            inactivateChildren();
+            parent->activate();
         }
     }
 
@@ -81,11 +80,13 @@ namespace magique
         subMenu = nullptr;
     }
 
+    void Menu::disable() { isActive = false; }
+
     bool Menu::getIsTopLevel() const { return parent == nullptr; }
 
     bool Menu::getIsActive() const { return isActive; }
 
-    void Menu::onDraw(const magique::Rect& bounds)
+    void Menu::onDraw(const Rect& bounds)
     {
         if (subMenu != nullptr)
         {

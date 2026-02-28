@@ -25,7 +25,10 @@ namespace magique::internal
     {
         std::function<void(T&)> func;
         explicit LambdaTask(std::function<void(T&)> func) : func(std::move(func)) {}
-        void execute(T& res) override { func(res); }
+        void execute(T& res) override
+        {
+            func(res);
+        }
     };
 
     struct IExecutor

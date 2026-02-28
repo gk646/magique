@@ -98,6 +98,7 @@ namespace magique
 
         // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
+        Point normal() const;
 
         // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
         Point& normalizeManhattan();
@@ -145,7 +146,7 @@ namespace magique
         operator Rectangle() const;
 
         // Returns the rect the is spanned by the two points
-        static Rect FromPoints(const Point& p1, const Point& p2);
+        static Rect FromSpanPoints(const Point& p1, const Point& p2);
 
         // Returns a rectangle that is centered on p with the given size
         static Rect CenteredOn(const Point& p, const Point& size);
@@ -158,7 +159,7 @@ namespace magique
         Rect operator+(const Point& p) const; // only x and y
         Rect& operator=(const Point& p);      // only x and y
         Rect operator-(const Point& p) const; // only x and y
-        Rect& operator-=(const Point& p) ; // only x and y
+        Rect& operator-=(const Point& p);     // only x and y
 
         bool operator==(float num) const; // checks all
 
@@ -201,6 +202,11 @@ namespace magique
 
         // Returns the shortest possible distance to connect point p with rect r
         float shortestDist(const Point& p) const;
+
+        // Returns the corner points - topLeft is pos()
+        Point topRight() const;
+        Point bottomRight() const;
+        Point bottomLeft() const;
     };
 
     // Represents a rotation angle - 0 degree is looking up, rotates clockwise
@@ -245,12 +251,12 @@ namespace magique
 
         Color warning;
         Color error;
+        Color affirmative;
 
         // Colors for controls
         Color getBodyColor(bool hovered, bool pressed) const;
         Color getOutlineColor(bool hovered, bool pressed) const;
-
-        Color getTextColor(bool selected, bool hovered) const;
+        Color getTextColor(bool hovered, bool selected) const;
     };
 
     //================= ASSETS =================//
@@ -375,11 +381,11 @@ namespace magique
         const TiledProperty* getProperty(const char* propertyName) const;
 
     private:
+        M_MAKE_PUB();
         int tileId = 0;
         const char* name = nullptr;
         int id = INT32_MAX;
         TiledProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES];
-        friend TileMap ImportTileMap(const Asset& asset);
     };
 
     struct TileInfo final
@@ -624,6 +630,16 @@ namespace magique
         French,
     };
 
+    enum class ParticleLayer : uint8_t; // Allows to draw particle in multiple layers (e.g. game, menus, ...)
+
+    struct WeightedColor
+    {
+        WeightedColor() = default;
+        WeightedColor(Color color, float weight = 0.5F) : color(color), weight(weight) {}
+        Color color;
+        float weight = 0.5F;
+    };
+
     //================= MULTIPLAYER =================//
 
     enum class SendFlag : uint8_t
@@ -864,6 +880,7 @@ namespace magique
         uint16_t lifeTime;    // Lifetime
         Shape shape;          // Shape
         bool angular = false; // If gravity is angular or not
+        ParticleLayer layer;
     };
 
     // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSaveData...)

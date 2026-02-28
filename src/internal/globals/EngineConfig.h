@@ -2,9 +2,12 @@
 #ifndef MAGIQUE_ENGINE_CONFIG_H
 #define MAGIQUE_ENGINE_CONFIG_H
 
+#include <cmath>
+
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
 #include <magique/ui/LoadingScreen.h>
+#include <magique/ui/UI.h>
 #include <magique/util/Logging.h>
 
 namespace magique
@@ -41,21 +44,24 @@ namespace magique
         bool isClientMode = false;              // Flag to disable certain engine tasks on multiplayer clients
         bool useGameConfig = true;
 
+        float getFontSize() const { return std::ceil(UIGetScaled(1) * font.baseSize); }
+
         void onInit()
         {
             loadingScreen = new LoadingScreen();
             Theme adwaita{};
             adwaita.textHighlight = WHITE;
             adwaita.text = Color{192, 191, 188, 255};
-            adwaita.textPassive = Color{119, 119,  119, 255};
+            adwaita.textPassive = Color{119, 119, 119, 255};
 
-            adwaita.backHighlight = Color{69,69,72, 255};
+            adwaita.backHighlight = Color{69, 69, 72, 255};
             adwaita.backActive = Color{46, 46, 50, 255};
             adwaita.background = Color{34, 34, 38, 255};
             adwaita.backOutline = Color{21, 21, 24, 255};
 
             adwaita.error = Color{246, 97, 81, 255};
             adwaita.warning = Color{255, 163, 72, 255};
+            adwaita.affirmative = Color{91, 200, 175, 255};
             theme = adwaita;
         }
     };

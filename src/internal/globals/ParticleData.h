@@ -9,7 +9,6 @@
 #include <magique/util/Logging.h>
 
 #include "external/raylib-compat/rshapes_compat.h"
-#include "magique/util/Math.h"
 
 namespace magique
 {
@@ -36,7 +35,7 @@ namespace magique
             }
         }
 
-        void render() const
+        void render(ParticleLayer layer) const
         {
             rlSetTexture(GetShapesTexture().id);
             const auto shapeRect = GetTexShapesRect();
@@ -51,6 +50,8 @@ namespace magique
             rlBegin(RL_QUADS);
             for (const auto& p : rectangles)
             {
+                if (p.layer != layer) // TODO Quick and dirty - faster if separated
+                    continue;
                 const auto& [r, g, b, a] = p.color;
                 rlColor4ub(r, g, b, a);
                 rlVertex2f(p.pos.x, p.pos.y);
@@ -62,6 +63,8 @@ namespace magique
 
             for (const auto& p : circles)
             {
+                if (p.layer != layer)
+                    continue;
                 DrawCircleSector(p.pos, p.p1, 0, 360, 9, p.color);
             }
 

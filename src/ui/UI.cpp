@@ -26,7 +26,7 @@ namespace magique
             point = {topLeft.x + inset.x, topLeft.y + (bounds.y - size.y) / 2};
             break;
         case Anchor::MID_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2, topLeft.y + (bounds.y - size.y) / 2};
+            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + (bounds.y - size.y) / 2 + inset.y};
             break;
         case Anchor::MID_RIGHT:
             point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + (bounds.y - size.y) / 2};
@@ -82,8 +82,6 @@ namespace magique
     }
 
     Point UIGetTargetResolution() { return global::UI_DATA.targetRes; }
-
-    Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
     Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
 
@@ -166,7 +164,7 @@ namespace magique
     MouseToWorld::MouseToWorld()
     {
         prev = GetMousePosition();
-        auto worldMouse = GetScreenToWorld2D(prev, magique::CameraGet());
+        auto worldMouse = GetScreenToWorld2D(prev, CameraGet());
         SetMousePositionDirect(worldMouse.x, worldMouse.y);
     }
 

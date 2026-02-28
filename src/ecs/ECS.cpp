@@ -35,6 +35,16 @@ namespace magique
         return true;
     }
 
+    bool EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc)
+    {
+        bool result = true;
+        for (const auto type : types)
+        {
+            result &= EntityRegister(type, createFunc);
+        }
+        return result;
+    }
+
     bool EntityUnregister(const EntityType type)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
@@ -124,33 +134,33 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;
         auto& registry = internal::REGISTRY;
-        if (registry.valid(entity)) [[likely]]
-        {
-            const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
-            if (data.destroyCallback)
-            {
-                data.destroyCallback(entity);
-            }
-            if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
-            {
-                ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
-            }
 
-            data.entityUpdateCache.erase(entity);
-            std::erase(data.drawVec, entity);
-            std::erase(data.entityUpdateVec, entity);
-            std::erase(data.collisionVec, entity);
-            data.entityNScriptedSet.erase(entity);
-            dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
-            global::PATH_DATA.solidEntities.erase(entity);
-            if (entity == CameraGetEntity())
-            {
-                data.cameraEntity = entt::null;
-            }
-            registry.destroy(entity);
-            return true;
+        if (!registry.valid(entity))
+        {
+            return false;
         }
-        return false;
+
+        const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
+        if (data.destroyCallback)
+            data.destroyCallback(entity);
+        if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
+        {
+            ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
+        }
+
+        data.entityUpdateCache.erase(entity);
+        std::erase(data.drawVec, entity);
+        std::erase(data.entityUpdateVec, entity);
+        std::erase(data.collisionVec, entity);
+        data.entityNScriptedSet.erase(entity);
+        dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
+        global::PATH_DATA.solidEntities.erase(entity);
+        if (entity == CameraGetEntity())
+        {
+            data.cameraEntity = entt::null;
+        }
+        registry.destroy(entity);
+        return true;
     }
 
     void EntityDestroy(const std::initializer_list<EntityType>& ids)
@@ -222,7 +232,9 @@ namespace magique
 
     CollisionC& ComponentGiveCollisionCircle(const entt::entity e, const float radius)
     {
-        return internal::REGISTRY.emplace<CollisionC>(e, radius, radius, 0.0F, 0.0F, Point{}, Point{}, Shape::CIRCLE);
+        auto& col = internal::REGISTRY.emplace<CollisionC>(e);
+        col.setCircleShape(radius);
+        return col;
     }
 
     CollisionC& ComponentGiveCollisionTri(const entt::entity e, const Point p2, const Point p3, Point anchor)
@@ -249,14 +261,10 @@ namespace magique
             return;
         }
 
-        if (EntityHasComponents<CameraC>(target))
-        {
-            LOG_WARNING("Target entity is already the camera holder!");
-            return;
-        }
-
         ComponentRemove<CameraC>(CameraGetEntity());
         reg.emplace<CameraC>(target);
+        global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(target).map;
+        global::ENGINE_DATA.cameraEntity = target;
     }
 
     static HashSet<entt::entity>& QueryLoadedIMPL(MapID map, const Rect& area)
@@ -334,4 +342,13 @@ namespace magique
         return set.values();
     }
 
+    void internal::OnRemoveCollisionC(entt::entity entity)
+    {
+        auto& data = global::ENGINE_DATA;
+        auto& dynamic = global::DY_COLL_DATA;
+        const auto& pos = POSITION_GROUP.get<const PositionC>(entity);
+        std::erase(data.collisionVec, entity);
+        dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
+        global::PATH_DATA.solidEntities.erase(entity);
+    }
 } // namespace magique

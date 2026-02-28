@@ -84,8 +84,8 @@ namespace magique
     block++;
 
             UPDATE_BLOCK(GetFPS(), "FPS: %d");
-            UPDATE_BLOCK(updateTick.getAvgMillis(), "Update: %.1f");
-            UPDATE_BLOCK(drawTick.getAvgMillis(), "Draw: %.1f");
+            UPDATE_BLOCK(updateTick.lastMillis(), "Update: %.1f");
+            UPDATE_BLOCK(drawTick.lastMillis(), "Draw: %.1f");
             UPDATE_BLOCK(GetPrevDrawCalls(), "Draw Calls: %.1d");
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)

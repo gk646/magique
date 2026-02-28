@@ -4,6 +4,7 @@
 namespace magique
 {
 
+    // In seconds
     struct BenchmarkEntry
     {
         void reset()
@@ -19,7 +20,9 @@ namespace magique
             ticks++;
             return seconds;
         }
+
         float last() const { return latest; }
+        float lastMillis() const { return latest * 1000; }
         float getAvgSeconds() const { return static_cast<float>(accumulated / ticks); }
         float getAvgMillis() const { return static_cast<float>(accumulated / ticks * 1000); }
 

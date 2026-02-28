@@ -484,7 +484,7 @@ namespace magique
             }
         }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data;
+        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data{};
     };
 
     // To prevent false sharing when accessed in multithread context

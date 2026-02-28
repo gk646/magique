@@ -31,7 +31,7 @@ namespace magique
         Menu();
 
         // Note: Adds the menu as children to the UIContainer
-        void addSubMenu(Menu* menu, std::string_view name);
+        Menu* addSubMenu(Menu* menu, std::string_view name);
         bool removeSubMenu(std::string_view name);
 
         // Sets the given submenu active
@@ -44,10 +44,14 @@ namespace magique
         void activateNested(std::string_view nestedMenu);
 
         // Gives control back to the parent
-        void activateParent();
+        void activateParent() const;
 
         // Sets this menu active - sets all children inactive
         void activate();
+
+        // Sets this menu to not being active
+        // Note: Allows to conditionally not draw the menu by using getIsActive() as it returns false if inactive
+        void disable();
 
         // Returns true if this menu is a top menu (no parents)
         bool getIsTopLevel() const;
@@ -76,7 +80,11 @@ namespace magique
 
         // Called when menu is active and exit button is pressed to switch to parent
         // If returns false action will be blocked
-        virtual bool onExitRequest() { return true; }
+        virtual bool onExitRequest()
+        {
+            disable();
+            return true;
+        }
 
     private:
         void inactivateChildren();

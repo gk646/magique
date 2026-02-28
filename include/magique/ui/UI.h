@@ -57,11 +57,6 @@ namespace magique
     void UISetPopup(Popup* popup);
     Popup UIGetPopup();
 
-    //================= UTIL =================//
-
-    // Same as raylib's but returns a magique::Point
-    Point GetMousePos();
-
     // Return the world mouse pos using CameraGet()
     Point GetWorldMousePos();
 
@@ -77,7 +72,7 @@ namespace magique
     // Returns a rectangle that adjusted to be on the screen (target resolution) by picking which corner the mouse is
     // Default its bottom right corner is the mouse position - can be offset manually
     // Note: Useful for tooltips
-    Rectangle UIGetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePos());
+    Rectangle UIGetRectOnScreen(const Point& offset, float width, float height, Point base = GetMousePosition());
 
     // Getters for input that allows for consumption - when consumed all methods return false
     // The consumed state is automatically reset at the beginning of each update tick
@@ -104,6 +99,17 @@ namespace magique
         static void ConsumeMouse();
         static bool GetIsKeyConsumed();
         static bool GetIsMouseConsumed();
+    };
+
+
+    struct ControllerInputMap
+    {
+        ControllerInputMap(UIObject& object);
+
+        virtual void onLeft();
+        virtual void onRight();
+        virtual void onUp();
+        virtual void onDown();
     };
 
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space

@@ -81,10 +81,17 @@ namespace magique
     // Returns the vector that contains all current valid connections
     const std::vector<Connection>& NetworkGetConnections();
 
+    struct NetworkEventData
+    {
+        SteamID steam;                // Steamid (only valid if using global sockets) else SteamID::INVALID
+        int closeCode;                // Specified close code
+        std::string_view closeReason; // Specified close string
+    };
+
     // Called with the current even and the affected connection
     // ClientEntity mappings will be deleted after the callback (on disconnect)
     // SteamID will be SteamID::INVALID when using LocalSocket
-    using NetworkCallback = std::function<void(NetworkEvent event, Connection conn, SteamID steam)>;
+    using NetworkCallback = std::function<void(NetworkEvent event, Connection conn, const NetworkEventData& data)>;
 
     // Sets the callback function that is called on various multiplayer events
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered

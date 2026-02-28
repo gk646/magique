@@ -218,6 +218,12 @@ namespace magique
         return *this;
     }
 
+    Point Point::normal() const
+    {
+        auto ret = *this;
+        return ret.normalize();
+    }
+
     Point& Point::normalizeManhattan()
     {
         const auto magnitude = std::abs(x) + std::abs(y);
@@ -325,7 +331,7 @@ namespace magique
 
     Rect::operator Rectangle() const { return {x, y, width, height}; }
 
-    Rect Rect::FromPoints(const Point& p1, const Point& p2)
+    Rect Rect::FromSpanPoints(const Point& p1, const Point& p2)
     {
         const Point smallest = {std::min(p1.x, p2.x), std::min(p1.y, p2.y)};
         const Point biggest = {std::max(p1.x, p2.x), std::max(p1.y, p2.y)};
@@ -506,6 +512,12 @@ namespace magique
         return rectPoint.euclidean(p);
     }
 
+    Point Rect::topRight() const { return {x + width, y}; }
+
+    Point Rect::bottomRight() const { return {x + width, y + height}; }
+
+    Point Rect::bottomLeft() const { return {x, y + height}; }
+
     //----------------- ROTATION -----------------//
 
     Rotation::Rotation(float angle) : rotation(angle)
@@ -600,7 +612,7 @@ namespace magique
         return backOutline;
     }
 
-    Color Theme::getTextColor(bool selected, bool hovered) const
+    Color Theme::getTextColor(bool hovered, bool selected) const
     {
         if (selected)
         {

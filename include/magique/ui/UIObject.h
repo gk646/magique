@@ -69,6 +69,9 @@ namespace magique
         // Note: Negative values will be ignored
         void setSize(Point size);
 
+        // Sets the position + size
+        void setBounds(const Rect& dims);
+
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
         // Note: Aligns the object once - use setAnchor() for permanent anchoring
@@ -78,6 +81,9 @@ namespace magique
         // Note: See the Direction enum (core/Types.h) for more info how this alignment happens
         // Note: Aligns the object once - use setAnchor() for permanent anchoring
         void align(Direction direction, const UIObject& relativeTo, Point offset = {});
+
+        // Same as others but uses a custom rect as base
+        void align(Anchor alignAnchor, const Rect& relativeTo, Point alignInset = {});
 
         // Returns true if the cursor is over the object
         bool getIsHovered() const;

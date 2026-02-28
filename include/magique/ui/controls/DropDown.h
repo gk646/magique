@@ -1,13 +1,14 @@
 #ifndef STARFIGHTER_DROPDOWN_H
 #define STARFIGHTER_DROPDOWN_H
 
-#include <magique/ui/controls/ListMenu.h>
+#include <magique/ui/controls/ListChooser.h>
 
 //===============================================
 // Dropdown
 //===============================================
 // .....................................................................
-//
+// Dropdown is a composite UIObject that when pressed shows a list of selectable values and displays the current value
+// Uses a ListChooser to display and select an entry
 // .....................................................................
 
 namespace magique
@@ -17,9 +18,11 @@ namespace magique
     {
         Dropdown(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
+        // Returns true if the list is visible
         bool getIsOpen() const;
 
-        ListMenu& getList();
+        // Returns the list
+        ListChooser& getList();
 
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }
@@ -43,7 +46,7 @@ namespace magique
         void drawDefault(const Rect& bounds);
 
     private:
-        ListMenu list;
+        ListChooser list;
         bool isOpen = false;
     };
 

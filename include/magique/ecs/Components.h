@@ -63,6 +63,7 @@ namespace magique
         // Sets the values to be a rectangle - anchor is relative to the offset
         // x and y = offset / size = size / anchor = size/2
         void setRectShape(const Rect& rect, Point anchor = {-1});
+        void setCircleShape(float radius);
 
         // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
         static Point GetMiddle(entt::entity e);

@@ -32,17 +32,14 @@ namespace magique
             // Ensure click started within button
             if (getIsHovered())
             {
-
                 for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
                 {
-                    if (LayeredInput::IsMouseButtonPressed(MouseButton(i)) && !isDisabled)
+                    if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
                     {
                         onClick(bounds, i);
                         if (clickFunc)
-                        {
                             clickFunc(bounds, i);
-                            LayeredInput::ConsumeMouse();
-                        }
+                        LayeredInput::ConsumeMouse();
                     }
                 }
             }
@@ -65,7 +62,7 @@ namespace magique
         const Color body = theme.getBodyColor(isHovered, isHovered && mouseDown);
         const Color outline = theme.getOutlineColor(isHovered, isHovered && mouseDown);
         DrawRectFrameFilled(bounds.floor(), body, outline);
-        drawHoverText(EngineGetFont(), UIGetScaled(1), DARKGRAY, GRAY, WHITE);
+        drawHoverText(EngineGetFont(), UIGetScaled(1), theme.backActive, theme.backHighlight, theme.textHighlight);
     }
 
     void Button::drawHoverText(const Font& fnt, float size, Color back, Color outline, Color text) const
@@ -74,7 +71,6 @@ namespace magique
         {
             return;
         }
-
         auto mouse = GetMousePos();
         const auto dims = MeasureTextEx(fnt, hoverText.c_str(), size, 1.0F);
         Rectangle textRect = {mouse.x, mouse.y, dims.x + 4, dims.y + 2};

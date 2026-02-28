@@ -101,21 +101,19 @@ namespace magique::internal
         Point emissionDims{1, 1};        // RECT: width/height  / CIRCLE: radius
         Point emissionAnchor;
         Point particleDims;
-        Color colors[MAGIQUE_PARTICLE_COLORPOOL_SIZE]{}; // Color pool
-        float minScale = 1, maxScale = 1;              // Scale
-        float minInitVeloc = 1, maxInitVeloc = 1;      // Initial velocity
-        Point direction{};                             // Direction
-        float rotation = 0;                            // Rotation around the anchor
-        float volume = 1.0F;                           // How much of the body will be treated as spawnable area
-        float spreadAngle = 0;                         // Spread angle around the direction
-        Point gravity;                                 // Gravity in x and y direction
+        Point lifeTime;
+        std::vector<WeightedColor> colors;
+        float minScale = 1, maxScale = 1;         // Scale
+        float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
+        Point direction{};                        // Direction
+        float rotation = 0;                       // Rotation around the anchor
+        float volume = 1.0F;                      // How much of the body will be treated as spawnable area
+        float spreadAngle = 0;                    // Spread angle around the direction
+        Point gravity;                            // Gravity in x and y direction
         float angularGravity = 0.0F;
         Point angularVelocity{0, 0};
-        uint16_t minLife = 100, maxLife = 100; // Total lifetime
-        uint8_t poolSize = 0;
         Shape shape = Shape::RECT;
         Shape emShape = Shape::TRIANGLE; // Default is point emission
-        Color color;
     };
 
     enum class ShareCodePropertyType : uint8_t

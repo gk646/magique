@@ -13,6 +13,9 @@
 
 namespace magique
 {
+    // Same as raylib's but returns a magique::Point
+    Point GetMousePos();
+
     // Returns the length of the text up to the specified index
     float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
 
