@@ -98,6 +98,7 @@ namespace magique
     struct SceneManager;
     struct Menu;
     struct Popup;
+    struct Scene;
 
     //================= UTIL =================//
     enum LogLevel : int;

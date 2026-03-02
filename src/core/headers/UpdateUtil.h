@@ -59,6 +59,12 @@ namespace magique
         }
         global::AUDIO_PLAYER.update(); // After game tick cause position updates
         WindowManagerGet().update();
+        auto& data = global::ENGINE_DATA;
+        for (auto e : data.deferredDestroyVec)
+        {
+            EntityDestroy(e);
+        }
+        data.deferredDestroyVec.clear();
     }
 } // namespace magique
 

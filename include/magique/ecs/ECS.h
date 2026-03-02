@@ -81,8 +81,12 @@ namespace magique
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
     void EntityDestroy(const std::initializer_list<EntityType>& ids);
 
-    // Iterates all enemies and destroys them if the function returns true
+    // Iterates ALL enemies and destroys them if the function returns true
     void EntityDestroy(const std::function<bool(entt::entity)>& func);
+
+    // Saves the entity and destroys it AFTER onGameUpdate() but BEFORE onUpdateEnd()
+    // Note: This avoids crashes when systems access entities after they are destroyed immediately during the tick
+    void EntityDestroyDeferred(entt::entity entity);
 
     //================= COMPONENTS =================//
 

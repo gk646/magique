@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/multiplayer/LocalSocket.h>
+
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #ifdef _WIN32
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
@@ -12,11 +13,11 @@
 #include <arpa/inet.h>
 #endif
 
-#include <raylib/raylib.h>
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
 #endif
 #include "internal/globals/NetworkingData.h"
+#include "internal/utils/OSUtil.h"
 
 namespace magique
 {
@@ -97,81 +98,7 @@ namespace magique
         return data.connections[0];
     }
 
-    static std::string IP_ADDR{};
-
-    const char* LocalSocketGetIP()
-    {
-        if (!IP_ADDR.empty())
-        {
-            return IP_ADDR.c_str();
-        }
-#ifdef _WIN32
-        WSADATA wsaData;
-        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) // Initialize Winsock
-        {
-            return nullptr;
-        }
-
-        char hostname[256];
-        if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
-        {
-            WSACleanup();
-            return nullptr;
-        }
-
-        addrinfo hints = {};
-        hints.ai_family = AF_INET; // IPv4
-        hints.ai_socktype = SOCK_STREAM;
-
-        addrinfo* info = nullptr;
-        if (getaddrinfo(hostname, "http", &hints, &info) != 0)
-        {
-            WSACleanup();
-            return nullptr;
-        }
-
-        for (const addrinfo* p = info; p != nullptr;)
-        {
-            const auto* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
-            const auto* ipPointer = inet_ntoa(ipv4->sin_addr);
-            IP_ADDR.append(ipPointer);
-            break; // Get the first IP
-        }
-        freeaddrinfo(info);
-        WSACleanup();
-
-#else // Unix-based systems (Linux/macOS)
-        ifaddrs* ifAddrStruct = nullptr;
-        const ifaddrs* ifa = nullptr;
-
-        if (getifaddrs(&ifAddrStruct) == -1)
-        {
-            return nullptr;
-        }
-
-        for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next)
-        {
-            if (ifa->ifa_addr == nullptr)
-            {
-                continue;
-            }
-
-            if (ifa->ifa_addr->sa_family == AF_INET)
-            {
-                char buff[32];
-                void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
-                inet_ntop(AF_INET, addr, buff, 32);
-                IP_ADDR = buff;
-                break;
-            }
-        }
-        if (ifAddrStruct != nullptr)
-        {
-            freeifaddrs(ifAddrStruct);
-        }
-#endif
-        return IP_ADDR.c_str();
-    }
+    const char* LocalSocketGetIP() { return OSUtilGetLocalIP(); }
 } // namespace magique
 #else
 namespace magique

@@ -4,15 +4,9 @@
 
 namespace magique::updater
 {
-    inline void StartTick()
-    {
+    inline void StartTick() {}
 
-    }
-
-    inline double EndTick(const double startTime)
-    {
-        return global::PERF_DATA.updateTick.add(GetTime() - startTime);
-    }
+    inline double EndTick(const double startTime) { return global::PERF_DATA.updateTick.add(GetTime() - startTime); }
 
     inline double Tick(const double startTime, Game& game, const entt::registry& reg)
     {

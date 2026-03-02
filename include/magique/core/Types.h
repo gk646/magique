@@ -19,8 +19,8 @@ namespace magique
 {
     struct Point final
     {
-        float x;
-        float y;
+        float x = 0.0F;
+        float y = 0.0F;
 
         Point() = default;
         Point(const Vector2& vec);
@@ -132,10 +132,10 @@ namespace magique
 
     struct Rect final
     {
-        float x;
-        float y;
-        float width;
-        float height;
+        float x = 0.0F;
+        float y = 0.0F;
+        float width = 0.0F;
+        float height = 0.0F;
 
         Rect() = default;
         Rect(const Rectangle& rect);

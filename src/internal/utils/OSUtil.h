@@ -14,4 +14,6 @@ void SetupProcessPriority();
 // Returns the amount of bytes in this process memory working set
 uint64_t GetMemoryWorkingSet();
 
-#endif //MAGIQUE_OSUTIL_H
+const char* OSUtilGetLocalIP();
+
+#endif // MAGIQUE_OSUTIL_H

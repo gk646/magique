@@ -223,6 +223,8 @@ namespace magique
         }
     }
 
+    void EntityDestroyDeferred(entt::entity entity) { global::ENGINE_DATA.deferredDestroyVec.push_back(entity); }
+
     CollisionC& ComponentGiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
         auto& col = internal::REGISTRY.emplace<CollisionC>(entity);

@@ -10,7 +10,7 @@
 // Button
 //===============================================
 // .....................................................................
-// The button control
+// A button is a pressable control where you can set callbacks to when pressed
 // Note: IF you override onUpdate() dont forget to call updateActions()
 // .....................................................................
 
@@ -38,9 +38,9 @@ namespace magique
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 
         // Called each tick on update thread
-        void onUpdate(const Rect& bounds, bool isDrawn) override
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
-            if (isDrawn)
+            if (wasDrawn)
                 updateActions(bounds);
         }
 

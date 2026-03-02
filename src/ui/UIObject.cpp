@@ -62,8 +62,8 @@ namespace magique
 
     Point UIObject::getPosition() const
     {
-        auto bounds = getBounds();
-        return {bounds.x, bounds.y};
+        const auto bounds = getBounds();
+        return bounds.pos();
     }
 
     void UIObject::setSize(Point size)

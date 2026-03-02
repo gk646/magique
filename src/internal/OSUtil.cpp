@@ -1,4 +1,6 @@
 #include <cstdint>
+#include <string>
+
 #ifdef _WIN32
 #define NOGDICAPMASKS     // CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 #define NOVIRTUALKEYCODES // VK_*
@@ -49,6 +51,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <sys/time.h>
+#include <arpa/inet.h>
+#include <ifaddrs.h>
 #include <cstring>
 #elif __APPLE__
 #include <mach/mach.h>
@@ -56,6 +60,7 @@
 #endif
 
 #include <raylib/raylib.h>
+#include <magique/util/Logging.h>
 
 #include "internal/utils/OSUtil.h"
 
@@ -90,12 +95,12 @@ void WaitTime(const double destinationTime, double sleepSeconds)
 void SetupThreadPriority(const int thread, bool high)
 {
 #if defined(WIN32)
-    //printf("Setting up: %d\n", GetCurrentThreadId());
+    // printf("Setting up: %d\n", GetCurrentThreadId());
     HANDLE hThread = GetCurrentThread();
     SetThreadPriority(hThread, high ? THREAD_PRIORITY_HIGHEST : THREAD_PRIORITY_ABOVE_NORMAL);
     DWORD_PTR affinityMask = static_cast<DWORD_PTR>(1) << thread;
     auto res = SetThreadAffinityMask(hThread, affinityMask);
-    //printf("Affinity: %d\n",affinityMask);
+    // printf("Affinity: %d\n",affinityMask);
     if (res == 0)
     {
         LOG_ERROR("Failed to setup thread affinity for thread: %d", thread);
@@ -163,4 +168,80 @@ uint64_t GetMemoryWorkingSet()
 #else
     return 0; // Unsupported platform
 #endif
+}
+
+static std::string IP_ADDR{};
+
+const char* OSUtilGetLocalIP()
+{
+    if (!IP_ADDR.empty())
+    {
+        return IP_ADDR.c_str();
+    }
+#ifdef _WIN32
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) // Initialize Winsock
+    {
+        return nullptr;
+    }
+
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) == SOCKET_ERROR)
+    {
+        WSACleanup();
+        return nullptr;
+    }
+
+    addrinfo hints = {};
+    hints.ai_family = AF_INET; // IPv4
+    hints.ai_socktype = SOCK_STREAM;
+
+    addrinfo* info = nullptr;
+    if (getaddrinfo(hostname, "http", &hints, &info) != 0)
+    {
+        WSACleanup();
+        return nullptr;
+    }
+
+    for (const addrinfo* p = info; p != nullptr;)
+    {
+        const auto* ipv4 = reinterpret_cast<struct sockaddr_in*>(p->ai_addr);
+        const auto* ipPointer = inet_ntoa(ipv4->sin_addr);
+        IP_ADDR.append(ipPointer);
+        break; // Get the first IP
+    }
+    freeaddrinfo(info);
+    WSACleanup();
+
+#else // Unix-based systems (Linux/macOS)
+    ifaddrs* ifAddrStruct = nullptr;
+    const ifaddrs* ifa = nullptr;
+
+    if (getifaddrs(&ifAddrStruct) == -1)
+    {
+        return nullptr;
+    }
+
+    for (ifa = ifAddrStruct; ifa != nullptr; ifa = ifa->ifa_next)
+    {
+        if (ifa->ifa_addr == nullptr)
+        {
+            continue;
+        }
+
+        if (ifa->ifa_addr->sa_family == AF_INET)
+        {
+            char buff[32];
+            void* addr = &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr;
+            inet_ntop(AF_INET, addr, buff, 32);
+            IP_ADDR = buff;
+            break;
+        }
+    }
+    if (ifAddrStruct != nullptr)
+    {
+        freeifaddrs(ifAddrStruct);
+    }
+#endif
+    return IP_ADDR.c_str();
 }

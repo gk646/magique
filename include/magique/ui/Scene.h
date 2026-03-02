@@ -17,8 +17,13 @@
 
 namespace magique
 {
-    // Returns the global instance of the scene manager
-    SceneManager& SceneGetManager();
+    // Returns the scene identified with the given name
+    // Note: If none exists yet a new one is created
+    Scene& SceneGet(const char* name);
+
+    // Returns a scene identified with the given gamestate
+    // Note: Useful for when you want to have a scene for each gamestate
+    Scene& SceneGet(GameState state);
 
     struct Scene final
     {
@@ -49,17 +54,6 @@ namespace magique
         std::vector<internal::SceneManagerMapping> mappings;
     };
 
-    struct SceneManager final
-    {
-        // Returns the scene identified with the given name
-        // Note: If none exists yet a new one is created
-        Scene& getScene(const char* name);
-
-        // Returns a scene identified with the given gamestate
-        // Note: Useful for when you want to have a scene for each gamestate
-        // Note: If none exists yet a new one is created
-        Scene& getScene(GameState state);
-    };
 } // namespace magique
 
 

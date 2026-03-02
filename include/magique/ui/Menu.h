@@ -59,6 +59,8 @@ namespace magique
         // Returns true if this menu is currently active
         bool getIsActive() const;
 
+        bool getIsSubmenuActive() const;
+
     protected:
         // Needs to be called (as the first thing) in all implementing versions
         // After that you should return if the current menu is not active (getIsActive())

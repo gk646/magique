@@ -29,9 +29,7 @@ namespace magique
     {
         if (getIsHovered())
         {
-            // Ensure click started within button
-            if (getIsHovered())
-            {
+
                 for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
                 {
                     if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
@@ -42,7 +40,6 @@ namespace magique
                         LayeredInput::ConsumeMouse();
                     }
                 }
-            }
             if (!isHovered)
             {
                 isHovered = true;
@@ -82,6 +79,8 @@ namespace magique
     TextButton::TextButton(const char* txt, Anchor anchor, Point inset, ScalingMode mod) :
         Button({}, anchor, inset, mod), text(txt)
     {
+        const auto& font = EngineGetFont();
+        fitToText(font, font.baseSize);
     }
 
     void TextButton::fitToText(const Font& font, float size)
@@ -96,7 +95,6 @@ namespace magique
     void TextButton::drawDefault(const Rect& bounds)
     {
         const auto& font = EngineGetFont();
-        fitToText(font, font.baseSize);
         Button::drawDefault(bounds);
         DrawTextCenteredRect(font, text.c_str(), font.baseSize, bounds, 1.0F, global::ENGINE_CONFIG.theme.text);
     }

@@ -64,7 +64,6 @@ namespace magique
         }
     }
 
-
     void Menu::activateParent() const
     {
         if (parent != nullptr)
@@ -85,6 +84,8 @@ namespace magique
     bool Menu::getIsTopLevel() const { return parent == nullptr; }
 
     bool Menu::getIsActive() const { return isActive; }
+
+    bool Menu::getIsSubmenuActive() const { return subMenu != nullptr; }
 
     void Menu::onDraw(const Rect& bounds)
     {

@@ -42,6 +42,7 @@ namespace magique
         std::vector<entt::entity> drawVec;                 // Vector containing all entities to be drawn this tick
         std::vector<MapID> loadedMaps{};                   // Currently loaded zones
         std::vector<entt::entity> collisionVec;            // Vector containing the entities to check for collision
+        std::vector<entt::entity> deferredDestroyVec;      // Contains all entities to be destroyed at the end of tick
         HashSet<entt::entity> queryCache;
 
         CameraShakeData cameraShake{};          // Data about the current camera shake

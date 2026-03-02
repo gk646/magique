@@ -5,9 +5,17 @@
 
 namespace magique
 {
-    inline SceneManager SCENE_MANAGER{};
+    struct SceneManagerData final
+    {
+        StringHashMap<Scene> nameMap;
+        HashMap<GameState, Scene> stateMap;
+    };
 
-    SceneManager& SceneGetManager() { return SCENE_MANAGER; }
+    inline SceneManagerData SCENE_DATA{};
+
+    Scene& SceneGet(const char* name) { return SCENE_DATA.nameMap[name]; }
+
+    Scene& SceneGet(const GameState state) { return SCENE_DATA.stateMap[state]; }
 
     void Scene::draw() const
     {
@@ -44,18 +52,6 @@ namespace magique
     }
 
     const std::vector<UIObject*>& Scene::getObjects() { return objects; }
-
-    struct SceneManagerData final
-    {
-        StringHashMap<Scene> nameMap;
-        HashMap<GameState, Scene> stateMap;
-    };
-
-    inline SceneManagerData SCENE_DATA{};
-
-    Scene& SceneManager::getScene(const char* name) { return SCENE_DATA.nameMap[name]; }
-
-    Scene& SceneManager::getScene(const GameState state) { return SCENE_DATA.stateMap[state]; }
 
 
 } // namespace magique
