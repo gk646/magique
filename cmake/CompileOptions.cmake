@@ -27,7 +27,7 @@ target_compile_definitions(magique PRIVATE MAGIQUE_IMPLEMENTATION)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique PUBLIC
             -std=c++23
-            -march=haswell
+            -march=core-avx2
             -flto=auto
             -fno-exceptions
             -fno-rtti
@@ -114,6 +114,7 @@ else ()
 endif ()
 
 target_compile_definitions(magique PUBLIC
+        ENCHANTUM_THROW
         MAGIQUE_VERSION="${PROJECT_VERSION}"
         MAGIQUE_LOGIC_TICKS=${MAGIQUE_LOGIC_TICKS}
         MAGIQUE_TICK_TIME=1.0F/${MAGIQUE_LOGIC_TICKS}

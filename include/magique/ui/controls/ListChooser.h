@@ -45,8 +45,9 @@ namespace magique
         void clear();
         bool empty() const;
 
-        // Inserts a new value at the specified position
-        void add(std::string_view item, int index = -1);
+        // Inserts a new value at the specified position - supports chaining calls
+        ListChooser& add(std::string_view item, int index = -1);
+        ListChooser& add(std::initializer_list<std::string_view> items);
 
         // Removes the value with the given name
         bool remove(const char* item);
@@ -62,6 +63,10 @@ namespace magique
         // Use -1 to clear - does NOT call the callback
         void setSelected(int index = -1);
         void setSelected(std::string_view item);
+
+        // Sets the vertical spacing between entries
+        float getSpacing() const;
+        void setSpacing(float spacing);
 
         // Allows to set a custom callback called everytime a (new) value is selected
         void setOnSelect(const SelectFunc<std::string>& func);
@@ -88,6 +93,7 @@ namespace magique
         std::vector<Entry> entries;
         int hovered = -1;
         int selected = -1;
+        float spacing = 1;
         friend struct Dropdown;
     };
 } // namespace magique

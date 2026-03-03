@@ -110,7 +110,7 @@ namespace magique
 
                 bool anyButton = std::memcmp(GetCurrentGamepadState(), GetPreviousGamepadState(),
                                              MAX_GAMEPADS * MAX_GAMEPAD_BUTTONS) != 0;
-                bool anyAxis = GetGamePadLeftStick(0, 0.2) != 0 || GetGamePadRightStick(0, 0.2) != 0;
+                bool anyAxis = GetGamePadLeftStick(0, 0.3) != 0 || GetGamePadRightStick(0, 0.3) != 0;
                 usingGamepad = anyButton || anyAxis;
             }
 

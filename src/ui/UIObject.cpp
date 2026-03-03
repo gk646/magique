@@ -154,7 +154,7 @@ namespace magique
             break;
         case Anchor::BOTTOM_CENTER:
             pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += relHeight - myHeight + alignInset.y;
+            pos.y += relHeight - myHeight - alignInset.y;
             break;
         case Anchor::BOTTOM_RIGHT:
             pos.x += (relWidth - myWidth) - alignInset.x;

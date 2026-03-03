@@ -29,10 +29,16 @@ namespace magique
         // Draw text and resets mods
         // move cursor to the right of the text
         void left(const std::string_view& txt, Color tint);
+        void left(Color tint, const char* fmt, ...);
+
+        // Draw text centered horizontally - does not move cursor
         void center(const std::string_view& txt, Color tint);
+        void center(Color tint, const char* fmt, ...);
+
         // moves right end of line to the left of the text
         // following calls will align to the left of the previous (only for right() calls)
         void right(const std::string_view& txt, Color tint);
+        void right(Color tint, const char* fmt, ...);
 
         // Images
         void icon(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);

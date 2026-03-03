@@ -5,6 +5,7 @@
 #include <magique/ui/controls/ListChooser.h>
 #include <magique/core/Draw.h>
 #include <magique/ui/UI.h>
+#include <magique/util/Logging.h>
 
 //===============================================
 // GridChooser
@@ -28,9 +29,9 @@ namespace magique
     {
         GridChooser(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
-        // Sets the gap between items - vertical & horizontal
-        void setGap(float gap);
-        float getGap() const;
+        // Sets the vertical and horizontal spacing between items
+        void setSpacing(Point spacing);
+        Point getSpacing() const;
 
         // Allows to set the default size for items that are added
         // Note: This is useful to avoid visual glitches during the first draw when elements change line due to dims
@@ -95,9 +96,9 @@ namespace magique
         };
         std::vector<Entry> entries;
         Point defaultDims{};
+        Point spacing = 2;
         int hovered = -1;
         int selected = -1;
-        float gap = 2;
     };
 
 
@@ -114,17 +115,16 @@ namespace magique
         UIObject(bounds, anchor, inset, mode)
     {
     }
-
     template <typename T>
-    void GridChooser<T>::setGap(float newGap)
+    void GridChooser<T>::setSpacing(Point newSpacing)
     {
-        gap = newGap;
+        spacing = newSpacing;
     }
 
     template <typename T>
-    float GridChooser<T>::getGap() const
+    Point GridChooser<T>::getSpacing() const
     {
-        return gap;
+        return spacing;
     }
 
     template <typename T>
@@ -235,21 +235,21 @@ namespace magique
             return;
         }
 
-        Point pos = bounds.pos() + gap;
-        float end = bounds.topRight().x - gap;
+        Point pos = bounds.pos() + spacing;
+        float end = bounds.topRight().x - spacing.x;
         float lineHeight = 0;
         for (int i = 0; i < (int)entries.size(); i++)
         {
             auto& entry = entries[i];
             if (pos.x + entry.dims.x > end)
             {
-                pos.x = bounds.x + gap;
+                pos.x = bounds.x + spacing.x;
                 pos.y += lineHeight;
                 lineHeight = 0;
             }
             entry.dims = drawFunc(pos, entry.item, i, hovered == i, selected == i);
-            lineHeight = std::max(lineHeight, entry.dims.y + gap);
-            pos.x += entry.dims.x + gap;
+            lineHeight = std::max(lineHeight, entry.dims.y + spacing.y);
+            pos.x += entry.dims.x + spacing.x;
         }
     }
 
@@ -257,8 +257,8 @@ namespace magique
     void GridChooser<T>::updateState()
     {
         const auto& bounds = getBounds();
-        Point pos = bounds.pos() + gap;
-        float end = bounds.topRight().x - gap;
+        Point pos = bounds.pos() + spacing;
+        float end = bounds.topRight().x - spacing.x;
         float lineHeight = 0;
         hovered = -1;
         for (int i = 0; i < (int)entries.size(); i++)
@@ -266,7 +266,7 @@ namespace magique
             const auto& entry = entries[i];
             if (pos.x + entry.dims.x > end)
             {
-                pos.x = bounds.x + gap;
+                pos.x = bounds.x + spacing.x;
                 pos.y += lineHeight;
                 lineHeight = 0;
             }
@@ -286,8 +286,8 @@ namespace magique
                     LayeredInput::ConsumeMouse();
                 }
             }
-            lineHeight = std::max(lineHeight, entry.dims.y + gap);
-            pos.x += entry.dims.x + gap;
+            lineHeight = std::max(lineHeight, entry.dims.y + spacing.y);
+            pos.x += entry.dims.x + spacing.x;
         }
         if (hoverFunc)
         {

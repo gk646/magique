@@ -1,4 +1,5 @@
 #include <cmath>
+#include <algorithm>
 
 #include "internal/globals/TweenData.h"
 #ifndef PI

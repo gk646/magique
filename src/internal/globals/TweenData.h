@@ -1,7 +1,7 @@
 #ifndef TWEENDATA_H
 #define TWEENDATA_H
 
-#include <algorithm>
+#include <vector>
 
 #include <magique/gamedev/Tweens.h>
 

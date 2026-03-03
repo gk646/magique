@@ -12,12 +12,32 @@ namespace magique
         resetMods();
     }
 
+
     void TextDrawer::left(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
         const auto pos = bounds.pos() + cursor + modOfffset;
         drawText(pos, txt, tint);
         cursor.x += width + gapp.x;
+    }
+
+    inline char BUFF[MAX_TEXT_BUFFER_LENGTH];
+
+#define FMT_TEXT()                                                                                                      \
+    va_list args;                                                                                                       \
+    va_start(args, fmt);                                                                                                \
+    int requiredByteCount = vsnprintf(BUFF, MAX_TEXT_BUFFER_LENGTH, fmt, args);                                         \
+    if (requiredByteCount >= MAX_TEXT_BUFFER_LENGTH)                                                                    \
+    {                                                                                                                   \
+        char* truncBuffer = BUFF + MAX_TEXT_BUFFER_LENGTH - 4;                                                          \
+        sprintf(truncBuffer, "...");                                                                                    \
+    }                                                                                                                   \
+    va_end(args);
+
+    void TextDrawer::left(Color tint, const char* fmt, ...)
+    {
+        FMT_TEXT();
+        left(BUFF, tint);
     }
 
     void TextDrawer::center(const std::string_view& txt, const Color tint)
@@ -27,6 +47,12 @@ namespace magique
         drawText(pos, txt, tint);
     }
 
+    void TextDrawer::center(Color tint, const char* fmt, ...)
+    {
+        FMT_TEXT();
+        center(BUFF, tint);
+    }
+
     void TextDrawer::right(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
@@ -34,6 +60,12 @@ namespace magique
         const auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
         drawText(pos, txt, tint);
         cursorEndX += width + gapp.x;
+    }
+
+    void TextDrawer::right(Color tint, const char* fmt, ...)
+    {
+        FMT_TEXT();
+        right(BUFF, tint);
     }
 
     void TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
@@ -87,15 +119,15 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::modHighlight(Color numberHighlight)
-    {
-        modHighlightColor = numberHighlight;
-        return *this;
-    }
-
     TextDrawer& TextDrawer::modOffset(Point offset)
     {
         modOfffset = offset;
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::modHighlight(Color numberHighlight)
+    {
+        modHighlightColor = numberHighlight;
         return *this;
     }
 
@@ -123,7 +155,7 @@ namespace magique
 
     Point TextDrawer::getCursor() const { return cursor; }
 
-    Rect  TextDrawer::getBounds() { return bounds; }
+    Rect TextDrawer::getBounds() { return bounds; }
 
     Rect TextDrawer::getBounds() const { return bounds; }
 

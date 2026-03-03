@@ -57,6 +57,8 @@
 #elif __APPLE__
 #include <mach/mach.h>
 #include <unistd.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
 #endif
 
 #include <raylib/raylib.h>

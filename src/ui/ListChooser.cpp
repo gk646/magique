@@ -30,7 +30,7 @@ namespace magique
             {
                 entrySize = drawDefaultEntry(pos, entry.text, hovered == i, selected == i);
             }
-            pos.y += entrySize;
+            pos.y += entrySize + spacing;
             entry.height = entrySize;
         }
     }
@@ -44,7 +44,7 @@ namespace magique
 
     bool ListChooser::empty() const { return entries.empty(); }
 
-    void ListChooser::add(std::string_view item, int index)
+    ListChooser& ListChooser::add(std::string_view item, int index)
     {
         if (index < hovered)
         {
@@ -63,6 +63,16 @@ namespace magique
         {
             entries.emplace(entries.begin() + index, std::string{item});
         }
+        return *this;
+    }
+
+    ListChooser& ListChooser::add(std::initializer_list<std::string_view> items)
+    {
+        for (auto& item : items)
+        {
+            add(item);
+        }
+        return *this;
     }
 
     bool ListChooser::remove(const char* item)
@@ -133,6 +143,10 @@ namespace magique
         }
     }
 
+    float ListChooser::getSpacing() const { return spacing; }
+
+    void ListChooser::setSpacing(float newSpacing) { spacing = newSpacing; }
+
     void ListChooser::setOnSelect(const SelectFunc<std::string>& func) { selectFunc = func; }
 
     void ListChooser::setDrawEntryFunc(const DrawItemFunc& func) { drawFunc = func; }
@@ -174,7 +188,7 @@ namespace magique
                     LayeredInput::ConsumeMouse();
                 }
             }
-            pos.y += entry.height;
+            pos.y += entry.height + spacing;
         }
         setSize({bounds.width, std::max(pos.y - bounds.y, getStartBounds().height)});
     }
