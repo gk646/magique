@@ -39,7 +39,7 @@ endif ()
 # No steam sdk path given
 if (MAGIQUE_STEAM AND NOT STEAM_PATH)
     message(FATAL_ERROR "Trying to use Steam integration without specifying the steam sdk path!\n
-    Use 'set(STEAM_PATH \"path/to/steam/sdk\")' BEFORE addding magique via add_subdirectory(...)")
+    Use 'set(STEAM_PATH \"path/to/steam/sdk\")' BEFORE adding magique via add_subdirectory(...)")
 endif ()
 
 if (MAGIQUE_STEAM AND MAGIQUE_LAN)
@@ -65,4 +65,3 @@ endif ()
 # Set parameters
 set(MAGIQUE_PUBLIC_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(MAGIQUE_PRIVATE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(MAGIQUE_CXSTRUCTS_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src/external/cxstructs)

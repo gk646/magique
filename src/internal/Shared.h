@@ -21,8 +21,8 @@ namespace magique
             return seconds;
         }
 
-        float last() const { return latest; }
-        float lastMillis() const { return latest * 1000; }
+        float last() const { return (float)latest; }
+        float lastMillis() const { return (float)latest * 1000.0F; }
         float getAvgSeconds() const { return static_cast<float>(accumulated / ticks); }
         float getAvgMillis() const { return static_cast<float>(accumulated / ticks * 1000); }
 

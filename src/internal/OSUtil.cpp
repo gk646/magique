@@ -1,5 +1,3 @@
-#include <cstdint>
-#include <string>
 
 #ifdef _WIN32
 #define NOGDICAPMASKS     // CC_*, LC_*, PC_*, CP_*, TC_*, RC_
@@ -45,6 +43,8 @@
 #include <windows.h>
 #include <processthreadsapi.h>
 #include <psapi.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #elif __linux__
 #include <unistd.h>
 #include <fcntl.h>
@@ -60,6 +60,9 @@
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #endif
+
+#include <cstdint>
+#include <string>
 
 #include <raylib/raylib.h>
 #include <magique/util/Logging.h>

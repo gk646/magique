@@ -6,7 +6,6 @@
 #include <magique/multiplayer/Networking.h>
 #include <magique/multiplayer/Lobby.h>
 
-
 #include "multiplayer/headers/MultiplayerStatistics.h"
 #include "multiplayer/headers/LobbyData.h"
 #include "multiplayer/headers/ConnectionMapping.h"

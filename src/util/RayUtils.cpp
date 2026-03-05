@@ -187,17 +187,17 @@ namespace magique
         const float height = bounds.height;
 
 #ifdef _MSC_VER
-        const Vector2 topStart = {x, y};
-        const Vector2 topEnd = {x + width - 2, y};
+        const Vector2 topStart = {x+1, y};
+        const Vector2 topEnd = {x + width - 1, y};
 
-        const Vector2 bottomStart = {x, y + height - 1};
-        const Vector2 bottomEnd = {x + width - 2, y + height - 1};
+        const Vector2 bottomStart = {x + 1, y + height - 1};
+        const Vector2 bottomEnd = {x + width - 1, y + height - 1};
 
-        const Vector2 leftStart = {x, y};
-        const Vector2 leftEnd = {x, y + height - 2};
+        const Vector2 leftStart = {x + 0.01F, y };
+        const Vector2 leftEnd = {x + 0.01F, y + height - 2};
 
-        const Vector2 rightStart = {x + width - 1, y};
-        const Vector2 rightEnd = {x + width - 1, y + height - 2};
+        const Vector2 rightStart = {x + width, y };
+        const Vector2 rightEnd = {x + width, y + height - 2};
 #else
         const Vector2 topStart = {x + 1, y};
         const Vector2 topEnd = {x + width - 1, y};
@@ -212,6 +212,7 @@ namespace magique
         const Vector2 rightEnd = {x + width, y + height - 1};
 #endif
 
+
         DrawLineV(topStart, topEnd, tint);
         DrawLineV(bottomStart, bottomEnd, tint);
         DrawLineV(leftStart, leftEnd, tint);
@@ -221,7 +222,11 @@ namespace magique
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
         DrawRectangleRec(bounds.shrink(2).floor(), fill);
+#ifdef _MSC_VER
+        DrawRectFrame(bounds.floor()+ Point{0,1}, outline);
+#else
         DrawRectFrame(bounds.floor(), outline);
+#endif
     }
 
     void DrawTruePixelartScale(RenderTexture texture)

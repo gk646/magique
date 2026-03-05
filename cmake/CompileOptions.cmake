@@ -12,17 +12,21 @@ target_include_directories(magique PRIVATE
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique PUBLIC MAGIQUE_STEAM)
     set(FULL_STEAM_PATH "${STEAM_PATH}/public")
-    if (NOT IS_ABSOLUTE "${FULL_STEAM_PATH}")
-        set(FULL_STEAM_PATH "${CMAKE_SOURCE_DIR}/${FULL_STEAM_PATH}")
-    endif ()
-    target_include_directories(magique PRIVATE ${FULL_STEAM_PATH}) # Include
+    if(WIN32)
+        set(HOME_DIR "$ENV{USERPROFILE}")
+        # Replace backslashes with forward slashes
+        string(REPLACE "\\" "/" HOME_DIR "${HOME_DIR}")
+    else()
+        set(HOME_DIR "$ENV{HOME}")
+    endif()
+    string(REGEX REPLACE "^~" "${HOME_DIR}" FULL_STEAM_PATH "${FULL_STEAM_PATH}")
+    target_include_directories(magique PRIVATE ${FULL_STEAM_PATH})
 elseif (MAGIQUE_LAN)
     target_compile_definitions(magique PUBLIC MAGIQUE_LAN)
 endif ()
 
 # Make the private members in public headers, public to the implementation (to avoid excessive friend...)
 target_compile_definitions(magique PRIVATE MAGIQUE_IMPLEMENTATION)
-
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique PUBLIC
@@ -52,8 +56,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -Og
             -g2
             -gz
-           # -D_GLIBCXX_DEBUG
-           # -D_GLIBCXX_ASSERTIONS
+            # -D_GLIBCXX_DEBUG
+            # -D_GLIBCXX_ASSERTIONS
             -D_DEBUG
             >
             $<$<CONFIG:Release>:
@@ -115,6 +119,7 @@ endif ()
 
 target_compile_definitions(magique PUBLIC
         ENCHANTUM_THROW
+        ENTT_NOEXCEPTION
         MAGIQUE_VERSION="${PROJECT_VERSION}"
         MAGIQUE_LOGIC_TICKS=${MAGIQUE_LOGIC_TICKS}
         MAGIQUE_TICK_TIME=1.0F/${MAGIQUE_LOGIC_TICKS}
