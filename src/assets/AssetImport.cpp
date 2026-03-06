@@ -27,9 +27,13 @@ namespace magique
     TextureRegion ImportTexture(const Texture& texture, AtlasID atlas)
     {
         MAGIQUE_ASSERT(texture.id != 0, "Trying to register an invalid texture");
+        return ImportTexture(LoadImageFromTexture(texture), atlas);
+    }
+
+    TextureRegion ImportTexture(const Image& img, AtlasID atlas)
+    {
         auto& texAtlas = global::ATLAS_DATA.getAtlas(atlas);
-        const Image textImg = LoadImageFromTexture(texture);
-        const auto region = texAtlas.addTexture(textImg, texture.width, texture.height);
+        const auto region = texAtlas.addTexture(img, img.width, img.height);
         return region;
     }
 
@@ -175,138 +179,107 @@ namespace magique
         return sheet;
     }
 
-    static void DrawCellFrame(Image& img, ase_t* ase, const ase_frame_t& frame, const std::vector<const char*>& layers)
+    static Image CellToImg(ase_cel_t& cell)
     {
-        bool none = true;
-        for (int j = 0; j < frame.cel_count; ++j)
-        {
-            bool validLayer = true;
-            const ase_cel_t* cel = frame.cels + j;
-            for (const auto* name : layers)
-            {
-                if (strcmp(cel->layer->name, name) != 0)
-                {
-                    validLayer = false;
-                    break;
-                }
-            }
-            if (!validLayer)
-            {
-                continue;
-            }
-            none = false;
-
-            while (cel->is_linked != 0)
-            {
-                ase_frame_t* frame = ase->frames + cel->linked_frame_index;
-                for (int k = 0; k < frame->cel_count; ++k)
-                {
-                    if (frame->cels[k].layer == cel->layer)
-                    {
-                        cel = frame->cels + k;
-                        break;
-                    }
-                }
-            }
-            void* src = cel->pixels;
-            int cx = cel->x;
-            int cy = cel->y;
-            int cw = cel->w;
-            int ch = cel->h;
-            int cl = -s_min(cx, 0);
-            int ct = -s_min(cy, 0);
-            int dl = s_max(cx, 0);
-            int dt = s_max(cy, 0);
-            int dr = s_min(ase->w, cw + cx);
-            int db = s_min(ase->h, ch + cy);
-            for (int dx = dl, sx = cl; dx < dr; dx++, sx++)
-            {
-                for (int dy = dt, sy = ct; dy < db; dy++, sy++)
-                {
-                    ase_color_t src_color = s_color(ase, src, cw * sy + sx);
-                    Color color;
-                    color.a = src_color.a;
-                    color.r = src_color.r;
-                    color.g = src_color.g;
-                    color.b = src_color.b;
-                    ImageDrawPixel(&img, dx, dy, color);
-                }
-            }
-        }
-        if (none)
-        {
-            // LOG_WARNING("No matching layer!");
-        }
+        Image image = GenImageColor(cell.w, cell.h, BLANK);
+        std::memcpy(image.data, cell.pixels, sizeof(Color) * cell.w * cell.h);
+        return image;
     }
 
-    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc func, AtlasID atlas, float scale)
+    static Image FrameToImg(ase_frame_t& frame)
     {
-        return ImportAsepriteEx(asset, {}, func, atlas, scale);
+        Image image = GenImageColor(frame.ase->w, frame.ase->h, BLANK);
+        std::memcpy(image.data, frame.pixels, sizeof(Color) * frame.ase->w * frame.ase->h);
+        return image;
     }
 
-    EntityAnimation ImportAsepriteEx(const Asset& asset, const std::vector<const char*>& layers, StateMapFunc func,
-                                     AtlasID atlas, float scale, Point offset, Point anchor)
+    static ase_cel_t FindLayerCell(const ase_frame_t& frame, const ase_layer_t& layer)
+    {
+        for (const auto& cell : std::span{frame.cels, (size_t)frame.cel_count})
+        {
+            if (cell.layer == &layer)
+            {
+                return cell;
+            }
+        }
+        return ase_cel_t{};
+    }
+
+    template <typename Func>
+    static EntityAnimation IterateTags(ase_t* import, Func func, StateMapFunc mapFunc, Point offset, Point anchor,
+                                       AtlasID atlas, float scale)
     {
         EntityAnimation animation{scale};
+        std::vector<Image> images = {};
+        for (const auto& tag : std::span{import->tags, (size_t)import->tag_count})
+        {
+            DurationArray durations{};
+            images.clear();
+            if (tag.to_frame - tag.from_frame >= MAGIQUE_MAX_ANIM_FRAMES)
+            {
+                LOG_WARNING("Too many frames in animation!");
+                continue;
+            }
+
+            for (int l = tag.from_frame; l <= tag.to_frame; ++l)
+            {
+                auto& frame = import->frames[l];
+                durations[(int)images.size()] = frame.duration_milliseconds;
+                func(images, frame);
+            }
+
+            const auto sheet = ImportSpriteSheetVec(images, atlas, scale);
+            const auto state = mapFunc(tag.name);
+            animation.addAnimationEx(state, sheet, durations, offset, anchor);
+        }
+        return animation;
+    }
+
+    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
+                                   Point anchor)
+    {
         if (!(asset.hasExtension(".ase") || asset.hasExtension(".aseprite")))
         {
-            LOG_WARNING("Invalid extensions for a asprite file");
-            return animation;
+            LOG_WARNING("Invalid extensions for a aseprite file");
+            return {};
         }
 
         auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
-        const auto width = import->w;
-        const auto height = import->h;
-
         if (anchor == -1)
-        {
-            anchor = Point{(float)width, (float)height} / 2;
-        }
+            anchor = Point{(float)import->w, (float)import->h} / 2;
 
-        std::vector<Image> images;
-        for (int i = 0; i < import->tag_count; ++i)
+        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
         {
-            auto& tag = import->tags[i];
-            images.clear();
-            DurationArray durations{};
-            for (int l = tag.from_frame; l <= tag.to_frame; ++l)
-            {
-                if (images.size() >= MAGIQUE_MAX_ANIM_FRAMES)
-                {
-                    LOG_WARNING("Too many frames in animation!");
-                    break;
-                }
-                const auto& frame = import->frames[l];
-                Image img = GenImageColor(width, height, BLANK);
-                durations[(int)images.size()] = frame.duration_milliseconds;
+            images.push_back(FrameToImg(frame));
+        };
 
-                DrawCellFrame(img, import, frame, layers);
-                images.push_back(img);
-            }
-            const auto sheet = ImportSpriteSheetVec(images, atlas, scale);
-            const auto state = func(tag.name);
-            animation.addAnimationEx(state, sheet, durations, offset, anchor);
-        }
+        auto animation = IterateTags(import, frameFunc, mapFunc, offset, anchor, atlas, scale);
         cute_aseprite_free(import);
         return animation;
     }
 
-    Shader ImportShader(const Asset& vertex, const Asset& fragment)
+    std::vector<std::pair<AnimationLayer, EntityAnimation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
+                                                                                 AtlasID atlas, LayerMapFunc layerMap,
+                                                                                 float scale, Point offset, Point anchor)
     {
-        if (vertex.getSize() != 0)
+        std::vector<std::pair<AnimationLayer, EntityAnimation>> animations;
+        auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
+        if (anchor == -1)
+            anchor = Point{(float)import->w, (float)import->h} / 2;
+
+        for (const auto& layer : std::span{import->layers, (size_t)import->layer_count})
         {
-            if (fragment.getSize() != 0)
+            auto frameFunc = [&](std::vector<Image>& images, ase_frame_t& frame)
             {
-                return LoadShaderFromMemory(vertex.getData(), fragment.getData());
-            }
-            return LoadShaderFromMemory(vertex.getData(), nullptr);
+                auto cell = FindLayerCell(frame, layer);
+                images.push_back(CellToImg(cell));
+            };
+            auto animation = IterateTags(import, frameFunc, stateMap, offset, anchor, atlas, scale);
+            animations.emplace_back(layerMap(layer.name), std::move(animation));
         }
-        else if (fragment.getSize() != 0)
-        {
-            return LoadShaderFromMemory(nullptr, fragment.getData());
-        }
-        LOG_WARNING("Passed empty asset for both vertex and fragment: Cant load shader");
-        return {};
+
+        cute_aseprite_free(import);
+        return animations;
     }
 
     Sound ImportSound(const Asset& asset)
@@ -363,6 +336,24 @@ namespace magique
             playlist.addTrack(music);
         }
         return playlist;
+    }
+
+    Shader ImportShader(const Asset& vertex, const Asset& fragment)
+    {
+        if (vertex.getSize() != 0)
+        {
+            if (fragment.getSize() != 0)
+            {
+                return LoadShaderFromMemory(vertex.getData(), fragment.getData());
+            }
+            return LoadShaderFromMemory(vertex.getData(), nullptr);
+        }
+        else if (fragment.getSize() != 0)
+        {
+            return LoadShaderFromMemory(nullptr, fragment.getData());
+        }
+        LOG_WARNING("Passed empty asset for both vertex and fragment: Cant load shader");
+        return {};
     }
 
     struct TiledPropertyParser final

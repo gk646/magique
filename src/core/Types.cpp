@@ -627,6 +627,10 @@ namespace magique
 
     //----------------- SPRITE SHEET -----------------//
 
+    SpriteSheet::SpriteSheet(TextureRegion region) : region(region), frames(1) {}
+
+    bool SpriteSheet::isValid() const { return region.isValid(); }
+
     TextureRegion SpriteSheet::getRegion(const int frame) const
     {
         TextureRegion ret = region;
@@ -634,10 +638,12 @@ namespace magique
         return ret;
     }
 
+    int SpriteSheet::getFrameCount() const { return frames; }
+
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {
-        MAGIQUE_ASSERT(maxDuration > 0 && sheet.frames > 0, "Empty Animation");
-        const int count = static_cast<int>(millis) % maxDuration;
+        MAGIQUE_ASSERT(durationMillis > 0 && sheet.getFrameCount() > 0 && sheet.isValid(), "Empty Animation");
+        const int count = static_cast<int>(millis) % (int)durationMillis;
         int frame = 0;
         uint16_t millisCount = 0;
         for (const auto duration : durations)
@@ -662,7 +668,7 @@ namespace magique
         return static_cast<int>(static_cast<float>(duration) / 1000.0F * MAGIQUE_LOGIC_TICKS);
     }
 
-    bool SpriteAnimation::isValid() const { return sheet.isValid() && sheet.frames > 0; }
+    bool SpriteAnimation::isValid() const { return sheet.isValid() && sheet.getFrameCount() > 0; }
 
 
     //----------------- TILE OBJECT PROPERTY -----------------//

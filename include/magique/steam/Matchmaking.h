@@ -25,8 +25,9 @@ namespace magique
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
     bool SteamCreateLobby(SteamLobbyType type, int maxPlayers = 4);
 
-    // Tries to connect to the lobby specified by the given id
+    // Tries to connect to the lobby specified by the given id (or id as string)
     void SteamJoinLobby(SteamLobbyID lobbyID);
+    void SteamJoinLobby(std::string_view lobbyID);
 
     // Leaves the current lobby specified by the given id
     // Failure: returns false if not currently in a lobby

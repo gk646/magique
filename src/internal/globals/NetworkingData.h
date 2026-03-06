@@ -37,7 +37,7 @@ namespace magique
 
     struct NetworkingData final
     {
-        LobbyData lobby;
+        LobbyData lobby{};
         MultiplayerStatistics statistics{};
         NetworkCallback callback = {};              // Callback
         std::vector<Connection> connections;        // Holds all current valid connections
@@ -51,16 +51,6 @@ namespace magique
         bool isHost = false;                                            // If the program is host or client
         bool inSession = false;                                         // If program is part of multiplayer activity
         bool isInitialized = false;                                     // Manual flag to give clean error msg
-
-        NetworkingData()
-        {
-            incMsgVec.reserve(150);
-            outMsgBuffer.reserve(150);
-            incMsgBuffer.reserve(150);
-            connections.reserve(8);
-            connectionMapping.reserve(8);
-            steamMapping.reserve(8);
-        }
 
         void close()
         {
@@ -154,6 +144,7 @@ namespace magique
         {
             const auto steamId = static_cast<SteamID>(pParam->m_info.m_identityRemote.GetSteamID64());
             const auto conn = static_cast<Connection>(pParam->m_hConn);
+            const char* closeReason = pParam->m_info.m_szEndDebug;
             const NetworkEventData eventData{steamId, pParam->m_info.m_eEndReason, pParam->m_info.m_szEndDebug};
             if (isHost)
             {
@@ -207,12 +198,12 @@ namespace magique
                 if (isHost)
                 {
                     callback(NetworkEvent::HOST_CLIENT_DISCONNECTED, conn, eventData);
-                    LOG_INFO("Client disconnected: %s", pParam->m_info.m_szEndDebug);
+                    LOG_INFO("Client disconnected: %s", closeReason);
                 }
                 else // If you're a client and the host disconnects
                 {
                     callback(NetworkEvent::CLIENT_CONNECTION_CLOSED, conn, eventData);
-                    LOG_INFO("Disconnected from the host: %s", pParam->m_info.m_szEndDebug);
+                    LOG_INFO("Disconnected from the host: %s", closeReason);
                 }
                 onConnectionDisconnect(conn);
             }
@@ -223,16 +214,15 @@ namespace magique
                 pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
             {
                 SteamNetworkingSockets()->CloseConnection(pParam->m_hConn, 0, nullptr, false);
-                const auto* errStr = pParam->m_info.m_szEndDebug;
                 if (isHost)
                 {
                     callback(NetworkEvent::HOST_LOCAL_PROBLEM, conn, eventData);
-                    LOG_INFO("Local problem with connection. Disconnected client from session: %s", errStr);
+                    LOG_INFO("Local problem with connection. Disconnected client from session: %s", closeReason);
                 }
                 else
                 {
                     callback(NetworkEvent::CLIENT_LOCAL_PROBLEM, conn, eventData);
-                    LOG_INFO("Local problem with connection. Closed session: %s", errStr);
+                    LOG_INFO("Local problem with connection. Closed session: %s", closeReason);
                 }
                 onConnectionDisconnect(conn);
             }

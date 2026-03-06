@@ -46,8 +46,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -Wuseless-cast
             -Wvla
             -Wno-useless-cast
-            -Wno-extra-semi
-            -Wno-missing-field-initializers
             -Wno-unused-parameter
     )
 

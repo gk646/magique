@@ -42,6 +42,21 @@ namespace magique
         SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyID)));
     }
 
+    void SteamJoinLobby(std::string_view lobbyID)
+    {
+        uint64_t id{};
+        auto [ptr, ec] = std::from_chars(lobbyID.begin(), lobbyID.end(), id);
+
+        if (ec == std::errc())
+        {
+            SteamJoinLobby(static_cast<SteamLobbyID>(id));
+        }
+        else
+        {
+            LOG_WARNING("Invalid lobby-id string: %s", lobbyID.data());
+        }
+    }
+
     bool SteamLeaveLobby()
     {
         if (!SteamIsInLobby())

@@ -21,7 +21,7 @@ namespace magique
         {
             if (getBounds().contains(GetMousePosition()))
             {
-                isOpen = true;
+                isOpen = !isOpen;
                 LayeredInput::ConsumeMouse();
             }
             else

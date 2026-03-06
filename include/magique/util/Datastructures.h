@@ -15,7 +15,6 @@
 
 namespace magique
 {
-
     // Serialized as an array of objects with "key" and "value" values [ {"key" : {} , "value" : {}}, ...] in json
     template <typename K, typename V>
     using HashMap = ankerl::unordered_dense::map<K, V>;
@@ -30,6 +29,64 @@ namespace magique
     // Transparent lookup enabled - works with const char* and std::string_view
     template <typename Value>
     using StringHashMap = HashMapEx<std::string, Value, StringHashFunc, StringEqualsFunc>;
+
+    // Useful to map a enum to a value with direct indexing
+    // Just a wrapped std::array<>
+    // Supports loading from JSON
+    // e.g. keybinds EnumArray<PlayerAction, magique::Keybind>
+    // If no explicit size is given uses Enum::COUNT (should be the last defined value)
+    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
+    template <class Key, typename Value, int manual_size = 0>
+    struct EnumArray final
+    {
+        struct ValueHolder final // This is persisted and loaded from JSON
+        {
+            Key key;
+            Value value;
+            bool operator==(const ValueHolder& other) const = default;
+        };
+
+        EnumArray() { initKeys(); };
+
+        constexpr EnumArray(const std::span<const ValueHolder>& init) : EnumArray()
+        {
+            for (const auto& value : init)
+            {
+                const auto keyInt = static_cast<size_t>(value.key);
+                if (keyInt < 0 || keyInt >= size())
+                {
+                    LOG_ERROR("Invalid key");
+                    continue;
+                }
+                data[keyInt] = ValueHolder{(Key)keyInt, value.value};
+            }
+        }
+
+        constexpr EnumArray(std::initializer_list<ValueHolder> init) : EnumArray(std::span{init.begin(), init.end()}) {}
+
+        const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].value; }
+        Value& operator[](Key key) { return data[static_cast<size_t>(key)].value; }
+
+        auto begin() { return data.begin(); }
+        auto end() { return data.end(); }
+        auto begin() const { return data.begin(); }
+        auto end() const { return data.end(); }
+
+        size_t size() const { return data.size(); }
+
+        bool operator==(const EnumArray& other) const = default;
+
+    private:
+        void initKeys()
+        {
+            for (size_t i = 0; i < data.size(); i++)
+            {
+                data[i].key = (Key)i;
+            }
+        }
+        static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
+        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data{};
+    };
 
     // Like a bitflag but for enums
     // Uses the smallest possible
@@ -201,54 +258,11 @@ namespace magique
         uint32_t size_ = 0;
     };
 
-    // Useful if you want to map a type to a range of numbers but do not want to use a hashmap (so some sort of conversion)
-    // Only instantiates up to the maximum needed range
+    // To prevent false sharing when accessed in multithread context
     template <typename T>
-    struct SparseRangeVector final
+    struct AlignedVec final
     {
-        void set(size_t index, const T& value)
-        {
-            if (data.size() < index + 1)
-            {
-                data.resize(index + 1);
-            }
-            data[index] = value;
-        }
-
-        template <typename Key>
-        T& operator[](Key key)
-        {
-            static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key bust be integral");
-            size_t index = static_cast<size_t>(key);
-            return (*this)[index];
-        }
-
-        template <typename Key>
-        const T& operator[](Key key) const
-        {
-            static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key bust be integral");
-            size_t index = static_cast<size_t>(key);
-            return (*this)[index];
-        }
-
-        const T& operator[](size_t index) const { return data[index]; }
-
-        T& operator[](size_t index)
-        {
-            if (data.size() < index + 1)
-            {
-                data.resize(index + 1);
-            }
-            return data[index];
-        }
-        void reserve(size_t size) { data.reserve(size); }
-
-        size_t width() const { return data.size(); }
-        bool empty() const { return data.empty(); }
-        void clear() { data.clear(); }
-
-    private:
-        std::vector<T> data;
+        alignas(64) std::vector<T> vec;
     };
 
     // This is useful for dynamically size 2D grids where for each cell you store data
@@ -428,71 +442,6 @@ namespace magique
         Compare comp;
     };
 
-
-    // Useful to map a enum to a value with direct indexing
-    // Just a wrapped std::array<>
-    // Supports loading from JSON
-    // e.g. keybinds EnumArray<PlayerAction, magique::Keybind>
-    // If no explicit size is given uses Enum::COUNT (should be the last defined value)
-    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
-    template <class Key, typename Value, int manual_size = 0>
-    struct EnumArray final
-    {
-        struct ValueHolder final // This is persisted and loaded from JSON
-        {
-            Key key;
-            Value value;
-            bool operator==(const ValueHolder& other) const = default;
-        };
-
-        EnumArray() { initKeys(); };
-
-        constexpr EnumArray(const std::span<const ValueHolder>& init) : EnumArray()
-        {
-            for (const auto& value : init)
-            {
-                const auto keyInt = static_cast<size_t>(value.key);
-                if (keyInt < 0 || keyInt >= size())
-                {
-                    LOG_ERROR("Invalid key");
-                    continue;
-                }
-                data[keyInt] = ValueHolder{(Key)keyInt, value.value};
-            }
-        }
-
-        constexpr EnumArray(std::initializer_list<ValueHolder> init) : EnumArray(std::span{init.begin(), init.end()}) {}
-
-        const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].value; }
-        Value& operator[](Key key) { return data[static_cast<size_t>(key)].value; }
-
-        auto begin() { return data.begin(); }
-        auto end() { return data.end(); }
-        auto begin() const { return data.begin(); }
-        auto end() const { return data.end(); }
-
-        size_t size() const { return data.size(); }
-
-        bool operator==(const EnumArray& other) const = default;
-
-    private:
-        void initKeys()
-        {
-            for (size_t i = 0; i < data.size(); i++)
-            {
-                data[i].key = (Key)i;
-            }
-        }
-        static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data{};
-    };
-
-    // To prevent false sharing when accessed in multithread context
-    template <typename T>
-    struct AlignedVec final
-    {
-        alignas(64) std::vector<T> vec;
-    };
 
 } // namespace magique
 

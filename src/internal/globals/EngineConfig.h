@@ -68,7 +68,7 @@ namespace magique
 
     namespace global
     {
-        inline Configuration ENGINE_CONFIG;
+        inline Configuration ENGINE_CONFIG{};
     }
 
 } // namespace magique

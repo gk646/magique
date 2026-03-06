@@ -79,7 +79,6 @@ namespace magique
         // Consumes mouse and key as nothing should come after it
         void updateInputs(KeyboardKey key = KEY_ESCAPE, GamepadButton button = GAMEPAD_BUTTON_RIGHT_FACE_RIGHT);
 
-
         // Called when menu is active and exit button is pressed to switch to parent
         // If returns false action will be blocked
         virtual bool onExitRequest()

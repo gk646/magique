@@ -144,7 +144,7 @@ namespace magique
 
     inline void HandleCollisionPairs()
     {
-        const auto& scriptVec = global::SCRIPT_DATA.scripts;
+        auto& scriptVec = global::SCRIPT_DATA.scripts;
         const auto& group = internal::POSITION_GROUP;
         auto& dynamic = global::DY_COLL_DATA;
 

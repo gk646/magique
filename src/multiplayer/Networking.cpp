@@ -4,16 +4,17 @@
 #include <magique/core/Types.h>
 #include <entt/entity/entity.hpp>
 #include <magique/multiplayer/Networking.h>
-#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
-#define _CRT_SECURE_NO_WARNINGS
 
+#if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
+
+#define _CRT_SECURE_NO_WARNINGS
 #include "internal/globals/NetworkingData.h"
 #include "internal/globals/EngineConfig.h"
 #include "headers/MultiplayerStatistics.h"
 
 namespace magique
 {
-    bool NetworkCloseSocket(const int closeCode, std::string_view reason)
+    bool NetworkCloseSocket(const int code, std::string_view reason)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
@@ -21,16 +22,14 @@ namespace magique
         {
             return false;
         }
+        bool res = true;
         for (const auto conn : data.connections)
         {
-            const auto steamConn = static_cast<HSteamNetConnection>(conn);
-            if (!SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, reason.data(), true))
-            {
-                LOG_ERROR("Failed to close existing connections when closing the global socket");
-            }
-            SteamNetworkingSockets()->CloseConnection(steamConn, closeCode, reason.data(), true);
+            res &= NetworkCloseConnection(conn, code, reason);
         }
-        const auto res = SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
+        if (!res)
+            LOG_ERROR("Failed to close existing connections when closing the global socket");
+        res &= SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
         data.goOffline();
         return res;
     }
@@ -44,7 +43,8 @@ namespace magique
         }
         const auto steamConn = static_cast<HSteamNetConnection>(conn);
         const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, code, reason.data(), true);
-        data.onConnectionDisconnect(conn);
+        if (res)
+            data.onConnectionDisconnect(conn);
         return res;
     }
 
@@ -241,6 +241,22 @@ namespace magique
 #else
 namespace magique
 {
+
+    bool NetworkCloseSocket(const int code, std::string_view reason)
+    {
+        (void)code;
+        (void)reason;
+        return false;
+    }
+
+    bool NetworkCloseConnection(Connection conn, int code, std::string_view reason)
+    {
+        (void)conn;
+        (void)code;
+        (void)reason;
+        return false;
+
+    }
     bool NetworkSend(Connection conn, Payload payload, SendFlag flag)
     {
         (void)conn;

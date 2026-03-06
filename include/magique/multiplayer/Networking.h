@@ -44,7 +44,7 @@
 
 namespace magique
 {
-    // Closes an open global OR local socket (if any)
+    // Closes an open global OR local socket (if any) AND all connections associated with it
     // Optionally specify a close code or string that can be read on the receiver
     // Returns true if an existing connection was closed successfully
     bool NetworkCloseSocket(int code = 0, std::string_view reason = {});

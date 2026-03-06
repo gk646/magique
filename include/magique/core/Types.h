@@ -280,11 +280,11 @@ namespace magique
 
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
-        uint16_t offX;  // Horizontal offset from the top left of the atlas
-        uint16_t offY;  // Vertical offset from the top left of the atlas
-        int16_t width;  // Width of the texture
-        int16_t height; // Height of the texture
-        uint16_t id;    // The texture id
+        uint16_t offX;   // Horizontal offset from the top left of the atlas
+        uint16_t offY;   // Vertical offset from the top left of the atlas
+        int16_t width;   // Width of the texture
+        int16_t height;  // Height of the texture
+        uint16_t id = 0; // The texture id
 
         Point getSize() const { return {(float)width, (float)height}; }
         bool isValid() const { return id != 0; }
@@ -292,12 +292,19 @@ namespace magique
 
     struct SpriteSheet final
     {
-        TextureRegion region;
-        uint16_t frames; // Total number of frames
-        bool blank;      // True if all frames are fully transparent
+        SpriteSheet() = default;
+        SpriteSheet(TextureRegion region);
 
-        bool isValid() const { return region.isValid(); }
+        bool isValid() const;
         [[nodiscard]] TextureRegion getRegion(int frame) const;
+
+        int getFrameCount() const;
+
+    private:
+        M_MAKE_PUB()
+        TextureRegion region{};
+        uint16_t frames = 0; // Total number of frames
+        bool blank = false;  // True if all frames are fully transparent
     };
 
     using DurationArray = uint16_t[MAGIQUE_MAX_ANIM_FRAMES]; // Duration in millis
@@ -306,7 +313,7 @@ namespace magique
     {
         DurationArray durations{};
         SpriteSheet sheet{};
-        uint16_t maxDuration = 0; // in millis
+        float durationMillis = 0;
 
         TextureRegion getCurrentFrame(float millis) const;
         // Returns duration in ticks
@@ -381,7 +388,7 @@ namespace magique
         const TiledProperty* getProperty(const char* propertyName) const;
 
     private:
-        M_MAKE_PUB();
+        M_MAKE_PUB()
         int tileId = 0;
         const char* name = nullptr;
         int id = INT32_MAX;
@@ -406,6 +413,7 @@ namespace magique
     struct Checksum final
     {
         // Initializes the checksum - should be the output of print() or format() or another MD5 implementation
+        Checksum() = default;
         explicit Checksum(const char* hexadecimalHash);
 
         bool operator==(const Checksum& other) const;
@@ -417,13 +425,11 @@ namespace magique
         void format(char* buffer, int size) const;
 
     private:
-        Checksum() = default;
         uint32_t first = 0;
         uint32_t second = 0;
         uint32_t third = 0;
         uint32_t fourth = 0;
         friend Checksum AssetPackChecksum(const char* path);
-        friend bool AssetPackValidate(Checksum, const char*);
     };
 
     //================= ECS =================//
@@ -457,7 +463,7 @@ namespace magique
         TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
     };
 
-    // This NEEDS to be a bit mask
+    // This NEEDS to be a bit mask https://en.wikipedia.org/wiki/Mask_(computing)
     // Feel free uncomment! or implement it your own
     enum class CollisionLayer : uint8_t;
     /*
@@ -600,7 +606,7 @@ namespace magique
     struct ParamInfo final
     {
         std::string name;
-        std::array<ParamType, 3> allowedTypes;
+        std::array<ParamType, 3> allowedTypes{};
         bool isOptional = false;
         bool isVariadic = false; // Matches variable amount of parameters
         union
@@ -630,13 +636,11 @@ namespace magique
         French,
     };
 
-    enum class ParticleLayer : uint8_t; // Allows to draw particle in multiple layers (e.g. game, menus, ...)
-
     struct WeightedColor
     {
         WeightedColor() = default;
         WeightedColor(Color color, float weight = 0.5F) : color(color), weight(weight) {}
-        Color color;
+        Color color{};
         float weight = 0.5F;
     };
 

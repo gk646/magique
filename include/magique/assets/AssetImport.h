@@ -5,6 +5,7 @@
 #include <vector>
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
+#include <magique/core/Animation.h>
 
 //===============================================
 // Asset Import
@@ -24,6 +25,7 @@ namespace magique
 
     // Allows to register an already existing or custom loaded texture onto the given atlas
     TextureRegion ImportTexture(const Texture& texture, AtlasID atlas = {});
+    TextureRegion ImportTexture(const Image& img, AtlasID atlas = {});
 
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
@@ -53,12 +55,20 @@ namespace magique
 
     // Imports an aseprite file with all the frames and duration set (.ase,.aseprite)
     using StateMapFunc = AnimationState (*)(const char* tagName);
-    // Uses the mapping function to get the animation state from the aseprite tag name
-    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc func, AtlasID atlas = {}, float scale = 1.0F);
 
-    // Only imports the given layers
-    EntityAnimation ImportAsepriteEx(const Asset& asset, const std::vector<const char*>& layers, StateMapFunc func,
-                                     AtlasID atlas = {}, float scale = 1.0F, Point offset = {}, Point anchor = {-1});
+    // Imports all tags from the given aseprite - each tag is mapped to a animation state with the mapping function
+    // Note: Only imports frames part of any tag
+    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas = {}, float scale = 1.0F,
+                                   Point offset = {}, Point anchor = {-1});
+
+    using LayerMapFunc = AnimationLayer (*)(const char* layerName);
+
+    // Imports each layers separately into its own entity animation
+    // Note: Uses the mapping function to map layer name in the editor to AnimationLayer values
+    std::vector<std::pair<AnimationLayer, EntityAnimation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
+                                                                                 LayerMapFunc layerMap,
+                                                                                 AtlasID atlas = {}, float scale = 1.0F,
+                                                                                 Point offset = {}, Point anchor = {-1});
 
     //================= Audio =================//
 

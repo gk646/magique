@@ -123,5 +123,4 @@ namespace magique
         }
     }
 
-
 } // namespace magique

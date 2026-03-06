@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/core/Animation.h>
 
-
 namespace magique
 {
     //----------------- ENTITY ANIMATION -----------------//
 
-    EntityAnimation::EntityAnimation(const float scale) : scale(scale) {}
+    EntityAnimation::EntityAnimation(const float scale) : logicScale(scale) {}
 
     void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameMillis)
     {
-        auto& animation = animations[static_cast<int>(state)];
+        auto& animation = animations[state];
         for (int i = 0; i < sheet.frames; ++i)
         {
             animation.durations[i] = frameMillis;
-            animation.maxDuration += frameMillis;
+            animation.durationMillis += frameMillis;
         }
         animation.sheet = sheet;
     }
@@ -22,48 +21,39 @@ namespace magique
     void EntityAnimation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
                                          Point off, Point anch)
     {
-        auto& animation = animations[static_cast<int>(state)];
+        auto& animation = animations[state];
         for (int i = 0; i < sheet.frames; ++i)
         {
             animation.durations[i] = durations[i];
-            animation.maxDuration += durations[i];
+            animation.durationMillis += durations[i];
         }
         animation.sheet = sheet;
         offset = {off.x, off.y};
-        offset *= scale;
+        offset *= logicScale;
         anchor = {anch.x, anch.y};
-        anchor *= scale;
+        anchor *= logicScale;
     }
 
-    void EntityAnimation::removeAnimation(AnimationState state)
-    {
-        auto& animation = animations[static_cast<int>(state)];
-        animation.maxDuration = UINT16_MAX; // Mark as invalid
-        animation.sheet = {};
-    }
+    void EntityAnimation::removeAnimation(AnimationState state) { animations.erase(state); }
 
     SpriteAnimation EntityAnimation::getCurrentAnimation(AnimationState state) const
     {
-        return animations[static_cast<int>(state)];
+        auto it = animations.find(state);
+        if (it != animations.end())
+        {
+            return it->second;
+        }
+        return {};
     }
 
     Point EntityAnimation::getOffset() const { return offset; }
 
-    Point EntityAnimation::getAnchor() const { return anchor; }
-
     void EntityAnimation::setOffset(Point newOffset) { offset = newOffset; }
 
-    bool EntityAnimation::hasAnimation(AnimationState state) const
-    {
-        if ((size_t)state >= animations.width())
-        {
-            return false;
-        }
-        const auto& anim = animations[static_cast<int>(state)];
-        return anim.isValid();
-    }
+    Point EntityAnimation::getAnchor() const { return anchor; }
 
-    const SparseRangeVector<SpriteAnimation>& EntityAnimation::getAnimations() const { return animations; }
+    bool EntityAnimation::hasAnimation(AnimationState state) const { return animations.contains(state); }
 
+    const HashMap<AnimationState, SpriteAnimation>& EntityAnimation::getAnimations() const { return animations; }
 
 } // namespace magique

@@ -3,6 +3,7 @@
 #define MAGIQUE_COMPONENTS_H
 
 #include <magique/core/Types.h>
+#include <magique/core/Animation.h>
 #include <magique/util/Datastructures.h>
 
 //===============================================
@@ -95,9 +96,6 @@ namespace magique
         // Sets a new action state - automatically reset the sprite count to 0 when a state change happens
         void setAnimationState(AnimationState state);
 
-        void setFlipX(bool flip);
-        void setFlipY(bool flip);
-
         //================= GETTERS =================//
 
         // Returns the current animation
@@ -113,14 +111,79 @@ namespace magique
         // Returns the current sprite count (in millis)
         [[nodiscard]] float getSpriteCount() const;
 
+        bool flipX = false;
+        bool flipY = false;
+
     private:
-        const EntityAnimation* entityAnimation; // Always valid
-        SpriteAnimation currentAnimation;
-        float spriteCount;
-        uint16_t animationStart;
-        AnimationState lastState;
-        AnimationState currentState;
-        bool flipX, flipY;
+        const EntityAnimation* animation = nullptr;
+        SpriteAnimation currentAnimation{};
+        float millisCount = 0;
+        uint16_t animationStart = 0;
+        AnimationState lastState{UINT8_MAX};
+        AnimationState currentState{UINT8_MAX};
+    };
+
+    // A layered animation is more complex and allows to stack animation ontop of each other
+    // This is useful for dynamically drawing characters where e.g. the face, clothes can change dynamically
+    // Each layer is a reference to an existing EntityAnimation and layers are set for each component individually
+    // All layers are then controlled via the same AnimationState, so they display the correct visuals
+    struct LayeredAnimationC final
+    {
+        // Draws all layers in ascending order (enum value) - uses each individual anchor or this one if set
+        void draw(const Point& pos, float rotation = 0) const;
+
+        // Progresses the animations - has to be called from the update method to be frame rate independent
+        void update();
+
+        // Sets the animation for the given layer - adds the offset ontop of any existing offset
+        void setLayer(AnimationLayer layer, const EntityAnimation& animation, Point offset);
+        void setLayer(AnimationLayer layer, const LayeredEntityAnimation& animation);
+
+        // Returns or creates a new animation for that layer
+        LayeredEntityAnimation getLayer(AnimationLayer layer);
+
+        bool hasLayer(AnimationLayer layer) const;
+
+        Point globalAnchor = -1;
+
+    private:
+        HashMap<AnimationLayer, LayeredEntityAnimation> animations;
+        float millisCount = 0;
+        AnimationState lastState{};
+        AnimationState currentState{};
+    };
+
+    // Can be used for a texture system to draw the visual representation of an entity
+    struct TextureC final
+    {
+        TextureC() = default;
+        // Sets anchor to the texture mid if invalid
+        TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1});
+
+        // Draws the texture at base size at the given position with offset and rotation around the anchor
+        void draw(Point pos, float rotation) const;
+
+        TextureRegion texture{};
+        Point offset{};
+        Point anchor{};
+    };
+
+    // Allows to layer textures to create more complex look
+    // Layers can be set dynamically at any point
+    struct LayeredTextureC final
+    {
+        // Draws all valid layers in ascending order (enum value) - if valid uses the global anchor over the individual ones
+        void draw(const Point& pos, float rotation = 0) const;
+
+        void setTexture(AnimationLayer layer, TextureC texture);
+
+        // Returns the texture on the layer or a dummy
+        TextureC getTexture(AnimationLayer layer);
+
+        Point globalAnchor = -1;
+
+    private:
+        HashMap<AnimationLayer, TextureC> textures;
     };
 
 } // namespace magique

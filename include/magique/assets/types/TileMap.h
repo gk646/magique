@@ -57,7 +57,7 @@ namespace magique
         const TiledProperty* getProperty(const char* name) const;
 
     private:
-        M_MAKE_PUB();
+        M_MAKE_PUB()
         std::vector<std::vector<TileObject>> objectLayers;
         std::vector<std::vector<int16_t>> tileLayers; // Contiguous array for map data
         std::vector<TiledProperty> properties;
@@ -66,4 +66,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_TILEMAP_H
+#endif // MAGIQUE_TILEMAP_H

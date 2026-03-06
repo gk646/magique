@@ -21,7 +21,7 @@
 namespace magique
 {
     void CheckStaticCollisionRange(int thread, int start, int end);
-    void HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet);
+    void HandleCollisionPairs(StaticPairCollector& pairColl);
 
     inline void StaticCollisionSystem()
     {
@@ -47,7 +47,7 @@ namespace magique
             JobAwaits(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
         // Handle unique pairs - we can share the pair set with dynamic
-        HandleCollisionPairs(staticData.pairCollector, global::DY_COLL_DATA.pairSet);
+        HandleCollisionPairs(staticData.pairCollector);
     }
 
     inline void CheckAgainstWorldBounds(std::vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
@@ -152,9 +152,9 @@ namespace magique
         }
     }
 
-    inline void HandleCollisionPairs(StaticPairCollector& pairColl, HashSet<uint64_t>& pairSet)
+    inline void HandleCollisionPairs(StaticPairCollector& pairColl)
     {
-        const auto& scripts = global::SCRIPT_DATA.scripts;
+        auto& scripts = global::SCRIPT_DATA.scripts;
         auto& dynamic = global::DY_COLL_DATA;
         for (auto& [vec] : pairColl)
         {

@@ -44,6 +44,9 @@ namespace magique
     // Returns the engine internal camera - used for all getter methods, culling visible entities and drawing debug visuals
     Camera2D& CameraGet();
 
+    // Sets a new zoom clamped to the given range
+    Camera2D& CameraSetZoom(float zoom, float min = 0.2F, float max = 1.0F);
+
     // Returns the map of the camera - you should probably draw this map
     // Failure: returns UINT8_MAX if there is no camera
     MapID CameraGetMap();
@@ -60,7 +63,7 @@ namespace magique
     //================= UTIL =================//
 
     // Returns true if the given point is inside any actors view bounds (using the camera bounds)
-    bool CameraInsideAnyViewBounds (Point pos);
+    bool CameraInsideAnyViewBounds(Point pos);
 
     //================= SHAKE =================//
 
@@ -75,4 +78,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_CAMERA_H
+#endif // MAGIQUE_CAMERA_H

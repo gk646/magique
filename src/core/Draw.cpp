@@ -21,9 +21,10 @@ constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 namespace magique
 {
 
-    void DrawRegion(const TextureRegion& region, const Point& pos, const bool flipX, const Color tint)
+    void DrawRegion(const TextureRegion& region, Point pos, const bool flipX, const Color tint)
     {
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
+        pos.floor();
 
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
@@ -65,8 +66,7 @@ namespace magique
         DrawRegion(region, center.floor(), false, tint);
     }
 
-    void DrawRegionPro(const TextureRegion& region, Rectangle dest, const float rotation, const Point anchor,
-                       const Color tint)
+    void DrawRegionPro(const TextureRegion& region, Rect dest, const float rot, const Point anchor, const Color tint)
     {
         // Check if the region is valid
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -88,12 +88,12 @@ namespace magique
         rlColor4ub(tint.r, tint.g, tint.b, tint.a);
         rlNormal3f(0.0f, 0.0f, 1.0f);
 
-        if (rotation != 0) [[unlikely]]
+        if (rot != 0) [[unlikely]]
         {
             float pxs[4] = {0, 0, dest.width, dest.width};
             float pys[4] = {0, dest.height, dest.height, 0};
 
-            RotatePoints4(dest.x, dest.y, pxs, pys, rotation, anchor.x, anchor.y);
+            RotatePoints4(dest.x, dest.y, pxs, pys, rot, anchor.x, anchor.y);
 
             rlTexCoord2f(texLeft, texTop);
             rlVertex2f(pxs[0], pys[0]);
@@ -130,60 +130,18 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawSprite(SpriteSheet& sheet, float x, float y, const int frame, const bool flipX, const Color tint)
+    void DrawSprite(SpriteSheet sheet, Point pos, const int frame, const bool flipX, const Color tint)
     {
-        // Check if the region is valid
         MAGIQUE_ASSERT(sheet.isValid() > 0, "The texture for this region is invalid");
         MAGIQUE_ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
+        DrawRegion(sheet.getRegion(frame), pos, flipX, tint);
+    }
 
-        x = std::floor(x); // Flooring to avoid texture glitches
-        y = std::floor(y);
-
-        const auto texWidth = static_cast<float>(sheet.region.width);
-        const auto texHeight = static_cast<float>(sheet.region.height);
-
-        const auto offsetX = static_cast<float>(sheet.region.offX + frame * sheet.region.width);
-        const auto offsetY = static_cast<float>(sheet.region.offY);
-
-        if (flipX) [[unlikely]]
-        {
-            sheet.region.width *= -1;
-        }
-
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
-
-        const float texCoordLeft = offsetX / atlasWidth;
-        const float texCoordRight = (offsetX + texWidth) / atlasWidth;
-        const float texCoordTop = offsetY / atlasHeight;
-        const float texCoordBottom = (offsetY + texHeight) / atlasHeight;
-
-        rlSetTexture(sheet.region.id);
-        {
-            rlBegin(RL_QUADS);
-            {
-                rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-                rlNormal3f(0.0f, 0.0f, 1.0f); // Normal vector pointing towards the viewer
-
-                // Top-left corner for region and quad
-                rlTexCoord2f(texCoordLeft, texCoordTop);
-                rlVertex2f(x, y);
-
-                // Bottom-left corner for region and quad
-                rlTexCoord2f(texCoordLeft, texCoordBottom);
-                rlVertex2f(x, y + texHeight);
-
-                // Bottom-right corner for region and quad
-                rlTexCoord2f(texCoordRight, texCoordBottom);
-                rlVertex2f(x + texWidth, y + texHeight);
-
-                // Top-right corner for region and quad
-                rlTexCoord2f(texCoordRight, texCoordTop);
-                rlVertex2f(x + texWidth, y);
-            }
-            rlEnd();
-        }
-        rlSetTexture(0);
+    void DrawSpriteEx(SpriteSheet sheet, const Rect& dest, int frame, float rot, Point anchor, Color tint)
+    {
+        MAGIQUE_ASSERT(sheet.isValid() > 0, "The texture for this region is invalid");
+        MAGIQUE_ASSERT(frame >= 0 && frame < sheet.frames, "Out of bounds frame");
+        DrawRegionPro(sheet.getRegion(frame), dest, rot, anchor, tint);
     }
 
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
@@ -264,27 +222,6 @@ namespace magique
         DrawTextEx(f, txt.data(), {std::round(pos.x - width), std::round(pos.y)}, fs, spc, c);
     }
 
-    void DrawPixelText(const Font& f, std::string_view txt, Vector2 pos, const int fsm, const Color tint)
-    {
-        pos.x = std::round(pos.x);
-        pos.y = std::round(pos.y);
-        DrawTextEx(f, txt.data(), pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
-    }
-
-    void DrawPixelTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const int fsm, const Color tint)
-    {
-        const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt.data(), fs, 1.0F).x;
-        DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
-    }
-
-    void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color tint)
-    {
-        const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt.data(), fs, (float)fsm).x;
-        DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
-    }
-
     int DrawTextUpTo(const Font& font, const char* text, Vector2 position, float fontSize, float width, Color tint)
     {
         int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
@@ -331,6 +268,27 @@ namespace magique
             i += codepointByteCount; // Move text bytes counter to next codepoint
         }
         return size;
+    }
+
+    void DrawPixelText(const Font& f, std::string_view txt, Vector2 pos, const int fsm, const Color tint)
+    {
+        pos.x = std::round(pos.x);
+        pos.y = std::round(pos.y);
+        DrawTextEx(f, txt.data(), pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
+    }
+
+    void DrawPixelTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const int fsm, const Color tint)
+    {
+        const auto fs = (float)f.baseSize * fsm;
+        const auto width = MeasureTextEx(f, txt.data(), fs, 1.0F).x;
+        DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
+    }
+
+    void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color tint)
+    {
+        const auto fs = (float)f.baseSize * fsm;
+        const auto width = MeasureTextEx(f, txt.data(), fs, (float)fsm).x;
+        DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
     }
 
     void DrawPixelTextNumbers(const Font& font, const char* text, Vector2 position, int fsm, Color textColor,

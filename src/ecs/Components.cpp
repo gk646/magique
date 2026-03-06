@@ -45,24 +45,22 @@ namespace magique
 
     //----------------- ANIMATION -----------------//
 
-    AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) :
-        entityAnimation(&animation), currentAnimation({}), spriteCount(0), animationStart(0),
-        lastState(AnimationState{UINT8_MAX}), currentState(AnimationState{UINT8_MAX}), flipX(false), flipY(false)
+    AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) : animation(&animation)
     {
         setAnimationState(startState);
     }
 
     void AnimationC::drawCurrentFrame(const Point& pos, const float rotation) const
     {
-        const auto currentFrame = currentAnimation.getCurrentFrame(spriteCount);
-        auto offset = entityAnimation->getOffset();
+        const auto currentFrame = currentAnimation.getCurrentFrame(millisCount);
+        const auto offset = animation->getOffset();
         const Rectangle dest = {pos.x + offset.x, pos.y + offset.y,
                                 static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
                                 static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)};
-        DrawRegionPro(currentFrame, dest, rotation, entityAnimation->getAnchor());
+        DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor());
     }
 
-    void AnimationC::update() { spriteCount += MAGIQUE_TICK_TIME * 1000.0F; }
+    void AnimationC::update() { millisCount += MAGIQUE_TICK_TIME * 1000.0F; }
 
     void AnimationC::setAnimationState(const AnimationState state)
     {
@@ -70,26 +68,107 @@ namespace magique
         {
             lastState = currentState;
             currentState = state;
-            spriteCount = 0;
-            currentAnimation = entityAnimation->getCurrentAnimation(state);
-            animationStart = spriteCount;
+            millisCount = 0;
+            currentAnimation = animation->getCurrentAnimation(state);
+            animationStart = millisCount;
         }
     }
-
-    void AnimationC::setFlipX(bool flip) { flipX = flip; }
-
-    void AnimationC::setFlipY(bool flip) { flipY = flip; }
 
     SpriteAnimation AnimationC::getCurrentAnimation() const { return currentAnimation; }
 
     bool AnimationC::getHasAnimationPlayed() const
     {
-        return spriteCount > animationStart + currentAnimation.maxDuration;
+        return millisCount > animationStart + currentAnimation.durationMillis;
     }
 
     AnimationState AnimationC::getCurrentState() const { return currentState; }
 
-    float AnimationC::getSpriteCount() const { return spriteCount; }
+    float AnimationC::getSpriteCount() const { return millisCount; }
+
+    //----------------- LAYERED ANIMATION -----------------//
+
+    void LayeredAnimationC::draw(const Point& pos, float rotation) const
+    {
+        for (const auto& [layer, layered] : animations)
+        {
+            auto& anim = *layered.animation;
+            auto layerOffset = layered.offset;
+            auto current = anim.getCurrentAnimation(currentState);
+            auto frame = current.getCurrentFrame(millisCount);
+            Point finalAnchor;
+            if (globalAnchor != -1)
+            {
+                finalAnchor = globalAnchor;
+            }
+            else
+            {
+                finalAnchor = layerOffset + anim.getAnchor();
+            }
+            DrawRegionPro(frame, Rect{pos + layerOffset + anim.getOffset(), frame.getSize()}.floor(), rotation,
+                          finalAnchor);
+        }
+    }
+
+    void LayeredAnimationC::update() { millisCount += MAGIQUE_TICK_TIME * 1000.0F; }
+
+    void LayeredAnimationC::setLayer(AnimationLayer layer, const EntityAnimation& animation, Point offset)
+    {
+        animations[layer] = {&animation, offset};
+    }
+
+    void LayeredAnimationC::setLayer(AnimationLayer layer, const LayeredEntityAnimation& animation)
+    {
+        animations[layer] = animation;
+    }
+
+    LayeredEntityAnimation LayeredAnimationC::getLayer(AnimationLayer layer) { return animations[layer]; }
+
+    bool LayeredAnimationC::hasLayer(AnimationLayer layer) const { return animations.contains(layer); }
+
+    //----------------- TextureC -----------------//
+
+    TextureC::TextureC(TextureRegion texture, Point offset, Point anchor) :
+        texture(texture), offset(offset.floor()),
+        anchor(anchor == -1 ? Point{texture.getSize() / 2}.floor() : anchor.floor())
+    {
+    }
+
+    void TextureC::draw(Point pos, float rotation) const
+    {
+        DrawRegionPro(texture, Rect{pos + offset, texture.getSize()}, std::floor(rotation), anchor);
+    }
+
+    void LayeredTextureC::draw(const Point& pos, float rotation) const
+    {
+        for (const auto& [layer, tex] : textures)
+        {
+            if (!tex.texture.isValid())
+                continue;
+            Point finalAnchor;
+            if (globalAnchor != -1)
+            {
+                finalAnchor = globalAnchor - tex.offset;
+            }
+            else
+            {
+                finalAnchor = tex.offset + tex.anchor;
+            }
+            const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
+            DrawRegionPro(tex.texture, dest.floor(), std::floor(rotation), finalAnchor);
+        }
+    }
+
+    void LayeredTextureC::setTexture(AnimationLayer layer, TextureC texture) { textures[layer] = texture; }
+
+    TextureC LayeredTextureC::getTexture(AnimationLayer layer)
+    {
+        const auto it = textures.find(layer);
+        if (it == textures.end())
+        {
+            return {};
+        }
+        return it->second;
+    }
 
     //----------------- COLLISION -----------------//
 

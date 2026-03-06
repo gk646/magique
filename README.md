@@ -1,7 +1,7 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.9.9-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.9.13-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
 `magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
@@ -37,20 +37,18 @@ Most notable features:
     - _**No external dependencies!**_ (all dependencies in the source)
     - All `raylib` functionalities are the same allowing for an easy transition
     - _**Fully documented headers**_, many **_examples_** and **_video guides_**!
-    - _**Many examples**_ from single headers to whole games! (see _examples/_)
     - Intuitive public API optimized for maximum usability
     - Extensive logging and error detection with asserts and debugger support
 - **Fast and modern**
-    - Internally uses _**custom datastructures and algorithms**_ to provide maximum performance
+    - Uses _**custom datastructures and algorithms**_ to provide maximum performance
     - Explicitly _**optimized for compile time**_ internally and externally!
-    - Takes advantage of _**multithreading, SIMD, data-driven design and cache locality**_ where possible
+    - Takes advantage of _**multithreading, data-driven design and cache locality**_
 - **Large feature set with `pay for what you use` policy**
     - Asset-Packing and Loading with **compression, encryption and checksum support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
     - _**Procedural particle system**_ inspired by Godot4
-    - Persistence API for gamesaves and gameconfig with typesafe data access
-    - Typesafe C++ scripting system allowing for custom methods and classes with native speed
+    - Persistence API for gamesaves and configuration
     - Supports _**[Tiled](https://www.mapeditor.org/) tilemaps and tilset exports**_ (.tmx, .tsx)
     - Object-oriented UI framework with automatic scaling and intuitive anchoring and alignment tools
     - Powerful in-game console with custom commands and interaction with the game
@@ -58,7 +56,7 @@ Most notable features:
 - **Multiplayer support**
     - Seamless transition between local and global networking with a unified API
 - **Steam integration**
-    - Provided a Steam SDK, allows access to _**steam features**_ like matchmaking and chat
+    - Provided a Steam SDK, allows access to _**steam features**_ like lobbies, stats, matchmaking and chat
 
 `magique` is using the following popular libraries:
 
@@ -68,7 +66,7 @@ Most notable features:
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
   IP
-- **[Steam SDK](https://partner.steamgames.com/)** _(1.61)_:  steam features and global P2P networking
+- **[Steam SDK](https://partner.steamgames.com/)** _(1.63)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
 - **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection (often used in gamedev)
 

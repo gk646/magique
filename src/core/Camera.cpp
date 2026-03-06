@@ -25,6 +25,12 @@ namespace magique
 
     Camera2D& CameraGet() { return global::ENGINE_DATA.camera; }
 
+    Camera2D& CameraSetZoom(float zoom, float min, float max)
+    {
+        global::ENGINE_DATA.camera.zoom = std::clamp(zoom, min, max);
+        return global::ENGINE_DATA.camera;
+    }
+
     MapID CameraGetMap()
     {
 #ifdef MAGIQUE_DEBUG

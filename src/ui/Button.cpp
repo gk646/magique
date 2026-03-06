@@ -29,17 +29,17 @@ namespace magique
     {
         if (getIsHovered())
         {
-
-                for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
+            for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
+            {
+                if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
                 {
-                    if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
-                    {
-                        onClick(bounds, i);
-                        if (clickFunc)
-                            clickFunc(bounds, i);
-                        LayeredInput::ConsumeMouse();
-                    }
+                    onClick(bounds, i);
+                    if (clickFunc)
+                        clickFunc(bounds, i);
+                    LayeredInput::ConsumeMouse();
                 }
+            }
+
             if (!isHovered)
             {
                 isHovered = true;

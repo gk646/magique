@@ -31,14 +31,14 @@ namespace magique
     EntityScript* ScriptingGetScript(const EntityType entity)
     {
         const auto& scriptData = global::SCRIPT_DATA;
-        MAGIQUE_ASSERT(scriptData.scripts.width() > (size_t)entity,
+        MAGIQUE_ASSERT(scriptData.scripts.find(entity) != scriptData.scripts.end(),
                        "No script registered for this type! Did you call SetScript()?");
-        auto* script = scriptData.scripts[entity];
-        if (script == nullptr)
+        auto it = scriptData.scripts.find(entity);
+        if (it == scriptData.scripts.end())
         {
             return scriptData.defaultScript;
         }
-        return script;
+        return it->second;
     }
 
     void ScriptingSetScripted(const entt::entity entity, const bool val)

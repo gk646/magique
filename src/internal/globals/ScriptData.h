@@ -9,7 +9,7 @@ namespace magique
     struct ScriptData final
     {
         inline static auto* defaultScript = new EntityScript();
-        SparseRangeVector<EntityScript*> scripts;
+        HashMap<EntityType, EntityScript*> scripts;
     };
 
     namespace global
@@ -19,4 +19,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_SCRIPTENGINE_H
+#endif // MAGIQUE_SCRIPTENGINE_H

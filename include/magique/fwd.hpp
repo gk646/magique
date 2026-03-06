@@ -15,19 +15,21 @@ enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
 // IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
 enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
-enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS
 enum class AtlasID : int;            // Identifies different texture atlas
+enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS
+enum class AnimationLayer : uint8_t; // User implemented to denote different animation layers - shared for all animations
+enum class ParticleLayer : uint8_t;  // Allows to draw particle in multiple layers (e.g. game, menus, ...)
 
 namespace magique
 {
     //================= CORE =================//
-    struct Keybind;          // Efficient representation of a keybind
-    struct Game;             // Core Game class
-    struct ScreenEmitter;    // Particle emitter for screen (simple) particles
-    struct EntityEmitter;    // Particle emitter for entity (complex) particles
-    struct EntityAnimation;  // Shared animation data for a specific entity
-    struct EmitterData;      // Data for particle emitters
-    struct Point;            // Floating point point
+    struct Keybind;         // Efficient representation of a keybind
+    struct Game;            // Core Game class
+    struct ScreenEmitter;   // Particle emitter for screen (simple) particles
+    struct EntityEmitter;   // Particle emitter for entity (complex) particles
+    struct EntityAnimation; // Shared animation data for a specific entity
+    struct EmitterData;     // Data for particle emitters
+    struct Point;           // Floating point point
     struct TileInfo;
     struct Rotation;
     struct GameSystem;
@@ -36,9 +38,9 @@ namespace magique
     //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
     struct AssetContainer; // Asset list loaded from a compiled asset pack
-    struct SaveLoader; // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSave;   // The game save object
-    struct GameConfig;   // The config persistence object
+    struct SaveLoader;     // Handles loading individual world state and player save - MainMenu -> Game
+    struct GameSave;       // The game save object
+    struct GameConfig;     // The config persistence object
 
     struct IExecutor; // Task loading interface
     namespace internal
@@ -50,21 +52,20 @@ namespace magique
     //=================ECS=================//
     struct EntityScript;
     enum ScriptEvent : uint8_t;
-    enum class CollisionLayer : uint8_t;
     enum class Shape : uint8_t;
     struct PositionC;  // Implicit position component
     struct CollisionC; // Built in collision component
 
     //================= ASSETS =================//
-    struct Asset;                 // Memory container for any asset
-    struct TextureRegion;         // All textures are stitched into an atlas, you can only retrieve their region
-    struct SpriteSheet;           // Identifies a sprite sheet
-    struct TileMap;               // Defines which textures to draw at each tile with a number
-    struct TileSet;               // Defines the details for all tiles in a project - collision ...
-    struct TileSheet;             // Stores the textures (id's) for all tiles in a project
-    struct Playlist;              // Stores multiple music objects to easily play and loop them
-    struct TileObject;            // TileObject imported from the Tile Editor
-    struct TextLines;             // Text import
+    struct Asset;         // Memory container for any asset
+    struct TextureRegion; // All textures are stitched into an atlas, you can only retrieve their region
+    struct SpriteSheet;   // Identifies a sprite sheet
+    struct TileMap;       // Defines which textures to draw at each tile with a number
+    struct TileSet;       // Defines the details for all tiles in a project - collision ...
+    struct TileSheet;     // Stores the textures (id's) for all tiles in a project
+    struct Playlist;      // Stores multiple music objects to easily play and loop them
+    struct TileObject;    // TileObject imported from the Tile Editor
+    struct TextLines;     // Text import
 
     using TileClassMapFunc = TileClass (*)(const char*);
 

@@ -190,7 +190,7 @@ namespace magique
     bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
     {
         // Avoids doubling logic - like offset handling
-        const PositionC posR{r.pos()};
+        const PositionC posR{r.pos(), pos.map, pos.type, pos.rotation};
         const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
         CheckCollisionEntities(pos, col, posR, colR, info);
         return info.isColliding();
@@ -231,7 +231,7 @@ namespace magique
         RotatePoints(angle, anchor, p1, p2, p3, p4);
     }
 
-    void RotatePoints(const float angle,  Point anchor, Point& p1, Point& p2, Point& p3, Point& p4)
+    void RotatePoints(const float angle, Point anchor, Point& p1, Point& p2, Point& p3, Point& p4)
     {
         anchor.floor();
         float pxs[4] = {p1.x, p2.x, p3.x, p4.x};

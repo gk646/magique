@@ -12,7 +12,7 @@
 // This module allows to define animations, which means mapping animation states to a sprite sheet
 // This animation data is meant to be shared across entities as it contains no state just data
 // The intended workflow is:
-//                  1. Create a EntityAnimation and add animations for the states it has (save it globally)
+//                  1. Create a EntityAnimation and add animations for the states it has (save it globally!)
 //                  2. Use ComponentGive<AnimationC>(entity, animation) or else to pass them a reference of the data
 // Notes: Frame duration is in millis
 // ................................................................................
@@ -48,23 +48,20 @@ namespace magique
         [[nodiscard]] Point getAnchor() const;
 
         bool hasAnimation(AnimationState state) const;
-        const SparseRangeVector<SpriteAnimation>& getAnimations() const;
+        const HashMap<AnimationState, SpriteAnimation>& getAnimations() const;
 
     private:
-        Point offset{};
+        Point offset{}; // Offest from where the animation is drawn
         Point anchor{};
-        SparseRangeVector<SpriteAnimation> animations;
-        float scale = 1.0F;
-        friend struct AnimationData;
+        HashMap<AnimationState, SpriteAnimation> animations;
+        float logicScale = 1.0F;
+        friend struct LayeredAnimationC;
     };
-
 
     struct LayeredEntityAnimation final
     {
-        LayeredEntityAnimation();
-
-    private:
-        SparseRangeVector<EntityAnimation> animations;
+        const EntityAnimation* animation; // This layers animation
+        Point offset;                     // Offset from where the layer is drawn
     };
 
 } // namespace magique
