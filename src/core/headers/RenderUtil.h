@@ -70,8 +70,8 @@ namespace magique
             }
         }
 
-        data.camera.target.x = MathLerp(data.camera.target.x, targetPosition.x, smoothing);
-        data.camera.target.y = MathLerp(data.camera.target.y, targetPosition.y, smoothing);
+        data.camera.target.x = std::lerp(data.camera.target.x, targetPosition.x, smoothing);
+        data.camera.target.y = std::lerp(data.camera.target.y, targetPosition.y, smoothing);
         data.camera.target.x = std::floor(data.camera.target.x);
         data.camera.target.y = std::floor(data.camera.target.y);
     }

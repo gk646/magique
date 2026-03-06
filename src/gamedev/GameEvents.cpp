@@ -9,10 +9,7 @@ namespace magique
 {
     inline EventManager EVENT_HANDLER{};
 
-    EventManager& GameEventsGet()
-    {
-        return EVENT_HANDLER;
-    }
+    EventManager& GameEventsGet() { return EVENT_HANDLER; }
 
     EventSubID EventManager::subscribe(IEventHandler* handler, entt::entity filter, int priority)
     {
@@ -42,6 +39,19 @@ namespace magique
         }
     }
 
+    template <>
+    void EventManager::emit(GameEvent event, entt::entity entity, const EventData& data)
+    {
+        for (auto& subscriber : subscribers)
+        {
+            if (!subscriber.isValid(entity) || !subscriber.handler->shouldBeCalled())
+            {
+                continue;
+            }
+            subscriber.handler->onEvent(event, entity, data);
+        }
+    }
+
     bool EventManager::EventSubscription::isValid(entt::entity entity) const
     {
         if (filter != entt::entity{} && filter != entity) [[unlikely]]
@@ -50,5 +60,6 @@ namespace magique
         }
         return true;
     }
+
 
 } // namespace magique

@@ -4,6 +4,8 @@
 
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
+#include <magique/core/Camera.h>
+#include <magique/util/RayUtils.h>
 
 namespace magique
 {
@@ -23,36 +25,47 @@ namespace magique
 
     struct SoundWrapper final
     {
-        Sound sound;
-        float volume;
-    };
+        SoundWrapper(Sound sound, float volume);
+        SoundWrapper(Sound sound, float volume, Point pos) : SoundWrapper(sound, volume)
+        {
+            position = pos;
+            isPositional = true;
+        }
+        SoundWrapper(Sound sound, float volume, entt::entity e) : SoundWrapper(sound, volume)
+        {
+            isPositional = true;
+            entity = e;
+        }
 
-    struct Sound2D final
-    {
+        SoundWrapper(const SoundWrapper& other) = delete;
+        SoundWrapper& operator=(const SoundWrapper& other) = delete;
+        SoundWrapper(SoundWrapper&& other) = default;
+        SoundWrapper& operator=(SoundWrapper&& other) = default;
+
+
         Sound sound;
-        float volume;
-        float* x;
-        float* y;
-        float lastX;
-        float lastY;
-        bool isAlive;
+        float playVolume;
+        Point position{};
+        entt::entity entity = entt::null;
+        bool isPositional = false;
+
+        bool shouldRemove() const
+        {
+            return (isPositional && entity != entt::null && !EntityExists(entity)) || !IsSoundPlaying(sound);
+        }
+        float getVolume() const;
+        void update();
     };
 
     struct AudioPlayer final
     {
-     std::vector<SoundWrapper> sounds;
-     std::vector<Sound2D> sounds2D;
-     std::vector<Track> tracks;
-     std::vector<Playlist*> playlists;
+        std::vector<SoundWrapper> sounds;
+        std::vector<Track> tracks;
+        std::vector<Playlist*> playlists;
 
+        float maxSoundDistance = 1000;
         float soundVolume = 1.0F;
         float musicVolume = 1.0F;
-
-        AudioPlayer()
-        {
-            sounds.reserve(25);
-            sounds2D.reserve(25);
-        }
 
         void addTrack(const Music& music, float volume, const bool fadeIn)
         {
@@ -65,14 +78,14 @@ namespace magique
             for (auto& t : tracks)
             {
                 if (t.music.stream.buffer == music.stream.buffer)
+                {
+                    t.markedForRemoval = true;
+                    if (!t.fade)
                     {
-                        t.markedForRemoval = true;
-                        if (!t.fade)
-                        {
-                            t.currentVolume = 0;
-                        }
-                        return;
+                        t.currentVolume = 0;
                     }
+                    return;
+                }
             }
         }
 
@@ -106,44 +119,18 @@ namespace magique
 
         void update() noexcept
         {
-            // Check if sound is done
-            for (auto it = sounds.begin(); it != sounds.end();)
-            {
-                if (!::IsSoundPlaying(it->sound))
-                {
-                    it = sounds.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-
-            // Check if sound2D is done
-            for (auto it = sounds2D.begin(); it != sounds2D.end();)
-            {
-                if (!::IsSoundPlaying(it->sound))
-                {
-                    it = sounds2D.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
-
-            // Update music buffer and remove if done
-            for (auto it = tracks.begin(); it != tracks.end();)
-            {
-                if (it->update())
-                {
-                    it = tracks.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
+            std::erase_if(sounds,
+                          [](SoundWrapper& e)
+                          {
+                              e.update();
+                              if (e.shouldRemove())
+                              {
+                                  UnloadSoundAlias(e.sound);
+                                  return true;
+                              }
+                              return false;
+                          });
+            std::erase_if(tracks, [](Track& e) { return e.update(); });
 
             // Progress playlist
             for (const auto playlist : playlists)
@@ -198,6 +185,43 @@ namespace magique
 
         return markedForRemoval && currentVolume <= 0;
     }
+
+    inline SoundWrapper::SoundWrapper(Sound originalSound, float volume) :
+        sound(LoadSoundAlias(originalSound)), playVolume(volume)
+    {
+        SetSoundVolume(sound, global::AUDIO_PLAYER.getSoundVolume(volume));
+        PlaySound(sound);
+    }
+
+    inline float SoundWrapper::getVolume() const
+    {
+        const auto& ap = global::AUDIO_PLAYER;
+        auto dist = CameraGetPosition().euclidean(position);
+        float distMult = 1.0F - MathLerpInverse(0, ap.maxSoundDistance, std::min(ap.maxSoundDistance, dist));
+        return ap.getSoundVolume(playVolume * distMult);
+    }
+
+    inline void SoundWrapper::update()
+    {
+        if (isPositional)
+        {
+            if (EntityExists(entity))
+            {
+                const auto& pos = ComponentGet<PositionC>(entity);
+                auto* col = ComponentTryGet<CollisionC>(entity);
+                position = pos.pos;
+                if (col != nullptr)
+                {
+                    position += col->getMidOffset();
+                }
+            }
+            auto cameraPos = CameraGetPosition();
+            auto dims = GetScreenDims();
+            auto distFactor = std::abs(cameraPos.x - position.x) / (dims.x / 2);
+            SetSoundPan(sound, position.x > cameraPos.x ? 0.5F - distFactor : 0.5 + distFactor);
+        }
+        SetSoundVolume(sound, getVolume());
+    }
 } // namespace magique
 
-#endif //SOUNDDATA_H
+#endif // SOUNDDATA_H

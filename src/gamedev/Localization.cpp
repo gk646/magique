@@ -50,7 +50,7 @@ namespace magique
 
     void LoadLocalization(const Asset& asset)
     {
-        MAGIQUE_ASSERT(strcmp(asset.getExtension(), ".mtf") == 0, "Passed asset needs to be a .mtf file");
+        MAGIQUE_ASSERT(asset.getExtension() == ".mtf", "Passed asset needs to be a .mtf file");
         MAGIQUE_ASSERT(asset.data != nullptr || asset.size == 0, "Asset contains no data!");
 
         const int fileSize = asset.size;

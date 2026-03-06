@@ -16,11 +16,7 @@ namespace magique
         ap.soundVolume = volume;
         for (auto& s : ap.sounds)
         {
-            SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
-        }
-        for (auto& s : ap.sounds2D)
-        {
-            SetSoundVolume(s.sound, ap.getSoundVolume(s.volume));
+            SetSoundVolume(s.sound, ap.getSoundVolume(s.getVolume()));
         }
     }
 
@@ -39,71 +35,31 @@ namespace magique
 
     float SoundGetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }
 
-    void SoundPlay(const Sound& sound, const float volume)
-    {
-        const auto alias = LoadSoundAlias(sound);
-        SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
-        global::AUDIO_PLAYER.sounds.emplace_back(alias, volume);
-    }
+    void SoundPlay(const Sound& sound, const float volume) { global::AUDIO_PLAYER.sounds.emplace_back(sound, volume); }
+
+    void SoundSetFalloffDistance(float distance) { global::AUDIO_PLAYER.maxSoundDistance = distance; }
 
     void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume)
     {
-        auto& reg = EntityGetRegistry();
-        if (!reg.valid(entity))
-        {
-            LOG_ERROR("Passed invalid entity: %d", static_cast<int>(entity));
-            return;
-        }
-        const auto alias = LoadSoundAlias(sound);
-        SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
-        auto& pos = EntityGetRegistry().get<PositionC>(entity);
-       // global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &pos.x, &pos.y, pos.x, pos.y, true);
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity);
     }
 
-    void SoundPlay2D(const Sound& sound, float& x, float& y, float volume)
+    void SoundPlay2D(const Sound& sound, Point pos, float volume)
     {
-        const auto alias = LoadSoundAlias(sound);
-        SetSoundVolume(alias, global::AUDIO_PLAYER.getSoundVolume(volume));
-        ::PlaySound(alias);
-        global::AUDIO_PLAYER.sounds2D.emplace_back(alias, volume, &x, &y, x, y, true);
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos);
     }
 
-    void SoundStop(const Sound& sound)
+    bool SoundStop(const Sound& sound)
     {
         auto& ap = global::AUDIO_PLAYER;
-        for (auto it = ap.sounds.begin(); it != ap.sounds.end();)
-        {
-            if (it->sound.stream.buffer == sound.stream.buffer)
-            {
-                ap.sounds.erase(it);
-                return;
-            }
-            ++it;
-        }
-        for (auto it = ap.sounds2D.begin(); it != ap.sounds2D.end();)
-        {
-            if (it->sound.stream.buffer == sound.stream.buffer)
-            {
-                ap.sounds2D.erase(it);
-                return;
-            }
-            ++it;
-        }
+        return std::erase_if(ap.sounds,
+                             [&](auto& wrapper) { return wrapper.sound.stream.buffer == sound.stream.buffer; }) > 0;
     }
 
     bool SoundIsPlaying(const Sound& sound)
     {
         const auto& sd = global::AUDIO_PLAYER;
         for (const auto& s : sd.sounds)
-        {
-            if (s.sound.stream.buffer == sound.stream.buffer)
-            {
-                return true;
-            }
-        }
-        for (const auto& s : sd.sounds2D)
         {
             if (s.sound.stream.buffer == sound.stream.buffer)
             {

@@ -17,65 +17,6 @@ namespace magique::internal
 } // namespace magique::internal
 
 
-//================= EVENTS =================//
-
-#define MQ_EVENT_FUNC_DECLARE(name)                                                                                     \
-    virtual void on##name(entt::entity entity, const E##name##Data& data) {}
-
-#define MQ_EVENT_FUNC_CALL(name)                                                                                        \
-    if constexpr (event == GameEvent::name)                                                                             \
-    {                                                                                                                   \
-        handler->on##name(entity, data);                                                                                \
-    }                                                                                                                   \
-    else
-
-#define MQ_EVENT_TYPE_DECLARE(name) struct E##name##Data;
-
-#define MQ_EVENT_ENUM_DECLARE(name) name,
-
-#define MQ_EVENT_EMIT_CASE(name)                                                                                        \
-    template <>                                                                                                         \
-    inline void EventManager::emit<GameEvent::name, E##name##Data>(entt::entity entity, const E##name##Data& data)      \
-    {                                                                                                                   \
-        for (auto& subscriber : subscribers)                                                                            \
-        {                                                                                                               \
-            if (!subscriber.isValid(entity))                                                                            \
-            {                                                                                                           \
-                continue;                                                                                               \
-            }                                                                                                           \
-            if (!subscriber.handler->shouldBeCalled())                                                                  \
-            {                                                                                                           \
-                continue;                                                                                               \
-            }                                                                                                           \
-            subscriber.handler->on##name(entity, data);                                                                 \
-        }                                                                                                               \
-    }
-
-#define MQ_EVENT_EMIT_CASE_NO_DATA(name)                                                                                \
-    template <>                                                                                                         \
-    inline void EventManager::emit<GameEvent::name>(entt::entity entity)                                                \
-    {                                                                                                                   \
-        emit<GameEvent::name, E##name##Data>(entity, E##name##Data{});                                                  \
-    }
-
-#define MQ_REGISTER_GAME_EVENTS(...)                                                                                    \
-    enum class GameEvent : uint8_t                                                                                      \
-    {                                                                                                                   \
-        FOR_EACH(MQ_EVENT_ENUM_DECLARE, __VA_ARGS__) COUNT                                                              \
-    };                                                                                                                  \
-    FOR_EACH(MQ_EVENT_TYPE_DECLARE, __VA_ARGS__)                                                                        \
-    namespace magique                                                                                                   \
-    {                                                                                                                   \
-        struct IEventHandler                                                                                            \
-        {                                                                                                               \
-            virtual ~IEventHandler() = default;                                                                         \
-            virtual bool shouldBeCalled() { return true; }                                                              \
-            FOR_EACH(MQ_EVENT_FUNC_DECLARE, __VA_ARGS__);                                                               \
-        };                                                                                                              \
-        FOR_EACH(MQ_EVENT_EMIT_CASE, __VA_ARGS__);                                                                      \
-        FOR_EACH(MQ_EVENT_EMIT_CASE_NO_DATA, __VA_ARGS__);                                                              \
-    }
-
 //================= SCRIPTING =================//
 
 #define PARENS ()
@@ -124,7 +65,7 @@ namespace magique::internal
         return {};
 
 #define ASSET_IS_SUPPORTED_IMAGE_TYPE(asset)                                                                            \
-    if (!IsSupportedImageFormat(asset.getExtension()))                                                                  \
+    if (!IsSupportedImageFormat(asset.getExtension().data()))                                                           \
     {                                                                                                                   \
         LOG_WARNING("Asset has unsupported extension: %s", asset.getExtension());                                       \
         return {};                                                                                                      \

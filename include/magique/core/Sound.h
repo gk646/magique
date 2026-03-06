@@ -40,20 +40,20 @@ namespace magique
     // Plays the given sound - multiple calls play it multiple times
     void SoundPlay(const Sound& sound, float volume = 1.0F);
 
-    // Plays the given sound attached to the given entity
-    // Automatically handles lifetime if entities is destroyed
+    // Sets the distance at which the volume becomes 0
+    void SoundSetFalloffDistance(float distance = 1000);
+
+    // Plays the given sound attached to the given entity - volume is dynamically updated with entity position
+    // Sound is automatically destroyed (stopped) if entity doesnt exist
     void SoundPlay2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
 
-    // Plays the given sound attached to the given coordinates
-    // IMPORTANT: Given references MUST outlive the duration of the sound!
-    void SoundPlay2D(const Sound& sound, float& x, float& y, float volume = 1.0F);
+    // Plays the given sound spatially at the given position
+    void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F);
 
-    // Stops playing the first instance of this sound
-    // Checks both normal and 2D
-    void SoundStop(const Sound& sound);
+    // Returns true if any instance of this sound was removed
+    bool SoundStop(const Sound& sound);
 
     // Returns true if any instance of the given sound is currently playing
-    // Checks both normal and 2D
     bool SoundIsPlaying(const Sound& sound);
 
     //================= MUSIC =================//
@@ -78,9 +78,6 @@ namespace magique
     // Forwards the playlist manually
     // Progresses the tracks sequentially (looping) or calls the custom forward function to determine the next track
     void PlaylistForward(Playlist& playlist);
-
-    // Sound, Sound2D, Music, Playlist
-    // play, pause, resume, stop, volume, PreProcess
 
 } // namespace magique
 

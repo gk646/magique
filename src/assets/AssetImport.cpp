@@ -51,7 +51,7 @@ namespace magique
     Image ImportImage(const Asset& asset)
     {
         ASSET_CHECK(asset);
-        const auto* ext = asset.getExtension();
+        const auto* ext = asset.getExtension().data();
         MAGIQUE_ASSERT(IsSupportedImageFormat(ext), "No valid extension");
         const auto img = LoadImageFromMemory(ext, asset.getUData(), asset.getSize());
         MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
@@ -285,7 +285,7 @@ namespace magique
     Sound ImportSound(const Asset& asset)
     {
         ASSET_CHECK(asset);
-        const auto* ext = asset.getExtension();
+        const auto* ext = asset.getExtension().data();
         if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
@@ -300,7 +300,7 @@ namespace magique
     Music ImportMusic(const Asset& asset)
     {
         ASSET_CHECK(asset);
-        const auto* ext = asset.getExtension();
+        const auto* ext = asset.getExtension().data();
         if (!IsSupportedSoundFormat(ext))
         {
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
@@ -326,7 +326,7 @@ namespace magique
         for (const auto& asset : assets)
         {
             ASSET_CHECK(asset);
-            const auto* ext = asset.getExtension();
+            const auto* ext = asset.getExtension().data();
             if (!IsSupportedSoundFormat(ext))
             {
                 LOG_ERROR("Asset file type is not a sound file!: %s", ext);
@@ -379,7 +379,7 @@ namespace magique
     {
         ASSET_CHECK(asset);
         TileMap tilemap{};
-        if (strcmp(asset.getExtension(), ".tmj") != 0)
+        if (asset.getExtension() != ".tmj")
         {
             LOG_WARNING("Invalid extensions for a TileMap: %s | Supported: .tmj", asset.getFileName());
             return TileMap{};
@@ -467,7 +467,7 @@ namespace magique
     {
         ASSET_CHECK(asset);
         TileSet tileset{};
-        if (strcmp(asset.getExtension(), ".tsj") != 0)
+        if (asset.getExtension() != ".tsj")
         {
             LOG_WARNING("Invalid extensions for a TileSet: %s | Supported: .tsj", asset.getFileName(true));
             return tileset;

@@ -18,8 +18,6 @@ namespace magique
         return val / ACCURACY;
     }
 
-    float MathLerp(const float min, const float max, const float step) { return min + step * (max - min); }
-
     float MathLerpInverse(const float min, const float max, const float value)
     {
         MAGIQUE_ASSERT(value <= max && value >= min, "'value' needs to be within the given bounds");

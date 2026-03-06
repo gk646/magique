@@ -62,7 +62,7 @@ namespace magique
 
     bool Asset::isValid() const { return data != nullptr && path != nullptr; }
 
-    const char* Asset::getFileName(const bool extension) const
+    std::string_view Asset::getFileName(const bool extension) const
     {
         const char* lastSep = nullptr;
 
@@ -98,7 +98,7 @@ namespace magique
         return stringBuffer;
     }
 
-    const char* Asset::getExtension() const
+   std::string_view Asset::getExtension() const
     {
         MAGIQUE_ASSERT(path != nullptr, "No path");
         const char* workPtr = path;
@@ -114,7 +114,7 @@ namespace magique
         }
 
         if (lastDot == nullptr)
-            return nullptr;
+            return {};
 
         int len = 0;
         workPtr = lastDot;

@@ -52,13 +52,13 @@ namespace magique
     MapID CameraGetMap();
 
     // Returns the current position (target) of the camera
-    Vector2 CameraGetPosition();
+    Point CameraGetPosition();
 
     // Returns the bounds of the camera rect including the view padding and zoom scaling
-    Rectangle CameraGetBounds();
+    Rect CameraGetBounds();
 
     // Returns the bounds of the camera without padding
-    Rectangle CameraGetNativeBounds();
+    Rect CameraGetNativeBounds();
 
     //================= UTIL =================//
 

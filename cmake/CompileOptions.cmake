@@ -31,7 +31,7 @@ target_compile_definitions(magique PRIVATE MAGIQUE_IMPLEMENTATION)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique PUBLIC
             -std=c++23
-            -march=core-avx2
+            -march=native
             -flto=auto
             -fno-exceptions
             -fno-rtti

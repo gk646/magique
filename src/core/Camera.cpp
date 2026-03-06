@@ -43,9 +43,9 @@ namespace magique
         return global::ENGINE_DATA.cameraMap;
     }
 
-    Vector2 CameraGetPosition() { return global::ENGINE_DATA.camera.target; }
+    Point CameraGetPosition() { return global::ENGINE_DATA.camera.target; }
 
-    Rectangle CameraGetBounds()
+    Rect CameraGetBounds()
     {
         const auto pad = global::ENGINE_CONFIG.cameraCullPadding;
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
@@ -61,7 +61,7 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    Rectangle CameraGetNativeBounds()
+    Rect CameraGetNativeBounds()
     {
         const auto& [offset, target, rotation, zoom] = global::ENGINE_DATA.camera;
 
@@ -76,17 +76,15 @@ namespace magique
     bool CameraInsideAnyViewBounds(Point point)
     {
         auto bounds = CameraGetBounds();
-
-        if (CheckCollisionPointRec(point, bounds))
+        if (bounds.contains(point))
         {
             return true;
         }
-
         for (const auto actor : ComponentGetView<ActorC>())
         {
             const auto& pos = ComponentGet<PositionC>(actor);
-            bounds = {pos.pos.x - bounds.width / 2, pos.pos.y - bounds.height / 2, bounds.width, bounds.height};
-            if (CheckCollisionPointRec(point, bounds))
+            bounds = Rect::CenteredOn(pos.pos, bounds.size());
+            if (bounds.contains(point))
             {
                 return true;
             }

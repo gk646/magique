@@ -30,14 +30,14 @@ namespace magique
     // Deserializes the given JSON string into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
     //      - append: appends the data instead of replacing if T==std::vector (or others that support it)
-    template <typename T, bool append = false>
+    template <bool append = false, typename T>
     bool JSONImport(Asset asset, T& data);
 
-    template <typename T, bool append = false>
+    template <bool append = false, typename T>
     bool JSONImport(std::string_view json, T& data);
 
     // Serialized the given data into the buffer (will be cleared and sized appropriately)
-    template <typename T, bool prettify = true>
+    template <bool prettify = true, typename T>
     bool JSONExport(const T& data, std::string& buffer);
 
     // Useful to reflect an enum - allows to import/export from JSON (with value names)
@@ -47,7 +47,7 @@ namespace magique
     struct glz::meta<Enum>                                                                                              \
     {                                                                                                                   \
         using enum Enum;                                                                                                \
-        static constexpr std::string_view name = #Enum;                                                                \
+        static constexpr std::string_view name = #Enum;                                                                 \
         static constexpr auto value = enchantum::values<Enum>;                                                          \
         static constexpr auto keys = enchantum::names<Enum>;                                                            \
     };
@@ -209,7 +209,7 @@ namespace glz
 
 namespace magique
 {
-    template <typename T, bool append>
+    template <bool append , typename T>
     bool JSONImport(Asset asset, T& data)
     {
         std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
@@ -223,7 +223,7 @@ namespace magique
         return true;
     }
 
-    template <typename T, bool append>
+    template <bool append , typename T>
     bool JSONImport(std::string_view json, T& data)
     {
         glz::context ctx{};
@@ -236,7 +236,7 @@ namespace magique
         return true;
     }
 
-    template <typename T, bool prettify>
+    template <bool prettify , typename T>
     bool JSONExport(const T& data, std::string& buffer)
     {
         const auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);

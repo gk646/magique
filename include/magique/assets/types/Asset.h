@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_ASSET_H
 #define MAGIQUE_ASSET_H
 
+#include <string_view>
 #include <magique/fwd.hpp>
 
 //===============================================
@@ -49,11 +50,11 @@ namespace magique
         // Returns the direct file name without the asset - This means all characters after the last separator ("/")
         // Failure: returns nullptr if the asset's path is empty or no filename can be found
         //      extension - include file extension or not (".png",".wav", ...)
-        [[nodiscard]] const char* getFileName(bool extension = true) const;
+        [[nodiscard]] std::string_view getFileName(bool extension = true) const;
 
         // Returns the file extension of the asset - This means all characters from the last dot to the end e.g. '.png'
         // Failure: returns nullptr if the asset's path is empty or has no extension
-        [[nodiscard]] const char* getExtension() const;
+        [[nodiscard]] std::string_view getExtension() const;
 
     private:
         M_MAKE_PUB()

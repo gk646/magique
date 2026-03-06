@@ -22,7 +22,7 @@ add_subdirectory(src/external/raylib)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # For both modes
     target_compile_options(raylib PRIVATE
-            -Wall -march=core-avx2 -fno-exceptions -fvisibility=hidden
+            -Wall -march=native -fno-exceptions -fvisibility=hidden
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >

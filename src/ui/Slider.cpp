@@ -32,7 +32,7 @@ namespace magique
     {
         if (mode == SliderMode::BALANCED)
         {
-            return MathLerp(min, max, sliderPos);
+            return std::lerp(min, max, sliderPos);
         }
 
         if (mode == SliderMode::IMBALANCED)
@@ -40,10 +40,10 @@ namespace magique
             if (sliderPos < 0.5)
             {
                 const auto newPos = MathLerpInverse(0.0F, 0.5F, sliderPos);
-                return MathLerp(min, mid, newPos);
+                return std::lerp(min, mid, newPos);
             }
             const auto newPos = MathLerpInverse(0.5F, 1.0F, sliderPos);
-            return MathLerp(mid, max, newPos);
+            return std::lerp(mid, max, newPos);
         }
         return 0.0F;
     }

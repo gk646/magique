@@ -90,7 +90,7 @@ namespace magique
     void GameSave::saveJSON(std::string_view slot, const T& obj)
     {
         auto& cell = getCellOrNew(slot, StorageType::JSON);
-        JSONExport<T, false>(obj, cell.data);
+        JSONExport<false>(obj, cell.data);
     }
 
     template <typename T>
