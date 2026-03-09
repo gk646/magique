@@ -5,7 +5,7 @@
 #include <vector>
 
 //===============================================
-// STL (Standard Templates Libarary)
+// STL (Standard Templates Library)
 //===============================================
 // ................................................................................
 // These are the simple and public types/enums used and exposed by magique
@@ -60,9 +60,6 @@ namespace magique
         }
         return ret;
     }
-
-
-
 } // namespace magique
 
 #endif // MAGEQUEST_STL_H

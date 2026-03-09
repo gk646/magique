@@ -221,7 +221,7 @@ namespace magique
 
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(bounds.shrink(2).floor(), fill);
+        DrawRectangleRec(bounds.floor().shrink(2), fill);
 #ifdef _MSC_VER
         DrawRectFrame(bounds.floor()+ Point{0,1}, outline);
 #else

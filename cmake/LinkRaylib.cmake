@@ -22,13 +22,13 @@ add_subdirectory(src/external/raylib)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # For both modes
     target_compile_options(raylib PRIVATE
-            -Wall -march=native -fno-exceptions -fvisibility=hidden
+            -Wall -march=native -fno-exceptions -fvisibility=hidden -flto=auto
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >
             $<$<CONFIG:Release>:-Ofast -DNDEBUG>
     )
-    target_link_options(raylib PRIVATE)
+    target_link_options(raylib PRIVATE -flto=auto)
 elseif (MSVC)
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>:/W3 /Od /Zi /RTC1>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
 #include <magique/assets/types/TileMap.h>
-
+#include <magique/util/Logging.h>
 
 namespace magique
 {
@@ -22,25 +22,45 @@ namespace magique
         return tileLayers[layer].data();
     }
 
-    int TileMap::getWidth() const { return width; }
+    Point TileMap::getDims() const { return {(float)width, (float)height}; }
 
-    int TileMap::getHeight() const { return height; }
+    Point TileMap::getPixelDims() const { return getDims() * tileSize; }
+
+    int TileMap::getTileSize() const { return tileSize; }
 
     int TileMap::getTileLayerCount() const { return static_cast<int>(tileLayers.size()); }
 
     int TileMap::getObjectLayerCount() const { return static_cast<int>(objectLayers.size()); }
 
-    std::vector<TileObject>& TileMap::getObjects(const int layer)
+    bool TileMap::hasObjectLayer(std::string_view layer) const
     {
-        MAGIQUE_ASSERT(layer < static_cast<int>(objectLayers.size()), "TileMap does not have that many object layers");
-        return objectLayers[layer];
+        const auto it = std::ranges::find_if(objectLayers, [&](const auto& l) { return l.name == layer; });
+        return it != objectLayers.end();
     }
 
-    const std::vector<TileObject>& TileMap::getObjects(const int layer) const
+    TiledObjectLayer& TileMap::getObjectLayer(std::string_view name)
     {
-        MAGIQUE_ASSERT(layer < static_cast<int>(objectLayers.size()), "TileMap does not have that many object layers");
-        return objectLayers[layer];
+        const auto it = std::ranges::find_if(objectLayers, [&](const auto& l) { return l.name == name; });
+        if (it == objectLayers.end())
+        {
+            LOG_ERROR("No such objects layer: %s", name.data());
+            return objectLayers.front();
+        }
+        return *it;
     }
+
+    const TiledObjectLayer& TileMap::getObjectLayer(std::string_view name) const
+    {
+        const auto it = std::ranges::find_if(objectLayers, [&](const auto& l) { return l.name == name; });
+        if (it == objectLayers.end())
+        {
+            LOG_ERROR("No such objects layer: %s", name.data());
+            return objectLayers.front();
+        }
+        return *it;
+    }
+
+    const std::vector<TiledObjectLayer>& TileMap::getObjectLayers() const { return objectLayers; }
 
     const TiledProperty* TileMap::getProperty(const char* name) const
     {

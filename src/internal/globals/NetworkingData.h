@@ -54,21 +54,15 @@ namespace magique
 
         void close()
         {
+            NetworkCloseSocket();
+            for (const auto conn : connections)
+            {
+                auto msg = isHost ? "Host closed application abruptly" : "Client closed application abruptly";
+                NetworkCloseConnection(conn, 0, msg);
+            }
 #ifdef MAGIQUE_LAN
             GameNetworkingSockets_Kill();
 #else
-            for (const auto conn : connections)
-            {
-                const char* msg = nullptr;
-                if (isHost)
-                    msg = "Host closed application abruptly";
-                else
-                    msg = "Client closed application abruptly";
-                const auto steamConn = static_cast<HSteamNetConnection>(conn);
-                SteamNetworkingSockets()->CloseConnection(steamConn, 0, msg, false);
-                // Second time to flush?
-                SteamNetworkingSockets()->CloseConnection(steamConn, 0, nullptr, false);
-            }
             goOffline();
 #endif
         }

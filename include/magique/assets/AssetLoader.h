@@ -26,30 +26,30 @@
 
 namespace magique
 {
-    using AssetLoadFunc = std::function<void(AssetContainer& assets)>; // For simple tasks not requiring variables
+    using AssetLoadFunc = std::function<void(AssetPack& assets)>; // For simple tasks not requiring variables
 
-    struct AssetLoader final : internal::TaskExecutor<AssetContainer>
+    struct AssetLoader final : internal::TaskExecutor<AssetPack>
     {
         // Registers a new task - this is for more complex task requiring its own class -> subclass magique::ITask{};
         // task     - a new instance of a subclass of ITask, takes ownership
         // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(ITask<AssetContainer>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(ITask<AssetPack>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
         // Registers a simple loading function - for smaller and less complex loading
         // func     - a loading func (lambda)
         // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
         // impact   - an absolute estimate of the time needed to finish the task
-        // Example: registerTask([](magique::AssetContainer &assets) {}, magique::MAIN_THREAD);
+        // Example: registerTask([](magique::AssetPack &assets) {}, magique::MAIN_THREAD);
         void registerTask(const AssetLoadFunc& func, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
         M_MAKE_PUB()
         AssetLoader(const char* assetPath, uint64_t encryptionKey);
         bool step() override;
-        AssetContainer assets;
+        AssetPack assets;
         friend Game;
     };
 

@@ -709,7 +709,13 @@ namespace magique
 
     //----------------- TILE OBJECT -----------------//
 
-    const char* TileObject::getName() const { return name; }
+    std::string_view TileObject::getName() const { return name; }
+
+    int TileObject::getID() const { return id; }
+
+    int TileObject::getTileClass() const { return tileClass; }
+
+    int TileObject::getTileID() const { return tileId; }
 
     const TiledProperty* TileObject::getProperty(const char* propertyName) const
     {
@@ -726,12 +732,6 @@ namespace magique
         }
         return nullptr;
     }
-
-    int TileObject::getID() const { return id; }
-
-    int TileObject::getTileClass() const { return tileClass; }
-
-    int TileObject::getTileID() const { return tileId; }
 
     //----------------- TILE INFO -----------------//
 
@@ -757,32 +757,19 @@ namespace magique
         return nullptr;
     }
 
-
-    Checksum::Checksum(const char* hexadecimalHash)
+    Checksum::Checksum(std::string_view hash)
     {
-        if (hexadecimalHash == nullptr || strlen(hexadecimalHash) != 32)
+        if (hash.empty() || hash.size() != 32)
         {
             LOG_WARNING("Invalid hexadecimal hash string");
             first = second = third = fourth = 0;
             return;
         }
-        auto parseHex = [](const char* str) -> uint32_t
-        {
-            char buffer[9];
-            strncpy(buffer, str, 8);
-            buffer[8] = '\0';
-            return static_cast<uint32_t>(strtoul(buffer, nullptr, 16));
-        };
 
-        first = parseHex(hexadecimalHash);
-        second = parseHex(hexadecimalHash + 8);
-        third = parseHex(hexadecimalHash + 16);
-        fourth = parseHex(hexadecimalHash + 24);
-
-        first = ReverseBytes(first);
-        second = ReverseBytes(second);
-        third = ReverseBytes(third);
-        fourth = ReverseBytes(fourth);
+        std::from_chars(hash.data(), hash.data() + 8, first, 16);
+        std::from_chars(hash.data() + 8, hash.data() + 16, second, 16);
+        std::from_chars(hash.data() + 16, hash.data() + 24, third, 16);
+        std::from_chars(hash.data() + 24, hash.data() + 32, fourth, 16);
     }
 
     bool Checksum::operator==(const Checksum& o) const
@@ -790,22 +777,14 @@ namespace magique
         return first == o.first && second == o.second && third == o.third && fourth == o.fourth;
     }
 
-    void Checksum::print() const
+    std::string Checksum::toString() const
     {
-        printf("Checksum: %08x%08x%08x%08x\n", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
-               ReverseBytes(fourth));
+        std::string ret(33, '\0');
+        snprintf(ret.data(), 33, "%08x%08x%08x%08x", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
+                 ReverseBytes(fourth));
+        return ret;
     }
 
-    void Checksum::format(char* buffer, const int size) const
-    {
-        if (size < 33)
-        {
-            LOG_WARNING("Need 32 bytes for checksum");
-            return;
-        }
-        snprintf(buffer, size, "%08x%08x%08x%08x", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
-                 ReverseBytes(fourth));
-    }
 
     //----------------- COLLIDER INFO -----------------//
 

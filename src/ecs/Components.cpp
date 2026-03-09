@@ -42,7 +42,6 @@ namespace magique
         return {};
     }
 
-
     //----------------- ANIMATION -----------------//
 
     AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) : animation(&animation)
@@ -192,13 +191,18 @@ namespace magique
         p1 = radius;
         p2 = radius;
         shape = Shape::CIRCLE;
+        anchor = radius;
     }
 
     Point CollisionC::GetMiddle(const entt::entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
-        const auto& col = magique::ComponentGet<CollisionC>(e);
-        return pos.getMiddle(col);
+        auto* col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr)
+        {
+            return pos.pos;
+        }
+        return pos.getMiddle(*col);
     }
 
     bool CollisionC::detects(const CollisionC& other) const

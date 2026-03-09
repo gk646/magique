@@ -6,6 +6,7 @@
 #include <magique/fwd.hpp>
 #include <magique/assets/types/Asset.h>
 #include <functional>
+#include <string>
 
 //===============================================
 // Asset Container
@@ -23,7 +24,7 @@
 
 namespace magique
 {
-    struct AssetContainer final
+    struct AssetPack final
     {
         // Iterates the given directory recursively and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
@@ -41,7 +42,7 @@ namespace magique
         // This is slower than getAssetByPath() but more convenient - O (n)
         // This does NOT require the full name - any fully matching path will be returned
         // e.g. res/icons/currencies/human/gold.png will be found by: human/gold.png
-        // Just make sure its still unique!
+        // Just make sure It's still unique!
         const Asset& getAsset(const char* name) const;
 
         // Returns true if any asset contains the given name (substring)
@@ -53,18 +54,19 @@ namespace magique
         // Returns the total amount of assets loaded
         int getSize() const;
 
-        ~AssetContainer();
-
     private:
         M_MAKE_PUB()
-        AssetContainer() = default;
+        AssetPack() = default;
+        AssetPack(const AssetPack&) = delete;
+        AssetPack& operator=(const AssetPack&) = delete;
+        AssetPack(AssetPack&&) = default;
+        AssetPack& operator=(AssetPack&&) = default;
         void sort();
-        const char* nativeData = nullptr; // Pointer to all the file data
-        std::vector<Asset> assets;        // Internal file list
-        friend struct AssetLoader;
-        friend bool AssetPackLoad(AssetContainer&, const char*, uint64_t);
+
+        std::string nativeData;
+        std::vector<Asset> assets; // Internal file list
     };
 
 } // namespace magique
 
-#endif //MAGIQUE_ASSET_CONTAINER_H
+#endif // MAGIQUE_ASSET_CONTAINER_H

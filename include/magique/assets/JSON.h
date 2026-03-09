@@ -60,6 +60,7 @@ namespace magique
 
 MQ_REFLECT_ENUM(magique::KeyBindType)
 MQ_REFLECT_ENUM(magique::StorageType)
+MQ_REFLECT_ENUM(magique::Shape)
 
 namespace glz
 {
@@ -209,7 +210,7 @@ namespace glz
 
 namespace magique
 {
-    template <bool append , typename T>
+    template <bool append, typename T>
     bool JSONImport(Asset asset, T& data)
     {
         std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
@@ -223,7 +224,7 @@ namespace magique
         return true;
     }
 
-    template <bool append , typename T>
+    template <bool append, typename T>
     bool JSONImport(std::string_view json, T& data)
     {
         glz::context ctx{};
@@ -236,7 +237,7 @@ namespace magique
         return true;
     }
 
-    template <bool prettify , typename T>
+    template <bool prettify, typename T>
     bool JSONExport(const T& data, std::string& buffer)
     {
         const auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);

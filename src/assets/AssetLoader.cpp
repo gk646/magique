@@ -4,7 +4,7 @@
 
 namespace magique
 {
-    void AssetLoader::registerTask(ITask<AssetContainer>* task, const ThreadType thread, const PriorityLevel pl,
+    void AssetLoader::registerTask(ITask<AssetPack>* task, const ThreadType thread, const PriorityLevel pl,
                                    const int impact)
     {
         addTask(task, pl, thread, impact);
@@ -19,7 +19,7 @@ namespace magique
 
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
-        addLambdaTask([=](AssetContainer& assets) { AssetPackLoad(assets, assetPath, encryptionKey); }, INTERNAL,
+        addLambdaTask([=](AssetPack& assets) { AssetPackLoad(assets, assetPath, encryptionKey); }, INTERNAL,
                       THREAD_ANY, 0, true);
     }
 

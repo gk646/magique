@@ -238,7 +238,7 @@ namespace magique
     EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
                                    Point anchor)
     {
-        if (!(asset.hasExtension(".ase") || asset.hasExtension(".aseprite")))
+        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
         {
             LOG_WARNING("Invalid extensions for a aseprite file");
             return {};
@@ -392,10 +392,11 @@ namespace magique
             return tilemap;
         }
 
+        tilemap.tileSize = map->tileheight;
         tilemap.height = map->height;
         tilemap.width = map->width;
 
-        cute_tiled_layer_t* layer = map->layers;
+        const cute_tiled_layer_t* layer = map->layers;
 
         // Parse tilemap properties
         for (int i = 0; i < map->property_count; ++i)
@@ -409,7 +410,8 @@ namespace magique
         {
             if (strcmp(layer->type.ptr, "objectgroup") == 0)
             {
-                auto& objects = tilemap.objectLayers.emplace_back();
+                auto& objectLayer = tilemap.objectLayers.emplace_back();
+                objectLayer.name = layer->name.ptr;
                 cute_tiled_object_t* objectPtr = layer->objects;
                 while (objectPtr != nullptr)
                 {
@@ -438,7 +440,7 @@ namespace magique
                         object.customProperties[i] = property;
                     }
 
-                    objects.push_back(object);
+                    objectLayer.objects.push_back(object);
                     objectPtr = objectPtr->next;
                 }
             }

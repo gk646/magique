@@ -22,7 +22,7 @@ static void testImpl(const uint64_t key, const bool compress)
     namespace fs = std::filesystem;
     CompileAssetImage("./", DATA_PATH, key, compress);
 
-    AssetContainer container;
+    AssetPack container;
     LoadAssetImage(container, DATA_PATH, key); // Compression detected automatically
 
     const auto& assets = container.getAllAssets();

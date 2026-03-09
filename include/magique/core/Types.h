@@ -209,7 +209,7 @@ namespace magique
         Point bottomLeft() const;
     };
 
-    // Represents a rotation angle - 0 degree is looking up, rotates clockwise
+    // Represents a (2D) rotation angle - 0 degree is looking up (north), rotates clockwise
     struct Rotation final
     {
         float rotation;
@@ -221,6 +221,7 @@ namespace magique
 
         Rotation& operator+=(const Rotation& other);
         Rotation& operator-=(const Rotation& other);
+
 
         // Returns the shortest difference between the two angles in degrees (always positive)
         float diff(Rotation other) const;
@@ -370,7 +371,7 @@ namespace magique
     // Objects defined inside the tile editor
     struct TileObject final
     {
-        const char* getName() const; // Can be null
+        std::string_view getName() const;
         int getID() const;
         int getTileClass() const;
         // If the object is a tile object so to the id of the tile
@@ -381,8 +382,8 @@ namespace magique
 
         Rect bounds{};
         float rotation = 0;
-        bool visible = false; // Mutable
-        int tileClass = 0;    // NOT assigned autoamtically
+        bool visible = false;
+        int tileClass = 0; // NOT assigned autoamtically
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* propertyName) const;
@@ -412,17 +413,14 @@ namespace magique
     // Checksum (hash) for a file
     struct Checksum final
     {
-        // Initializes the checksum - should be the output of print() or format() or another MD5 implementation
+        // Initializes the checksum - should be the output of toString() or another MD5 implementation
+        explicit Checksum(std::string_view hash);
         Checksum() = default;
-        explicit Checksum(const char* hexadecimalHash);
 
         bool operator==(const Checksum& other) const;
 
-        // Prints the checksum in hexadecimal digits to stdout
-        void print() const;
-
-        // Formats the checksum into the given buffer
-        void format(char* buffer, int size) const;
+        // Returns the checksum as string
+        std::string toString() const;
 
     private:
         uint32_t first = 0;
@@ -446,13 +444,6 @@ namespace magique
         SPECIAL,
         DEATH,
         STATES_END, // All custom state enums need this as last state
-    };
-
-    // Which lighting style the emitter has
-    enum LightStyle : uint8_t
-    {
-        POINT_LIGHT_SOFT,         // Point light
-        DIRECTIONAL_LIGHT_STRONG, // Sunlight
     };
 
     // Shape classes
@@ -686,7 +677,7 @@ namespace magique
 
     // A network message object to be sent via the network - should be used directly and not stored
     // The type is very useful for correctly handling the message on the receivers end (e.g. HEALTH_UPDATE, POS_UPDATE, ...)
-    // Note: The passed data will be copied when batching and sending (so supports both stack and heap memory)
+    // Note: The passed data will be copied when sending (so supports both stack and heap memory)
     struct Payload final
     {
         const void* data; // Direct pointer to the given data
@@ -887,7 +878,7 @@ namespace magique
         ParticleLayer layer;
     };
 
-    // Loading task - has to be subclassed with the correct type for T (e.g. AssetContainer or GameSaveData...)
+    // Loading task - has to be subclassed with the correct type for T (e.g. AssetPack or GameSaveData...)
     template <typename T>
     struct ITask
     {

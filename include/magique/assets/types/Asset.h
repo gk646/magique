@@ -28,14 +28,10 @@ namespace magique
         // Returns the valid size of the data pointer
         int getSize() const;
 
-        // Checks if the assets extension matches the given one e.g '.png' myTexture.png
-        // Includes the dot
-        bool hasExtension(const char* extension) const;
-
         // True if the asset path starts with the given prefix
         bool startsWith(const char* prefix) const;
 
-        // True if the asset path ends with the given prefix
+        // True if the asset path ends with the given prefix e.g. '.png"
         bool endsWith(const char* suffix) const;
 
         // True if the asset path contains the given sequence anywhere
@@ -44,24 +40,19 @@ namespace magique
         // Returns true if this asset is valid and can be used
         bool isValid() const;
 
-        //================= STRING GETTERS =================//
-        // IMPORTANT: The string returned by these methods is only valid until any of these methods are called again
-
         // Returns the direct file name without the asset - This means all characters after the last separator ("/")
-        // Failure: returns nullptr if the asset's path is empty or no filename can be found
+        // Failure: returns path if the asset's path is empty or no filename can be found
         //      extension - include file extension or not (".png",".wav", ...)
         [[nodiscard]] std::string_view getFileName(bool extension = true) const;
 
-        // Returns the file extension of the asset - This means all characters from the last dot to the end e.g. '.png'
-        // Failure: returns nullptr if the asset's path is empty or has no extension
+        // Returns the file extension of the asset - includes all character form last dot until the end e.g. '.png'
+        // Failure: returns empty if the asset's path is empty or has no extension
         [[nodiscard]] std::string_view getExtension() const;
 
     private:
         M_MAKE_PUB()
-        const char* path;                       // Full path of the file - from the compile root
-        int size;                               // File size
-        const char* data;                       // File data
-        inline static char stringBuffer[128]{}; // Shared string buffer for string returns
+        std::string_view path;                  // Full path of the file - from the compile root
+        std::string_view data;                  // File data
     };
 
 } // namespace magique

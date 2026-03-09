@@ -130,8 +130,8 @@ namespace magique
 
         auto& grid = data.mapTileGrids[map];
         const auto tileSize = data.tileSetScale * static_cast<float>(data.tileSet->getTileSize());
-        const auto mapWidth = tileMap.getWidth();
-        const auto mapHeight = tileMap.getHeight();
+        const int mapWidth = tileMap.getDims().x;
+        const int mapHeight = tileMap.getDims().y;
         auto& tileVec = data.colliderReferences.tilesCollisionMap[map];
         for (const auto layer : layers)
         {

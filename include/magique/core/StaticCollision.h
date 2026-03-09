@@ -29,7 +29,7 @@ namespace magique
 
     //================= TILE OBJECTS =================//
 
-    // Loads the given tile-objects as static colliders - probably from TileMap::getObjects()
+    // Loads the given tile-objects as static colliders - probably from TileMap::getObjectLayer()
     // This can be called at any time and has immediate effect - recommended at startup as many objects get expensive
     // Passed vector is saved and future calls with it are skipped (unless removed)
     // Note: If you applied scaling to the TileSheet needs to be applied here as well to match

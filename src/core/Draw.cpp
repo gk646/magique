@@ -155,8 +155,8 @@ namespace magique
         MAGIQUE_ASSERT(tileMap.getTileLayerCount() >= layer, "Out of bounds layer!");
 
         const float tileSize = tileSheet.getTextureSize();
-        const int mWidth = tileMap.getWidth();
-        const int mHeight = tileMap.getHeight();
+        const int mWidth = tileMap.getDims().x;
+        const int mHeight = tileMap.getDims().y;
 
         const int startTileX = std::max(0, (int)std::floor(rect.x / tileSize));
         const int endTileX = std::min(mWidth, (int)std::ceil((rect.x + rect.width) / tileSize));

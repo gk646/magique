@@ -78,10 +78,10 @@ int FindAssetPos(const std::vector<magique::Asset>& assets, const char* name)
     {
         const int mid = low + (high - low) / 2;
 
-        if (strcmp(assets[mid].path, name) == 0) [[unlikely]]
+        if (assets[mid].getFileName(false) == name) [[unlikely]]
             return mid;
 
-        if (Sorter::Full(assets[mid].path, name))
+        if (Sorter::Full(assets[mid].path.data(), name))
             low = mid + 1;
         else
             high = mid - 1;
@@ -100,10 +100,10 @@ int FindDirectoryPos(const std::vector<magique::Asset>& assets, const char* name
     {
         const int mid = low + (high - low) / 2;
 
-        if (strncmp(assets[mid].path, name, size) == 0) [[unlikely]]
+        if (strncmp(assets[mid].path.data(), name, size) == 0) [[unlikely]]
             return mid;
 
-        if (Sorter::Directory(assets[mid].path, name, size))
+        if (Sorter::Directory(assets[mid].path.data(), name, size))
             low = mid + 1;
         else
             high = mid - 1;
@@ -117,17 +117,7 @@ namespace magique
 {
     static constexpr Asset emptyAsset{};
 
-    AssetContainer::~AssetContainer() { delete[] nativeData; }
-
-    void AssetContainer::sort()
-    {
-        auto comparator = [](const Asset& a1, const Asset& a2) { return Sorter::Full(a1.path, a2.path); };
-        // This sorts all entries after directory and then inside a directory after numbering
-        //std::ranges::sort(assets, comparator);
-        std::ranges::sort(assets, comparator);
-    }
-
-    void AssetContainer::forEachIn(const char* name, const std::function<void(Asset)>& func) const
+    void AssetPack::forEachIn(const char* name, const std::function<void(Asset)>& func) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         const int size = static_cast<int>(strlen(name));
@@ -139,7 +129,7 @@ namespace magique
             return;
         }
 
-        while (pos > 0 && strncmp(assets[pos - 1].path, name, size) == 0)
+        while (pos > 0 && strncmp(assets[pos - 1].path.data(), name, size) == 0)
         {
             pos--;
         }
@@ -148,11 +138,10 @@ namespace magique
         {
             func(assets[pos]);
             pos++;
-        }
-        while (pos < static_cast<int>(assets.size()) && strncmp(assets[pos].path, name, size) == 0);
+        } while (pos < static_cast<int>(assets.size()) && strncmp(assets[pos].path.data(), name, size) == 0);
     }
 
-    const Asset& AssetContainer::getAssetByPath(const char* name) const
+    const Asset& AssetPack::getAssetByPath(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
@@ -165,7 +154,7 @@ namespace magique
         return assets[pos];
     }
 
-    const Asset& AssetContainer::getAsset(const char* name) const
+    const Asset& AssetPack::getAsset(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
@@ -180,14 +169,25 @@ namespace magique
         return emptyAsset;
     }
 
-    bool AssetContainer::hasAsset(const char* name) const
+    bool AssetPack::hasAsset(const char* name) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         return std::ranges::any_of(assets, [&](auto& asset) { return asset.contains(name); });
     }
 
-    const std::vector<Asset>& AssetContainer::getAllAssets() const { return assets; }
+    const std::vector<Asset>& AssetPack::getAllAssets() const { return assets; }
 
-    int AssetContainer::getSize() const { return static_cast<int>(assets.size()); }
+    int AssetPack::getSize() const { return static_cast<int>(assets.size()); }
+
+    void AssetPack::sort()
+    {
+        auto comparator = [](const Asset& a1, const Asset& a2)
+        {
+            return Sorter::Full(a1.path.data(), a2.path.data());
+        };
+        // This sorts all entries after directory and then inside a directory after numbering
+        // std::ranges::sort(assets, comparator);
+        std::ranges::sort(assets, comparator);
+    }
 
 } // namespace magique

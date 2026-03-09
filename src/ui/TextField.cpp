@@ -172,11 +172,9 @@ namespace magique
     void TextField::drawDefault(const Rect& bounds, float fontSize)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-
-        const Color body = theme.getBodyColor(getIsHovered(),getIsFocused());
+        const Color body = theme.getBodyColor(getIsHovered(), getIsFocused());
         const Color outline = theme.backOutline;
-        DrawRectangleRounded(bounds, 0.1F, 20, body);
-        DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
+        DrawRectFrameFilled(bounds, body, outline);
         drawText(fontSize, getIsFocused() ? theme.textHighlight : theme.text, theme.textPassive);
     }
 

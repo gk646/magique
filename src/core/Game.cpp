@@ -136,13 +136,11 @@ namespace magique
 
     Game::~Game()
     {
-#ifdef MAGIQUE_STEAM
         global::MP_DATA.close();
+#ifdef MAGIQUE_STEAM
         // Give some time to steam thread and callbacks to clean up?
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         global::STEAM_DATA.close();
-#elif MAGIQUE_LAN
-        global::MP_DATA.close();
 #endif
         CloseAudioDevice();
         CloseWindow();
@@ -163,7 +161,7 @@ namespace magique
         onStartup(*static_cast<AssetLoader*>(loader));
 
         // Load atlas to gpu - needs to be the last task
-        const auto loadAtlasGPU = [](AssetContainer&)
+        const auto loadAtlasGPU = [](AssetPack&)
         {
             global::ATLAS_DATA.loadToGPU();
         };

@@ -66,7 +66,7 @@ namespace magique
         void setRectShape(const Rect& rect, Point anchor = {-1});
         void setCircleShape(float radius);
 
-        // Returns the middle point of an entity with the CollisionC (PositionC is implicit)
+        // Returns the middle point of the entity (or just the position if CollisionC is missing)
         static Point GetMiddle(entt::entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide

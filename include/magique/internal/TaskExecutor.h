@@ -88,7 +88,7 @@ namespace magique::internal
         [[nodiscard]] float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
-        [[nodiscard]] bool isStartup() const final { return std::is_same_v<T, AssetContainer>; }
+        [[nodiscard]] bool isStartup() const final { return std::is_same_v<T, AssetPack>; }
 
         void printStats() const
         {

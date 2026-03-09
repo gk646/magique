@@ -37,7 +37,7 @@ namespace magique
 
     //================= LOADING & SAVING =================//
     struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
-    struct AssetContainer; // Asset list loaded from a compiled asset pack
+    struct AssetPack; // Asset list loaded from a compiled asset pack
     struct SaveLoader;     // Handles loading individual world state and player save - MainMenu -> Game
     struct GameSave;       // The game save object
     struct GameConfig;     // The config persistence object

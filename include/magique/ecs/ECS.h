@@ -103,7 +103,7 @@ namespace magique
     // Note: When using views to iterate over entities it's faster to access components over the view
     // Failure: Returns nullptr if the component is not present on the given entity
     template <typename T>
-    T* ComponentTryGet(entt::entity entity);
+    T* ComponentTryGet(entt::entity entity = EngineGetPlayer());
 
     // Tries to remove the specified components from the given entities
     // Note: If CollisionC is removed, immediately removes the entity from internal collision caches

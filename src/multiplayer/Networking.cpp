@@ -28,8 +28,11 @@ namespace magique
             res &= NetworkCloseConnection(conn, code, reason);
         }
         if (!res)
-            LOG_ERROR("Failed to close existing connections when closing the global socket");
+            LOG_WARNING("Failed to close existing connections when closing the global socket");
         res &= SteamNetworkingSockets()->CloseListenSocket(data.listenSocket);
+        if (!res)
+            LOG_WARNING("Failed to close listen socket");
+        data.listenSocket = k_HSteamListenSocket_Invalid;
         data.goOffline();
         return res;
     }
@@ -255,7 +258,6 @@ namespace magique
         (void)code;
         (void)reason;
         return false;
-
     }
     bool NetworkSend(Connection conn, Payload payload, SendFlag flag)
     {

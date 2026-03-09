@@ -5,490 +5,386 @@
 #include <cstring>
 #include <cmath>
 #include <raylib/raylib.h>
+#include <raylib/config.h>
 
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/AssetContainer.h>
-#include <magique/util/Compression.h>
 #include <magique/util/Logging.h>
 
-
 #include "internal/utils/EncryptionUtil.h"
+#include "external/raylib/src/external/sinfl.h"
+#include "external/raylib/src/external/sdefl.h"
+#include "magique/util/Strings.h"
 
 namespace fs = std::filesystem;
 
 inline constexpr auto IMAGE_HEADER = "ASSET";
 inline constexpr auto IMAGE_HEADER_COMPRESSED = "COMPR";
-
-static void ScanDirectory(const fs::path& directory, std::vector<fs::path>& pathList)
-{
-    const auto iter = fs::directory_iterator(directory);
-    for (const auto& entry : iter)
-    {
-        if (entry.is_directory())
-        {
-            ScanDirectory(entry.path(), pathList);
-        }
-        else if (entry.is_regular_file())
-        {
-            pathList.push_back(entry.path());
-        }
-    }
-}
-
-static bool CreatePathList(const char* directory, std::vector<fs::path>& pathList)
-{
-    fs::path dirPath(directory);
-    std::error_code ec;
-    const fs::file_status status = fs::status(dirPath, ec);
-    if (ec)
-    {
-        LOG_ERROR("Error: Cannot access path: %s", directory);
-        return false;
-    }
-
-    if (fs::is_directory(status))
-    {
-        ScanDirectory(dirPath, pathList);
-        return true;
-    }
-    if (fs::is_regular_file(status))
-    {
-        pathList.emplace_back(dirPath);
-        return true;
-    }
-    LOG_ERROR("Error: Given path is not directory or file: %s", directory);
-    return false;
-}
+inline constexpr int HEADER_LEN = 5; // Including terminator
 
 namespace magique
 {
-    // Dangerous method - but just switches out pointers - outside memory management is (should be) sound
-    static void UnCompressImage(char*& imageData, int& imageSize)
+    using PathList = std::vector<fs::path>;
+
+    bool ReadFile(std::string_view name, std::string& data)
     {
-        const auto* start = reinterpret_cast<const unsigned char*>(&imageData[5]);
-        auto data = Decompress(start, imageSize);
-        delete[] imageData;
-        imageSize = data.getSize();
-        imageData = (char*)data.getData();
-        data.pointer = nullptr; // we switch out the pointer
-    }
-
-    static bool ParseImage(char*& imageData, int& imageSize, std::vector<Asset>& assets, const uint64_t encryptionKey)
-    {
-        int totalSize = 0;
-        int filePointer = 0;
-        int totalEntries = 0;
-
-        if (std::memcmp(IMAGE_HEADER, &imageData[filePointer], 5) != 0)
+        FILE* file = fopen(name.data(), "rb");
+        if (file == nullptr)
         {
-            if (std::memcmp(IMAGE_HEADER_COMPRESSED, &imageData[filePointer], 5) == 0)
-            {
-                UnCompressImage(imageData, imageSize);
-            }
-            else
-            {
-                LOG_ERROR("Malformed asset pack file");
-                return false;
-            }
-        }
-
-        filePointer += 5;
-        std::memcpy(&totalSize, &imageData[filePointer], 4);
-
-        if (imageSize == 0)
-            imageSize = totalSize;
-
-        if (imageSize != totalSize)
-        {
-            LOG_ERROR("AssetPack size mismatch between header and buffer size");
             return false;
         }
-        // Skip header file size
-        filePointer += 4;
-
-        std::memcpy(&totalEntries, &imageData[filePointer], 4);
-
-        if (totalEntries < 50'000 && totalEntries > 0) // Sanity check
-        {
-            assets.reserve(totalEntries + 1);
-        }
-
-        filePointer += 4;
-
-        while (filePointer < imageSize && filePointer < totalSize)
-        {
-            int titleLen = 0;
-            int fileSize = 0;
-            const char* titlePointer;
-            // Get title pointer
-            {
-                SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
-                std::memcpy(&titleLen, &imageData[filePointer], sizeof(int));
-                if (titleLen > 512)
-                {
-                    LOG_ERROR("Filename exceeds limit");
-                    return false;
-                }
-                filePointer += 4;
-                SymmetricEncrypt(&imageData[filePointer], titleLen, encryptionKey);
-                titlePointer = &imageData[filePointer];
-                filePointer += titleLen;
-            }
-
-            // Get file pointer
-            SymmetricEncrypt(&imageData[filePointer], sizeof(int), encryptionKey);
-            std::memcpy(&fileSize, &imageData[filePointer], sizeof(int));
-            if (fileSize > imageSize - filePointer)
-            {
-                LOG_ERROR("File data exceeds image data");
-                return false;
-            }
-            filePointer += 4;
-            SymmetricEncrypt(&imageData[filePointer], fileSize, encryptionKey);
-            assets.push_back(Asset{titlePointer, fileSize, &imageData[filePointer]});
-            filePointer += fileSize;
-        }
-        return true;
-    }
-
-    bool AssetPackLoad(AssetContainer& assets, const char* path, const uint64_t encryptionKey)
-    {
-        if (!fs::exists(path)) // User cant use AssetContainer -> its empty
-        {
-            LOG_WARNING("No asset pack at: %s", path);
-            return false;
-        }
-        const auto startTime = GetTime();
-
-        // read file
-        FILE* file = fopen(path, "rb");
-        if (file != nullptr)
-        {
-            // Get size
-            fseek(file, 0, SEEK_END);
-            int imageSize = ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            // Read image
-            auto imageData = new char[imageSize];
-            fread(imageData, imageSize, 1, file);
-            fclose(file);
-
-            const int original = imageSize;
-            const bool res = ParseImage(imageData, imageSize, assets.assets, encryptionKey);
-            assets.nativeData = imageData;
-            assets.sort();
-            if (res)
-            {
-                const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
-                if (original == imageSize)
-                {
-                    auto* logText = "Loaded asset pack %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
-                    LOG_INFO(logText, path, time, imageSize / 1'000'000.0F, assets.getSize());
-                }
-                else
-                {
-                    auto* logText = "Loaded asset pack %s | Took: %d millis. Decompressed: %.2f mb -> "
-                                    "%.2f mb | Assets: %d";
-                    LOG_INFO(logText, path, time, original / 1'000'000.0F, imageSize / 1'000'000.0F, assets.getSize());
-                }
-                return true;
-            }
-            LOG_ERROR("Failed to parse asset pack: %s", path);
-            return false;
-        }
-        LOG_ERROR("Failed to load asset pack file: %s", path);
-        return false;
-    }
-
-    static bool IsImageOutdated(const char* directory)
-    {
-        const auto path = fs::path(directory);
-        if (fs::exists(path) && fs::is_directory(path)) // needs to exist and be a directory
-        {
-            const auto filePath = "index.magique";
-            if (fs::exists(filePath))
-            {
-                FILE* file = fopen(filePath, "rb");
-                if (!file)
-                {
-                    LOG_WARNING("Failed to read asset pack index file");
-                    return true;
-                }
-
-                // Read file
-                char buff[128]{};
-                fread(buff, sizeof(buff), 1, file);
-                fclose(file);
-
-                // Detect format
-                if (strncmp(buff, "MAGIQUE_INDEX_FILE", 18) != 0)
-                {
-                    LOG_WARNING("Failed to read asset pack index file");
-                    return true;
-                }
-
-                char* ptr = &buff[19]; // Skip format
-
-                auto skipChar = [](char*& ptr, char skip)
-                {
-                    while (*ptr != '\0')
-                    {
-                        if (*ptr == skip)
-                        {
-                            ++ptr;
-                            break;
-                        }
-                        ++ptr;
-                    }
-                };
-
-                // Check assets
-                skipChar(ptr, ':');
-                const int assets = TextToInteger(ptr);
-                if (assets == -1) // empty
-                    return true;
-
-                // Check Size
-                skipChar(ptr, ':');
-                const int size = TextToInteger(ptr);
-                if (assets == 0 || size == 0) // parse error
-                {
-                    LOG_WARNING("Failed to read asset pack index file");
-                    return true;
-                }
-
-                // Check mode (only same mode allowed)
-                skipChar(ptr, ':');
-                const int mode = TextToInteger(ptr);
-#ifdef NDEBUG
-                if (mode == 0) // Debug mode
-                {
-                    return true;
-                }
-#else
-                if (mode == 1) // Release mode
-                {
-                    return true;
-                }
-#endif
-
-                // Actually check size of all assets
-                std::vector<fs::path> pathList;
-                CreatePathList(path.string().c_str(), pathList);
-
-                // Count mismatch
-                if ((int)pathList.size() != assets)
-                    return true;
-
-                int totalSize = 0;
-                for (const auto& assetPath : pathList)
-                {
-                    totalSize += static_cast<int>(fs::file_size(assetPath));
-                }
-                // TODO to also check for hash here we would need to basically compile the asset pack
-                // so i guess we skip it?
-                if (totalSize == size)
-                {
-                    LOG_INFO("Skipped compiling asset pack: No changes detected (Only checks size not content!)");
-                    return false;
-                }
-            }
-        }
-        LOG_INFO("Recompiling asset pack: Changes detected");
-        return true;
-    }
-
-    static void CreateIndexFile(const char* imageName, int asset, const int totalSize)
-    {
-        const char* filePath = "./index.magique";
-        FILE* file = fopen(filePath, "wb");
-        if (!file)
-        {
-            LOG_WARNING("Failed to create index file: %s", filePath);
-            return;
-        }
-        if (asset == 0)
-            asset = -1; // empty
-
-        char checksumBuf[33]{};
-        const auto checksum = AssetPackChecksum(imageName);
-        checksum.format(checksumBuf, sizeof(checksumBuf));
-
-        char buffer[128] = {0}; // Buffer to hold the content
-        const auto* fmt = "MAGIQUE_INDEX_FILE\nASSETS:%d\nSIZE:%d\nRelease:%d\nChecksum:%s";
-#ifdef NDEBUG // Release mode
-        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 1, checksumBuf);
-#else
-        snprintf(buffer, sizeof(buffer), fmt, asset, totalSize, 0, checksumBuf);
-#endif
-        const size_t bytesWritten = fwrite(buffer, sizeof(char), strlen(buffer), file);
-        if (bytesWritten != strlen(buffer))
-        {
-            LOG_WARNING("Failed to write to index file: %s", filePath);
-        }
+        fseek(file, 0, SEEK_END);
+        int fileSize = (int)ftell(file); // File size per file limited to 2GB
+        data.resize(fileSize);
+        fseek(file, 0, SEEK_SET);
+        fread(data.data(), fileSize, 1, file);
         fclose(file);
+        return true;
     }
 
-    // Warning: Changes data inplace
-    static void WriteEncrypted(FILE* file, void* data, int size, uint64_t key)
+    bool WriteFile(const char* fileName, std::string_view content)
     {
-        SymmetricEncrypt((char*)data, size, key);
-        fwrite(data, size, 1, file);
-    }
-
-    static void WriteImage(const std::vector<fs::path>& pathList, int& writtenSize, const fs::path& rootPath,
-                           FILE* imageFile, std::vector<char>& data, const char* imageName, const uint64_t key)
-    {
-        std::string relativePathStr;
-        int totalFileSize = 0; // Only raw file size
-        for (const auto& entry : pathList)
-        {
-            // Open the input file for reading
-            FILE* file = fopen(entry.generic_string().c_str(), "rb");
-            if (file == nullptr)
-            {
-                LOG_ERROR("Could not open input file: %s", entry.generic_string().c_str());
-                continue;
-            }
-            setvbuf(file, nullptr, _IONBF, 0);
-
-            // Read the file size
-            fseek(file, 0, SEEK_END);
-            int fileSize = (int)ftell(file); // File size per file limited to 2GB
-            totalFileSize += fileSize;
-            if (fileSize > (int)data.size())
-                data.resize(fileSize, 0);
-            fseek(file, 0, SEEK_SET);
-
-            // Read the file data into the buffer
-            fread(data.data(), fileSize, 1, file);
-
-            // Get the relative path for the file
-            fs::path relativePath = fs::relative(entry, rootPath);
-            relativePathStr = relativePath.generic_string();
-            auto pathLen = static_cast<int>(relativePathStr.size() + 1);
-
-            // Update the total written size - Two 4 byte integers for path length and file size
-            writtenSize += 4;
-            writtenSize += pathLen;
-            writtenSize += 4;
-            writtenSize += fileSize;
-
-            // Write the path length to the image file
-            int pathLenBuf = pathLen;
-            WriteEncrypted(imageFile, &pathLenBuf, sizeof(int), key);
-            // Write the relative path to the image file
-            WriteEncrypted(imageFile, relativePathStr.data(), pathLen, key);
-            // Write the file size to the image file
-            int fileSizeBuff = fileSize;
-            WriteEncrypted(imageFile, &fileSizeBuff, sizeof(int), key);
-            // Write the file data to the image file
-            WriteEncrypted(imageFile, data.data(), fileSize, key);
-
-            // Close the input file
-            fclose(file);
-        }
-        CreateIndexFile(imageName, pathList.size(), totalFileSize);
-    }
-
-    bool AssetPackCompile(const char* directory, const char* fileName, const uint64_t encryptionKey,
-                           const bool compress)
-    {
-        if (!IsImageOutdated(directory))
-        {
-            return true;
-        }
-        const auto startTime = GetTime();
-        std::vector<fs::path> pathList;
-        pathList.reserve(100);
-
-        // Create the list of file paths
-        if (!CreatePathList(directory, pathList))
-        {
-            return false;
-        }
-        if (pathList.empty())
-        {
-            LOG_ERROR("No files to compile into asset pack");
-            return false;
-        }
-
-        int writtenSize = 0;
-        const fs::path rootPath(directory);
-
-        // Open the image file for writing
-        FILE* imageFile = fopen(fileName, "w+b");
-        if (!imageFile)
+        FILE* file = fopen(fileName, "w+b");
+        if (file == nullptr)
         {
             LOG_ERROR("Could not open file for writing: %s", fileName);
             return false;
         }
 
-        // Write the header
-        fwrite(IMAGE_HEADER, strlen(IMAGE_HEADER), 1, imageFile);
+        fwrite(content.data(), content.size(), 1, file);
+        fclose(file);
+        return true;
+    }
 
-        // Write total size
-        fwrite(&writtenSize, 4, 1, imageFile);
-
-        // Write elements
-        const int size = pathList.size();
-        fwrite(&size, 4, 1, imageFile);
-        writtenSize += static_cast<int>(strlen(IMAGE_HEADER)) + 4 + 4;
-
-        // Temp data from files
-        std::vector<char> data;
-        data.reserve(10000);
-
-        // Write the image data
-        WriteImage(pathList, writtenSize, rootPath, imageFile, data, fileName, encryptionKey);
-
-        // Update the total written size in the file header
-        fseek(imageFile, 5, SEEK_SET);
-        fwrite(&writtenSize, sizeof(int), 1, imageFile);
-
-        if (compress)
+    static void ScanDirectory(const fs::path& directory, PathList& pathList)
+    {
+        const auto iter = fs::directory_iterator(directory);
+        for (const auto& entry : iter)
         {
-            // Read the file data into a vector for compression
-            if (writtenSize > (int)data.size())
-                data.resize(writtenSize);
-
-            fseek(imageFile, 0, SEEK_SET);
-            fread(data.data(), writtenSize, 1, imageFile);
-            fclose(imageFile);
-
-            // Compress the data
-            auto comp = Compress(reinterpret_cast<const unsigned char*>(data.data()), writtenSize);
-
-            // Open the file again to write the compressed data
-            FILE* compFile = fopen(fileName, "wb");
-            if (!compFile)
+            if (entry.is_directory())
             {
-                LOG_ERROR("Could not open file for writing: %s", fileName);
-                return false;
+                ScanDirectory(entry.path(), pathList);
+            }
+            else if (entry.is_regular_file())
+            {
+                pathList.push_back(entry.path());
+            }
+        }
+    }
+
+    static bool CreatePathList(const char* directory, PathList& pathList)
+    {
+        fs::path dirPath(directory);
+        std::error_code ec;
+        const fs::file_status status = fs::status(dirPath, ec);
+        if (ec)
+        {
+            LOG_ERROR("Error: Cannot access path: %s", directory);
+            return false;
+        }
+
+        pathList.reserve(100);
+        if (fs::is_directory(status))
+        {
+            ScanDirectory(dirPath, pathList);
+            return true;
+        }
+        if (fs::is_regular_file(status))
+        {
+            pathList.emplace_back(dirPath);
+            return true;
+        }
+        LOG_ERROR("Error: Given path is not directory or file: %s", directory);
+        return false;
+    }
+
+    struct PackEntry final
+    {
+        int nameLen;
+        const char* name;
+        int dataLen;
+        const char* data;
+
+        PackEntry() = default;
+
+        PackEntry(const char* name, const char* data, int dataLen) :
+            nameLen(strlen(name)), name(name), dataLen(dataLen), data(data)
+        {
+        }
+
+        void to(std::string& buff) const
+        {
+            size_t offset = buff.size();
+            const size_t requiredSize = buff.size() + sizeof(int) + nameLen + 1 + sizeof(int) + dataLen + 1;
+            buff.resize(requiredSize);
+
+            std::memcpy(&buff[offset], &nameLen, sizeof(int));
+            offset += sizeof(int);
+
+            std::memcpy(&buff[offset], name, nameLen + 1);
+            offset += nameLen + 1;
+
+            std::memcpy(&buff[offset], &dataLen, sizeof(int));
+            offset += sizeof(int);
+
+            std::memcpy(&buff[offset], data, dataLen);
+        }
+
+        void from(char* file, int& offset)
+        {
+            std::memcpy(&nameLen, &file[offset], sizeof(int));
+            offset += sizeof(int);
+
+            name = &file[offset];
+            offset += nameLen + 1;
+
+            std::memcpy(&dataLen, &file[offset], sizeof(int));
+            offset += sizeof(int);
+
+            data = &file[offset];
+            offset += dataLen + 1;
+        }
+    };
+
+    struct PackHeader final
+    {
+        const char* header;
+        int totalSize;
+        int entries;
+
+        void to(std::string& buff) const
+        {
+            const size_t requiredSize = HEADER_LEN + sizeof(int) * 2;
+            if (buff.size() < requiredSize)
+            {
+                buff.resize(requiredSize);
             }
 
-            // Write the compressed data to the file
-            fwrite(IMAGE_HEADER_COMPRESSED, 5, 1, compFile);
-            fwrite(comp.getData(), comp.getSize(), 1, compFile);
-            comp.free();
-            fclose(compFile);
+            size_t offset = 0;
+            std::memcpy(&buff[offset], header, HEADER_LEN);
+            offset += HEADER_LEN;
 
-            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
-            auto* logText = "Compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
-                            "(%.0f%%) | Assets: %d";
-            LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, comp.getSize() / 1'000'000.0F,
-                     static_cast<float>(comp.getSize()) / writtenSize * 100.0F, size);
-            writtenSize = comp.getSize();
+            std::memcpy(&buff[offset], &totalSize, sizeof(int));
+            offset += sizeof(int);
+
+            std::memcpy(&buff[offset], &entries, sizeof(int));
+        }
+
+        void from(char* file, int& offset)
+        {
+            offset = 0;
+            header = &file[offset];
+            offset += HEADER_LEN;
+
+            std::memcpy(&totalSize, &file[offset], sizeof(int));
+            offset += sizeof(int);
+
+            std::memcpy(&entries, &file[offset], sizeof(int));
+            offset += sizeof(int);
+        }
+    };
+
+    static void UnCompressData(std::string& data)
+    {
+        const auto* start = data.data() + HEADER_LEN;
+        const auto newData = new char[MAX_DECOMPRESSION_SIZE * 1024 * 1024];
+        int newSize = sinflate(newData, MAX_DECOMPRESSION_SIZE * 1024 * 1024, start, data.size() - HEADER_LEN);
+
+        data.resize(newSize + HEADER_LEN);
+        std::memcpy(data.data() + HEADER_LEN, newData, newSize);
+        delete[] newData;
+    }
+
+    static void CompressData(std::string& data)
+    {
+        int maxLen = sdefl_bound(data.size() - HEADER_LEN);
+        const auto newData = new char[maxLen];
+
+        auto* ctx = new sdefl();
+        int newSize = sdeflate(ctx, newData, data.data() + HEADER_LEN, data.size() - HEADER_LEN, 5);
+
+        data.resize(newSize + HEADER_LEN);
+        std::memcpy(data.data() + HEADER_LEN, newData, newSize);
+
+        delete[] newData;
+        delete ctx;
+    }
+
+    static bool ParseImage(AssetPack& container, const uint64_t key)
+    {
+        auto& data = container.nativeData;
+        if (!(data.starts_with(IMAGE_HEADER) || data.starts_with(IMAGE_HEADER_COMPRESSED)))
+        {
+            LOG_ERROR("Malformed asset pack file");
+            return false;
+        }
+
+        SymmetricEncrypt(data.data() + HEADER_LEN, data.size() - HEADER_LEN, key);
+
+        if (data.starts_with(IMAGE_HEADER_COMPRESSED))
+        {
+            UnCompressData(data);
+        }
+
+        int offset = 0;
+        PackHeader header{};
+        header.from(data.data(), offset);
+        if ((int)data.size() != header.totalSize)
+        {
+            LOG_ERROR("AssetPack size mismatch between header and buffer size");
+            return false;
+        }
+
+        container.assets.reserve(header.entries + 1);
+        while (offset < (int)data.size())
+        {
+            PackEntry entry{};
+            entry.from(data.data(), offset);
+            if (entry.nameLen > 1000)
+            {
+                LOG_ERROR("Error parsing asset pack");
+                return false;
+            }
+            container.assets.push_back({{entry.name, (size_t)entry.nameLen}, {entry.data, (size_t)entry.dataLen}});
+        }
+        container.sort();
+        return true;
+    }
+
+    bool AssetPackLoad(AssetPack& assets, const char* path, const uint64_t key)
+    {
+        if (!fs::exists(path)) // User cant use AssetPack -> its empty
+        {
+            LOG_WARNING("No asset pack at: %s", path);
+            return false;
+        }
+
+        const auto startTime = GetTime();
+        if (!ReadFile(path, assets.nativeData))
+        {
+            LOG_ERROR("Failed to open asset pack file: %s", path);
+            return false;
+        }
+        const int originalSize = assets.nativeData.size();
+        const bool res = ParseImage(assets, key);
+        const int currentSize = assets.nativeData.size();
+
+        if (!res)
+        {
+            LOG_ERROR("Failed to parse asset pack: %s", path);
+            return false;
+        }
+
+        const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
+        if (originalSize == currentSize)
+        {
+            auto* logText = "Loaded asset pack %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
+            LOG_INFO(logText, path, time, originalSize / 1'000'000.0F, assets.getSize());
         }
         else
         {
-            fclose(imageFile);
-            const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
-            auto* logText = "Compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
-            LOG_INFO(logText, directory, fileName, time, writtenSize / 1'000'000.0F, size);
+            auto* logText = "Loaded asset pack %s | Took: %d millis. Decompressed: %.2f mb -> "
+                            "%.2f mb | Assets: %d";
+            LOG_INFO(logText, path, time, originalSize / 1'000'000.0F, currentSize / 1'000'000.0F, assets.getSize());
         }
 
+        return true;
+    }
+
+    static std::pair<int, int> GeneratePack(std::string& data, const PathList& pathList, std::string_view dir,
+                                            bool compress, const uint64_t key)
+    {
+        fs::path root{dir};
+        PackHeader header{IMAGE_HEADER, 1, 1};
+        header.to(data);
+        std::string relativePathStr;
+
+        for (const auto& entry : pathList)
+        {
+            std::string fileData;
+            if (!ReadFile(entry.generic_string(), fileData))
+            {
+                LOG_ERROR("Failed to open file: %s", entry.generic_string().c_str());
+                continue;
+            }
+            relativePathStr = fs::relative(entry, root).generic_string();
+            PackEntry asset{relativePathStr.c_str(), fileData.data(), (int)fileData.size()};
+            asset.to(data);
+        }
+
+        header = {compress ? IMAGE_HEADER_COMPRESSED : IMAGE_HEADER, (int)data.size(), (int)pathList.size()};
+        header.to(data);
+
+        int originalSize = data.size();
+        int compressedSize = 0;
+        if (compress)
+        {
+            CompressData(data);
+            compressedSize = data.size();
+        }
+
+        SymmetricEncrypt(data.data() + HEADER_LEN, data.size() - HEADER_LEN, key);
+        return {originalSize, compressedSize};
+    }
+
+    static bool HasImageChanged(std::string_view packName, std::string_view newData)
+    {
+        std::string packData;
+        if (!ReadFile(packName, packData))
+        {
+            return true;
+        }
+        if (newData.size() != packData.size())
+        {
+            return true;
+        }
+        return std::memcmp(packData.data(), newData.data(), packData.size()) != 0;
+    }
+
+    bool AssetPackCompile(const char* dir, const char* name, const uint64_t key, const bool compress)
+    {
+        const auto startTime = GetTime();
+
+        PathList pathList;
+        if (!CreatePathList(dir, pathList))
+        {
+            return false;
+        }
+
+        if (pathList.empty())
+        {
+            LOG_ERROR("No files to compile into asset pack");
+            return true;
+        }
+
+        std::string data;
+        auto [original, compressed] = GeneratePack(data, pathList, dir, compress, key);
+
+        if (!HasImageChanged(name, data))
+        {
+            LOG_INFO("Skipped compiling asset pack: No changes detected");
+            return true;
+        }
+
+        if (!WriteFile(name, data))
+        {
+            LOG_ERROR("Could not open file for writing: %s", name);
+            return false;
+        }
+
+        const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
+        if (compress)
+        {
+            auto* logText = "Compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
+                            "(%.0f%%) | Assets: %d";
+            LOG_INFO(logText, dir, name, time, original / 1'000'000.0F, compressed / 1'000'000.0F,
+                     100.0F - (float)compressed / original * 100.0F, pathList.size());
+        }
+        else
+        {
+            auto* logText = "Compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
+            LOG_INFO(logText, dir, name, time, original / 1'000'000.0F, pathList.size());
+        }
         return true;
     }
 
