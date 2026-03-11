@@ -19,11 +19,12 @@ namespace magique
         TileSet() = default;
 
         // Returns the vector containing all marked tiles
-        [[nodiscard]] const std::vector<TileInfo>& getTilesInfo() const;
+        const std::vector<TileInfo>& getTilesInfo() const;
 
         // Returns the tile size parsed from the tileset data
-        [[nodiscard]] int getTileSize() const;
+        int getTileSize() const;
 
+        // Returns the info or nullptr (or error and the first info)
         TileInfo& getInfo(uint8_t tileId);
         const TileInfo* getInfo(uint8_t tileId) const;
         const TileInfo* getInfo(const char* image) const;
@@ -32,12 +33,12 @@ namespace magique
         int getTileCount() const;
 
     private:
+        M_MAKE_PUB()
         int tileSize = -1; // Default
         int tileCount = 0;
         std::vector<TileInfo> infoVec;
-        friend TileSet ImportTileSet(const Asset&, TileClassMapFunc);
     };
 
 } // namespace magique
 
-#endif //MAGIQUE_TILESET_H
+#endif // MAGIQUE_TILESET_H

@@ -451,7 +451,15 @@ namespace magique
 
                 for (int i = 0; i < layer->data_count; ++i)
                 {
-                    dataVec.push_back(static_cast<int16_t>(layer->data[i]));
+                    int hFlip{};
+                    int vFlip{};
+                    int dFlip{};
+
+                    auto tileId = layer->data[i];
+                    cute_tiled_get_flags(tileId, &hFlip, &vFlip, &dFlip);
+                    tileId = cute_tiled_unset_flags(tileId);
+
+                    dataVec.push_back({(int16_t)tileId, hFlip == 1, vFlip == 1, dFlip == 1});
                 }
             }
             else
@@ -530,7 +538,7 @@ namespace magique
         ASSET_IS_SUPPORTED_IMAGE_TYPE(asset);
 
         const auto sheet = TileSheet(asset, tileSize, scale);
-        if (sheet.getTextureID() == 0)
+        if (sheet.getRegion(0).id == 0)
         {
             LOG_WARNING("Failed to load TileSheet: %s", asset.getFileName());
             return sheet;

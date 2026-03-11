@@ -100,6 +100,13 @@ namespace magique
     Point GetGamePadLeftStick(int gamepad, float deadZone = 0.2F);
     Point GetGamePadRightStick(int gamepad, float deadZone = 0.2F);
 
+    // Activates the shader in the constructor and ends the shader in the destructor
+    struct ShaderWrapper
+    {
+        ShaderWrapper(Shader& shader);
+        ~ShaderWrapper();
+    };
+
 } // namespace magique
 
 #endif // MAGIQUE_RAYUTILS_H

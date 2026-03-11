@@ -225,6 +225,17 @@ namespace magique
 
     void EntityDestroyDeferred(entt::entity entity) { global::ENGINE_DATA.deferredDestroyVec.push_back(entity); }
 
+    void EntityDestroyDeferred(const FilterFunc& func)
+    {
+        for (const auto e : internal::REGISTRY.view<entt::entity>())
+        {
+            if (func(e))
+            {
+                EntityDestroyDeferred(e);
+            }
+        }
+    }
+
     CollisionC& ComponentGiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
     {
         auto& col = internal::REGISTRY.emplace<CollisionC>(entity);

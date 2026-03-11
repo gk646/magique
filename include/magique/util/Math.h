@@ -51,7 +51,7 @@ namespace magique
     bool MathIsWhole(float num);
 
     // Mirrors the given value vertically
-    float MathMirrorVert(float value, float border);
+    float MathMirror(float value, float border);
 
     // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
     float TowardsZero(float value, float change);

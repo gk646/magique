@@ -69,7 +69,7 @@ namespace magique
         // Distance functions
         float manhattan(const Point& p) const;
         float euclidean(const Point& p) const;
-        float euclideanSqr(const Point& p) const; // euclidean without square root
+        float euclideanSqr(const Point& p) const; // Euclidean without square root
         float chebyshev(const Point& p) const;
         float octile(const Point& p) const;
 
@@ -170,8 +170,14 @@ namespace magique
         Rect round() const;
         Rect& zero();
 
-        // Returns random point inside the rect
-        Point random() const;
+        // Flips the rect along the given axis
+        Rect mirrorVertical(float xAxis) const;
+        Rect mirrorHorizontal(float yAxis) const;
+        Rect mirrorDiagonal(Point p) const;
+
+        // Returns random point inside the rect such that a rect with given dims would be fully inside
+        // Note: This is useful to position collision entities in a rectangle so that they fit
+        Point random(Point dims = {}) const;
 
         // Returns true if the point is contained in the rect
         bool contains(const Point& p) const;
@@ -281,8 +287,8 @@ namespace magique
 
     struct TextureRegion final // All textures are part of an atlas and can not be referenced as standalone
     {
-        uint16_t offX;   // Horizontal offset from the top left of the atlas
-        uint16_t offY;   // Vertical offset from the top left of the atlas
+        int16_t offX;    // Horizontal offset from the top left of the atlas
+        int16_t offY;    // Vertical offset from the top left of the atlas
         int16_t width;   // Width of the texture
         int16_t height;  // Height of the texture
         uint16_t id = 0; // The texture id
@@ -335,7 +341,7 @@ namespace magique
     };
 
     // A custom definable property inside the Tiled Tile Editor
-    // TileSet/TileMap/Objects... -> right click custom properties -> choose type, name and value
+    // TileSet/TileMap/Objects... -> right click in properties window -> custom properties -> choose type, name and value
     struct TiledProperty final
     {
         // Returns the value of the property
@@ -383,7 +389,7 @@ namespace magique
         Rect bounds{};
         float rotation = 0;
         bool visible = false;
-        int tileClass = 0; // NOT assigned autoamtically
+        int tileClass = 0; // NOT assigned automatically
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* propertyName) const;
@@ -399,15 +405,24 @@ namespace magique
     struct TileInfo final
     {
         TiledProperty customProperties[MAGIQUE_TILE_SET_CUSTOM_PROPERTIES]; // Mutable
-        Rect bounds;                  // Primary rect - top most (in the object list)
-        Rect secBounds;               // Secondary rect - second top (in the object list)
-        const char* image;            // only valid if its an image tileset
-        TileClass tileClass{};        // class attribute
-        bool hasCollision = false;    // True if has at least one collision shape
-        uint16_t tileID = UINT16_MAX; // tile index of this tile
+        Rect bounds;               // Primary rect - top most (in the object list)
+        Rect secBounds;            // Secondary rect - second top (in the object list)
+        const char* image;         // only valid if it's an image tileset
+        TileClass tileClass{};     // class attribute
+        bool hasCollision = false; // True if has at least one collision shape
+        int16_t tileID = 0;        // tile index of this tile
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const char* name) const;
+    };
+
+    // Tiled allows to flip tiles in both directions
+    struct TileID final
+    {
+        int16_t id;
+        bool flippedHorizontal = false;
+        bool flippedVertical = false;
+        bool flippedDiagonal = false;
     };
 
     // Checksum (hash) for a file

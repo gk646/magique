@@ -7,6 +7,7 @@
 
 #include "internal/utils/CollisionPrimitives.h"
 #include "magique/core/Camera.h"
+#include "magique/ecs/ECS.h"
 
 namespace magique
 {
@@ -187,10 +188,26 @@ namespace magique
         }
     }
 
+    void CheckCollisionEntities(entt::entity a, entt::entity b, CollisionInfo& info)
+    {
+        auto& posA = ComponentGet<PositionC>(a);
+        auto& colA = ComponentGet<CollisionC>(a);
+        auto& posB = ComponentGet<PositionC>(b);
+        auto& colB = ComponentGet<CollisionC>(b);
+        CheckCollisionEntities(posA, colA, posB, colB, info);
+    }
+
+    bool CheckCollisionEntities(entt::entity a, entt::entity b)
+    {
+        CollisionInfo info{};
+        CheckCollisionEntities(a, b, info);
+        return info.isColliding();
+    }
+
     bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
     {
         // Avoids doubling logic - like offset handling
-        const PositionC posR{r.pos(), pos.map, pos.type, pos.rotation};
+        const PositionC posR{r.pos(), pos.map, pos.type, 0};
         const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
         CheckCollisionEntities(pos, col, posR, colR, info);
         return info.isColliding();

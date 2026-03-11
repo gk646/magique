@@ -64,7 +64,11 @@ namespace magique
 
     // Returns true if the given entity has ALL the specified component types
     template <typename... Args>
-    bool EntityHasComponents(entt::entity entity);
+    bool EntityHasAll(entt::entity entity);
+
+    // Returns true if the given
+    template <typename... Args>
+    bool EntityHasAny(entt::entity entity);
 
     // Returns true if the given entity is an actor - has the actor component
     bool EntityIsActor(entt::entity entity);
@@ -81,12 +85,13 @@ namespace magique
     // Immediately destroys all entities that have the given type - pass an empty list to destroy all types
     void EntityDestroy(const std::initializer_list<EntityType>& ids);
 
-    // Iterates ALL enemies and destroys them if the function returns true
-    void EntityDestroy(const std::function<bool(entt::entity)>& func);
+    // Iterates ALL enemies and destroys them if the filter returns true
+    void EntityDestroy(const FilterFunc& func);
 
     // Saves the entity and destroys it AFTER onGameUpdate() but BEFORE onUpdateEnd()
     // Note: This avoids crashes when systems access entities after they are destroyed immediately during the tick
     void EntityDestroyDeferred(entt::entity entity);
+    void EntityDestroyDeferred(const FilterFunc& func);
 
     //================= COMPONENTS =================//
 
@@ -164,7 +169,7 @@ namespace magique
     {
         static_assert(sizeof(T) != 0 && "Trying to get empty component - those are not instantiated by EnTT");
         MAGIQUE_ASSERT(EntityExists(entity), "Entity does not exist");
-        MAGIQUE_ASSERT(EntityHasComponents<T>(entity), "Specified component does not exist on this entity!");
+        MAGIQUE_ASSERT(EntityHasAll<T>(entity), "Specified component does not exist on this entity!");
         if constexpr (std::is_same_v<T, PositionC> || std::is_same_v<T, CollisionC>)
         {
             return internal::POSITION_GROUP.get<T>(entity);
@@ -218,9 +223,15 @@ namespace magique
     }
 
     template <typename... Args>
-    bool EntityHasComponents(const entt::entity entity)
+    bool EntityHasAll(const entt::entity entity)
     {
         return internal::REGISTRY.all_of<Args...>(entity);
+    }
+
+    template <typename... Args>
+    bool EntityHasAny(entt::entity entity)
+    {
+        return internal::REGISTRY.any_of<Args...>(entity);
     }
 
     template <typename... Args>

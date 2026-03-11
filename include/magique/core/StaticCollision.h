@@ -25,7 +25,7 @@ namespace magique
     // Sets static collision bounds - this is only useful for simpler (static) scenes
     // Everything outside the rectangle is considered solid - pass a width or height of 0 to disable
     // Default: Disabled
-    void SetStaticWorldBounds(const Rectangle& rectangle);
+    void CollisionSetWorldBounds(const Rectangle& rectangle);
 
     //================= TILE OBJECTS =================//
 
@@ -33,33 +33,33 @@ namespace magique
     // This can be called at any time and has immediate effect - recommended at startup as many objects get expensive
     // Passed vector is saved and future calls with it are skipped (unless removed)
     // Note: If you applied scaling to the TileSheet needs to be applied here as well to match
-    void AddTileMapObjects(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1);
+    void CollisionAddTileObjects(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1);
 
     // Removes the TileObjects added by the given vector
     // This method usually does not need to be called but there might be niche uses cases
-    void RemoveTileMapObjects(MapID map, const std::vector<TileObject>& collisionObjects);
+    void CollisionRemoveTileObjects(MapID map, const std::vector<TileObject>& collisionObjects);
 
     //================= TILESET =================//
 
     // Sets the global tileset to use for parsing tile collision and other features
     // Note: Can also be used for non-solid tiles to define special areas (water, slime, poison, ...)
     // Note: Supports the Tile Collision Editor (only Rectangles!) - allows to define a custom collision area per tile
-    void LoadGlobalTileSet(const TileSet& tileSet, float scale = 1);
+    void CollisionSetTileset(const TileSet& tileSet, float scale = 1);
 
     // Parses the selected layers of the tile data of the given map and inserts correct static colliders for marked tiles
-    // Note: Using this is only possible if set a global tileset with LoadGlobalTileSet()
+    // Note: Using this is only possible if set a global tileset with CollisionSetTileset()
     // Once set all calls with the same map are skipped (because there's only 1 tilemap per map)
     //       - layers: specifies which layers to parse (e.g. what layers contain collidable tiles: background, ...)
-    void AddTileCollisions(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
+    void CollisionAddTiles(MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers);
 
     // Removes the tile collision data associated with this map
-    void RemoveTileCollisions(MapID map);
+    void CollisionRemoveTiles(MapID map);
 
     //================= MANUAL GROUPS =================//
 
-    struct ManualColliderGroup final
+    struct ColliderGroup final
     {
-        ManualColliderGroup();
+        ColliderGroup();
 
         // Adds a rect collider with the given dimensions (topleft and dimensions)
         void addRect(float x, float y, float width, float height);
@@ -79,12 +79,12 @@ namespace magique
     };
 
     // Adds all colliders of the given group to the specified map
-    void AddColliderGroup(MapID map, const ManualColliderGroup& group);
+    void CollisionAddGroup(MapID map, const ColliderGroup& group);
 
     // Removes all colliders of the given group from the specified map (if exists)
-    void RemoveColliderGroup(MapID map, const ManualColliderGroup& group);
+    void CollisionRemoveGroup(MapID map, const ColliderGroup& group);
 
 } // namespace magique
 
 
-#endif //MAGIQUE_STATIC_COLLISION_H
+#endif // MAGIQUE_STATIC_COLLISION_H

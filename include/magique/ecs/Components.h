@@ -66,6 +66,9 @@ namespace magique
         void setRectShape(const Rect& rect, Point anchor = {-1});
         void setCircleShape(float radius);
 
+        // Adjust the position of the entity such the collision shape is centered on the give position
+        static void CenterOn(entt::entity e, Point point);
+
         // Returns the middle point of the entity (or just the position if CollisionC is missing)
         static Point GetMiddle(entt::entity e);
 
@@ -158,7 +161,7 @@ namespace magique
     {
         TextureC() = default;
         // Sets anchor to the texture mid if invalid
-        TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1});
+        TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1}, int priority = 0);
 
         // Draws the texture at base size at the given position with offset and rotation around the anchor
         void draw(Point pos, float rotation) const;
@@ -166,6 +169,7 @@ namespace magique
         TextureRegion texture{};
         Point offset{};
         Point anchor{};
+        int priority = 0; // Can be used to enforce ordering
     };
 
     // Allows to layer textures to create more complex look
@@ -181,6 +185,7 @@ namespace magique
         TextureC getTexture(AnimationLayer layer);
 
         Point globalAnchor = -1;
+        int priority = 0; // Can be used to enforce ordering
 
     private:
         HashMap<AnimationLayer, TextureC> textures;

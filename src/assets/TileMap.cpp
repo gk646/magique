@@ -5,28 +5,22 @@
 
 namespace magique
 {
-    int16_t& TileMap::getTileIndex(const int x, const int y, const int layer)
+    TileID& TileMap::getTileIndex(const int x, const int y, const int layer)
     {
         auto& data = tileLayers[layer];
         return data[x + (y * width)];
     }
 
-    int16_t TileMap::getTileIndex(const int x, const int y, const int layer) const
+    TileID TileMap::getTileIndex(const int x, const int y, const int layer) const
     {
         return getLayerData(layer)[x + y * width];
     }
 
-    const int16_t* TileMap::getLayerData(const int layer) const
+    const TileID* TileMap::getLayerData(const int layer) const
     {
         MAGIQUE_ASSERT(layer < static_cast<int>(tileLayers.size()), "TileMap does not have that many tile layers");
         return tileLayers[layer].data();
     }
-
-    Point TileMap::getDims() const { return {(float)width, (float)height}; }
-
-    Point TileMap::getPixelDims() const { return getDims() * tileSize; }
-
-    int TileMap::getTileSize() const { return tileSize; }
 
     int TileMap::getTileLayerCount() const { return static_cast<int>(tileLayers.size()); }
 
@@ -77,5 +71,11 @@ namespace magique
         }
         return nullptr;
     }
+
+    Point TileMap::getDims() const { return {(float)width, (float)height}; }
+
+    Point TileMap::getPixelDims() const { return getDims() * tileSize; }
+
+    int TileMap::getTileSize() const { return tileSize; }
 
 } // namespace magique

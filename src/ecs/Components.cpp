@@ -126,9 +126,9 @@ namespace magique
 
     //----------------- TextureC -----------------//
 
-    TextureC::TextureC(TextureRegion texture, Point offset, Point anchor) :
+    TextureC::TextureC(TextureRegion texture, Point offset, Point anchor, int priority) :
         texture(texture), offset(offset.floor()),
-        anchor(anchor == -1 ? Point{texture.getSize() / 2}.floor() : anchor.floor())
+        anchor(anchor == -1 ? Point{texture.getSize() / 2}.floor() : anchor.floor()), priority(priority)
     {
     }
 
@@ -192,6 +192,13 @@ namespace magique
         p2 = radius;
         shape = Shape::CIRCLE;
         anchor = radius;
+    }
+
+    void CollisionC::CenterOn(entt::entity e, Point point)
+    {
+        auto& pos = ComponentGet<PositionC>(e);
+        auto& col = ComponentGet<CollisionC>(e);
+        pos.pos = point - col.getMidOffset();
     }
 
     Point CollisionC::GetMiddle(const entt::entity e)

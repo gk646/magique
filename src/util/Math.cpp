@@ -95,7 +95,7 @@ namespace magique
         return value;
     }
 
-    float MathMirrorVert(float value, float border) { return value + 2 * (border - value); }
+    float MathMirror(float value, float border) { return value + 2 * (border - value); }
 
     Point GetCirclePosOutline(const Point& middle, const float radius, const float angle)
     {

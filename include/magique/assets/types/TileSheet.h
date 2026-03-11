@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_TILE_SHEET_H
 #define MAGIQUE_TILE_SHEET_H
 
-#include <vector>
 #include <magique/fwd.hpp>
 
 //===============================================
@@ -24,16 +23,13 @@ namespace magique
         explicit TileSheet(const Asset& asset, int size, float scale);
 
         // Returns the region for the given tileNum
-        [[nodiscard]] TextureRegion getRegion(uint16_t tileNum) const;
+        TextureRegion getRegion(int16_t tileNum) const;
 
         // Returns the offset from the top left of the atlas for the texture this tileNum corresponds to
-        [[nodiscard]] Vector2 getOffset(uint16_t tileNum) const;
+        Point getOffset(int16_t tileNum) const;
 
         // Returns the size of each texture
-        [[nodiscard]] float getTextureSize() const;
-
-        // Returns the id of the texture the TileSheet is stored on
-        [[nodiscard]] unsigned int getTextureID() const;
+        float getTextureSize() const;
 
     private:
         int16_t texSize = 16;   // Size of each texture
@@ -42,4 +38,4 @@ namespace magique
     };
 } // namespace magique
 
-#endif //MAGIQUE_TILE_SHEET_H
+#endif // MAGIQUE_TILE_SHEET_H

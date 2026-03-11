@@ -32,15 +32,15 @@ namespace magique
         //================= TILES =================//
 
         // Returns a modifiable reference to the tile index at the given position
-        int16_t& getTileIndex(int x, int y, int layer);
+        TileID& getTileIndex(int x, int y, int layer);
 
         // Returns the tile index at the given position
-        [[nodiscard]] int16_t getTileIndex(int x, int y, int layer) const;
+        TileID getTileIndex(int x, int y, int layer) const;
 
         // Returns the pointer to the start of the layer
         // Layers are sorted bottom up as shown in the editor - only counting tile layers
         // Note: the length the of the layer data (for on layer) is: getWidth() * getHeight()
-        [[nodiscard]] const int16_t* getLayerData(int layer) const;
+        const TileID* getLayerData(int layer) const;
 
         // Returns the layer count
         [[nodiscard]] int getTileLayerCount() const;
@@ -75,7 +75,7 @@ namespace magique
     private:
         M_MAKE_PUB()
         std::vector<TiledObjectLayer> objectLayers;
-        std::vector<std::vector<int16_t>> tileLayers; // Contiguous array for map data
+        std::vector<std::vector<TileID>> tileLayers; // Contiguous array for map data
         std::vector<TiledProperty> properties;
         int width = 0, height = 0;
         int tileSize = 0;

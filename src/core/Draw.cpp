@@ -15,12 +15,10 @@
 #include "external/raylib-compat/rcore_compat.h"
 #include "magique/util/RayUtils.h"
 
-constexpr auto ATLAS_WIDTH = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
-constexpr auto ATLAS_HEIGHT = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
 
 namespace magique
 {
-
     void DrawRegion(const TextureRegion& region, Point pos, const bool flipX, const Color tint)
     {
         MAGIQUE_ASSERT(region.id > 0, "The texture for this region is invalid");
@@ -29,10 +27,10 @@ namespace magique
         const auto texWidth = static_cast<float>(region.width);
         const auto texHeight = static_cast<float>(region.height);
 
-        const float texLeft = (static_cast<float>(region.offX) + (flipX ? texWidth : 0)) / ATLAS_WIDTH;
-        const float texRight = (static_cast<float>(region.offX) + (flipX ? 0 : texWidth)) / ATLAS_WIDTH;
-        const float texTop = static_cast<float>(region.offY) / ATLAS_HEIGHT;
-        const float texBottom = (static_cast<float>(region.offY) + texHeight) / ATLAS_HEIGHT;
+        const float texLeft = (static_cast<float>(region.offX) + (flipX ? texWidth : 0)) / ATLAS_SIZE;
+        const float texRight = (static_cast<float>(region.offX) + (flipX ? 0 : texWidth)) / ATLAS_SIZE;
+        const float texTop = static_cast<float>(region.offY) / ATLAS_SIZE;
+        const float texBottom = (static_cast<float>(region.offY) + texHeight) / ATLAS_SIZE;
 
         rlSetTexture(region.id);
         rlBegin(RL_QUADS);
@@ -74,10 +72,10 @@ namespace magique
         const auto texWidth = static_cast<float>(std::abs(region.width));
         const auto texHeight = static_cast<float>(std::abs(region.height));
 
-        const float texLeft = (static_cast<float>(region.offX) + (dest.width < 0 ? texWidth : 0)) / ATLAS_WIDTH;
-        const float texRight = (static_cast<float>(region.offX) + (dest.width < 0 ? 0 : texWidth)) / ATLAS_WIDTH;
-        const float texTop = (static_cast<float>(region.offY) + (dest.height < 0 ? texHeight : 0)) / ATLAS_HEIGHT;
-        const float texBottom = (static_cast<float>(region.offY) + (dest.height < 0 ? 0 : texHeight)) / ATLAS_HEIGHT;
+        const float texLeft = (static_cast<float>(region.offX) + (dest.width < 0 ? texWidth : 0)) / ATLAS_SIZE;
+        const float texRight = (static_cast<float>(region.offX) + (dest.width < 0 ? 0 : texWidth)) / ATLAS_SIZE;
+        const float texTop = (static_cast<float>(region.offY) + (dest.height < 0 ? texHeight : 0)) / ATLAS_SIZE;
+        const float texBottom = (static_cast<float>(region.offY) + (dest.height < 0 ? 0 : texHeight)) / ATLAS_SIZE;
 
         dest.width = std::abs(dest.width);
         dest.height = std::abs(dest.height);
@@ -170,34 +168,53 @@ namespace magique
         const float screenX = static_cast<float>(startTileX) * tileSize + origin.x;
         float screenY = static_cast<float>(startTileY) * tileSize + origin.y;
 
-        rlSetTexture(tileSheet.getTextureID());
+        rlSetTexture(tileSheet.getRegion(0).id);
         rlBegin(RL_QUADS);
         rlColor4ub(255, 255, 255, 255);
         rlNormal3f(0.0F, 0.0F, 0.0F);
 
-        constexpr auto atlasWidth = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
-        constexpr auto atlasHeight = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+        constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+
         for (int i = 0; i < diffY; ++i)
         {
             float tmpScreenX = screenX;
             for (int j = 0; j < diffX; ++j)
             {
-                const auto [x, y] = tileSheet.getOffset(start[j]);
-                const float texCoordLeft = std::floor(x) / atlasWidth;
-                const float texCoordRight = std::floor(x + tileSize) / atlasWidth;
-                const float texCoordTop = std::floor(y) / atlasHeight;
-                const float texCoordBottom = std::floor(y + tileSize) / atlasHeight;
+                const auto& tile = start[j];
+                const auto [x, y] = tileSheet.getOffset(tile.id);
 
-                rlTexCoord2f(texCoordLeft, texCoordTop);
+                Point topLeft = Point{x, y} / ATLAS_SIZE;
+                Point topRight = Point{x + tileSize, y} / ATLAS_SIZE;
+                Point botLeft = Point{x, y + tileSize} / ATLAS_SIZE;
+                Point botRight = Point{x + tileSize, y + tileSize} / ATLAS_SIZE;
+
+                if (tile.flippedDiagonal)
+                {
+                    std::swap(topRight, botLeft);
+                }
+
+                if (tile.flippedHorizontal)
+                {
+                    std::swap(topLeft, topRight);
+                    std::swap(botRight, botLeft);
+                }
+
+                if (tile.flippedVertical)
+                {
+                    std::swap(topLeft, botLeft);
+                    std::swap(topRight, botRight);
+                }
+
+                rlTexCoord2f(topLeft.x, topLeft.y);
                 rlVertex2f(tmpScreenX, screenY);
 
-                rlTexCoord2f(texCoordLeft, texCoordBottom);
+                rlTexCoord2f(botLeft.x, botLeft.y);
                 rlVertex2f(tmpScreenX, screenY + tileSize);
 
-                rlTexCoord2f(texCoordRight, texCoordBottom);
+                rlTexCoord2f(botRight.x, botRight.y);
                 rlVertex2f(tmpScreenX + tileSize, screenY + tileSize);
 
-                rlTexCoord2f(texCoordRight, texCoordTop);
+                rlTexCoord2f(topRight.x, topRight.y);
                 rlVertex2f(tmpScreenX + tileSize, screenY);
 
                 tmpScreenX += tileSize;

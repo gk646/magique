@@ -77,7 +77,7 @@ namespace magique
             const auto objectNum = StaticIDHelper::GetObjectNum(num);
             CollisionInfo info{};
             CheckCollisionEntityRect(pos, col, colliders[(int)objectNum].bounds, info);
-            if (info.isColliding())
+            if (info.isColliding()) [[unlikely]]
             {
                 pairCollector.push_back({info, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
             }

@@ -13,14 +13,14 @@ namespace magique
     TileSheet::TileSheet(const Asset& asset, const int textureSize, const float scale)
     {
         const auto img = ImportImage(asset);
-        const Point scaledDims = {(float)img.width * scale, (float)img.height * scale};
+        const Point scaledDims = Point{(float)img.width, (float)img.height} * scale;
 
-        Rectangle src{0, 0, static_cast<float>(textureSize), static_cast<float>(textureSize)};
-        Rectangle dst{0, 0, std::floor(src.width * scale), std::floor(src.height * scale)};
+        Rect src{Point{}, static_cast<float>(textureSize)};
+        Rect dst{Point{}, Point{src.size() * scale}.floor()};
 
         if (scaledDims.x >= MAGIQUE_TEXTURE_ATLAS_SIZE || scaledDims.y >= MAGIQUE_TEXTURE_ATLAS_SIZE)
         {
-            LOG_ERROR("Cannot load image as TilSheet: Too big!");
+            LOG_ERROR("Cannot load image as TileSheet: Too big!");
             return;
         }
 
@@ -63,21 +63,20 @@ namespace magique
         UnloadImage(img);
     }
 
-    TextureRegion TileSheet::getRegion(const uint16_t tileNum) const
+    TextureRegion TileSheet::getRegion(const int16_t tileNum) const
     {
         if (tileNum == 0) [[unlikely]]
         {
-            return {static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
-                    static_cast<uint16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize), texSize, texSize, textureID};
+            return {static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
+                    static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize), texSize, texSize, textureID};
         }
 
         const int row = (tileNum - 1) / texPerRow;
         const int colum = tileNum - 1 - row * texPerRow;
-        return {static_cast<uint16_t>(colum * texSize), static_cast<uint16_t>(row * texSize), texSize, texSize,
-                textureID};
+        return {static_cast<int16_t>(colum * texSize), static_cast<int16_t>(row * texSize), texSize, texSize, textureID};
     }
 
-    Vector2 TileSheet::getOffset(const uint16_t tileNum) const
+    Point TileSheet::getOffset(const int16_t tileNum) const
     {
         if (tileNum == 0) [[unlikely]]
         {
@@ -90,7 +89,5 @@ namespace magique
     }
 
     float TileSheet::getTextureSize() const { return texSize; }
-
-    unsigned int TileSheet::getTextureID() const { return textureID; }
 
 } // namespace magique

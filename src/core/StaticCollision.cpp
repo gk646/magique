@@ -9,14 +9,13 @@
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/PathFindingData.h"
 
-
 namespace magique
 {
-    void SetStaticWorldBounds(const Rectangle& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
+    void CollisionSetWorldBounds(const Rectangle& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
 
     //----------------- TILE OBJECTS -----------------//
 
-    void AddTileMapObjects(const MapID map, const std::vector<TileObject>& collisionObjects, const float scale)
+    void CollisionAddTileObjects(const MapID map, const std::vector<TileObject>& collisionObjects, const float scale)
     {
         if (collisionObjects.empty())
         {
@@ -58,7 +57,7 @@ namespace magique
         global::PATH_DATA.updateStaticPathGrid(map);
     }
 
-    void RemoveTileMapObjects(const MapID map, const std::vector<TileObject>& collisionObjects)
+    void CollisionRemoveTileObjects(const MapID map, const std::vector<TileObject>& collisionObjects)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (!data.colliderReferences.tileObjectMap.contains(map))
@@ -95,7 +94,7 @@ namespace magique
 
     //----------------- TILESET -----------------//
 
-    void LoadGlobalTileSet(const TileSet& tileSet, const float scale)
+    void CollisionSetTileset(const TileSet& tileSet, const float scale)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (data.tileSet != nullptr)
@@ -108,17 +107,17 @@ namespace magique
         {
             if (tileInfo.hasCollision)
             {
-                data.markedTilesMap[tileInfo.tileID] = tileInfo;
+                data.markedTilesMap[tileInfo.tileID + 1] = tileInfo;
             }
         }
     }
 
-    void AddTileCollisions(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
+    void CollisionAddTiles(const MapID map, const TileMap& tileMap, const std::initializer_list<int>& layers)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (data.tileSet == nullptr)
         {
-            LOG_WARNING("Cannot load tile collision data without tile set. Use LoadGlobalTileSet()");
+            LOG_WARNING("Cannot load tile collision data without tile set. Use CollisionSetTileset()");
             return;
         }
 
@@ -129,16 +128,47 @@ namespace magique
         }
 
         auto& grid = data.mapTileGrids[map];
-        const auto tileSize = data.tileSetScale * static_cast<float>(data.tileSet->getTileSize());
+        const auto tileSize = static_cast<float>(data.tileSet->getTileSize());
         const int mapWidth = tileMap.getDims().x;
         const int mapHeight = tileMap.getDims().y;
         auto& tileVec = data.colliderReferences.tilesCollisionMap[map];
+
+        auto insertTile = [&](Point tilePos, TileID tile, Rect hitbox, TileClass tileClass)
+        {
+            if (tile.flippedDiagonal)
+            {
+                hitbox = hitbox.mirrorDiagonal(tileSize / 2);
+            }
+
+            if (tile.flippedHorizontal)
+            {
+                hitbox = hitbox.mirrorHorizontal(tileSize / 2);
+            }
+
+            if (tile.flippedVertical)
+            {
+                hitbox = hitbox.mirrorVertical(tileSize / 2);
+            }
+
+            hitbox += tilePos;
+            hitbox = hitbox.scale(data.tileSetScale);
+
+            if (hitbox.size() == 0)
+            {
+                return;
+            }
+
+            const auto objectNum = data.colliderStorage.insert(hitbox);
+            tileVec.push_back(objectNum);
+            const auto objectId = StaticIDHelper::CreateID(objectNum, (int)tileClass);
+            grid.insert(objectId, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
+        };
+
         for (const auto layer : layers)
         {
             if (layer > tileMap.getTileLayerCount())
             {
-                LOG_WARNING("Given tilemap does not contain a layer with index: %d. Check TileMap.h for more info",
-                            layer);
+                LOG_WARNING("Tilemap does not contain a layer with index: %d. Check TileMap.h for more info", layer);
                 continue;
             }
 
@@ -148,34 +178,27 @@ namespace magique
                 const auto yOff = i * mapWidth;
                 for (int j = 0; j < mapWidth; ++j)
                 {
-                    // tile data is 1 more so that empty is 0
-                    const auto tileNum = static_cast<uint16_t>(start[yOff + j] - 1);
-                    if (tileNum == UINT16_MAX) // uint overflows to maximum value (0-1 = MAX)
+                    auto tile = start[yOff + j];
+                    if (tile.id == 0)
                         continue;
-                    const auto infoIt = data.markedTilesMap.find(tileNum);
-                    if (infoIt != data.markedTilesMap.end())
+
+                    const auto infoIt = data.markedTilesMap.find(tile.id);
+                    if (infoIt == data.markedTilesMap.end())
                     {
-                        const auto& info = infoIt->second;
-                        auto scaled = info.bounds.scale(data.tileSetScale);
-                        scaled += Point{(float)j, (float)i} * tileSize;
-                        if (scaled.width == 0) // rect is 0 if not assigned - so adding to x and y is always valid
-                        {
-                            scaled.width = tileSize;
-                            scaled.height = tileSize;
-                        }
-                        const auto objectNum = data.colliderStorage.insert(scaled);
-                        tileVec.push_back(objectNum);
-                        const auto tileClass = infoIt->second.tileClass;
-                        grid.insert(StaticIDHelper::CreateID(objectNum, (int)tileClass), scaled.x, scaled.y, scaled.width,
-                                    scaled.height);
+                        continue;
                     }
+                    const auto& info = infoIt->second;
+                    const auto tilePos = Point{(float)j, (float)i} * tileSize;
+
+                    insertTile(tilePos, tile, info.bounds, info.tileClass);
+                    insertTile(tilePos, tile, info.secBounds, info.tileClass);
                 }
             }
         }
         global::PATH_DATA.updateStaticPathGrid(map);
     }
 
-    void RemoveTileCollisions(const MapID map)
+    void CollisionRemoveTiles(const MapID map)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (!data.colliderReferences.tilesCollisionMap.contains(map))
@@ -199,23 +222,23 @@ namespace magique
 
     int MANUAL_GROUP_ID = 0;
 
-    ManualColliderGroup::ManualColliderGroup() : id(MANUAL_GROUP_ID++) {}
+    ColliderGroup::ColliderGroup() : id(MANUAL_GROUP_ID++) {}
 
-    void ManualColliderGroup::addRect(const float x, const float y, const float width, const float height)
+    void ColliderGroup::addRect(const float x, const float y, const float width, const float height)
     {
         colliders.push_back({{x, y, width, height}});
     }
 
-    void ManualColliderGroup::addRectCentered(const float x, const float y, const float width, const float height)
+    void ColliderGroup::addRectCentered(const float x, const float y, const float width, const float height)
     {
         colliders.push_back({{x - width / 2, y - height / 2, width, height}});
     }
 
-    int ManualColliderGroup::getID() const { return id; }
+    int ColliderGroup::getID() const { return id; }
 
-    const std::vector<StaticCollider>& ManualColliderGroup::getColliders() const { return colliders; }
+    const std::vector<StaticCollider>& ColliderGroup::getColliders() const { return colliders; }
 
-    void AddColliderGroup(const MapID map, const ManualColliderGroup& group)
+    void CollisionAddGroup(const MapID map, const ColliderGroup& group)
     {
         auto& data = global::STATIC_COLL_DATA;
         auto& mapGroupInfoVec = data.colliderReferences.groupMap[map];
@@ -247,7 +270,7 @@ namespace magique
         global::PATH_DATA.updateStaticPathGrid(map);
     }
 
-    void RemoveColliderGroup(const MapID map, const ManualColliderGroup& group)
+    void CollisionRemoveGroup(const MapID map, const ColliderGroup& group)
     {
         auto& data = global::STATIC_COLL_DATA;
         if (!data.colliderReferences.groupMap.contains(map))

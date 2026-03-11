@@ -34,6 +34,10 @@ namespace magique
     void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                 const CollisionC& colB, CollisionInfo& info);
 
+    // Easier access versions
+    void CheckCollisionEntities(entt::entity a, entt::entity b, CollisionInfo& info);
+    bool CheckCollisionEntities(entt::entity a, entt::entity b);
+
     // Returns true and assign info if a collision occurs between the entity and the given rectangle
     bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
 
@@ -61,4 +65,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_COLLISION_DETECTION_H
+#endif // MAGIQUE_COLLISION_DETECTION_H

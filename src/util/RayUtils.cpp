@@ -187,16 +187,16 @@ namespace magique
         const float height = bounds.height;
 
 #ifdef _MSC_VER
-        const Vector2 topStart = {x+1, y};
+        const Vector2 topStart = {x + 1, y};
         const Vector2 topEnd = {x + width - 1, y};
 
         const Vector2 bottomStart = {x + 1, y + height - 1};
         const Vector2 bottomEnd = {x + width - 1, y + height - 1};
 
-        const Vector2 leftStart = {x + 0.01F, y };
+        const Vector2 leftStart = {x + 0.01F, y};
         const Vector2 leftEnd = {x + 0.01F, y + height - 2};
 
-        const Vector2 rightStart = {x + width, y };
+        const Vector2 rightStart = {x + width, y};
         const Vector2 rightEnd = {x + width, y + height - 2};
 #else
         const Vector2 topStart = {x + 1, y};
@@ -223,7 +223,7 @@ namespace magique
     {
         DrawRectangleRec(bounds.floor().shrink(2), fill);
 #ifdef _MSC_VER
-        DrawRectFrame(bounds.floor()+ Point{0,1}, outline);
+        DrawRectFrame(bounds.floor() + Point{0, 1}, outline);
 #else
         DrawRectFrame(bounds.floor(), outline);
 #endif
@@ -319,6 +319,10 @@ namespace magique
             return {};
         return p;
     }
+
+    ShaderWrapper::ShaderWrapper(Shader& shader) { BeginShaderMode(shader); }
+
+    ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
 
 
 } // namespace magique

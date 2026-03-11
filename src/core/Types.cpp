@@ -441,7 +441,33 @@ namespace magique
         return *this;
     }
 
-    Point Rect::random() const { return Point{x + MathRandom(0, width), y + MathRandom(0, height)}; }
+    Rect Rect::mirrorVertical(float xAxis) const
+    {
+        const Point topLeft = {x, MathMirror(y, xAxis)};
+        const Point bottomRight = {x + width, MathMirror(y + height, xAxis)};
+        return FromSpanPoints(topLeft, bottomRight);
+    }
+
+    Rect Rect::mirrorHorizontal(float yAxis) const
+    {
+        const Point topLeft = {MathMirror(x, yAxis), y};
+        const Point bottomRight = {MathMirror(x + width, yAxis), y + height};
+        return FromSpanPoints(topLeft, bottomRight);
+    }
+
+    Rect Rect::mirrorDiagonal(Point p) const
+    {
+        const Point topLeft = pos();
+        const Point botRight = bottomRight();
+        const Point mirroredTopLeft = {topLeft.y, topLeft.x};
+        const Point mirroredBottomRight = {botRight.y, botRight.x};
+        return FromSpanPoints(mirroredTopLeft, mirroredBottomRight);
+    }
+
+    Point Rect::random(Point dims) const
+    {
+        return Point{x + MathRandom(0, width - dims.x), y + MathRandom(0, height - dims.y)};
+    }
 
     bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, width, height); }
 
@@ -669,7 +695,6 @@ namespace magique
     }
 
     bool SpriteAnimation::isValid() const { return sheet.isValid() && sheet.getFrameCount() > 0; }
-
 
     //----------------- TILE OBJECT PROPERTY -----------------//
 

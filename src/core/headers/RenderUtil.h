@@ -87,7 +87,7 @@ namespace magique
         // Dynamic entities
         for (const auto e : EngineGetDrawEntities())
         {
-            if (!EntityHasComponents<CollisionC>(e))
+            if (!EntityHasAll<CollisionC>(e))
             {
                 continue;
             }
@@ -126,7 +126,7 @@ namespace magique
 
                 if (p2 != 0)
                 {
-                    DrawRectangleLinesEx({x, y, p1, p2}, 2, RED);
+                    DrawRectangleLinesEx({x, y, p1, p2}, 1, RED);
                 }
                 else
                 {
