@@ -669,7 +669,7 @@ namespace magique
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {
         MAGIQUE_ASSERT(durationMillis > 0 && sheet.getFrameCount() > 0 && sheet.isValid(), "Empty Animation");
-        const int count = static_cast<int>(millis) % (int)durationMillis;
+        const int count = static_cast<int>(millis) % static_cast<int>(durationMillis);
         int frame = 0;
         uint16_t millisCount = 0;
         for (const auto duration : durations)

@@ -196,9 +196,16 @@ namespace magique
     inline float SoundWrapper::getVolume() const
     {
         const auto& ap = global::AUDIO_PLAYER;
-        auto dist = CameraGetPosition().euclidean(position);
-        float distMult = 1.0F - MathLerpInverse(0, ap.maxSoundDistance, std::min(ap.maxSoundDistance, dist));
-        return ap.getSoundVolume(playVolume * distMult);
+        if (isPositional)
+        {
+            auto dist = CameraGetPosition().euclidean(position);
+            float distMult = 1.0F - MathLerpInverse(0, ap.maxSoundDistance, std::min(ap.maxSoundDistance, dist));
+            return ap.getSoundVolume(playVolume * distMult);
+        }
+        else
+        {
+            return playVolume;
+        }
     }
 
     inline void SoundWrapper::update()

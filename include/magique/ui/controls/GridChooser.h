@@ -145,6 +145,7 @@ namespace magique
     {
         return std::erase_if(entries, [&](const auto& entry) { return entry.item == key; }) > 0;
     }
+
     template <typename T>
     template <typename K>
     T* GridChooser<T>::getItem(const K& key)

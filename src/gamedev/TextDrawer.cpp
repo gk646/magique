@@ -12,13 +12,13 @@ namespace magique
         resetMods();
     }
 
-
-    void TextDrawer::left(const std::string_view& txt, const Color tint)
+    TextDrawer& TextDrawer::left(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
         const auto pos = bounds.pos() + cursor + modOfffset;
         drawText(pos, txt, tint);
         cursor.x += width + gapp.x;
+        return *this;
     }
 
     inline char BUFF[MAX_TEXT_BUFFER_LENGTH];
@@ -34,41 +34,46 @@ namespace magique
     }                                                                                                                   \
     va_end(args);
 
-    void TextDrawer::left(Color tint, const char* fmt, ...)
+    TextDrawer& TextDrawer::left(Color tint, const char* fmt, ...)
     {
         FMT_TEXT();
         left(BUFF, tint);
+        return *this;
     }
 
-    void TextDrawer::center(const std::string_view& txt, const Color tint)
+    TextDrawer& TextDrawer::center(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
         const auto pos = Point{bounds.x + (bounds.width - width) / 2.0F, bounds.y + cursor.y} + modOfffset;
         drawText(pos, txt, tint);
+        return *this;
     }
 
-    void TextDrawer::center(Color tint, const char* fmt, ...)
+    TextDrawer& TextDrawer::center(Color tint, const char* fmt, ...)
     {
         FMT_TEXT();
         center(BUFF, tint);
+        return *this;
     }
 
-    void TextDrawer::right(const std::string_view& txt, const Color tint)
+    TextDrawer& TextDrawer::right(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
         const auto lineEnd = bounds.x + bounds.width - offf.x;
         const auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
         drawText(pos, txt, tint);
         cursorEndX += width + gapp.x;
+        return *this;
     }
 
-    void TextDrawer::right(Color tint, const char* fmt, ...)
+    TextDrawer& TextDrawer::right(Color tint, const char* fmt, ...)
     {
         FMT_TEXT();
         right(BUFF, tint);
+        return *this;
     }
 
-    void TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
+    TextDrawer& TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
     {
         auto pos = bounds.pos() + cursor + modOfffset;
         if (centeredOnText)
@@ -79,6 +84,7 @@ namespace magique
         DrawRegion(img, pos);
         if (moveCursor)
             cursor.x += img.width + gapp.x;
+        return *this;
     }
 
     TextDrawer& TextDrawer::linebreak(const float amount)

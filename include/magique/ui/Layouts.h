@@ -26,25 +26,24 @@ namespace magique
         Layout() = default;
         Layout(const Rect& area);
 
-        const Rect& getArea() const;
+        const Rect& area() const;
 
         // Automatically converted to rect where needed
         operator Rect() const;
         operator Rectangle() const;
 
     private:
-        Rect area{};
+        Rect bounds{};
     };
 
 
     // Splits the given area into two pieces by making a vertical slice at the given width (in percent of the total width)
     // gap specifies the width of a gap in the middle that's kept free - for left side on the right, for right side on the left
-    struct VerticalSplit : Layout
+    struct VSplit : Layout
     {
-        VerticalSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
+        VSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
 
         Layout left() const;
-
         Layout right() const;
 
     private:
@@ -54,18 +53,27 @@ namespace magique
 
 
     // Splits the given area into two pieces by making a horizontal slice at the given height (in percent of the total height)
-    struct HorizontalSplit : Layout
+    struct HSplit : Layout
     {
-        HorizontalSplit(const Rect& area, float where = 0.5F);
+        HSplit(const Rect& area, float where = 0.5F);
 
         Layout upper() const;
-
         Layout lower() const;
 
-    private:
         float split = 0.5F;
     };
 
+    struct GridLayout : Layout
+    {
+        GridLayout(const Rect& area, Point itemSize, float gap = 2.0F);
+
+        // Returns the bounds of the i-th item in the grid
+        Layout item(int index) const;
+
+    private:
+        Point itemSize;
+        float gap = 2.0F;
+    };
 
 } // namespace magique
 

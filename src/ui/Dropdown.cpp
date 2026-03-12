@@ -56,7 +56,7 @@ namespace magique
         if (isOpen)
         {
             list.setPosition(bounds.pos() + Point{0, height + 1});
-            DrawRectFrameFilled(list.getBounds().enlarge(2), theme.backActive, theme.textPassive);
+            DrawRectFrameFilled(list.getBounds().enlarge(2), theme.backHighlight, theme.textPassive);
             list.draw();
         }
     }
