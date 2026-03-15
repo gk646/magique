@@ -166,13 +166,13 @@ namespace magique
 
         for (const auto layer : layers)
         {
-            if (layer > tileMap.getTileLayerCount())
+            if (layer > (int)tileMap.getTileLayers().size())
             {
                 LOG_WARNING("Tilemap does not contain a layer with index: %d. Check TileMap.h for more info", layer);
                 continue;
             }
 
-            const auto* start = tileMap.getLayerData(layer);
+            const auto* start = tileMap[layer].tiles.data();
             for (int i = 0; i < mapHeight; ++i)
             {
                 const auto yOff = i * mapWidth;

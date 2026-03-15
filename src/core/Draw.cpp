@@ -147,10 +147,10 @@ namespace magique
         DrawTileMapEx({}, CameraGetNativeBounds(), tileMap, tileSheet, layer);
     }
 
-    void DrawTileMapEx(const Point& origin, const Rectangle& rect, const TileMap& tileMap, const TileSheet& tileSheet,
+    void DrawTileMapEx(const Point& origin, const Rect& rect, const TileMap& tileMap, const TileSheet& tileSheet,
                        int layer)
     {
-        MAGIQUE_ASSERT(tileMap.getTileLayerCount() >= layer, "Out of bounds layer!");
+        MAGIQUE_ASSERT((int)tileMap.getTileLayers().size() >= layer, "Out of bounds layer!");
 
         const float tileSize = tileSheet.getTextureSize();
         const int mWidth = tileMap.getDims().x;
@@ -161,7 +161,7 @@ namespace magique
         const int startTileY = std::max(0, (int)std::floor(rect.y / tileSize));
         const int endTileY = std::min(mHeight, (int)std::ceil((rect.y + rect.height) / tileSize));
 
-        const auto* start = tileMap.getLayerData(layer) + (startTileX + startTileY * mWidth);
+        const TileID* start = tileMap[layer].tiles.data() + (startTileX + startTileY * mWidth);
         const int diffX = endTileX - startTileX;
         const int diffY = endTileY - startTileY;
 

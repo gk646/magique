@@ -446,8 +446,10 @@ namespace magique
             }
             else if (strcmp(layer->type.ptr, "tilelayer") == 0)
             {
-                auto& dataVec = tilemap.tileLayers.emplace_back();
-                dataVec.reserve((tilemap.width * tilemap.height) + 1);
+                auto& tileLayer = tilemap.tileLayers.emplace_back();
+                tileLayer.name = layer->name.ptr;
+                tileLayer.dims = {(float)layer->width,(float) layer->height};
+                tileLayer.tiles.reserve((tilemap.width * tilemap.height) + 1);
 
                 for (int i = 0; i < layer->data_count; ++i)
                 {
@@ -459,7 +461,7 @@ namespace magique
                     cute_tiled_get_flags(tileId, &hFlip, &vFlip, &dFlip);
                     tileId = cute_tiled_unset_flags(tileId);
 
-                    dataVec.push_back({(int16_t)tileId, hFlip == 1, vFlip == 1, dFlip == 1});
+                    tileLayer.tiles.push_back({(int16_t)tileId, hFlip == 1, vFlip == 1, dFlip == 1});
                 }
             }
             else

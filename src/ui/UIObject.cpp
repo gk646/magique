@@ -118,59 +118,37 @@ namespace magique
 
     void UIObject::align(Anchor alignAnchor, const Rect& relativeTo, Point alignInset)
     {
-        const auto [relX, relY, relWidth, relHeight] = relativeTo;
-        const auto [myX, myY, myWidth, myHeight] = getBounds();
-        Point pos = {relX, relY};
-        alignInset = UIGetScaled(alignInset);
-        switch (alignAnchor)
-        {
-        case Anchor::TOP_LEFT:
-            pos.x += alignInset.x;
-            pos.y += alignInset.y;
-            break;
-        case Anchor::TOP_CENTER:
-            pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += alignInset.y;
-            break;
-        case Anchor::TOP_RIGHT:
-            pos.x += (relWidth - myWidth) - alignInset.x;
-            pos.y += alignInset.y;
-            break;
-        case Anchor::MID_LEFT:
-            pos.x += alignInset.x;
-            pos.y += (relHeight - myHeight) / 2.0F;
-            break;
-        case Anchor::MID_CENTER:
-            pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += (relHeight - myHeight) / 2.0F;
-            break;
-        case Anchor::MID_RIGHT:
-            pos.x += (relWidth - myWidth) - alignInset.x;
-            pos.y += (relHeight - myHeight) / 2.0F;
-            break;
-        case Anchor::BOTTOM_LEFT:
-            pos.x += alignInset.x;
-            pos.y += relHeight - myHeight - alignInset.y;
-            break;
-        case Anchor::BOTTOM_CENTER:
-            pos.x += (relWidth - myWidth) / 2.0F;
-            pos.y += relHeight - myHeight - alignInset.y;
-            break;
-        case Anchor::BOTTOM_RIGHT:
-            pos.x += (relWidth - myWidth) - alignInset.x;
-            pos.y += relHeight - myHeight + alignInset.y;
-            break;
-        case Anchor::NONE:
-            break;
-        }
-        setPosition(pos);
+        setPosition(UIGetAnchor(alignAnchor, relativeTo, getBounds().size(), UIGetScaled(alignInset)));
     }
 
-    bool UIObject::getIsHovered() const { return getBounds().contains(GetMousePos()); }
+    bool UIObject::getIsHovered(bool layered) const
+    {
+        return (!layered || !LayeredInput::GetIsMouseConsumed()) && getBounds().contains(GetMousePos());
+    }
 
-    bool UIObject::getIsClicked(const int button) const { return IsMouseButtonPressed(button) && getIsHovered(); }
+    bool UIObject::getIsClicked(const int button, bool layered) const
+    {
+        if (layered)
+        {
+            return LayeredInput::IsMouseButtonPressed(button) && getIsHovered();
+        }
+        else
+        {
+            return IsMouseButtonPressed(button) && getIsHovered();
+        }
+    }
 
-    bool UIObject::getIsPressed(int mouseButton) const { return IsMouseButtonDown(mouseButton) && getIsHovered(); }
+    bool UIObject::getIsPressed(int mouseButton, bool layered) const
+    {
+        if (layered)
+        {
+            return LayeredInput::IsMouseButtonDown(mouseButton) && getIsHovered();
+        }
+        else
+        {
+            return IsMouseButtonDown(mouseButton) && getIsHovered();
+        }
+    }
 
     void UIObject::setAnchor(const Anchor newAnchor, const Point newInset)
     {

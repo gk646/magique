@@ -16,8 +16,8 @@ namespace magique
     void SteamSetLobbyCallback(const SteamLobbyCallback& callback) {}
 } // namespace magique
 #else
+#include <charconv>
 #include <magique/steam/Matchmaking.h>
-
 
 #include "internal/globals/SteamData.h"
 

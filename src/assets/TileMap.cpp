@@ -1,30 +1,45 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <cstring>
+#include <algorithm>
 #include <magique/assets/types/TileMap.h>
 #include <magique/util/Logging.h>
 
 namespace magique
 {
-    TileID& TileMap::getTileIndex(const int x, const int y, const int layer)
+    const TileID& TiledTileLayer::operator()(size_t x, size_t y) const { return tiles[x + y * (size_t)dims.x]; }
+
+    TileID& TiledTileLayer::operator()(size_t x, size_t y) { return tiles[x + y * (size_t)dims.x]; }
+
+    const TiledTileLayer& TileMap::operator[](size_t layer) const { return tileLayers[layer]; }
+
+    TiledTileLayer& TileMap::operator[](size_t layer) { return tileLayers[layer]; }
+
+    const TiledTileLayer& TileMap::getLayer(std::string_view name) const
     {
-        auto& data = tileLayers[layer];
-        return data[x + (y * width)];
+        const auto it = std::ranges::find_if(tileLayers, [&](const auto& l) { return l.name == name; });
+        if (it == tileLayers.end())
+        {
+            LOG_ERROR("No such tile layer: %s", name.data());
+            return tileLayers.front();
+        }
+        return *it;
     }
 
-    TileID TileMap::getTileIndex(const int x, const int y, const int layer) const
+    TiledTileLayer& TileMap::getLayer(std::string_view name)
     {
-        return getLayerData(layer)[x + y * width];
+        const auto it = std::ranges::find_if(tileLayers, [&](const auto& l) { return l.name == name; });
+        if (it == tileLayers.end())
+        {
+            LOG_ERROR("No such tile layer: %s", name.data());
+            return tileLayers.front();
+        }
+        return *it;
     }
 
-    const TileID* TileMap::getLayerData(const int layer) const
-    {
-        MAGIQUE_ASSERT(layer < static_cast<int>(tileLayers.size()), "TileMap does not have that many tile layers");
-        return tileLayers[layer].data();
-    }
+    const std::vector<TiledTileLayer>& TileMap::getTileLayers() const { return tileLayers; }
 
-    int TileMap::getTileLayerCount() const { return static_cast<int>(tileLayers.size()); }
+    std::vector<TiledTileLayer>& TileMap::getTileLayers() { return tileLayers; }
 
-    int TileMap::getObjectLayerCount() const { return static_cast<int>(objectLayers.size()); }
 
     bool TileMap::hasObjectLayer(std::string_view layer) const
     {
@@ -56,20 +71,16 @@ namespace magique
 
     const std::vector<TiledObjectLayer>& TileMap::getObjectLayers() const { return objectLayers; }
 
-    const TiledProperty* TileMap::getProperty(const char* name) const
+    std::vector<TiledObjectLayer>& TileMap::getObjectLayers() { return objectLayers; }
+
+    const TiledProperty* TileMap::getProperty(const std::string_view& name) const
     {
-        for (const auto& property : properties)
+        const auto it = std::ranges::find_if(properties, [&](const auto& p) { return p.getName() == name; });
+        if (it == properties.end())
         {
-            if (property.getName() == nullptr)
-            {
-                continue;
-            }
-            if (strcmp(property.getName(), name) == 0)
-            {
-                return &property;
-            }
+            return nullptr;
         }
-        return nullptr;
+        return &(*it);
     }
 
     Point TileMap::getDims() const { return {(float)width, (float)height}; }

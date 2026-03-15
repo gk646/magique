@@ -60,14 +60,6 @@ namespace magique
         }                                                                                                               \
     }
 
-    void GameSystem::CallDrawGame() { CALL_FUNCTIONS(DrawGame, (state, CameraGet())); }
-
-    void GameSystem::CallUpdateGame() { CALL_FUNCTIONS(UpdateGame, (state)); }
-
-    void GameSystem::CallUpdateEnd() { CALL_FUNCTIONS(UpdateEnd, (state)); }
-
-    const char* GameSystem::getName() const { return name.c_str(); }
-
     void GameSystemRegister(GameSystem* system, std::string_view name, std::initializer_list<GameState> stats)
     {
         if (stats.size() == 0)
@@ -125,5 +117,13 @@ namespace magique
             }
         }
     }
+
+    void GameSystem::CallDrawGame() { CALL_FUNCTIONS(DrawGame, (state, CameraGet())); }
+
+    void GameSystem::CallUpdateGame() { CALL_FUNCTIONS(UpdateGame, (state)); }
+
+    void GameSystem::CallUpdateEnd() { CALL_FUNCTIONS(UpdateEnd, (state)); }
+
+    const char* GameSystem::getName() const { return name.c_str(); }
 
 } // namespace magique

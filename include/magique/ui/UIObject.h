@@ -86,13 +86,13 @@ namespace magique
         void align(Anchor alignAnchor, const Rect& relativeTo, Point alignInset = {});
 
         // Returns true if the cursor is over the object
-        bool getIsHovered() const;
+        bool getIsHovered(bool layered = true) const;
 
         // Returns true if mouse button is pressed while the object is hovered
-        bool getIsClicked(int mouseButton = MOUSE_BUTTON_LEFT) const;
+        bool getIsClicked(int mouseButton = MOUSE_BUTTON_LEFT, bool layered = true) const;
 
         // Returns true if mouse button is down while the object is hovered
-        bool getIsPressed(int mouseButton = MOUSE_BUTTON_LEFT) const;
+        bool getIsPressed(int mouseButton = MOUSE_BUTTON_LEFT, bool layered = true) const;
 
         // Controls the anchor position of the object on the screen - set to AnchorPosition::NONE in order to un-anchor the object
         // Note: Anchoring is updated each tick automatically

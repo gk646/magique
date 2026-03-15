@@ -39,10 +39,10 @@ namespace magique
     Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType = ".png");
 
     // Draws the full texture at the specified position and scaled
-    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint);
+    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, Color tint = WHITE);
 
     // Draws a scaled render texture at the given position (automatically flips it)
-    void DrawRenderTexture(const RenderTexture& texture, const Vector2& pos, float scale, const Color& tint);
+    void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint = WHITE);
 
     // Draws a nice looking (rounded) pixel art outline with the given radius
     // First the outline (dark) then the actual line (lighter) and the filler on the edges (lightest)
@@ -60,7 +60,7 @@ namespace magique
 
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
-    void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, const Color& tint);
+    void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
 
     // Draws text horizontally & vertically centered inside the rectangle
     void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rectangle& bounds,
@@ -75,12 +75,13 @@ namespace magique
     // Draws a frame but filled
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline);
 
-    // Scales and draws the given render texture at the correct position to fill most of the screen
-    // Scales only with multiples and in a way such that both x and y dimension must fit within the screen
+    // Returns the screen dimension in a point
+    Point GetScreenDims();
+
+    // Scales and draws the given render texture at the correct position to fill most of the given dimensions
+    // Scales only with multiples and in a way such that both x and y dimension must fit within the dimensions
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
-
-    Point GetScreenDims();
 
     struct MouseDragger final
     {

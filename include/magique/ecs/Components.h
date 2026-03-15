@@ -164,7 +164,7 @@ namespace magique
         TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1}, int priority = 0);
 
         // Draws the texture at base size at the given position with offset and rotation around the anchor
-        void draw(Point pos, float rotation) const;
+        void draw(Point pos, float rotation, Color tint = WHITE) const;
 
         TextureRegion texture{};
         Point offset{};
@@ -177,7 +177,7 @@ namespace magique
     struct LayeredTextureC final
     {
         // Draws all valid layers in ascending order (enum value) - if valid uses the global anchor over the individual ones
-        void draw(const Point& pos, float rotation = 0) const;
+        void draw(const Point& pos, float rotation = 0, Color tint = WHITE) const;
 
         void setTexture(AnimationLayer layer, TextureC texture);
 
@@ -186,6 +186,12 @@ namespace magique
 
         Point globalAnchor = -1;
         int priority = 0; // Can be used to enforce ordering
+
+        // Allows iteration through the layers
+        auto begin() { return textures.begin(); }
+        auto end() { return textures.end(); }
+        auto begin() const { return textures.begin(); }
+        auto end() const { return textures.end(); }
 
     private:
         HashMap<AnimationLayer, TextureC> textures;

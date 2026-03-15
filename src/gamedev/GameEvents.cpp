@@ -15,28 +15,43 @@ namespace magique
     {
         auto& sub = subscribers.emplace_back();
         sub.handler = handler;
-        sub.id = curr++;
+        sub.id = curr;
         sub.filter = filter;
         sub.priority = priority;
-        const EventSubID newSub = sub.id;
         std::ranges::sort(subscribers, [](const auto& one, const auto& two) { return one.priority > two.priority; });
-        return newSub;
+        return curr++;
+    }
+
+    EventSubID EventManager::subscribe(const EventFunc& func, entt::entity filter, int priority)
+    {
+        struct Handler final : IEventHandler
+        {
+            Handler(const EventFunc& func) : func(func) {}
+            void onEvent(GameEvent event, entt::entity entity, const EventData& data) override
+            {
+                func(event, entity, data);
+            }
+            EventFunc func;
+        };
+        return subscribe(new Handler(func), filter, priority);
     }
 
     bool EventManager::unsubscribe(EventSubID id)
     {
-        auto it = std::ranges::find_if(subscribers, [id](const EventSubscription& sub) { return sub.id == id; });
-        if (it != subscribers.end())
-        {
-            // delete it->handler;
-            *it = subscribers.back();
-            subscribers.pop_back();
-            return true;
-        }
-        else
+        if (id == 0)
         {
             return false;
         }
+        return std::erase_if(subscribers,
+                             [id](const auto& sub)
+                             {
+                                 if (sub.id == id)
+                                 {
+                                     delete sub.handler;
+                                     return true;
+                                 }
+                                 return false;
+                             }) > 0;
     }
 
     template <>
@@ -44,17 +59,16 @@ namespace magique
     {
         for (auto& subscriber : subscribers)
         {
-            if (!subscriber.isValid(entity) || !subscriber.handler->shouldBeCalled())
+            if (subscriber.isValid(entity) && subscriber.handler->shouldBeCalled())
             {
-                continue;
+                subscriber.handler->onEvent(event, entity, data);
             }
-            subscriber.handler->onEvent(event, entity, data);
         }
     }
 
     bool EventManager::EventSubscription::isValid(entt::entity entity) const
     {
-        if (filter != entt::entity{} && filter != entity) [[unlikely]]
+        if (filter != entt::null && filter != entity) [[unlikely]]
         {
             return false;
         }

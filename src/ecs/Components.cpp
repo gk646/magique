@@ -132,12 +132,12 @@ namespace magique
     {
     }
 
-    void TextureC::draw(Point pos, float rotation) const
+    void TextureC::draw(Point pos, float rotation, Color tint) const
     {
-        DrawRegionPro(texture, Rect{pos + offset, texture.getSize()}, std::floor(rotation), anchor);
+        DrawRegionPro(texture, Rect{pos + offset, texture.getSize()}, std::floor(rotation), anchor, tint);
     }
 
-    void LayeredTextureC::draw(const Point& pos, float rotation) const
+    void LayeredTextureC::draw(const Point& pos, float rotation, Color tint) const
     {
         for (const auto& [layer, tex] : textures)
         {
@@ -153,7 +153,7 @@ namespace magique
                 finalAnchor = tex.offset + tex.anchor;
             }
             const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
-            DrawRegionPro(tex.texture, dest.floor(), std::floor(rotation), finalAnchor);
+            DrawRegionPro(tex.texture, dest.floor(), std::floor(rotation), finalAnchor, tint);
         }
     }
 

@@ -8,54 +8,60 @@
 namespace magique
 {
 
-    static Point UIGetAnchor(const Anchor anchor, Point topLeft, Point bounds, Point size, Point inset)
+    Point UIGetAnchor(Anchor anchor, const UIObject& relative, const Point size, const Point inset)
     {
-        Point point = topLeft;
+        return UIGetAnchor(anchor, relative.getBounds(), size, inset);
+    }
+
+    Point UIGetAnchor(Anchor anchor, const Rect& relative, Point size, Point inset)
+    {
+        Point pos = relative.pos();
         switch (anchor)
         {
         case Anchor::TOP_LEFT:
-            point = {topLeft.x + inset.x, topLeft.y + inset.y};
+            pos += inset;
             break;
         case Anchor::TOP_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + inset.y};
+            pos.x += (relative.width - size.x) / 2.0F+ inset.x;
+            pos.y += inset.y;
             break;
         case Anchor::TOP_RIGHT:
-            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + inset.y};
+            pos.x += (relative.width - size.x) - inset.x;
+            pos.y += inset.y;
             break;
         case Anchor::MID_LEFT:
-            point = {topLeft.x + inset.x, topLeft.y + (bounds.y - size.y) / 2};
+            pos.x += inset.x;
+            pos.y += (relative.height - size.y) / 2.0F + inset.y;
             break;
         case Anchor::MID_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + (bounds.y - size.y) / 2 + inset.y};
+            pos.x += (relative.width - size.x) / 2.0F + inset.x;
+            pos.y += (relative.height - size.y) / 2.0F + inset.y;
             break;
         case Anchor::MID_RIGHT:
-            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + (bounds.y - size.y) / 2};
+            pos.x += (relative.width - size.x) - inset.x;
+            pos.y += (relative.height - size.y) / 2.0F + inset.y;
             break;
         case Anchor::BOTTOM_LEFT:
-            point = {topLeft.x + inset.x, topLeft.y + bounds.y - size.y - inset.y};
+            pos.x += inset.x;
+            pos.y += relative.height - size.y - inset.y;
             break;
         case Anchor::BOTTOM_CENTER:
-            point = {topLeft.x + (bounds.x - size.x) / 2 + inset.x, topLeft.y + bounds.y - size.y - inset.y};
+            pos.x += (relative.width - size.x) / 2.0F+ inset.x;
+            pos.y += relative.height - size.y - inset.y;
             break;
         case Anchor::BOTTOM_RIGHT:
-            point = {topLeft.x + bounds.x - size.x - inset.x, topLeft.y + bounds.y - size.y - inset.y};
+            pos.x += (relative.width - size.x) - inset.x;
+            pos.y += relative.height - size.y - inset.y;
             break;
         case Anchor::NONE:
-            MAGIQUE_ASSERT(false, "Invalid anchor");
             break;
         }
-        return point;
+        return pos;
     }
 
     Point UIGetAnchor(const Anchor anchor, const Point size, const Point inset)
     {
-        return UIGetAnchor(anchor, {}, global::UI_DATA.targetRes, size, inset);
-    }
-
-    Point UIGetAnchor(Anchor anchor, const UIObject& relative, const Point size, const Point inset)
-    {
-        const auto bounds = relative.getBounds();
-        return UIGetAnchor(anchor, {bounds.x, bounds.y}, {bounds.width, bounds.height}, size, inset);
+        return UIGetAnchor(anchor, Rect{global::UI_DATA.targetRes}, size, inset);
     }
 
     float UIGetScaled(const float val) { return global::UI_DATA.scaling.y * val; }
@@ -84,6 +90,10 @@ namespace magique
     Point UIGetTargetResolution() { return global::UI_DATA.targetRes; }
 
     Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
+
+    void UIShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
+
+    bool UIUsingGamepad() { return global::UI_DATA.usingGamepad; }
 
     Rectangle UIGetRectOnScreen(const Point& offset, float width, float height, Point base)
     {
@@ -156,10 +166,6 @@ namespace magique
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
-
-    void UIShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
-
-    bool UIUsingGamepad() { return global::UI_DATA.usingGamepad; }
 
     MouseToWorld::MouseToWorld()
     {

@@ -42,7 +42,7 @@ namespace magique
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
 
     // Allows to specify the origin (zero point) and rectangle (of the tilemap) to draw (in tiles)
-    void DrawTileMapEx(const Point& origin, const Rectangle& rect, const TileMap& tileMap, const TileSheet& tileSheet,
+    void DrawTileMapEx(const Point& origin, const Rect& rect, const TileMap& tileMap, const TileSheet& tileSheet,
                        int layer);
 
     //================= TEXT =================//

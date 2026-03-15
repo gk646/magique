@@ -27,11 +27,13 @@ namespace magique
     // |(BL)      (BC)      (BR)|
     // =========================
     // Returns the (top-left) coordinates of the specified anchor point in absolute coordinates (draw coordinates)
-    // Passing a size aligns the point to be left bound relative to the dimension
+    // Passing a size aligns the point to be centered bound relative to the dimension
     // Inset applies an offset on the border points inwards
     // Passing a UIObject return the anchor point relative to the object bounds
-    Point UIGetAnchor(Anchor anchor, Point size = {}, Point inset = {});
     Point UIGetAnchor(Anchor anchor, const UIObject& relative, Point size = {}, Point inset = {});
+    Point UIGetAnchor(Anchor anchor, const Rect& relative, Point size = {}, Point inset = {});
+    // Uses the screen dimensions as base
+    Point UIGetAnchor(Anchor anchor, Point size = {}, Point inset = {});
 
     // Accepts a value in the logical resolution and returns the value in the current resolution (scaled vertically)
     // Note: This is useful when needing static offsets that automatically scale

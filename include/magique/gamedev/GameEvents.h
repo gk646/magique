@@ -1,6 +1,7 @@
 #ifndef MAGIQUE_GAME_EVENTS_H
 #define MAGIQUE_GAME_EVENTS_H
 
+#include <functional>
 #include <vector>
 #include <magique/fwd.hpp>
 #include <entt/entity/entity.hpp>
@@ -34,6 +35,8 @@ namespace magique
         virtual void onEvent(GameEvent event, entt::entity entity, const EventData& data) {}
     };
 
+    using EventFunc = std::function<void(GameEvent event, entt::entity entity, const EventData& data)>;
+
     // Returns the global event manager instance
     EventManager& GameEventsGet();
 
@@ -42,7 +45,10 @@ namespace magique
         // Adds an event handler
         //  - filter: only calls event func if emitted entity matches filter
         //  - priority: called in priority order descending - highest first
-        EventSubID subscribe(IEventHandler* handler, entt::entity filter = {}, int priority = 0);
+        EventSubID subscribe(IEventHandler* handler, entt::entity filter = entt::null, int priority = 0);
+
+        // Called every time the filter matches
+        EventSubID subscribe(const EventFunc& func, entt::entity filter= entt::null, int priority = 0);
 
         // Returns true if the subscription has been removed
         bool unsubscribe(EventSubID id);
@@ -57,13 +63,13 @@ namespace magique
         {
             bool isValid(entt::entity entity) const;
             IEventHandler* handler;
+            int priority;
             entt::entity filter;
             EventSubID id;
-            int priority;
             GameEvent event;
         };
 
-        EventSubID curr = 0;
+        EventSubID curr = 1;
         std::vector<EventSubscription> subscribers;
     };
 

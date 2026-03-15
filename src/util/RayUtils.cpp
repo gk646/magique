@@ -117,16 +117,15 @@ namespace magique
         return texture;
     }
 
-    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, const Color& tint)
+    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, Color tint)
     {
         DrawTexturePro(texture, {0, 0, (float)texture.width, (float)texture.height}, dest, {0, 0}, 0, tint);
     }
 
-    void DrawRenderTexture(const RenderTexture& texture, const Vector2& pos, float scale, const Color& tint)
+    void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint)
     {
         DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height},
-                       {pos.x, pos.y, (float)texture.texture.width * scale, (float)texture.texture.height * scale}, {},
-                       0, tint);
+                       {dest.x, dest.y, dest.width, dest.height}, {}, 0, tint);
     }
 
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
@@ -159,7 +158,7 @@ namespace magique
         DrawTextureV(texture, center, tint);
     }
 
-    void DrawFilledRect(const Rectangle& bounds, const float fillPercent, const Direction dir, const Color& tint)
+    void DrawFilledRect(const Rectangle& bounds, const float fillPercent, const Direction dir, Color tint)
     {
         DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
     }
@@ -246,7 +245,7 @@ namespace magique
         SetMouseScale(1 / scale.x, 1 / scale.y);
         const auto drawPos = GetCenteredPos({0, 0, display.x, display.y}, canvas.x, canvas.y);
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
-        DrawRenderTexture(texture, drawPos, scale.x, WHITE);
+        DrawRenderTexture(texture, {drawPos, canvas}, WHITE);
     }
 
     Point GetScreenDims() { return {(float)GetScreenWidth(), (float)GetScreenHeight()}; }

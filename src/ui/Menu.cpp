@@ -87,6 +87,8 @@ namespace magique
 
     bool Menu::getIsSubmenuActive() const { return subMenu != nullptr; }
 
+    Menu* Menu::getParent() const { return parent; }
+
     void Menu::onDraw(const Rect& bounds)
     {
         if (subMenu != nullptr)

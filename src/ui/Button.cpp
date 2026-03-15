@@ -55,9 +55,8 @@ namespace magique
     void Button::drawDefault(const Rect& bounds)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        const Color body = theme.getBodyColor(isHovered, isHovered && mouseDown);
-        const Color outline = theme.getOutlineColor(isHovered, isHovered && mouseDown);
+        const Color body = theme.getBodyColor(getIsHovered(), getIsClicked());
+        const Color outline = theme.getOutlineColor(getIsHovered(), getIsClicked());
         DrawRectFrameFilled(bounds.floor(), body, outline);
         drawHoverText(EngineGetFont(), UIGetScaled(1), theme.backActive, theme.backHighlight, theme.textHighlight);
     }

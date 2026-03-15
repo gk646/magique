@@ -201,7 +201,7 @@ namespace magique
         const auto newData = new char[maxLen];
 
         auto* ctx = new sdefl();
-        int newSize = sdeflate(ctx, newData, data.data() + HEADER_LEN, data.size() - HEADER_LEN, 5);
+        int newSize = sdeflate(ctx, newData, data.data() + HEADER_LEN, data.size() - HEADER_LEN, 4);
 
         data.resize(newSize + HEADER_LEN);
         std::memcpy(data.data() + HEADER_LEN, newData, newSize);
