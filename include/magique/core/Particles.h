@@ -124,10 +124,10 @@ namespace magique
         // Default: (0,0)
         EmitterBase& setGravity(Point gravity);
 
-        // Sets the min and max scale of the emitted particle(s) - randomly chosen when created
+        // Sets the min (x) and max (y) scale of the emitted particles - randomly chosen when created
         // Note: Scaling is applied to the default dimensions of the particle
         // Default: 1
-        EmitterBase& setScale(float minScale, float maxScale = 0);
+        EmitterBase& setScale(Point scale);
 
         // Sets the initial direction vector - uses raylibs coordinate system
         //  - - - - - - -
@@ -147,9 +147,9 @@ namespace magique
         // Default: 0
         EmitterBase& setSpread(float val);
 
-        // Sets the min and max initial velocity in pixels per second - randomly chosen when created
+        // Sets the min(x) and max(y) initial velocity in pixels per second - randomly chosen when created
         // Default: 1
-        EmitterBase& setVelocityRange(float minVeloc, float maxVeloc = 0);
+        EmitterBase& setVelocityRange(Point velocity);
 
         //================= FUNCTIONS =================//
 

@@ -492,7 +492,7 @@ namespace magique
             {
                 const Rectangle sBox = {textPos.x, textPos.y, maxWidth, lineHeight};
                 const auto isSelected = i == data.suggestionPos;
-                const Color text =  isSelected ? theme.textHighlight : theme.text;
+                const Color text = isSelected ? theme.textHighlight : theme.text;
                 const Color back = isSelected ? theme.backHighlight : theme.backActive;
 
                 DrawRectangleRec(sBox, back);
@@ -719,12 +719,12 @@ namespace magique
         {
             if (min == max)
             {
-                LOG_WARNING("Not enough arguments! Expected: %d Got: %d", min, parsed);
+                LOG_WARNING("Not enough arguments for command! Expected: %d Got: %d", min, parsed);
                 return false;
             }
             else
             {
-                LOG_WARNING("Not enough arguments! Expected at least: %d Got: %d", min, parsed);
+                LOG_WARNING("Not enough arguments for command! Expected at least: %d Got: %d", min, parsed);
                 return false;
             }
         }
@@ -733,12 +733,12 @@ namespace magique
         {
             if (min == max)
             {
-                LOG_WARNING("Too many arguments! Expected: %d Got: %d", max, parsed);
+                LOG_WARNING("Too many arguments for command! Expected: %d Got: %d", max, parsed);
                 return false;
             }
             else
             {
-                LOG_WARNING("Too many arguments! Expected at most: %d Got: %d", max, parsed);
+                LOG_WARNING("Too many arguments for command! Expected at most: %d Got: %d", max, parsed);
                 return false;
             }
         }

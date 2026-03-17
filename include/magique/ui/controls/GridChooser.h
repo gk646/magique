@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_GRIDCHOOSER_H
 #define MAGIQUE_GRIDCHOOSER_H
 
-#include <cmath>
+#include <algorithm>
 #include <magique/ui/controls/ListChooser.h>
 #include <magique/core/Draw.h>
 #include <magique/ui/UI.h>

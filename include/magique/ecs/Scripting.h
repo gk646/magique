@@ -62,13 +62,13 @@ namespace magique
     {
         onCreate,
         onDestroy,
-        onTick,
+        onUpdate,
         onDynamicCollision,
         onStaticCollision,
     };
 
     // Add ALL event types here
-    MQ_REGISTER_SCRIPT_EVENTS(onCreate, onDestroy, onTick, onDynamicCollision, onStaticCollision)
+    MQ_REGISTER_SCRIPT_EVENTS(onCreate, onDestroy, onUpdate, onDynamicCollision, onStaticCollision)
 
     struct EntityScript
     {
@@ -84,7 +84,7 @@ namespace magique
 
         // Called once at the beginning of each tick
         //      - updated: true if this entity is in update range of any actor (e.g. it's loaded)
-        virtual void onTick(entt::entity self, bool updated) {}
+        virtual void onUpdate(entt::entity self, bool updated) {}
 
         // Called each time this entity collides with another entity - called for both entities
         virtual void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)

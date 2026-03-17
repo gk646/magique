@@ -51,26 +51,6 @@ namespace magique
     };
 
 
-    // A shader that swaps a given color to a target color - the color must match exactly
-    // Useful for reskinning textures
-    struct ColorSwapShader final
-    {
-        struct ColorPair
-        {
-            Color from{};
-            Color to{};
-        };
-
-        // Activates the shader and swaps up 4 colors - using BeginShaderMode
-        ColorSwapShader(const std::array<ColorPair, 4>& pairs);
-        // Ends the shader using EndShaderMode
-        ~ColorSwapShader();
-
-    private:
-        static void Init();
-        friend struct Game;
-    };
-
 
 } // namespace magique
 

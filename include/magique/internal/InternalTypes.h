@@ -92,26 +92,27 @@ namespace magique::internal
 
     struct EmitterData final
     {
+        std::vector<WeightedColor> colors{{RED}};
         using ScaleFunction = float (*)(float s, float t);
         using ColorFunction = Color (*)(const Color& c, float t);
+
         ScaleFunction scaleFunc = nullptr;
         ColorFunction colorFunc = nullptr;
         void* tickFunc = nullptr;
         mutable Point emissionPos{0, 0}; // RECT: width/height  / CIRCLE: radius
         Point emissionDims{1, 1};        // RECT: width/height  / CIRCLE: radius
-        Point emissionAnchor;
-        Point particleDims;
-        Point lifeTime;
-        std::vector<WeightedColor> colors;
-        float minScale = 1, maxScale = 1;         // Scale
-        float minInitVeloc = 1, maxInitVeloc = 1; // Initial velocity
-        Point direction{};                        // Direction
-        float rotation = 0;                       // Rotation around the anchor
-        float volume = 1.0F;                      // How much of the body will be treated as spawnable area
-        float spreadAngle = 0;                    // Spread angle around the direction
-        Point gravity;                            // Gravity in x and y direction
-        float angularGravity = 0.0F;
+        Point emissionAnchor{};
+        Point particleDims{1};
+        Point lifeTime{1};
+        Point scale{1};
+        Point veloc{1};
         Point angularVelocity{0, 0};
+        Point direction{0, -1}; // Direction
+        Point gravity;          // Gravity in x and y direction
+        float rotation = 0;     // Rotation around the anchor
+        float volume = 1.0F;    // How much of the body will be treated as spawnable area
+        float spreadAngle = 0;  // Spread angle around the direction
+        float angularGravity = 0.0F;
         Shape shape = Shape::RECT;
         Shape emShape = Shape::TRIANGLE; // Default is point emission
     };

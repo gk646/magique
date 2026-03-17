@@ -44,8 +44,11 @@ namespace magique
         {
             return false;
         }
+
+        NetworkFlush(conn);
         const auto steamConn = static_cast<HSteamNetConnection>(conn);
         const auto res = SteamNetworkingSockets()->CloseConnection(steamConn, code, reason.data(), true);
+        NetworkFlush(conn);
         if (res)
             data.onConnectionDisconnect(conn);
         return res;
@@ -91,11 +94,12 @@ namespace magique
         return NetworkSend(NetworkGetConnections().front(), payload, flag);
     }
 
-    void NetworkFlush()
+    void NetworkFlush(Connection conn)
     {
-        for (const auto conn : NetworkGetConnections())
+        for (const auto savedConn : NetworkGetConnections())
         {
-            SteamNetworkingSockets()->FlushMessagesOnConnection(static_cast<int>(conn));
+            if (conn == Connection::INVALID || conn == savedConn)
+                SteamNetworkingSockets()->FlushMessagesOnConnection(static_cast<int>(conn));
         }
     }
 

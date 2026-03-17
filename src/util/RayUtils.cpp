@@ -319,7 +319,7 @@ namespace magique
         return p;
     }
 
-    ShaderWrapper::ShaderWrapper(Shader& shader) { BeginShaderMode(shader); }
+    ShaderWrapper::ShaderWrapper(const Shader& shader) { BeginShaderMode(shader); }
 
     ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
 

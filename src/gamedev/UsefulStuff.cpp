@@ -50,10 +50,5 @@ namespace magique
 
     inline Shader COLOR_SWAP{};
 
-    ColorSwapShader::ColorSwapShader(const std::array<ColorPair, 4>& pairs) {}
-
-    ColorSwapShader::~ColorSwapShader() {}
-
-    void ColorSwapShader::Init() {}
 
 } // namespace magique

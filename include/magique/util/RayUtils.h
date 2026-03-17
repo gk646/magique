@@ -104,7 +104,7 @@ namespace magique
     // Activates the shader in the constructor and ends the shader in the destructor
     struct ShaderWrapper
     {
-        ShaderWrapper(Shader& shader);
+        ShaderWrapper(const Shader& shader);
         ~ShaderWrapper();
     };
 

@@ -16,6 +16,7 @@
 #include <magique/core/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
+#include <magique/gamedev/BaseShaders.h>
 
 #include "internal/globals/TweenData.h"
 #include "internal/globals/EngineData.h"
@@ -66,47 +67,46 @@
 
 namespace magique
 {
-    namespace internal
+    bool InitMagique()
     {
-        bool MagiqueInit()
+        static bool initCalled = false;
+        if (initCalled)
         {
-            static bool initCalled = false;
-            if (initCalled)
-            {
-                LOG_WARNING("Init called twice. Skipping...");
-                return false;
-            }
-            initCalled = true;
-            // Apparently this is necessary for shaders to work with shapes
-            Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
-            SetShapesTexture(texture, Rectangle{0, 0, 1, 1});
+            LOG_WARNING("Init called twice. Skipping...");
+            return false;
+        }
+        initCalled = true;
+        // Apparently this is necessary for shaders to work with shapes
+        Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+        SetShapesTexture(texture, Rectangle{0, 0, 1, 1});
 
-            // Setup raylib callback
-            SetTraceLogCallback(
-                [](int logLevel, const char* text, va_list args)
-                {
-                    logLevel = std::max(logLevel - 3, 0);
-                    LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
-                });
-            global::LOG_DATA.init();
-            global::ENGINE_CONFIG.onInit();
+        // Setup raylib callback
+        SetTraceLogCallback(
+            [](int logLevel, const char* text, va_list args)
+            {
+                logLevel = std::max(logLevel - 3, 0);
+                internal::LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
+            });
+        global::LOG_DATA.init();
+        global::ENGINE_CONFIG.onInit();
 #if MAGIQUE_INCLUDE_FONT == 1
-            global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
+        global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
 #else
-            global::ENGINE_CONFIG.font = GetFontDefault();
+        global::ENGINE_CONFIG.font = GetFontDefault();
 #endif
-            global::ENGINE_DATA.init();
-            global::CONSOLE_DATA.init(); // Create default commands
-            InitJobSystem();
+        global::ENGINE_DATA.init();
+        global::CONSOLE_DATA.init(); // Create default commands
+        internal::InitJobSystem();
+        VignetteShader::Init();
+        OutlineShader::Init();
 
 #ifdef MAGIQUE_DEBUG
-            GameSystemEnableStats(true);
+        GameSystemEnableStats(true);
 #endif
 
-            LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
-            return true;
-        }
-    } // namespace internal
+        LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
+        return true;
+    }
 
     Game::Game(const char* name, const char* version) : isRunning(true), gameName(strdup(name)), version(strdup(version))
     {
@@ -128,7 +128,7 @@ namespace magique
         SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
 
         // Setup magique
-        internal::MagiqueInit();
+        InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized %s: %s", gameName, getVersion());

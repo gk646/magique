@@ -235,7 +235,7 @@ namespace magique
             if (data.isEntityScripted(entity)) [[likely]]
             {
                 // Pass a boolean whether the entity is updated => if it's in the cache
-                ScriptingInvokeEvent<onTick>(entity, cache.contains(entity));
+                ScriptingInvokeEvent<onUpdate>(entity, cache.contains(entity));
             }
         }
     }

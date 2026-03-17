@@ -54,17 +54,19 @@ namespace magique
 
         void close()
         {
-            NetworkCloseSocket();
-            for (const auto conn : connections)
+            if (NetworkIsHost())
             {
-                auto msg = isHost ? "Host closed application abruptly" : "Client closed application abruptly";
-                NetworkCloseConnection(conn, 0, msg);
+                NetworkCloseSocket(k_ESteamNetConnectionEnd_App_Min, "Host quit abruptly");
+            }
+            else if (NetworkIsClient())
+            {
+                NetworkCloseConnection(NetworkGetConnections().front(), k_ESteamNetConnectionEnd_App_Min,
+                                       "Client quit abruptly");
             }
 #ifdef MAGIQUE_LAN
             GameNetworkingSockets_Kill();
-#else
-            goOffline();
 #endif
+            goOffline();
         }
 
         void goOnline(const bool host, Connection conn = Connection::INVALID)

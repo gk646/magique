@@ -67,9 +67,9 @@ namespace magique
     // Sends to the first available connection (the host if you are a client)
     bool NetworkSendHost(Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
-    // Flush any messages waiting on the nagle timer or on the sockets
+    // Flush any messages waiting on the nagle timer or on the sockets on all connections (or the one specified)
     // Note: You should call this at the end of each game tick to get all the message out
-    void NetworkFlush();
+    void NetworkFlush(Connection conn = Connection::INVALID);
 
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages

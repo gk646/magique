@@ -112,12 +112,7 @@ namespace magique
             // So we call GetRandomValue() often instead of once
 
             // Scale
-            particle.scale = data.minScale;
-            if (data.minScale != data.maxScale)
-            {
-                const float p = MathRandom(0, 1.0F);
-                particle.scale = data.minScale + (data.maxScale - data.minScale) * p;
-            }
+            particle.scale = MathRandom(data.scale.x, data.scale.y);
 
             // p1,p2,p3,p4
             particle.p1 = static_cast<int16_t>(std::round(data.particleDims.x));
@@ -136,19 +131,14 @@ namespace magique
             }
 
             // vx,vy - velocity
-            float velo = data.minInitVeloc;
-            if (data.minInitVeloc != data.maxInitVeloc)
-            {
-                const float p = MathRandom(0.0F, 1.0F);
-                velo = data.minInitVeloc + (data.maxInitVeloc - data.minInitVeloc) * p;
-            }
+            float velo = MathRandom(data.veloc.x, data.veloc.y);
             particle.veloc = direction * velo;
 
             Color best = data.colors.front().color;
             float maxWeight = 0.0F;
             for (auto& wColor : data.colors)
             {
-                auto weight = MathRandom() * wColor.weight ;
+                auto weight = MathRandom() * wColor.weight;
                 if (weight > maxWeight)
                 {
                     maxWeight = weight;
@@ -161,7 +151,7 @@ namespace magique
             particle.age = 0;
             particle.shape = data.shape;
 
-            if (data.angularVelocity.x != 0 || data.angularVelocity.y != 0 || data.angularGravity != 0)
+            if (data.angularVelocity != 0 || data.angularGravity != 0)
             {
                 particle.angular = true;
                 particle.veloc = data.angularVelocity * velo;
@@ -305,19 +295,11 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setScale(const float minScale, float maxScale)
+    EmitterBase& EmitterBase::setScale(Point scale)
     {
-        if (maxScale == 0)
-        {
-            maxScale = minScale;
-        }
-        if (minScale > maxScale)
-        {
-            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %.2f | Max: %.2f", minScale, maxScale);
-            return *this;
-        }
-        data.minScale = minScale;
-        data.maxScale = maxScale;
+        if (scale.y < scale.x)
+            std::swap(scale.x, scale.y);
+        data.scale = scale;
         return *this;
     }
 
@@ -338,19 +320,11 @@ namespace magique
         return *this;
     }
 
-    EmitterBase& EmitterBase::setVelocityRange(const float minVeloc, float maxVeloc)
+    EmitterBase& EmitterBase::setVelocityRange(Point velocity)
     {
-        if (maxVeloc == 0)
-        {
-            maxVeloc = minVeloc;
-        }
-        if (minVeloc > maxVeloc)
-        {
-            LOG_ERROR("Skipping! Minimum value is bigger than maximum value! Min: %.2f | Max: %.2f", minVeloc, maxVeloc);
-            return *this;
-        }
-        data.minInitVeloc = minVeloc;
-        data.maxInitVeloc = maxVeloc;
+        if (velocity.y < velocity.x)
+            std::swap(velocity.x, velocity.y);
+        data.veloc = velocity;
         return *this;
     }
 
