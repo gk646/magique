@@ -345,6 +345,12 @@ namespace magique
 
     Rect Rect::CenteredOn(const Point& p, const Point& size) { return Rect{p - size / 2, size}; }
 
+    Rect Rect::CenteredIn(Point size, const Rect& rect)
+    {
+        auto pos = rect.pos() + (rect.size() - size) / 2.0F;
+        return {pos.floor(), size};
+    }
+
     Rect Rect::Filled(const Rect& area, float fill, Direction direction)
     {
         Rect filledBounds = area;

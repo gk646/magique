@@ -25,9 +25,6 @@ namespace magique
     // Measure text functions for pixel fonts - mult is the multiple of the base font size
     float MeasurePixelText(const char* text, const Font& font, int mult = 1);
 
-    // Returns the top left point to center a rectangle (width and height) within the rectangle 'within'
-    Vector2 GetCenteredPos(const Rectangle& within, float width, float height);
-
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
 

@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_UI_H
 #define MAGIQUE_UI_H
 
+#include <vector>
 #include <magique/core/Types.h>
 
 //===============================================
@@ -56,8 +57,14 @@ namespace magique
     void UISetTargetResolution(Point resolution);
     Point UIGetTargetResolution();
 
-    void UISetPopup(Popup* popup);
-    Popup UIGetPopup();
+    // Needs to be called MANUALLY to draw the popup - should be called as the last thing thats rendered (on top of the rest)
+    void UIDrawPopups();
+
+    // Adds a new popup on top - doesn't allow duplicates - handled in the order they are added
+    // Calling this function for an existing one
+    void UIAddPopup(Popup& popup);
+    bool UIRemovePopup(Popup& popup);
+    const std::vector<Popup*>& UIGetPopups();
 
     // Return the world mouse pos using CameraGet()
     Point GetWorldMousePos();
@@ -96,16 +103,19 @@ namespace magique
         static bool IsGamepadButtonDown(int gamepad, int key);
         static bool IsGamepadButtonReleased(int gamepad, int key);
 
-        // Consume the input for this tick - all input methods after this will return false
+        // Consume the key and gamepad input - all methods will return false
         static void ConsumeKey();
+
+        // Consume the mouse input - all methods will return false
         static void ConsumeMouse();
         static bool GetIsKeyConsumed();
         static bool GetIsMouseConsumed();
     };
 
-
     struct ControllerInputMap
     {
+        virtual ~ControllerInputMap() = default;
+
         ControllerInputMap(UIObject& object);
 
         virtual void onLeft();

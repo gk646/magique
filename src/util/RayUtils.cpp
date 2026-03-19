@@ -71,12 +71,6 @@ namespace magique
         return MeasureTextUpTo(text, index, font, static_cast<float>(font.baseSize * mult), 1.0F);
     }
 
-    Vector2 GetCenteredPos(const Rectangle& within, const float width, const float height)
-    {
-        return Vector2{std::floor(within.x + ((within.width - width) / 2.0F)),
-                       std::floor(within.y + ((within.height - height) / 2.0F))};
-    }
-
     float GetRoundness(const float radius, const Rectangle& bounds)
     {
         if (bounds.width > bounds.height)
@@ -167,8 +161,8 @@ namespace magique
                               Color tint)
     {
         const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
-        const auto center = GetCenteredPos(bounds, dims.x, dims.y);
-        DrawTextEx(fnt, txt.data(), center, fs, spacing, tint);
+        const auto center = Rect::CenteredIn(dims, bounds);
+        DrawTextEx(fnt, txt.data(), center.pos(), fs, spacing, tint);
     }
 
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)
@@ -243,7 +237,7 @@ namespace magique
         canvas *= scale;
         canvas.floor();
         SetMouseScale(1 / scale.x, 1 / scale.y);
-        const auto drawPos = GetCenteredPos({0, 0, display.x, display.y}, canvas.x, canvas.y);
+        const auto drawPos = Rect::CenteredIn({canvas}, display).pos();
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, {drawPos, canvas}, WHITE);
     }

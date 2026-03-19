@@ -11,6 +11,7 @@
 #include <magique/ui/UI.h>
 #include <magique/util/Datastructures.h>
 #include <magique/util/RayUtils.h>
+#include <magique/ui/controls/Popup.h>
 
 #include "external/raylib-compat/rcore_compat.h"
 
@@ -20,6 +21,7 @@ namespace magique
     {
         std::vector<UIObject*> objects;
         std::vector<UIObject*> containers;
+        std::vector<Popup*> popups;
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
         Point targetRes{1920, 1080};
@@ -125,6 +127,11 @@ namespace magique
                     EnableCursor();
                 }
             }
+        }
+
+        void drawPopup()
+        {
+
         }
 
         // All objects are registered in their ctor

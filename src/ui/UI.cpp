@@ -22,7 +22,7 @@ namespace magique
             pos += inset;
             break;
         case Anchor::TOP_CENTER:
-            pos.x += (relative.width - size.x) / 2.0F+ inset.x;
+            pos.x += (relative.width - size.x) / 2.0F + inset.x;
             pos.y += inset.y;
             break;
         case Anchor::TOP_RIGHT:
@@ -46,7 +46,7 @@ namespace magique
             pos.y += relative.height - size.y - inset.y;
             break;
         case Anchor::BOTTOM_CENTER:
-            pos.x += (relative.width - size.x) / 2.0F+ inset.x;
+            pos.x += (relative.width - size.x) / 2.0F + inset.x;
             pos.y += relative.height - size.y - inset.y;
             break;
         case Anchor::BOTTOM_RIGHT:
@@ -88,6 +88,35 @@ namespace magique
     }
 
     Point UIGetTargetResolution() { return global::UI_DATA.targetRes; }
+
+    void UIDrawPopups()
+    {
+        if (!global::UI_DATA.popups.empty())
+        {
+            auto& popup = *global::UI_DATA.popups.front();
+            popup.draw();
+        }
+    }
+
+    void UIAddPopup(Popup& popup)
+    {
+        auto& data = global::UI_DATA;
+        auto it = std::ranges::find(data.popups, &popup);
+        if (it != data.popups.end())
+        {
+            data.popups.erase(it);
+            data.popups.insert(data.popups.begin(), &popup);
+        }
+        else
+        {
+            data.popups.insert(data.popups.begin(), &popup);
+        }
+        global::UI_DATA.popups.push_back(&popup);
+    }
+
+    bool UIRemovePopup(Popup& popup) { return std::erase(global::UI_DATA.popups, &popup) > 0; }
+
+    const std::vector<Popup*>& UIGetPopups() { return global::UI_DATA.popups; }
 
     Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
 

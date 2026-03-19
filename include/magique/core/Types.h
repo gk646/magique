@@ -151,6 +151,9 @@ namespace magique
         // Returns a rectangle that is centered on p with the given size
         static Rect CenteredOn(const Point& p, const Point& size);
 
+        // Returns a new rectangle with the given size centered within the given rect
+        static Rect CenteredIn(Point size, const Rect& rect);
+
         // Returns the bounds of the filled area of a rectangle given by the fill direction and the amount
         //      - fill [0-1] how much the rectangle is filled
         static Rect Filled(const Rect& area, float fill, Direction direction);
