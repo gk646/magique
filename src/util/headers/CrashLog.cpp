@@ -1,6 +1,9 @@
 #include <chrono>
 #include <fstream>
+
+#if __has_include(<stacktrace>)
 #include <stacktrace>
+#endif
 
 #include "util/headers/CrashLog.h"
 #include "magique/core/Game.h"
@@ -205,6 +208,7 @@ namespace magique
         std::string stackTrace;
         stackTrace.reserve(128);
 
+#if __has_include(<stacktrace>)
         auto stacktrace = std::stacktrace::current();
         int lineNumber = 0;
         for (const auto& entry : stacktrace)
@@ -226,6 +230,9 @@ namespace magique
             stackTrace += entry.description();
             stackTrace += "\n";
         }
+#else
+        stackTrace += "Not available\n";
+#endif
         return stackTrace;
     }
 

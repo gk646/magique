@@ -35,18 +35,19 @@ namespace magique
 
     float SoundGetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }
 
-    void SoundPlay(const Sound& sound, const float volume) { global::AUDIO_PLAYER.sounds.emplace_back(sound, volume); }
-
-    void SoundSetFalloffDistance(float distance) { global::AUDIO_PLAYER.maxSoundDistance = distance; }
-
-    void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume)
+    void SoundPlay(const Sound& sound, const float volume, bool loop)
     {
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity);
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop);
     }
 
-    void SoundPlay2D(const Sound& sound, Point pos, float volume)
+    void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume, bool loop)
     {
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos);
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity, loop);
+    }
+
+    void SoundPlay2D(const Sound& sound, Point pos, float volume, bool loop)
+    {
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos, loop);
     }
 
     bool SoundStop(const Sound& sound)
@@ -68,6 +69,8 @@ namespace magique
         }
         return false;
     }
+
+    void SoundSetFalloffDistance(float distance) { global::AUDIO_PLAYER.maxSoundDistance = distance; }
 
     void MusicPlay(const Music& music, const float volume, const bool fade)
     {

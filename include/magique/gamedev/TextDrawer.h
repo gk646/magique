@@ -36,12 +36,15 @@ namespace magique
         TextDrawer& center(Color tint, const char* fmt, ...);
 
         // moves right end of line to the left of the text
-        // following calls will align to the left of the previous (only for right() calls)
+        // following calls will align to the left of the previous (only for right() calls) (right-mode)
         TextDrawer& right(const std::string_view& txt, Color tint);
         TextDrawer& right(Color tint, const char* fmt, ...);
 
         // Images
         TextDrawer& icon(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
+
+        // Draws the icon using the right-mode and moves the cursor to the left
+        TextDrawer& iconRight(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
 
         // Move cursor
         // moves cursor to the beginning of the next line and resets mods

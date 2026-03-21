@@ -244,6 +244,12 @@ namespace magique
         return *this;
     }
 
+    Point Point::round() const
+    {
+        Point p = *this;
+        return p.round();
+    }
+
     Point Point::floor() const
     {
         Point p = *this;
@@ -797,10 +803,23 @@ namespace magique
             return;
         }
 
-        std::from_chars(hash.data(), hash.data() + 8, first, 16);
-        std::from_chars(hash.data() + 8, hash.data() + 16, second, 16);
-        std::from_chars(hash.data() + 16, hash.data() + 24, third, 16);
-        std::from_chars(hash.data() + 24, hash.data() + 32, fourth, 16);
+        auto parseHex = [](const char* str) -> uint32_t
+        {
+            char buffer[9];
+            strncpy(buffer, str, 8);
+            buffer[8] = '\0';
+            return static_cast<uint32_t>(strtoul(buffer, nullptr, 16));
+        };
+
+        first = parseHex(hash.data());
+        second = parseHex(hash.data() + 8);
+        third = parseHex(hash.data() + 16);
+        fourth = parseHex(hash.data() + 24);
+
+        first = ReverseBytes(first);
+        second = ReverseBytes(second);
+        third = ReverseBytes(third);
+        fourth = ReverseBytes(fourth);
     }
 
     bool Checksum::operator==(const Checksum& o) const
@@ -873,31 +892,61 @@ namespace magique
         }
     }
 
-    Param::Param(const std::string_view& name, const std::string_view& str) : name(name)
+    Param::Param(const std::string_view& name, const std::string_view& val) : name(name)
     {
-        std::string_view view{str};
+        auto isValidNumber = [](std::string_view val)
+        {
+            if (val.empty())
+                return false;
+
+            size_t i = 0;
+            if (val.front() == '+' || val.front() == '-')
+                i++;
+
+            bool hasDot = false;
+            bool hasDigit = false;
+
+            for (; i < val.size(); ++i)
+            {
+                if (val[i] == '.')
+                {
+                    if (hasDot)
+                        return false; // Only one dot allowed
+                    hasDot = true;
+                }
+                else if (std::isdigit(val[i]))
+                {
+                    hasDigit = true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return hasDigit;
+        };
 
         // Bool cases
-        if (view == "False" || view == "false" || view == "FALSE" || view == "OFF" || view == "off")
+        if (val == "False" || val == "false" || val == "FALSE" || val == "OFF" || val == "off")
         {
             boolean = false;
             type = ParamType::BOOL;
         }
-        else if (view == "True" || view == "true" || view == "TRUE" || view == "ON" || view == "on")
+        else if (val == "True" || val == "true" || val == "TRUE" || val == "ON" || val == "on")
         {
             boolean = true;
             type = ParamType::BOOL;
         }
         else // Either number or string
         {
-            auto [ptr, ec] = std::from_chars(str.data(), str.data() + str.size(), number);
-            if (ec == std::errc())
+            if (isValidNumber(val))
             {
                 type = ParamType::NUMBER;
+                number = TextToFloat(val.data());
             }
             else
             {
-                string = str;
+                string = val;
                 type = ParamType::STRING;
             }
         }

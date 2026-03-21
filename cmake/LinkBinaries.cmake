@@ -59,6 +59,7 @@ if (WIN32)
         target_compile_options(magique PUBLIC /std:c++latest /Zc:preprocessor)
     endif ()
 elseif (APPLE)
+
 elseif (UNIX)
     target_link_libraries(magique PUBLIC stdc++exp)
 endif ()

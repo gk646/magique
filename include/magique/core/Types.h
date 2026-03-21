@@ -107,9 +107,10 @@ namespace magique
 
         // uses std::round() to round to the nearest whole number
         Point& round();
-        Point floor() const;
+        Point round() const;
 
         // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
+        Point floor() const;
         Point& floor();
         // uses std::ceil()
         Point& ceil();
@@ -579,7 +580,7 @@ namespace magique
     {
         Param() = default;
         Param(const ParamInfo& info); // Create from default
-        Param(const std::string_view& name, const std::string_view& str);
+        Param(const std::string_view& name, const std::string_view& val);
 
         // Returns the parameter name
         const char* getName() const;
@@ -637,12 +638,22 @@ namespace magique
     using PathFindHeuristicFunc = float (*)(const Point& curr, const Point& end);
     using PathFindMoveCostFunc = float (*)(const Point& dir);
 
+    // ISO 639 langauge codes
     enum class Language : uint8_t
     {
-        English,
-        German,
-        Italian,
-        French,
+        None,
+        EN, // English
+        DE, // German
+        IT, // italian
+        FR, // French
+        JA, // Japanese
+        ZH, // Chinese
+        CS, // Czech
+        DA, // Danish
+        ES, // Spanish
+        PT, // Portuguese
+        KO, // Korean
+        COUNT,
     };
 
     struct WeightedColor

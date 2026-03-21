@@ -6,6 +6,7 @@
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
 #include <magique/core/Animation.h>
+#include <magique/gamedev/Localization.h>
 
 //===============================================
 // Asset Import
@@ -114,13 +115,32 @@ namespace magique
     Font ImportFont(const Asset& asset, int baseSize, int characters = 0);
 
     // Imports a shader by loading the given assets as vertex and fragment shaders
-    // Note: Either one can be empty - its allowed to load with only a fragment, only a vertex or both
+    // Note: Either one can be empty - It's allowed to load with only a fragment, only a vertex or both
     Shader ImportShader(const Asset& vertex, const Asset& fragment);
 
     // Imports the given asset into a simple container
     // The file is separated and stored line-wise
     // Failure: Returns empty container
     TextLines ImportText(Asset asset, char delimiter = '\n');
+
+    // Tries to import a language from the given file
+    // Supported types: .po (GNU gettext format - look at for more info: https://github.com/vslavik/poedit
+    LocalizedLanguage ImportGettext(Asset asset);
+
+    // Imports a magique translation file format (.mtf):
+    // language:{Your language code}
+    // {keyword}:{translation}
+    // {keyword}:{translation}
+    // # This is a line comment
+    // ...
+    // Note: the keywords MUST not contain a semicolon (everything after the first semicolon is translation)
+    // Example (german.mtf):
+    // language:DE
+    // greeting:Herzlich Willkommen!
+    // # We might wanna make this shorter
+    // goodbye:Auf Wiedersehen!
+    LocalizedLanguage ImportMTF(Asset asset);
+
 
 } // namespace magique
 

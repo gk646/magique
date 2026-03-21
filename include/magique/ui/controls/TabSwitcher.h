@@ -3,11 +3,19 @@
 
 #include <magique/ui/UIContainer.h>
 
+//===============================================
+// TabSwitcher
+//===============================================
+// .....................................................................
+// TabSwitcher is a control that draws the name of its children as clickable tabs and allows switching between them
+// The active child is then aligned below the switcher and drawn
+// .....................................................................
+
 namespace magique
 {
+
     struct TabSwitcher : UIContainer
     {
-
         TabSwitcher(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
         void setActive(UIObject* tab);
@@ -21,7 +29,8 @@ namespace magique
         void switchRight();
 
     protected:
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+        // Draws the tabs
+        void onDraw(const Rect& bounds) override;
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
@@ -29,8 +38,12 @@ namespace magique
                 updateInputs();
         }
 
+
+        // Called for each tab
+        virtual Point drawTab(Point pos, const ContainerChild& child, bool isActive);
+
+        // Make the tabs clickable
         void updateInputs();
-        void drawDefault(const Rect& bounds);
 
     private:
         int active = 0;

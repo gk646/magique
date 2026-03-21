@@ -59,7 +59,7 @@ namespace magique
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rect& bounds, float fontSize = 14);
+        void drawDefault(const Rect& bounds, float fontSize = 16);
 
     public:
         // Called everytime the textfield is focused and enter is pressed

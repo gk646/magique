@@ -44,17 +44,14 @@ namespace magique
 
     void SteamJoinLobby(std::string_view lobbyID)
     {
-        uint64_t id{};
-        auto [ptr, ec] = std::from_chars(lobbyID.begin(), lobbyID.end(), id);
-
-        if (ec == std::errc())
+        uint64_t value = std::strtoull(lobbyID.data(), nullptr, 10);
+        CSteamID id{(uint64)value};
+        if (!id.IsValid())
         {
-            SteamJoinLobby(static_cast<SteamLobbyID>(id));
+            LOG_WARNING("Invalid lobby ID: %s", lobbyID.data());
+            return;
         }
-        else
-        {
-            LOG_WARNING("Invalid lobby-id string: %s", lobbyID.data());
-        }
+        SteamJoinLobby(static_cast<SteamLobbyID>(id.ConvertToUint64()));
     }
 
     bool SteamLeaveLobby()

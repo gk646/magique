@@ -52,6 +52,8 @@ namespace magique
 
     UIObject* TabSwitcher::getActive() const
     {
+        if (getChildren().empty())
+            return nullptr;
         if (active >= 0 && active < (int)getChildren().size())
         {
             return getChild(active);
@@ -61,6 +63,7 @@ namespace magique
 
     void TabSwitcher::switchLeft()
     {
+
         active--;
         active = (active + getChildren().size()) % getChildren().size();
     }
@@ -71,54 +74,59 @@ namespace magique
         active = (active + getChildren().size()) % getChildren().size();
     }
 
-    constexpr float GAP = 3;
-
-    void TabSwitcher::updateInputs()
+    void TabSwitcher::onDraw(const Rect& bounds)
     {
-        if (LayeredInput::IsKeyPressed(KEY_LEFT) || LayeredInput::IsKeyPressed(KEY_Q))
-        {
-            switchLeft();
-        }
-        else if (LayeredInput::IsKeyPressed(KEY_RIGHT) || LayeredInput::IsKeyPressed(KEY_E))
-        {
-            switchRight();
-        }
-    }
-
-    void TabSwitcher::drawDefault(const Rect& bounds)
-    {
-        const auto& theme = EngineGetTheme();
-        const auto& fnt = EngineGetFont();
         Point pos = bounds.pos();
-        auto drawSwitchButton = [&](const Rect& area, bool left)
+        float biggestY = 0;
+        for (int i = 0; i < (int)getChildren().size(); i++)
         {
-            auto hov = area.contains(GetMousePos());
-            auto pres = hov && LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-            DrawRectFrameFilled(area, theme.getBodyColor(hov, pres), theme.getOutlineColor(hov, pres));
-            TextDrawer drawer{fnt, area};
-            drawer.modCenterV().center(left ? "Q" : "E", theme.textPassive);
-        };
-
-        drawSwitchButton({pos, 8}, true);
-        pos += Point{8 + GAP, 0};
-
-        for (auto& [name, obj] : getChildren())
-        {
-            Rect tab{pos, {MeasureTextEx(fnt, name.data(), fnt.baseSize, 1.0F).x + 4, fnt.baseSize + 4.0F}};
-            const auto hovered = tab.contains(GetMousePos());
-            const auto hoverFill = hovered ? theme.text : theme.textPassive;
-            DrawRectFrameFilled(tab, hoverFill, theme.getOutlineColor(hovered, false));
-            TextDrawer{fnt, tab}.modCenterV().center(name, theme.textHighlight);
-            pos += Point{tab.width + GAP, 0};
+            auto& child = getChildren()[i];
+            auto dims = drawTab(pos, child, i == active);
+            Rect tab = {pos, dims};
+            if (tab.contains(GetMousePos()) && LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                setActive(child.object);
+            }
+            pos.x += dims.x + 2;
+            biggestY = std::max(biggestY, pos.y);
         }
-        drawSwitchButton({pos, 8}, false);
-        setBounds(Rect::FromSpanPoints(bounds.pos(), pos + Point{0, fnt.baseSize + 2.0F}));
+
+        setBounds(Rect::FromSpanPoints(bounds.pos(), {pos.x, pos.y + biggestY}));
 
         auto activeObj = getActive();
         if (activeObj != nullptr)
         {
-            activeObj->align(Anchor::TOP_CENTER, getBounds(), {0, 20});
+            activeObj->align(Anchor::TOP_CENTER, getBounds(), {0, biggestY + 5});
             activeObj->draw();
+        }
+    }
+
+    Point TabSwitcher::drawTab(Point pos, const ContainerChild& child, bool isActive)
+    {
+        const auto& theme = EngineGetTheme();
+        const auto& fnt = EngineGetFont();
+
+        Point dims = Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize, 1.0F)} + 4;
+        Rect tab{pos, dims};
+        const auto hovered = tab.contains(GetMousePos());
+        DrawRectFrameFilled(tab, theme.getBodyColor(hovered, isActive), theme.getOutlineColor(hovered, isActive));
+        TextDrawer{fnt, tab}.modCenterV().center(child.name, theme.textHighlight);
+        return tab.size();
+    }
+
+    void TabSwitcher::updateInputs()
+    {
+        Point pos = getBounds().pos();
+        for (int i = 0; i < (int)getChildren().size(); i++)
+        {
+            auto& child = getChildren()[i];
+            auto dims = drawTab(pos, child, i == active);
+            Rect tab = {pos, dims};
+            if (tab.contains(GetMousePos()) && LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                setActive(child.object);
+            }
+            pos.x += dims.x + 2;
         }
     }
 

@@ -73,7 +73,8 @@ namespace magique
     //      - undef: STRING
     //           - removes the environment param with the given name
     //   namespaces:
-    //      - mq: Contains various functions that call magique API functions of the same (similar) name
+    //      - mq: Contains various functions that call magique API functions of the same (similar) name:
+    //
 
     // Registers a custom command with the given name and description
     // Will replace the existing command with the same name with a warning (if exists)
@@ -126,7 +127,9 @@ namespace magique
 
     //================= Environmental Parameters =================//
     // Builtin environmental parameters:
-    //      - GAME_NAME: STRING | name of the game as specified in the Game constructor
+    //      - MQ_VERSION:    STRING | version of magique
+    //      - GAME_NAME:     STRING | name of the game as specified in the Game constructor
+    //      - GAME_VERSION:  STRING | version of the game as specified in the Game constructor
 
     // Sets (or creates) the environment param with the given name to the given value
     // Note: Type is determined automatically

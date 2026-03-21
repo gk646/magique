@@ -2702,6 +2702,9 @@ static void UpdateAudioStreamInLockedState(AudioStream stream, const void *data,
     }
 }
 
+#include "raudio_compat.c"
+
+
 // Some required functions for audio standalone module version
 #if defined(RAUDIO_STANDALONE)
 // Check file extension
@@ -2877,5 +2880,7 @@ static bool SaveFileText(const char *fileName, char *text)
 #endif
 
 #undef AudioBuffer
+
+
 
 #endif      // SUPPORT_MODULE_RAUDIO

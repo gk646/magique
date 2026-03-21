@@ -7,6 +7,8 @@
 #include <magique/core/Camera.h>
 #include <magique/util/RayUtils.h>
 
+#include "external/raylib-compat/raudio_compat.h"
+
 namespace magique
 {
     struct Track final
@@ -25,13 +27,13 @@ namespace magique
 
     struct SoundWrapper final
     {
-        SoundWrapper(Sound sound, float volume);
-        SoundWrapper(Sound sound, float volume, Point pos) : SoundWrapper(sound, volume)
+        SoundWrapper(Sound sound, float volume, bool loop);
+        SoundWrapper(Sound sound, float volume, Point pos, bool loop) : SoundWrapper(sound, volume, loop)
         {
             position = pos;
             isPositional = true;
         }
-        SoundWrapper(Sound sound, float volume, entt::entity e) : SoundWrapper(sound, volume)
+        SoundWrapper(Sound sound, float volume, entt::entity e, bool loop) : SoundWrapper(sound, volume, loop)
         {
             isPositional = true;
             entity = e;
@@ -48,6 +50,7 @@ namespace magique
         Point position{};
         entt::entity entity = entt::null;
         bool isPositional = false;
+        bool loop = false;
 
         bool shouldRemove() const
         {
@@ -186,11 +189,12 @@ namespace magique
         return markedForRemoval && currentVolume <= 0;
     }
 
-    inline SoundWrapper::SoundWrapper(Sound originalSound, float volume) :
-        sound(LoadSoundAlias(originalSound)), playVolume(volume)
+    inline SoundWrapper::SoundWrapper(Sound originalSound, float volume, bool loop) :
+        sound(LoadSoundAlias(originalSound)), playVolume(volume), loop(loop)
     {
         SetSoundVolume(sound, global::AUDIO_PLAYER.getSoundVolume(volume));
         PlaySound(sound);
+        SetAudioBufferLooping(sound.stream.buffer, loop);
     }
 
     inline float SoundWrapper::getVolume() const

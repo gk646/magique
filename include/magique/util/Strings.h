@@ -63,10 +63,6 @@ namespace magique
     // string-compare-n-no-case
     bool strncmpnc(const char* s1, const char* s2, int n);
 
-    // Case insensitive version of strstr
-    // https://en.cppreference.com/w/c/string/byte/strstr
-    char* strstrnc(const char* haystack, const char* needle);
-
     //================= ENCODING =================//
 
     // Encodes the given string into base64 representation

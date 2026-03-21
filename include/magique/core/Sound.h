@@ -36,25 +36,26 @@ namespace magique
     float SoundGetMusicVolume();
 
     //================= SOUND & SOUND2D =================//
+    // Looping automatically restarts the sound when it ends
 
     // Plays the given sound - multiple calls play it multiple times
-    void SoundPlay(const Sound& sound, float volume = 1.0F);
-
-    // Sets the distance at which the volume becomes 0
-    void SoundSetFalloffDistance(float distance = 1000);
+    void SoundPlay(const Sound& sound, float volume = 1.0F, bool loop = false);
 
     // Plays the given sound attached to the given entity - volume is dynamically updated with entity position
-    // Sound is automatically destroyed (stopped) if entity doesnt exist
-    void SoundPlay2D(const Sound& sound, entt::entity entity, float volume = 1.0F);
+    // Sound is automatically destroyed (stopped) if entity doesn't exist
+    void SoundPlay2D(const Sound& sound, entt::entity entity, float volume = 1.0F, bool loop = false);
 
     // Plays the given sound spatially at the given position
-    void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F);
+    void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F, bool loop = false);
 
     // Returns true if any instance of this sound was removed
     bool SoundStop(const Sound& sound);
 
     // Returns true if any instance of the given sound is currently playing
     bool SoundIsPlaying(const Sound& sound);
+
+    // Sets the distance at which the volume becomes 0
+    void SoundSetFalloffDistance(float distance = 1000);
 
     //================= MUSIC =================//
 

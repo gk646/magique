@@ -87,11 +87,28 @@ namespace magique
         return *this;
     }
 
+    TextDrawer& TextDrawer::iconRight(const TextureRegion& img, bool centeredOnText, bool moveCursor)
+    {
+        const auto width = img.getSize().x;
+        const auto lineEnd = bounds.x + bounds.width - offf.x;
+        auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
+        if (centeredOnText)
+        {
+            pos.y -= img.height / 2 - font.baseSize / 2;
+        }
+        pos.floor();
+        DrawRegion(img, pos);
+        if (moveCursor)
+            cursorEndX += img.width + gapp.x;
+        return *this;
+    }
+
     TextDrawer& TextDrawer::linebreak(const float amount)
     {
         cursor.x = offf.x;
         cursor.y += amount * (2 + (float)font.baseSize);
         resetMods();
+        cursorEndX = 0;
         return *this;
     }
 
@@ -213,7 +230,6 @@ namespace magique
         modOfffset = 0;
         modHighlightColor = BLANK;
         modSizeMult = 1;
-        cursorEndX = 0;
         shadeColor = BLANK;
         modCenterVert = false;
     }

@@ -19,6 +19,7 @@
 #define CUTE_TILED_NO_EXTERNAL_TILESET_WARNING
 #define CUTE_TILED_IMPLEMENTATION
 
+#include "enchantum/enchantum.hpp"
 #include "external/cute_asprite.h"
 #include "external/cute_tiled.h"
 
@@ -448,7 +449,7 @@ namespace magique
             {
                 auto& tileLayer = tilemap.tileLayers.emplace_back();
                 tileLayer.name = layer->name.ptr;
-                tileLayer.dims = {(float)layer->width,(float) layer->height};
+                tileLayer.dims = {(float)layer->width, (float)layer->height};
                 tileLayer.tiles.reserve((tilemap.width * tilemap.height) + 1);
 
                 for (int i = 0; i < layer->data_count; ++i)
@@ -554,5 +555,97 @@ namespace magique
     }
 
     TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset.getData(), delimiter}; }
+
+    static size_t findAfter(const std::string_view& str, const char* what, size_t pos = 0)
+    {
+        size_t found = str.find(what, pos);
+        if (found != std::string::npos)
+        {
+            return found + strlen(what);
+        }
+        return found;
+    }
+
+    LocalizedLanguage ImportGettext(Asset asset)
+    {
+        LocalizedLanguage language{};
+        if (asset.getExtension() != ".po")
+        {
+            LOG_WARNING("Invalid extension for gettext file: %s", asset.getExtension().data());
+            return language;
+        }
+
+        const std::string_view file{asset.getData(), (size_t)asset.getSize()};
+
+        const auto langStr = file.substr(findAfter(file, "Language: "), 2);
+        language.language = LocalizationParseLanguage(langStr);
+        if (language.language == Language::None)
+        {
+            LOG_WARNING("Failed to import gettext file %s: No such language: %.2s", asset.getFileName().data(),
+                        langStr.data());
+            return language;
+        }
+
+        // Remove newlines and " and comments
+        auto removeSymbols = [](std::string& str)
+        {
+            size_t pos = str.find("\n#:");
+            while (pos != std::string::npos)
+            {
+                auto end = str.find("\n", pos + 1);
+                str.erase(pos, end - pos);
+                pos = str.find("\n#:");
+            }
+
+            pos = str.find("\"\n");
+            while (pos != std::string::npos)
+            {
+                str.erase(pos, 3);
+                pos = str.find("\"\n");
+            }
+        };
+
+        std::string key{};
+        size_t pos = file.find("msgid", findAfter(file, "msgid")); // Start with the second
+        while (pos < (size_t)asset.getSize())
+        {
+            auto msgidBegin = findAfter(file, "msgid ", pos);
+            if (msgidBegin == std::string_view::npos)
+                break;
+            auto msgidEnd = file.find("msgstr ", pos);
+
+            auto msgstrBegin = findAfter(file, "msgstr ", msgidBegin);
+            if (msgstrBegin == std::string_view::npos)
+                break;
+
+            auto msgstrEnd = file.find("msgid ", msgstrBegin);
+
+            if (msgstrEnd == std::string_view::npos)
+                msgstrEnd = asset.getSize() - 1;
+
+            pos = msgstrEnd;
+
+            auto msgid = file.substr(msgidBegin + 1, msgidEnd - msgidBegin);
+            auto msgstr = file.substr(msgstrBegin + 1, (msgstrEnd - msgstrBegin) - 1);
+
+            key = msgid;
+            removeSymbols(key);
+            auto& value = language.translations[key];
+            value = msgstr;
+            removeSymbols(value);
+        }
+        return language;
+    }
+
+    LocalizedLanguage ImportMTF(Asset asset)
+    {
+        LocalizedLanguage language{};
+        if (asset.getExtension() != ".mtf")
+        {
+            LOG_WARNING("Invalid extension for magique traslation file: %s", asset.getExtension().data());
+            return language;
+        }
+        return language;
+    }
 
 } // namespace magique

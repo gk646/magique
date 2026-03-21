@@ -2,8 +2,7 @@
 #ifndef MAGIQUE_LOCALIZATION_H
 #define MAGIQUE_LOCALIZATION_H
 
-#include <string>
-#include <magique/fwd.hpp>
+#include <magique/util/Datastructures.h>
 
 //===============================================
 // Localization Module
@@ -12,57 +11,50 @@
 // This module allows to dynamically change language and get the correct strings based on a given keyword
 // Each keyword is unique and identifies the translated strings across languages
 //      -> keyword: hello  - English: Hello User! - German: Guten Tag Benutzer!
-// You can either manually add localization for each language and keyword or load it from a file
-// Note: How the different languages are called is up to the user (e.g. country codes (DE, US) or something else)
+//      -> keyword: Good Morning  - English: Good Morning - German: Guten Morgen!
 //
-// The magique translation file format (.mtf):
-// language:{Your language code}
-// {keyword}:{translation}
-// {keyword}:{translation}
-// # This is a line comment
-// ...
-// Note: the keywords MUST not contain a semicolon (everything after the first semicolon is translation)
-// Example (german.mtf):
-// language:DE
-// greeting:Herzlich Willkommen!
-// # We might wanna make this shorter
-// goodbye:Auf Wiedersehen!
+// You can either manually add localization for each language and keyword or load it from a file in assets/AssetImport.h
+// Supported Formats: .po (GNU gettext format)
+// Note: There is also a macro localize() that can be used
 // .....................................................................
 
 namespace magique
 {
-
-    struct LocalizedString final
+    struct LocalizedLanguage final
     {
-
+        Language language = Language::None;
+        StringHashMap<std::string> translations;
     };
 
-    // Returns the localized string for the given keyword
+    // Returns the localized string for the given keyword - uses the currently set language
     // Failure: if no language is set or doesn't exist or the keyword is not translated, the keyword itself is returned
-    const char* Localize(const char* keyword);
+    const char* Localize(const char* key);
+    std::string_view Localize(const std::string_view& key);
 
     //============== LOAD ==============//
 
-    // Loads the given magique translation file (.mtf) and adds the specified localizations for that language
-    void LoadLocalization(const Asset& asset);
+    // Adds the given language
+    void LocalizationAdd(const LocalizedLanguage& lang);
+    void LocalizationAdd(LocalizedLanguage&& lang);
 
-    // Manually adds a localization of the keyword in the given language
-    void AddLocalization(const char* keyword, const char* language, const char* translation);
+    // Manually adds a translation of the keyword in the given language
+    void LocalizationAdd(std::string_view key, std::string_view translation, Language lang);
 
     //============== UTIL ==============//
 
     // Sets the localization language - takes effect immediately and Localize() returns the translation for this language
-    // Default: empty
-    void SetLocalizationLanguage(const char* language);
+    // Default: EN
+    void LocalizationSetLanguage(Language lang);
+    Language LocalizationGetLanguage();
 
-    // Returns the current language
-    // Failure: if no language is set returns empty string
-    const std::string& GetLocalizationLanguage();
-
-    // Scans all registered languages and compares them to reference language:
+    // Scans all registered languages and compares them to base language:
     //      - missing translation for keywords
     //      - missing keywords in other languages
-    void ValidateLocalizations(const char* referenceLanguage);
+    void LocalizationValidate(Language base = Language::EN);
+
+    // Parses the language from a given ISO 639 code (e.g. en, es, de, it) - NOT case sensitive
+    // Failure: Returns Language::None
+    Language LocalizationParseLanguage(std::string_view langCode);
 
 } // namespace magique
 

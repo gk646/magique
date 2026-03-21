@@ -19,6 +19,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
 #include "external/raylib-compat/rcore_compat.h"
+#include "magique/gamedev/Localization.h"
 
 namespace magique
 {
@@ -260,9 +261,24 @@ namespace magique
             showUIHitbox.setFunction([](const ParamList& params) { UIShowHitboxes(params.back().getBool()); });
             ConsoleRegisterCommand(showUIHitbox);
 
-#ifndef MAGIQUE_TEST_MODE
+            Command setLanguage{"mq.setLanguage", "Changes the localization language"};
+            setLanguage.addParam("language code (en, es, it, de ..)", {ParamType::STRING});
+            setLanguage.setFunction(
+                [](const ParamList& params)
+                {
+                    auto lang = LocalizationParseLanguage(params.front().getString());
+                    if (lang == Language::None)
+                    {
+                        LOG_WARNING("Invalid language code: %s", params.front().getString());
+                        return;
+                    }
+                    LocalizationSetLanguage(lang);
+                });
+            ConsoleRegisterCommand(setLanguage);
+
+            ConsoleSetEnvParam("MQ_VERSION", global::ENGINE_DATA.gameInstance->getName());
             ConsoleSetEnvParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
-#endif
+            ConsoleSetEnvParam("GAME_VERSION", global::ENGINE_DATA.gameInstance->getVersion());
         }
 
         void refreshSuggestions()

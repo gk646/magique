@@ -2,7 +2,6 @@
 #define MAGEQUEST_MENU_H
 
 #include "magique/ui/UIContainer.h"
-#include <magique/fwd.hpp>
 #include <magique/ui/UIObject.h>
 
 //===============================================
