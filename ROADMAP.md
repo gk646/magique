@@ -54,26 +54,12 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 ### UI
 
-**More Controls**
-
-- DropDown
-
 **Default Multiplayer Chat**
 
 - Implement reusable chat for multiplayer with default style
 
-**Menu/Page/Layout Designer**
-
-- Simple class that takes some information and structures them in a layout
-- Possible by adding single containers each with dimensions and a layout enum specifier
-- Can easily then draw in the containers within the layout
 
 ### Assets
-
-**Better change detection for asset pack**
-
-- Use file hashing instead of size and name check
-    - Already implemented in ValidateImage()
 
 
 ### Examples

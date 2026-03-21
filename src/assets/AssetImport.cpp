@@ -589,12 +589,12 @@ namespace magique
         // Remove newlines and " and comments
         auto removeSymbols = [](std::string& str)
         {
-            size_t pos = str.find("\n#:");
+            size_t pos = str.find("\n#");
             while (pos != std::string::npos)
             {
                 auto end = str.find("\n", pos + 1);
                 str.erase(pos, end - pos);
-                pos = str.find("\n#:");
+                pos = str.find("\n#");
             }
 
             pos = str.find("\"\n");
@@ -621,7 +621,7 @@ namespace magique
             auto msgstrEnd = file.find("msgid ", msgstrBegin);
 
             if (msgstrEnd == std::string_view::npos)
-                msgstrEnd = asset.getSize() - 1;
+                msgstrEnd = asset.getSize() - 2;
 
             pos = msgstrEnd;
 

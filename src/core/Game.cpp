@@ -136,12 +136,16 @@ namespace magique
 
     Game::~Game()
     {
+#if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
         global::MP_DATA.close();
+#endif
+
 #ifdef MAGIQUE_STEAM
         // Give some time to steam thread and callbacks to clean up?
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         global::STEAM_DATA.close();
 #endif
+
         CloseAudioDevice();
         CloseWindow();
         LOG_INFO("Shutdown magique");

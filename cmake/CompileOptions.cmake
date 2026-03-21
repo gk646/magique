@@ -12,13 +12,13 @@ target_include_directories(magique PRIVATE
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique PUBLIC MAGIQUE_STEAM)
     set(FULL_STEAM_PATH "${STEAM_PATH}/public")
-    if(WIN32)
+    if (WIN32)
         set(HOME_DIR "$ENV{USERPROFILE}")
         # Replace backslashes with forward slashes
         string(REPLACE "\\" "/" HOME_DIR "${HOME_DIR}")
-    else()
+    else ()
         set(HOME_DIR "$ENV{HOME}")
-    endif()
+    endif ()
     string(REGEX REPLACE "^~" "${HOME_DIR}" FULL_STEAM_PATH "${FULL_STEAM_PATH}")
     target_include_directories(magique PRIVATE ${FULL_STEAM_PATH})
 elseif (MAGIQUE_LAN)
@@ -72,20 +72,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_link_options(magique PUBLIC
             -flto=auto
-            $<$<CONFIG:Debug>:
-            -Wl,--as-needed
-            -Wl,--no-undefined
-            -Wl,--warn-common
-            >
-
-            $<$<CONFIG:Release>:
-            -Wl,--gc-sections
-            -Wl,--as-needed
-            -Wl,--build-id
-            -Wl,--no-undefined
-            -Wl,--strip-all
-            -Wl,--sort-section=alignment
-            >
     )
 
     if (MAGIQUE_SANITIZER)
@@ -116,7 +102,6 @@ else ()
 endif ()
 
 target_compile_definitions(magique PUBLIC
-        ENCHANTUM_THROW
         ENTT_NOEXCEPTION
         MAGIQUE_VERSION="${PROJECT_VERSION}"
         MAGIQUE_LOGIC_TICKS=${MAGIQUE_LOGIC_TICKS}

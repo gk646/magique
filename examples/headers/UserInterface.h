@@ -6,7 +6,7 @@
 #include <magique/ui/controls/TextField.h>
 #include <magique/ui/controls/Window.h>
 #include <magique/ui/controls/ScrollPane.h>
-#include "magique/ui/controls/ListMenu.h"
+#include "magique/ui/controls/ListChooser.h"
 #include <magique/util/Logging.h>
 
 //-----------------------------------------------
