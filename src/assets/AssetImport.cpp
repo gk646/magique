@@ -19,6 +19,8 @@
 #define CUTE_TILED_NO_EXTERNAL_TILESET_WARNING
 #define CUTE_TILED_IMPLEMENTATION
 
+#define CUTE_TILED_WARNING(msg) LOG_ERROR(msg);
+
 #include "enchantum/enchantum.hpp"
 #include "external/cute_asprite.h"
 #include "external/cute_tiled.h"

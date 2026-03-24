@@ -30,7 +30,7 @@ namespace magique
     template <typename Value>
     using StringHashMap = HashMapEx<std::string, Value, StringHashFunc, StringEqualsFunc>;
 
-    // Useful to map a enum to a value with direct indexing
+    // Useful to map an enum to a value with direct indexing
     // Just a wrapped std::array<>
     // Supports loading from JSON
     // e.g. keybinds EnumArray<PlayerAction, magique::Keybind>

@@ -6,9 +6,9 @@
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
-#include <magique/util/Logging.h>
 
 #include "external/raylib-compat/rcore_compat.h"
+#include "magique/core/Camera.h"
 
 namespace magique
 {
@@ -244,6 +244,12 @@ namespace magique
 
     Point GetScreenDims() { return {(float)GetScreenWidth(), (float)GetScreenHeight()}; }
 
+    Point GetWorldToScreen2DNorm(const Point world, Point screen)
+    {
+        const auto pos = Point{GetWorldToScreen2D(world, CameraGet())};
+        return pos / screen;
+    }
+
     Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)
     {
         Point newTarget = {camera.target.x, camera.target.y};
@@ -316,6 +322,10 @@ namespace magique
     ShaderWrapper::ShaderWrapper(const Shader& shader) { BeginShaderMode(shader); }
 
     ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
+
+    RenderTextureWrapper::RenderTextureWrapper(const RenderTexture& texture) { BeginTextureMode(texture); }
+
+    RenderTextureWrapper::~RenderTextureWrapper() { EndTextureMode(); }
 
 
 } // namespace magique

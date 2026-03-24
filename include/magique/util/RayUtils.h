@@ -75,6 +75,11 @@ namespace magique
     // Returns the screen dimension in a point
     Point GetScreenDims();
 
+    // Returns the normalized position on the screen of the given world pos (e.g. 0.0 - 1.0)
+    // Uses GetWorldToScreen2D() with the engine camera
+    // Note: This is necessary when passing the position to shaders
+    Point GetWorldToScreen2DNorm(Point world, Point screen = GetScreenDims());
+
     // Scales and draws the given render texture at the correct position to fill most of the given dimensions
     // Scales only with multiples and in a way such that both x and y dimension must fit within the dimensions
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
@@ -103,6 +108,13 @@ namespace magique
     {
         ShaderWrapper(const Shader& shader);
         ~ShaderWrapper();
+    };
+
+    // Activates the render texture in the constructor and ends it in the destructor
+    struct RenderTextureWrapper final
+    {
+        RenderTextureWrapper(const RenderTexture& texture);
+        ~RenderTextureWrapper();
     };
 
 } // namespace magique

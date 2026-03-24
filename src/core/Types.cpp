@@ -677,6 +677,8 @@ namespace magique
     }
 
     int SpriteSheet::getFrameCount() const { return frames; }
+    
+    bool SpriteSheet::isBlank() const { return blank; }
 
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {

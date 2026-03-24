@@ -304,12 +304,13 @@ namespace magique
     struct SpriteSheet final
     {
         SpriteSheet() = default;
-        SpriteSheet(TextureRegion region);
+        explicit SpriteSheet(TextureRegion region);
 
         bool isValid() const;
         [[nodiscard]] TextureRegion getRegion(int frame) const;
 
         int getFrameCount() const;
+        bool isBlank() const;
 
     private:
         M_MAKE_PUB()

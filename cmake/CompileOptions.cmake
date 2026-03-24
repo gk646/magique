@@ -33,7 +33,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -std=c++23
             -march=native
             -flto=auto
-            -fno-exceptions
             -fno-rtti
             -fvisibility=hidden
             -Wall

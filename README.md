@@ -69,6 +69,7 @@ Most notable features:
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.63)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
 - **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection (often used in gamedev)
+- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for resource loading
 
 ### Quickstart
 
