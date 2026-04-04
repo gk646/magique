@@ -84,7 +84,7 @@ namespace magique
 
     void TextButton::fitToText(const Font& font, float size)
     {
-        setSize(Point{MeasureTextEx(font, text.c_str(), size, 1.0F)} + Point{4});
+        setSize(Point{MeasureTextEx(font, text.c_str(), size == 0 ? font.baseSize : size, 1.0F)} + Point{4});
     }
 
     std::string& TextButton::getText() { return text; }
@@ -95,7 +95,7 @@ namespace magique
     {
         const auto& font = EngineGetFont();
         Button::drawDefault(bounds);
-        DrawTextCenteredRect(font, text.c_str(), font.baseSize, bounds, 1.0F, global::ENGINE_CONFIG.theme.text);
+        DrawTextCenteredRect(font, text, font.baseSize, bounds, 1.0F, global::ENGINE_CONFIG.theme.text);
     }
 
 

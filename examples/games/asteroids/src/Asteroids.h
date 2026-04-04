@@ -6,7 +6,7 @@
 using namespace magique;
 
 // Entity identifiers
-enum EntityType : uint16_t
+enum class EntityType : uint16_t
 {
     PLAYER,
     BULLET,
@@ -42,29 +42,28 @@ struct Asteroids final : Game
 {
     Asteroids() : Game("magique - Asteroids") {}
     void onStartup(AssetLoader& loader) override;
-    void updateGame(GameState gameState) override;
-    void drawGame(GameState gameState, Camera2D& camera) override;
-    void drawUI(GameState gameState) override;
+    void onUpdateGame(GameState gameState) override;
+    void onDrawGame(GameState gameState, Camera2D& camera) override;
+    void onDrawUI(GameState gameState) override;
 };
 
 /// Scripts
 
 struct PlayerScript final : EntityScript
 {
-    void onKeyEvent(entt::entity self) override;
-    void onTick(entt::entity self, bool updated) override;
+    void onUpdate(entt::entity self, bool updated) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
 };
 
 struct BulletScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override;
+    void onUpdate(entt::entity self, bool updated) override;
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
 
 struct RockScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override;
+    void onUpdate(entt::entity self, bool updated) override;
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override;
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
@@ -81,21 +80,23 @@ struct HouseScript final : EntityScript
 
 struct PlayerBarUI final : UIObject
 {
-    PlayerBarUI() : UIObject(50, 70, 200, 50) {}
-    void onDraw(const magique::Rect& bounds) override;
+    PlayerBarUI() : UIObject({50, 70, 200, 50}) {}
+    void onDraw(const Rect& bounds) override;
 };
 
 struct ScoreCounter final : UIObject
 {
-    ScoreCounter() : UIObject(200, 50, Anchor::TOP_CENTER) {}
-    void onDraw(const magique::Rect& bounds) override;
+    ScoreCounter() : UIObject({200, 50}, Anchor::TOP_CENTER) {}
+    void onDraw(const Rect& bounds) override;
+    TextButton score{""};
 };
 
 struct GameOverUI final : Button
 {
-    GameOverUI() : Button(250,50, Anchor::MID_CENTER) {}
-    void onClick(const Rectangle& bounds, int button) override;
-    void onDraw(const Rectangle &bounds) override;
+    GameOverUI();
+    void onDraw(const Rect& bounds) override;
+
+    TextButton restart{"Restart"};
 };
 
 #endif // ASTEROIDS_H

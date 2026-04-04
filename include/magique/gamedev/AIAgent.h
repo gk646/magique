@@ -109,7 +109,7 @@ namespace magique
         {
             for (int j = 0; j < (int)StateEnum::ENUM_SIZE; ++j)
             {
-                qMatrix(i, j) = GetRandomFloat(min, max);
+                qMatrix(i, j) = MathRandom(min, max);
             }
         }
     }

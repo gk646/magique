@@ -17,7 +17,7 @@ namespace magique
 
     void CameraSetViewOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraViewOff = {x, y}; }
 
-    void SetCameraTarget(const float x, const float y) { global::ENGINE_CONFIG.cameraPositionOff = {x, y}; }
+    void CameraSetTargetOffset(const float x, const float y) { global::ENGINE_CONFIG.cameraPositionOff = {x, y}; }
 
     void CameraSetSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 

@@ -52,6 +52,8 @@ namespace magique
 
     void Slider::setSliderPercent(const float value) { sliderPos = value; }
 
+    void Slider::setOnChange(const SliderChangeFunc& newFunc) { func = newFunc; }
+
     void Slider::updateActions(const Rect& bounds)
     {
         if (getIsHovered())
@@ -89,8 +91,11 @@ namespace magique
 
         if (isDragged && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
+            float prev = sliderPos;
             const auto delta = GetMouseDelta();
             sliderPos = std::clamp(sliderPos + delta.x / bounds.width, 0.0F, 1.0F);
+            if (sliderPos != prev && func)
+                func(getSliderValue(), sliderPos);
         }
         else
         {
@@ -102,8 +107,8 @@ namespace magique
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-         Color body = theme.getBodyColor( isHovered, isHovered && mouseDown);
-         Color outline = theme.getOutlineColor( isHovered, isHovered && mouseDown);
+        Color body = theme.getBodyColor(isHovered, isHovered && mouseDown);
+        Color outline = theme.getOutlineColor(isHovered, isHovered && mouseDown);
         const auto bodyHeight = bounds.height / 4.0F;
 
         outline.a = 150;

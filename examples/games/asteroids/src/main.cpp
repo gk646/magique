@@ -5,7 +5,7 @@
 int main()
 {
     // Compiles the asset images
-    CompileAssetImage("../res");
+    AssetPackCompile("../res");
     Asteroids game{};
     return game.run();
 }

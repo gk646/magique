@@ -161,8 +161,8 @@ namespace magique
                               Color tint)
     {
         const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
-        const auto center = Rect::CenteredIn(dims, bounds);
-        DrawTextEx(fnt, txt.data(), center.pos(), fs, spacing, tint);
+        const auto center = Point{bounds.x + (bounds.width - dims.x) / 2.0F, bounds.y + (bounds.height - dims.y) / 2.0F};
+        DrawTextEx(fnt, txt.data(), center, fs, spacing, tint);
     }
 
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)

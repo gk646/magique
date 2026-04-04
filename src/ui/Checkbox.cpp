@@ -11,7 +11,7 @@ namespace magique
     {
     }
 
-    void CheckBox::setOnChange(const ChangeFunc& clickFunc) { func = clickFunc; }
+    void CheckBox::setOnChange(const ButtonChangeFunc& clickFunc) { func = clickFunc; }
 
     bool CheckBox::getState() const { return state; }
 

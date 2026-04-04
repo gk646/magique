@@ -51,7 +51,8 @@ namespace magique
     bool MathIsWhole(float num);
 
     // Mirrors the given value vertically
-    float MathMirror(float value, float border);
+    template <typename T>
+    T MathMirror(T value, T border);
 
     // Applies the change to the given value such that it goes closer to 0 (or 0) but not oversteps it
     float TowardsZero(float value, float change);
@@ -95,6 +96,12 @@ namespace magique
     bool MathInRange(const T& val, const T& min, const T& max)
     {
         return (val >= min) && (val <= max);
+    }
+
+    template <typename T>
+    T MathMirror(T value, T border)
+    {
+        return value + (2 * (border - value));
     }
 
 } // namespace magique

@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_SLIDER_H
 #define MAGIQUE_SLIDER_H
 
+#include <functional>
 #include <magique/ui/UIObject.h>
 
 //===============================================
@@ -14,6 +15,9 @@
 
 namespace magique
 {
+    // Called with the new changed value and the slider position in percent
+    using SliderChangeFunc = std::function<void(float value, float percent)>;
+
     struct Slider : UIObject
     {
         // Creates a new slider from coordinates in the logical UI resolution
@@ -44,6 +48,9 @@ namespace magique
         // Sets the slider to the given position - from 0.0 - 1.0 - left = 0, right = 1.0
         void setSliderPercent(float value);
 
+        // Called everytime the value changes and the control is not dragged
+        void setOnChange(const SliderChangeFunc& func);
+
     protected:
         // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
@@ -61,6 +68,7 @@ namespace magique
     private:
         Point getKnobPosition() const;
 
+        SliderChangeFunc func;
         float min = 0, mid = 0.5, max = 1;
         float sliderPos = 0.5;
         SliderMode mode = SliderMode::BALANCED;

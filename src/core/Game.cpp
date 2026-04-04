@@ -59,7 +59,7 @@
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"
 #if MAGIQUE_INCLUDE_FONT == 1
-#include "internal/misc/CascadiaCode.h"
+#include "internal/misc/Probably8Denser.h"
 #endif
 
 // Note: All includes are pulled out topside for clarity
@@ -90,7 +90,7 @@ namespace magique
         global::LOG_DATA.init();
         global::ENGINE_CONFIG.onInit();
 #if MAGIQUE_INCLUDE_FONT == 1
-        global::ENGINE_CONFIG.font = LoadFont_CascadiaCode();
+        global::ENGINE_CONFIG.font = LoadFont_Probably8Denser();
 #else
         global::ENGINE_CONFIG.font = GetFontDefault();
 #endif

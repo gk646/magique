@@ -95,8 +95,6 @@ namespace magique
         return value;
     }
 
-    float MathMirror(float value, float border) { return value + 2 * (border - value); }
-
     Point GetCirclePosOutline(const Point& middle, const float radius, const float angle)
     {
         const auto direction = Point::FromRotation(angle);

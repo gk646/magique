@@ -50,8 +50,6 @@ namespace magique
         float step;
     };
 
-
-
 } // namespace magique
 
 #endif // MAGEQUEST_USEFULSTUFF_H

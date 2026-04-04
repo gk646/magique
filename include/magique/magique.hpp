@@ -46,6 +46,7 @@
 #include "gamedev/Procedural.h"
 #include "gamedev/ShareCode.h"
 #include "gamedev/VirtualClock.h"
+#include "gamedev/TextDrawer.h"
 #include "gamedev/UsefulStuff.h"
 
 // Networking
@@ -70,6 +71,7 @@
 #include "ui/UI.h"
 #include "ui/TextFormat.h"
 #include "ui/UIContainer.h"
+#include "ui/Scene.h"
 #include "ui/controls/Button.h"
 #include "ui/controls/Window.h"
 #include "ui/controls/TextField.h"
@@ -84,7 +86,6 @@
 #include "util/Logging.h"
 #include "util/Strings.h"
 #include "util/JobSystem.h"
-#include "util/Compression.h"
 #include "util/RayUtils.h"
 #include "util/Math.h"
 
