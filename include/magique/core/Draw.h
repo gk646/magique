@@ -65,13 +65,15 @@ namespace magique
     void DrawPixelTextCentered(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
     void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
 
-    // Highlights all numbers in a different color
-    void DrawPixelTextNumbers(const Font& f, const char* txt, Vector2 pos, int fsm = 1, Color text = WHITE,
-                              Color numbers = GRAY);
+    // Draws the given text but highlights all numbers in a different color
+    void DrawPixelTextWithNumberHighlight(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1,
+                                          Color text = WHITE, Color numbers = GRAY);
 
-    // Draws a rectangle over the text block defined by "from" and "to" so it looks like its highlighted
-    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs, float spc = 1.0F,
-                           Color highlight = ColorAlpha(BLUE, 0.4F));
+    // Draws a ONLY a highlight - slightly larger than the text
+    // Note: This can be used BEFORE drawing the text to give it a background color, or AFTER to highlight things
+    // Note: Passing -1 as to means until the end
+    void DrawTextHighlight(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
+                               Color tint = ColorAlpha(BLUE, 0.4F), int from = 0, int to = -1);
 
     //================= SHAPES =================//
 

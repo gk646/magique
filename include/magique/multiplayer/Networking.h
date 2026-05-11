@@ -116,11 +116,12 @@ namespace magique
     void NetworkSetConnMapping(Connection conn, entt::entity entity);
 
     // Returns the entity mapped to this connection - entt::null if none was set
-    entt::entity NetworkGetConnMapping(Connection conn);
+    entt::entity NetworkGetMappedEntity(Connection conn);
 
     // Returns the (first) connection mapped to the given entity (if any)
     // Failure: Returns INVALID_CONNECTION if mapping exists for the given entity
-    Connection NetworkGetConnMapping(entt::entity entity);
+    Connection NetworkGetMappedConnection(entt::entity entity);
+
 
     // Returns the number of the connection
     // This numbers stays the same for as long as the connection doesn't terminate (regardless of other disconnects or joins)
@@ -168,7 +169,7 @@ namespace magique
                           "Include the header where enum class MessageTypes is defined!");
 
             uint32_t total = 0;
-            const auto ticks = EngineGetTick();
+            const auto ticks = EngineGetTicks();
 
             printf("\t%-25s || %10s | %10s\n", "Message // Stat", "Count", "Avg/tick");
             for (const auto& entry : stats)

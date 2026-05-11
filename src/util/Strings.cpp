@@ -77,7 +77,7 @@ namespace magique
     {
         float distance = 0.0F;
         size_t i = 0;
-        const float maxDistance = std::sqrt(9.5F * 9.5F + 3.0F * 3.0F);
+        const float maxDistance = std::sqrtf(9.5F * 9.5F + 3.0F * 3.0F);
 
         while (i < s1.size() && i < s2.size())
         {
@@ -88,7 +88,7 @@ namespace magique
             if (x1 < 0 || x2 < 0) // Invalid character
                 continue;
 
-            const auto dist = std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+            const auto dist = std::sqrtf((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
             distance += dist;
         }
 
@@ -126,8 +126,8 @@ namespace magique
 
     int StringReplace(char* buffer, const int bufferSize, const char* keyword, const char* replacement)
     {
-        const auto lenKeyword = static_cast<int>(strlen(keyword));
-        const auto lenReplacement = static_cast<int>(strlen(replacement));
+        const auto lenKeyword = static_cast<int>(std::strlen(keyword));
+        const auto lenReplacement = static_cast<int>(std::strlen(replacement));
         int replacements = 0;
 
         if (lenKeyword == 0)
@@ -135,7 +135,7 @@ namespace magique
             return 0;
         }
 
-        char* pos = strstr(buffer, keyword);
+        char* pos = std::strstr(buffer, keyword);
         while (pos != nullptr)
         {
             const auto lenBefore = static_cast<int>(pos - buffer);
@@ -143,19 +143,19 @@ namespace magique
 
             if (lenBefore + lenAfter + lenReplacement >= bufferSize)
             {
-                pos = strstr(pos + lenKeyword, keyword);
+                pos = std::strstr(pos + lenKeyword, keyword);
                 continue;
             }
 
             if (lenReplacement != lenKeyword)
             {
-                memmove(pos + lenReplacement, pos + lenKeyword, lenAfter + 1);
+                std::memmove(pos + lenReplacement, pos + lenKeyword, lenAfter + 1);
             }
 
-            memcpy(pos, replacement, lenReplacement);
+            std::memcpy(pos, replacement, lenReplacement);
             replacements++;
 
-            pos = strstr(pos + lenReplacement, keyword);
+            pos = std::strstr(pos + lenReplacement, keyword);
         }
 
         return replacements;
@@ -218,6 +218,25 @@ namespace magique
         return result;
     }
 
+    bool StringIsValidName(const char* text, int minLen, int maxLen)
+    {
+        if (text == nullptr)
+        {
+            return false;
+        }
+        int len = 0;
+        while (*text != '\0')
+        {
+            if ((*text < 'A' || *text > 'Z') && (*text < 'a' || *text > 'z') && (*text < '0' || *text > '9'))
+            {
+                return false;
+            }
+            len++;
+            text++;
+        }
+        return len >= minLen && len <= maxLen;
+    }
+
     bool strcmpnc(const char* s1, const char* s2)
     {
         if ((s1 == nullptr) || (s2 == nullptr))
@@ -244,25 +263,6 @@ namespace magique
             ++s2;
         }
         return n < 0 || *s1 == *s2;
-    }
-
-    bool StringIsValidName(const char* text, int minLen, int maxLen)
-    {
-        if (text == nullptr)
-        {
-            return false;
-        }
-        int len = 0;
-        while (*text != '\0')
-        {
-            if ((*text < 'A' || *text > 'Z') && (*text < 'a' || *text > 'z') && (*text < '0' || *text > '9'))
-            {
-                return false;
-            }
-            len++;
-            text++;
-        }
-        return len >= minLen && len <= maxLen;
     }
 
     std::string StringToBase64(std::string_view input) { return glz::write_base64(input); }

@@ -53,8 +53,8 @@ namespace magique
         case TweenMode::IN_OUT_QUAD:
             return step < 0.5 ? 2 * step * step : 1 - std::pow(-2.0F * step + 2.0F, 2.0F) / 2.0F;
         case TweenMode::IN_OUT_CIRC:
-            return step < 0.5 ? (1.0F - std::sqrt(1.0F - std::pow(2.0F * step, 2.0F))) / 2.0F
-                              : (std::sqrt(1.0F - std::pow(-2.0F * step + 2.0F, 2.0F)) + 1.0F) / 2.0F;
+            return step < 0.5 ? (1.0F - std::sqrtf(1.0F - std::pow(2.0F * step, 2.0F))) / 2.0F
+                              : (std::sqrtf(1.0F - std::pow(-2.0F * step + 2.0F, 2.0F)) + 1.0F) / 2.0F;
         }
         return 0.0F;
     }

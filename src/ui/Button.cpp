@@ -57,7 +57,7 @@ namespace magique
         const auto& theme = global::ENGINE_CONFIG.theme;
         const Color body = theme.getBodyColor(getIsHovered(), getIsClicked());
         const Color outline = theme.getOutlineColor(getIsHovered(), getIsClicked());
-        DrawRectFrameFilled(bounds.floor(), body, outline);
+        DrawRectFrameFilled(bounds.floored(), body, outline);
         drawHoverText(EngineGetFont(), UIGetScaled(1), theme.backActive, theme.backHighlight, theme.textHighlight);
     }
 
@@ -75,7 +75,7 @@ namespace magique
         DrawTextEx(fnt, hoverText.c_str(), mouse, size, 1.0F, text);
     }
 
-    TextButton::TextButton(const char* txt, Anchor anchor, Point inset, ScalingMode mod) :
+    TextButton::TextButton(std::string_view txt, Anchor anchor, Point inset, ScalingMode mod) :
         Button({}, anchor, inset, mod), text(txt)
     {
         const auto& font = EngineGetFont();

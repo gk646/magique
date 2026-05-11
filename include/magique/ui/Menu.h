@@ -37,10 +37,8 @@ namespace magique
         bool activateSubmenu(std::string_view name);
         bool activateSubmenu(Menu* menu);
 
-        // Splits the string at ":" and tries to call activateSubmenu for each entry with new submenu that is activated
-        // Allows to switch into deeper menus from the top
-        // Note: switchToNested("Play:Lobby") - first switches to Play menu, then switches to Lobby inside the Play menu
-        void activateNested(std::string_view nestedMenu);
+        // Activates the first nested menu with the given name - searches all menus recursively
+        void activateNested(std::string_view name);
 
         // Gives control back to the parent
         void activateParent() const;

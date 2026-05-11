@@ -3,7 +3,6 @@
 
 #include <magique/core/Types.h>
 #include <raylib/raylib.h>
-#include <functional>
 
 //===============================================
 // TextDrawer
@@ -28,19 +27,19 @@ namespace magique
 
         // Draw text and resets mods
         // move cursor to the right of the text
-        TextDrawer& left(const std::string_view& txt, Color tint);
+        TextDrawer& left(const std::string_view& txt, Color tint = WHITE);
         TextDrawer& left(Color tint, const char* fmt, ...);
 
         // Draw text centered horizontally - does not move cursor
-        TextDrawer& center(const std::string_view& txt, Color tint);
+        TextDrawer& center(const std::string_view& txt, Color tint = WHITE);
         TextDrawer& center(Color tint, const char* fmt, ...);
 
         // moves right end of line to the left of the text
         // following calls will align to the left of the previous (only for right() calls) (right-mode)
-        TextDrawer& right(const std::string_view& txt, Color tint);
+        TextDrawer& right(const std::string_view& txt, Color tint = WHITE);
         TextDrawer& right(Color tint, const char* fmt, ...);
 
-        // Images
+        // Images - works with modSize()
         TextDrawer& icon(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
 
         // Draws the icon using the right-mode and moves the cursor to the left
@@ -50,8 +49,8 @@ namespace magique
         // moves cursor to the beginning of the next line and resets mods
         TextDrawer& linebreak(float amount = 1.0F);
 
-        // Moves the cursor arbitrarily
-        TextDrawer& move(Point pos);
+        // Moves the line start - persistent across linebreak()
+        TextDrawer& indent(float x);
 
         // moves the cursor either vertical or horizontal by the initial gap multiplied with a factor
         // Negative gap for horizontal moves the right end of line cursor
@@ -61,8 +60,10 @@ namespace magique
         // ===== MODS ======//
         // Temporary mod only for the next action
 
+        // Multiplies the fontsize by the given factor
         TextDrawer& modSize(int fsm);
 
+        // Applies a offset to the cursor
         TextDrawer& modOffset(Point offset);
 
         // Highlights numbers in a different color
@@ -74,6 +75,9 @@ namespace magique
         // Centers the text action vertically inside bounds
         TextDrawer& modCenterV();
 
+        // Applies a background color to the text
+        TextDrawer& modBackground(Color background);
+
         // ===== Helpers ======//
 
         float textWidth(const std::string_view& txt) const;
@@ -81,9 +85,12 @@ namespace magique
         // Returns the new lines added inplace to the given string
         int withNewLines(char* str) const;
 
-        // getters
+        // Returns the position of the cursor where the next action happens
         Point getCursor() const;
-        Rect getBounds();
+
+        // Returns the offset of the cursor from the top left
+        Point getCursorOffset() const;
+
         Rect getBounds() const;
         Rect getGap() const;
 
@@ -101,6 +108,7 @@ namespace magique
         Color modHighlightColor = BLANK;
         Point modOfffset{};
         Color shadeColor{};
+        Color backgroundColor{};
         int modSizeMult = 1;
         bool modCenterVert = false;
 

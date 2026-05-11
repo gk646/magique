@@ -475,13 +475,11 @@ namespace magique
         std::fseek(file, 0, SEEK_END);
         const auto fileSize = static_cast<uint64_t>(ftell(file));
         std::fseek(file, 0, SEEK_SET);
-        uint64_t totalBytesRead = 0;
         uint64_t bytesRead = 0;
 
         while (true)
         {
             bytesRead = std::fread(chunk, 1, 64, file);
-            totalBytesRead += bytesRead;
 
             if (bytesRead == 64)
                 processChunk(chunk, checksum);

@@ -571,7 +571,7 @@ namespace magique
     LocalizedLanguage ImportGettext(Asset asset)
     {
         LocalizedLanguage language{};
-        if (asset.getExtension() != ".po")
+        if (asset.getExtension() != ".po" && asset.getExtension() != ".pot")
         {
             LOG_WARNING("Invalid extension for gettext file: %s", asset.getExtension().data());
             return language;
@@ -579,13 +579,16 @@ namespace magique
 
         const std::string_view file{asset.getData(), (size_t)asset.getSize()};
 
-        const auto langStr = file.substr(findAfter(file, "Language: "), 2);
-        language.language = LocalizationParseLanguage(langStr);
-        if (language.language == Language::None)
+        if (asset.getExtension() == ".po")
         {
-            LOG_WARNING("Failed to import gettext file %s: No such language: %.2s", asset.getFileName().data(),
-                        langStr.data());
-            return language;
+            const auto langStr = file.substr(findAfter(file, "Language: "), 2);
+            language.language = LocalizationParseLanguage(langStr);
+            if (language.language == Language::None)
+            {
+                LOG_WARNING("Failed to import gettext file %s: No such language: %.2s", asset.getFileName().data(),
+                            langStr.data());
+                return language;
+            }
         }
 
         // Remove newlines and " and comments
@@ -639,8 +642,26 @@ namespace magique
         return language;
     }
 
+    LocalizedLanguage ImportGettextBase(Asset asset, Language lang)
+    {
+        LocalizedLanguage language{};
+        if (asset.getExtension() != ".po" && asset.getExtension() != ".pot")
+        {
+            LOG_WARNING("Invalid extension for gettext file: %s", asset.getExtension().data());
+            return language;
+        }
+        language = ImportGettext(asset);
+        language.language = lang;
+        for (auto& [key, translation] : language.translations)
+        {
+            translation = key;
+        }
+        return language;
+    }
+
     LocalizedLanguage ImportMTF(Asset asset)
     {
+
         LocalizedLanguage language{};
         if (asset.getExtension() != ".mtf")
         {

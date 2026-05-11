@@ -15,16 +15,16 @@ namespace magique
 {
     //================= NOISE =================//
 
-    // Returns the noise value at this position
-    float GenerateNoise(float x, float y);
+    // Returns the noise value [-1, 1] at the given position
+    float ProceduralGet(Point pos);
 
     // Changes the generated noise type
     // Effective immediately
-    void SetNoiseType(NoiseType noise);
+    void ProceduralSetType(NoiseType noise);
 
     // Sets a seed - is initialized randomly per default - can be set to deterministically generate noise
     // Effective immediately
-    void SetSeed(int seed);
+    void ProceduralSetSeed(int seed);
 
 } // namespace magique
 

@@ -1,8 +1,6 @@
 #ifndef COLLISION_BENCHMARK_H
 #define COLLISION_BENCHMARK_H
 
-#include <raylib/raylib.h>
-
 #include <magique/magique.hpp>
 
 //-----------------------------------------------
@@ -42,6 +40,11 @@
 // Time: 7.68
 // Time: 7.54   | optimized iteration and removed a branch
 // Time: 5.69ms | New compiler version? some minor branching optimizations
+// Internal rewrites - many version later - slower cause probably more object included
+// Time: 14.8ms | some minor branching optimizations (19297 objects)
+// Time: 14.5ms | minor math optimizations in SAT
+// Time: 14.2ms | sqrtf
+// Time: 13.9ms | Adjusted how much more main thread does vs worker thread
 // .....................................................................
 
 using namespace magique;
@@ -59,7 +62,7 @@ struct TestCompC final
 
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override
+    void onUpdate(entt::entity self, bool updated) override
     {
         auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
@@ -75,7 +78,7 @@ struct PlayerScript final : EntityScript
 
 struct ObjectScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override
+    void onUpdate(entt::entity self, bool updated) override
     {
         auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false;
@@ -97,7 +100,7 @@ void benchmarkSetup()
 {
     for (int i = 0; i < 50'000; ++i)
     {
-        EntityCreate(EntityType::OBJECT, Point::Random(0,4000), MapID(0));
+        EntityCreate(EntityType::OBJECT, Point::Random(0, 4000), MapID(0));
     }
     EntityCreate(EntityType::PLAYER, {2500, 2500}, MapID(0));
     EngineSetBenchmarkTicks(300);
@@ -137,7 +140,7 @@ struct Example final : Game
             ComponentGiveActor(e);
 
             ComponentGiveCamera(e);
-            GiveCollisionRect(e, 15, 25);
+            ComponentGiveCollisionRect(e, {15, 25});
             ComponentGive<TestCompC>(e);
         };
         EntityRegister(EntityType::PLAYER, playerFunc);
@@ -146,15 +149,15 @@ struct Example final : Game
             const auto val = GetRandomValue(0, MAX_SHAPE);
             if (val < 25)
             {
-                GiveCollisionRect(e, OBJECT_SIZE, OBJECT_SIZE);
+                ComponentGiveCollisionRect(e, {OBJECT_SIZE, OBJECT_SIZE});
             }
             else if (val < 50)
             {
-                ComponentGiveCollision(e, {-15, 15}, {15, 15});
+                ComponentGiveCollisionTri(e, {-15, 15}, {15, 15});
             }
             else
             {
-                ComponentGiveCollision(e, 24);
+                ComponentGiveCollisionCircle(e, 24);
             }
 
             ComponentGet<PositionC>(e).rotation = GetRandomValue(0, 5);
@@ -194,10 +197,7 @@ struct Example final : Game
         EndMode2D();
     }
 
-    void onUpdateGame(GameState gameState) override
-    {
-        printf("Loaded Objects: %d\n", EngineGetUpdateEntities().size());
-    }
+    void onUpdateGame(GameState gameState) override { printf("Loaded Objects: %d\n", EngineGetUpdateEntities().size()); }
 };
 
 #endif // COLLISION_BENCHMARK_H

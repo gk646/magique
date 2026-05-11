@@ -40,7 +40,7 @@ namespace magique
         Point targetPosition{0, 0};
         if (cameraEntity != entt::null) [[likely]]
         {
-            targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floor();
+            targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floored();
         }
 
         // Apply manual offset if specified
@@ -119,7 +119,7 @@ namespace magique
             for (const auto idx : objectIds)
             {
                 const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx).bounds;
-                if (p1 == 0 || !camBounds.contains({x, y}))
+                if (p1 == 0 || !camBounds.contains(Point{x, y}))
                 {
                     continue;
                 }

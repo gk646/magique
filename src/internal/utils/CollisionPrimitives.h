@@ -123,8 +123,8 @@ namespace magique
         {
             return;
         }
-        const float overlapX = std::min(x1 + w1, x2 + w2) - std::max(x1, x2);
-        const float overlapY = std::min(y1 + h1, y2 + h2) - std::max(y1, y2);
+        const float overlapX = std::fmin(x1 + w1, x2 + w2) - std::fmax(x1, x2);
+        const float overlapY = std::fmin(y1 + h1, y2 + h2) - std::fmax(y1, y2);
 
         if (overlapX < overlapY)
         {
@@ -139,8 +139,8 @@ namespace magique
             info.penDepth = overlapY;
         }
 
-        info.collisionPoint.x = (std::max(x1, x2) + std::min(x1 + w1, x2 + w2)) / 2.0f;
-        info.collisionPoint.y = (std::max(y1, y2) + std::min(y1 + h1, y2 + h2)) / 2.0f;
+        info.collisionPoint.x = (std::fmax(x1, x2) + std::fmin(x1 + w1, x2 + w2)) / 2.0f;
+        info.collisionPoint.y = (std::fmax(y1, y2) + std::fmin(y1 + h1, y2 + h2)) / 2.0f;
     }
 
     inline void RectToCircle(const float rx, const float ry, const float rw, const float rh, const float cx,
@@ -156,7 +156,7 @@ namespace magique
         {
             return;
         }
-        const float distance = std::sqrt(distance_squared);
+        const float distance = std::sqrtf(distance_squared);
         if (distance != 0.0f) [[likely]]
         {
             info.normalVector.x = dx / distance;
@@ -191,66 +191,55 @@ namespace magique
         {
             return; // Early bound check
         }
+
+        float e1x[4] = {pxs[1] - pxs[0], pxs[2] - pxs[1], pxs[3] - pxs[2], pxs[0] - pxs[3]};
+        float e1y[4] = {pys[1] - pys[0], pys[2] - pys[1], pys[3] - pys[2], pys[0] - pys[3]};
+        float e2x[4] = {p1xs[1] - p1xs[0], p1xs[2] - p1xs[1], p1xs[3] - p1xs[2], p1xs[0] - p1xs[3]};
+        float e2y[4] = {p1ys[1] - p1ys[0], p1ys[2] - p1ys[1], p1ys[3] - p1ys[2], p1ys[0] - p1ys[3]};
+
         float minPenetration = std::numeric_limits<float>::max();
         Point bestAxis{};
         const auto OverlapOnAxis = [](const float (&pxs)[4], const float (&pys)[4], const float (&p1xs)[4],
                                       const float (&p1ys)[4], float& axisX, float& axisY, float& penetration) -> bool
         {
-            float projA[4];
-            projA[0] = pxs[0] * axisX + pys[0] * axisY;
-            projA[1] = pxs[1] * axisX + pys[1] * axisY;
-            projA[2] = pxs[2] * axisX + pys[2] * axisY;
-            projA[3] = pxs[3] * axisX + pys[3] * axisY;
+            // Project all points onto the axis (SIMD candidate)
+            float projA[4] = {pxs[0] * axisX + pys[0] * axisY, pxs[1] * axisX + pys[1] * axisY,
+                              pxs[2] * axisX + pys[2] * axisY, pxs[3] * axisX + pys[3] * axisY};
+            float projB[4] = {p1xs[0] * axisX + p1ys[0] * axisY, p1xs[1] * axisX + p1ys[1] * axisY,
+                              p1xs[2] * axisX + p1ys[2] * axisY, p1xs[3] * axisX + p1ys[3] * axisY};
 
-            float minA = std::min(std::min(std::min(projA[0], projA[1]), projA[2]), projA[3]);
-            float maxA = std::max(std::max(std::max(projA[0], projA[1]), projA[2]), projA[3]);
+            const float minA = std::fmin(std::fmin(projA[0], projA[1]), std::fmin(projA[2], projA[3]));
+            const float maxA = std::fmax(std::fmax(projA[0], projA[1]), std::fmax(projA[2], projA[3]));
+            const float minB = std::fmin(std::fmin(projB[0], projB[1]), std::fmin(projB[2], projB[3]));
+            const float maxB = std::fmax(std::fmax(projB[0], projB[1]), std::fmax(projB[2], projB[3]));
 
-            // Project points of the second shape onto the axis
-            float projB[4];
-            projB[0] = p1xs[0] * axisX + p1ys[0] * axisY;
-            projB[1] = p1xs[1] * axisX + p1ys[1] * axisY;
-            projB[2] = p1xs[2] * axisX + p1ys[2] * axisY;
-            projB[3] = p1xs[3] * axisX + p1ys[3] * axisY;
+            float overlap1 = maxA - minB;
+            float overlap2 = maxB - minA;
+            bool overlaps = (overlap1 >= 0.0f) && (overlap2 >= 0.0f);
+            if (!overlaps)
+                return false;
 
-            float minB = std::min(std::min(std::min(projB[0], projB[1]), projB[2]), projB[3]);
-            float maxB = std::max(std::max(std::max(projB[0], projB[1]), projB[2]), projB[3]);
-
-            if (maxA >= minB && maxB >= minA)
-            {
-                const float overlap1 = maxA - minB;
-                const float overlap2 = maxB - minA;
-
-                if (overlap1 < overlap2)
-                {
-                    penetration = overlap1;
-                }
-                else
-                {
-                    penetration = overlap2;
-                    axisX = -axisX;
-                    axisY = -axisY;
-                }
-                return true;
-            }
-            return false;
+            penetration = (overlap1 < overlap2) ? overlap1 : overlap2;
+            axisX = (overlap1 < overlap2) ? axisX : -axisX;
+            axisY = (overlap1 < overlap2) ? axisY : -axisY;
+            return true;
         };
 
-        const auto processEdge = [&](const float x1, const float y1, const float x2, const float y2)
+        const auto processEdge = [&](const float ex, const float ey)
         {
-            const float edgeX = x2 - x1;
-            const float edgeY = y2 - y1;
-            float axisX = -edgeY;
-            float axisY = edgeX;
+            float axisX = -ey;
+            float axisY = ex;
             float penetration;
 
             float axisLength = axisX * axisX + axisY * axisY;
-            if (axisLength == 0.0f)
+            if (axisLength < 1e-6f)
             {
                 return true; // Skip this axis, continue with others
             }
-            axisLength = std::sqrt(axisLength);
-            axisX /= axisLength;
-            axisY /= axisLength;
+
+            const float invLength = 1.0f / std::sqrtf(axisLength);
+            axisX *= invLength;
+            axisY *= invLength;
 
             if (!OverlapOnAxis(pxs, pys, p1xs, p1ys, axisX, axisY, penetration))
                 return false;
@@ -263,20 +252,22 @@ namespace magique
             return true;
         };
 
-        bool validAxisFound = true;
-        validAxisFound &= processEdge(pxs[0], pys[0], pxs[1], pys[1]);
-        validAxisFound &= processEdge(pxs[1], pys[1], pxs[2], pys[2]);
-        validAxisFound &= processEdge(pxs[2], pys[2], pxs[3], pys[3]);
-        validAxisFound &= processEdge(pxs[3], pys[3], pxs[0], pys[0]);
-        validAxisFound &= processEdge(p1xs[0], p1ys[0], p1xs[1], p1ys[1]);
-        validAxisFound &= processEdge(p1xs[1], p1ys[1], p1xs[2], p1ys[2]);
-        validAxisFound &= processEdge(p1xs[2], p1ys[2], p1xs[3], p1ys[3]);
-        validAxisFound &= processEdge(p1xs[3], p1ys[3], p1xs[0], p1ys[0]);
-
-        if (!validAxisFound)
-        {
-            return; // No collision detected
-        }
+        if (!processEdge(e1x[0], e1y[0]))
+            return;
+        if (!processEdge(e1x[1], e1y[1]))
+            return;
+        if (!processEdge(e1x[2], e1y[2]))
+            return;
+        if (!processEdge(e1x[3], e1y[3]))
+            return;
+        if (!processEdge(e2x[0], e2y[0]))
+            return;
+        if (!processEdge(e2x[1], e2y[1]))
+            return;
+        if (!processEdge(e2x[2], e2y[2]))
+            return;
+        if (!processEdge(e2x[3], e2y[3]))
+            return;
 
         info.normalVector = -bestAxis; // already normalized
         info.penDepth = minPenetration;
@@ -290,15 +281,14 @@ namespace magique
                                const float r2, CollisionInfo& info)
     {
         const float radiiSum = r1 + r2;
-
         const float dx = x2 - x1;
         const float dy = y2 - y1;
-        float distance_squared = dx * dx + dy * dy;
+        const float distance_squared = dx * dx + dy * dy;
         if (distance_squared > radiiSum * radiiSum)
         {
             return;
         }
-        float distance = std::sqrt(distance_squared);
+        const float distance = std::sqrtf(distance_squared);
         info.penDepth = radiiSum - distance;
         info.normalVector = {(x1 - x2) / distance, (y1 - y2) / distance};
         info.collisionPoint = {x1 + info.normalVector.x * r1, y1 + info.normalVector.y * r1};
@@ -356,13 +346,15 @@ namespace magique
             closest = &closest4;
         }
 
-        if (minDist <= radiusSq)
+        if (minDist > radiusSq) [[unlikely]]
         {
-            const float distance = std::sqrt(minDist);
-            info.penDepth = cr - distance;
-            info.normalVector = closest->dir(mid);
-            info.collisionPoint = *closest;
+            return;
         }
+
+        const float distance = std::sqrtf(minDist);
+        info.penDepth = cr - distance;
+        info.normalVector = closest->dir(mid);
+        info.collisionPoint = *closest;
     }
 
     inline void QuadrilateralToCircle(const float (&pxs)[4], const float (&pys)[4], const float cx, const float cy,
@@ -373,7 +365,6 @@ namespace magique
         info.normalVector = -info.normalVector;
     }
 
-
     //----------------- ROTATION -----------------//
 
     // Takes translation x and y / point coordinates relative to translation / rotation clockwise in degrees from the top / anchor is relative to the points
@@ -381,10 +372,9 @@ namespace magique
     inline void RotatePoints4(float x, float y, float (&pxs)[4], float (&pys)[4], const float rotation,
                               const float anchorX, const float anchorY)
     {
-        const float cosTheta = cosf(rotation * DEG2RAD);
-        const float sinTheta = sinf(rotation * DEG2RAD);
+        const float cosTheta = std::cosf(rotation * DEG2RAD);
+        const float sinTheta = std::sinf(rotation * DEG2RAD);
 
-        // Rotate point 0
         const float localX0 = pxs[0] - anchorX;
         const float localY0 = pys[0] - anchorY;
         const float rotatedX0 = localX0 * cosTheta - localY0 * sinTheta;
@@ -392,7 +382,6 @@ namespace magique
         pxs[0] = x + rotatedX0 + anchorX;
         pys[0] = y + rotatedY0 + anchorY;
 
-        // Rotate point 1
         const float localX1 = pxs[1] - anchorX;
         const float localY1 = pys[1] - anchorY;
         const float rotatedX1 = localX1 * cosTheta - localY1 * sinTheta;
@@ -400,7 +389,6 @@ namespace magique
         pxs[1] = x + rotatedX1 + anchorX;
         pys[1] = y + rotatedY1 + anchorY;
 
-        // Rotate point 2
         const float localX2 = pxs[2] - anchorX;
         const float localY2 = pys[2] - anchorY;
         const float rotatedX2 = localX2 * cosTheta - localY2 * sinTheta;
@@ -408,7 +396,6 @@ namespace magique
         pxs[2] = x + rotatedX2 + anchorX;
         pys[2] = y + rotatedY2 + anchorY;
 
-        // Rotate point 3
         const float localX3 = pxs[3] - anchorX;
         const float localY3 = pys[3] - anchorY;
         const float rotatedX3 = localX3 * cosTheta - localY3 * sinTheta;

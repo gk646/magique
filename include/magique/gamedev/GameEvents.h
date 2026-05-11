@@ -37,41 +37,21 @@ namespace magique
 
     using EventFunc = std::function<void(GameEvent event, entt::entity entity, const EventData& data)>;
 
-    // Returns the global event manager instance
-    EventManager& GameEventsGet();
+    // Immediately calls all handlers in correct order if conditions match (e.g. filter matches and shouldBeCalled() is true)
+    // Template is only for cleaner signature - MUST be type EventData
+    template <typename EventDataT = EventData>
+    void GameEventsEmit(GameEvent event, entt::entity entity = entt::null, const EventDataT& data = {});
 
-    struct EventManager final
-    {
-        // Adds an event handler
-        //  - filter: only calls event func if emitted entity matches filter
-        //  - priority: called in priority order descending - highest first
-        EventSubID subscribe(IEventHandler* handler, entt::entity filter = entt::null, int priority = 0);
+    // Adds an event handler
+    //  - filter: only calls event func if emitted entity matches filter
+    //  - priority: called in priority order descending - highest first
+    EventSubID GameEventsSubscribe(IEventHandler* handler, entt::entity filter = entt::null, int priority = 0);
 
-        // Called every time the filter matches
-        EventSubID subscribe(const EventFunc& func, entt::entity filter= entt::null, int priority = 0);
+    // Called every time the filter matches
+    EventSubID GameEventsSubscribe(const EventFunc& func, entt::entity filter = entt::null, int priority = 0);
 
-        // Returns true if the subscription has been removed
-        bool unsubscribe(EventSubID id);
-
-        // Immediately calls all handlers in correct order if conditions match (e.g. filter matches and shouldBeCalled() is true)
-        // Template is only for cleaner signature - MUST be type EventData
-        template <typename EventDataT = EventData>
-        void emit(GameEvent event, entt::entity entity = entt::null, const EventDataT& data = {});
-
-    private:
-        struct EventSubscription final
-        {
-            bool isValid(entt::entity entity) const;
-            IEventHandler* handler;
-            int priority;
-            entt::entity filter;
-            EventSubID id;
-            GameEvent event;
-        };
-
-        EventSubID curr = 1;
-        std::vector<EventSubscription> subscribers;
-    };
+    // Returns true if the subscription has been removed
+    bool GameEventsCancel(EventSubID id);
 
 } // namespace magique
 

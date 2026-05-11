@@ -48,7 +48,7 @@ namespace magique
                     }
                     else
                     {
-                        const auto mult = std::sqrt(1.0F - data.volume); // Already calculated in the setter
+                        const auto mult = std::sqrtf(1.0F - data.volume); // Already calculated in the setter
                         // Distributed by splitting up outer rectangle in 4 rectangles
                         // Two long ones  above and bottom - and then the two sides (so they dont overlap)
                         auto rect = GetRandomValue(0, 3);
@@ -200,7 +200,7 @@ namespace magique
 
     EmitterBase& EmitterBase::setEmissionRotationAnchor(const Point& anchor)
     {
-        data.emissionAnchor = anchor.floor();
+        data.emissionAnchor = anchor.floored();
         return *this;
     }
 

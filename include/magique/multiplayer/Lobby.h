@@ -67,11 +67,11 @@ namespace magique
         // Gets the value of the start signal
         [[nodiscard]] bool getStartSignal() const;
 
-        // Sends a new chat message in the lobby chat
+        // Sends a new chat message in the lobby chat - replicates to steam
         // Note: requires you to be in a lobby - callback not called for sent messages
-        void sendChatMessage(std::string_view message);
+        void sendChatMsg(std::string_view message);
 
-        // Sets the metadata - behavior differs from clients vs hosts
+        // Sets the metadata - behavior differs from clients vs hosts - replicates the change to the steam lobby
         // Host:   Immediately sets the value and sends the update to all clients
         // Client: Sent the change only to the host - host then decides what to do with it
         // Note: metadata is automatically cleared if the multiplayer session closes

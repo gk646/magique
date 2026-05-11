@@ -21,6 +21,12 @@ namespace magique
     void EntityAnimation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
                                          Point off, Point anch)
     {
+        if (sheet.frames == 0)
+        {
+            LOG_WARNING("Cannot add sheet with 0 frames to animation");
+            return;
+        }
+
         auto& animation = animations[state];
         for (int i = 0; i < sheet.frames; ++i)
         {
@@ -28,10 +34,10 @@ namespace magique
             animation.durationMillis += durations[i];
         }
         animation.sheet = sheet;
-        offset = {off.x, off.y};
-        offset *= logicScale;
-        anchor = {anch.x, anch.y};
-        anchor *= logicScale;
+        offset = off * logicScale;
+        if (anch == 0)
+            anch = sheet.getRegion(0).getSize() / 2;
+        anchor = anch * logicScale;
     }
 
     void EntityAnimation::removeAnimation(AnimationState state) { animations.erase(state); }
@@ -51,6 +57,8 @@ namespace magique
     void EntityAnimation::setOffset(Point newOffset) { offset = newOffset; }
 
     Point EntityAnimation::getAnchor() const { return anchor; }
+
+    void EntityAnimation::setAnchor(Point newAnchor) { anchor = newAnchor; }
 
     bool EntityAnimation::hasAnimation(AnimationState state) const { return animations.contains(state); }
 

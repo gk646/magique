@@ -61,7 +61,7 @@ namespace magique
     void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint)
     {
         const auto center = pos - region.getSize() / 2;
-        DrawRegion(region, center.floor(), false, tint);
+        DrawRegion(region, center.floored(), false, tint);
     }
 
     void DrawRegionPro(const TextureRegion& region, Rect dest, const float rot, const Point anchor, const Color tint)
@@ -308,60 +308,59 @@ namespace magique
         DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
     }
 
-    void DrawPixelTextNumbers(const Font& font, const char* text, Vector2 position, int fsm, Color textColor,
-                              Color numberColor)
+
+    void DrawPixelTextWithNumberHighlight(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color text,
+                                          Color numbers)
     {
-        int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
-        float spacing = (float)fsm;
-        float fontSize = (float)font.baseSize * (float)fsm;
-        float textOffsetY = 0;    // Offset between lines (on linebreak '\n')
-        float textOffsetX = 0.0f; // Offset X to next character to draw
+        float fs = (float)f.baseSize * (float)fsm;
+        float spc = (float)fsm;
 
-        float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
-
+        const int size = TextLength(txt.data());
+        float textOffsetY = 0;
+        float textOffsetX = 0.0f;
+        const float scaleFactor = fs / f.baseSize;
         for (int i = 0; i < size;)
         {
-            // Get next codepoint from byte string and glyph index in font
             int codepointByteCount = 0;
-            int codepoint = GetCodepointNext(&text[i], &codepointByteCount);
-            int index = GetGlyphIndex(font, codepoint);
-
+            const int codepoint = GetCodepointNext(&txt[i], &codepointByteCount);
+            const int index = GetGlyphIndex(f, codepoint);
             if (codepoint == '\n')
             {
-                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetY += (fontSize + GetTextLineSpacing());
+                textOffsetY += (fs + GetTextLineSpacing());
                 textOffsetX = 0.0f;
             }
             else
             {
-                const Color& txtColor = (isdigit(codepoint) != 0) ? numberColor : textColor;
+                const auto& info = f.glyphs[index];
+                const auto& rec = f.recs[index];
                 if ((codepoint != ' ') && (codepoint != '\t'))
                 {
-                    DrawTextCodepoint(font, codepoint, Vector2{position.x + textOffsetX, position.y + textOffsetY},
-                                      fontSize, txtColor);
+                    Vector2 charPos{pos.x + textOffsetX, pos.y + textOffsetY};
+                    const Color& txtColor = (isdigit(codepoint) != 0) ? numbers : text;
+                    DrawTextCodepoint(f, codepoint, charPos, fs, txtColor);
                 }
-
-                if (font.glyphs[index].advanceX == 0)
-                    textOffsetX += ((float)font.recs[index].width * scaleFactor + spacing);
+                if (info.advanceX == 0)
+                    textOffsetX += rec.width * scaleFactor + spc;
                 else
-                    textOffsetX += ((float)font.glyphs[index].advanceX * scaleFactor + spacing);
+                    textOffsetX += (float)info.advanceX * scaleFactor + spc;
             }
-
-            i += codepointByteCount; // Move text bytes counter to next codepoint
+            i += codepointByteCount;
         }
     }
 
-    void DrawTextHighlight(int from, int to, const Font& f, const char* txt, Vector2 pos, float fs, float spc,
-                           Color highlight)
+    void DrawTextHighlight(const Font& f, std::string_view text, Point pos, float fs, float spc, Color tint, int from,
+                           int to)
     {
+        if (to == -1)
+            to = text.size();
         if (from > to)
-        {
             std::swap(from, to);
-        }
 
+        const char* txt = text.data();
         const char* textStart = txt;
         const char* lineStart = txt;
         Rectangle baseRect = {pos.x - 1.0F, pos.y - 1.0F, 0, fs + 2};
+
         while (true)
         {
             if (*txt == '\n' || *txt == '\0')
@@ -384,7 +383,7 @@ namespace magique
                         lineRect.x = std::floor(lineRect.x);
                         lineRect.width = width + 2;
                         lineRect.width = std::floor(lineRect.width);
-                        DrawRectangleRec(lineRect, highlight);
+                        DrawRectangleRec(lineRect, tint);
                     }
                 }
 

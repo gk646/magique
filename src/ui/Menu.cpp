@@ -46,21 +46,14 @@ namespace magique
         return false;
     }
 
-    void Menu::activateNested(std::string_view nestedMenu)
+    void Menu::activateNested(std::string_view search)
     {
-        auto parts = StringSplit(nestedMenu, ':');
-        Menu* menu = this;
-        for (auto& child : parts)
+        if (activateSubmenu(search))
+            return;
+
+        for (auto& [name, ptr] : getChildren())
         {
-            if (!menu->activateSubmenu(child))
-            {
-                break;
-            }
-            else
-            {
-                menu = menu->getChild(child)->getAs<Menu>();
-                menu->inactivateChildren();
-            }
+            ptr->getAs<Menu>()->activateNested(search);
         }
     }
 
@@ -77,6 +70,17 @@ namespace magique
         inactivateChildren();
         isActive = true;
         subMenu = nullptr;
+
+        Menu* parentPtr = parent;
+        Menu* subMenuPtr = this;
+        while (parentPtr != nullptr)
+        {
+            parentPtr->subMenu = subMenuPtr;
+            parentPtr->isActive = false;
+
+            subMenuPtr = parentPtr;
+            parentPtr = parentPtr->parent;
+        }
     }
 
     void Menu::disable() { isActive = false; }

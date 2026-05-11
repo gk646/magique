@@ -4,6 +4,8 @@
 
 #include <functional>
 #include <magique/steam/Steam.h>
+#include <magique/steam/Matchmaking.h>
+
 #include "internal/globals/NetworkingData.h"
 
 #ifdef MAGIQUE_STEAM
@@ -17,18 +19,25 @@ namespace magique
         STEAM_CALLBACK(SteamCallback, OnLobbyEntered, LobbyEnter_t);
         STEAM_CALLBACK(SteamCallback, OnJoinRequested, GameLobbyJoinRequested_t);
         STEAM_CALLBACK(SteamCallback, OnConnectionStatusChange, SteamNetConnectionStatusChangedCallback_t);
+        STEAM_CALLBACK(SteamCallback, OnNewUrlLaunch, NewUrlLaunchParameters_t);
+        STEAM_CALLBACK(SteamCallback, OnUserStats, UserStatsReceived_t);
     };
 
     struct SteamData final
     {
         SteamCallback* callback = nullptr;
         CCallResult<SteamData, LobbyCreated_t> m_SteamCallResultCreateLobby;
+        CCallResult<SteamData, LobbyMatchList_t> m_CallResultLobbyMatchList;
 
-        std::function<void(SteamID, const std::string&)> chatCallback;
-        std::function<void(SteamLobbyID, SteamID, SteamLobbyEvent)> lobbyEventCallback;
-        std::string cacheString;
+        std::function<void(SteamID, std::string_view)> chatCallback;
+        SteamLobbyCallback lobbyEventCallback;
+        SteamLobbySearchCallback lobbySearchCallback;
         SteamOverlayCallback overlayCallback = nullptr;
+        std::function<void()> urlLaunchCallback;
+        std::function<void(const SteamStatResult& res, SteamID)> statsCallback;
 
+        std::string cacheString;
+        std::vector<SteamLobbyID> lobbySearchResult;
         CSteamID userID;
         CSteamID lobbyID = CSteamID(0, k_EUniverseInvalid, k_EAccountTypeInvalid);
         bool isInitialized = false;
@@ -50,6 +59,7 @@ namespace magique
         void update() { SteamAPI_RunCallbacks(); }
 
         void OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure);
+        void OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure);
     };
 
     inline CSteamID SteamIDFromMagique(SteamID magiqueID) { return CSteamID{static_cast<uint64>(magiqueID)}; }
@@ -73,7 +83,6 @@ namespace magique
         inline SteamData STEAM_DATA{};
     } // namespace global
 
-
     inline void SteamCallback::OnJoinRequested(GameLobbyJoinRequested_t* pParam)
     {
         auto& steam = global::STEAM_DATA;
@@ -84,8 +93,6 @@ namespace magique
             steam.lobbyEventCallback(lobbyID, steamID, SteamLobbyEvent::ON_LOBBY_INVITE);
         }
     }
-
-    //----------------- LOBBY IMPLEMENTATION -----------------//
 
     inline void SteamCallback::OnLobbyChatUpdate(LobbyChatUpdate_t* pCallback)
     {
@@ -134,9 +141,7 @@ namespace magique
             {
                 steam.cacheString = message;
                 if (steam.chatCallback)
-                {
                     steam.chatCallback(static_cast<SteamID>(senderID.ConvertToUint64()), steam.cacheString);
-                }
             }
         }
     }
@@ -153,8 +158,14 @@ namespace magique
         }
     }
 
-    inline void SteamData::OnLobbyCreated(LobbyCreated_t* pCallback, bool /**/)
+    inline void SteamData::OnLobbyCreated(LobbyCreated_t* pCallback, bool bIOFailure)
     {
+        if (bIOFailure)
+        {
+            LOG_WARNING("Failed to create lobby");
+            return;
+        }
+
         auto& steam = global::STEAM_DATA;
         if (pCallback->m_eResult == k_EResultOK)
         {
@@ -166,6 +177,39 @@ namespace magique
                 lobbyEventCallback(lobbyID, steamID, SteamLobbyEvent::ON_LOBBY_CREATED);
             }
         }
+    }
+
+    inline void SteamData::OnLobbyMatchList(LobbyMatchList_t* pLobbyMatchList, bool bIOFailure)
+    {
+        if (bIOFailure)
+        {
+            LOG_WARNING("Failed to retrieve lobby list");
+            return;
+        }
+
+        lobbySearchResult.clear();
+        for (uint32_t i = 0; i < pLobbyMatchList->m_nLobbiesMatching; i++)
+        {
+            lobbySearchResult.push_back(
+                static_cast<SteamLobbyID>(SteamMatchmaking()->GetLobbyByIndex(i).ConvertToUint64()));
+        }
+
+        if (lobbySearchCallback)
+            lobbySearchCallback(lobbySearchResult);
+    }
+
+    inline void SteamCallback::OnNewUrlLaunch(NewUrlLaunchParameters_t* pCallback)
+    {
+        if (global::STEAM_DATA.urlLaunchCallback)
+            global::STEAM_DATA.urlLaunchCallback();
+    }
+
+    inline void SteamCallback::OnUserStats(UserStatsReceived_t* pParam)
+    {
+        SteamStatResult result{static_cast<SteamID>(pParam->m_steamIDUser.ConvertToUint64())};
+        if (pParam->m_nGameID == SteamGetAppID() && pParam->m_eResult == k_EResultOK)
+            if (global::STEAM_DATA.statsCallback)
+                global::STEAM_DATA.statsCallback(result, result.user);
     }
 
 } // namespace magique

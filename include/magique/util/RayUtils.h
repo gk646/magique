@@ -13,8 +13,42 @@
 
 namespace magique
 {
+    //================= UTIL =================//
+
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
+
+    // Toggles fullscreen more reliably - should not be called during a frame
+    // First maximizes the window then sets the monitors max size then toggles fullscreen
+    void ToggleFullscreenEx();
+
+    // Returns the screen dimension in a point
+    Point GetScreenDims();
+
+    // Loads a texture from memory (by first loading it as image)
+    Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType = ".png");
+
+    Point GetGamePadLeftStick(int gamepad, float deadZone = 0.2F);
+    Point GetGamePadRightStick(int gamepad, float deadZone = 0.2F);
+
+    // Activates the shader in the constructor and ends the shader in the destructor
+    struct ShaderWrapper
+    {
+        ShaderWrapper(const Shader& shader);
+        ~ShaderWrapper();
+    };
+
+    // Activates the render texture in the constructor and ends it in the destructor
+    struct RenderTextureWrapper final
+    {
+        RenderTextureWrapper(const RenderTexture& texture);
+        ~RenderTextureWrapper();
+    };
+
+    //================= DRAWING =================//
+
+    // Draws a scaled render texture at the given position (automatically flips it)
+    void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint = WHITE);
 
     // Returns the length of the text up to the specified index
     float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
@@ -28,32 +62,19 @@ namespace magique
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
 
-    // Toggles fullscreen more reliably - should not be called during a frame
-    // First maximizes the window then sets the monitors max size then toggles fullscreen
-    void ToggleFullscreenEx();
-
-    // Loads a texture from memory (by first loading it as image)
-    Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType = ".png");
-
-    // Draws the full texture at the specified position and scaled
-    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, Color tint = WHITE);
-
-    // Draws a scaled render texture at the given position (automatically flips it)
-    void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint = WHITE);
-
     // Draws a nice looking (rounded) pixel art outline with the given radius
     // First the outline (dark) then the actual line (lighter) and the filler on the edges (lightest)
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
                           float radius = 2);
 
     // Draws an unrounded pixel art outline
-    void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border);
+    void DrawPixelBorder(const Rect& bounds, const Color& outline, const Color& border);
 
     // Returns true if mouse is inside rect or on rect
     bool CheckCollisionMouseRect(const Rectangle& bounds);
 
     // Draws a horizontally centered texture
-    void DrawTextCenteredureV(const Texture& texture, const Vector2& pos, const Color& tint);
+    void DrawTextureCenteredV(const Texture& texture, const Vector2& pos, const Color& tint);
 
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
@@ -72,9 +93,6 @@ namespace magique
     // Draws a frame but filled
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline);
 
-    // Returns the screen dimension in a point
-    Point GetScreenDims();
-
     // Returns the normalized position on the screen of the given world pos (e.g. 0.0 - 1.0)
     // Uses GetWorldToScreen2D() with the engine camera
     // Note: This is necessary when passing the position to shaders
@@ -85,36 +103,25 @@ namespace magique
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
 
+    // Draws an arrow in the given bounds
+    // Note: For optimal results width should be even and height should be more than width
+    void DrawArrow(const Rect& bounds, Color tint = WHITE);
+
     struct MouseDragger final
     {
-        // Updates the zoom and returns the new camera position
+        // Updates the zoom and returns the new camera position based on mouse dragg when called
         Point update(Camera2D& camera, float zoomMult = 2, float min = 1, float max = 5);
 
+        // Returns the offset from drag start to the current position
         Point getDragOffset(Camera2D& camera) const;
 
-        Point getDragStartWorld() const;
+        // Returns the camera position when the drag was started
+        Point getCameraDragStart() const;
 
     private:
         void resetDragPos(Camera2D& camera);
         Point dragStartScreen{};
-        Point dragStartWorld{};
-    };
-
-    Point GetGamePadLeftStick(int gamepad, float deadZone = 0.2F);
-    Point GetGamePadRightStick(int gamepad, float deadZone = 0.2F);
-
-    // Activates the shader in the constructor and ends the shader in the destructor
-    struct ShaderWrapper
-    {
-        ShaderWrapper(const Shader& shader);
-        ~ShaderWrapper();
-    };
-
-    // Activates the render texture in the constructor and ends it in the destructor
-    struct RenderTextureWrapper final
-    {
-        RenderTextureWrapper(const RenderTexture& texture);
-        ~RenderTextureWrapper();
+        Point dragStartCamera{};
     };
 
 } // namespace magique

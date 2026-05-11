@@ -9,10 +9,10 @@ namespace magique
 {
     FastNoiseLite NOISE_GEN{static_cast<int>(time(nullptr))};
 
-    float GenerateNoise(const float x, const float y) { return NOISE_GEN.GetNoise(x, y); }
+    float ProceduralGet(const Point p) { return NOISE_GEN.GetNoise(p.x, p.y); }
 
-    void SetNoiseType(NoiseType noise) { NOISE_GEN.SetNoiseType(static_cast<FastNoiseLite::NoiseType>(noise)); }
+    void ProceduralSetType(NoiseType noise) { NOISE_GEN.SetNoiseType(static_cast<FastNoiseLite::NoiseType>(noise)); }
 
-    void SetSeed(const int seed) { NOISE_GEN.SetSeed(seed); }
+    void ProceduralSetSeed(const int seed) { NOISE_GEN.SetSeed(seed); }
 
 } // namespace magique

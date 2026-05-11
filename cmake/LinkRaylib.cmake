@@ -7,6 +7,7 @@ set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
 set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
+set(OPENGL_VERSION "4.3")
 
 if (UNIX)
     set(GLFW_BUILD_X11 ON)
@@ -22,7 +23,7 @@ add_subdirectory(src/external/raylib)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     # For both modes
     target_compile_options(raylib PRIVATE
-            -Wall -march=native -fno-exceptions -fvisibility=hidden -flto=auto
+            -Wall -march=native -fno-exceptions -fvisibility=hidden -flto=auto  -ffast-math -fno-math-errno -fno-trapping-math
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >

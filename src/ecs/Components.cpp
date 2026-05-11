@@ -52,10 +52,10 @@ namespace magique
     void AnimationC::drawCurrentFrame(const Point& pos, const float rotation) const
     {
         const auto currentFrame = currentAnimation.getCurrentFrame(millisCount);
-        const auto offset = animation->getOffset();
-        const Rectangle dest = {pos.x + offset.x, pos.y + offset.y,
-                                static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
-                                static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)};
+         Rect dest = {pos + animation->getOffset(),
+                           {static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
+                      static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)}};
+        dest.floor();
         DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor());
     }
 
@@ -153,7 +153,7 @@ namespace magique
                 finalAnchor = tex.offset + tex.anchor;
             }
             const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
-            DrawRegionPro(tex.texture, dest.floor(), std::floor(rotation), finalAnchor, tint);
+            DrawRegionPro(tex.texture, dest.floored(), std::floor(rotation), finalAnchor, tint);
         }
     }
 
@@ -227,9 +227,9 @@ namespace magique
         switch (shape)
         {
         case Shape::RECT:
-            return Point{p1, p2} / 2.0F + offset;
+            return offset + Point{p1, p2} / 2.0F;
         case Shape::CIRCLE:
-            return Point{p1, p1} + offset;
+            return offset + Point{p1, p1};
         case Shape::TRIANGLE:
             break;
         }

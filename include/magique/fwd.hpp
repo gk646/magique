@@ -96,7 +96,6 @@ namespace magique
     struct LoadingScreen;
     struct Window;
     struct WindowManager;
-    struct SceneManager;
     struct Menu;
     struct Popup;
     struct Scene;

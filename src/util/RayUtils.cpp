@@ -28,7 +28,6 @@ namespace magique
     int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing)
     {
         int size = TextLength(text);                  // Total size in bytes of the text, scanned by codepoints in loop
-        float textOffsetY = 0;                        // Offset between lines (on linebreak '\n')
         float textOffsetX = 0.0f;                     // Offset X to next character to draw
         float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
         for (int i = 0; i < size;)
@@ -41,7 +40,6 @@ namespace magique
             if (codepoint == '\n')
             {
                 // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetY += (fontSize + GetTextLineSpacing());
                 textOffsetX = 0.0f;
             }
             else
@@ -111,11 +109,6 @@ namespace magique
         return texture;
     }
 
-    void DrawTextureScaled(const Texture& texture, const Rectangle& dest, Color tint)
-    {
-        DrawTexturePro(texture, {0, 0, (float)texture.width, (float)texture.height}, dest, {0, 0}, 0, tint);
-    }
-
     void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint)
     {
         DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height},
@@ -135,7 +128,7 @@ namespace magique
         DrawRectangleRoundedLinesEx(bounds, boundsRound, 30, 1, border);
     }
 
-    void DrawPixelBorder(const Rectangle& bounds, const Color& outline, const Color& border)
+    void DrawPixelBorder(const Rect& bounds, const Color& outline, const Color& border)
     {
         auto enlargedRect = Rect{bounds}.enlarge(2);
         DrawRectangleLinesEx(enlargedRect, 1, outline);
@@ -144,7 +137,7 @@ namespace magique
 
     bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
-    void DrawTextCenteredureV(const Texture& texture, const Vector2& pos, const Color& tint)
+    void DrawTextureCenteredV(const Texture& texture, const Vector2& pos, const Color& tint)
     {
         auto center = pos;
         center.x -= (float)texture.width / 2.0F;
@@ -161,8 +154,8 @@ namespace magique
                               Color tint)
     {
         const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
-        const auto center = Point{bounds.x + (bounds.width - dims.x) / 2.0F, bounds.y + (bounds.height - dims.y) / 2.0F};
-        DrawTextEx(fnt, txt.data(), center, fs, spacing, tint);
+        const Point center = {bounds.x + (bounds.width - dims.x) / 2.0F, bounds.y + (bounds.height - dims.y) / 2.0F};
+        DrawTextEx(fnt, txt.data(), center.floored(), fs, spacing, tint);
     }
 
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)
@@ -214,11 +207,11 @@ namespace magique
 
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(bounds.floor().shrink(2), fill);
+        DrawRectangleRec(bounds.floored().shrink(2), fill);
 #ifdef _MSC_VER
-        DrawRectFrame(bounds.floor() + Point{0, 1}, outline);
+        DrawRectFrame(bounds.floored() + Point{0, 1}, outline);
 #else
-        DrawRectFrame(bounds.floor(), outline);
+        DrawRectFrame(bounds.floored(), outline);
 #endif
     }
 
@@ -240,6 +233,31 @@ namespace magique
         const auto drawPos = Rect::CenteredIn({canvas}, display).pos();
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, {drawPos, canvas}, WHITE);
+    }
+
+    void DrawArrow(const Rect& bounds, Color tint)
+    {
+        const auto tip = bounds.topMid().floor();
+        const auto base = bounds.bottomMid().round();
+
+        const float thick = std::max(1.0f, bounds.width / 5.0f);
+        DrawLineEx(tip, base, thick, tint);
+
+        if (bounds.width == 4)
+        {
+            DrawPixelV(tip  + Point{-2,1}, tint);
+            DrawPixelV(tip + Point{-3,2}, tint);
+            DrawPixelV(tip + Point{0,1}, tint);
+            DrawPixelV(tip + Point{1,2}, tint);
+        }
+        else
+        {
+            const float headOffset = bounds.height * 0.5f;
+            const auto leftHead = Point(bounds.leftMid().x, tip.y + headOffset).round();
+            const auto rightHead = Point(bounds.rightMid().x, tip.y + headOffset).round();
+            DrawLineEx(leftHead, tip, thick, tint);
+            DrawLineEx(rightHead, tip, thick, tint);
+        }
     }
 
     Point GetScreenDims() { return {(float)GetScreenWidth(), (float)GetScreenHeight()}; }
@@ -268,12 +286,12 @@ namespace magique
         if (UIGetDragStart() == -1)
         {
             dragStartScreen = GetMousePos();
-            dragStartWorld = camera.target;
+            dragStartCamera = camera.target;
         }
         else
         {
             auto diff = (dragStartScreen - GetMousePos()) / camera.zoom;
-            newTarget = dragStartWorld + diff.floor();
+            newTarget = dragStartCamera + diff.floor();
             newTarget.floor();
         }
         return newTarget;
@@ -281,7 +299,7 @@ namespace magique
 
     Point MouseDragger::getDragOffset(Camera2D& camera) const { return (dragStartScreen - GetMousePos()) / camera.zoom; }
 
-    Point MouseDragger::getDragStartWorld() const { return dragStartWorld; }
+    Point MouseDragger::getCameraDragStart() const { return dragStartCamera; }
 
     void MouseDragger::resetDragPos(Camera2D& camera)
     {
@@ -293,11 +311,11 @@ namespace magique
         }
 
         const auto diff = dragStartScreen - GetMousePos();
-        auto newTarget = dragStartWorld + (diff / camera.zoom);
+        auto newTarget = dragStartCamera + (diff / camera.zoom);
         camera.target.x = newTarget.x;
         camera.target.y = newTarget.y;
 
-        dragStartWorld = newTarget;
+        dragStartCamera = newTarget;
         dragStartScreen = GetMousePos();
     }
 

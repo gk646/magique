@@ -42,15 +42,15 @@ namespace magique
         template <typename T>
         void saveVector(std::string_view slot, const std::vector<T>& vector);
 
-        // Serializes the given object to JSON using assets/JSON.h
+        // Serializes the given object to JSON using assets/JSON.h and returns a view to the written data
         template <typename T>
-        void saveJSON(std::string_view slot, const T& obj);
+        std::string_view saveJSON(std::string_view slot, const T& obj);
 
         //================= GETTING =================//
 
-        // If the storage exists AND stores a string returns a copy of it
+        // If the storage exists AND stores a string returns a view to it
         // Failure: else returns the given default value
-        std::string getStringOrElse(std::string_view slot, const std::string& defaultVal = "");
+        std::string_view getStringOrElse(std::string_view slot, std::string_view defaultVal = "");
 
         // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
@@ -58,14 +58,19 @@ namespace magique
         template <typename T = unsigned char>
         DataPointer<T> getBytes(std::string_view slot);
 
-        // Returns a copy of the vector stored at this slot
-        // Failure: returns an empty vector
+        // Returns a view to the vector stored at this slot
+        // Failure: returns an empty view
         template <typename T>
-        std::vector<T> getVector(std::string_view slot);
+        std::span<T> getVector(std::string_view slot);
 
         // Parses the data from the JSON into the given object using assets/JSON.h
         template <typename T>
         void getJSON(std::string_view slot, T& obj);
+
+        // Returns the JSON as view if present
+        // Failure: empty view
+        template <typename T>
+        std::string_view getJSON(std::string_view slot);
 
         //================= UTIL =================//
 
@@ -87,10 +92,11 @@ namespace magique
     }
 
     template <typename T>
-    void GameSave::saveJSON(std::string_view slot, const T& obj)
+    std::string_view GameSave::saveJSON(std::string_view slot, const T& obj)
     {
         auto& cell = getCellOrNew(slot, StorageType::JSON);
         JSONExport<false>(obj, cell.data);
+        return cell.data;
     }
 
     template <typename T>
@@ -121,7 +127,7 @@ namespace magique
         }
     }
     template <typename T>
-    std::vector<T> GameSave::getVector(const std::string_view slot)
+    std::span<T> GameSave::getVector(const std::string_view slot)
     {
         const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING({});
@@ -137,6 +143,15 @@ namespace magique
         M_GAMESAVE_SLOT_MISSING();
         M_GAMESAVE_TYPE_MISMATCH(JSON, );
         JSONImport(cell->data, obj);
+    }
+
+    template <typename T>
+    std::string_view GameSave::getJSON(std::string_view slot)
+    {
+        const auto* cell = getCell(slot);
+        M_GAMESAVE_SLOT_MISSING({});
+        M_GAMESAVE_TYPE_MISMATCH(JSON, {});
+        return cell->data;
     }
 
 

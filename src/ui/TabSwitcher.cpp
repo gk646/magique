@@ -1,9 +1,7 @@
 #include <algorithm>
 
 #include <magique/ui/controls/TabSwitcher.h>
-
-#include "magique/util/RayUtils.h"
-
+#include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
 #include <magique/core/Engine.h>
 #include <magique/gamedev/TextDrawer.h>
@@ -14,6 +12,10 @@ namespace magique
         UIContainer(bounds, anchor, inset, mode)
     {
     }
+
+    void TabSwitcher::setAlignOffset(Point offset) { alignOffset = offset; }
+
+    Point TabSwitcher::getAlignOffset() const { return alignOffset; }
 
     void TabSwitcher::setActive(UIObject* tab)
     {
@@ -92,11 +94,10 @@ namespace magique
         }
 
         setBounds(Rect::FromSpanPoints(bounds.pos(), {pos.x, pos.y + biggestY}));
-
         auto activeObj = getActive();
         if (activeObj != nullptr)
         {
-            activeObj->align(Anchor::TOP_CENTER, getBounds(), {0, biggestY + 5});
+            activeObj->align(Anchor::TOP_CENTER, getBounds(), Point{0, biggestY + 5} + alignOffset);
             activeObj->draw();
         }
     }
@@ -105,9 +106,8 @@ namespace magique
     {
         const auto& theme = EngineGetTheme();
         const auto& fnt = EngineGetFont();
-
-        Point dims = Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize, 1.0F)} + 4;
-        Rect tab{pos, dims};
+        const Point dims = Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize * 1.0F, 0.5F)} + 4;
+        const Rect tab{pos, dims};
         const auto hovered = tab.contains(GetMousePos());
         DrawRectFrameFilled(tab, theme.getBodyColor(hovered, isActive), theme.getOutlineColor(hovered, isActive));
         TextDrawer{fnt, tab}.modCenterV().center(child.name, theme.textHighlight);

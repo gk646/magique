@@ -7,11 +7,41 @@
 
 namespace magique
 {
-    inline EventManager EVENT_HANDLER{};
 
-    EventManager& GameEventsGet() { return EVENT_HANDLER; }
+    struct EventSubscription final
+    {
+        bool isValid(entt::entity entity) const
+        {
+            if (filter != entt::null && filter != entity) [[unlikely]]
+            {
+                return false;
+            }
+            return true;
+        }
 
-    EventSubID EventManager::subscribe(IEventHandler* handler, entt::entity filter, int priority)
+        IEventHandler* handler;
+        int priority;
+        entt::entity filter;
+        EventSubID id;
+        GameEvent event;
+    };
+
+    static EventSubID curr = 1;
+    static std::vector<EventSubscription> subscribers;
+
+    template <>
+    void GameEventsEmit(GameEvent event, entt::entity entity, const EventData& data)
+    {
+        for (auto& subscriber : subscribers)
+        {
+            if (subscriber.isValid(entity) && subscriber.handler->shouldBeCalled())
+            {
+                subscriber.handler->onEvent(event, entity, data);
+            }
+        }
+    }
+
+    EventSubID GameEventsSubscribe(IEventHandler* handler, entt::entity filter, int priority)
     {
         auto& sub = subscribers.emplace_back();
         sub.handler = handler;
@@ -22,7 +52,7 @@ namespace magique
         return curr++;
     }
 
-    EventSubID EventManager::subscribe(const EventFunc& func, entt::entity filter, int priority)
+    EventSubID GameEventsSubscribe(const EventFunc& func, entt::entity filter, int priority)
     {
         struct Handler final : IEventHandler
         {
@@ -33,10 +63,10 @@ namespace magique
             }
             EventFunc func;
         };
-        return subscribe(new Handler(func), filter, priority);
+        return GameEventsSubscribe(new Handler(func), filter, priority);
     }
 
-    bool EventManager::unsubscribe(EventSubID id)
+    bool GameEventsCancel(EventSubID id)
     {
         if (id == 0)
         {
@@ -53,27 +83,5 @@ namespace magique
                                  return false;
                              }) > 0;
     }
-
-    template <>
-    void EventManager::emit(GameEvent event, entt::entity entity, const EventData& data)
-    {
-        for (auto& subscriber : subscribers)
-        {
-            if (subscriber.isValid(entity) && subscriber.handler->shouldBeCalled())
-            {
-                subscriber.handler->onEvent(event, entity, data);
-            }
-        }
-    }
-
-    bool EventManager::EventSubscription::isValid(entt::entity entity) const
-    {
-        if (filter != entt::null && filter != entity) [[unlikely]]
-        {
-            return false;
-        }
-        return true;
-    }
-
 
 } // namespace magique

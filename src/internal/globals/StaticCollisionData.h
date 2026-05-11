@@ -65,7 +65,7 @@ namespace magique
             MAGIQUE_ASSERT(objectNum < colliders.size(), "Given num is out of bounds");
             auto& collider = colliders[objectNum];
             MAGIQUE_ASSERT(collider.bounds.size() != 0, "Attempting to delete a deleted collider");
-            collider.bounds.zero();
+            collider.bounds = Rect{};
             freeList.push_back(objectNum);
         }
     };

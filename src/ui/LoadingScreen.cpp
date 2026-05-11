@@ -16,14 +16,14 @@ namespace magique
 
     LoadingScreen* LoadingScreenGet() { return global::ENGINE_CONFIG.loadingScreen; }
 
-    void LoadingScreen::DrawDefault(const bool /**/, const float progress)
+    void LoadingScreen::drawDefault(const bool /**/, const float progress)
     {
-        const auto& theme =  global::ENGINE_CONFIG.theme;
+        const auto& theme = global::ENGINE_CONFIG.theme;
         const Point dims = Point{0.4F, 0.02F} * GetScreenDims();
-        const auto anchor = UIGetAnchor(Anchor::BOTTOM_RIGHT, dims, {20, 20});
+        const auto anchor = UIGetAnchor(Anchor::BOTTOM_RIGHT, GetScreenDims(), dims, {20, 20});
         const auto outside = Rect{anchor, dims};
         DrawRectFrameFilled(outside, theme.backHighlight, theme.backActive);
-        const auto inside = Rect::Filled(outside.shrink(2), progress/100.0F, Direction::RIGHT);
+        const auto inside = Rect::Filled(outside.shrink(2), progress / 100.0F, Direction::RIGHT);
         DrawRectFrameFilled(inside, theme.background, theme.backOutline);
     }
 

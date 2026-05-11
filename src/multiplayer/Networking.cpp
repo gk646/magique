@@ -207,7 +207,7 @@ namespace magique
         data.connectionMapping.push_back(ConnMapping{conn, entity});
     }
 
-    entt::entity NetworkGetConnMapping(const Connection conn)
+    entt::entity NetworkGetMappedEntity(const Connection conn)
     {
         auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
@@ -220,7 +220,7 @@ namespace magique
         return entt::null;
     }
 
-    Connection NetworkGetConnMapping(const entt::entity entity)
+    Connection NetworkGetMappedConnection(const entt::entity entity)
     {
         auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)

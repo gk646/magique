@@ -143,6 +143,7 @@ namespace magique
         const auto bounds = getBounds();
         const Point tPos = centered ? getCenteredTextPos(bounds, fontSize) : Point{bounds.x, bounds.y};
 
+
         if (!isFocused && text.empty() && hint != nullptr)
         {
             DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.75));
@@ -155,7 +156,7 @@ namespace magique
         if (hasSelection())
         {
             const auto highlight = ColorAlpha(cursor, 0.45F);
-            DrawTextHighlight(selectionStart, selectionEnd, font, text.c_str(), tPos, fontSize, spacing, highlight);
+            DrawTextHighlight(font, text.c_str(), tPos, fontSize, spacing, highlight, selectionStart, selectionEnd);
         }
 
         if (!isFocused || blinkCounter > blinkDelay || !showCursor)

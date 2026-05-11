@@ -25,7 +25,7 @@ namespace magique
         assignDataImpl(slot, data, bytes, StorageType::DATA);
     }
 
-    std::string GameSave::getStringOrElse(std::string_view slot, const std::string& defaultVal)
+    std::string_view GameSave::getStringOrElse(std::string_view slot, std::string_view defaultVal)
     {
         const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING(defaultVal);

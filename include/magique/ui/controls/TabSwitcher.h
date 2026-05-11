@@ -13,10 +13,13 @@
 
 namespace magique
 {
-
     struct TabSwitcher : UIContainer
     {
         TabSwitcher(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
+
+        // Sets/gets the align offset applied to the alignment - active tab is aligned after: TOP_CENTER + offset
+        void setAlignOffset(Point offset);
+        Point getAlignOffset()const;
 
         void setActive(UIObject* tab);
         void setActive(std::string_view tab);
@@ -29,7 +32,7 @@ namespace magique
         void switchRight();
 
     protected:
-        // Draws the tabs
+        // Draws active the switcher and the active - tabs are aligned with the TOP_CENTER align option relative to the switcher
         void onDraw(const Rect& bounds) override;
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
@@ -38,7 +41,6 @@ namespace magique
                 updateInputs();
         }
 
-
         // Called for each tab
         virtual Point drawTab(Point pos, const ContainerChild& child, bool isActive);
 
@@ -46,6 +48,7 @@ namespace magique
         void updateInputs();
 
     private:
+        Point alignOffset{};
         int active = 0;
     };
 

@@ -130,11 +130,6 @@ namespace magique
     template <typename T>
     static void SetFormatValueImpl(const char* key, const auto& val)
     {
-        MAGIQUE_ASSERT(strlen(key) < MAGIQUE_MAX_FORMAT_LEN, "Given placeholder is larger than configured max!");
-        if constexpr (std::is_same_v<T, const char*>)
-        {
-            MAGIQUE_ASSERT(strlen(val) < MAGIQUE_MAX_FORMAT_LEN, "Given value string is larger than configured max!");
-        }
         const auto it = VALUES.find(key);
         auto& valueVec = VALUE_STORAGE.getValueVec<T>(); // where to insert new value
         if (it != VALUES.end())                          // placeholder exists

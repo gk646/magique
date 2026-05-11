@@ -8,32 +8,30 @@
 
 namespace magique
 {
-    bool PathFind(std::vector<Point>& pathVec, const Point start, const Point end, const MapID map, const Point hitbox,
-                  const int maxLen, GridMode mode)
+    bool PathFind(std::vector<Point>& pathVec, const Point start, const Point target, const MapID map)
     {
-        auto& path = global::PATH_DATA;
-        path.findPath(pathVec, start, end, map, maxLen, mode);
-        return !pathVec.empty();
+        return PathFindPro(pathVec, start, target, map);
     }
 
-    bool PathFindEx(std::vector<Point>& pathVec, Point start, Point end, MapID map, Point hitbox,
-                    PathFindHeuristicFunc heuristic, int maxLen, GridMode mode)
+    bool PathFindEx(std::vector<Point>& pathVec, Point start, Point target, MapID map, int max, GridMode mode,
+                    const Rect& bounds)
     {
-        auto& path = global::PATH_DATA;
-        path.findPath(pathVec, start, end, map, maxLen, mode, heuristic);
-        return !pathVec.empty();
+        return PathFindPro(pathVec, start, target, map, max, mode, bounds);
+    }
+
+    bool PathFindPro(std::vector<Point>& pathVec, Point start, Point target, MapID map, int max, GridMode mode,
+                     const Rect& bounds, PathFindHeuristicFunc hfunc)
+    {
+        return global::PATH_DATA.findPath(pathVec, start, target, map, max, mode, hfunc);
     }
 
     bool PathFindNext(Point& next, const Point start, const Point end, const MapID map, const int maxLen, GridMode mode)
     {
         auto& path = global::PATH_DATA;
-        PathFind(path.pathCache, start, end, map, {}, maxLen, mode);
-        if (path.pathCache.empty())
-        {
-            return false;
-        }
-        next = path.pathCache[path.pathCache.size() - 1];
-        return true;
+        auto res = PathFindPro(path.pathCache, start, end, map, maxLen, mode);
+        if (!path.pathCache.empty())
+            next = path.pathCache[path.pathCache.size() - 1];
+        return res;
     }
 
     bool PathRayCast(const Point start, const Point end, const MapID map)
@@ -80,18 +78,13 @@ namespace magique
         return true;
     }
 
-    bool PathExist(const Point start, const Point end, const MapID map, const int max, GridMode mode)
-    {
-        Point point;
-        return PathFindNext(point, start, end, map, max);
-    }
-
     Point PathFindRandomTarget(Point start, const Rect& area, MapID map, int iterations)
     {
         for (int i = 0; i < iterations; i++)
         {
             auto random = area.random();
-            if (PathExist(start, random, map))
+            Point next;
+            if (PathFindNext(next, start, random, map))
             {
                 return random;
             }
@@ -99,7 +92,7 @@ namespace magique
         return Point{-1};
     }
 
-    Point PathFindNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
+    Point PathGetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
     {
         // Stored in reverse
         int lowestIdx = -1;

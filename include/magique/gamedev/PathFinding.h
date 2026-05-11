@@ -22,19 +22,25 @@ namespace magique
     //================= PATH =================//
 
     // Assigns the (middle points) cells along the shortest path to the given vector - excluding the start tile
-    //      - pathLen: stops searching if the path length exceeds this
     // Note: The point list is in REVERSE order! (last element is the next point)
-    // Failure: if no path can be found returns an empty vector
-    // Returns: True if a path could be found, false if the target is a solid tile or cant be reached
-    bool PathFind(std::vector<Point>& path, Point start, Point end, MapID map, Point hitbox = {}, int maxLen = 50,
-                  GridMode mode = GridMode::STAR);
+    // Note: Will always try to return the best path even if it doesn't reach the target
+    // Returns: True if the returned path reaches the target
+    bool PathFind(std::vector<Point>& path, Point start, Point target, MapID map);
 
-    // Allows to specify a custom heuristic function
-    bool PathFindEx(std::vector<Point>& path, Point start, Point end, MapID map, Point hitbox,
-                    PathFindHeuristicFunc heuristic, int maxLen = 50, GridMode mode = GridMode::STAR);
+    // Same as PathFind() but allows to specify:
+    //      - max: maximum length of the path
+    //      - mode: allows to choose if diagonal steps are allowed
+    //      - hitbox: stops searching if the path length exceeds this
+    bool PathFindEx(std::vector<Point>& path, Point start, Point target, MapID map, int max = 50,
+                    GridMode mode = GridMode::STAR, const Rect& hitbox = {});
+
+    // Same as PathFindEx() but allows to specify:
+    //      - hfunc: a custom heuristic function used to determine the best next tile
+    bool PathFindPro(std::vector<Point>& path, Point start, Point target, MapID map, int max = 50,
+                     GridMode mode = GridMode::STAR, const Rect& hitbox = {}, PathFindHeuristicFunc hfunc = nullptr);
 
     // Assigns "next" to the next position you should move to, in order to reach the end point the fastest
-    // Same as FindPath() but only assigns the next point
+    // Same as PathFind() but only assigns the next point
     bool PathFindNext(Point& next, Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
 
     //================= QUERY =================//
@@ -42,8 +48,8 @@ namespace magique
     // Returns true if the ray cast through the pathfinding grid does not hit solid cells (in line of sight)
     bool PathRayCast(Point start, Point end, MapID map);
 
-    // Returns true if there exists a valid path from start to end
-    bool PathExist(Point start, Point end, MapID map, int maxLen = 50, GridMode mode = GridMode::STAR);
+    // Returns true if the pathfinding tile (that contains the point) is solid (cannot be walked on)
+    bool PathIsSolid(const Point& pos, MapID map);
 
     //================= UTIL =================//
 
@@ -54,7 +60,7 @@ namespace magique
     // Returns the next point on the path you should go to
     // If inside a cell in the path returns the next logical cell you should move to
     // Otherwise returns the closest cell in the path
-    Point PathFindNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path);
+    Point PathGetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path);
 
     // If set, all entities of the given type are considered solid for pathfinding and make cells non-traversable
     // The dynamic pathfinding grid will be updated each tick with their position and collision shapes
@@ -72,9 +78,6 @@ namespace magique
     // Draws the tiles along the given path in the pathfinding grid
     void PathDraw(const std::vector<Point>& path, Color color = RED);
 
-    // Returns true if the pathfinding tile (that contains the point) is solid (cannot be walked on)
-    bool PathIsSolid(const Point& pos, MapID map);
-
 } // namespace magique
 
-#endif //MAGIQUE_PATHFINDING_H
+#endif // MAGIQUE_PATHFINDING_H

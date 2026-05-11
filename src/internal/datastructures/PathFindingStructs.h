@@ -158,7 +158,7 @@ namespace magique
 
         void setValue(const Point& p, const T& value) { setValue(p.x, p.y, value); }
 
-        void clear() { memset(rows, 0, size * size * sizeof(T)); }
+        void clear() { std::memset(rows, 0, size * size * sizeof(T)); }
     };
 
 

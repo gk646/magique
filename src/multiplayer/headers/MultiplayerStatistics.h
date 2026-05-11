@@ -13,7 +13,7 @@ struct MultiplayerStatistics final
 #ifdef MAGIQUE_DEBUG
     void reset()
     {
-        startTick = magique::EngineGetTick();
+        startTick = magique::EngineGetTicks();
         incoming.reset();
         outgoing.reset();
     }

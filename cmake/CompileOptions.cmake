@@ -59,8 +59,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             >
             $<$<CONFIG:Release>:
             -Ofast
+            -ffast-math
+            -fno-math-errno
+            -fno-trapping-math
             -DNDEBUG
-            -fuse-linker-plugin
             -fomit-frame-pointer
             -ffunction-sections
             -fdata-sections
@@ -118,7 +120,6 @@ target_compile_definitions(magique PUBLIC
         MAGIQUE_MAX_PLAYERS=${MAGIQUE_MAX_PLAYERS}
         MAGIQUE_MAX_LOBBY_MESSAGE_LEN=${MAGIQUE_MAX_LOBBY_MESSAGE_LEN}
         MAGIQUE_PARTICLE_COLORPOOL_SIZE=${MAGIQUE_PARTICLE_COLORPOOL_SIZE}
-        MAGIQUE_MAX_FORMAT_LEN=${MAGIQUE_MAX_FORMAT_LEN}
         MAGIQUE_MAX_SUPPORTED_TIMERS=${MAGIQUE_MAX_SUPPORTED_TIMERS}
         MAGIQUE_INCLUDE_FONT=${MAGIQUE_INCLUDE_FONT}
 )

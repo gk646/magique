@@ -137,7 +137,7 @@ namespace magique
 
     float Point::manhattan(const Point& p) const { return std::abs(x - p.x) + std::abs(y - p.y); }
 
-    float Point::euclidean(const Point& p) const { return std::sqrt(euclideanSqr(p)); }
+    float Point::euclidean(const Point& p) const { return std::sqrtf(euclideanSqr(p)); }
 
     float Point::euclideanSqr(const Point& p) const { return (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y); }
 
@@ -200,7 +200,7 @@ namespace magique
         return *this;
     }
 
-    Point Point::inverse() const
+    Point Point::inverted() const
     {
         Point p = *this;
         return p.invert();
@@ -211,7 +211,7 @@ namespace magique
         auto magnitude = x * x + y * y;
         if (magnitude != 0) [[likely]]
         {
-            magnitude = std::sqrt(magnitude);
+            magnitude = std::sqrtf(magnitude);
             x /= magnitude;
             y /= magnitude;
         }
@@ -235,7 +235,7 @@ namespace magique
         return *this;
     }
 
-    float Point::magnitude() const { return std::sqrt(x * x + y * y); }
+    float Point::magnitude() const { return std::sqrtf(x * x + y * y); }
 
     Point& Point::round()
     {
@@ -244,13 +244,13 @@ namespace magique
         return *this;
     }
 
-    Point Point::round() const
+    Point Point::rounded() const
     {
         Point p = *this;
         return p.round();
     }
 
-    Point Point::floor() const
+    Point Point::floored() const
     {
         Point p = *this;
         return p.floor();
@@ -423,7 +423,7 @@ namespace magique
         return *this;
     }
 
-    Rect Rect::floor() const
+    Rect Rect::floored() const
     {
         auto ret = *this;
         return ret.floor();
@@ -438,19 +438,10 @@ namespace magique
         return *this;
     }
 
-    Rect Rect::round() const
+    Rect Rect::rounded() const
     {
         auto ret = *this;
         return ret.round();
-    }
-
-    Rect& Rect::zero()
-    {
-        x = 0.0F;
-        y = 0.0F;
-        width = 0.0F;
-        height = 0.0F;
-        return *this;
     }
 
     Rect Rect::mirrorVertical(float xAxis) const
@@ -482,6 +473,11 @@ namespace magique
     }
 
     bool Rect::contains(const Point& p) const { return PointToRect(p.x, p.y, x, y, width, height); }
+
+    bool Rect::contains(const Rect& p) const
+    {
+        return p.x >= x && p.y >= y && p.x + p.width <= x + width && p.y + p.height <= y + height;
+    }
 
     bool Rect::intersects(const Rect& r) const { return RectToRect(x, y, width, height, r.x, r.y, r.width, r.height); }
 
@@ -555,6 +551,14 @@ namespace magique
     Point Rect::bottomRight() const { return {x + width, y + height}; }
 
     Point Rect::bottomLeft() const { return {x, y + height}; }
+
+    Point Rect::topMid() const { return {x + width / 2.0F, y}; }
+
+    Point Rect::bottomMid() const { return {x + width / 2.0F, y + height}; }
+
+    Point Rect::leftMid() const { return {x, y + height / 2.0F}; }
+
+    Point Rect::rightMid() const { return {x + width, y + height / 2.0F}; }
 
     //----------------- ROTATION -----------------//
 
@@ -677,7 +681,7 @@ namespace magique
     }
 
     int SpriteSheet::getFrameCount() const { return frames; }
-    
+
     bool SpriteSheet::isBlank() const { return blank; }
 
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
@@ -823,6 +827,8 @@ namespace magique
         third = ReverseBytes(third);
         fourth = ReverseBytes(fourth);
     }
+
+    Checksum::Checksum(const char* hash) : Checksum(std::string_view(hash)) {}
 
     bool Checksum::operator==(const Checksum& o) const
     {

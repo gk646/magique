@@ -5,6 +5,8 @@
 #include <magique/core/Types.h>
 #include <string_view>
 #include <functional>
+#include <optional>
+#include <variant>
 
 //===============================================
 // Steam Module
@@ -24,6 +26,22 @@ namespace magique
     // Note: Check out https://partner.steamgames.com/doc/api/ISteamApps#GetLaunchCommandLine
     std::string_view SteamGetLaunchParam(std::string_view key);
 
+    // Sets the callback called when steam launches your game with a commandline
+    // Note: Use SteamGetLaunchParam() to access the params
+    void SteamSetURLLaunchCallback(const std::function<void()>& callback);
+
+    //================= GAME =================//
+
+    // Returns the app id of the current game
+    uint32_t SteamGetAppID();
+
+    // Returns the language set for the game
+    Language SteamGetGameLanguage();
+
+    // Signals steam to verify and redownload the game files
+    //      - missingFilesOnly: if true only checks for missing files, not if existing files are wrong/out-of-date
+    void SteamMarkGameFilesCorrupt(bool missingFilesOnly = false);
+
     //================= USER =================//
 
     // Returns your own steam id
@@ -39,6 +57,43 @@ namespace magique
 
     // Sets the callback function called when the steam overlay is opened or closed
     void SteamSetOverlayCallback(const SteamOverlayCallback& callback);
+
+    // Retrieve the associated connection with the given steam id
+    // Note: Automatically updated whenever possible (e.g. before a network event is fired)
+    Connection SteamGetMappedConnection(SteamID id);
+    SteamID SteamGetMappedID(Connection conn);
+
+    //================= STATS =================//
+    // Allows access to the Stats API https://partner.steamgames.com/doc/features/achievements
+
+    // Requests the latest stat values for the given user - fires a stats callback when done
+    void SteamRequestStats(SteamID user = SteamGetID());
+
+    struct SteamStatResult
+    {
+        // Returns a value only if:
+        //      - The stat exists and is published on the steamworks dashboard
+        //      - The requested type matches the datatype in the dashboard
+        std::optional<int32_t> getInt(std::string_view name) const;
+        std::optional<float> getFloat(std::string_view name) const;
+
+    private:
+        M_MAKE_PUB()
+        SteamID user;
+    };
+
+    // Called when a stat request finishes˛for the given user
+    // Note: The data can be accessed by calling the getters on the result
+    void SteamSetStatsRequestCallback(const std::function<void(const SteamStatResult& res, SteamID user)>& callback);
+
+    // Sets the given stats to the given value
+    // Note: This is a cheap call and only modifies the in memory value of the steam client -> call often incase of crash
+    void SteamSetStat(std::string_view name, std::variant<int32_t, float> value);
+
+    // Commits the current in-memory stats to the server
+    // Note: Should be called during major changes (e.g. map change, new round) so rather minutes not seconds
+    // Note: Might trigger a stats request callback if some updated values are rejected - the current values are then returned
+    void SteamStoreStats();
 
     //================= PERSISTENCE =================//
 

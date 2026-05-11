@@ -9,8 +9,7 @@
 // Slider
 //===============================================
 // .....................................................................
-// The slider control
-// Note: IF you override onUpdate() dont forget to call updateActions()
+// The slider control allows to move a knob on an axis which creates different values based on the configuration
 // .....................................................................
 
 namespace magique
@@ -22,15 +21,6 @@ namespace magique
     {
         // Creates a new slider from coordinates in the logical UI resolution
         Slider(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
-
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
-
-        // Called each tick on update thread
-        void onUpdate(const Rect& bounds, bool isDrawn) override
-        {
-            if (isDrawn)
-                updateActions(bounds);
-        }
 
         // Sets the scale to be balanced between min and max - the middle will be the arithmetic mid between both values
         void setScaleBalanced(float min, float max);
@@ -52,6 +42,15 @@ namespace magique
         void setOnChange(const SliderChangeFunc& func);
 
     protected:
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+
+        // Called each tick on update thread
+        void onUpdate(const Rect& bounds, bool isDrawn) override
+        {
+            if (isDrawn)
+                updateActions(bounds);
+        }
+
         // Called once when the mouse position enters the button
         virtual void onHover(const Rectangle& bounds) {}
 

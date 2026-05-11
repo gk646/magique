@@ -61,8 +61,18 @@ struct Snake final : magique::Game
                 STATE.moveDelay = {val / (MAGIQUE_TICK_TIME)};
             });
 
+        auto& sizeSlider = gameScene.addObject(new magique::Slider{{150, 50}, magique::Anchor::TOP_RIGHT, {50, 100}});
+        sizeSlider.setScaleImblanced(8, 16, 64);
+        sizeSlider.setOnChange([&](float val, float perc) { STATE.boardDims = {val}; });
+
         auto& gameOverScene = magique::SceneGet(GameState::GameOver);
-        gameOverScene.addObject(new magique::TextButton{"Restart", magique::Anchor::TOP_RIGHT, 50});
+        auto& restart = gameOverScene.addObject(new magique::TextButton{"Restart", magique::Anchor::TOP_RIGHT, 50});
+        restart.setOnClick(
+            [&](const magique::Rect& bounds, int button)
+            {
+                ResetGame();
+                magique::EngineSetState(GameState::Game);
+            });
 
         SetWindowState(FLAG_WINDOW_RESIZABLE);
     }
@@ -75,6 +85,7 @@ struct Snake final : magique::Game
 
     void onUpdateGame(GameState gameState) override
     {
+        STATE.cellSize = std::round((magique::GetScreenDims().y * 0.8F) / STATE.boardDims.y);
         if (gameState != GameState::Game)
         {
             return;
@@ -185,6 +196,7 @@ struct Snake final : magique::Game
         STATE.food.clear();
         STATE.snake.clear();
         STATE.snake.push_back(STATE.boardDims / 2);
+        STATE.direction = magique::Direction::UP;
     }
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override

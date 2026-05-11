@@ -13,9 +13,11 @@
 //      -> keyword: hello  - English: Hello User! - German: Guten Tag Benutzer!
 //      -> keyword: Good Morning  - English: Good Morning - German: Guten Morgen!
 //
-// You can either manually add localization for each language and keyword or load it from a file in assets/AssetImport.h
-// Supported Formats: .po (GNU gettext format)
-// Note: There is also a macro localize() that can be used
+// You can either manually add localization for each language or import it from a file with assets/AssetImport.h
+// Supported Formats:
+//      -  .po (GNU gettext format)
+//
+// Note: There is localize() macro that can be used to wrap the call to Localize()
 // .....................................................................
 
 namespace magique
@@ -23,7 +25,7 @@ namespace magique
     struct LocalizedLanguage final
     {
         Language language = Language::None;
-        StringHashMap<std::string> translations;
+        StringHashMap<std::string> translations; // Key values pairs of: [key, translation]
     };
 
     // Returns the localized string for the given keyword - uses the currently set language
@@ -47,12 +49,14 @@ namespace magique
     void LocalizationSetLanguage(Language lang);
     Language LocalizationGetLanguage();
 
-    // Scans all registered languages and compares them to base language:
-    //      - missing translation for keywords
-    //      - missing keywords in other languages
+    // Prints out a report when comparing all registered languages to the base language:
+    //      - empty translations
+    //      - new keywords (e.g. the language contains keywords not present in the base)
+    //      - missing keywords (e.g. the language does NOT have keywords not present in the base)
     void LocalizationValidate(Language base = Language::EN);
 
     // Parses the language from a given ISO 639 code (e.g. en, es, de, it) - NOT case sensitive
+    // Note: Only languages part of the Language enum are supported
     // Failure: Returns Language::None
     Language LocalizationParseLanguage(std::string_view langCode);
 

@@ -31,6 +31,7 @@ namespace magique
         void addAnimation(AnimationState state, SpriteSheet sheet, int frameMillis);
 
         // Same as addAnimation but with extended parameters
+        // Anchor will be set to the middle of the sheet dims if 0
         void addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations, Point offset = {},
                             Point anchor = {});
 
@@ -46,6 +47,7 @@ namespace magique
 
         // The rotation anchor
         [[nodiscard]] Point getAnchor() const;
+        void setAnchor(Point anchor);
 
         bool hasAnimation(AnimationState state) const;
         const HashMap<AnimationState, SpriteAnimation>& getAnimations() const;

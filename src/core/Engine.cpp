@@ -28,9 +28,9 @@ namespace magique
 
     void EngineSetStateCallback(const GameStateCallback& func) { global::ENGINE_DATA.stateCallback = func; }
 
-    void EngineSetUpdateRange(const int distance)
+    void EngineSetUpdateRange(const float distance)
     {
-        global::ENGINE_CONFIG.entityUpdateDist = static_cast<float>(distance);
+        global::ENGINE_CONFIG.entityUpdateDist = distance;
     }
 
     int EngineGetUpdateRange() { return (int)global::ENGINE_CONFIG.entityUpdateDist; }
@@ -61,7 +61,9 @@ namespace magique
 
     float EngineGetTime() { return global::ENGINE_DATA.engineTime; }
 
-    uint32_t EngineGetTick() { return global::ENGINE_DATA.engineTicks; }
+    float EngineGetTimeSince(float time) { return EngineGetTime() - time; }
+
+    uint32_t EngineGetTicks() { return global::ENGINE_DATA.engineTicks; }
 
     //----------------- GET -----------------//
 

@@ -76,14 +76,16 @@ namespace magique
     TextDrawer& TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
     {
         auto pos = bounds.pos() + cursor + modOfffset;
+        auto size = img.getSize() * modSizeMult;
         if (centeredOnText)
         {
-            pos.y -= img.height / 2 - font.baseSize / 2;
+            pos.y -= size.y / 2 - font.baseSize / 2;
         }
         pos.floor();
-        DrawRegion(img, pos);
+        if (img.isValid())
+            DrawRegionPro(img, {pos, size});
         if (moveCursor)
-            cursor.x += img.width + gapp.x;
+            cursor.x += size.x + gapp.x;
         return *this;
     }
 
@@ -112,9 +114,9 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::move(Point pos)
+    TextDrawer& TextDrawer::indent(float x)
     {
-        cursor += pos;
+        bounds.x += x;
         return *this;
     }
 
@@ -166,6 +168,12 @@ namespace magique
         return *this;
     }
 
+    TextDrawer& TextDrawer::modBackground(Color background)
+    {
+        backgroundColor = background;
+        return *this;
+    }
+
     float TextDrawer::textWidth(const std::string_view& txt) const
     {
         return MeasureTextEx(font, txt.data(), (float)font.baseSize * (float)modSizeMult, (float)modSizeMult).x;
@@ -176,9 +184,9 @@ namespace magique
         return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.width - offf.x, font, font.baseSize);
     }
 
-    Point TextDrawer::getCursor() const { return cursor; }
+    Point TextDrawer::getCursor() const { return bounds.pos() + cursor; }
 
-    Rect TextDrawer::getBounds() { return bounds; }
+    Point TextDrawer::getCursorOffset() const { return cursor; }
 
     Rect TextDrawer::getBounds() const { return bounds; }
 
@@ -204,14 +212,19 @@ namespace magique
             newLines = StringSetNewlines((char*)txt.data(), MAX_TEXT_BUFFER_LENGTH, lineEnd, font, fntSize);
         }
 
+        if (backgroundColor.a > 0)
+        {
+            DrawTextHighlight(font, txt, pos, fntSize, 1.0F, backgroundColor);
+        }
+
         if (shadeColor.a > 0)
         {
-            DrawPixelText(font, txt, pos + Point{1 * (float)modSizeMult, 0}, modSizeMult, shadeColor);
+            DrawPixelText(font, txt, pos + Point{(float)modSizeMult, 0}, modSizeMult, shadeColor);
         }
 
         if (modHighlightColor.a > 0)
         {
-            DrawPixelTextNumbers(font, txt.data(), pos, modSizeMult, tint, modHighlightColor);
+            DrawPixelTextWithNumberHighlight(font, txt.data(), pos, modSizeMult, tint, modHighlightColor);
         }
         else
         {
@@ -231,6 +244,7 @@ namespace magique
         modHighlightColor = BLANK;
         modSizeMult = 1;
         shadeColor = BLANK;
+        backgroundColor = BLANK;
         modCenterVert = false;
     }
 

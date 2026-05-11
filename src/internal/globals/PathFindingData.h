@@ -156,7 +156,7 @@ namespace magique
             openCost.setNewMid(start);
         }
 
-        void findPath(std::vector<Point>& path, Point start, Point end, const MapID map, const uint16_t maxPathLen,
+        bool findPath(std::vector<Point>& path, Point start, Point end, const MapID map, const uint16_t maxPathLen,
                       GridMode mode, PathFindHeuristicFunc hFunc = nullptr)
         {
             start = Point{start / cellSize}.floor();
@@ -167,14 +167,13 @@ namespace magique
             const auto& dynamicGrid = mapsDynamicGrids[map];
 
             uint16_t iteration = 0;
-            uint16_t maxIts = MAGIQUE_MAX_PATH_SEARCH_CAPACITY;
             uint16_t bestNodeIndex = 0;
             float bestDistance = 1e12;
 
             // Viability check
             if (IsCellSolid(start.x, start.y, staticGrid, dynamicGrid)) [[unlikely]]
             {
-                return;
+                return false;
             }
 
             if (hFunc == nullptr)
@@ -186,7 +185,7 @@ namespace magique
             const auto& movement = MOVEMENTS[(int)mode];
 
             frontier.emplace(start, 0.0F, hFunc(start, end), UINT16_MAX, 0); // Initial node
-            while (!frontier.empty() && iteration < maxIts)
+            while (!frontier.empty() && iteration < MAGIQUE_MAX_PATH_SEARCH_CAPACITY)
             {
                 nodePool[iteration] = frontier.top();
                 auto& current = nodePool[iteration];
@@ -201,7 +200,7 @@ namespace magique
                 if (current.position == end) [[unlikely]]
                 {
                     constructPath(current, path);
-                    return;
+                    return true;
                 }
 
                 frontier.pop();
@@ -211,19 +210,19 @@ namespace magique
                 {
                     for (const auto& dir : movement)
                     {
-                        const auto newPos = current.position + dir;
-                        const auto newPosWorld = newPos * cellSize;
+                        const auto newPosTile = current.position + dir;
+                        const auto newPosWorld = newPosTile * cellSize;
 
                         // Is not visited and not solid
-                        if (visited.getValue(newPos) ||
+                        if (visited.getValue(newPosTile) ||
                             IsCellSolid(newPosWorld.x, newPosWorld.y, staticGrid, dynamicGrid))
                         {
                             continue;
                         }
 
-                        const auto val = openCost.getValue(newPos);
+                        const auto val = openCost.getValue(newPosTile);
                         const float gCost = mFunc(dir) + current.gCost;
-                        const auto hCost = hFunc(newPos, end);
+                        const auto hCost = hFunc(newPosTile, end);
                         const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
                         const auto newFCost = hCost + gCost;
 
@@ -231,14 +230,14 @@ namespace magique
                         {
                             continue;
                         }
-                        frontier.push({newPos, gCost, newFCost, iteration, newPathLen});
-                        openCost.setValue(newPos, newFCost);
+                        frontier.push({newPosTile, gCost, newFCost, iteration, newPathLen});
+                        openCost.setValue(newPosTile, newFCost);
                     }
                     iteration++;
                 }
             }
-
             constructPath(nodePool[bestNodeIndex], path);
+            return false;
         }
 
 
@@ -262,4 +261,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_PATHFINDING_DATA_H
+#endif // MAGIQUE_PATHFINDING_DATA_H

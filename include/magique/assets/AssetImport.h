@@ -124,8 +124,12 @@ namespace magique
     TextLines ImportText(Asset asset, char delimiter = '\n');
 
     // Tries to import a language from the given file
-    // Supported types: .po (GNU gettext format - look at for more info: https://github.com/vslavik/poedit
+    // Supported types: .po  (GNU gettext format - look at for more info: https://github.com/vslavik/poedit
     LocalizedLanguage ImportGettext(Asset asset);
+
+    // Imports a .pot file - this is the base of file that only contains keys not translation
+    // The translation will be set to the keys itself and the language to the given one (as none is specified in the file)
+    LocalizedLanguage ImportGettextBase(Asset asset, Language lang = Language::EN);
 
     // Imports a magique translation file format (.mtf):
     // language:{Your language code}

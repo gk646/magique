@@ -71,7 +71,7 @@ namespace magique
         if (size > 500) // Multithreading over certain amount
         {
             std::array<jobHandle, COL_WORK_PARTS> handles{};
-            constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.25F; // 25% more work for main thread
+            constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.19; // 19% more work for main thread
             constexpr float workerPart = (1.0F - mainThreadPart) / (COL_WORK_PARTS - 1);
             float beginPercent = 0.0F;
             for (int j = 0; j < COL_WORK_PARTS - 1; ++j)
@@ -85,12 +85,78 @@ namespace magique
         else
 #endif
         {
-            CheckHashGridCells(0.0F, 1.0F, COL_WORK_PARTS - 1);
+            CheckHashGridCells(0.0F, 1.0F, 0);
         }
         HandleCollisionPairs();
     }
 
     //----------------- IMPLEMENTATION -----------------//
+
+    inline void HandleCollisionPairs()
+    {
+        auto& scriptVec = global::SCRIPT_DATA.scripts;
+        const auto& group = internal::POSITION_GROUP;
+        auto& dynamic = global::DY_COLL_DATA;
+
+        auto& colPairs = dynamic.collisionPairs;
+        auto& pairSet = dynamic.pairSet;
+
+        for (auto& [vec] : colPairs)
+        {
+            for (auto& pairInfo : vec)
+            {
+                const auto e1 = pairInfo.e1;
+                const auto e2 = pairInfo.e2;
+
+                // This cannot be avoided as duplicates are inserted into the hashgrid
+                if (dynamic.isMarked(e1, static_cast<uint32_t>(e2)))
+                {
+                    continue;
+                }
+
+                // this checks existence as well - also needed cause deletion caused reference invalidation
+                const auto p1 = ComponentTryGet<const PositionC>(e1);
+                const auto p2 = ComponentTryGet<const PositionC>(e2);
+                if (p1 == nullptr || p2 == nullptr) [[unlikely]]
+                {
+                    continue;
+                }
+                auto& col1 = ComponentGet<CollisionC>(e1);
+                auto& col2 = ComponentGet<CollisionC>(e2);
+
+                // Prepare second info - with the fresh data
+                auto secondInfo = pairInfo.info;
+                secondInfo.normalVector.x *= -1;
+                secondInfo.normalVector.y *= -1;
+
+                if (col1.detects(col2))
+                {
+                    // Already checked if both entities exist
+                    ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, pairInfo.info);
+                    if (pairInfo.info.getIsAccumulated())
+                    {
+                        AccumulateInfo(col1, col2.shape, pairInfo.info);
+                    }
+                }
+
+                if (col2.detects(col1))
+                {
+                    // Call for second entity
+#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
+                    bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
+                    if (invokeEvent)
+#endif
+                        ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
+                    if (secondInfo.getIsAccumulated())
+                    {
+                        AccumulateInfo(col2, col1.shape, secondInfo);
+                    }
+                }
+            }
+            vec.clear();
+        }
+        pairSet.clear();
+    }
 
     inline void CheckHashGridCells(const float beginP, const float endP, const int thread)
     {
@@ -140,74 +206,6 @@ namespace magique
                 }
             }
         }
-    }
-
-    inline void HandleCollisionPairs()
-    {
-        auto& scriptVec = global::SCRIPT_DATA.scripts;
-        const auto& group = internal::POSITION_GROUP;
-        auto& dynamic = global::DY_COLL_DATA;
-
-        auto& colPairs = dynamic.collisionPairs;
-        auto& pairSet = dynamic.pairSet;
-
-        for (auto& [vec] : colPairs)
-        {
-            for (auto& pairInfo : vec)
-            {
-                const auto e1 = pairInfo.e1;
-                const auto e2 = pairInfo.e2;
-
-                // This cannot be avoided as duplicates are inserted into the hashgrid
-                if (dynamic.isMarked(e1, static_cast<uint32_t>(e2)))
-                {
-                    continue;
-                }
-
-                // this checks existence as well - also needed cause deletion caused reference invalidation
-                const auto p1 = ComponentTryGet<const PositionC>(e1);
-                const auto p2 = ComponentTryGet<const PositionC>(e2);
-                if (p1 == nullptr || p2 == nullptr) [[unlikely]]
-                {
-                    continue;
-                }
-                auto& col1 = ComponentGet<CollisionC>(e1);
-                auto& col2 = ComponentGet<CollisionC>(e2);
-
-                // Prepare second info - with the fresh data
-                auto secondInfo = pairInfo.info;
-                secondInfo.normalVector.x *= -1;
-                secondInfo.normalVector.y *= -1;
-
-                if (col1.detects(col2))
-                {
-                    // Already checked if both entities exist
-                    ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p1->type], e1, e2, pairInfo.info);
-
-                    if (pairInfo.info.getIsAccumulated())
-                    {
-                        AccumulateInfo(col1, col2.shape, pairInfo.info);
-                    }
-                }
-
-                if (col2.detects(col1))
-                {
-                    // Call for second entity
-#if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                    bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
-                    if (invokeEvent)
-#endif
-                        ScriptingInvokeEventDirect<onDynamicCollision>(scriptVec[p2->type], e2, e1, secondInfo);
-
-                    if (secondInfo.getIsAccumulated())
-                    {
-                        AccumulateInfo(col2, col1.shape, secondInfo);
-                    }
-                }
-            }
-            vec.clear();
-        }
-        pairSet.clear();
     }
 
 } // namespace magique

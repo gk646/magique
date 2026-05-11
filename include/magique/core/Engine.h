@@ -33,9 +33,9 @@ namespace magique
 
     // Sets the size of the update square centered on the actors
     // Entities in range will be collision checked and added to the update vector
-    // Note: Entities not in range can still be updated via the EntityScript::onTick function
+    // Note: Entities not in range can still be updated via the EntityScript::onUpdate() function
     // Default: 2500
-    void EngineSetUpdateRange(int distance);
+    void EngineSetUpdateRange(float distance);
     int EngineGetUpdateRange();
 
     // When entities leave the update range they are still updated for the cache duration
@@ -105,9 +105,12 @@ namespace magique
     // Returns the seconds since startup - updated at the start of each tick
     float EngineGetTime();
 
+    // Returns the time elapsed since the give timepoint (as returned by EngineGetTime())
+    float EngineGetTimeSince(float time);
+
     // Returns the logic ticks since startup - updated at the start of each logic tick (MAGIQUE_LOGIC_TICKS)
     // Note: Can also be used to track if a tick passed
-    uint32_t EngineGetTick();
+    uint32_t EngineGetTicks();
 
     namespace internal
     {

@@ -2,6 +2,7 @@
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #include "internal/globals/NetworkingData.h"
+#include "magique/steam/Matchmaking.h"
 namespace magique
 {
     void LobbySetChatCallback(const LobbyChatCallback& callback) { global::MP_DATA.lobby.chatCallback = callback; }
@@ -36,7 +37,7 @@ namespace magique
 
     bool Lobby::getStartSignal() const { return global::MP_DATA.lobby.startSignal; }
 
-    void Lobby::sendChatMessage(std::string_view message)
+    void Lobby::sendChatMsg(std::string_view message)
     {
         MG_SESSION_LOCK()
         if (message.size() > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
@@ -70,6 +71,8 @@ namespace magique
             LOG_WARNING("Empty key not allowed");
             return;
         }
+
+        SteamLobbySetData(key, value);
 
         global::MP_DATA.lobby.metadata[key] = value;
 

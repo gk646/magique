@@ -85,78 +85,67 @@ namespace magique
         return Language::None;
     }
 
-    void LocalizationValidate(Language base) {}
+    void LocalizationValidate(Language base)
+    {
+        struct LanguageInfo final
+        {
+            int emptyValues = 0;
+            int missingKeys = 0;
+            int newKeywords = 0;
+            bool present = false;
+        };
 
-    // {
-    //     struct LanguageInfo final
-    //     {
-    //         int emptyKeywords = 0;
-    //         int missingKeywords = 0;
-    //         int newKeywords = 0;
-    //     };
-    //
-    //     auto asdf = DATA.languageMapping;
-    //     HashMap<const char*, LanguageInfo> languageInfos;
-    //     if (!DATA.languageMapping.contains(referenceLanguage))
-    //     {
-    //         LOG_ERROR("Validation reference language %s does not exist!", referenceLanguage);
-    //         return;
-    //     }
-    //
-    //     StringHashMap<std::string> initialTable; // Table the others are compared with
-    //     const auto& referenceTable = DATA.languageMapping[referenceLanguage];
-    //
-    //     for (const auto& languagePair : DATA.languageMapping)
-    //     {
-    //         auto& info = languageInfos[languagePair.first.c_str()];
-    //         const auto& table = languagePair.second;
-    //         for (const auto& keywordPair : table)
-    //         {
-    //             if (keywordPair.second.empty())
-    //             {
-    //                 ++info.emptyKeywords;
-    //             }
-    //         }
-    //
-    //         if (&languagePair.second == &referenceTable)
-    //         {
-    //             continue; // Skip - don't need to compare table to itself
-    //         }
-    //
-    //         // Consistency check
-    //         for (const auto& referencePair : referenceTable) // Check reference against current
-    //         {
-    //             if (!table.contains(referencePair.first))
-    //             {
-    //                 ++info.missingKeywords;
-    //             }
-    //         }
-    //
-    //         for (const auto& keywordPair : table) // Check current against reference
-    //         {
-    //             if (!referenceTable.contains(keywordPair.first))
-    //             {
-    //                 ++info.newKeywords;
-    //             }
-    //         }
-    //     }
-    //
-    //     LOG_INFO("Localization Validation against: %s", referenceLanguage);
-    //     for (const auto& infoPair : languageInfos)
-    //     {
-    //         const auto infoData = infoPair.second;
-    //         if (strcmp(infoPair.first, referenceLanguage) == 0)
-    //         {
-    //             const auto* msg = "    Language: %s | Empty Translations: %d | Reference\n";
-    //             printf(msg, infoPair.first, infoData.emptyKeywords, infoData.newKeywords, infoData.missingKeywords);
-    //         }
-    //         else
-    //         {
-    //             const auto* msg =
-    //                 "    Language: %s | Empty Translations: %d | New Keywords: %d | Missing Keywords: %d\n";
-    //             printf(msg, infoPair.first, infoData.emptyKeywords, infoData.newKeywords, infoData.missingKeywords);
-    //         }
-    //     }
-    // }
+        if (!DATA.languageMapping.contains(base))
+        {
+            LOG_ERROR("Localization validation base language does not exist: %s", enchantum::to_string(base).data());
+            return;
+        }
+
+        const auto& referenceTable = DATA.languageMapping[base];
+        HashMap<Language, LanguageInfo> languageInfos;
+
+        for (const auto& [_, language] : DATA.languageMapping)
+        {
+            if (language.language == base || language.translations.empty())
+                continue;
+
+            auto& info = languageInfos[language.language];
+            info.present = true;
+
+            for (const auto& [key, translation] : language.translations)
+            {
+                if (translation.empty())
+                {
+                    ++info.emptyValues;
+                }
+            }
+
+            // Consistency check - Check reference against current
+            for (const auto& [key, translation] : referenceTable.translations)
+            {
+                if (!language.translations.contains(key))
+                {
+                    ++info.missingKeys;
+                }
+            }
+
+            for (const auto& [key, translation] : language.translations)
+            {
+                if (!referenceTable.translations.contains(key))
+                {
+                    ++info.newKeywords;
+                }
+            }
+        }
+
+        LOG_INFO("Localization Validation against: %s", enchantum::to_string(base).data());
+        for (const auto& [lang, info] : languageInfos)
+        {
+            if (!info.present) // Not used
+                continue;
+            const auto* msg = "    Language: %s | Empty Translations: %d | New Keywords: %d | Missing Keywords: %d\n";
+            printf(msg, enchantum::to_string(lang).data(), info.emptyValues, info.newKeywords, info.missingKeys);
+        }
+    }
 
 } // namespace magique

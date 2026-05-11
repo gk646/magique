@@ -39,9 +39,9 @@ namespace magique
 
     // Splits the given area into two pieces by making a vertical slice at the given width (in percent of the total width)
     // gap specifies the width of a gap in the middle that's kept free - for left side on the right, for right side on the left
-    struct VSplit : Layout
+    struct VerticalLayout : Layout
     {
-        VSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
+        VerticalLayout(const Rect& area, float where = 0.5F, float gap = 0.0F);
 
         Layout left() const;
         Layout right() const;
@@ -53,9 +53,9 @@ namespace magique
 
 
     // Splits the given area into two pieces by making a horizontal slice at the given height (in percent of the total height)
-    struct HSplit : Layout
+    struct HorizontalLayout : Layout
     {
-        HSplit(const Rect& area, float where = 0.5F);
+        HorizontalLayout(const Rect& area, float where = 0.5F);
 
         Layout upper() const;
         Layout lower() const;
@@ -65,13 +65,17 @@ namespace magique
 
     struct GridLayout : Layout
     {
-        GridLayout(const Rect& area, Point itemSize, float gap = 2.0F);
+        GridLayout(const Rect& area, Point itemSize, float gap = 0.05F);
+
+        // Adjust the item width in a way that it fits the given size perfectly
+        GridLayout(const Rect& area, int itemsPerRow, int rows = 1, float gap = 0.05F);
 
         // Returns the bounds of the i-th item in the grid
         Layout item(int index) const;
 
     private:
         Point itemSize;
+        int perRow = 1;
         float gap = 2.0F;
     };
 

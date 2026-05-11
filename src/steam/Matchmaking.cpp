@@ -16,14 +16,13 @@ namespace magique
     void SteamSetLobbyCallback(const SteamLobbyCallback& callback) {}
 } // namespace magique
 #else
-#include <charconv>
 #include <magique/steam/Matchmaking.h>
 
 #include "internal/globals/SteamData.h"
 
 namespace magique
 {
-    bool SteamCreateLobby(const SteamLobbyType type, const int maxPlayers)
+    bool SteamLobbyCreate(const SteamLobbyType type, const int maxPlayers)
     {
         SteamAPICall_t hSteamAPICall = k_uAPICallInvalid;
         hSteamAPICall = SteamMatchmaking()->CreateLobby(static_cast<ELobbyType>((int)type), maxPlayers);
@@ -32,17 +31,22 @@ namespace magique
         return hSteamAPICall != k_uAPICallInvalid;
     }
 
-    void SteamJoinLobby(SteamLobbyID lobbyID)
+    void SteamLobbyJoin(SteamLobbyID lobbyID)
     {
         if (SteamIsInLobby())
         {
             LOG_WARNING("Cant join a lobby when in a lobby");
             return;
         }
+        if (lobbyID == SteamLobbyID::INVALID)
+        {
+            LOG_WARNING("Invalid lobby ID: %llu", static_cast<uint64>(lobbyID));
+            return;
+        }
         SteamMatchmaking()->JoinLobby(CSteamID(static_cast<uint64>(lobbyID)));
     }
 
-    void SteamJoinLobby(std::string_view lobbyID)
+    void SteamLobbyJoin(std::string_view lobbyID)
     {
         uint64_t value = std::strtoull(lobbyID.data(), nullptr, 10);
         CSteamID id{(uint64)value};
@@ -51,7 +55,29 @@ namespace magique
             LOG_WARNING("Invalid lobby ID: %s", lobbyID.data());
             return;
         }
-        SteamJoinLobby(static_cast<SteamLobbyID>(id.ConvertToUint64()));
+        SteamLobbyJoin(static_cast<SteamLobbyID>(id.ConvertToUint64()));
+    }
+
+    void SteamLobbySetData(std::string_view key, std::string_view value)
+    {
+        SteamMatchmaking()->SetLobbyData(CSteamID(static_cast<uint64>(SteamLobbyGetID())), key.data(), value.data());
+    }
+
+    bool SteamLobbySendMsg(std::string_view msg)
+    {
+        const auto& steam = global::STEAM_DATA;
+        return SteamMatchmaking()->SendLobbyChatMsg(steam.lobbyID, msg.data(), msg.size() + 1);
+    }
+
+    std::string_view SteamGetLobbyData(std::string_view key, SteamLobbyID id)
+    {
+        return SteamMatchmaking()->GetLobbyData(CSteamID(static_cast<uint64>(id)), key.data());
+    }
+
+    std::pair<int, int> SteamLobbyGetPlayerCount(SteamLobbyID id)
+    {
+        const auto steamID = CSteamID(static_cast<uint64>(id));
+        return {SteamMatchmaking()->GetNumLobbyMembers(steamID), SteamMatchmaking()->GetLobbyMemberLimit(steamID)};
     }
 
     bool SteamLeaveLobby()
@@ -82,12 +108,11 @@ namespace magique
         return false;
     }
 
-    SteamLobbyID SteamGetLobbyID() { return static_cast<SteamLobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
+    SteamLobbyID SteamLobbyGetID() { return static_cast<SteamLobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
 
-    SteamID SteamGetLobbyOwner()
+    SteamID SteamGetLobbyOwner(SteamLobbyID lobby )
     {
-        MAGIQUE_ASSERT(SteamIsInLobby(), "Cant get the lobby owner when not in a lobby");
-        return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(global::STEAM_DATA.lobbyID).ConvertToUint64());
+        return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(CSteamID((uint64)lobby)).ConvertToUint64());
     }
 
     void SteamSetLobbyCallback(const SteamLobbyCallback& callback)
@@ -95,29 +120,30 @@ namespace magique
         auto& steamData = global::STEAM_DATA;
         steamData.lobbyEventCallback = callback;
     }
-
-    Connection SteamGetConnMapping(SteamID id)
+    void SteamSetLobbySearchCallback(const SteamLobbySearchCallback& callback)
     {
-        for (auto& mapping : global::MP_DATA.steamMapping)
-        {
-            if (mapping.steam == id)
-            {
-                return mapping.conn;
-            }
-        }
-        return Connection::INVALID;
+        global::STEAM_DATA.lobbySearchCallback = callback;
     }
 
-    SteamID SteamGetConnMapping(Connection conn)
+    SteamSearchFilter& SteamSearchFilter::string(std::string_view key, std::string_view value,
+                                                 SteamFilterComparison comp)
     {
-        for (auto& mapping : global::MP_DATA.steamMapping)
-        {
-            if (mapping.conn == conn)
-            {
-                return mapping.steam;
-            }
-        }
-        return SteamID::INVALID;
+        SteamMatchmaking()->AddRequestLobbyListStringFilter(key.data(), value.data(),
+                                                            static_cast<ELobbyComparison>(comp));
+        return *this;
+    }
+
+    SteamSearchFilter& SteamSearchFilter::number(std::string_view key, int value, SteamFilterComparison comp)
+    {
+        SteamMatchmaking()->AddRequestLobbyListNumericalFilter(key.data(), value, static_cast<ELobbyComparison>(comp));
+        return *this;
+    }
+
+    void SteamSearchLobbies()
+    {
+        auto call = SteamMatchmaking()->RequestLobbyList();
+        auto& steam = global::STEAM_DATA;
+        steam.m_CallResultLobbyMatchList.Set(call, &steam, &SteamData::OnLobbyMatchList);
     }
 
     bool SteamOpenInviteDialog()

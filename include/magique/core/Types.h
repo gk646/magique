@@ -94,7 +94,7 @@ namespace magique
 
         // Inverts the vectors direction
         Point& invert();
-        Point inverse() const;
+        Point inverted() const;
 
         // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
@@ -107,10 +107,10 @@ namespace magique
 
         // uses std::round() to round to the nearest whole number
         Point& round();
-        Point round() const;
+        Point rounded() const;
 
         // uses std::floor() to round to the closest whole to the left (watch out for negative numbers)
-        Point floor() const;
+        Point floored() const;
         Point& floor();
         // uses std::ceil()
         Point& ceil();
@@ -169,10 +169,9 @@ namespace magique
 
         // Applies to all values
         Rect& floor();
-        Rect floor() const;
+        Rect floored() const;
         Rect& round();
-        Rect round() const;
-        Rect& zero();
+        Rect rounded() const;
 
         // Flips the rect along the given axis
         Rect mirrorVertical(float xAxis) const;
@@ -183,8 +182,9 @@ namespace magique
         // Note: This is useful to position collision entities in a rectangle so that they fit
         Point random(Point dims = {}) const;
 
-        // Returns true if the point is contained in the rect
+        // Returns true if the thing is contained in the rect
         bool contains(const Point& p) const;
+        bool contains(const Rect& p) const;
 
         // Returns true if the two rects have any overlapping area
         bool intersects(const Rect& r) const;
@@ -217,6 +217,11 @@ namespace magique
         Point topRight() const;
         Point bottomRight() const;
         Point bottomLeft() const;
+
+        Point topMid() const;
+        Point bottomMid() const;
+        Point leftMid() const;
+        Point rightMid() const;
     };
 
     // Represents a (2D) rotation angle - 0 degree is looking up (north), rotates clockwise
@@ -231,7 +236,6 @@ namespace magique
 
         Rotation& operator+=(const Rotation& other);
         Rotation& operator-=(const Rotation& other);
-
 
         // Returns the shortest difference between the two angles in degrees (always positive)
         float diff(Rotation other) const;
@@ -434,7 +438,8 @@ namespace magique
     struct Checksum final
     {
         // Initializes the checksum - should be the output of toString() or another MD5 implementation
-        explicit Checksum(std::string_view hash);
+        Checksum(std::string_view hash);
+        Checksum(const char* hash);
         Checksum() = default;
 
         bool operator==(const Checksum& other) const;
@@ -630,10 +635,8 @@ namespace magique
 
     enum class GridMode : uint8_t
     {
-        // Only allows movement in four orthogonal directions, up left down right
-        // The found path will NOT contain any diagonal moves
-        CROSS,
-        STAR, // Allows all orthogonal direction and additionally all diagonals top left, top right...
+        CROSS, // Allows only orthogonal directions and cells (up left down right) - path will NOT contain diagonal moves
+        STAR,  // Allows all orthogonal direction and additionally all diagonals top left, top right...
     };
 
     using PathFindHeuristicFunc = float (*)(const Point& curr, const Point& end);
@@ -648,7 +651,7 @@ namespace magique
         IT, // italian
         FR, // French
         JA, // Japanese
-        ZH, // Chinese
+        ZH, // Chinese (simplified)
         CS, // Czech
         DA, // Danish
         ES, // Spanish
@@ -753,7 +756,11 @@ namespace magique
 
     //================= STEAM =================//
 
-    enum class SteamLobbyID : uint64_t; // Steam lobby ID - internally is just a SteamID
+    // Steam lobby ID - internally is just a SteamID
+    enum class SteamLobbyID : uint64_t
+    {
+        INVALID = 0
+    };
 
     enum class SteamID : uint64_t // SteamID
     {
@@ -787,6 +794,21 @@ namespace magique
         //      - Join the new lobby with JoinSteamLobby(lobbyID);
         ON_LOBBY_INVITE,
     };
+
+    enum class SteamFilterComparison : uint8_t
+    {
+        Equal = 0,
+        NotEqual = 3
+    };
+
+    enum class SteamFilterDistance : uint8_t
+    {
+        Close,     // Only lobbies in immediate region
+        Default,   // Only lobbies in the same or nearby region
+        Far,       // Lobbies half around the globe (up to 200ms latency!)
+        Worldwide, // Lobbies all around the world
+    };
+
 
     //================= UI =================//
 
