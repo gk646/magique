@@ -19,7 +19,7 @@ namespace magique
     {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
-            if (getBounds().contains(GetMousePosition()))
+            if (!LayeredInput::GetIsMouseConsumed() && getBounds().contains(GetMousePosition()))
             {
                 isOpen = !isOpen;
                 LayeredInput::ConsumeMouse();
@@ -49,7 +49,7 @@ namespace magique
             }
             else
             {
-                height = list.drawDefaultEntry(bounds.pos(), entry.text.c_str(), false, false);
+                height = list.drawDefaultEntry(bounds.pos(), entry.text.c_str(),  isOpen || getIsHovered(), false);
             }
         }
 

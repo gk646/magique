@@ -80,7 +80,7 @@ namespace magique
         std::memcpy(&steamData.userID, &id, sizeof(id));
 
         steamData.isInitialized = true;
-        LOG_INFO("Initialized steam");
+        LOG_INFO("Initialized Steam");
         return true;
     }
 

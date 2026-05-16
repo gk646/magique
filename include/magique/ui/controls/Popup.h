@@ -45,6 +45,7 @@ namespace magique
     {
         ConfirmPopup(std::string_view infoText);
 
+    protected:
         void onDraw(const Rect& bounds) override;
 
     private:

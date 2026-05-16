@@ -26,6 +26,7 @@ namespace magique
         void setActive(int index);
 
         UIObject* getActive() const;
+        bool isActive(std::string_view tab) const;
 
         // Switches to the next tab in the given direction
         void switchLeft();

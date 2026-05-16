@@ -266,7 +266,7 @@ namespace magique
     };
 
     // This is useful for dynamically size 2D grids where for each cell you store data
-    // E.g. for the fog of war for a map
+    // E.g. the fog of war for a map
     // The reduction is useful to sample the grid at a lower resolution
     //
     // First you sample from world to tile pos (worldPos / tileSize)
@@ -279,21 +279,6 @@ namespace magique
     {
         DynamicGridContainer() = default;
         DynamicGridContainer(int cols, int rows) : data(cols * rows), cols(cols), rows(rows) {}
-
-        T& operator()(int x, int y)
-        {
-            x /= reduction;
-            y /= reduction;
-            return data[y * cols + x];
-        }
-
-        const T& operator()(int x, int y) const
-        {
-            x /= reduction;
-            y /= reduction;
-            int index = y * cols + x;
-            return data[index];
-        }
 
         const T& operator()(const Point& point) const
         {
@@ -316,6 +301,25 @@ namespace magique
         const std::vector<T>& getData() const { return data; }
 
         std::vector<T>& getData() { return data; }
+
+        // Sets the given cell - expands the grid if needed
+        void insert(const Point& point, const T& val)
+        {
+            if (!insideGrid(point)) [[unlikely]]
+            {
+                resize(std::max(cols, (int)point.x) + 1, std::max(rows, (int)point.y) + 1);
+            }
+            operator()(point) = val;
+        }
+
+        void insert(int x, int y, const T& val)
+        {
+            if (!insideGrid(x, y)) [[unlikely]]
+            {
+                resize(std::max(cols, x) + 1, std::max(rows, y) + 1);
+            }
+            operator()(x, y) = val;
+        }
 
         void insert(int x, int y, int width, int height, const T& elem)
         {
@@ -356,7 +360,14 @@ namespace magique
         {
             cols = nCols;
             rows = nRows;
-            data.resize(cols * nRows, elem);
+            data.resize(nCols * nRows, elem);
+        }
+
+        void clear()
+        {
+            data.clear();
+            cols = 0;
+            rows = 0;
         }
 
     private:

@@ -32,6 +32,42 @@ namespace magique
         // Creates a new ListMenu from coordinates in the logical UI resolution
         ListChooser(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
+        // Inserts a new value at the specified position - supports chaining calls
+        ListChooser& add(std::string_view item, int index = -1);
+        ListChooser& add(std::initializer_list<std::string_view> items);
+
+        // Removes the value with the given name
+        bool remove(std::string_view item);
+        bool remove(int index);
+
+        // Removes all values
+        void clear();
+        bool empty() const;
+
+        // Returns the index of the hovered element
+        // -1 if nothing is hovered
+        int getHoveredIndex() const;
+        std::string_view getHovered() const;
+
+        int getSelectedIndex() const;
+        std::string_view getSelected() const;
+
+        // Use -1 to clear any selection
+        void setSelected(int index = -1, bool triggerCallback = false);
+        void setSelected(std::string_view item, bool triggerCallback = false);
+
+        // Sets the vertical spacing between entries
+        float getSpacing() const;
+        void setSpacing(float spacing);
+
+        // Allows to set a custom callback called everytime a (new) value is selected
+        void setOnSelect(const SelectFunc<std::string_view>& func);
+
+        // Sets a custom function to draw items
+        // Default: Uses drawDefaultEntry
+        void setDrawEntryFunc(const DrawItemFunc& func);
+
+    protected:
         // Draws all entries by calling drawEntryDefault or (if set) uses a custom draw function
         void onDraw(const Rect& bounds) override;
 
@@ -41,41 +77,6 @@ namespace magique
                 updateState();
         }
 
-        // Removes all values
-        void clear();
-        bool empty() const;
-
-        // Inserts a new value at the specified position - supports chaining calls
-        ListChooser& add(std::string_view item, int index = -1);
-        ListChooser& add(std::initializer_list<std::string_view> items);
-
-        // Removes the value with the given name
-        bool remove(const char* item);
-        bool remove(int index);
-
-        // Returns the index of the hovered element
-        // -1 if nothing is hovered
-        int getHoveredIndex() const;
-        const char* getHovered() const;
-
-        int getSelectedIndex() const;
-        const char* getSelected() const;
-        // Use -1 to clear - does NOT call the callback
-        void setSelected(int index = -1);
-        void setSelected(std::string_view item);
-
-        // Sets the vertical spacing between entries
-        float getSpacing() const;
-        void setSpacing(float spacing);
-
-        // Allows to set a custom callback called everytime a (new) value is selected
-        void setOnSelect(const SelectFunc<std::string>& func);
-
-        // Sets a custom function to draw items
-        // Default: Uses drawDefaultEntry
-        void setDrawEntryFunc(const DrawItemFunc& func);
-
-    protected:
         // Draws a default representation of an entry
         float drawDefaultEntry(const Point& pos, std::string_view txt, bool isHovered, bool isSelected) const;
 
@@ -83,7 +84,7 @@ namespace magique
         void updateState();
 
     private:
-        SelectFunc<std::string> selectFunc;
+        SelectFunc<std::string_view> selectFunc;
         DrawItemFunc drawFunc;
         struct Entry final
         {

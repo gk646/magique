@@ -2,6 +2,7 @@
 
 #include <raylib/raylib.h>
 #include <magique/core/Camera.h>
+#include <magique/gamedev/PathFinding.h>
 
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/EngineData.h"
@@ -71,6 +72,18 @@ namespace magique
         const float camHeight = offset.y * 2 / zoom;
 
         return {camLeft, camTop, camWidth, camHeight};
+    }
+
+    bool CameraInLineOfSight(entt::entity entity)
+    {
+        const auto& pos = ComponentGet<PositionC>(entity);
+        if (pos.map != CameraGetMap())
+            return false;
+        Point mid = pos.pos;
+        const auto* col = ComponentTryGet<CollisionC>(entity);
+        if (col != nullptr)
+            mid += col->getMidOffset();
+        return PathRayCast(CameraGetPosition(), mid, CameraGetMap());
     }
 
     bool CameraInsideAnyViewBounds(Point point)

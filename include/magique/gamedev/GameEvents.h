@@ -2,7 +2,6 @@
 #define MAGIQUE_GAME_EVENTS_H
 
 #include <functional>
-#include <vector>
 #include <magique/fwd.hpp>
 #include <entt/entity/entity.hpp>
 

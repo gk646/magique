@@ -5,7 +5,6 @@
 #include <cstring>
 #include <cmath>
 #include <raylib/raylib.h>
-#include <raylib/config.h>
 
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/AssetContainer.h>
@@ -184,8 +183,10 @@ namespace magique
         }
     };
 
+
     static void UnCompressData(std::string& data)
     {
+        constexpr int MAX_DECOMPRESSION_SIZE = 64;
         const auto* start = data.data() + HEADER_LEN;
         const auto newData = new char[MAX_DECOMPRESSION_SIZE * 1024 * 1024];
         int newSize = sinflate(newData, MAX_DECOMPRESSION_SIZE * 1024 * 1024, start, data.size() - HEADER_LEN);

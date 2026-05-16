@@ -51,10 +51,10 @@ namespace magique
 
     using VisitedCellID = uint32_t;
 
-    [[nodiscard]] static VisitedCellID GetVisitedCell(const int cellX, const int cellY)
+    static VisitedCellID GetVisitedCellID(const int cellX, const int cellY)
     {
         // VisitedCellID must be uint otherwise the shifting doesn't work
-        // A signed int has its signed saved in the most significant bit regardless of size
+        // A signed int has its sign saved in the most significant bit regardless of size
         // Thus shifting the number left shifts it away...
         // The casting of negative numbers to uint results in: Largest value - abs(value)
         // So negative numbers go down from the top - which is good for hash distribution anyway
@@ -63,52 +63,31 @@ namespace magique
         return (static_cast<VisitedCellID>(first) << 16) | second;
     }
 
-    // This is just a technique to pack data more closely
-    // Instead of treating the pathfinding grid as a grid with the main size given in config.h
-    // We increase the outer grid by a factor - this reduces the values stored in the hashmap which is already better.
-    // Then we use a bitset to tightly pack the data of each of the subgrids within the bigger grid
-    // Given a MAGIQUE_PATHFINDING_CELL_SIZE of 32 and a subgrid size of 16 the outer grid is 16 * 32 = 512
-    // This means there are 16 * 16 normal grids inside the enlarged grid
-    // By dividing the normalize coordinate inside the current enlarged grid cell (value between 0 - 512) by 32
-    // We get the index at which it is stored inside the bitset (flattened array)
-    template <int mainGridBaseSize, int subGridSize = 16> // Fits into cache line (key/value pair)
+    template <int mainGridBaseSize>
     struct DenseLookupGrid final
     {
-        // Is constexpr and power of 2 to get optimized division and modulo
-        constexpr static int mainGridSize = mainGridBaseSize * subGridSize;
-        HashMap<VisitedCellID, std::bitset<subGridSize * subGridSize>> visited{};
+        HashMap<VisitedCellID, bool> visited{};
 
         [[nodiscard]] bool getIsMarked(const float x, const float y) const
         {
-            // < -1 0 < 1
-            const int cellX = floordiv<mainGridSize>(x);
-            const int cellY = floordiv<mainGridSize>(y);
-            const auto pathCell = GetVisitedCell(cellX, cellY);
-            const auto it = visited.find(pathCell);
-            if (it != visited.end()) // Get the position within the subgrid
-            {
-                const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-                const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
-                return it->second[vCellX + (vCellY * subGridSize)];
-            }
-            return false;
+            const int cellX = floordiv<mainGridBaseSize>(x);
+            const int cellY = floordiv<mainGridBaseSize>(y);
+            return visited.contains(GetVisitedCellID(cellX, cellY));
         }
 
         void setMarked(const float x, const float y)
         {
-            const int cellX = floordiv<mainGridSize>(x);
-            const int cellY = floordiv<mainGridSize>(y);
-            const int vCellX = std::abs(static_cast<int>(x)) % mainGridSize / mainGridBaseSize;
-            const int vCellY = std::abs(static_cast<int>(y)) % mainGridSize / mainGridBaseSize;
-            const auto cell = GetVisitedCell(cellX, cellY);
-            visited[cell].set(vCellX + (vCellY * subGridSize), true);
+            const int cellX = floordiv<mainGridBaseSize>(x);
+            const int cellY = floordiv<mainGridBaseSize>(y);
+            visited[GetVisitedCellID(cellX, cellY)] = true;
         }
 
         void insert(const float x, const float y, const float w, const float h)
         {
             auto insertFunc = [this](const int cellX, const int cellY)
             {
-                setMarked((cellX * MAGIQUE_PATHFINDING_CELL_SIZE), (cellY * MAGIQUE_PATHFINDING_CELL_SIZE));
+                setMarked(static_cast<float>(cellX * MAGIQUE_PATHFINDING_CELL_SIZE),
+                          static_cast<float>(cellY * MAGIQUE_PATHFINDING_CELL_SIZE));
             };
             RasterizeRect<mainGridBaseSize>(insertFunc, x, y, w, h);
         }

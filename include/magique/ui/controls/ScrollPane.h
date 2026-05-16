@@ -34,7 +34,7 @@ namespace magique
         Point getScrollOffset() const;
 
         // Adds content that will be drawn
-        void setContent(UIObject& content);
+        void setContent(UIObject& content, Anchor anchor= Anchor::TOP_LEFT, Point inset ={});
         UIObject* getContent() const;
 
         // Sets the base anchor position of the content

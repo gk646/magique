@@ -20,6 +20,7 @@ namespace magique
         cursor.x += width + gapp.x;
         return *this;
     }
+#define MAX_TEXT_BUFFER_LENGTH 2048
 
     inline char BUFF[MAX_TEXT_BUFFER_LENGTH];
 
@@ -138,6 +139,16 @@ namespace magique
         cursor.y += mult * gapp.y;
         return *this;
     }
+
+    TextDrawer& TextDrawer::jumpLast()
+    {
+        cursor.x = offf.x;
+        cursorEndX = 0;
+        cursor.y = bounds.height - (offf.y + font.baseSize * modSizeMult);
+        resetMods();
+        return *this;
+    }
+
     TextDrawer& TextDrawer::modSize(int fsm)
     {
         modSizeMult = fsm;

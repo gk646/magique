@@ -7,6 +7,7 @@
 #include <magique/util/Math.h>
 
 #include "internal/globals/EngineConfig.h"
+#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -65,7 +66,7 @@ namespace magique
             const auto dragStarted = CheckCollisionPointCircle(Vector2{dragStart.x, dragStart.y}, knobVec, radius);
 
             // Ensure click started within knob
-            if (dragStarted)
+            if (!isDragged && dragStarted)
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
@@ -75,27 +76,22 @@ namespace magique
                     }
                 }
                 isDragged = true;
+                dragStartVal = sliderPos;
             }
 
 
-            if (!isHovered)
-            {
-                isHovered = true;
-                onHover(bounds);
-            }
-        }
-        else
-        {
-            isHovered = false;
+
         }
 
-        if (isDragged && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+
+        if (isDragged && LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
-            float prev = sliderPos;
-            const auto delta = GetMouseDelta();
-            sliderPos = std::clamp(sliderPos + delta.x / bounds.width, 0.0F, 1.0F);
+            const float prev = sliderPos;
+            const auto diff = GetMousePos().x - UIGetDragStart().x;
+            sliderPos = std::clamp(dragStartVal + diff / bounds.width, 0.0F, 1.0F);
             if (sliderPos != prev && func)
                 func(getSliderValue(), sliderPos);
+            LayeredInput::ConsumeMouse();
         }
         else
         {
@@ -106,9 +102,8 @@ namespace magique
     void Slider::drawDefault(const Rect& bounds) const
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        const auto mouseDown = IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-        Color body = theme.getBodyColor(isHovered, isHovered && mouseDown);
-        Color outline = theme.getOutlineColor(isHovered, isHovered && mouseDown);
+        Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
+        Color outline = theme.getOutlineColor(getIsHovered(), getIsPressed());
         const auto bodyHeight = bounds.height / 4.0F;
 
         outline.a = 150;
@@ -119,7 +114,7 @@ namespace magique
         DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
 
         const Vector2 sliderKnob = {bounds.x + sliderPos * bounds.width, sliderBody.y + sliderBody.height / 2.0F};
-        DrawCircleV(sliderKnob, UIGetScaled(15), body);
+        DrawCircleV(sliderKnob, bounds.height / 2.0F, body);
     }
 
     Point Slider::getKnobPosition() const

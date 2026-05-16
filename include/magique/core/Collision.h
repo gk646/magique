@@ -43,6 +43,7 @@ namespace magique
 
     // Returns true if the entity collision shape contains or intersects the mouse pos
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
+    bool CheckCollisionEntityMouse(entt::entity e);
 
     //================= CIRCLE =================//
 

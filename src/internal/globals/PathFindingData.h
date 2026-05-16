@@ -47,14 +47,10 @@ namespace magique
         //----------------- METHODS -----------------//
 
         // Checks if the given coordinates are in a solid tile - directly takes the grids to avoid the lookup
-        [[nodiscard]] static bool IsCellSolid(const float x, const float y, const PathFindingGrid& staticGrid,
-                                              const PathFindingGrid& dynamicGrid)
+        static bool IsCellSolid(const float x, const float y, const PathFindingGrid& staticGrid,
+                                const PathFindingGrid& dynamicGrid)
         {
-            if (staticGrid.getIsMarked(x, y)) [[unlikely]]
-            {
-                return true;
-            }
-            return dynamicGrid.getIsMarked(x, y);
+            return staticGrid.getIsMarked(x, y) || dynamicGrid.getIsMarked(x, y);
         }
 
         [[nodiscard]] bool getIsPathSolid(const entt::entity e, const EntityType type) const

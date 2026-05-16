@@ -27,6 +27,22 @@ namespace magique
         return child;
     }
 
+    void UIContainer::addChildren(const std::initializer_list<UIObject*>& newChildren)
+    {
+        for (auto e : newChildren)
+        {
+            addChild(e);
+        }
+    }
+
+    void UIContainer::addChildren(std::span<UIObject*> newChildren)
+    {
+        for (auto e : newChildren)
+        {
+            addChild(e);
+        }
+    }
+
     bool UIContainer::removeChild(std::string_view name)
     {
         MAGIQUE_ASSERT(!name.empty(), "Name must be non-null");
@@ -72,6 +88,57 @@ namespace magique
     }
 
     const std::vector<ContainerChild>& UIContainer::getChildren() const { return children; }
+
+    void VerticalContainer::onDraw(const Rect& bounds)
+    {
+        float height = 0;
+        const UIObject* curr = nullptr;
+        for (auto [name, ptr] : getChildren())
+        {
+            if (curr == nullptr)
+            {
+                ptr->align(anchor, *this);
+            }
+            else
+            {
+                ptr->align(Direction::DOWN, *curr, {0, gap});
+            }
+            curr = ptr;
+            ptr->draw();
+            height += ptr->getBounds().height + gap;
+        }
+        setSize({bounds.width, height});
+    }
+
+    void VerticalContainer::setHorizontalAlign(Anchor align)
+    {
+        switch (align)
+        {
+        case Anchor::NONE:
+            break;
+        case Anchor::TOP_LEFT:
+        case Anchor::MID_LEFT:
+        case Anchor::BOTTOM_LEFT:
+            anchor = Anchor::TOP_LEFT;
+            break;
+        case Anchor::TOP_CENTER:
+        case Anchor::MID_CENTER:
+        case Anchor::BOTTOM_CENTER:
+            anchor = Anchor::TOP_CENTER;
+            break;
+        case Anchor::TOP_RIGHT:
+        case Anchor::MID_RIGHT:
+        case Anchor::BOTTOM_RIGHT:
+            anchor = Anchor::TOP_RIGHT;
+            break;
+        }
+    }
+
+    Anchor VerticalContainer::getHorizontalAlign() const { return anchor; }
+
+    float VerticalContainer::getGap() const { return gap; }
+
+    void VerticalContainer::setGap(float newGap) { gap = newGap; }
 
 
 } // namespace magique

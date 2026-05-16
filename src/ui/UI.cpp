@@ -100,16 +100,16 @@ namespace magique
 
     void UIAddPopup(Popup& popup)
     {
-        auto& data = global::UI_DATA;
-        auto it = std::ranges::find(data.popups, &popup);
-        if (it != data.popups.end())
+        auto& popups = global::UI_DATA.popups;
+        auto it = std::ranges::find(popups, &popup);
+        if (it != popups.end())
         {
-            data.popups.erase(it);
-            data.popups.insert(data.popups.begin(), &popup);
+           popups.erase(it);
+           popups.insert(popups.begin(), &popup);
         }
         else
         {
-            data.popups.insert(data.popups.begin(), &popup);
+            popups.insert(popups.begin(), &popup);
         }
         global::UI_DATA.popups.push_back(&popup);
     }

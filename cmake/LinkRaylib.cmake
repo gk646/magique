@@ -16,18 +16,33 @@ if (UNIX)
     set(GLFW_BUILD_WAYLAND OFF)
 endif (UNIX)
 
+
+
 message(STATUS "\n-- ------------- raylib ------------------")
 add_subdirectory(src/external/raylib)
 
 # Compiler args for raylib
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+
+    if (LINUX)
+        target_compile_options(magique PUBLIC -march=sandybridge -mtune=generic)
+    elseif (APPLE)
+        if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+            # Apple Silicon (M1/M2/M3): ARM64 + NEON/SVE
+            target_compile_options(magique PUBLIC -march=armv8-a -mtune=generic)
+        else ()
+            # Intel Mac (x86-64)
+            target_compile_options(magique PUBLIC -march=x86-64 -mtune=generic)
+        endif ()
+    endif ()
+
     # For both modes
     target_compile_options(raylib PRIVATE
-            -Wall -march=native -fno-exceptions -fvisibility=hidden -flto=auto  -ffast-math -fno-math-errno -fno-trapping-math
+            -Wall -fno-exceptions -fvisibility=hidden -flto=auto
     )
     target_compile_options(raylib PRIVATE
             $<$<CONFIG:Debug>: -Og -Wall -g >
-            $<$<CONFIG:Release>:-Ofast -DNDEBUG>
+            $<$<CONFIG:Release>:-Ofast -DNDEBUG -ffast-math -fno-math-errno -fno-trapping-math>
     )
     target_link_options(raylib PRIVATE -flto=auto)
 elseif (MSVC)

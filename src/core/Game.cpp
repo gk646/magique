@@ -104,7 +104,18 @@ namespace magique
         GameSystemEnableStats(true);
 #endif
 
-        LOG_INFO("Initialized magique %s (%d Workers)", MAGIQUE_VERSION, MAGIQUE_WORKER_THREADS);
+        int steam = 0;
+        int lan = 0;
+#ifdef MAGIQUE_STEAM
+        steam = 1;
+        lan = 1;
+#endif
+#ifdef MAGIQUE_LAN
+        lan = 1;
+#endif
+
+        LOG_INFO("Initialized magique %s (raylib %s; %d Workers; Steam %d; LAN: %d)", MAGIQUE_VERSION, RAYLIB_VERSION,
+                 MAGIQUE_WORKER_THREADS, MAGIQUE_STEAM, steam, lan);
         return true;
     }
 

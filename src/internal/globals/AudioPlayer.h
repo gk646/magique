@@ -146,12 +146,12 @@ namespace magique
             }
         }
 
-        [[nodiscard]] float getSoundVolume(const float playBackVolume) const
+        float getSoundVolume(const float playBackVolume) const
         {
             return GetMasterVolume() * soundVolume * playBackVolume;
         }
 
-        [[nodiscard]] float getMusicVolume(const float playBackVolume) const
+        float getMusicVolume(const float playBackVolume) const
         {
             return GetMasterVolume() * musicVolume * playBackVolume;
         }
@@ -208,7 +208,7 @@ namespace magique
         }
         else
         {
-            return playVolume;
+            return ap.getSoundVolume(playVolume);
         }
     }
 

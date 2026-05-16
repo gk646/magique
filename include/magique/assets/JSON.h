@@ -9,6 +9,7 @@
 #include <magique/gamedev/VirtualClock.h>
 #include <magique/util/Datastructures.h>
 #include <magique/internal/InternalTypes.h>
+#include <magique/core/Animation.h>
 
 //===============================================
 // JSON Import/Exports
@@ -111,6 +112,17 @@ namespace glz
     {
         using T = magique::internal::StorageCell;
         static constexpr auto values = object(&T::name, &T::type, &T::data);
+    };
+
+    // Empty so glaze doesnt complain - nonsensical to load textures from json
+    // Allows to store it in a serialized struct
+    template<>
+    struct from<JSON, magique::EntityAnimation>
+    {
+        template <auto Opts>
+        static void op(magique::EntityAnimation& value, auto&&... args)
+        {
+        }
     };
 
     template <typename K, typename V, int maxSize>

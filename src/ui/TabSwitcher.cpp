@@ -63,9 +63,21 @@ namespace magique
         return nullptr;
     }
 
+    bool TabSwitcher::isActive(std::string_view tab) const
+    {
+        for (int i = 0; i < (int)getChildren().size(); i++)
+        {
+            auto& [name, obj] = getChildren()[i];
+            if (name == tab && active == i)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void TabSwitcher::switchLeft()
     {
-
         active--;
         active = (active + getChildren().size()) % getChildren().size();
     }

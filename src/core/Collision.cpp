@@ -221,6 +221,18 @@ namespace magique
         return info.isColliding();
     }
 
+    bool CheckCollisionEntityMouse(entt::entity e)
+    {
+        const auto& pos = ComponentGet<PositionC>(e);
+        const auto* col = ComponentTryGet<CollisionC>(e);
+        if (col != nullptr) [[likely]]
+        {
+            return CheckCollisionEntityMouse(pos, *col);
+        }
+        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
+        return worldMouse.x == pos.pos.x && worldMouse.y == pos.pos.y;
+    }
+
     void CheckCollisionCircleToQuadrilateral(const Point center, const float r, const Point q1, const Point q2,
                                              const Point q3, const Point q4, CollisionInfo& info)
     {

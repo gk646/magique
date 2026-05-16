@@ -3,6 +3,7 @@
 #define MAGIQUE_UI_CONTAINER_H
 
 #include <functional>
+#include <span>
 #include <vector>
 #include <magique/ui/UIObject.h>
 
@@ -15,6 +16,7 @@
 //  - If you have only a few distinct classes that make up the whole thing use a UIObject with UIObject members
 //  - If you have many members and need to access them programmatically (loops, ...) use UIContainer
 // Note: UIContainer::onUpdate() is called before its children
+// Note: Also contains VerticalContainer˛- auto expands vertically
 // .....................................................................
 
 namespace magique
@@ -43,6 +45,10 @@ namespace magique
         // Returns: the added child if successful, otherwise nullptr
         UIObject* addChild(UIObject* child, std::string_view name = {});
 
+        // Adds many children with no names
+        void addChildren(const std::initializer_list<UIObject*>& newChildren);
+        void addChildren(std::span<UIObject*> newChildren);
+
         // Returns true the child associated with the given name or index was removed
         // Failure: returns wrong if no child with the given name or index exists
         bool removeChild(std::string_view name);
@@ -62,6 +68,30 @@ namespace magique
     private:
         std::vector<ContainerChild> children;
     };
+
+    // Stacks the given children vertically and automatically adjusts its size to fit
+    // Note: This is useful to use as content for a ScrollPane
+    // The alignment of the content can either be centered, left or right
+    struct VerticalContainer : UIContainer
+    {
+        VerticalContainer(const Rect& bounds) : UIContainer(bounds) {}
+
+        // Sets/gets the horizontal alignment of the children - only determines if LEFT | CENTER | RIGHT
+        void setHorizontalAlign(Anchor align);
+        Anchor getHorizontalAlign() const;
+
+        float getGap() const;
+        void setGap(float gap = 2.0F);
+
+    protected:
+        void onDraw(const Rect& bounds) override;
+
+    private:
+        Anchor anchor = Anchor::TOP_CENTER;
+        float gap = 2.0F;
+    };
+
+
 } // namespace magique
 
 #endif // MAGIQUE_UI_CONTAINER_H

@@ -40,15 +40,16 @@ namespace magique
         const auto& staticGrid = path.mapsStaticGrids[map];
         const auto& dynamicGrid = path.mapsDynamicGrids[map];
 
-        int x0 = static_cast<int>(start.x / MAGIQUE_PATHFINDING_CELL_SIZE);
-        int y0 = static_cast<int>(start.y / MAGIQUE_PATHFINDING_CELL_SIZE);
-        int const x1 = static_cast<int>(end.x / MAGIQUE_PATHFINDING_CELL_SIZE);
-        int const y1 = static_cast<int>(end.y / MAGIQUE_PATHFINDING_CELL_SIZE);
+        constexpr float invCellSize = 1.0f / MAGIQUE_PATHFINDING_CELL_SIZE;
+        int x0 = static_cast<int>(start.x * invCellSize);
+        int y0 = static_cast<int>(start.y * invCellSize);
+        const int x1 = static_cast<int>(end.x * invCellSize);
+        const int y1 = static_cast<int>(end.y * invCellSize);
 
-        int const dx = std::abs(x1 - x0);
-        int const sx = x0 < x1 ? 1 : -1;
-        int const dy = -std::abs(y1 - y0);
-        int const sy = y0 < y1 ? 1 : -1;
+        const int dx = std::abs(x1 - x0);
+        const int sx = x0 < x1 ? 1 : -1;
+        const int dy = -std::abs(y1 - y0);
+        const int sy = y0 < y1 ? 1 : -1;
         int error = dx + dy;
 
         while (true)
@@ -76,6 +77,14 @@ namespace magique
             }
         }
         return true;
+    }
+
+    bool PathIsSolid(const Point& pos, const MapID map)
+    {
+        auto& path = global::PATH_DATA;
+        const auto& staticGrid = path.mapsStaticGrids[map];
+        const auto& dynamicGrid = path.mapsDynamicGrids[map];
+        return PathFindingData::IsCellSolid(pos.x, pos.y, staticGrid, dynamicGrid);
     }
 
     Point PathFindRandomTarget(Point start, const Rect& area, MapID map, int iterations)
@@ -172,14 +181,6 @@ namespace magique
             const Rectangle rect = {p.x - halfSize, p.y - halfSize, cellSize, cellSize};
             DrawRectangleRec(rect, color);
         }
-    }
-
-    bool PathIsSolid(const Point& pos, const MapID map)
-    {
-        auto& path = global::PATH_DATA;
-        const auto& staticGrid = path.mapsStaticGrids[map];
-        const auto& dynamicGrid = path.mapsDynamicGrids[map];
-        return PathFindingData::IsCellSolid(pos.x, pos.y, staticGrid, dynamicGrid);
     }
 
 } // namespace magique

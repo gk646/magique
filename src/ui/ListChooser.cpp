@@ -75,12 +75,12 @@ namespace magique
         return *this;
     }
 
-    bool ListChooser::remove(const char* item)
+    bool ListChooser::remove(std::string_view item)
     {
         for (int i = 0; i < (int)entries.size(); i++)
         {
             auto& entry = entries[i];
-            if (strcmp(item, entry.text.c_str()) == 0)
+            if (item == entry.text)
             {
                 return remove(i);
             }
@@ -108,29 +108,34 @@ namespace magique
 
     int ListChooser::getHoveredIndex() const { return hovered; }
 
-    const char* ListChooser::getHovered() const
+    std::string_view ListChooser::getHovered() const
     {
-        if (hovered != -1)
+        if (selected >= 0 && selected < (int)entries.size())
         {
             return entries[hovered].text.c_str();
         }
-        return nullptr;
+        return {};
     }
 
     int ListChooser::getSelectedIndex() const { return selected; }
 
-    const char* ListChooser::getSelected() const
+    std::string_view ListChooser::getSelected() const
     {
-        if (selected != -1)
+        if (selected >= 0 && selected < (int)entries.size())
         {
-            return entries[selected].text.c_str();
+            return entries[selected].text;
         }
-        return nullptr;
+        return {};
     }
 
-    void ListChooser::setSelected(int index) { selected = index; }
+    void ListChooser::setSelected(int index, bool triggerCallback)
+    {
+        selected = index;
+        if (triggerCallback && selectFunc && selected >= 0 && selected < (int)entries.size())
+            selectFunc(getSelected());
+    }
 
-    void ListChooser::setSelected(std::string_view item)
+    void ListChooser::setSelected(std::string_view item, bool triggerCallback)
     {
         for (int i = 0; i < (int)entries.size(); i++)
         {
@@ -138,6 +143,8 @@ namespace magique
             if (entry.text == item)
             {
                 selected = i;
+                if (triggerCallback && selectFunc)
+                    selectFunc(entry.text);
                 return;
             }
         }
@@ -147,7 +154,7 @@ namespace magique
 
     void ListChooser::setSpacing(float newSpacing) { spacing = newSpacing; }
 
-    void ListChooser::setOnSelect(const SelectFunc<std::string>& func) { selectFunc = func; }
+    void ListChooser::setOnSelect(const SelectFunc<std::string_view>& func) { selectFunc = func; }
 
     void ListChooser::setDrawEntryFunc(const DrawItemFunc& func) { drawFunc = func; }
 
@@ -170,6 +177,7 @@ namespace magique
         const auto& bounds = getBounds();
         Point pos = bounds.pos();
         hovered = -1;
+        const auto pressed = LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         for (int i = 0; i < (int)entries.size(); i++)
         {
             const auto& entry = entries[i];
@@ -177,7 +185,7 @@ namespace magique
             if (CheckCollisionMouseRect(lineRect) && !LayeredInput::GetIsMouseConsumed())
             {
                 hovered = i;
-                if (LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                if (pressed)
                 {
                     if (i != selected)
                     {
@@ -190,6 +198,10 @@ namespace magique
             }
             pos.y += entry.height + spacing;
         }
+
+        if (pressed && bounds.contains(GetMousePos()))
+            LayeredInput::ConsumeMouse();
+
         setSize({bounds.width, std::max(pos.y - bounds.y, getStartBounds().height)});
     }
 

@@ -32,13 +32,20 @@ inline CellID GetCellID(const int cellX, const int cellY)
 template <int div>
 int floordiv(const float x)
 {
-    const int intx = static_cast<int>(x);
-    const int res = intx / div;
-    if (intx < 0) [[unlikely]]
+    static_assert((div & (div - 1)) == 0, "div must be a power of 2");
+    constexpr int shift = []() constexpr
     {
-        return res - 1;
-    }
-    return res;
+        int s = 0;
+        for (int d = div; d > 1; d >>= 1, ++s)
+        {
+        }
+        return s;
+    }();
+
+    const int intx = static_cast<int>(x);
+    const int res = intx >> shift;
+    const int mask = (x < 0.0f) && (x != static_cast<float>(intx));
+    return res - mask;
 }
 
 template <int cellSize, typename Func>

@@ -129,11 +129,6 @@ namespace magique
             }
         }
 
-        void drawPopup()
-        {
-
-        }
-
         // All objects are registered in their ctor
         void registerObject(UIObject* object, const bool isContainer = false)
         {

@@ -14,7 +14,7 @@
 
 namespace magique
 {
-    // Called with the new changed value and the slider position in percent
+    // Called with the new changed value and the slider position in percent [0.0 - 1.0]
     using SliderChangeFunc = std::function<void(float value, float percent)>;
 
     struct Slider : UIObject
@@ -51,9 +51,6 @@ namespace magique
                 updateActions(bounds);
         }
 
-        // Called once when the mouse position enters the button
-        virtual void onHover(const Rectangle& bounds) {}
-
         // Called if the mouse is clicked inside the button bounds - can be called multiple times with different buttons
         virtual void onClick(const Rectangle& bounds, int button) {}
 
@@ -66,14 +63,13 @@ namespace magique
 
     private:
         Point getKnobPosition() const;
-
         SliderChangeFunc func;
         float min = 0, mid = 0.5, max = 1;
         float sliderPos = 0.5;
         SliderMode mode = SliderMode::BALANCED;
-        bool isHovered = false;
         bool isClicked = false;
         bool isDragged = false;
+        float dragStartVal = 0.0F;
     };
 
 } // namespace magique

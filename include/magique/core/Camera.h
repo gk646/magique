@@ -62,6 +62,9 @@ namespace magique
 
     //================= UTIL =================//
 
+    // Returns true if the given entity is on the camera map and a path raycast from the camera to its middle is successful
+    bool CameraInLineOfSight(entt::entity entity);
+
     // Returns true if the given point is inside any actors view bounds (using the camera bounds)
     bool CameraInsideAnyViewBounds(Point pos);
 

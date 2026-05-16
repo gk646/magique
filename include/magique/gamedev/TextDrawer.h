@@ -45,8 +45,9 @@ namespace magique
         // Draws the icon using the right-mode and moves the cursor to the left
         TextDrawer& iconRight(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
 
-        // Move cursor
-        // moves cursor to the beginning of the next line and resets mods
+        // ===== CURSOR ======//
+
+        // Moves cursor to the beginning of the next line and resets mods
         TextDrawer& linebreak(float amount = 1.0F);
 
         // Moves the line start - persistent across linebreak()
@@ -56,6 +57,9 @@ namespace magique
         // Negative gap for horizontal moves the right end of line cursor
         TextDrawer& gapH(float mult = 1.0F);
         TextDrawer& gapV(float mult = 1.0F);
+
+        // Jumps to the last possible line given the bounds and gap (vertically) - respects modSize()
+        TextDrawer& jumpLast();
 
         // ===== MODS ======//
         // Temporary mod only for the next action

@@ -45,6 +45,7 @@
 // Time: 14.5ms | minor math optimizations in SAT
 // Time: 14.2ms | sqrtf
 // Time: 13.9ms | Adjusted how much more main thread does vs worker thread
+// Time: 13.5ms | Fedora 44 + GCC 16
 // .....................................................................
 
 using namespace magique;

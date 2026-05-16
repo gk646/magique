@@ -6,7 +6,6 @@
 
 namespace magique
 {
-
     Popup::Popup(Rect size, Anchor anchor, Point inset, ScalingMode scaling) : UIObject(size, anchor, inset, scaling) {}
 
     void Popup::close() { UIRemovePopup(*this); }
@@ -43,8 +42,7 @@ namespace magique
         DrawRectangleRec(Rect{UIGetTargetResolution()}, ColorAlpha(theme.backActive, 0.6F));
 
         const auto dims = MeasureTextEx(fnt, infoText.c_str(), fnt.baseSize, 1.0F);
-        auto modalSize = GetScreenDims() * 0.15F;
-        modalSize.x = std::min(modalSize.x, dims.x + 12);
+        auto modalSize = Point{dims.x + 12, UIGetTargetResolution().y * 0.15F};
 
         const Rect modal = Rect{UIGetAnchor(Anchor::MID_CENTER, modalSize), modalSize};
         DrawRectFrameFilled(modal, theme.background, theme.backOutline);
