@@ -245,6 +245,8 @@ void ToggleFullscreen(void)
         // fullscreen to avoid issues with framebuffer scaling
         glfwSetWindowAttrib(platform.handle, GLFW_DECORATED, GLFW_TRUE);
         FLAG_CLEAR(CORE.Window.flags, FLAG_WINDOW_UNDECORATED);
+
+        glfwShowWindow(platform.handle);
 #endif
     }
 

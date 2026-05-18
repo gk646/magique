@@ -49,13 +49,13 @@ namespace magique
             }
             else
             {
-                height = list.drawDefaultEntry(bounds.pos(), entry.text.c_str(),  isOpen || getIsHovered(), false);
+                height = list.drawDefaultEntry(bounds.pos(), entry.text.c_str(), isOpen || getIsHovered(), false);
             }
         }
 
         if (isOpen)
         {
-            list.setPosition(bounds.pos() + Point{0, height + 1});
+            list.setPosition(bounds.pos() + Point{0.0F, height + 1});
             DrawRectFrameFilled(list.getBounds().enlarge(2), theme.backHighlight, theme.textPassive);
             list.draw();
         }

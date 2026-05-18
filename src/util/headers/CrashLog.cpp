@@ -6,12 +6,15 @@
 #endif
 
 #include "util/headers/CrashLog.h"
+
+#include "external/glad.h"
 #include "magique/core/Game.h"
+#include "raylib/raylib.h"
 
 // Platform-specific headers
 #ifdef __linux__
 #include <csignal>
-#include <execinfo.h>
+#include <sys/utsname.h>
 #elif __APPLE__
 #include <csignal>
 #include <execinfo.h>
@@ -53,154 +56,225 @@ namespace magique
         }
         else
         {
-            fprintf(stderr, "Failed to open file: %s\n", fileName);
+            fprintf(stderr, "Failed to write crashlog file: %s\n", fileName);
         }
     }
 
     std::string GetSystemInfoString()
     {
-        std::string systemInfo;
+        std::string gpuRenderer;
+        std::string gpuVersion;
+        std::string gpuDriver;
 
-        auto now = std::chrono::system_clock::now();
-        std::time_t now_time = std::chrono::system_clock::to_time_t(now);
-        systemInfo += "Current Time: " + std::string(std::ctime(&now_time));
+        std::string cpuModel;
+        int cpuCores = 0;
+        float cpuSpeedMHz = 0.0f;
 
-#ifdef __linux__
-        systemInfo += "\nRAM Information:\n";
-        std::ifstream meminfo("/proc/meminfo");
-        if (meminfo.is_open())
+        uint64_t memTotal = 0;
+        uint64_t memAvailable = 0;
+        uint64_t memProcess = 0;
+
+        std::string osName;
+        std::string osVersion;
+        std::string architecture;
+
+        std::time_t now_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+        gpuRenderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+        gpuVersion = reinterpret_cast<const char*>(glGetString(GL_VERSION));
+        gpuDriver = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+
+#if defined(_WIN32)
+        SYSTEM_INFO sysInfo;
+        GetSystemInfo(&sysInfo);
+        cpuCores = sysInfo.dwNumberOfProcessors;
+        cpuModel = "Not available";
+
+        switch (sysInfo.wProcessorArchitecture)
         {
-            std::string line;
-            while (getline(meminfo, line))
-            {
-                if (line.contains("MemTotal:") || line.find("MemFree:") != std::string::npos ||
-                    line.contains("MemAvailable:"))
-                {
-                    systemInfo += "  " + line + "\n";
-                }
-            }
-            meminfo.close();
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            architecture = "x86_64";
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+            architecture = "ARM";
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            architecture = "ARM64";
+            break;
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            architecture = "x86";
+            break;
+        default:
+            architecture = "Unknown";
         }
 
-        systemInfo += "\nCPU Information:\n";
+        MEMORYSTATUSEX memInfo;
+        memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+        GlobalMemoryStatusEx(&memInfo);
+        memTotal = memInfo.ullTotalPhys;
+        memAvailable = memInfo.ullAvailPhys;
+
+        PROCESS_MEMORY_COUNTERS_EX pmc;
+        GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
+        memProcess = pmc.WorkingSetSize;
+
+        OSVERSIONINFO osvi;
+        ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+        GetVersionEx(&osvi);
+        osName = "Windows";
+        osVersion = std::to_string(osvi.dwMajorVersion) + "." + std::to_string(osvi.dwMinorVersion);
+
+#elif defined(__linux__)
         std::ifstream cpuinfo("/proc/cpuinfo");
         if (cpuinfo.is_open())
         {
             std::string line;
-            std::string model;
-            std::string cores;
-            std::string MHz;
-            std::string fpu;
-            while (getline(cpuinfo, line))
+            while (std::getline(cpuinfo, line))
             {
-                if (line.contains("model name"))
-                {
-                    model = line.substr(line.find(':') + 2);
-                }
-                else if (line.contains("cpu cores"))
-                {
-                    cores = line.substr(line.find(':') + 2);
-                }
-                else if (line.contains("MHz"))
-                {
-                    MHz = line.substr(line.find(':') + 2);
-                }
-                else if (line.contains("fpu"))
-                {
-                    fpu = line.substr(line.find(':') + 2);
-                    break;
-                }
+                if (line.find("model name") != std::string::npos)
+                    cpuModel = line.substr(line.find(':') + 2);
+                else if (line.find("cpu cores") != std::string::npos)
+                    cpuCores = std::stoi(line.substr(line.find(':') + 2));
+                else if (line.find("cpu MHz") != std::string::npos)
+                    cpuSpeedMHz = std::stof(line.substr(line.find(':') + 2));
             }
             cpuinfo.close();
-            systemInfo += "  Model: " + model + "\n";
-            systemInfo += "  Cores: " + cores + "\n";
-            systemInfo += "  Speed: " + MHz + " MHz\n";
-            systemInfo += "  FPU: " + fpu + "\n";
         }
 
-        systemInfo += "\nGPU Information:\n";
-        FILE* lspci = popen("lspci | grep -i vga", "r");
-        if (lspci != nullptr)
+        std::ifstream meminfo("/proc/meminfo");
+        if (meminfo.is_open())
         {
-            char buffer[128];
-            while (fgets(buffer, sizeof(buffer), lspci) != nullptr)
+            std::string line;
+            while (std::getline(meminfo, line))
             {
-                systemInfo += "  " + std::string(buffer);
+                if (line.find("MemTotal:") != std::string::npos)
+                    memTotal = static_cast<uint64_t>(std::stof(line.substr(10)) * 1024);
+                else if (line.find("MemAvailable:") != std::string::npos)
+                    memAvailable = static_cast<uint64_t>(std::stof(line.substr(13)) * 1024);
             }
-            pclose(lspci);
+            meminfo.close();
         }
-        else
+
+        std::ifstream statm("/proc/self/statm");
+        if (statm.is_open())
         {
-            systemInfo += "  Not available\n";
+            std::string line;
+            std::getline(statm, line);
+            std::istringstream iss(line);
+            std::string token;
+            std::getline(iss, token, ' ');
+            std::getline(iss, token, ' ');
+            memProcess = static_cast<uint64_t>(std::stoull(token) * sysconf(_SC_PAGESIZE));
+            statm.close();
         }
-        systemInfo += "\nPlatform Information:\n";
+
         std::ifstream osRelease("/etc/os-release");
         if (osRelease.is_open())
         {
             std::string line;
-            while (getline(osRelease, line))
+            while (std::getline(osRelease, line))
             {
-                if (line.contains("PRETTY_NAME="))
+                if (line.find("PRETTY_NAME=") != std::string::npos)
                 {
-                    std::string prettyName = line.substr(line.find("\"") + 1);
-                    prettyName = prettyName.substr(0, prettyName.find("\""));
-                    systemInfo += "  OS: " + prettyName + "\n";
+                    osName = line.substr(line.find('=') + 2);
+                    osName = osName.substr(0, osName.find('"'));
                 }
             }
             osRelease.close();
         }
 
-#elif __APPLE__
-        // Get RAM information
-        systemInfo += "\nRAM Information:\n";
-        // Placeholder for Mac RAM info
-        systemInfo += "  Not implemented for Mac\n";
+        struct utsname sysInfo;
+        if (uname(&sysInfo) == 0)
+            architecture = sysInfo.machine;
+        else
+            architecture = "Unknown";
 
-        // Get CPU information
-        systemInfo += "\nCPU Information:\n";
-        // Placeholder for Mac CPU info
-        systemInfo += "  Not implemented for Mac\n";
+#elif defined(__APPLE__)
+        size_t size;
+        size = 0;
+        sysctlbyname("machdep.cpu.brand_string", nullptr, &size, nullptr, 0);
+        if (size > 0)
+        {
+            std::vector<char> buffer(size);
+            sysctlbyname("machdep.cpu.brand_string", buffer.data(), &size, nullptr, 0);
+            cpuModel = std::string(buffer.data(), size - 1);
+        }
+        size = sizeof(cpuCores);
+        sysctlbyname("hw.ncpu", &cpuCores, &size, nullptr, 0);
 
-        // Get GPU information
-        systemInfo += "\nGPU Information:\n";
-        // Placeholder for Mac GPU info
-        systemInfo += "  Not available\n";
+        size = sizeof(memTotal);
+        sysctlbyname("hw.memsize", &memTotal, &size, nullptr, 0);
+        memAvailable = 0;
 
-        // Get Platform information
-        systemInfo += "\nPlatform Information:\n";
-        systemInfo += "  OS: Mac OS\n";
-        // Placeholder for more platform info
-        systemInfo += "  Not implemented for Mac\n";
-#elif _WIN32
-        MEMORYSTATUSEX memInfo;
-        memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-        GlobalMemoryStatusEx(&memInfo);
-        systemInfo += "\nRAM Information:\n";
-        systemInfo += "  Total Physical Memory: " + std::to_string(memInfo.ullTotalPhys / (1024 * 1024)) + " MB\n";
-        systemInfo += "  Available Physical Memory: " + std::to_string(memInfo.ullAvailPhys / (1024 * 1024)) + " MB\n";
+        struct mach_task_basic_info info;
+        mach_msg_type_number_t infoCount = MACH_TASK_BASIC_INFO_COUNT;
+        if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, reinterpret_cast<task_info_t>(&info), &infoCount) ==
+            KERN_SUCCESS)
+            memProcess = info.resident_size;
 
-        // Get CPU information
-        SYSTEM_INFO sysInfo;
-        GetSystemInfo(&sysInfo);
-        systemInfo += "\nCPU Information:\n";
-        systemInfo += "  Number of Processors: " + std::to_string(sysInfo.dwNumberOfProcessors) + "\n";
-        systemInfo += "  Processor Type: " + std::to_string(sysInfo.dwProcessorType) + "\n";
+        osName = "macOS";
+        size = 0;
+        sysctlbyname("kern.osproductversion", nullptr, &size, nullptr, 0);
+        if (size > 0)
+        {
+            std::vector<char> buffer(size);
+            sysctlbyname("kern.osproductversion", buffer.data(), &size, nullptr, 0);
+            osVersion = std::string(buffer.data(), size - 1);
+        }
 
-        // Get GPU information (simplified)
-        systemInfo += "\nGPU Information:\n";
-        systemInfo += "  Not available\n";
-
-        systemInfo += "\nPlatform Information:\n";
-        OSVERSIONINFO osvi;
-        ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-        GetVersionEx(&osvi);
-        systemInfo +=
-            "  OS: Windows " + std::to_string(osvi.dwMajorVersion) + "." + std::to_string(osvi.dwMinorVersion) + "\n";
-        systemInfo += "  System Type: " +
-            std::string(sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ? "64-bit" : "32-bit") + "\n";
+        size = 0;
+        sysctlbyname("machdep.cpu.arch", nullptr, &size, nullptr, 0);
+        if (size > 0)
+        {
+            std::vector<char> buffer(size);
+            sysctlbyname("machdep.cpu.arch", buffer.data(), &size, nullptr, 0);
+            architecture = std::string(buffer.data(), size - 1);
+        }
+        else
+        {
+            size = 0;
+            sysctlbyname("hw.machine", nullptr, &size, nullptr, 0);
+            if (size > 0)
+            {
+                std::vector<char> buffer(size);
+                sysctlbyname("hw.machine", buffer.data(), &size, nullptr, 0);
+                architecture = std::string(buffer.data(), size - 1);
+            }
+            else
+            {
+                architecture = "Unknown";
+            }
+        }
 #endif
-        return systemInfo;
+
+        std::ostringstream oss;
+        oss << "Current Time: " << std::ctime(&now_time);
+
+        oss << "\nGPU Information:\n";
+        oss << "  Renderer: " << (gpuRenderer.empty() ? "Not available" : gpuRenderer) << "\n";
+        oss << "  Version: " << (gpuVersion.empty() ? "Not available" : gpuVersion) << "\n";
+        oss << "  Driver: " << (gpuDriver.empty() ? "Not available" : gpuDriver) << "\n";
+
+        oss << "\nCPU Information:\n";
+        oss << "  Model: " << (cpuModel.empty() ? "Not available" : cpuModel) << "\n";
+        oss << "  Cores: " << cpuCores << "\n";
+        oss << "  Speed: " << (cpuSpeedMHz > 0 ? std::to_string(cpuSpeedMHz) + " MHz" : "Not available") << "\n";
+
+        oss << "\nMemory Information:\n";
+        oss << "  Total: " << (memTotal > 0 ? std::to_string(memTotal / (1024 * 1024)) + " MB" : "Not available")
+            << "\n";
+        oss << "  Available: "
+            << (memAvailable > 0 ? std::to_string(memAvailable / (1024 * 1024)) + " MB" : "Not available") << "\n";
+        oss << "  Process Usage: "
+            << (memProcess > 0 ? std::to_string(memProcess / (1024 * 1024)) + " MB" : "Not available") << "\n";
+
+        oss << "\nPlatform Information:\n";
+        oss << "  OS: " << (osName.empty() ? "Not available" : osName) << "\n";
+        oss << "  Version: " << (osVersion.empty() ? "Not available" : osVersion) << "\n";
+        oss << "  Architecture: " << (architecture.empty() ? "Not available" : architecture) << "\n";
+
+        return oss.str();
     }
 
     std::string GetStackTrace()
@@ -231,7 +305,7 @@ namespace magique
             stackTrace += "\n";
         }
 #else
-        stackTrace += "Not available\n";
+        stackTrace += "     Not available\n";
 #endif
         return stackTrace;
     }
@@ -271,8 +345,9 @@ namespace magique
         auto& game = magique::GameGetInstance();
         crashData += "magique CrashLog File\n";
         crashData += "Exception received: " + signalName + "\n\n";
-        crashData += "magique version: " + std::string{MAGIQUE_VERSION} + "\n";
-        crashData += std::string{game.getName()} + "version: " + std::string{game.getVersion()} + "\n\n";
+        crashData += "magique: " + std::string{MAGIQUE_VERSION} + "\n";
+        crashData += "raylib: " + std::string{RAYLIB_VERSION} + "\n\n";
+        crashData += std::string{game.getName()} + ": " + std::string{game.getVersion()} + "\n";
         crashData += "System Information:\n";
         crashData += GetSystemInfoString();
         crashData += "\n";

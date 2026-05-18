@@ -5,7 +5,7 @@
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
 #include <magique/core/Camera.h>
-#include <magique/util/RayUtils.h>
+#include <magique/ui/UI.h>
 
 #include "external/raylib-compat/raudio_compat.h"
 
@@ -227,9 +227,9 @@ namespace magique
                 }
             }
             auto cameraPos = CameraGetPosition();
-            auto dims = GetScreenDims();
-            auto distFactor = std::abs(cameraPos.x - position.x) / (dims.x / 2);
-            SetSoundPan(sound, position.x > cameraPos.x ? 0.5F - distFactor : 0.5 + distFactor);
+            auto dims = UIGetTargetResolution();
+            auto distFactor = (position.x - cameraPos.x) / dims.x;
+            SetSoundPan(sound, distFactor);
         }
         SetSoundVolume(sound, getVolume());
     }

@@ -20,6 +20,8 @@ namespace magique
 
     Point::operator Vector2() const { return Vector2{x, y}; }
 
+    Point Point::FromInt(int x, int y) { return {(float)x, (float)y}; }
+
     Point Point::Random(float min, float max) { return {MathRandom(min, max), MathRandom(min, max)}; }
 
     Point Point::PerpendicularTowardsPoint(Point startPoint, Point direction, Point target)
@@ -414,6 +416,16 @@ namespace magique
 
     bool Rect::operator==(const float num) const { return x == num && y == num && width == num && height == num; }
 
+    Rect& Rect::operator/(float divisor)
+    {
+        const auto mult = 1.0F / divisor;
+        x *= mult;
+        y *= mult;
+        width *= mult;
+        height *= mult;
+        return *this;
+    }
+
     Rect& Rect::floor()
     {
         x = std::floor(x);
@@ -799,6 +811,8 @@ namespace magique
         }
         return nullptr;
     }
+
+    bool TileID::isEmpty() const { return id <= 1; }
 
     Checksum::Checksum(std::string_view hash)
     {

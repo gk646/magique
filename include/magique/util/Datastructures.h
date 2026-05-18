@@ -267,30 +267,23 @@ namespace magique
 
     // This is useful for dynamically size 2D grids where for each cell you store data
     // E.g. the fog of war for a map
-    // The reduction is useful to sample the grid at a lower resolution
-    //
-    // First you sample from world to tile pos (worldPos / tileSize)
-    // And then another /2 to make the grid smaller (reduction)
-    // So you a single grid cell is 16pixels instead of 8
-    // By making it a template parameter (and a power of two) you loose almost no speed!
-    // All functions take the pixel value
-    template <typename T, int reduction = 2>
+    template <typename T>
     struct DynamicGridContainer final
     {
         DynamicGridContainer() = default;
-        DynamicGridContainer(int cols, int rows) : data(cols * rows), cols(cols), rows(rows) {}
+        DynamicGridContainer(int cols, int rows, const T& val = {}) : data(cols * rows, val), cols(cols), rows(rows) {}
 
         const T& operator()(const Point& point) const
         {
-            const int x = static_cast<int>(point.x / reduction);
-            const int y = static_cast<int>(point.y / reduction);
+            const int x = static_cast<int>(point.x);
+            const int y = static_cast<int>(point.y);
             return data[y * cols + x];
         }
 
         T& operator()(const Point& point)
         {
-            const int x = static_cast<int>(point.x / reduction);
-            const int y = static_cast<int>(point.y / reduction);
+            const int x = static_cast<int>(point.x);
+            const int y = static_cast<int>(point.y);
             return data[y * cols + x];
         }
 
@@ -305,34 +298,21 @@ namespace magique
         // Sets the given cell - expands the grid if needed
         void insert(const Point& point, const T& val)
         {
-            if (!insideGrid(point)) [[unlikely]]
+            if (!isInside(point)) [[unlikely]]
             {
-                resize(std::max(cols, (int)point.x) + 1, std::max(rows, (int)point.y) + 1);
+                resize(std::max(cols, (int)point.x), std::max(rows, (int)point.y));
             }
             operator()(point) = val;
         }
 
-        void insert(int x, int y, const T& val)
+        void insert(const Rect rect, const T& elem)
         {
-            if (!insideGrid(x, y)) [[unlikely]]
+            for (int i = 0; i < (int)rect.height; ++i)
             {
-                resize(std::max(cols, x) + 1, std::max(rows, y) + 1);
-            }
-            operator()(x, y) = val;
-        }
-
-        void insert(int x, int y, int width, int height, const T& elem)
-        {
-            x /= reduction;
-            y /= reduction;
-            width /= reduction;
-            height /= reduction;
-            for (int i = 0; i < height; ++i)
-            {
-                for (int j = 0; j < width; ++j)
+                for (int j = 0; j < (int)rect.width; ++j)
                 {
-                    const int xCo = j + x;
-                    const int yCo = i + y;
+                    const int xCo = j + (int)rect.x;
+                    const int yCo = i + (int)rect.y;
                     if (xCo >= 0 && yCo >= 0 && xCo < cols && yCo < rows)
                     {
                         int idx = yCo * cols + xCo;
@@ -342,25 +322,33 @@ namespace magique
             }
         }
 
-        bool insideGrid(int x, int y) const
+        bool isInside(const Point& point) const
         {
-            x /= reduction;
-            y /= reduction;
+            const int x = static_cast<int>(point.x);
+            const int y = static_cast<int>(point.y);
             return x >= 0 && y >= 0 && x < cols && y < rows;
         }
 
-        bool insideGrid(const Point& point) const
-        {
-            const int x = static_cast<int>(point.x / reduction);
-            const int y = static_cast<int>(point.y / reduction);
-            return x >= 0 && y >= 0 && x < cols && y < rows;
-        }
-
+        // Warning: Expensive when changing amount of columns
         void resize(int nCols, int nRows, const T& elem = {})
         {
+            if (nCols == cols)
+            {
+                data.resize(nCols * nRows, elem);
+            }
+            else
+            {
+                auto copy = this;
+                data.resize(nCols * nRows, elem);
+                std::ranges::fill(data, {});
+                for (auto [pos, val] : copy)
+                {
+                    this->operator()(pos) = val;
+                }
+            }
+
             cols = nCols;
             rows = nRows;
-            data.resize(nCols * nRows, elem);
         }
 
         void clear()
@@ -369,6 +357,50 @@ namespace magique
             cols = 0;
             rows = 0;
         }
+
+        class Iterator
+        {
+            DynamicGridContainer* grid;
+            int index;
+
+        public:
+            using iterator_category = std::input_iterator_tag;
+            using value_type = std::pair<Point, T>;
+            using difference_type = std::ptrdiff_t;
+            using reference = std::pair<Point, T&>;
+            using pointer = value_type*;
+
+            Iterator(DynamicGridContainer* grid, int index) : grid(grid), index(index) {}
+
+            reference operator*() const
+            {
+                const int x = index % grid->cols;
+                const int y = index / grid->cols;
+                return reference{Point::FromInt(x, y), grid->data[index]};
+            }
+
+            Iterator& operator++()
+            {
+                ++index;
+                return *this;
+            }
+
+            Iterator operator++(int)
+            {
+                Iterator tmp = *this;
+                ++index;
+                return tmp;
+            }
+
+            bool operator==(const Iterator& other) const { return index == other.index; }
+
+            bool operator!=(const Iterator& other) const { return !(*this == other); }
+        };
+
+        // Iterates over the vector directly without jumps - NOT in row-major order
+        // Returns [Point: pos, T&: value]
+        Iterator begin() { return Iterator(this, 0); }
+        Iterator end() { return Iterator(this, cols * rows); }
 
     private:
         std::vector<T> data;

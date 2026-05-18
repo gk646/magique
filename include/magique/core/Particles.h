@@ -103,7 +103,7 @@ namespace magique
         EmitterBase& setColorsWeighted(const std::vector<WeightedColor>& colors);
 
         // Sets the lifetime in seconds - randomly chosen between the min (x) and max (y)
-        EmitterBase& setLifetime(Point lifetime = {0, 1.0F});
+        EmitterBase& setLifetime(Point lifetime = {0, 1});
 
         //================= ADDITIONALS =================//
 

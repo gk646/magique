@@ -142,7 +142,7 @@ namespace magique
         InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
-        LOG_INFO("Initialized %s: %s", gameName, getVersion());
+        LOG_INFO("Initialized %s %s", gameName, getVersion());
     }
 
     Game::~Game()

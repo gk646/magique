@@ -17,5 +17,4 @@ namespace magique
 
 } // namespace magique
 
-
 #endif //MAGEQUEST_CRASHLOG_H

@@ -28,6 +28,8 @@ namespace magique
         constexpr Point(float both) : x(both), y(both) {}
         operator Vector2() const;
 
+        static Point FromInt(int x, int y);
+
         // Initializes both value randomly within the given range
         static Point Random(float min, float max);
 
@@ -166,6 +168,7 @@ namespace magique
         Rect& operator-=(const Point& p);     // only x and y
 
         bool operator==(float num) const; // checks all
+        Rect& operator/(float divisor) ;
 
         // Applies to all values
         Rect& floor();
@@ -432,6 +435,8 @@ namespace magique
         bool flippedHorizontal = false;
         bool flippedVertical = false;
         bool flippedDiagonal = false;
+
+        bool isEmpty() const;
     };
 
     // Checksum (hash) for a file

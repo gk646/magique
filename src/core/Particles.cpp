@@ -42,7 +42,7 @@ namespace magique
                 {
                     const auto ran1 = MathRandom(0.0F, 1.0F);
                     const auto ran2 = MathRandom(0.0F, 1.0F);
-                    if (data.volume == 1.0F)
+                    if (data.volume == 1.0F) [[likely]]
                     {
                         particle.pos = Point{ran1 * (data.emissionDims.x), ran2 * (data.emissionDims.y)};
                     }

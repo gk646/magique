@@ -109,7 +109,7 @@ namespace magique
         auto activeObj = getActive();
         if (activeObj != nullptr)
         {
-            activeObj->align(Anchor::TOP_CENTER, getBounds(), Point{0, biggestY + 5} + alignOffset);
+            activeObj->align(Anchor::TOP_CENTER, getBounds(), Point{0.0F, biggestY + 5} + alignOffset);
             activeObj->draw();
         }
     }

@@ -18,10 +18,6 @@ namespace magique
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
 
-    // Toggles fullscreen more reliably - should not be called during a frame
-    // First maximizes the window then sets the monitors max size then toggles fullscreen
-    void ToggleFullscreenEx();
-
     // Returns the screen dimension in a point
     Point GetScreenDims();
 

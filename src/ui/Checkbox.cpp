@@ -56,16 +56,16 @@ namespace magique
         switch (infoDir)
         {
         case Direction::LEFT:
-            textPos -= Point{dims.x + 2, 0};
+            textPos -= Point{dims.x + 2, 0.0F};
             break;
         case Direction::RIGHT:
-            textPos += Point{dims.x + bounds.width + 2, 0};
+            textPos += Point{dims.x + bounds.width + 2, 0.0F};
             break;
         case Direction::UP:
-            textPos -= Point{0, dims.y + 2};
+            textPos -= Point{0.0F, dims.y + 2};
             break;
         case Direction::DOWN:
-            textPos += Point{0, bounds.height + 2};
+            textPos += Point{0.0F, bounds.height + 2};
             break;
         }
         DrawTextEx(EngineGetFont(), infoText.c_str(), textPos, fSize, 1.0F, theme.text);

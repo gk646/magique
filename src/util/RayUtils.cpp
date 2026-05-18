@@ -82,25 +82,6 @@ namespace magique
         }
     }
 
-    static Point prevRes = {};
-
-    void ToggleFullscreenEx()
-    {
-        if (!IsWindowFullscreen())
-        {
-            prevRes = GetScreenDims();
-            MaximizeWindow();
-            const auto monitor = GetCurrentMonitor();
-            SetWindowSize(GetMonitorWidth(monitor), GetMonitorHeight(monitor));
-        }
-        else
-        {
-            RestoreWindow();
-            SetWindowSize((int)prevRes.x, (int)prevRes.y);
-        }
-        ToggleFullscreen();
-    }
-
     Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType)
     {
         auto img = LoadImageFromMemory(fileType, data, size);
