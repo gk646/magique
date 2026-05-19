@@ -29,17 +29,17 @@ endif ()
 target_compile_definitions(magique PRIVATE MAGIQUE_IMPLEMENTATION)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    if(LINUX)
+    if (LINUX)
         target_compile_options(magique PUBLIC -march=sandybridge -mtune=generic)
-    elseif(APPLE)
-        if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    elseif (APPLE)
+        if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
             # Apple Silicon (M1/M2/M3): ARM64 + NEON/SVE
             target_compile_options(magique PUBLIC -march=armv8-a -mtune=generic)
-        else()
+        else ()
             # Intel Mac (x86-64)
             target_compile_options(magique PUBLIC -march=x86-64 -mtune=generic)
-        endif()
-    endif()
+        endif ()
+    endif ()
 
     target_compile_options(magique PUBLIC
             -std=c++23
@@ -51,13 +51,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -Wpedantic
             -Wc++20-compat
             -Wc++20-extensions
-            -Wcomma-subscript
             -Wdeprecated-declarations
-            -Wuseless-cast
             -Wvla
-            -Wno-useless-cast
             -Wno-unused-parameter
     )
+
+    # Avoid warnings on Mac
+    if (LINUX)
+        target_compile_options(magique PUBLIC -Wcomma-subscript -Wuseless-cast -Wno-useless-cast)
+    endif ()
 
     target_compile_options(magique PUBLIC
             $<$<CONFIG:Debug>:

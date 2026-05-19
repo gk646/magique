@@ -1,6 +1,7 @@
 #ifndef NODO_DATASTRUCTURES_H
 #define NODO_DATASTRUCTURES_H
 
+#include <algorithm>
 #include <span>
 #include <ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>

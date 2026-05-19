@@ -935,7 +935,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 	s->mem_ctx = mem_ctx;
 
 	s_skip(s, sizeof(uint32_t)); // File size.
-	int magic = (int)s_read_uint16(s);
+	[[maybe_unused]] int magic = (int)s_read_uint16(s);
 	CUTE_ASEPRITE_ASSERT(magic == 0xA5E0);
 
 	ase->frame_count = (int)s_read_uint16(s);
@@ -1068,8 +1068,8 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 				{
 					cel->w = s_read_uint16(s);
 					cel->h = s_read_uint16(s);
-					int zlib_byte0 = s_read_uint8(s);
-					int zlib_byte1 = s_read_uint8(s);
+					[[maybe_unused]] int zlib_byte0 = s_read_uint8(s);
+					[[maybe_unused]] int zlib_byte1 = s_read_uint8(s);
 					int deflate_bytes = (int)chunk_size - (int)(s->in - chunk_start);
 					void* pixels = s->in;
 					CUTE_ASEPRITE_ASSERT((zlib_byte0 & 0x0F) == 0x08); // Only zlib compression method (RFC 1950) is supported.
@@ -1240,7 +1240,7 @@ ase_t* cute_aseprite_load_from_memory(const void* memory, int size, void* mem_ct
 			}
 			while (cel->is_linked) {
 				ase_frame_t* frame = ase->frames + cel->linked_frame_index;
-				int found = 0;
+				[[maybe_unused]] int found = 0;
 				for (int k = 0; k < frame->cel_count; ++k) {
 					if (frame->cels[k].layer == cel->layer) {
 						cel = frame->cels + k;

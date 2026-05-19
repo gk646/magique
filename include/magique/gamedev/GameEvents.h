@@ -28,7 +28,7 @@ namespace magique
         virtual ~IEventHandler() = default;
 
         // Called each time BEFORE any event method - event method is only called if returns true
-        virtual bool shouldBeCalled() { return true; }
+        virtual bool shouldBeCalled(GameEvent event, entt::entity entity, const EventData& data) { return true; }
 
         // Called for each event
         virtual void onEvent(GameEvent event, entt::entity entity, const EventData& data) {}

@@ -34,7 +34,7 @@ namespace magique
     {
         for (auto& subscriber : subscribers)
         {
-            if (subscriber.isValid(entity) && subscriber.handler->shouldBeCalled())
+            if (subscriber.isValid(entity) && subscriber.handler->shouldBeCalled(event, entity, data))
             {
                 subscriber.handler->onEvent(event, entity, data);
             }

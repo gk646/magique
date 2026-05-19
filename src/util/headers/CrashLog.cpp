@@ -1,5 +1,6 @@
 #include <chrono>
 #include <fstream>
+#include <vector>
 
 #if __has_include(<stacktrace>)
 #include <stacktrace>
@@ -19,6 +20,7 @@
 #include <csignal>
 #include <execinfo.h>
 #include <sys/utsname.h>
+#include <sys/sysctl.h>
 #elif _WIN32
 #include <windows.h>
 #include <dbghelp.h>
@@ -37,11 +39,11 @@ namespace magique
         const auto* game = GameGetInstance().getName();
         std::string date(64, '\0');
         // Cannot use TextFormat as we cant include raylib and windows in the same translation unit...
-        sprintf(date.data(), "%02d.%02d.%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
+        snprintf(date.data(), 64, "%02d.%02d.%04d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
         std::string time(64, '\0');
-        sprintf(time.data(), "%02d:%02d", tm.tm_hour, tm.tm_min);
+        snprintf(time.data(), 64, "%02d:%02d", tm.tm_hour, tm.tm_min);
         static std::string FILE_NAME(64, '\0');
-        sprintf(FILE_NAME.data(), "./crash-log-%s-%s-%s.txt", game, date.c_str(), time.c_str());
+        snprintf(FILE_NAME.data(), 64, "./crash-log-%s-%s-%s.txt", game, date.c_str(), time.c_str());
         return FILE_NAME.c_str();
     }
 
@@ -310,7 +312,6 @@ namespace magique
         return stackTrace;
     }
 
-
 #if defined(__linux__) || defined(__APPLE__)
     inline std::string GetSignalName(int signal)
     {
@@ -346,8 +347,8 @@ namespace magique
         crashData += "magique CrashLog File\n";
         crashData += "Exception received: " + signalName + "\n\n";
         crashData += "magique: " + std::string{MAGIQUE_VERSION} + "\n";
-        crashData += "raylib: " + std::string{RAYLIB_VERSION} + "\n\n";
-        crashData += std::string{game.getName()} + ": " + std::string{game.getVersion()} + "\n";
+        crashData += "raylib: " + std::string{RAYLIB_VERSION} + "\n";
+        crashData += std::string{game.getName()} + ": " + std::string{game.getVersion()} + "\n\n";
         crashData += "System Information:\n";
         crashData += GetSystemInfoString();
         crashData += "\n";

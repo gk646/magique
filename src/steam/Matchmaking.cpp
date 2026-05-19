@@ -110,7 +110,7 @@ namespace magique
 
     SteamLobbyID SteamLobbyGetID() { return static_cast<SteamLobbyID>(global::STEAM_DATA.lobbyID.ConvertToUint64()); }
 
-    SteamID SteamGetLobbyOwner(SteamLobbyID lobby )
+    SteamID SteamGetLobbyOwner(SteamLobbyID lobby)
     {
         return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(CSteamID((uint64)lobby)).ConvertToUint64());
     }
