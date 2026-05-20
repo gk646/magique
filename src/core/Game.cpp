@@ -115,7 +115,7 @@ namespace magique
 #endif
 
         LOG_INFO("Initialized magique %s (raylib %s; %d Workers; Steam %d; LAN: %d)", MAGIQUE_VERSION, RAYLIB_VERSION,
-                 MAGIQUE_WORKER_THREADS, MAGIQUE_STEAM, steam, lan);
+                 MAGIQUE_WORKER_THREADS, steam, lan);
         return true;
     }
 

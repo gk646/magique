@@ -1,15 +1,14 @@
 #include <chrono>
 #include <fstream>
 #include <vector>
-
 #if __has_include(<stacktrace>)
 #include <stacktrace>
 #endif
 
-#include "util/headers/CrashLog.h"
+#include <magique/core/Game.h>
 
+#include "util/headers/CrashLog.h"
 #include "external/glad.h"
-#include "magique/core/Game.h"
 #include "raylib/raylib.h"
 
 // Platform-specific headers
@@ -21,6 +20,7 @@
 #include <execinfo.h>
 #include <sys/utsname.h>
 #include <sys/sysctl.h>
+#include <mach/mach.h>
 #elif _WIN32
 #include <windows.h>
 #include <dbghelp.h>

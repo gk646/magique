@@ -138,6 +138,8 @@ namespace magique
 
         void onConnectionStatusChange(SteamNetConnectionStatusChangedCallback_t* pParam)
         {
+            // LOG_INFO("Prev: %s Curr: %s", enchantum::to_string(pParam->m_eOldState).data(),
+            //          enchantum::to_string(pParam->m_info.m_eState).data());
             const auto steamId = static_cast<SteamID>(pParam->m_info.m_identityRemote.GetSteamID64());
             const auto conn = static_cast<Connection>(pParam->m_hConn);
             const char* closeReason = pParam->m_info.m_szEndDebug;

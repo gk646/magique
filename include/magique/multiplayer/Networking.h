@@ -148,7 +148,6 @@ namespace magique
     // Returns true if this game is currently in client mode
     bool NetworkIsClientMode();
 
-
 } // namespace magique
 
 

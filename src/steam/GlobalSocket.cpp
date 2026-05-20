@@ -5,8 +5,8 @@
 namespace magique
 {
     bool GlobalSocketInit() { M_ENABLE_STEAM_ERROR(false) }
-    bool GlobalSocketCreate() { M_ENABLE_STEAM_ERROR(false) }
-    Connection GlobalSocketConnect(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}) }
+    bool GlobalSocketCreate() { M_ENABLE_STEAM_ERROR(false) };
+    Connection GlobalSocketConnect(const SteamID magiqueSteamID) { M_ENABLE_STEAM_ERROR({}); }
 } // namespace magique
 #else
 #include "internal/globals/NetworkingData.h"
@@ -42,12 +42,12 @@ namespace magique
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
-    Connection GlobalSocketConnect(const SteamID magiqueSteamID)
+    Connection GlobalSocketConnect(const SteamID steam)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
 
-        const CSteamID steamID{static_cast<uint64>(magiqueSteamID)};
+        const CSteamID steamID(static_cast<uint64>(steam));
         if (!steamID.IsValid())
         {
             LOG_WARNING("Cannot connect to invalid SteamID");
@@ -58,14 +58,25 @@ namespace magique
         SteamNetworkingIdentity sni{};
         sni.SetSteamID(steamID);
 
+        if (sni.IsInvalid())
+        {
+            LOG_WARNING("Cannot connect to invalid SteamID");
+            return Connection::INVALID;
+        }
+
         const auto conn = SteamNetworkingSockets()->ConnectP2P(sni, 0, 0, nullptr);
         if (conn == k_HSteamNetConnection_Invalid)
         {
             LOG_WARNING("Failed to connect to global socket");
             return Connection::INVALID;
         }
+
+        char buffer[SteamNetworkingIdentity::k_cchMaxString];
+        sni.ToString(buffer, SteamNetworkingIdentity::k_cchMaxString);
+        LOG_INFO("GlobalSockets connecting to: %s", buffer);
+
         data.goOnline(false, static_cast<Connection>(conn));
-        return data.connections[0];
+        return data.connections.front();
     }
 
 } // namespace magique

@@ -107,7 +107,7 @@ namespace magique
 
     bool Lobby::getStartSignal() const { return false; }
 
-    void Lobby::sendChatMessage(std::string_view message) { (void)message; }
+    void Lobby::sendChatMsg(std::string_view message) { (void)message; }
 
     void Lobby::setMetadata(std::string_view key, std::string_view value)
     {
