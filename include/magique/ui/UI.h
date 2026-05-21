@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_UI_H
 #define MAGIQUE_UI_H
 
+#include <functional>
 #include <vector>
 #include <magique/core/Types.h>
 
@@ -112,17 +113,71 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    struct ControllerInputMap
+    // Used to enable gamepad (and arrow keys) navigation of UI menus - without any logic changes
+    // Works by positiong the cursor (even when not shown) to the correct position
+    // However menus should still be designed with controller in mind to make it easier
+    // Note: UIObject::Menu allows to store a mapping and automatically applies it if its activated
+    struct GamepadUIMapping
     {
-        virtual ~ControllerInputMap() = default;
+        GamepadUIMapping(UIObject& object);
+        virtual ~GamepadUIMapping() = default;
 
-        ControllerInputMap(UIObject& object);
+        // Resets the state
+        void reset();
 
-        virtual void onLeft();
-        virtual void onRight();
-        virtual void onUp();
-        virtual void onDown();
+        // Called when this mapping is set active
+        // Returns the starting position of the mouse
+        // Default: -1 (ignored) and reset()
+        virtual Point onStart() ;
+
+        // Called when the submit button (ENTER or A (Xbox)) has been pressed
+        // If returns true a mouse click is emitted
+        // Default: true
+        virtual bool onSubmit(GamepadUIMappingState& state);
+
+        // Called when back button (ESC or B (Xbox)) has been pressed
+        // If returns true attempts to activate the parent menu
+        // Default: true and reset()
+        virtual bool onBack(GamepadUIMappingState& state);
+
+        // Called on the corresponding arrow keys/controller joystick input was made
+        // Returns the next screen position for the mouse
+        // Default: -1 (ignored)
+        virtual Point onLeft(GamepadUIMappingState& state){return -1;}
+        virtual Point onRight(GamepadUIMappingState & state){return -1;}
+        virtual Point onUp(GamepadUIMappingState& state){return -1;}
+        virtual Point onDown(GamepadUIMappingState& state){return -1;}
+
+        // Called on button presses other than the special functions
+        // Note: Invalid parameter is -1
+        // Default: -1 (ignored)
+        virtual Point onButton(GamepadButton gamepad, KeyboardKey key){return -1;}
+
+        // Returns the object its attached to or state
+        UIObject& getObject();
+        const GamepadUIMappingState& getState()const;
+
+        // Can be called manually to trigger the corresponding callback
+        // Note: These are called AUTOMATICALLY when the appropriate buttons are pressed
+        void start();
+        void submit();
+        void back();
+        void button(GamepadButton gamepad, KeyboardKey key);
+        void left();
+        void right();
+        void up();
+        void down();
+
+    private:
+        void setMouse(Point pos);
+        GamepadUIMappingState state_{    };
+        UIObject* object = nullptr;
     };
+
+    // Sets/gets the current input map
+    // Note: This is set automatically for menus
+    void UISetGamepadMap( GamepadUIMapping& map);
+    GamepadUIMapping* UIGetGamepadMap();
 
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space
     // Destructor resets it back to original screen pos
@@ -134,7 +189,6 @@ namespace magique
     private:
         Point prev;
     };
-
 
 } // namespace magique
 

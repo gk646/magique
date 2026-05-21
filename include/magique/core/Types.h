@@ -867,6 +867,12 @@ namespace magique
         IMBALANCED,
     };
 
+    struct GamepadUIMappingState
+    {
+        int row = 0;
+        int col = 0;
+    };
+
     //================= HELPER TYPES =================//
 
     enum KeyBindType : uint8_t

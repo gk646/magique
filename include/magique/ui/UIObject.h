@@ -28,6 +28,7 @@ namespace magique
         // Creates the object from absolute dimensions in the logical UI resolution (see ui/UI.h)
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         UIObject(Rect size, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
+        virtual ~UIObject();
 
         //================= CORE =================//
 
@@ -120,7 +121,9 @@ namespace magique
         // Starts a scissor mode with the current bounds - has to be stopped manually!
         void beginBoundsScissor() const;
 
-        virtual ~UIObject();
+        // Returns true if this UIObject is subclass of menu
+        bool getIsMenu() const;
+
 
     private:
         Rect pBounds;
@@ -131,6 +134,7 @@ namespace magique
         bool wasDrawnLastTick = false;
         bool drawnThisTick = false;
         bool isContainer = false;
+        bool isMenu = false;
         friend UIData;
         friend Window;
     };

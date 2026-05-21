@@ -174,4 +174,8 @@ namespace magique
         BeginScissorMode((int)bounds.x, (int)bounds.y, (int)bounds.width, (int)bounds.height);
     }
 
+    bool UIObject::getIsMenu() const{
+        return isMenu;
+    }
+
 } // namespace magique

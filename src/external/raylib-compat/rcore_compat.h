@@ -31,6 +31,11 @@ extern "C"
 
     char* GetCurrentGamepadState();
     char* GetPreviousGamepadState();
+
+    void TriggerMouseClick(int button);
+
+    Vector2 GetMouseScale();
+
 }
 
 #endif // RCORE_COMPAT_H

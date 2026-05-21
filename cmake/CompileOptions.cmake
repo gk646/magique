@@ -30,6 +30,7 @@ target_compile_definitions(magique PRIVATE MAGIQUE_IMPLEMENTATION)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     if (LINUX)
+        # up to AVX - minimum: Intel Core i5-2400 / AMD FX-4100
         target_compile_options(magique PUBLIC -march=sandybridge -mtune=generic)
     elseif (APPLE)
         if (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
@@ -97,9 +98,11 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         )
     endif ()
 elseif (MSVC)
+    target_compile_options(magique PUBLIC /bigobj)
+
     target_compile_options(magique PUBLIC
-            $<$<CONFIG:Debug>:/W3 /Od /Zi /RTC1 /Zc:preprocessor>
-            $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX2 /Zc:inline /Zc:preprocessor /GS /Gy /Oi /Gw /GF /GL /GR- /Oi >
+            $<$<CONFIG:Debug>:/W3 /RTCsu /Zi /Zc:preprocessor>
+            $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX /Zc:inline /Zc:preprocessor /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi >
     )
 
     target_link_options(magique PUBLIC

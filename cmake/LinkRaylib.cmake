@@ -44,14 +44,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -Wall -fno-exceptions -fvisibility=hidden -flto=auto
     )
     target_compile_options(raylib PRIVATE
-            $<$<CONFIG:Debug>: -Og -Wall -g >
+            $<$<CONFIG:Debug>: -Og -Wall -g>
             $<$<CONFIG:Release>:-Ofast -DNDEBUG -ffast-math -fno-math-errno -fno-trapping-math>
     )
     target_link_options(raylib PRIVATE -flto=auto)
 elseif (MSVC)
     target_compile_options(raylib PRIVATE
-            $<$<CONFIG:Debug>:/W3 /Od /Zi /RTC1>
-            $<$<CONFIG:Release>:/DNDEBUG /W4 /Ob2 /O2 /GL /GF /GR- /fp:fast /arch:AVX2 /Gw /Zc:inline>
+            $<$<CONFIG:Debug>:/W3 /RTCsu /Od /Zi /Zc:preprocessor>
+            $<$<CONFIG:Release>:/DNDEBUG /W4 /GS- /Ob2 /O2 /GL /GF /GR- /fp:fast /arch:AVX /Gw /Zc:inline>
     )
     target_link_options(raylib PRIVATE $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF>)
 endif ()

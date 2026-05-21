@@ -67,6 +67,12 @@ namespace magique
 
     void Menu::activate()
     {
+        if (isActive)
+            return;
+
+        if (getGamepadMapping() != nullptr)
+            UISetGamepadMap(*getGamepadMapping());
+
         inactivateChildren();
         isActive = true;
         subMenu = nullptr;
@@ -91,7 +97,12 @@ namespace magique
 
     bool Menu::getIsSubmenuActive() const { return subMenu != nullptr; }
 
-    Menu* Menu::getParent() const { return parent; }
+    Menu* Menu::getParent() const { return parent; }void Menu::setGamepadMapping(GamepadUIMapping* map){
+        mapping = map;
+}
+    GamepadUIMapping* Menu::getGamepadMapping(){
+        return mapping;
+}
 
     void Menu::onDraw(const Rect& bounds)
     {
@@ -109,6 +120,8 @@ namespace magique
 
     void Menu::updateInputs(KeyboardKey key, GamepadButton button)
     {
+        if (getIsActive() && getGamepadMapping() != nullptr && UIGetGamepadMap() != getGamepadMapping())
+            UISetGamepadMap(*getGamepadMapping());
         if (LayeredInput::IsKeyPressed(key) || LayeredInput::IsGamepadButtonPressed(0, button))
         {
             if (onExitRequest())

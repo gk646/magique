@@ -30,3 +30,15 @@ void SetMousePositionDirect(float x, float y)
 
 char* GetCurrentGamepadState() { return CORE.Input.Gamepad.currentButtonState[0]; }
 char* GetPreviousGamepadState() { return CORE.Input.Gamepad.previousButtonState[0]; }
+
+void TriggerMouseClick(int button)
+{
+    CORE.Input.Mouse.currentButtonState[button] = 1;
+    CORE.Input.Mouse.previousButtonState[button] = 0;
+}
+
+Vector2 GetMouseScale()
+{
+    return CORE.Input.Mouse.scale;
+}
+

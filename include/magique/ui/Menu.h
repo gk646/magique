@@ -1,6 +1,7 @@
 #ifndef MAGEQUEST_MENU_H
 #define MAGEQUEST_MENU_H
 
+#include "magique/ui/UI.h"
 #include "magique/ui/UIContainer.h"
 #include <magique/ui/UIObject.h>
 
@@ -16,7 +17,7 @@
 // A menu has certain properties
 //  - Always covers the full screen (its bounds are UI target resolution)
 //  - A menu can be active or not (if its drawn and the "shown" one)
-//      - If a submenu (or a submenu of a submenu) is active the menu itself is NOT active
+//      - If a submenu (or a submenu of a submenu) is active the containing menu itself is NOT active
 
 // Note: "getIsActive()" NEEDS to be checked when drawing and updating (as menu switching takes place in updateInputs()
 //        Also the base functions need to be called
@@ -24,7 +25,6 @@
 
 namespace magique
 {
-
     struct Menu : UIContainer
     {
         Menu();
@@ -37,7 +37,7 @@ namespace magique
         bool activateSubmenu(std::string_view name);
         bool activateSubmenu(Menu* menu);
 
-        // Activates the first nested menu with the given name - searches all menus recursively
+        // Activates the first nested menu with the given name - searches all submenus recursively
         void activateNested(std::string_view name);
 
         // Gives control back to the parent
@@ -56,10 +56,16 @@ namespace magique
         // Returns true if this menu is currently active
         bool getIsActive() const;
 
+        // Returns true if a submenu is active
         bool getIsSubmenuActive() const;
 
         // Returns the parent
         Menu* getParent() const;
+
+        // Sets/gets the gamepad mapping for this menu - should pass a new Instance of your implementing class
+        // If set automatically set this mapping active when the menu is activated
+        void setGamepadMapping(GamepadUIMapping* map);
+        GamepadUIMapping* getGamepadMapping();
 
     protected:
         // Needs to be called (as the first thing) in all implementing versions
@@ -92,6 +98,7 @@ namespace magique
         Menu* parent = nullptr;
         Menu* subMenu = nullptr;
         bool isActive = true;
+        GamepadUIMapping* mapping = nullptr;
     };
 } // namespace magique
 

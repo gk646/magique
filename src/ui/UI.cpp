@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/ui/UI.h>
+#include <magique/ui/Menu.h>
+#include <magique/core/Camera.h>
 
 #include "internal/globals/UIData.h"
-#include "magique/core/Camera.h"
 #include "external/raylib-compat/rcore_compat.h"
 
 namespace magique
@@ -194,7 +195,78 @@ namespace magique
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
-    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
+    bool LayeredInput::GetIsMouseConsumed()
+    {
+        return global::UI_DATA.mouseConsumed;
+    }
+
+    GamepadUIMapping::GamepadUIMapping(UIObject& object) : object(&object) {
+
+}
+
+    void GamepadUIMapping::reset(){
+        state_ = {};
+}
+    Point GamepadUIMapping::onStart() {
+        return {-1};
+    }
+
+    bool GamepadUIMapping::onSubmit(GamepadUIMappingState& state){
+        return true;
+}
+
+    bool GamepadUIMapping::onBack(GamepadUIMappingState& state){
+            reset();
+            return true;
+    }
+
+    const GamepadUIMappingState& GamepadUIMapping::getState() const{
+        return state_;
+}void GamepadUIMapping::start(){
+        setMouse(onStart());
+}UIObject& GamepadUIMapping::getObject(){
+        return *object;
+}void GamepadUIMapping::submit(){
+        if (onSubmit(state_))
+        {
+            TriggerMouseClick(MouseButton::MOUSE_BUTTON_LEFT);
+        }
+}
+    void GamepadUIMapping::back(){
+        if (onBack(state_) && object->getIsMenu())
+        {
+            object->getAs<Menu>()->activateParent();
+        }
+}
+
+    void GamepadUIMapping::button(GamepadButton gamepad, KeyboardKey key){
+        setMouse(onButton(gamepad, key));
+}void GamepadUIMapping::left(){
+        setMouse(onLeft(state_));
+}void GamepadUIMapping::right(){
+        setMouse(onRight(state_));
+}void GamepadUIMapping::up(){
+        setMouse(onUp(state_));
+}void GamepadUIMapping::down(){
+        setMouse(onDown(state_));
+}
+
+    void GamepadUIMapping::setMouse(Point pos){
+        if (pos != -1)
+        {
+             pos = pos *  (Point{1} /  GetMouseScale() );
+            SetMousePosition(pos.x, pos.y);
+        }
+}
+
+    void UISetGamepadMap(GamepadUIMapping& map){
+        global::UI_DATA.gamepadMapping = &map;
+        map.start();
+}
+
+    GamepadUIMapping* UIGetGamepadMap(){
+        return global::UI_DATA.gamepadMapping;
+}
 
     MouseToWorld::MouseToWorld()
     {

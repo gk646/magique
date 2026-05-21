@@ -9,7 +9,6 @@
 
 #include "util/headers/CrashLog.h"
 #include "external/glad.h"
-#include "raylib/raylib.h"
 
 // Platform-specific headers
 #ifdef __linux__
@@ -23,7 +22,7 @@
 #include <mach/mach.h>
 #elif _WIN32
 #include <windows.h>
-#include <dbghelp.h>
+#include <psapi.h>
 #endif
 
 #define M_CALL_STACK_SIZE 32
@@ -343,11 +342,10 @@ namespace magique
 #endif
         std::string crashData;
         crashData.reserve(1024);
-        auto& game = magique::GameGetInstance();
+        auto& game = GameGetInstance();
         crashData += "magique CrashLog File\n";
         crashData += "Exception received: " + signalName + "\n\n";
         crashData += "magique: " + std::string{MAGIQUE_VERSION} + "\n";
-        crashData += "raylib: " + std::string{RAYLIB_VERSION} + "\n";
         crashData += std::string{game.getName()} + ": " + std::string{game.getVersion()} + "\n\n";
         crashData += "System Information:\n";
         crashData += GetSystemInfoString();

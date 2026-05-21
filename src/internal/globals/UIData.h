@@ -27,6 +27,7 @@ namespace magique
         Point targetRes{1920, 1080};
         Point sourceRes{1920, 1080};
         Point scaling{1.0F, 1.0F};
+        GamepadUIMapping* gamepadMapping = nullptr;
         bool keyConsumed = false;
         bool mouseConsumed = false;
         bool customTargetRes = false;
@@ -37,6 +38,41 @@ namespace magique
         {
             keyConsumed = false;
             mouseConsumed = false;
+        }
+
+        void updateGamePadMapping()
+        {
+            if (gamepadMapping == nullptr || !IsGamepadAvailable(0))
+            {
+                return;
+            }
+
+                if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+                {
+                    gamepadMapping->submit();
+                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+                {
+                    gamepadMapping->back();
+                }
+               else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+                {
+                    gamepadMapping->down();
+
+                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_UP))
+                {
+                     gamepadMapping->up();
+                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+                {
+                    gamepadMapping->left();
+                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+                {
+                     gamepadMapping->right();
+                }
+            else
+            {
+                // TODO onButton() generic response
+            }
+
         }
 
         // Before each draw and update tick
@@ -87,12 +123,16 @@ namespace magique
             for (size_t i = 0; i < containers.size(); ++i)
             {
                 auto& container = *containers[i];
+                if (gamepadMapping != nullptr && &gamepadMapping->getObject() ==& container)
+                    updateGamePadMapping();
                 container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
             }
 
             for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
+                if (gamepadMapping != nullptr && &gamepadMapping->getObject() ==& obj)
+                    updateGamePadMapping();
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
             }
 
@@ -120,7 +160,7 @@ namespace magique
             {
                 if (usingGamepad)
                 {
-                    HideCursor();
+                   HideCursor();
                 }
                 else
                 {
