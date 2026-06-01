@@ -61,7 +61,7 @@ namespace magique
 
     // Plays the given music - multiple calls play it multiple times
     // fade controls both fade-in and fade-out
-    void MusicPlay(const Music& music, float volume = 1.0F, bool fade = true);
+    void MusicPlay(const Music& music, float volume = 1.0F, bool fade = true, bool loop = false);
 
     // Stops the first instance of this music
     void MusicStop(const Music& music);

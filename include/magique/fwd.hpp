@@ -23,24 +23,25 @@ enum class ParticleLayer : uint8_t;  // Allows to draw particle in multiple laye
 namespace magique
 {
     //================= CORE =================//
-    struct Keybind;         // Efficient representation of a keybind
-    struct Game;            // Core Game class
-    struct ScreenEmitter;   // Particle emitter for screen (simple) particles
-    struct EntityEmitter;   // Particle emitter for entity (complex) particles
-    struct EntityAnimation; // Shared animation data for a specific entity
-    struct EmitterData;     // Data for particle emitters
-    struct Point;           // Floating point point
+    struct Keybind;       // Efficient representation of a keybind
+    struct Game;          // Core Game class
+    struct ScreenEmitter; // Particle emitter for screen (simple) particles
+    struct EntityEmitter; // Particle emitter for entity (complex) particles
+    struct Animation;     // Shared animation data for a specific entity
+    struct LayeredAnimation;
+    struct EmitterData; // Data for particle emitters
+    struct Point;       // Floating point point
     struct TileInfo;
     struct Rotation;
     struct GameSystem;
     enum class Direction : uint8_t;
 
     //================= LOADING & SAVING =================//
-    struct AssetLoader;    // Handles loading all major game files -  Start -> MainMenu
-    struct AssetPack; // Asset list loaded from a compiled asset pack
-    struct SaveLoader;     // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSave;       // The game save object
-    struct GameConfig;     // The config persistence object
+    struct AssetLoader; // Handles loading all major game files -  Start -> MainMenu
+    struct AssetPack;   // Asset list loaded from a compiled asset pack
+    struct SaveLoader;  // Handles loading individual world state and player save - MainMenu -> Game
+    struct GameSave;    // The game save object
+    struct GameConfig;  // The config persistence object
 
     struct IExecutor; // Task loading interface
     namespace internal
@@ -99,6 +100,7 @@ namespace magique
     struct Menu;
     struct Popup;
     struct Scene;
+    struct GamepadMapping;
 
     //================= UTIL =================//
     enum LogLevel : int;

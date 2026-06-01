@@ -35,6 +35,9 @@ namespace magique
     template <typename T>
     const T* MathPickRandom(const std::vector<T>& pool);
 
+    // Returns the value of val + offset wraps it around such that it stays within 0 <= row < max
+    int MathCirculate(int val, int offset, int max);
+
     //================= NUMBERS =================//
 
     // True if the given "val" is within the specified range (included) - only uses 'operator<'

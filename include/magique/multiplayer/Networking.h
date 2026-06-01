@@ -97,6 +97,10 @@ namespace magique
     // See the MultiplayerEvent enum for more info about the type of events and when they are triggered
     void NetworkSetCallback(const NetworkCallback& func);
 
+    // Called when any client asks to connect to us - connection is only accepted if function returns true
+    // Note: Use this to limit set a hard limit for player count (besides not connecting on the client when the lobby is full)
+    void NetworkSetAcceptFunc(const std::function<bool()>& acceptFunc);
+
     // Returns true if currently hosting or connected to a host
     bool NetworkInSession();
 

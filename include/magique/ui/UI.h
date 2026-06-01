@@ -15,6 +15,8 @@
 // To fit different screen ratios (21:9, 4:3) you can use anchor points.
 // The intended workflow is to completely work in 1920x1080 and specify all measurements in that resolution.
 // This makes it easy to follow designs and reason about distances while the engine handles scaling automatically.
+//
+// Note: Also contains the GamepadMapping functionality that allows to add gamepad navigation to Menu and other UIObjects
 // .....................................................................
 
 namespace magique
@@ -113,71 +115,53 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
+    // Artificially creates a mouse press - optionally allows to set the mouse position before
+    void UIEmitMousePress(MouseButton button = MOUSE_BUTTON_LEFT, Point mouse = {-1});
+
+    // Receives current state - returns the point where the mouse should be next
+    // -1 mouse positions will be ignored
+    using GamepadMappingFunc = std::function<Point(GamepadMappingState& state)>;
+
     // Used to enable gamepad (and arrow keys) navigation of UI menus - without any logic changes
-    // Works by positiong the cursor (even when not shown) to the correct position
+    // Works by positioning the cursor (even when not shown) to the correct position
     // However menus should still be designed with controller in mind to make it easier
     // Note: UIObject::Menu allows to store a mapping and automatically applies it if its activated
-    struct GamepadUIMapping
+    struct GamepadMapping
     {
-        GamepadUIMapping(UIObject& object);
-        virtual ~GamepadUIMapping() = default;
+        GamepadMapping(UIObject& object, const GamepadMappingFunc& func = nullptr);
+        virtual ~GamepadMapping() = default;
 
         // Resets the state
         void reset();
 
-        // Called when this mapping is set active
-        // Returns the starting position of the mouse
-        // Default: -1 (ignored) and reset()
-        virtual Point onStart() ;
-
-        // Called when the submit button (ENTER or A (Xbox)) has been pressed
-        // If returns true a mouse click is emitted
-        // Default: true
-        virtual bool onSubmit(GamepadUIMappingState& state);
-
-        // Called when back button (ESC or B (Xbox)) has been pressed
-        // If returns true attempts to activate the parent menu
-        // Default: true and reset()
-        virtual bool onBack(GamepadUIMappingState& state);
-
-        // Called on the corresponding arrow keys/controller joystick input was made
-        // Returns the next screen position for the mouse
-        // Default: -1 (ignored)
-        virtual Point onLeft(GamepadUIMappingState& state){return -1;}
-        virtual Point onRight(GamepadUIMappingState & state){return -1;}
-        virtual Point onUp(GamepadUIMappingState& state){return -1;}
-        virtual Point onDown(GamepadUIMappingState& state){return -1;}
+        // Sets the callback on event
+        void setOnEvent(const GamepadMappingFunc& func);
 
         // Called on button presses other than the special functions
         // Note: Invalid parameter is -1
         // Default: -1 (ignored)
-        virtual Point onButton(GamepadButton gamepad, KeyboardKey key){return -1;}
+        virtual Point onButton(GamepadButton gamepad, KeyboardKey key) { return -1; }
 
         // Returns the object its attached to or state
         UIObject& getObject();
-        const GamepadUIMappingState& getState()const;
+        const GamepadMappingState& getState() const;
 
         // Can be called manually to trigger the corresponding callback
         // Note: These are called AUTOMATICALLY when the appropriate buttons are pressed
-        void start();
-        void submit();
-        void back();
-        void button(GamepadButton gamepad, KeyboardKey key);
-        void left();
-        void right();
-        void up();
-        void down();
+        void triggerEvent(GamepadMappingEvent event);
+        void triggerButton(GamepadButton gamepad, KeyboardKey key);
 
     private:
         void setMouse(Point pos);
-        GamepadUIMappingState state_{    };
+        GamepadMappingState state_{};
         UIObject* object = nullptr;
+        GamepadMappingFunc func;
     };
 
     // Sets/gets the current input map
     // Note: This is set automatically for menus
-    void UISetGamepadMap( GamepadUIMapping& map);
-    GamepadUIMapping* UIGetGamepadMap();
+    void UISetGamepadMap(GamepadMapping* map);
+    GamepadMapping* UIGetGamepadMap();
 
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space
     // Destructor resets it back to original screen pos

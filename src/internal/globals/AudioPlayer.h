@@ -21,6 +21,7 @@ namespace magique
         float currentVolume = 1.0F;
         bool markedForRemoval = false;
         bool fade = true;
+        bool looping = false;
 
         bool update();
     };
@@ -70,10 +71,12 @@ namespace magique
         float soundVolume = 1.0F;
         float musicVolume = 1.0F;
 
-        void addTrack(const Music& music, float volume, const bool fadeIn)
+        void addTrack(const Music& music, float volume, const bool fadeIn, bool looping = false)
         {
             PlayMusicStream(music);
-            tracks.emplace_back(music, volume, fadeIn ? 0.0F : volume, false, fadeIn);
+            tracks.emplace_back(music, volume, fadeIn ? 0.0F : volume, false, fadeIn, looping);
+            if (looping)
+                SetAudioBufferLooping(music.stream.buffer, true);
         }
 
         void removeTrack(const Music& music)
@@ -98,7 +101,7 @@ namespace magique
                 return;
 
             const int nextTrack = playlist.getNextTrack();
-            addTrack(playlist.tracks[nextTrack], playlist.volume, playlist.fading);
+            addTrack(playlist.tracks[nextTrack], playlist.volume, playlist.fading, false);
             playlists.push_back(&playlist);
         }
 
@@ -141,7 +144,7 @@ namespace magique
                 if (!IsMusicStreamPlaying(playlist->tracks[playlist->currentTrack]))
                 {
                     const int nextTrack = playlist->getNextTrack();
-                    addTrack(playlist->tracks[nextTrack], playlist->volume, playlist->fading);
+                    addTrack(playlist->tracks[nextTrack], playlist->volume, playlist->fading, false);
                 }
             }
         }
@@ -181,7 +184,7 @@ namespace magique
             currentVolume += VOLUME_STEP;
             SetMusicVolume(music, ap.getMusicVolume(currentVolume));
         }
-        else if (!markedForRemoval)
+        else if (!markedForRemoval && !looping)
         {
             markedForRemoval = GetMusicTimeLength(music) - GetMusicTimePlayed(music) < FADE_DURATION;
         }

@@ -27,7 +27,7 @@ namespace magique
         Point targetRes{1920, 1080};
         Point sourceRes{1920, 1080};
         Point scaling{1.0F, 1.0F};
-        GamepadUIMapping* gamepadMapping = nullptr;
+        GamepadMapping* gamepadMapping = nullptr;
         bool keyConsumed = false;
         bool mouseConsumed = false;
         bool customTargetRes = false;
@@ -40,39 +40,47 @@ namespace magique
             mouseConsumed = false;
         }
 
-        void updateGamePadMapping()
+        void updateGamePadMapping() const
         {
-            if (gamepadMapping == nullptr || !IsGamepadAvailable(0))
+            if (gamepadMapping == nullptr)
             {
                 return;
             }
 
-                if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
-                {
-                    gamepadMapping->submit();
-                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
-                {
-                    gamepadMapping->back();
-                }
-               else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_DOWN))
-                {
-                    gamepadMapping->down();
-
-                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_UP))
-                {
-                     gamepadMapping->up();
-                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_LEFT))
-                {
-                    gamepadMapping->left();
-                }else if (LayeredInput::IsGamepadButtonPressed(0,GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
-                {
-                     gamepadMapping->right();
-                }
+            if (LayeredInput::IsKeyPressed(KEY_ENTER) ||
+                LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Submit);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_ESCAPE) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Back);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_DOWN) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Down);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_UP) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_UP))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Up);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_LEFT) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Left);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_RIGHT) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::Right);
+            }
             else
             {
                 // TODO onButton() generic response
             }
-
         }
 
         // Before each draw and update tick
@@ -123,7 +131,7 @@ namespace magique
             for (size_t i = 0; i < containers.size(); ++i)
             {
                 auto& container = *containers[i];
-                if (gamepadMapping != nullptr && &gamepadMapping->getObject() ==& container)
+                if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &container)
                     updateGamePadMapping();
                 container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
             }
@@ -131,7 +139,7 @@ namespace magique
             for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
-                if (gamepadMapping != nullptr && &gamepadMapping->getObject() ==& obj)
+                if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &obj)
                     updateGamePadMapping();
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
             }
@@ -142,7 +150,7 @@ namespace magique
                 dragStart = {-1, -1};
             }
 
-            bool prevStat = usingGamepad;
+            const bool prevStat = usingGamepad;
             if (usingGamepad)
             {
                 usingGamepad = GetKeyPressedQueueCount() == 0 && Point{GetMouseDelta()} == 0;
@@ -160,7 +168,7 @@ namespace magique
             {
                 if (usingGamepad)
                 {
-                   HideCursor();
+                    HideCursor();
                 }
                 else
                 {

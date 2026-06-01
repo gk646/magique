@@ -175,6 +175,8 @@ namespace magique
 
     void NetworkSetCallback(const NetworkCallback& func) { global::MP_DATA.callback = func; }
 
+    void NetworkSetAcceptFunc(const std::function<bool()>& acceptFunc) { global::MP_DATA.acceptCallback = acceptFunc; }
+
     bool NetworkInSession() { return global::MP_DATA.inSession; }
 
     bool NetworkIsHost() { return global::MP_DATA.inSession && global::MP_DATA.isHost; }
@@ -209,7 +211,7 @@ namespace magique
 
     entt::entity NetworkGetMappedEntity(const Connection conn)
     {
-        auto& data = global::MP_DATA;
+        const auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
         {
             if (mapping.conn == conn)
@@ -222,7 +224,7 @@ namespace magique
 
     Connection NetworkGetMappedConnection(const entt::entity entity)
     {
-        auto& data = global::MP_DATA;
+        const auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
         {
             if (mapping.entity == entity)

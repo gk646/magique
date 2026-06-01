@@ -87,7 +87,7 @@ namespace magique
     // Animation component references an animation and saves its current state
     struct AnimationC final
     {
-        explicit AnimationC(const EntityAnimation& animation, AnimationState start = {});
+        explicit AnimationC(const Animation& animation, AnimationState start = {});
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
@@ -118,7 +118,7 @@ namespace magique
         bool flipY = false;
 
     private:
-        const EntityAnimation* animation = nullptr;
+        const Animation* animation = nullptr;
         SpriteAnimation currentAnimation{};
         float millisCount = 0;
         uint16_t animationStart = 0;
@@ -139,18 +139,18 @@ namespace magique
         void update();
 
         // Sets the animation for the given layer - adds the offset ontop of any existing offset
-        void setLayer(AnimationLayer layer, const EntityAnimation& animation, Point offset);
-        void setLayer(AnimationLayer layer, const LayeredEntityAnimation& animation);
+        void setLayer(AnimationLayer layer, const Animation& animation, Point offset);
+        void setLayer(AnimationLayer layer, const LayeredAnimation& animation);
 
         // Returns or creates a new animation for that layer
-        LayeredEntityAnimation getLayer(AnimationLayer layer);
+        LayeredAnimation getLayer(AnimationLayer layer);
 
         bool hasLayer(AnimationLayer layer) const;
 
         Point globalAnchor = -1;
 
     private:
-        HashMap<AnimationLayer, LayeredEntityAnimation> animations;
+        HashMap<AnimationLayer, LayeredAnimation> animations;
         float millisCount = 0;
         AnimationState lastState{};
         AnimationState currentState{};

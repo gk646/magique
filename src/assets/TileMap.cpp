@@ -83,6 +83,8 @@ namespace magique
         return &(*it);
     }
 
+    bool TileMap::hasProperty(std::string_view name) const { return getProperty(name) != nullptr; }
+
     Point TileMap::getDims() const { return {(float)width, (float)height}; }
 
     Point TileMap::getPixelDims() const { return getDims() * tileSize; }

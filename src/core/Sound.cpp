@@ -72,9 +72,9 @@ namespace magique
 
     void SoundSetFalloffDistance(float distance) { global::AUDIO_PLAYER.maxSoundDistance = distance; }
 
-    void MusicPlay(const Music& music, const float volume, const bool fade)
+    void MusicPlay(const Music& music, const float volume, const bool fade, bool loop)
     {
-        global::AUDIO_PLAYER.addTrack(music, volume, fade);
+        global::AUDIO_PLAYER.addTrack(music, volume, fade, loop);
     }
 
     void MusicStop(const Music& music) { global::AUDIO_PLAYER.removeTrack(music); }

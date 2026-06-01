@@ -76,13 +76,13 @@ namespace magique
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
     const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius,
-                                                       const FilterFunc& filter = {});
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = {});
+                                                       const FilterFunc& filter = nullptr);
+    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    const std::vector<entt::entity>& EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = {});
-    const std::vector<entt::entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = {});
+    const std::vector<entt::entity>& EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    const std::vector<entt::entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     //================= UTILS =================//
 

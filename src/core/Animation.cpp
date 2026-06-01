@@ -5,9 +5,9 @@ namespace magique
 {
     //----------------- ENTITY ANIMATION -----------------//
 
-    EntityAnimation::EntityAnimation(const float scale) : logicScale(scale) {}
+    Animation::Animation(const float scale) : logicScale(scale) {}
 
-    void EntityAnimation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameMillis)
+    void Animation::addAnimation(AnimationState state, const SpriteSheet sheet, const int frameMillis)
     {
         auto& animation = animations[state];
         for (int i = 0; i < sheet.frames; ++i)
@@ -18,7 +18,7 @@ namespace magique
         animation.sheet = sheet;
     }
 
-    void EntityAnimation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
+    void Animation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
                                          Point off, Point anch)
     {
         if (sheet.frames == 0)
@@ -40,9 +40,9 @@ namespace magique
         anchor = anch * logicScale;
     }
 
-    void EntityAnimation::removeAnimation(AnimationState state) { animations.erase(state); }
+    void Animation::removeAnimation(AnimationState state) { animations.erase(state); }
 
-    SpriteAnimation EntityAnimation::getCurrentAnimation(AnimationState state) const
+    SpriteAnimation Animation::getCurrentAnimation(AnimationState state) const
     {
         auto it = animations.find(state);
         if (it != animations.end())
@@ -52,16 +52,16 @@ namespace magique
         return {};
     }
 
-    Point EntityAnimation::getOffset() const { return offset; }
+    Point Animation::getOffset() const { return offset; }
 
-    void EntityAnimation::setOffset(Point newOffset) { offset = newOffset; }
+    void Animation::setOffset(Point newOffset) { offset = newOffset; }
 
-    Point EntityAnimation::getAnchor() const { return anchor; }
+    Point Animation::getAnchor() const { return anchor; }
 
-    void EntityAnimation::setAnchor(Point newAnchor) { anchor = newAnchor; }
+    void Animation::setAnchor(Point newAnchor) { anchor = newAnchor; }
 
-    bool EntityAnimation::hasAnimation(AnimationState state) const { return animations.contains(state); }
+    bool Animation::hasAnimation(AnimationState state) const { return animations.contains(state); }
 
-    const HashMap<AnimationState, SpriteAnimation>& EntityAnimation::getAnimations() const { return animations; }
+    const HashMap<AnimationState, SpriteAnimation>& Animation::getAnimations() const { return animations; }
 
 } // namespace magique

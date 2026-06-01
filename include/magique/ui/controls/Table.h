@@ -9,7 +9,7 @@
 // Table
 //===============================================
 // .....................................................................
-//
+// Allows to add columns
 // .....................................................................
 
 namespace magique
@@ -19,18 +19,18 @@ namespace magique
 
     struct Table : UIObject
     {
-
         Table(Rect size, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
-        void addColumn(std::string_view name, float width) {}
+        // Adds a new column to the table with the given name - if not specified width will be based on current font
+        void addColumn(std::string_view name, float width = -1);
 
     protected:
-        void onDraw(const Rect& bounds) override
-        {
+        void onDraw(const Rect& bounds) override { drawDefault(); }
 
-        }
+        void drawDefault();
 
     private:
+
         struct ColumnInfo final
         {
             std::string name;

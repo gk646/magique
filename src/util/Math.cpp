@@ -42,6 +42,13 @@ namespace magique
         return rand < std::clamp(chance, 0.0F, 1.0F);
     }
 
+    int MathCirculate(int val, int offset, int max)
+    {
+        if (max <= 0)
+            return val;
+        return ((val + offset) % max + max) % max;
+    }
+
     bool MathIsPowerOfTwo(const unsigned int x) { return x != 0 && (x & (x - 1)) == 0; }
 
     unsigned int MathNextPowerOfTwo(unsigned int n)

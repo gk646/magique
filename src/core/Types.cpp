@@ -77,6 +77,8 @@ namespace magique
 
     Point Point::operator/(const Point& p) const { return {x / p.x, y / p.y}; }
 
+    bool Point::operator>(const Point& p) const { return x > p.y && y > p.x; }
+
     bool Point::operator<(const Point& p) const { return x < p.x && y < p.y; }
 
     Point& Point::operator/=(const Point& p)
@@ -772,21 +774,23 @@ namespace magique
 
     int TileObject::getTileID() const { return tileId; }
 
-    const TiledProperty* TileObject::getProperty(const char* propertyName) const
+    const TiledProperty* TileObject::getProperty(std::string_view property) const
     {
-        for (const auto& property : customProperties)
+        for (const auto& p : customProperties)
         {
-            if (property.getName() == nullptr)
+            if (p.getName() == nullptr)
             {
                 continue;
             }
-            if (strcmp(property.getName(), propertyName) == 0)
+            if (p.getName() == property)
             {
-                return &property;
+                return &p;
             }
         }
         return nullptr;
     }
+
+    bool TileObject::hasProperty(std::string_view property) const { return getProperty(property) != nullptr; }
 
     //----------------- TILE INFO -----------------//
 
@@ -1021,6 +1025,28 @@ namespace magique
 
 #define KEY_MACRO_MODIFIER()
 
+
+    void GamepadMappingState::circulateRows(int offset, int max) { row = MathCirculate(row, offset, max); }
+
+    void GamepadMappingState::circulateCols(int offset, int max) { col = MathCirculate(col, offset, max); }
+
+    bool GamepadMappingState::isLeftOrRight() const
+    {
+        return event == GamepadMappingEvent::Left || event == GamepadMappingEvent::Right;
+    }
+
+    bool GamepadMappingState::isUpOrDown() const
+    {
+        return event == GamepadMappingEvent::Up || event == GamepadMappingEvent::Down;
+    }
+    bool GamepadMappingState::isLeft() const { return event == GamepadMappingEvent::Left; }
+
+    bool GamepadMappingState::isRight() const { return event == GamepadMappingEvent::Right; }
+
+    bool GamepadMappingState::isDown() const { return event == GamepadMappingEvent::Down; }
+
+    bool GamepadMappingState::isUp() const { return event == GamepadMappingEvent::Up; }
+    bool GamepadMappingState::isDirection() const { return isLeftOrRight() || isUpOrDown(); }
 
     Keybind::Keybind(KeyboardKey key, bool layered, bool shift, bool ctrl, bool alt) :
         key(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)

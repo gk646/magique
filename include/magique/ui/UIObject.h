@@ -124,11 +124,17 @@ namespace magique
         // Returns true if this UIObject is subclass of menu
         bool getIsMenu() const;
 
+        // Sets/gets the gamepad mapping for this menu - should pass a new Instance of your implementing class
+        // Menu automatically tries to activate the mapping if set
+        // Note: See UI.h for more Info
+        void setGamepadMapping(GamepadMapping* map);
+        GamepadMapping* getGamepadMapping() const;
 
     private:
         Rect pBounds;
         Rect startBounds;                          // Bounds object started with
         Point inset{};                             // Inset - offset towards the middle of the screen
+        GamepadMapping* mapping = nullptr;         // Input mapping for gamepads/arrow keys
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
         bool wasDrawnLastTick = false;

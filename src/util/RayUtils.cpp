@@ -226,10 +226,10 @@ namespace magique
 
         if (bounds.width == 4)
         {
-            DrawPixelV(tip  + Point{-2,1}, tint);
-            DrawPixelV(tip + Point{-3,2}, tint);
-            DrawPixelV(tip + Point{0,1}, tint);
-            DrawPixelV(tip + Point{1,2}, tint);
+            DrawPixelV(tip + Point{-2, 1}, tint);
+            DrawPixelV(tip + Point{-3, 2}, tint);
+            DrawPixelV(tip + Point{0, 1}, tint);
+            DrawPixelV(tip + Point{1, 2}, tint);
         }
         else
         {

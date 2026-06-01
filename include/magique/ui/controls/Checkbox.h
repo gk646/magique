@@ -22,14 +22,6 @@ namespace magique
     {
         CheckBox(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
 
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
-
-        void onUpdate(const Rect& bounds, bool wasDrawn) override
-        {
-            if (wasDrawn)
-                updateInputs();
-        }
-
         // Sets the function called when the state changes
         void setOnChange(const ButtonChangeFunc& func);
 
@@ -38,10 +30,18 @@ namespace magique
         void setState(bool state);
 
         const std::string& getInfoText() const;
-         Direction getInfoDirection() const;
         void setInfoText(const std::string& text, Direction dir = Direction::RIGHT);
 
+        Direction getInfoDirection() const;
+
     protected:
+        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+
+        void onUpdate(const Rect& bounds, bool wasDrawn) override
+        {
+            if (wasDrawn)
+                updateInputs();
+        }
         // Updates the click state
         void updateInputs();
 

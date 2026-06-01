@@ -70,7 +70,7 @@ void TextureLoader::execute(AssetContainer& assets)
 
     // Load player animations - from single image files
     {
-        EntityAnimation playerAnim{3}; // Scaling factor is 3 just like for the tilemap and collision
+        magique::Animation playerAnim{3}; // Scaling factor is 3 just like for the tilemap and collision
         std::vector<Asset> idle;
         std::vector<Asset> jump;
         std::vector<Asset> run;

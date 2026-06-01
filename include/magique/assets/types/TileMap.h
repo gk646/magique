@@ -79,6 +79,7 @@ namespace magique
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const std::string_view& name) const;
+        bool hasProperty(std::string_view name) const;
 
         // Returns the width hand height of the tile layers (in tiles)
         Point getDims() const;

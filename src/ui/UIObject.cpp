@@ -24,6 +24,8 @@ namespace magique
         global::UI_DATA.registerObject(this);
     }
 
+    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
+
     void UIObject::draw()
     {
         global::UI_DATA.registerDrawCall(this, isContainer);
@@ -34,10 +36,6 @@ namespace magique
             DrawRectangleLinesEx(bounds, 1, BLUE);
         }
     }
-
-    UIObject::~UIObject() { global::UI_DATA.unregisterObject(this); }
-
-    //----------------- UTIL -----------------//
 
     Rect UIObject::getBounds() const
     {
@@ -134,7 +132,7 @@ namespace magique
         }
         else
         {
-            return IsMouseButtonPressed(button) && getIsHovered();
+            return IsMouseButtonPressed(button) && getIsHovered(layered);
         }
     }
 
@@ -146,7 +144,7 @@ namespace magique
         }
         else
         {
-            return IsMouseButtonDown(mouseButton) && getIsHovered();
+            return IsMouseButtonDown(mouseButton) && getIsHovered(layered);
         }
     }
 
@@ -174,8 +172,10 @@ namespace magique
         BeginScissorMode((int)bounds.x, (int)bounds.y, (int)bounds.width, (int)bounds.height);
     }
 
-    bool UIObject::getIsMenu() const{
-        return isMenu;
-    }
+    bool UIObject::getIsMenu() const { return isMenu; }
+
+    void UIObject::setGamepadMapping(GamepadMapping* map) { mapping = map; }
+
+    GamepadMapping* UIObject::getGamepadMapping() const { return mapping; }
 
 } // namespace magique

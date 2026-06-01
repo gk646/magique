@@ -87,6 +87,7 @@ namespace magique
             DrawRegionPro(img, {pos, size});
         if (moveCursor)
             cursor.x += size.x + gapp.x;
+        resetMods();
         return *this;
     }
 
@@ -95,14 +96,17 @@ namespace magique
         const auto width = img.getSize().x;
         const auto lineEnd = bounds.x + bounds.width - offf.x;
         auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
+        const auto size = img.getSize() * modSizeMult;
         if (centeredOnText)
         {
             pos.y -= img.height / 2 - font.baseSize / 2;
         }
         pos.floor();
-        DrawRegion(img, pos);
+        if (img.isValid())
+            DrawRegionPro(img, {pos, size});
         if (moveCursor)
             cursorEndX += img.width + gapp.x;
+        resetMods();
         return *this;
     }
 
@@ -195,7 +199,7 @@ namespace magique
         return StringSetNewlines(str, MAX_TEXT_BUFFER_LENGTH, bounds.width - offf.x, font, font.baseSize);
     }
 
-    Point TextDrawer::getCursor() const { return bounds.pos() + cursor; }
+    Point TextDrawer::getCursor() const { return bounds.pos() + cursor + modOfffset; }
 
     Point TextDrawer::getCursorOffset() const { return cursor; }
 

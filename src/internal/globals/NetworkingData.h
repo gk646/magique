@@ -39,7 +39,8 @@ namespace magique
     {
         LobbyData lobby{};
         MultiplayerStatistics statistics{};
-        NetworkCallback callback = {};              // Callback
+        NetworkCallback callback = {}; // Callback
+        std::function<bool()> acceptCallback{};
         std::vector<Connection> connections;        // Holds all current valid connections
         std::vector<ConnMapping> connectionMapping; // Holds all the manually set mappings
         std::vector<SteamMapping> steamMapping;
@@ -158,7 +159,8 @@ namespace magique
                         return;
                     }
 
-                    if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK)
+                    if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK &&
+                        (!acceptCallback || acceptCallback()))
                     {
                         connections.push_back(conn);
                         numberMapping.addConnection(conn);

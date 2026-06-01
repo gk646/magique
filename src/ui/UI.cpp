@@ -105,8 +105,8 @@ namespace magique
         auto it = std::ranges::find(popups, &popup);
         if (it != popups.end())
         {
-           popups.erase(it);
-           popups.insert(popups.begin(), &popup);
+            popups.erase(it);
+            popups.insert(popups.begin(), &popup);
         }
         else
         {
@@ -195,78 +195,66 @@ namespace magique
 
     bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
 
-    bool LayeredInput::GetIsMouseConsumed()
+    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
+
+    void UIEmitMousePress(MouseButton button, Point mouse)
     {
-        return global::UI_DATA.mouseConsumed;
+        if (mouse != -1)
+        {
+            mouse *= Point{1} / GetMouseScale();
+            SetMousePosition(mouse.x, mouse.y);
+        }
+        TriggerMouseClick(button);
     }
 
-    GamepadUIMapping::GamepadUIMapping(UIObject& object) : object(&object) {
-
-}
-
-    void GamepadUIMapping::reset(){
+    GamepadMapping::GamepadMapping(UIObject& object, const GamepadMappingFunc& func) : object(&object), func(func)
+    {
         state_ = {};
-}
-    Point GamepadUIMapping::onStart() {
-        return {-1};
     }
 
-    bool GamepadUIMapping::onSubmit(GamepadUIMappingState& state){
-        return true;
-}
+    void GamepadMapping::reset() { state_ = {}; }
 
-    bool GamepadUIMapping::onBack(GamepadUIMappingState& state){
+    void GamepadMapping::setOnEvent(const GamepadMappingFunc& newFunc) { func = newFunc; }
+
+    const GamepadMappingState& GamepadMapping::getState() const { return state_; }
+
+    void GamepadMapping::triggerEvent(GamepadMappingEvent event)
+    {
+        if (event == GamepadMappingEvent::Start)
             reset();
-            return true;
+
+        state_.event = event;
+        Point pos = -1;
+        if (func)
+            pos = func(state_);
+
+        if (event == GamepadMappingEvent::Submit && pos == -1)
+            UIEmitMousePress();
+        if (event == GamepadMappingEvent::Back && getObject().getIsMenu())
+            getObject().getAs<Menu>()->activateParent();
+        setMouse(pos);
     }
 
-    const GamepadUIMappingState& GamepadUIMapping::getState() const{
-        return state_;
-}void GamepadUIMapping::start(){
-        setMouse(onStart());
-}UIObject& GamepadUIMapping::getObject(){
-        return *object;
-}void GamepadUIMapping::submit(){
-        if (onSubmit(state_))
-        {
-            TriggerMouseClick(MouseButton::MOUSE_BUTTON_LEFT);
-        }
-}
-    void GamepadUIMapping::back(){
-        if (onBack(state_) && object->getIsMenu())
-        {
-            object->getAs<Menu>()->activateParent();
-        }
-}
+    UIObject& GamepadMapping::getObject() { return *object; }
 
-    void GamepadUIMapping::button(GamepadButton gamepad, KeyboardKey key){
-        setMouse(onButton(gamepad, key));
-}void GamepadUIMapping::left(){
-        setMouse(onLeft(state_));
-}void GamepadUIMapping::right(){
-        setMouse(onRight(state_));
-}void GamepadUIMapping::up(){
-        setMouse(onUp(state_));
-}void GamepadUIMapping::down(){
-        setMouse(onDown(state_));
-}
-
-    void GamepadUIMapping::setMouse(Point pos){
+    void GamepadMapping::setMouse(Point pos)
+    {
         if (pos != -1)
         {
-             pos = pos *  (Point{1} /  GetMouseScale() );
+            pos = pos * (Point{1} / GetMouseScale());
             SetMousePosition(pos.x, pos.y);
         }
-}
+    }
 
-    void UISetGamepadMap(GamepadUIMapping& map){
-        global::UI_DATA.gamepadMapping = &map;
-        map.start();
-}
+    void UISetGamepadMap(GamepadMapping* map)
+    {
+        if (map == nullptr)
+            return;
+        global::UI_DATA.gamepadMapping = map;
+        map->triggerEvent(GamepadMappingEvent::Start);
+    }
 
-    GamepadUIMapping* UIGetGamepadMap(){
-        return global::UI_DATA.gamepadMapping;
-}
+    GamepadMapping* UIGetGamepadMap() { return global::UI_DATA.gamepadMapping; }
 
     MouseToWorld::MouseToWorld()
     {

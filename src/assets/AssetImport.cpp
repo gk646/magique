@@ -209,10 +209,10 @@ namespace magique
     }
 
     template <typename Func>
-    static EntityAnimation IterateTags(ase_t* import, Func func, StateMapFunc mapFunc, Point offset, Point anchor,
+    static Animation IterateTags(ase_t* import, Func func, StateMapFunc mapFunc, Point offset, Point anchor,
                                        AtlasID atlas, float scale)
     {
-        EntityAnimation animation{scale};
+        Animation animation{scale};
         std::vector<Image> images = {};
         for (const auto& tag : std::span{import->tags, (size_t)import->tag_count})
         {
@@ -238,7 +238,7 @@ namespace magique
         return animation;
     }
 
-    EntityAnimation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
+    Animation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
                                    Point anchor)
     {
         if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
@@ -261,11 +261,11 @@ namespace magique
         return animation;
     }
 
-    std::vector<std::pair<AnimationLayer, EntityAnimation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
+    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
                                                                                  AtlasID atlas, LayerMapFunc layerMap,
                                                                                  float scale, Point offset, Point anchor)
     {
-        std::vector<std::pair<AnimationLayer, EntityAnimation>> animations;
+        std::vector<std::pair<LayeredAnimation, Animation>> animations;
         auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
         if (anchor == -1)
             anchor = Point{(float)import->w, (float)import->h} / 2;

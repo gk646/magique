@@ -14,6 +14,7 @@
 // GridChooser is similar to the ListChooser but items are arranged in a grid (left right, up down orientation)
 // Also items can have a texture and text associated with it
 // Note: For identification you can use any type K (key) - your class needs to then implement operator== with that type
+// Note: Sets a default GamepadMapping in the constructor - allows to jump between elements and select them
 // .....................................................................
 
 namespace magique
@@ -73,6 +74,10 @@ namespace magique
         // Default: Uses drawDefaultEntry
         void setDrawEntryFunc(const DrawGridItemFunc<T>& func);
 
+        // Returns the max amount of columns of any row - only really accurate if items are equally sized
+        // Note: Only valid after draw() has been called once
+        int getColumns() const;
+
     protected:
         void onDraw(const Rect& bounds) override;
 
@@ -92,11 +97,12 @@ namespace magique
         struct Entry final
         {
             T item;
-            Point dims;
+            Rect bounds;
         };
         std::vector<Entry> entries;
         Point defaultDims{};
         Point spacing = 2;
+        int columns = 0;
         int hovered = -1;
         int selected = -1;
     };
@@ -114,7 +120,62 @@ namespace magique
     GridChooser<T>::GridChooser(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
         UIObject(bounds, anchor, inset, mode)
     {
+        setGamepadMapping(new GamepadMapping{*this, [&](GamepadMappingState& state)
+                                             {
+                                                 const int totalRows = (entries.size() + columns - 1) / columns;
+                                                 const int lastRowEntries = entries.size() % columns;
+                                                 const bool lastRowFull = (lastRowEntries == 0);
+
+                                                 if (state.event == GamepadMappingEvent::Start)
+                                                 {
+                                                     if (entries.empty())
+                                                     {
+                                                         return getBounds().mid();
+                                                     }
+
+                                                     state.row = 0;
+                                                     state.col = 0;
+                                                     if (selected != -1)
+                                                     {
+                                                         state.row = selected / columns;
+                                                         state.col = selected % columns;
+                                                     }
+                                                     return entries[0].bounds.mid();
+                                                 }
+
+                                                 if (state.isUp())
+                                                 {
+                                                     state.row = std::max(0, state.row - 1);
+                                                 }
+                                                 else if (state.isDown())
+                                                 {
+                                                     state.row = std::min(totalRows - 1, state.row + 1);
+                                                 }
+                                                 else if (state.isLeft())
+                                                 {
+                                                     state.col = std::max(0, state.col - 1);
+                                                 }
+                                                 else if (state.isRight())
+                                                 {
+                                                     const int maxCol = (state.row == totalRows - 1 && !lastRowFull)
+                                                         ? lastRowEntries - 1
+                                                         : columns - 1;
+                                                     state.col = std::min(maxCol, state.col + 1);
+                                                 }
+
+                                                 if (state.isDirection())
+                                                 {
+                                                     const int index = state.row * columns + state.col;
+                                                     if (index >= 0 && index < (int)entries.size())
+                                                     {
+                                                         return entries[index].bounds.mid();
+                                                     }
+                                                 }
+
+                                                 return Point{-1};
+                                             }});
     }
+
     template <typename T>
     void GridChooser<T>::setSpacing(Point newSpacing)
     {
@@ -228,6 +289,12 @@ namespace magique
     }
 
     template <typename T>
+    int GridChooser<T>::getColumns() const
+    {
+        return columns;
+    }
+
+    template <typename T>
     void GridChooser<T>::onDraw(const Rect& bounds)
     {
         if (!drawFunc)
@@ -239,40 +306,35 @@ namespace magique
         Point pos = bounds.pos() + spacing;
         float end = bounds.topRight().x - spacing.x;
         float lineHeight = 0;
+        int colsCount = 0;
         for (int i = 0; i < (int)entries.size(); i++)
         {
             auto& entry = entries[i];
-            if (pos.x + entry.dims.x > end)
+            if (pos.x + entry.bounds.width > end)
             {
                 pos.x = bounds.x + spacing.x;
                 pos.y += lineHeight;
                 lineHeight = 0;
+                colsCount = 0;
             }
-            entry.dims = drawFunc(pos, entry.item, i, hovered == i, selected == i);
-            lineHeight = std::max(lineHeight, entry.dims.y + spacing.y);
-            pos.x += entry.dims.x + spacing.x;
+            const auto size = drawFunc(pos, entry.item, i, hovered == i, selected == i);
+            entry.bounds = Rect{pos, size};
+            lineHeight = std::max(lineHeight, entry.bounds.height + spacing.y);
+            pos.x += entry.bounds.width + spacing.x;
+            columns = std::max(++colsCount, columns);
         }
+        if (lineHeight != 0) // Factor in last row
+            pos.y += lineHeight;
+        setSize({bounds.width, std::max(pos.y - bounds.y, getStartBounds().height)});
     }
 
     template <typename T>
     void GridChooser<T>::updateState()
     {
-        const auto& bounds = getBounds();
-        Point pos = bounds.pos() + spacing;
-        float end = bounds.topRight().x - spacing.x;
-        float lineHeight = 0;
         hovered = -1;
         for (int i = 0; i < (int)entries.size(); i++)
         {
-            const auto& entry = entries[i];
-            if (pos.x + entry.dims.x > end)
-            {
-                pos.x = bounds.x + spacing.x;
-                pos.y += lineHeight;
-                lineHeight = 0;
-            }
-
-            const Rect itemRect = {pos, entry.dims};
+            const auto& itemRect = entries[i].bounds;
             if (itemRect.contains(GetMousePosition()) && !LayeredInput::GetIsMouseConsumed())
             {
                 hovered = i;
@@ -287,9 +349,8 @@ namespace magique
                     LayeredInput::ConsumeMouse();
                 }
             }
-            lineHeight = std::max(lineHeight, entry.dims.y + spacing.y);
-            pos.x += entry.dims.x + spacing.x;
         }
+
         if (hoverFunc)
         {
             if (hovered != -1)
@@ -301,7 +362,6 @@ namespace magique
                 hoverFunc(*getSelected());
             }
         }
-        setSize({bounds.width, std::max(pos.y - bounds.y, getStartBounds().height)});
     }
 } // namespace magique
 

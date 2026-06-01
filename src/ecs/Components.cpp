@@ -44,7 +44,7 @@ namespace magique
 
     //----------------- ANIMATION -----------------//
 
-    AnimationC::AnimationC(const EntityAnimation& animation, const AnimationState startState) : animation(&animation)
+    AnimationC::AnimationC(const Animation& animation, const AnimationState startState) : animation(&animation)
     {
         setAnimationState(startState);
     }
@@ -110,17 +110,17 @@ namespace magique
 
     void LayeredAnimationC::update() { millisCount += MAGIQUE_TICK_TIME * 1000.0F; }
 
-    void LayeredAnimationC::setLayer(AnimationLayer layer, const EntityAnimation& animation, Point offset)
+    void LayeredAnimationC::setLayer(AnimationLayer layer, const Animation& animation, Point offset)
     {
         animations[layer] = {&animation, offset};
     }
 
-    void LayeredAnimationC::setLayer(AnimationLayer layer, const LayeredEntityAnimation& animation)
+    void LayeredAnimationC::setLayer(AnimationLayer layer, const LayeredAnimation& animation)
     {
         animations[layer] = animation;
     }
 
-    LayeredEntityAnimation LayeredAnimationC::getLayer(AnimationLayer layer) { return animations[layer]; }
+    LayeredAnimation LayeredAnimationC::getLayer(AnimationLayer layer) { return animations[layer]; }
 
     bool LayeredAnimationC::hasLayer(AnimationLayer layer) const { return animations.contains(layer); }
 

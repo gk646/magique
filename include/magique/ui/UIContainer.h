@@ -45,6 +45,9 @@ namespace magique
         // Returns: the added child if successful, otherwise nullptr
         UIObject* addChild(UIObject* child, std::string_view name = {});
 
+        template <typename T, typename... Args>
+        T& emplaceChild(Args&&... args);
+
         // Adds many children with no names
         void addChildren(const std::initializer_list<UIObject*>& newChildren);
         void addChildren(std::span<UIObject*> newChildren);
@@ -70,18 +73,23 @@ namespace magique
     };
 
     // Stacks the given children vertically and automatically adjusts its size to fit
-    // Note: This is useful to use as content for a ScrollPane
     // The alignment of the content can either be centered, left or right
+    // Note: This is useful to use as content for a ScrollPane or in Menus (when stacking buttons or controls)
+    // Note: Automatically fits its size to the content (if its larger than base size)
     struct VerticalContainer : UIContainer
     {
-        VerticalContainer(const Rect& bounds) : UIContainer(bounds) {}
+        VerticalContainer(const Rect& bounds = {}) : UIContainer(bounds) {}
 
         // Sets/gets the horizontal alignment of the children - only determines if LEFT | CENTER | RIGHT
-        void setHorizontalAlign(Anchor align);
+        void setHorizontalAlign(Anchor align = Anchor::TOP_CENTER);
         Anchor getHorizontalAlign() const;
 
         float getGap() const;
         void setGap(float gap = 2.0F);
+
+        // If true draws them in reverse
+        // Note: This is useful when drawing dropdowns so the list doesn't get overdrawn by controls below
+        void setReverseDraw(bool reverse );
 
     protected:
         void onDraw(const Rect& bounds) override;
@@ -89,9 +97,24 @@ namespace magique
     private:
         Anchor anchor = Anchor::TOP_CENTER;
         float gap = 2.0F;
+        bool reverseDraw = false;
     };
 
 
 } // namespace magique
+
+
+/// IMPLEMENTATION
+
+
+namespace magique
+{
+    template <typename T, typename... Args>
+    T& UIContainer::emplaceChild(Args&&... args)
+    {
+        return *static_cast<T*>(addChild(new T(std::forward<Args>(args)...)));
+    }
+} // namespace magique
+
 
 #endif // MAGIQUE_UI_CONTAINER_H

@@ -92,22 +92,24 @@ namespace magique
     void VerticalContainer::onDraw(const Rect& bounds)
     {
         float height = 0;
-        const UIObject* curr = nullptr;
         for (auto [name, ptr] : getChildren())
         {
-            if (curr == nullptr)
-            {
-                ptr->align(anchor, *this);
-            }
-            else
-            {
-                ptr->align(Direction::DOWN, *curr, {0, gap});
-            }
-            curr = ptr;
-            ptr->draw();
+            ptr->align(anchor, *this, {0, height});
+            if (!reverseDraw)
+                ptr->draw();
             height += ptr->getBounds().height + gap;
         }
-        setSize({bounds.width, height});
+
+        if (reverseDraw)
+        {
+            for (auto it = getChildren().rbegin(); it != getChildren().rend(); ++it)
+            {
+                it->object->draw();
+            }
+        }
+
+        const auto start = getStartBounds();
+        setSize({std::max(bounds.width, start.width), std::max(height, start.height)});
     }
 
     void VerticalContainer::setHorizontalAlign(Anchor align)
@@ -139,6 +141,8 @@ namespace magique
     float VerticalContainer::getGap() const { return gap; }
 
     void VerticalContainer::setGap(float newGap) { gap = newGap; }
+
+    void VerticalContainer::setReverseDraw(bool reverse) { reverseDraw = reverse; }
 
 
 } // namespace magique

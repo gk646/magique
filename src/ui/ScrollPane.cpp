@@ -64,19 +64,19 @@ namespace magique
 
     void ScrollPane::drawDefault(const Rect& bounds)
     {
-        auto& theme = global::ENGINE_CONFIG.theme;
+        const auto& theme = global::ENGINE_CONFIG.theme;
         DrawRectFrameFilled(bounds, theme.background, theme.backOutline);
-        Color color;
         {
             const auto scroller = getVerticalScrollBounds();
-            color = (CheckCollisionMouseRect(scroller) || vertical.isDragging) ? theme.backHighlight : theme.backActive;
-            DrawRectangleRec(scroller, color);
+            bool hovered = CheckCollisionMouseRect(scroller);
+            bool pressed = vertical.isDragging;
+            DrawRectFrameFilled(scroller, theme.getBodyColor(hovered, pressed), theme.getOutlineColor(hovered, pressed));
         }
         {
             const auto scroller = getHorizontalScrollBounds();
-            color =
-                (CheckCollisionMouseRect(scroller) || horizontal.isDragging) ? theme.backHighlight : theme.backActive;
-            DrawRectangleRec(scroller, color);
+            bool hovered = CheckCollisionMouseRect(scroller);
+            bool pressed = horizontal.isDragging;
+            DrawRectFrameFilled(scroller, theme.getBodyColor(hovered, pressed), theme.getOutlineColor(hovered, pressed));
         }
     }
 
@@ -187,7 +187,7 @@ namespace magique
         {
             isDragging = true;
         }
-        if (!LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+        if (isDragging && !IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             isDragging = false;
         }

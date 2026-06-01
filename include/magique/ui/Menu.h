@@ -62,10 +62,6 @@ namespace magique
         // Returns the parent
         Menu* getParent() const;
 
-        // Sets/gets the gamepad mapping for this menu - should pass a new Instance of your implementing class
-        // If set automatically set this mapping active when the menu is activated
-        void setGamepadMapping(GamepadUIMapping* map);
-        GamepadUIMapping* getGamepadMapping();
 
     protected:
         // Needs to be called (as the first thing) in all implementing versions
@@ -98,7 +94,7 @@ namespace magique
         Menu* parent = nullptr;
         Menu* subMenu = nullptr;
         bool isActive = true;
-        GamepadUIMapping* mapping = nullptr;
+        GamepadMapping* mapping = nullptr;
     };
 } // namespace magique
 

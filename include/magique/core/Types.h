@@ -50,6 +50,7 @@ namespace magique
         Point operator*(const Point& other) const;
         Point& operator*=(const Point& p);
         Point operator/(const Point& p) const;
+        bool operator>(const Point& p) const;
         bool operator<(const Point& p) const; // For both
         Point& operator/=(const Point& p);
         Point operator-() const;
@@ -168,7 +169,7 @@ namespace magique
         Rect& operator-=(const Point& p);     // only x and y
 
         bool operator==(float num) const; // checks all
-        Rect& operator/(float divisor) ;
+        Rect& operator/(float divisor);
 
         // Applies to all values
         Rect& floor();
@@ -404,7 +405,8 @@ namespace magique
         int tileClass = 0; // NOT assigned automatically
 
         // Returns: the property with the given name or nullptr if not exists
-        const TiledProperty* getProperty(const char* propertyName) const;
+        const TiledProperty* getProperty(std::string_view name) const;
+        bool hasProperty(std::string_view name) const;
 
     private:
         M_MAKE_PUB()
@@ -867,10 +869,44 @@ namespace magique
         IMBALANCED,
     };
 
-    struct GamepadUIMappingState
+    enum class GamepadMappingEvent : uint8_t
+    {
+        // Called when this mapping is set active
+        Start,
+        // Called when the submit button (ENTER or A (Xbox)) has been pressed
+        // Triggers a mouse press automatically if -1 is returned
+        Submit,
+        // Called when back button (ESC or B (Xbox)) has been pressed
+        // Automatically tries to activate the parent if attached object is a Menu
+        Back,
+
+        // Called on the corresponding key (Arrow Keys) or controller (DPAD or left Joystick) input was made
+        Left,
+        Right,
+        Up,
+        Down,
+    };
+
+    struct GamepadMappingState
     {
         int row = 0;
         int col = 0;
+        GamepadMappingEvent event; // Latest event
+
+        // Assigns the next value to row/cols such that it stays within 0 <= row < max
+        // Use offset to change direction (offset from current value)
+        // Note: This is useful for menus to allow cycling through
+        void circulateRows(int offset, int max);
+        void circulateCols(int offset, int max);
+
+        // Returns true if the event fits the criteria
+        bool isLeftOrRight() const;
+        bool isUpOrDown() const;
+        bool isLeft() const;
+        bool isRight() const;
+        bool isDown() const;
+        bool isUp() const;
+        bool isDirection() const;
     };
 
     //================= HELPER TYPES =================//
