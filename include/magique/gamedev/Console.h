@@ -42,7 +42,7 @@ namespace magique
     //================= CONTROL =================//
 
     // Sets the key which opens the command line
-    // Note: Can be set to an invalid key to "lock" the console
+    // Note: Can be set to an invalid key (0) to "lock" the console
     // Default: KEY_PAGE_UP
     void ConsoleSetOpenKey(int key);
 

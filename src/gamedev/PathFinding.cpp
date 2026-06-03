@@ -2,6 +2,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/gamedev/PathFinding.h>
+#include <magique/ecs/ECS.h>
 #include <magique/core/Camera.h>
 
 #include "internal/globals/PathFindingData.h"
@@ -79,6 +80,15 @@ namespace magique
         return true;
     }
 
+    bool PathRayCast(entt::entity a, entt::entity b)
+    {
+        const auto* aPos = ComponentTryGet<PositionC>(a);
+        const auto* bPos = ComponentTryGet<PositionC>(b);
+        if (aPos == nullptr || bPos == nullptr || (aPos->map != bPos->map)) [[unlikely]]
+            return false;
+        return PathRayCast(CollisionC::GetMiddle(a), CollisionC::GetMiddle(b), aPos->map);
+    }
+
     bool PathIsSolid(const Point& pos, const MapID map)
     {
         auto& path = global::PATH_DATA;
@@ -103,6 +113,9 @@ namespace magique
 
     Point PathGetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path)
     {
+        if (path.empty())
+            return pos.dir(target);
+
         // Stored in reverse
         int lowestIdx = -1;
         float lowestDist = std::numeric_limits<float>::max();
@@ -148,7 +161,7 @@ namespace magique
         }
         else
         {
-            return pos;
+            return target;
         }
     }
 

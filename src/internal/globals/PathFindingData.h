@@ -180,14 +180,17 @@ namespace magique
             const PathFindMoveCostFunc mFunc = MOVE_COST[(int)mode];
             const auto& movement = MOVEMENTS[(int)mode];
 
-            frontier.emplace(start, 0.0F, hFunc(start, end), UINT16_MAX, 0); // Initial node
+            auto hCost = hFunc(start, end);
+            frontier.emplace(start, 0.0F, hCost, hCost, UINT16_MAX, 0); // Initial node - no move cost
             while (!frontier.empty() && iteration < MAGIQUE_MAX_PATH_SEARCH_CAPACITY)
             {
                 nodePool[iteration] = frontier.top();
                 auto& current = nodePool[iteration];
 
-                const auto currentDistance = current.fCost;
-                if (currentDistance < bestDistance)
+                // Filter after distance as if we don't reach target don't care when taking longer route
+                // Anything better than nothing
+                const auto currentDistance = current.hCost;
+                if (currentDistance < bestDistance) [[unlikely]]
                 {
                     bestDistance = currentDistance;
                     bestNodeIndex = iteration;
@@ -216,17 +219,17 @@ namespace magique
                             continue;
                         }
 
-                        const auto val = openCost.getValue(newPosTile);
+                        const auto bestValueForTile = openCost.getValue(newPosTile);
                         const float gCost = mFunc(dir) + current.gCost;
                         const auto hCost = hFunc(newPosTile, end);
                         const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
                         const auto newFCost = hCost + gCost;
 
-                        if (val != 0.0F && newFCost >= val)
+                        if (bestValueForTile != 0.0F && newFCost >= bestValueForTile)
                         {
                             continue;
                         }
-                        frontier.push({newPosTile, gCost, newFCost, iteration, newPathLen});
+                        frontier.push({newPosTile, gCost, newFCost, hCost, iteration, newPathLen});
                         openCost.setValue(newPosTile, newFCost);
                     }
                     iteration++;

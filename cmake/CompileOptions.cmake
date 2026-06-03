@@ -87,6 +87,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_link_options(magique PUBLIC
             -flto=auto
+            -Wl,--rpath='$ORIGIN'
     )
 
     if (MAGIQUE_SANITIZER)
@@ -106,7 +107,7 @@ elseif (MSVC)
     )
 
     target_link_options(magique PUBLIC
-            /LTCG /OPT:REF /OPT:ICF
+            /LTCG /OPT:REF /OPT:ICF /RELEASE
     )
 
     if (MAGIQUE_SANITIZER)

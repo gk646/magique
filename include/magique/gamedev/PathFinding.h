@@ -48,6 +48,9 @@ namespace magique
     // Returns true if the ray cast through the pathfinding grid does not hit solid cells (in line of sight)
     bool PathRayCast(Point start, Point end, MapID map);
 
+    // Returns ture IF both entities are on the same map AND the ray cast from their mid-points does not hit any solid cells
+    bool PathRayCast(entt::entity a, entt::entity b);
+
     // Returns true if the pathfinding tile (that contains the point) is solid (cannot be walked on)
     bool PathIsSolid(const Point& pos, MapID map);
 
@@ -59,7 +62,7 @@ namespace magique
 
     // Returns the next point on the path you should go to
     // If inside a cell in the path returns the next logical cell you should move to
-    // Otherwise returns the closest cell in the path
+    // Otherwise returns the target
     Point PathGetNextOnPath(const Point& pos, const Point& target, const std::vector<Point>& path);
 
     // If set, all entities of the given type are considered solid for pathfinding and make cells non-traversable

@@ -123,8 +123,9 @@ namespace magique
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
 
-        // Decreases the magnitude of the vector by the given scalar (flat)
-        Point& decreaseMagnitude(float f);
+        // Decreases the magnitude of the vector by the given scalar (flat) or factor
+        Point& changeMagnitudeAbs(float abs);
+        Point& changeMagnitude(float factor);
 
         // Returns the perpendicular vector to this one - either to the left or to the right
         Point perpendicular(bool left) const;
@@ -149,7 +150,7 @@ namespace magique
         Rect(float x, float y, float width, float height);
         operator Rectangle() const;
 
-        // Returns the rect the is spanned by the two points
+        // Returns the rect that is spanned by the two points
         static Rect FromSpanPoints(const Point& p1, const Point& p2);
 
         // Returns a rectangle that is centered on p with the given size

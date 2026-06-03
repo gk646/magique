@@ -35,14 +35,14 @@ namespace magique
     struct GridNode final
     {
         Point position;
-        float fCost; // Combined cost
-        float gCost; // Cost from start
+        float fCost; // Combined cost of moving + cost of distance
+        float gCost; // Cost of moving
+        float hCost; // Cost of distance
         uint16_t parent;
         uint16_t stepCount;
         GridNode() = default;
-        GridNode(const Point position, const float gCost, const float fCost, const uint16_t parent,
-                 const uint16_t stepCount) :
-            position(position), fCost(fCost), gCost(gCost), parent(parent), stepCount(stepCount)
+        GridNode(Point position, float gCost, float fCost, float hCost, uint16_t parent, uint16_t stepCount) :
+            position(position), fCost(fCost), gCost(gCost), hCost(hCost), parent(parent), stepCount(stepCount)
         {
         }
         bool operator>(const GridNode& o) const { return fCost > o.fCost; }

@@ -283,21 +283,27 @@ namespace magique
         return *this;
     }
 
-    Point& Point::decreaseMagnitude(const float f)
+    Point& Point::changeMagnitudeAbs(const float f)
     {
         const float mag = magnitude();
-        if (mag <= f)
+        const float newMagnitude = mag + f;
+        if (newMagnitude <= 0)
         {
             x = 0.0F;
             y = 0.0F;
             return *this;
         }
 
-        const float newMagnitude = mag - f;
         const float scaleFactor = newMagnitude / mag;
         x *= scaleFactor;
         y *= scaleFactor;
 
+        return *this;
+    }
+
+    Point& Point::changeMagnitude(float factor)
+    {
+        changeMagnitudeAbs(magnitude() * factor);
         return *this;
     }
 
