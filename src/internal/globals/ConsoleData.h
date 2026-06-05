@@ -286,12 +286,13 @@ namespace magique
             suggestionPos = 0;
             suggestions.clear();
 
-            auto itFunc = [&](const auto& cmd)
+            if (line.empty())
+                return;
+
+            auto itFunc = [&](const Command& cmd)
             {
-                if (strncmpnc(cmd.getName().c_str(), line.c_str(), line.size()))
-                {
+                if (StringIsSimilar(cmd.getName(), line))
                     suggestions.push_back(&cmd);
-                }
             };
             std::ranges::for_each(commands, itFunc);
 
@@ -299,7 +300,7 @@ namespace magique
             {
                 auto first = StringDistancePhysical(line, c1->getName());
                 auto second = StringDistancePhysical(line, c2->getName());
-                return first < second;
+                return first > second;
             };
             std::ranges::sort(suggestions, pred);
 
@@ -642,9 +643,7 @@ namespace magique
                 cursorPos = static_cast<int>(data.line.size());
             }
         }
-        const auto cWidth = static_cast<float>(GetScreenWidth());
-        const auto cHeight = HEIGHT_P * static_cast<float>(GetScreenHeight());
-        const Rectangle cRect = {0, 0, cWidth, cHeight};
+        const Rect cRect = {{}, GetScreenDims() * Point{1, HEIGHT_P}};
         const auto wheelMove = GetMouseWheelMove() * 10.0F;
         if (wheelMove != 0 && CheckCollisionPointRec(GetMousePos(), cRect))
         {

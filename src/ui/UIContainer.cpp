@@ -91,7 +91,7 @@ namespace magique
 
     void VerticalContainer::onDraw(const Rect& bounds)
     {
-        float height = 0;
+        float height = gap;
         for (auto [name, ptr] : getChildren())
         {
             ptr->align(anchor, *this, {0, height});

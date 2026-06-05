@@ -6,8 +6,9 @@
 
 namespace magique
 {
-    Dropdown::Dropdown(Rect bounds, Anchor anchor, Point inset, ScalingMode scaling) :
-        UIObject(bounds, anchor, inset, scaling), list(bounds)
+    Dropdown::Dropdown(Rect bounds, std::string_view label, Direction labelDir, Anchor anchor, Point inset,
+                       ScalingMode scaling) :
+        LabelledObject(bounds, label, labelDir, anchor, inset, scaling), list(bounds)
     {
     }
 

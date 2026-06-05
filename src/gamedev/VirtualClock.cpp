@@ -74,7 +74,7 @@ namespace magique
 
     int VirtualTime::getDays() const { return day; }
 
-    std::string VirtualTime::toString() const
+    std::string_view VirtualTime::toString() const
     {
         return TextFormat("%id:%ih:%im:%is", getDays(), getHours(), getMinutes(), getSeconds());
     }

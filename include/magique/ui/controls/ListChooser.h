@@ -44,6 +44,8 @@ namespace magique
         void clear();
         bool empty() const;
 
+        bool contains( std::string_view item) const;
+
         // Returns the index of the hovered element
         // -1 if nothing is hovered
         int getHoveredIndex() const;

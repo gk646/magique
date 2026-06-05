@@ -1,5 +1,5 @@
-#ifndef STARFIGHTER_TABSWITCHER_H
-#define STARFIGHTER_TABSWITCHER_H
+#ifndef MAGIQUE_TABSWITCHER_H
+#define MAGIQUE_TABSWITCHER_H
 
 #include <magique/ui/UIContainer.h>
 
@@ -55,4 +55,4 @@ namespace magique
 
 } // namespace magique
 
-#endif // STARFIGHTER_TABSWITCHER_H
+#endif // MAGIQUE_TABSWITCHER_H

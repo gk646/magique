@@ -62,6 +62,7 @@ namespace magique
 MQ_REFLECT_ENUM(magique::KeyBindType)
 MQ_REFLECT_ENUM(magique::StorageType)
 MQ_REFLECT_ENUM(magique::Shape)
+MQ_REFLECT_ENUM(magique::Language)
 
 namespace glz
 {

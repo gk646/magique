@@ -7,7 +7,6 @@ namespace magique
 {
     inline void InternalUpdatePre(const entt::registry& registry, Game& game) // Before user space update
     {
-        global::UI_DATA.resetConsumed();
         global::TWEEN_DATA.update();
         global::CONSOLE_DATA.update();  // First in case needs to block input
         global::PARTICLE_DATA.update(); // Order doesnt matter

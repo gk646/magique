@@ -30,7 +30,7 @@ namespace magique
 
         static Point FromInt(int x, int y);
 
-        // Initializes both value randomly within the given range
+        // Initializes both values randomly within the given range
         static Point Random(float min, float max);
 
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
@@ -223,6 +223,7 @@ namespace magique
         Point bottomRight() const;
         Point bottomLeft() const;
 
+        // Returns the middle points of the edges
         Point topMid() const;
         Point bottomMid() const;
         Point leftMid() const;
@@ -242,16 +243,16 @@ namespace magique
         Rotation& operator+=(const Rotation& other);
         Rotation& operator-=(const Rotation& other);
 
-        // Returns the shortest difference between the two angles in degrees (always positive)
-        float diff(Rotation other) const;
+        // Returns the shortest distance between the two angles in degrees (always positive)
+        float dist(Rotation other) const;
 
-        // Returns the shortest distance one has to go from this angle to the other angle in degrees
+        // Returns the SHORTEST difference - the amount one has to go from this angle to the other angle in degrees
         // Note: Can return negative values
-        float distance(Rotation other) const;
+        float diff(Rotation other) const;
 
         // Changes this rotation to be the same as target (in the quickest way) but at maximum max degrees per call
         // Note: This is a helper function - useful for rotating things at capped rate (Tank Turret, Vehicle, ...)
-        void modulate(Rotation target, float max = 4.0F);
+        void rotateTowards(Rotation target, float max = 4.0F);
     };
 
     //================= CORE =================//
@@ -866,8 +867,8 @@ namespace magique
 
     enum class SliderMode : uint8_t
     {
-        BALANCED,
-        IMBALANCED,
+        Linear,
+        TwoZones,
     };
 
     enum class GamepadMappingEvent : uint8_t

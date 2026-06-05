@@ -7,7 +7,8 @@
 namespace magique
 {
 
-    CheckBox::CheckBox(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode)
+    CheckBox::CheckBox(Rect bounds, std::string_view label, Direction labelDir, Anchor anchor, Point inset,
+                       ScalingMode scaling) : LabelledObject(bounds, label, labelDir, anchor, inset, scaling)
     {
     }
 
@@ -15,17 +16,13 @@ namespace magique
 
     bool CheckBox::getState() const { return state; }
 
-    void CheckBox::setState(bool newState) { state = newState; }
-
-    const std::string& CheckBox::getInfoText() const { return infoText; }
-
-    Direction CheckBox::getInfoDirection() const { return infoDir; }
-
-    void CheckBox::setInfoText(const std::string& text, Direction dir)
+    void CheckBox::setState(bool newState, bool triggerCallback)
     {
-        infoText = text;
-        infoDir = dir;
+        state = newState;
+        if (triggerCallback && func)
+            func(state);
     }
+
 
     void CheckBox::updateInputs()
     {
@@ -49,26 +46,6 @@ namespace magique
             const auto len = std::min(bounds.width, bounds.height) / 2 * 0.7F;
             DrawCircleV(bounds.mid(), len, theme.text);
         }
-
-        Point textPos = bounds.pos();
-        const auto fSize = EngineGetFont().baseSize * (int)UIGetScaled(1);
-        const auto dims = MeasureTextEx(EngineGetFont(), infoText.c_str(), fSize, 1.0F);
-        switch (infoDir)
-        {
-        case Direction::LEFT:
-            textPos -= Point{dims.x + 2, 0.0F};
-            break;
-        case Direction::RIGHT:
-            textPos += Point{dims.x + bounds.width + 2, 0.0F};
-            break;
-        case Direction::UP:
-            textPos -= Point{0.0F, dims.y + 2};
-            break;
-        case Direction::DOWN:
-            textPos += Point{0.0F, bounds.height + 2};
-            break;
-        }
-        DrawTextEx(EngineGetFont(), infoText.c_str(), textPos, fSize, 1.0F, theme.text);
     }
 
 } // namespace magique

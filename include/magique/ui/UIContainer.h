@@ -85,18 +85,18 @@ namespace magique
         Anchor getHorizontalAlign() const;
 
         float getGap() const;
-        void setGap(float gap = 2.0F);
+        void setGap(float gap = 3.0F);
 
         // If true draws them in reverse
         // Note: This is useful when drawing dropdowns so the list doesn't get overdrawn by controls below
-        void setReverseDraw(bool reverse );
+        void setReverseDraw(bool reverse = true);
 
     protected:
         void onDraw(const Rect& bounds) override;
 
     private:
         Anchor anchor = Anchor::TOP_CENTER;
-        float gap = 2.0F;
+        float gap = 3.0F;
         bool reverseDraw = false;
     };
 

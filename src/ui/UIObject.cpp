@@ -2,9 +2,11 @@
 #include <magique/ui/UI.h>
 #include <magique/ui/UIObject.h>
 #include <magique/core/Types.h>
+#include <magique/core/Draw.h>
+#include <magique/core/Engine.h>
+#include <magique/util/RayUtils.h>
 
 #include "internal/globals/UIData.h"
-#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -28,10 +30,11 @@ namespace magique
 
     void UIObject::draw()
     {
-        global::UI_DATA.registerDrawCall(this, isContainer);
+        auto& ui = global::UI_DATA;
+        ui.registerDrawCall(this, isContainer);
         const auto bounds = getBounds();
         onDraw(bounds);
-        if (global::UI_DATA.showHitboxes)
+        if (ui.showHitboxes)
         {
             DrawRectangleLinesEx(bounds, 1, BLUE);
         }
@@ -177,5 +180,48 @@ namespace magique
     void UIObject::setGamepadMapping(GamepadMapping* map) { mapping = map; }
 
     GamepadMapping* UIObject::getGamepadMapping() const { return mapping; }
+
+    LabelledObject::LabelledObject(Rect size, std::string_view text, Direction direction, Anchor anchor, Point inset,
+                                   ScalingMode scaling) :
+        UIObject(size, anchor, inset, scaling), label(text), dir(direction)
+    {
+    }
+
+    std::string_view LabelledObject::getText() const { return label; }
+
+    void LabelledObject::setText(std::string_view text) { label = text; }
+
+    void LabelledObject::setDirection(Direction direction) { dir = direction; }
+
+    Direction LabelledObject::getDirection() const { return dir; }
+
+    void LabelledObject::drawLabelDefault(const Rect& bounds) const
+    {
+        drawLabel(bounds, EngineGetFont(), EngineGetFont().baseSize);
+    }
+
+    void LabelledObject::drawLabel(const Rect& bounds, const Font& font, float fSize) const
+    {
+        if (label.empty())
+            return;
+
+        const float centerYOff = std::ceil((bounds.height - fSize) / 2.0F);
+        switch (dir)
+        {
+        case Direction::LEFT:
+            DrawTextRightBound(font, label, bounds.pos() + Point{-2, centerYOff}, fSize);
+            break;
+        case Direction::RIGHT:
+            DrawTextEx(font, label.data(), bounds.topRight() + Point{2, centerYOff}, fSize, 1.0F, WHITE);
+            break;
+        case Direction::UP:
+            DrawTextCentered(font, label, bounds.bottomMid() - Point{0, fSize + 4}, fSize);
+            break;
+        case Direction::DOWN:
+            DrawTextCentered(font, label, bounds.topMid() + Point{0, 4}, fSize);
+            break;
+        }
+    }
+
 
 } // namespace magique

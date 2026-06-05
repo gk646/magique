@@ -80,7 +80,7 @@ namespace magique
         TextDrawer& modCenterV();
 
         // Applies a background color to the text
-        TextDrawer& modBackground(Color background);
+        TextDrawer& modBackground(Color background = ColorAlpha(BLACK , 0.25F));
 
         // ===== Helpers ======//
 

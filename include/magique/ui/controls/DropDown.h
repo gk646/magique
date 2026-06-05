@@ -1,5 +1,5 @@
-#ifndef STARFIGHTER_DROPDOWN_H
-#define STARFIGHTER_DROPDOWN_H
+#ifndef MAGIQUE_DROPDOWN_H
+#define MAGIQUE_DROPDOWN_H
 
 #include <magique/ui/controls/ListChooser.h>
 
@@ -14,9 +14,10 @@
 namespace magique
 {
 
-    struct Dropdown : UIObject
+    struct Dropdown : LabelledObject
     {
-        Dropdown(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
+        Dropdown(Rect bounds, std::string_view label = "", Direction labelDir = Direction::LEFT,
+                 Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         // Returns true if the list is visible
         bool getIsOpen() const;
@@ -25,7 +26,11 @@ namespace magique
         ListChooser& getList();
 
     protected:
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override
+        {
+            LabelledObject::onDraw(bounds);
+            drawDefault(bounds);
+        }
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
@@ -47,10 +52,11 @@ namespace magique
 
     private:
         ListChooser list;
+        std::string infoText;
         bool isOpen = false;
     };
 
 
 } // namespace magique
 
-#endif // STARFIGHTER_DROPDOWN_H
+#endif // MAGIQUE_DROPDOWN_H

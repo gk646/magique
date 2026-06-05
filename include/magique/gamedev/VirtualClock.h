@@ -20,11 +20,9 @@ namespace magique
     {
         VirtualTime() = default;
 
-        // Initializes the time from the total time given by all parameteres
-        // 5 days 25 hours => 6 days 1 hour
-        // 72 seconds => 1min 12s
+        // Initializes the time from the total time given by all parameters
+        // Overflow is eliminated: 5 days 25 hours => 6 days 1 hour // 72 seconds => 1min 12s
         VirtualTime(int seconds, int minutes = 0, int hours = 0, int days = 0);
-
 
         VirtualTime operator+(const VirtualTime& other) const;
         VirtualTime operator-(const VirtualTime& other) const;
@@ -39,7 +37,7 @@ namespace magique
         bool operator<=(const VirtualTime& other) const;
         bool operator>=(const VirtualTime& other) const;
         VirtualTime& operator*=(float scale);
-        VirtualTime operator*(float scale)const;
+        VirtualTime operator*(float scale) const;
 
         // The whole time converted to seconds
         int toSeconds() const;
@@ -49,7 +47,8 @@ namespace magique
         int getHours() const;
         int getDays() const;
 
-        std::string toString() const;
+        // Use immediately or copy the value
+        std::string_view toString() const;
 
     private:
         int day;

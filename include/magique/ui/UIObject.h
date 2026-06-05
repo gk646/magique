@@ -145,6 +145,37 @@ namespace magique
         friend Window;
     };
 
+    // Object with optional text drawn NEXT to it
+    // Note: This is used for controls that are usually labeled: Dropdown, Checkbox, ...
+    struct LabelledObject : UIObject
+    {
+        LabelledObject(Rect size, std::string_view text, Direction direction = Direction::LEFT,
+                       Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
+
+        // Gets/Sets the label text
+        std::string_view getText() const;
+        void setText(std::string_view text);
+
+        // Sets/Gets the label direction
+        // Either horizontally centered above/below OR vertically centered left/right
+        void setDirection(Direction direction);
+        Direction getDirection() const;
+
+    protected:
+        // Draws the label using engine font and font base size
+        void drawLabelDefault(const Rect& bounds) const;
+
+        // Draws the label with the given font and size
+        void drawLabel(const Rect& bounds, const Font& font, float fSize) const;
+
+        // Must be called by subclasses
+        void onDraw(const Rect& bounds) override { drawLabelDefault(bounds); }
+
+    private:
+        std::string label;
+        Direction dir;
+    };
+
 } // namespace magique
 
 

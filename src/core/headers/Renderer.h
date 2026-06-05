@@ -18,6 +18,7 @@ namespace magique::renderer
     {
         AssignCameraPosition();
         ResetDrawCallCount();
+        global::UI_DATA.onRenderTick();
     }
 
     inline double EndTick(const double startTime)

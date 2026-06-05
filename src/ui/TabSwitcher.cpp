@@ -118,7 +118,7 @@ namespace magique
     {
         const auto& theme = EngineGetTheme();
         const auto& fnt = EngineGetFont();
-        const Point dims = Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize * 1.0F, 0.5F)} + 4;
+        const Point dims = Point{8, 4} + Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize * 1.0F, 0.5F)};
         const Rect tab{pos, dims};
         const auto hovered = tab.contains(GetMousePos());
         DrawRectFrameFilled(tab, theme.getBodyColor(hovered, isActive), theme.getOutlineColor(hovered, isActive));

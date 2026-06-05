@@ -17,17 +17,18 @@ namespace magique
     // Called with the new changed value and the slider position in percent [0.0 - 1.0]
     using SliderChangeFunc = std::function<void(float value, float percent)>;
 
-    struct Slider : UIObject
+    struct Slider : LabelledObject
     {
         // Creates a new slider from coordinates in the logical UI resolution
-        Slider(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
+        Slider(Rect bounds, std::string_view label = "", Direction labelDir = Direction::LEFT,
+                 Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         // Sets the scale to be balanced between min and max - the middle will be the arithmetic mid between both values
-        void setScaleBalanced(float min, float max);
+        void setScaleLinear(float min, float max);
 
         // Sets the scale to be imbalanced
         // On the left half of the slider interpolate between min-mid, on the right interpolate between mid-max
-        void setScaleImblanced(float min, float mid, float max);
+        void setScaleZones(float min, float mid, float max);
 
         // Gets the slider value according to the previously set scale
         [[nodiscard]] float getSliderValue() const;
@@ -36,13 +37,18 @@ namespace magique
         [[nodiscard]] float getSliderPercent() const;
 
         // Sets the slider to the given position - from 0.0 - 1.0 - left = 0, right = 1.0
-        void setSliderPercent(float value);
+        //      callback: if true calls the on change callback
+        void setSliderPercent(float value, bool callback = false);
 
         // Called everytime the value changes and the control is not dragged
         void setOnChange(const SliderChangeFunc& func);
 
     protected:
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override
+        {
+            LabelledObject::onDraw(bounds);
+            drawDefault(bounds);
+        }
 
         // Called each tick on update thread
         void onUpdate(const Rect& bounds, bool isDrawn) override
@@ -66,7 +72,7 @@ namespace magique
         SliderChangeFunc func;
         float min = 0, mid = 0.5, max = 1;
         float sliderPos = 0.5;
-        SliderMode mode = SliderMode::BALANCED;
+        SliderMode mode = SliderMode::Linear;
         bool isClicked = false;
         bool isDragged = false;
         float dragStartVal = 0.0F;

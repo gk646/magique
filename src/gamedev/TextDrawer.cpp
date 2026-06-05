@@ -229,7 +229,7 @@ namespace magique
 
         if (backgroundColor.a > 0)
         {
-            DrawTextHighlight(font, txt, pos, fntSize, 1.0F, backgroundColor);
+            DrawTextHighlight(font, txt, pos, fntSize, modSizeMult, backgroundColor);
         }
 
         if (shadeColor.a > 0)

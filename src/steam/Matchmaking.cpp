@@ -84,7 +84,7 @@ namespace magique
     {
         if (!SteamIsInLobby())
             return false;
-        const auto& steam = global::STEAM_DATA;
+        auto& steam = global::STEAM_DATA;
         SteamMatchmaking()->LeaveLobby(steam.lobbyID);
         if (steam.lobbyEventCallback)
         {
@@ -92,6 +92,7 @@ namespace magique
             const auto steamID = MagiqueIDFromSteam(steam.userID);
             steam.lobbyEventCallback(lobbyID, steamID, SteamLobbyEvent::ON_LOBBY_EXIT);
         }
+        steam.lobbyID = {};
         return true;
     }
 

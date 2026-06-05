@@ -342,7 +342,7 @@ namespace magique
 #endif
         std::string crashData;
         crashData.reserve(1024);
-        auto& game = GameGetInstance();
+        const auto& game = GameGetInstance();
         crashData += "magique CrashLog File\n";
         crashData += "Exception received: " + signalName + "\n\n";
         crashData += "magique: " + std::string{MAGIQUE_VERSION} + "\n";

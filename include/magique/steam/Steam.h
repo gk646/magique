@@ -38,6 +38,9 @@ namespace magique
     // Returns the language set for the game
     Language SteamGetGameLanguage();
 
+    // Returns a list of all available languages for this game
+    std::vector<Language> SteamGetGameLanguages();
+
     // Signals steam to verify and redownload the game files
     //      - missingFilesOnly: if true only checks for missing files, not if existing files are wrong/out-of-date
     void SteamMarkGameFilesCorrupt(bool missingFilesOnly = false);
@@ -100,6 +103,11 @@ namespace magique
     // Returns the path of the local user data folder specific to the game and steam id
     // Note: This should be used to load and store local data for steam games - automatically adjusts to game and user
     const char* SteamGetUserDataLocation();
+
+    //================= UTIL =================//
+
+    // Steam server time - Number of SECONDS since January 1, 1970, GMT (unix time)
+    uint32_t SteamGetServerTime();
 
 } // namespace magique
 

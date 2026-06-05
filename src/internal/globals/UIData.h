@@ -22,6 +22,7 @@ namespace magique
         std::vector<UIObject*> objects;
         std::vector<UIObject*> containers;
         std::vector<Popup*> popups;
+        UIObject* mouseConsumedAfter = nullptr; // Object after which the mouse was consumed
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
         Point targetRes{1920, 1080};
@@ -33,6 +34,14 @@ namespace magique
         bool customTargetRes = false;
         bool showHitboxes = false;
         bool usingGamepad = false;
+
+        // Consumed status
+        // Reset each tick (before render and update)
+        // Consumes status is only set in onUpdate() (as its has nothign to do with drawing)
+        // We save when it is set (at which object) to emulate the ordering for drawing
+        //      => All objects drawn up to the object that consumed should be drawn with the consumed state
+        // So we consume before drawing and clear it when the object is drawn that consumed in the first place
+        // This is done for both onDraw() and onDrawUpdate()
 
         void resetConsumed()
         {
@@ -98,6 +107,9 @@ namespace magique
                 dragStart = {mx, my};
             }
 
+            if (mouseConsumedAfter != nullptr)
+                mouseConsumed = true;
+
             // Here we are doing the updates for next tick (instead of right at the end of the draw tick)
             // Using fori to support deletions in the update methods
             for (size_t i = 0; i < containers.size(); ++i)
@@ -109,8 +121,12 @@ namespace magique
                 }
                 container.wasDrawnLastTick = container.drawnThisTick;
                 container.drawnThisTick = false;
+
+                if (mouseConsumedAfter == &container)
+                    mouseConsumed = false;
                 container.onDrawUpdate(container.getBounds(), container.wasDrawnLastTick);
             }
+
             for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
@@ -120,13 +136,20 @@ namespace magique
                 }
                 obj.wasDrawnLastTick = obj.drawnThisTick;
                 obj.drawnThisTick = false;
+
+                if (mouseConsumedAfter == &obj)
+                    mouseConsumed = false;
                 obj.onDrawUpdate(obj.getBounds(), obj.wasDrawnLastTick);
             }
+
+            resetConsumed();
         }
 
         // Only before each update tick (if it happens)
         void onUpdateTick()
         {
+            mouseConsumedAfter = nullptr;
+
             // Using fori to support deletions in the update methods
             for (size_t i = 0; i < containers.size(); ++i)
             {
@@ -134,6 +157,8 @@ namespace magique
                 if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &container)
                     updateGamePadMapping();
                 container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
+                if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
+                    mouseConsumedAfter = &container;
             }
 
             for (size_t i = 0; i < objects.size(); ++i)
@@ -142,6 +167,8 @@ namespace magique
                 if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &obj)
                     updateGamePadMapping();
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+                if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
+                    mouseConsumedAfter = &obj;
             }
 
             // After the tick
@@ -177,6 +204,12 @@ namespace magique
             }
         }
 
+        void onRenderTick()
+        {
+            if (mouseConsumedAfter != nullptr)
+                mouseConsumed = true;
+        }
+
         // All objects are registered in their ctor
         void registerObject(UIObject* object, const bool isContainer = false)
         {
@@ -198,6 +231,9 @@ namespace magique
 
         void registerDrawCall(UIObject* object, const bool isContainer)
         {
+            if (object == mouseConsumedAfter)
+                mouseConsumed = false;
+
             if (!object->wasDrawnLastTick)
             {
                 object->onShown(object->getBounds());

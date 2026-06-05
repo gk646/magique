@@ -32,6 +32,7 @@ namespace magique
         // Note: Adds the menu as children to the UIContainer
         Menu* addSubMenu(Menu* menu, std::string_view name);
         bool removeSubMenu(std::string_view name);
+        Menu* getSubMenu(std::string_view name) const;
 
         // Sets the given submenu active
         bool activateSubmenu(std::string_view name);

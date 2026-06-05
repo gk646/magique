@@ -93,104 +93,104 @@ namespace magique
 
     uint32_t SteamGetAppID() { return SteamUtils()->GetAppID(); }
 
-    const char* ClientAPIToISO(const char* apiLanguageCode)
+    const char* ClientAPIToISO(std::string_view api)
     {
-        switch (*apiLanguageCode)
+        switch (api.front())
         {
         case 'a': // arabic
             return "ar";
         case 'b':
-            if (strcmp(apiLanguageCode, "bulgarian") == 0)
+            if (api == "bulgarian")
                 return "bg";
-            if (strcmp(apiLanguageCode, "brazilian") == 0)
+            if (api == "brazilian")
                 return "pt";
             break;
         case 'c':
-            if (strcmp(apiLanguageCode, "czech") == 0)
+            if (api == "czech")
                 return "cs";
             break;
         case 'd':
-            if (strcmp(apiLanguageCode, "danish") == 0)
+            if (api == "danish")
                 return "da";
-            if (strcmp(apiLanguageCode, "dutch") == 0)
+            if (api == "dutch")
                 return "nl";
             break;
         case 'e':
-            if (strcmp(apiLanguageCode, "english") == 0)
+            if (api == "english")
                 return "en";
             break;
         case 'f':
-            if (strcmp(apiLanguageCode, "finnish") == 0)
+            if (api == "finnish")
                 return "fi";
-            if (strcmp(apiLanguageCode, "french") == 0)
+            if (api == "french")
                 return "fr";
             break;
         case 'g':
-            if (strcmp(apiLanguageCode, "german") == 0)
+            if (api == "german")
                 return "de";
-            if (strcmp(apiLanguageCode, "greek") == 0)
+            if (api == "greek")
                 return "el";
             break;
         case 'h':
-            if (strcmp(apiLanguageCode, "hungarian") == 0)
+            if (api == "hungarian")
                 return "hu";
             break;
         case 'i':
-            if (strcmp(apiLanguageCode, "indonesian") == 0)
+            if (api == "indonesian")
                 return "id";
-            if (strcmp(apiLanguageCode, "italian") == 0)
+            if (api == "italian")
                 return "it";
             break;
         case 'j':
-            if (strcmp(apiLanguageCode, "japanese") == 0)
+            if (api == "japanese")
                 return "ja";
             break;
         case 'k':
-            if (strcmp(apiLanguageCode, "koreana") == 0)
+            if (api == "koreana")
                 return "ko";
             break;
         case 'n':
-            if (strcmp(apiLanguageCode, "norwegian") == 0)
+            if (api == "norwegian")
                 return "no";
             break;
         case 'p':
-            if (strcmp(apiLanguageCode, "polish") == 0)
+            if (api == "polish")
                 return "pl";
-            if (strcmp(apiLanguageCode, "portuguese") == 0)
+            if (api == "portuguese")
                 return "pt";
             break;
         case 'r':
-            if (strcmp(apiLanguageCode, "romanian") == 0)
+            if (api == "romanian")
                 return "ro";
-            if (strcmp(apiLanguageCode, "russian") == 0)
+            if (api == "russian")
                 return "ru";
             break;
         case 's':
-            if (strcmp(apiLanguageCode, "schinese") == 0)
+            if (api == "schinese")
                 return "zh";
-            if (strcmp(apiLanguageCode, "spanish") == 0)
+            if (api == "spanish")
                 return "es";
-            if (strcmp(apiLanguageCode, "swedish") == 0)
+            if (api == "swedish")
                 return "sv";
             break;
         case 't':
-            if (strcmp(apiLanguageCode, "tchinese") == 0)
+            if (api == "tchinese")
                 return "zh";
-            if (strcmp(apiLanguageCode, "thai") == 0)
+            if (api == "thai")
                 return "th";
-            if (strcmp(apiLanguageCode, "turkish") == 0)
+            if (api == "turkish")
                 return "tr";
             break;
         case 'u':
-            if (strcmp(apiLanguageCode, "ukrainian") == 0)
+            if (api == "ukrainian")
                 return "uk";
             break;
         case 'v':
-            if (strcmp(apiLanguageCode, "vietnamese") == 0)
+            if (api == "vietnamese")
                 return "vi";
             break;
         case 'l':
-            if (strcmp(apiLanguageCode, "latam") == 0)
+            if (api == "latam")
                 return "es";
             break;
         default:
@@ -204,6 +204,17 @@ namespace magique
         const auto lang = SteamApps()->GetCurrentGameLanguage();
         const auto res = ClientAPIToISO(lang);
         return LocalizationParseLanguage(res);
+    }
+
+    std::vector<Language> SteamGetGameLanguages()
+    {
+        std::vector<Language> res;
+        auto langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');
+        for (const auto& lang : langs)
+        {
+            res.push_back( LocalizationParseLanguage(ClientAPIToISO(lang)));
+        }
+        return res;
     }
 
     void SteamMarkGameFilesCorrupt(bool missingFilesOnly) { SteamApps()->MarkContentCorrupt(missingFilesOnly); }
@@ -270,12 +281,7 @@ namespace magique
 
     void SteamSetStat(std::string_view name, std::variant<int32_t, float> value)
     {
-        std::visit(
-            [&](auto&& data)
-            {
-                SteamUserStats()->SetStat(name.data(), data);
-            },
-            value);
+        std::visit([&](auto&& data) { SteamUserStats()->SetStat(name.data(), data); }, value);
     }
 
     void SteamStoreStats() { SteamUserStats()->StoreStats(); }
@@ -287,6 +293,8 @@ namespace magique
         SteamUser()->GetUserDataFolder(TEMP, 512);
         return TEMP;
     }
+
+    uint32_t SteamGetServerTime() { return SteamUtils()->GetServerRealTime(); }
 
 } // namespace magique
 #endif

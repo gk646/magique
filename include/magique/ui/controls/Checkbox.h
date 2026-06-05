@@ -2,8 +2,8 @@
 #define MAGEQUEST_SWITCHBUTTON_H
 
 #include <string>
-#include <magique/ui/UIObject.h>
 #include <functional>
+#include <magique/ui/UIObject.h>
 
 //===============================================
 // Checkbox
@@ -14,28 +14,28 @@
 
 namespace magique
 {
-
     // Called with the new state after a change
     using ButtonChangeFunc = std::function<void(bool state)>;
 
-    struct CheckBox : UIObject
+    struct CheckBox : LabelledObject
     {
-        CheckBox(Rect bounds, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mode = ScalingMode::FULL);
+        CheckBox(Rect bounds, std::string_view label = "", Direction labelDir = Direction::LEFT,
+                 Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         // Sets the function called when the state changes
         void setOnChange(const ButtonChangeFunc& func);
 
         // Returns the current state of the checkbox
         bool getState() const;
-        void setState(bool state);
+        void setState(bool state, bool triggerCallback = false);
 
-        const std::string& getInfoText() const;
-        void setInfoText(const std::string& text, Direction dir = Direction::RIGHT);
-
-        Direction getInfoDirection() const;
 
     protected:
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
+        void onDraw(const Rect& bounds) override
+        {
+            LabelledObject::onDraw(bounds);
+            drawDefault(bounds);
+        }
 
         void onUpdate(const Rect& bounds, bool wasDrawn) override
         {
@@ -50,8 +50,6 @@ namespace magique
 
     private:
         ButtonChangeFunc func;
-        std::string infoText;
-        Direction infoDir = Direction::RIGHT;
         bool state = false;
     };
 

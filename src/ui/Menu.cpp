@@ -21,6 +21,16 @@ namespace magique
 
     bool Menu::removeSubMenu(std::string_view name) { return removeChild(name); }
 
+    Menu* Menu::getSubMenu(std::string_view name) const
+    {
+        for (auto& [child, ptr] : getChildren())
+        {
+            if (child == name)
+                return (Menu*)ptr;
+        }
+        return nullptr;
+    }
+
     bool Menu::activateSubmenu(std::string_view name)
     {
         auto* child = static_cast<Menu*>(getChild(name));

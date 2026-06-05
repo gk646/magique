@@ -102,7 +102,7 @@ namespace magique
 
     bool StringIsSimilar(std::string_view original, std::string_view search, float tolerance)
     {
-        if (original.empty())
+        if (search.empty())
         {
             return true;
         }
@@ -200,7 +200,7 @@ namespace magique
     std::vector<std::string> StringSplit(std::string_view s, char delim)
     {
         std::vector<std::string> result;
-        result.reserve(32);
+        result.reserve(16);
         size_t start = 0;
         size_t end = 0;
         while ((end = s.find(delim, start)) != std::string_view::npos)

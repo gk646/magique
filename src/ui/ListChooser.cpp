@@ -1,5 +1,6 @@
 #include <cstring>
 #include <raylib/raylib.h>
+#include <algorithm>
 
 #include <magique/ui/controls/ListChooser.h>
 #include <magique/util/RayUtils.h>
@@ -7,6 +8,7 @@
 #include <magique/ui/UI.h>
 
 #include "internal/globals/EngineConfig.h"
+
 
 namespace magique
 {
@@ -43,6 +45,11 @@ namespace magique
     }
 
     bool ListChooser::empty() const { return entries.empty(); }
+
+    bool ListChooser::contains(std::string_view item) const
+    {
+        return std::ranges::any_of(entries, [&](const auto& entry) { return entry.text == item; });
+    }
 
     ListChooser& ListChooser::add(std::string_view item, int index)
     {

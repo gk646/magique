@@ -1,5 +1,5 @@
-#ifndef STARFIGHTER_RAUDIO_COMPAT_H
-#define STARFIGHTER_RAUDIO_COMPAT_H
+#ifndef MAGIQUE_RAUDIO_COMPAT_H
+#define MAGIQUE_RAUDIO_COMPAT_H
 
 #include "raylib/raylib.h"
 
@@ -10,4 +10,4 @@ extern "C"
 
 
 
-#endif // STARFIGHTER_RAUDIO_COMPAT_H
+#endif // MAGIQUE_RAUDIO_COMPAT_H

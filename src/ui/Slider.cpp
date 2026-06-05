@@ -11,32 +11,36 @@
 
 namespace magique
 {
-    Slider::Slider(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) : UIObject(bounds, anchor, inset, mode) {}
+    Slider::Slider(Rect bounds, std::string_view label, Direction labelDir, Anchor anchor, Point inset,
+                   ScalingMode scaling) : LabelledObject(bounds, label, labelDir, anchor, inset, scaling)
 
-    void Slider::setScaleBalanced(const float min, const float max)
+    {
+    }
+
+    void Slider::setScaleLinear(const float min, const float max)
     {
         this->min = min;
         this->max = max;
         this->mid = min + (max - min) / 2;
-        mode = SliderMode::BALANCED;
+        mode = SliderMode::Linear;
     }
 
-    void Slider::setScaleImblanced(const float min, const float mid, const float max)
+    void Slider::setScaleZones(const float min, const float mid, const float max)
     {
         this->min = min;
         this->mid = mid;
         this->max = max;
-        mode = SliderMode::IMBALANCED;
+        mode = SliderMode::TwoZones;
     }
 
     float Slider::getSliderValue() const
     {
-        if (mode == SliderMode::BALANCED)
+        if (mode == SliderMode::Linear)
         {
             return std::lerp(min, max, sliderPos);
         }
 
-        if (mode == SliderMode::IMBALANCED)
+        if (mode == SliderMode::TwoZones)
         {
             if (sliderPos < 0.5)
             {
@@ -51,7 +55,12 @@ namespace magique
 
     float Slider::getSliderPercent() const { return sliderPos; }
 
-    void Slider::setSliderPercent(const float value) { sliderPos = value; }
+    void Slider::setSliderPercent(const float value, bool callback)
+    {
+        sliderPos = value;
+        if (callback && func)
+            func(getSliderValue(), sliderPos);
+    }
 
     void Slider::setOnChange(const SliderChangeFunc& newFunc) { func = newFunc; }
 
@@ -78,11 +87,7 @@ namespace magique
                 isDragged = true;
                 dragStartVal = sliderPos;
             }
-
-
-
         }
-
 
         if (isDragged && LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {

@@ -598,17 +598,17 @@ namespace magique
 
     Rotation& Rotation::operator+=(const Rotation& other)
     {
-        *this = Rotation{rotation + other.rotation};
+        *this = {this->rotation + other.rotation};
         return *this;
     }
 
     Rotation& Rotation::operator-=(const Rotation& other)
     {
-        *this = Rotation{rotation - other.rotation};
+        *this = {this->rotation - other.rotation};
         return *this;
     }
 
-    float Rotation::diff(Rotation other) const
+    float Rotation::dist(Rotation other) const
     {
         const float diff = std::abs(rotation - other.rotation);
         if (diff > 180.0F)
@@ -621,7 +621,7 @@ namespace magique
         }
     }
 
-    float Rotation::distance(Rotation other) const
+    float Rotation::diff(Rotation other) const
     {
         const float dist = other.rotation - rotation;
         if (dist < -180.0F)
@@ -635,9 +635,9 @@ namespace magique
         return dist;
     }
 
-    void Rotation::modulate(Rotation target, float max)
+    void Rotation::rotateTowards(Rotation target, float max)
     {
-        const auto dist = distance(target);
+        const auto dist = diff(target);
         if (dist > 0.0F)
         {
             *this += std::min(dist, max);
