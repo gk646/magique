@@ -197,6 +197,23 @@ namespace magique
         HashMap<AnimationLayer, TextureC> textures;
     };
 
+
+    // Used to signal a light source
+    // Used for built-in lighting but also viable for your custom lighting
+    struct LightingC final
+    {
+        float radius = 50.0F;
+        Color color = RED;
+        float intensity = 1.0f; // Multiplier of the color value
+        float randRangePosition = 0.0F; // The range of how much the position can be change by a random value
+    };
+
+    // Used to signal a solid entity where light cant pass through - uses the collision shape
+    // Used for built-in lighting but also viable for your custom lighting
+    struct OccluderC final
+    {
+    };
+
 } // namespace magique
 
 #endif // MAGIQUE_COMPONENTS_H

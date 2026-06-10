@@ -100,6 +100,23 @@ namespace magique
         bool reverseDraw = false;
     };
 
+    struct HorizontalContainer : UIContainer
+    {
+        // Sets/gets the vertical alignment of the children - only determines if UP | MID | BOTTOM
+        void setHorizontalAlign(Anchor align = Anchor::MID_CENTER);
+        Anchor getHorizontalAlign() const;
+
+        float getGap() const;
+        void setGap(float gap = 3.0F);
+
+    protected:
+        void onDraw(const Rect& bounds) override;
+
+    private:
+        Anchor anchor = Anchor::MID_CENTER;
+        float gap = 3.0F;
+    };
+
 
 } // namespace magique
 

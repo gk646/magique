@@ -1,7 +1,8 @@
+#include <cmath>
+
 #include <magique/gamedev/TextDrawer.h>
 #include <magique/util/Strings.h>
 #include <magique/core/Draw.h>
-#include <raylib/config.h>
 
 namespace magique
 {
@@ -15,7 +16,7 @@ namespace magique
     TextDrawer& TextDrawer::left(const std::string_view& txt, const Color tint)
     {
         const auto width = textWidth(txt);
-        const auto pos = bounds.pos() + cursor + modOfffset;
+        const auto pos = getCursor();
         drawText(pos, txt, tint);
         cursor.x += width + gapp.x;
         return *this;
@@ -74,13 +75,13 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::icon(const TextureRegion& img, bool centeredOnText, bool moveCursor)
+    TextDrawer& TextDrawer::img(const TextureRegion& img, bool centeredOnCursor, bool moveCursor)
     {
-        auto pos = bounds.pos() + cursor + modOfffset;
+        auto pos = getCursor();
         auto size = img.getSize() * modSizeMult;
-        if (centeredOnText)
+        if (centeredOnCursor)
         {
-            pos.y -= size.y / 2 - font.baseSize / 2;
+            pos.y -= (size.y - font.baseSize) / 2.0F;
         }
         pos.floor();
         if (img.isValid())
@@ -91,15 +92,15 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::iconRight(const TextureRegion& img, bool centeredOnText, bool moveCursor)
+    TextDrawer& TextDrawer::imgRight(const TextureRegion& img, bool centeredOnCursor, bool moveCursor)
     {
         const auto width = img.getSize().x;
         const auto lineEnd = bounds.x + bounds.width - offf.x;
         auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
         const auto size = img.getSize() * modSizeMult;
-        if (centeredOnText)
+        if (centeredOnCursor)
         {
-            pos.y -= img.height / 2 - font.baseSize / 2;
+            pos.y -= (img.height - font.baseSize) / 2.0F;
         }
         pos.floor();
         if (img.isValid())
@@ -191,7 +192,8 @@ namespace magique
 
     float TextDrawer::textWidth(const std::string_view& txt) const
     {
-        return MeasureTextEx(font, txt.data(), (float)font.baseSize * (float)modSizeMult, (float)modSizeMult).x;
+        return std::floor(
+            MeasureTextEx(font, txt.data(), (float)font.baseSize * (float)modSizeMult, (float)modSizeMult).x);
     }
 
     int TextDrawer::withNewLines(char* str) const

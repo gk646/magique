@@ -56,7 +56,7 @@ namespace magique
         Point operator-() const;
 
         // With numbers
-        [[nodiscard]] Point operator*(float i) const;
+        Point operator*(float i) const;
         bool operator<(float num) const;  // For both
         bool operator<=(float num) const; // For both
         bool operator==(float num) const; // For both
@@ -317,7 +317,7 @@ namespace magique
         explicit SpriteSheet(TextureRegion region);
 
         bool isValid() const;
-        [[nodiscard]] TextureRegion getRegion(int frame) const;
+        TextureRegion getRegion(int frame) const;
 
         int getFrameCount() const;
         bool isBlank() const;
@@ -362,17 +362,17 @@ namespace magique
         // Returns the value of the property
         // IMPORTANT: program will crash when you call the wrong type getter
         //            -> e.g. check if it's an integer first before calling getInt()
-        [[nodiscard]] bool getBool() const;
-        [[nodiscard]] int getInt() const;
-        [[nodiscard]] float getFloat() const;
-        [[nodiscard]] const char* getString() const;
-        [[nodiscard]] Color getColor() const;
+        bool getBool() const;
+        int getInt() const;
+        float getFloat() const;
+        const char* getString() const;
+        Color getColor() const;
 
         // the type of the property
-        [[nodiscard]] TileObjectPropertyType getType() const;
+        TileObjectPropertyType getType() const;
 
         // the name of the property
-        [[nodiscard]] const char* getName() const;
+        const char* getName() const;
 
     private:
         TileObjectPropertyType type = TileObjectPropertyType::INT;
@@ -516,13 +516,13 @@ namespace magique
         // Note: If you used the wrong getter (for the type) returns INT32_MAX with a warning
 
         // Returns the collider class ONLY IF the type is TILEMAP_OBJECT
-        [[nodiscard]] int getColliderClass() const;
+        int getColliderClass() const;
 
         // Returns the group number ONLY IF the type is MANUAL_COLLIDER
-        [[nodiscard]] int getManualGroup() const;
+        int getManualGroup() const;
 
         // Returns the tile class ONLY IF the type is
-        [[nodiscard]] TileClass getTileClass() const;
+        TileClass getTileClass() const;
 
         const ColliderType type; // The type of the collider
 
@@ -544,9 +544,9 @@ namespace magique
         float penDepth = 0;     // The amount by which the shapes overlap - minimal distance to move along the normal
 
         // Returns true
-        [[nodiscard]] bool isColliding() const;
+        bool isColliding() const;
 
-        [[nodiscard]] bool getIsAccumulated() const;
+        bool getIsAccumulated() const;
 
     private:
         bool isAccumulated = false; // True if this info should be accumulated for this entity
@@ -804,20 +804,19 @@ namespace magique
         ON_LOBBY_INVITE,
     };
 
-    enum class SteamFilterComparison : uint8_t
+    enum class SteamComparisonFilter : uint8_t
     {
         Equal = 0,
         NotEqual = 3
     };
 
-    enum class SteamFilterDistance : uint8_t
+    enum class SteamDistanceFilter : uint8_t
     {
         Close,     // Only lobbies in immediate region
         Default,   // Only lobbies in the same or nearby region
         Far,       // Lobbies half around the globe (up to 200ms latency!)
         Worldwide, // Lobbies all around the world
     };
-
 
     //================= UI =================//
 
@@ -887,6 +886,10 @@ namespace magique
         Right,
         Up,
         Down,
+
+        // Called when switch buttons are pressed (Q or E, BackButton left/right (Xbox))
+        SwitchLeft,
+        SwitchRight,
     };
 
     struct GamepadMappingState
@@ -909,6 +912,9 @@ namespace magique
         bool isDown() const;
         bool isUp() const;
         bool isDirection() const;
+        bool isLeftSwitch() const;
+        bool isRightSwitch() const;
+        bool isSwitch() const;
     };
 
     //================= HELPER TYPES =================//
@@ -936,22 +942,25 @@ namespace magique
         // Gamepad only used for gamepad bindings
         // Uses direct input polling (e.g. IsKeyDown())
         // Modifiers are checked to be down in both isPressed and isDown
-        [[nodiscard]] bool isPressed(int gamepad = 0) const;
-        [[nodiscard]] bool isDown(int gamepad = 0) const;
+        bool isPressed(int gamepad = 0) const;
+        bool isDown(int gamepad = 0) const;
         // Returns true if the base key OR any modifiers are released
-        [[nodiscard]] bool isReleased(int gamepad = 0) const;
+        bool isReleased(int gamepad = 0) const;
+
+        bool hasShift() const;
+        bool hasCtrl() const;
+        bool hasAlt() const;
+        bool isLayered() const;
 
         // Returns the base key code
-        [[nodiscard]] int getKey() const;
-        [[nodiscard]] bool hasShift() const;
-        [[nodiscard]] bool hasCtrl() const;
-        [[nodiscard]] bool hasAlt() const;
-        [[nodiscard]] bool isLayered() const;
-
         KeyBindType getType() const;
 
+        KeyboardKey getKey() const;
+        MouseButton getMouse() const;
+        GamepadButton getController() const;
+
     private:
-        int16_t key = 0;
+        int16_t bind = 0;
         KeyBindType type;
         bool layered = true;
         bool shift = false;
@@ -989,10 +998,10 @@ namespace magique
         virtual void execute(T& res) = 0;
 
         // Returns true if the task has been loaded
-        [[nodiscard]] bool getIsLoaded() const;
+        bool getIsLoaded() const;
 
         // Returns the subjective arbitrary impact measurement - set by the user
-        [[nodiscard]] int getImpact() const;
+        int getImpact() const;
 
     private:
         bool isLoaded = false;
@@ -1010,7 +1019,7 @@ namespace magique
         ~DataPointer() noexcept { free(); }
 
         // Returns size in bytes
-        [[nodiscard]] int getSize() const { return size; }
+        int getSize() const { return size; }
 
         // Returns the underlying data pointer
         T* getData() const { return pointer; }

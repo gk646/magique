@@ -34,6 +34,7 @@
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/LoggingData.h"
+#include "magique/core/Lighting.h"
 
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
@@ -96,7 +97,9 @@ namespace magique
 #endif
         global::ENGINE_DATA.init();
         global::CONSOLE_DATA.init(); // Create default commands
-        internal::InitJobSystem();
+        internal::JobInit();
+        internal::LightingInit();
+
         VignetteShader::Init();
         OutlineShader::Init();
 

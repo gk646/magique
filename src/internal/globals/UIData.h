@@ -57,34 +57,44 @@ namespace magique
             }
 
             if (LayeredInput::IsKeyPressed(KEY_ENTER) ||
-                LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+                LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Submit);
             }
             else if (LayeredInput::IsKeyPressed(KEY_ESCAPE) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Back);
             }
             else if (LayeredInput::IsKeyPressed(KEY_DOWN) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Down);
             }
             else if (LayeredInput::IsKeyPressed(KEY_UP) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_UP))
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Up);
             }
             else if (LayeredInput::IsKeyPressed(KEY_LEFT) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Left);
             }
             else if (LayeredInput::IsKeyPressed(KEY_RIGHT) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GamepadButton::GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
             {
                 gamepadMapping->triggerEvent(GamepadMappingEvent::Right);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_Q) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::SwitchLeft);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_E) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
+            {
+                gamepadMapping->triggerEvent(GamepadMappingEvent::SwitchRight);
             }
             else
             {
@@ -184,7 +194,6 @@ namespace magique
             }
             else
             {
-
                 bool anyButton = std::memcmp(GetCurrentGamepadState(), GetPreviousGamepadState(),
                                              MAX_GAMEPADS * MAX_GAMEPAD_BUTTONS) != 0;
                 bool anyAxis = GetGamePadLeftStick(0, 0.3) != 0 || GetGamePadRightStick(0, 0.3) != 0;

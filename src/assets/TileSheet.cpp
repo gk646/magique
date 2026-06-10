@@ -18,13 +18,13 @@ namespace magique
         Rect src{Point{}, static_cast<float>(textureSize)};
         Rect dst{Point{}, Point{src.size() * scale}.floor()};
 
-        if (scaledDims.x >= MAGIQUE_TEXTURE_ATLAS_SIZE || scaledDims.y >= MAGIQUE_TEXTURE_ATLAS_SIZE)
+        if (scaledDims.x >= MAGIQUE_MAX_TEXTURE_SIZE || scaledDims.y >= MAGIQUE_MAX_TEXTURE_SIZE)
         {
             LOG_ERROR("Cannot load image as TileSheet: Too big!");
             return;
         }
 
-        Image texImage = GenImageColor(MAGIQUE_TEXTURE_ATLAS_SIZE, MAGIQUE_TEXTURE_ATLAS_SIZE, BLANK);
+        Image texImage = GenImageColor(MAGIQUE_MAX_TEXTURE_SIZE, MAGIQUE_MAX_TEXTURE_SIZE, BLANK);
 
         texPerRow = static_cast<uint16_t>(texImage.width / static_cast<int>(dst.width));
         texSize = static_cast<int16_t>(dst.width);
@@ -67,8 +67,8 @@ namespace magique
     {
         if (tileNum == 0) [[unlikely]]
         {
-            return {static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
-                    static_cast<int16_t>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize), texSize, texSize, textureID};
+            return {static_cast<int16_t>(MAGIQUE_MAX_TEXTURE_SIZE - texSize),
+                    static_cast<int16_t>(MAGIQUE_MAX_TEXTURE_SIZE - texSize), texSize, texSize, textureID};
         }
 
         const int row = (tileNum - 1) / texPerRow;
@@ -80,8 +80,8 @@ namespace magique
     {
         if (tileNum == 0) [[unlikely]]
         {
-            return {static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize),
-                    static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE - texSize)};
+            return {static_cast<float>(MAGIQUE_MAX_TEXTURE_SIZE - texSize),
+                    static_cast<float>(MAGIQUE_MAX_TEXTURE_SIZE - texSize)};
         }
         const int row = (tileNum - 1) / texPerRow;
         const int colum = tileNum - 1 - row * texPerRow;

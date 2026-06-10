@@ -11,6 +11,15 @@ namespace magique
     TabSwitcher::TabSwitcher(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
         UIContainer(bounds, anchor, inset, mode)
     {
+        setGamepadMapping(new GamepadMapping(*this,
+                                             [&](GamepadMappingState& state)
+                                             {
+                                                 if (state.isLeftSwitch())
+                                                     switchLeft();
+                                                 else if (state.isRightSwitch())
+                                                     switchRight();
+                                                 return Point{-1};
+                                             }));
     }
 
     void TabSwitcher::setAlignOffset(Point offset) { alignOffset = offset; }

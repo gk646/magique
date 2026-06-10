@@ -112,7 +112,7 @@ namespace magique
 
         // Returns the UIObject cast to the given type
         template <typename T>
-        T* getAs();
+        T& getAs();
 
         // Gets the bounds the object was initialized with
         // Note: Will always be the absolute coordinates it was created with
@@ -125,7 +125,7 @@ namespace magique
         bool getIsMenu() const;
 
         // Sets/gets the gamepad mapping for this menu - should pass a new Instance of your implementing class
-        // Menu automatically tries to activate the mapping if set
+        // If a menu is activated tries to automatically set a mapping if present
         // Note: See UI.h for more Info
         void setGamepadMapping(GamepadMapping* map);
         GamepadMapping* getGamepadMapping() const;
@@ -146,7 +146,7 @@ namespace magique
     };
 
     // Object with optional text drawn NEXT to it
-    // Note: This is used for controls that are usually labeled: Dropdown, Checkbox, ...
+    // Note: This is used for controls that are usually labeled: ListChooser, Dropdown, Checkbox, Slider, ...
     struct LabelledObject : UIObject
     {
         LabelledObject(Rect size, std::string_view text, Direction direction = Direction::LEFT,
@@ -185,9 +185,9 @@ namespace magique
 namespace magique
 {
     template <typename T>
-    T* UIObject::getAs()
+    T& UIObject::getAs()
     {
-        return static_cast<T*>(this);
+        return *static_cast<T*>(this);
     }
 } // namespace magique
 

@@ -13,8 +13,8 @@ namespace magique
     {
         bool initialized = false;
         uint16_t id = 0;                         // Texture id
-        int width = MAGIQUE_TEXTURE_ATLAS_SIZE;  // Total width
-        int height = MAGIQUE_TEXTURE_ATLAS_SIZE; // Total height
+        int width = MAGIQUE_MAX_TEXTURE_SIZE;  // Total width
+        int height = MAGIQUE_MAX_TEXTURE_SIZE; // Total height
         int posX = 0;                            // Current offset from the top left
         int posY = 0;                            // Current offset from the top let
         int currentStepHeight = 0;               // Highest height of a texture in current row

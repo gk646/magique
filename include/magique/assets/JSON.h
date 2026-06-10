@@ -91,7 +91,7 @@ namespace glz
     struct meta<magique::Keybind>
     {
         using T = magique::Keybind;
-        static constexpr auto value = object(&T::key, &T::type, &T::layered, &T::shift, &T::ctrl, &T::alt);
+        static constexpr auto value = object(&T::bind, &T::type, &T::layered, &T::shift, &T::ctrl, &T::alt);
     };
 
     template <>

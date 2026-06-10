@@ -231,7 +231,7 @@ namespace magique
         if (event == GamepadMappingEvent::Submit && pos == -1)
             UIEmitMousePress();
         if (event == GamepadMappingEvent::Back && getObject().getIsMenu())
-            getObject().getAs<Menu>()->activateParent();
+            getObject().getAs<Menu>().activateParent();
         setMouse(pos);
     }
 

@@ -187,7 +187,7 @@ namespace magique
             if (!dynamic.mapEntityGrids.contains(currentMap))
                 return;
             const auto& grid = dynamic.mapEntityGrids[currentMap];
-            const auto bounds = CameraGetBounds();
+            const auto bounds = CameraGetNativeBounds();
             constexpr int cellSize = MAGIQUE_COLLISION_CELL_SIZE;
             const float fontSize = config.font.baseSize;
             const float textOff = MAGIQUE_COLLISION_CELL_SIZE / 2.0F - fontSize / 2.0F;
@@ -225,7 +225,7 @@ namespace magique
             constexpr int MARKER_GAP = 250; // Pixels between each marker
             constexpr int MARKER_SIZE = 30; // Pixels between each marker
 
-            const auto bounds = CameraGetBounds();
+            const auto bounds = CameraGetNativeBounds();
             const int startX = static_cast<int>(bounds.x) / MARKER_GAP;
             const int startY = static_cast<int>(bounds.y) / MARKER_GAP;
             const int width = static_cast<int>(bounds.width) / MARKER_GAP;
@@ -253,7 +253,7 @@ namespace magique
             const auto& staticGrid = path.mapsStaticGrids[currentMap];
             const auto& dynamicGrid = path.mapsDynamicGrids[currentMap];
 
-            const auto bounds = CameraGetBounds();
+            const auto bounds = CameraGetNativeBounds();
             constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
             const int startX = static_cast<int>(bounds.x) / cellSize;
             const int startY = static_cast<int>(bounds.y) / cellSize;

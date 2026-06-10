@@ -15,8 +15,8 @@ struct LocalizationDemo final : Game
     {
         const auto loadLocalization = [](AssetContainer& assets)
         {
-            LoadLocalization(assets.getAsset("english.mtf"));
-            LoadLocalization(assets.getAsset("german.mtf"));
+            LoadLocalization(assets["english.mtf"]);
+            LoadLocalization(assets["german.mtf"]);
         };
         loader.registerTask(loadLocalization, MAIN_THREAD);
         SetLocalizationLanguage("EN");

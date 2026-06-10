@@ -56,7 +56,7 @@ struct Demo final : Game
         auto loadTextureFiles = [](AssetContainer& assets)
         {
             // Get an asset by name
-            Asset textureAsset = assets.getAsset("MyPicture.png");
+            Asset textureAsset = assets["MyPicture.png"];
             if (textureAsset.isValid() == false)
             {
                 LOG_ERROR("Internal magique loading error - please report to https://github.com/gk646/magique/issues");

@@ -83,7 +83,7 @@ namespace magique
         scd.isHibernate = true;
     }
 
-    bool internal::InitJobSystem()
+    bool internal::JobInit()
     {
         static bool initCalled = false;
         if (initCalled)

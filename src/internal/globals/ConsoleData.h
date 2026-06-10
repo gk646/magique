@@ -304,7 +304,7 @@ namespace magique
             };
             std::ranges::sort(suggestions, pred);
 
-            auto chunks = StringSplit(line, ' ');
+            const auto chunks = StringSplit(line, ' ');
             parsedCommand = ParamParser::ParseCommand(chunks);
         }
 

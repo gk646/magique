@@ -40,10 +40,13 @@ namespace magique
         TextDrawer& right(Color tint, const char* fmt, ...);
 
         // Images - works with modSize()
-        TextDrawer& icon(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
+        TextDrawer& img(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true);
 
-        // Draws the icon using the right-mode and moves the cursor to the left
-        TextDrawer& iconRight(const TextureRegion& img, bool centeredOnText = true, bool moveCursor = true);
+        // Draws the image using the right-mode and moves the cursor to the left
+        TextDrawer& imgRight(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true);
+
+        // Must be implemented by the project manually
+        TextDrawer& keybind(Keybind keybind, bool centered = true);
 
         // ===== CURSOR ======//
 
@@ -67,7 +70,7 @@ namespace magique
         // Multiplies the fontsize by the given factor
         TextDrawer& modSize(int fsm);
 
-        // Applies a offset to the cursor
+        // Applies an offset to the cursor
         TextDrawer& modOffset(Point offset);
 
         // Highlights numbers in a different color
@@ -80,7 +83,7 @@ namespace magique
         TextDrawer& modCenterV();
 
         // Applies a background color to the text
-        TextDrawer& modBackground(Color background = ColorAlpha(BLACK , 0.25F));
+        TextDrawer& modBackground(Color background = ColorAlpha(BLACK, 0.25F));
 
         // ===== Helpers ======//
 

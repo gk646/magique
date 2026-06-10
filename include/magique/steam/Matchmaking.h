@@ -19,7 +19,6 @@
 
 namespace magique
 {
-
     // Returns true if the async call trying to create a lobby was successful
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
     bool SteamLobbyCreate(SteamLobbyType type, int maxPlayers = 4);
@@ -82,11 +81,11 @@ namespace magique
     {
         // Filters lobbies where the lobby value at the given key doesn't match with the given value and comparator
         SteamSearchFilter& string(std::string_view key, std::string_view value,
-                                  SteamFilterComparison comp = SteamFilterComparison::Equal);
+                                  SteamComparisonFilter comp = SteamComparisonFilter::Equal);
 
         // Filters lobbies where the lobby value at the given key doesn't match with the given value and comparator
         SteamSearchFilter& number(std::string_view key, int value,
-                                  SteamFilterComparison comp = SteamFilterComparison::Equal);
+                                  SteamComparisonFilter comp = SteamComparisonFilter::Equal);
     };
 
     // Start a search with the currently applied filters - returns up to 50 lobbies

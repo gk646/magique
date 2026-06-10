@@ -44,6 +44,7 @@ Most notable features:
     - Explicitly _**optimized for compile time**_ internally and externally!
     - Takes advantage of _**multithreading, data-driven design and cache locality**_
 - **Large feature set with `pay for what you use` policy**
+    - Blazingly fast **2D raytracing** with soft shadows for any geometry using polar-tracing optimization 
     - Asset-Packing and Loading with **compression, encryption and checksum support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets

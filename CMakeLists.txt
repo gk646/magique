@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.26
+        VERSION 0.9.27
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 
@@ -37,7 +37,7 @@ set(MAGIQUE_MAX_ENTITIES_CELL 24 CACHE STRING "Maximum amount of entities allowe
 set(MAGIQUE_PATHFINDING_CELL_SIZE 16 CACHE STRING "Coarseness/size of the pathfinding grid")
 set(MAGIQUE_MAX_PATH_SEARCH_CAPACITY 1024 CACHE STRING "Maximum amount of tiles evaluated in a single search")
 set(MAGIQUE_CHECK_EXISTS_BEFORE_EVENT 1 CACHE BOOL "Check if entity exists before calling collision method")
-set(MAGIQUE_TEXTURE_ATLAS_SIZE 8192 CACHE STRING "Maximum width of any texture atlas")
+set(MAGIQUE_MAX_TEXTURE_SIZE 4096 CACHE STRING "Maximum size of any texture made by the engine")
 set(MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2 CACHE STRING "Maximum amount of custom tile properties for each tile object")
 set(MAGIQUE_TILE_SET_CUSTOM_PROPERTIES 4 CACHE STRING "Maximum amount of custom tile properties for each tile in a tileset")
 set(MAGIQUE_MAX_ANIM_FRAMES 16 CACHE STRING "Maximum amount of frames per single animation")

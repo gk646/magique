@@ -15,7 +15,7 @@
 #include "external/raylib-compat/rcore_compat.h"
 #include "magique/util/RayUtils.h"
 
-constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_MAX_TEXTURE_SIZE);
 
 namespace magique
 {
@@ -58,10 +58,10 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint)
+    void DrawRegionCentered(const TextureRegion& region, const Point& pos, bool flipX, Color tint)
     {
         const auto center = pos - region.getSize() / 2;
-        DrawRegion(region, center.floored(), false, tint);
+        DrawRegion(region, center.floored(), flipX, tint);
     }
 
     void DrawRegionPro(const TextureRegion& region, Rect dest, const float rot, const Point anchor, const Color tint)
@@ -173,7 +173,7 @@ namespace magique
         rlColor4ub(255, 255, 255, 255);
         rlNormal3f(0.0F, 0.0F, 0.0F);
 
-        constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_TEXTURE_ATLAS_SIZE);
+        constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_MAX_TEXTURE_SIZE);
 
         for (int i = 0; i < diffY; ++i)
         {
@@ -229,7 +229,7 @@ namespace magique
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, const float fs, const float spc, const Color c)
     {
         const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
-        DrawTextEx(f, txt.data(), {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fs, spc, c);
+        DrawTextEx(f, txt.data(), Point{pos.x - width / 2.0F, pos.y}.floored(), fs, spc, c);
     }
 
     void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, const float fs, const float spc,

@@ -19,13 +19,16 @@
 // Example:
 // The texture:       resources/textures/player.png
 // Compile Image:     assets::CompileImage("../resources");
-// While loading:     RegisterTexture(assets.getAsset("textures/player.png");
+// While loading:     RegisterTexture(assets["textures/player.png"];
 // ................................................................................
 
 namespace magique
 {
     struct AssetPack final
     {
+        // Equal to getAsset()
+        const Asset& operator[](std::string_view name) const;
+
         // Iterates the given directory recursively and calls 'func' for all entries with the current asset
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
@@ -43,7 +46,7 @@ namespace magique
         // This does NOT require the full name - any fully matching path will be returned
         // e.g. res/icons/currencies/human/gold.png will be found by: human/gold.png
         // Just make sure It's still unique!
-        const Asset& getAsset(const char* name) const;
+        const Asset& getAsset(std::string_view name) const;
 
         // Returns true if any asset contains the given name (substring)
         bool hasAsset(const char* name) const;

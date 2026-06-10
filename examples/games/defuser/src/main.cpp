@@ -212,10 +212,10 @@ struct Robo final : Game
         loader.registerTask(
             [](AssetContainer& assets)
             {
-                RegisterHandle(RegisterTileMap(assets.getAsset("city.tmx")), "tilemap");
-                RegisterHandle(RegisterTileSheet(assets.getAsset("topdown.png"), 8, 3), "tilesheet");
-                RegisterHandle(RegisterTileSet(assets.getAsset("topdown.tsx")), "tileset");
-                RegisterHandle(RegisterTexture(assets.getAsset("robot.png")), "robot");
+                RegisterHandle(RegisterTileMap(assets["city.tmx"]), "tilemap");
+                RegisterHandle(RegisterTileSheet(assets["topdown.png"], 8, 3), "tilesheet");
+                RegisterHandle(RegisterTileSet(assets["topdown.tsx"]), "tileset");
+                RegisterHandle(RegisterTexture(assets["robot.png"]), "robot");
             },
             THREAD_MAIN);
 

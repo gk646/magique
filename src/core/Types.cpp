@@ -1052,18 +1052,25 @@ namespace magique
     bool GamepadMappingState::isDown() const { return event == GamepadMappingEvent::Down; }
 
     bool GamepadMappingState::isUp() const { return event == GamepadMappingEvent::Up; }
+
     bool GamepadMappingState::isDirection() const { return isLeftOrRight() || isUpOrDown(); }
 
+    bool GamepadMappingState::isLeftSwitch() const { return event == GamepadMappingEvent::SwitchLeft; }
+
+    bool GamepadMappingState::isRightSwitch() const { return event == GamepadMappingEvent::SwitchRight; }
+
+    bool GamepadMappingState::isSwitch() const { return isLeftSwitch() || isRightSwitch(); }
+
     Keybind::Keybind(KeyboardKey key, bool layered, bool shift, bool ctrl, bool alt) :
-        key(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
+        bind(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
     }
     Keybind::Keybind(MouseButton mouse, bool layered, bool shift, bool ctrl, bool alt) :
-        key(mouse), type(Mouse), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
+        bind(mouse), type(Mouse), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
     }
 
-    Keybind::Keybind(GamepadButton key, bool layered) : key(key), type(Controller), layered(layered) {}
+    Keybind::Keybind(GamepadButton key, bool layered) : bind(key), type(Controller), layered(layered) {}
 
     bool Keybind::isPressed(int gamepad) const
     {
@@ -1071,13 +1078,13 @@ namespace magique
         switch (type)
         {
         case Mouse:
-            KEY_MACRO(keyPressed, IsMouseButtonPressed, key);
+            KEY_MACRO(keyPressed, IsMouseButtonPressed, bind);
             break;
         case Keyboard:
-            KEY_MACRO(keyPressed, IsKeyPressed, key);
+            KEY_MACRO(keyPressed, IsKeyPressed, bind);
             break;
         case Controller:
-            KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonPressed, key);
+            KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonPressed, bind);
             break;
         }
         return keyPressed && isModifierDown();
@@ -1089,13 +1096,13 @@ namespace magique
         switch (type)
         {
         case Mouse:
-            KEY_MACRO(keyPressed, IsMouseButtonDown, key);
+            KEY_MACRO(keyPressed, IsMouseButtonDown, bind);
             break;
         case Keyboard:
-            KEY_MACRO(keyPressed, IsKeyDown, key);
+            KEY_MACRO(keyPressed, IsKeyDown, bind);
             break;
         case Controller:
-            KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonDown, key);
+            KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonDown, bind);
             break;
         }
         return keyPressed && isModifierDown();
@@ -1103,17 +1110,17 @@ namespace magique
 
     bool Keybind::isReleased(int gamepad) const
     {
-        bool keyPressed = false;
+        bool released = false;
         switch (type)
         {
         case Mouse:
-            KEY_MACRO(keyPressed, IsMouseButtonReleased, key);
+            KEY_MACRO(released, IsMouseButtonReleased, bind);
             break;
         case Keyboard:
-            KEY_MACRO(keyPressed, IsKeyReleased, key);
+            KEY_MACRO(released, IsKeyReleased, bind);
             break;
         case Controller:
-            KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonReleased, key);
+            KEY_MACRO_GAMEPAD(released, IsGamepadButtonReleased, bind);
             break;
         }
 
@@ -1141,10 +1148,8 @@ namespace magique
             return value;
         };
 
-        return keyPressed && anyModifierReleased();
+        return released || anyModifierReleased();
     }
-
-    int Keybind::getKey() const { return key; }
 
     auto Keybind::hasShift() const -> bool { return shift; }
 
@@ -1155,6 +1160,12 @@ namespace magique
     bool Keybind::isLayered() const { return layered; }
 
     KeyBindType Keybind::getType() const { return type; }
+
+    KeyboardKey Keybind::getKey() const { return (KeyboardKey)bind; }
+
+    MouseButton Keybind::getMouse() const { return (MouseButton)bind; }
+
+    GamepadButton Keybind::getController() const { return (GamepadButton)bind; }
 
     bool Keybind::isModifierDown() const
     {

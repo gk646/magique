@@ -61,12 +61,12 @@ namespace magique
 
     float MeasurePixelText(const char* text, const Font& font, int mult)
     {
-        return MeasureTextEx(font, text, static_cast<float>(font.baseSize * mult), 1.0F).x;
+        return MeasureTextEx(font, text, static_cast<float>(font.baseSize * mult), mult).x;
     }
 
     float MeasurePixelTextUpTo(const char* text, int index, const Font& font, int mult)
     {
-        return MeasureTextUpTo(text, index, font, static_cast<float>(font.baseSize * mult), 1.0F);
+        return MeasureTextUpTo(text, index, font, static_cast<float>(font.baseSize * mult), mult);
     }
 
     float GetRoundness(const float radius, const Rectangle& bounds)
@@ -90,11 +90,19 @@ namespace magique
         return texture;
     }
 
-    void DrawRenderTexture(const RenderTexture& texture, const Rect& dest, Color tint)
+    void DrawRenderTexture(const RenderTexture& texture, Point pos, Point scale, Color tint)
     {
         DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height},
-                       {dest.x, dest.y, dest.width, dest.height}, {}, 0, tint);
+                       {pos.x, pos.y, (float)texture.texture.width * scale.x, (float)texture.texture.height * scale.y},
+                       {}, 0, tint);
     }
+
+    void DrawRenderTextureEx(const RenderTexture& texture, Rect dest, float rot,Color tint)
+    {
+        DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height}, dest, {},
+                       rot, tint);
+    }
+
 
     void DrawPixelOutline(const Rectangle& bounds, const Color& outline, const Color& border, const Color& filler,
                           float radius)
@@ -213,7 +221,7 @@ namespace magique
         SetMouseScale(1.0F / scale.x, 1.0F / scale.y);
         const auto drawPos = Rect::CenteredIn({canvas}, display).pos();
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
-        DrawRenderTexture(texture, {drawPos, canvas}, WHITE);
+        DrawRenderTexture(texture, drawPos, scale);
     }
 
     void DrawArrow(const Rect& bounds, Color tint)

@@ -127,14 +127,14 @@ namespace magique
     }
 
     SteamSearchFilter& SteamSearchFilter::string(std::string_view key, std::string_view value,
-                                                 SteamFilterComparison comp)
+                                                 SteamComparisonFilter comp)
     {
         SteamMatchmaking()->AddRequestLobbyListStringFilter(key.data(), value.data(),
                                                             static_cast<ELobbyComparison>(comp));
         return *this;
     }
 
-    SteamSearchFilter& SteamSearchFilter::number(std::string_view key, int value, SteamFilterComparison comp)
+    SteamSearchFilter& SteamSearchFilter::number(std::string_view key, int value, SteamComparisonFilter comp)
     {
         SteamMatchmaking()->AddRequestLobbyListNumericalFilter(key.data(), value, static_cast<ELobbyComparison>(comp));
         return *this;

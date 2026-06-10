@@ -51,7 +51,7 @@ void Asteroids::onStartup(AssetLoader& loader)
                          });
 
         // Add a playlist so it automatically loops
-        ASSETS.playlist = ImportPlaylist({assets.getAsset("Automatav2.mp3")});
+        ASSETS.playlist = ImportPlaylist({assets["Automatav2.mp3"]});
         PlaylistPlay(ASSETS.playlist, 0.6F); // Start playlist
     };
     loader.registerTask(loadSound, THREAD_ANY); // Add the task

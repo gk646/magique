@@ -23,7 +23,7 @@ namespace magique
     void DrawRegion(const TextureRegion& region, Point pos, bool flipX = false, Color tint = WHITE);
 
     // Draws the region horizontally centered on the given point
-    void DrawRegionCentered(const TextureRegion& region, const Point& pos, Color tint = WHITE);
+    void DrawRegionCentered(const TextureRegion& region, const Point& pos, bool flipX = false, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect
     // Note: Pass a negative width/height to mirror the texture horizontally/vertically
@@ -73,7 +73,7 @@ namespace magique
     // Note: This can be used BEFORE drawing the text to give it a background color, or AFTER to highlight things
     // Note: Passing -1 as to means until the end
     void DrawTextHighlight(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
-                               Color tint = ColorAlpha(BLUE, 0.4F), int from = 0, int to = -1);
+                           Color tint = ColorAlpha(BLUE, 0.4F), int from = 0, int to = -1);
 
     //================= SHAPES =================//
 

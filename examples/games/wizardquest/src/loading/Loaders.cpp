@@ -65,7 +65,7 @@ void EntityLoader::execute(AssetContainer& res)
 
 void TextureLoader::execute(AssetContainer& assets)
 {
-    auto handle = RegisterTileSheet(assets.getAsset("topdown.png"), 8, 3);
+    auto handle = RegisterTileSheet(assets["topdown.png"], 8, 3);
     RegisterHandle(handle, HandleID::TILESHEET);
 
     // Load player animations - from single image files

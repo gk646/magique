@@ -63,7 +63,7 @@ namespace magique
 
         for (auto& [name, ptr] : getChildren())
         {
-            ptr->getAs<Menu>()->activateNested(search);
+            ptr->getAs<Menu>().activateNested(search);
         }
     }
 
@@ -136,9 +136,9 @@ namespace magique
     {
         for (auto& [name, child] : getChildren())
         {
-            child->getAs<Menu>()->subMenu = nullptr;
-            child->getAs<Menu>()->isActive = false;
-            child->getAs<Menu>()->inactivateChildren();
+            child->getAs<Menu>().subMenu = nullptr;
+            child->getAs<Menu>().isActive = false;
+            child->getAs<Menu>().inactivateChildren();
         }
     }
 

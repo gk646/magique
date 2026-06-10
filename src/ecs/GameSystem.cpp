@@ -11,7 +11,7 @@ namespace magique
 {
     struct GameSystemData final
     {
-        bool benchmark = false;
+        bool benchmark = true;
 
         enum class Function
         {

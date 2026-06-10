@@ -117,6 +117,11 @@ namespace magique
 {
     static constexpr Asset emptyAsset{};
 
+    const Asset& AssetPack::operator[](std::string_view name) const
+    {
+        return getAsset(name);
+    }
+
     void AssetPack::forEachIn(const char* name, const std::function<void(Asset)>& func) const
     {
         MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
@@ -154,13 +159,12 @@ namespace magique
         return assets[pos];
     }
 
-    const Asset& AssetPack::getAsset(const char* name) const
+    const Asset& AssetPack::getAsset(std::string_view name) const
     {
-        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
         for (const auto& asset : assets)
         {
-            if (asset.contains(name))
+            if (asset.contains(name.data()))
             {
                 return asset;
             }

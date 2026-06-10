@@ -86,7 +86,7 @@ namespace magique
         images.push_back(firstImage);
 
         // Check if any single image would exceed atlas size
-        if (width > MAGIQUE_TEXTURE_ATLAS_SIZE)
+        if (width > MAGIQUE_MAX_TEXTURE_SIZE)
         {
             LOG_WARNING("SpriteSheet width would exceed texture atlas width! Skipping: %s", assets[0].getFileName(true));
             for (auto& img : images)

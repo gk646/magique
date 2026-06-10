@@ -109,7 +109,7 @@ namespace magique
     {
         // Initializes the job system
         // Note: Does not have to be called manually when using the game template
-        bool InitJobSystem();
+        bool JobInit();
 
         // Closes the job system
         // Note: Does not have to be called manually when using the game template
