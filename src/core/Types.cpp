@@ -478,7 +478,7 @@ namespace magique
         return FromSpanPoints(topLeft, bottomRight);
     }
 
-    Rect Rect::mirrorDiagonal(Point p) const
+    Rect Rect::mirrorDiagonal() const
     {
         const Point topLeft = pos();
         const Point botRight = bottomRight();

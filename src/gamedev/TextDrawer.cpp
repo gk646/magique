@@ -75,7 +75,7 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::img(const TextureRegion& img, bool centeredOnCursor, bool moveCursor)
+    TextDrawer& TextDrawer::img(const TextureRegion& img, bool centeredOnCursor, bool moveCursor, Color tint )
     {
         auto pos = getCursor();
         auto size = img.getSize() * modSizeMult;
@@ -85,14 +85,14 @@ namespace magique
         }
         pos.floor();
         if (img.isValid())
-            DrawRegionPro(img, {pos, size});
+            DrawRegionPro(img, {pos, size}, 0, {}, tint);
         if (moveCursor)
             cursor.x += size.x + gapp.x;
         resetMods();
         return *this;
     }
 
-    TextDrawer& TextDrawer::imgRight(const TextureRegion& img, bool centeredOnCursor, bool moveCursor)
+    TextDrawer& TextDrawer::imgRight(const TextureRegion& img, bool centeredOnCursor, bool moveCursor, Color tint)
     {
         const auto width = img.getSize().x;
         const auto lineEnd = bounds.x + bounds.width - offf.x;
@@ -104,7 +104,7 @@ namespace magique
         }
         pos.floor();
         if (img.isValid())
-            DrawRegionPro(img, {pos, size});
+            DrawRegionPro(img, {pos, size},0,{}, tint);
         if (moveCursor)
             cursorEndX += img.width + gapp.x;
         resetMods();

@@ -97,38 +97,6 @@ void WaitTime(const double destinationTime, double sleepSeconds)
     }
 }
 
-void SetupThreadPriority(const int thread, bool high)
-{
-#if defined(WIN32)
-    // printf("Setting up: %d\n", GetCurrentThreadId());
-    HANDLE hThread = GetCurrentThread();
-    SetThreadPriority(hThread, high ? THREAD_PRIORITY_HIGHEST : THREAD_PRIORITY_ABOVE_NORMAL);
-    DWORD_PTR affinityMask = static_cast<DWORD_PTR>(1) << thread;
-    auto res = SetThreadAffinityMask(hThread, affinityMask);
-    // printf("Affinity: %d\n",affinityMask);
-    if (res == 0)
-    {
-        LOG_ERROR("Failed to setup thread affinity for thread: %d", thread);
-    }
-#endif
-}
-
-void SetupProcessPriority()
-{
-#if defined(WIN32)
-    HANDLE hProcess = GetCurrentProcess();
-    SetPriorityClass(hProcess, HIGH_PRIORITY_CLASS);
-    return;
-    // Generally don't want to thread pin (at least not like this?)
-    // Performance is generally a bit less on average but no lags or hitches in high intensive workload
-    DWORD_PTR processAffinityMask = 0xF;
-    if (!SetProcessAffinityMask(hProcess, processAffinityMask))
-    {
-        LOG_ERROR("Failed to setup process priority");
-    }
-#endif
-}
-
 uint64_t GetMemoryWorkingSet()
 {
 #ifdef _WIN32

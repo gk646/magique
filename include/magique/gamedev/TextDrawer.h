@@ -40,10 +40,12 @@ namespace magique
         TextDrawer& right(Color tint, const char* fmt, ...);
 
         // Images - works with modSize()
-        TextDrawer& img(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true);
+        TextDrawer& img(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true,
+                        Color tint = WHITE);
 
         // Draws the image using the right-mode and moves the cursor to the left
-        TextDrawer& imgRight(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true);
+        TextDrawer& imgRight(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true,
+                             Color tint = WHITE);
 
         // Must be implemented by the project manually
         TextDrawer& keybind(Keybind keybind, bool centered = true);

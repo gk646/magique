@@ -26,12 +26,12 @@ namespace magique
             GameSystem* system = nullptr;
             EnumArray<Function, BenchmarkEntry> functions;
 
-            float getTotalMillis()
+            float getTotalMillis() const
             {
                 float total = 0;
-                for (auto& function : functions)
+                for (const auto& [key, entry] : functions)
                 {
-                    total += function.value.getAvgMillis();
+                    total += entry.getAvgMillis();
                 }
                 return total;
             }
@@ -85,7 +85,7 @@ namespace magique
         }
 
         auto copy = SYSTEM_DATA.systems;
-        std::ranges::sort(copy, [](auto& one, auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
+        std::ranges::sort(copy, []( auto& one,  auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
 
         LOG_INFO("Gamesystem Stats:");
         printf("\t%-25s || %10s | %10s | %10s \n", "System // Function (ms)", "DrawGame", "UpdateGame", "UpdateEnd");

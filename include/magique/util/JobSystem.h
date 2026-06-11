@@ -2,100 +2,45 @@
 #ifndef MAGIQUE_JOBSYSTEM_H
 #define MAGIQUE_JOBSYSTEM_H
 
+#include <functional>
+#include <span>
 #include <magique/fwd.hpp>
-#include <tuple>
 
 //===============================================
 // Job System
 //===============================================
 // .....................................................................
-// Note: This is for advanced module.
 // This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
 // Between ticks, it's in hibernation, sleeping until woken up again (if not used).
 // Allows to submit concurrent jobs to distribute compatible work across threads and await their completion.
 // Per default has MAGIQUE_WORKER_THREADS many worker threads.
-// Note: Don't forget to give the main thread work BEFORE waiting for the jobs to return!
+// Note: Don't forget to give the main thread work as well BEFORE waiting for the jobs to return!
 // .....................................................................
 
 namespace magique
 {
     // Handle to a job
-    enum class jobHandle : uint16_t
+    enum class JobID : uint16_t
     {
         null = UINT16_MAX, // The null handle
     };
 
-    //================= JOBS =================//
-
-    // Creates a new job from a lambda or function
-    // Note: Only use the returned job pointer to submit jobs
+    // Adds a new job from the given callable or function
+    // Called at least after the given delay passed (seconds)
+    // Note: A callable can be any lambda or std::function() e.g. [captures](arguments){ return myVar + 3;}, ...
     template <typename Callable>
-    IJob* JobCreate(Callable callable);
+    JobID JobAdd(Callable callable, float delay = 0.0F);
 
-    // Creates a new job with explicitly given arguments
-    // Note: Only use the returned job pointer to submit jobs
+    // Allows to specify explicit arguments
     template <typename Callable, typename... Args>
-    IJob* JobCreateEx(Callable callable, Args... args);
+    JobID JobAddEx(Callable callable, Args... args);
 
-    //================= ADDING =================//
-    // Note: Takes ownership of all passed pointers (should not be accessed after)
+    // Waits till the specified jobs are completed
+    void JobAwait(JobID id);
+    void JobAwait(std::span<const JobID> handles);
 
-    // Adds a new job to the global queue
-    jobHandle JobAdd(IJob* job);
-
-    //================= WAITING =================//
-
-    // Waits till the specified job is completed if it exists
-    void JobAwait(jobHandle handle);
-
-    // Awaits the completion of all given handles if they exist
-    // Allows for std::vector<>, std::array<>, and std::initializer_list<>
-    template <typename Iterable>
-    void JobAwaits(const Iterable& handles);
-
-    // Awaits the completion of all current tasks
+    // Waits until all jobs are done (e.g. none exists) - might never be true if new ones are added
     void JobAwaitAll();
-
-    //================= LIFECYCLE =================//
-    // Note: Called automatically when using the game template - ONLY call if your not using the game template!
-
-    // Brings all workers back to speed (out of hibernate)
-    void JobsWakeUp();
-
-    // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
-    void JobsSleep(double target, double sleepTime);
-
-    //================= JOBS =================//
-
-    // Job base class - allows to call templated lambdas
-    struct IJob
-    {
-        virtual ~IJob() = default;
-        virtual void run() = 0;
-        jobHandle handle = jobHandle::null;
-    };
-
-    // Allows to explicitly specify parameters
-    template <typename Func, typename... Args>
-    struct ExplicitJob final : IJob
-    {
-        explicit ExplicitJob(Func func, Args... args);
-        void run() override;
-
-    private:
-        Func func;
-        std::tuple<Args...> args;
-    };
-
-    template <typename Callable>
-    struct Job final : IJob
-    {
-        explicit Job(Callable func);
-        void run() override;
-
-    private:
-        Callable func_;
-    };
 
 } // namespace magique
 
@@ -109,52 +54,72 @@ namespace magique
     {
         // Initializes the job system
         // Note: Does not have to be called manually when using the game template
-        bool JobInit();
+        bool JobsInit();
 
         // Closes the job system
         // Note: Does not have to be called manually when using the game template
-        bool CloseJobSystem();
+        bool JobsClose();
 
-        void* GetJobMemory(size_t bytes);
+        // Brings all workers back to speed (out of hibernate)
+        void JobsWakeUp();
+
+        // Puts all workers to hibernation - pass the target until which to hibernate and the actual sleep time
+        void JobsSleep(double target, double sleepTime);
+
+        JobID JobQueue(IJob* job, float delay = 0.0F);
+        void* JobGetJobMemory(size_t bytes);
+
     } // namespace internal
 
+    // Job base class - allows to call templated lambdas
+    struct IJob
+    {
+        virtual ~IJob() = default;
+        virtual void run() = 0;
+        JobID id = JobID::null;
+        float execTime = 0.0F;
+    };
+
+    // Allows to explicitly specify parameters
+    template <typename Func, typename... Args>
+    struct ExplicitJob final : IJob
+    {
+        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
+        void run() override { std::apply(func, args); }
+
+    private:
+        Func func;
+        std::tuple<Args...> args;
+    };
+
     template <typename Callable>
-    IJob* JobCreate(Callable callable)
+    struct Job final : IJob
+    {
+        explicit Job(Callable func) : func_(std::move(func)) {}
+        void run() override { func_(); }
+
+    private:
+        Callable func_;
+    };
+
+    template <typename Callable>
+    JobID JobAdd(Callable callable, float delay)
     {
         constexpr auto size = sizeof(Job<Callable>);
-        void* ptr = internal::GetJobMemory(size);
-        return new (ptr) Job<Callable>(callable);
+        void* ptr = internal::JobGetJobMemory(size);
+        auto job = new (ptr) Job<Callable>(callable);
+        return internal::JobQueue(job, delay);
     }
 
     template <typename Callable, typename... Args>
-    IJob* JobCreateEx(Callable callable, Args... args)
+    JobID JobAddEx(Callable callable, Args... args)
     {
         constexpr auto size = sizeof(ExplicitJob<Callable, Args...>);
-        void* ptr = internal::GetJobMemory(size);
-        return new (ptr) ExplicitJob<Callable, Args...>(callable, args...);
+        void* ptr = internal::JobGetJobMemory(size);
+        auto job = new (ptr) ExplicitJob<Callable, Args...>(callable, args...);
+        return internal::JobQueue(job);
     }
 
-    template <typename Func, typename... Args>
-    ExplicitJob<Func, Args...>::ExplicitJob(Func func, Args... args) :
-        func(std::move(func)), args(std::make_tuple(args...))
-    {
-    }
-
-    template <typename Func, typename... Args>
-    void ExplicitJob<Func, Args...>::run()
-    {
-        std::apply(func, args);
-    }
-
-    template <typename Callable>
-    Job<Callable>::Job(Callable func) : func_(std::move(func))
-    {
-    }
-
-    template <typename Callable>
-    void Job<Callable>::run()
-    {
-        func_();
-    }
 } // namespace magique
-#endif //MAGIQUE_JOBSYSTEM_H
+
+#endif // MAGIQUE_JOBSYSTEM_H

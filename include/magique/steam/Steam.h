@@ -66,6 +66,11 @@ namespace magique
     Connection SteamGetMappedConnection(SteamID id);
     SteamID SteamGetMappedID(Connection conn);
 
+    //================= OVERLAY =================//
+
+    // Opens the overlay and displays the users profile
+    void SteamShowOverlayForUser(SteamID id);
+
     //================= STATS =================//
     // Allows access to the Stats API https://partner.steamgames.com/doc/features/achievements
 
@@ -82,7 +87,7 @@ namespace magique
 
     private:
         M_MAKE_PUB()
-        SteamID user;
+        SteamID user{};
     };
 
     // Called when a stat request finishes˛for the given user

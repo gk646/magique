@@ -5,9 +5,10 @@
 #include <atomic>
 
 // Wrapper for a spinlock
-struct SpinLockGuard;
 struct SpinLock final
 {
+
+private:
     void lock()
     {
         while (locked.exchange(true, std::memory_order_acquire))
@@ -18,8 +19,8 @@ struct SpinLock final
 
     void unlock() { locked.store(false, std::memory_order_release); }
 
-private:
     std::atomic<bool> locked{};
+    friend struct SpinLockGuard;
 };
 
 struct SpinLockGuard
@@ -34,4 +35,4 @@ private:
     SpinLock& spinLock;
 };
 
-#endif //SPINLOCK_H
+#endif // SPINLOCK_H

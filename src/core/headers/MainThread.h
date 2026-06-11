@@ -8,12 +8,6 @@ namespace magique::mainthread
     inline double UPDATE_TIME = 0.0F;
     inline double RENDER_TIME = 0.0F;
 
-    inline void Setup()
-    {
-        SetupThreadPriority(0); // Thread 0
-        SetupProcessPriority();
-    }
-
     inline void Close()
     {
         renderer::Close();
@@ -33,7 +27,7 @@ namespace magique::mainthread
             {
                 data.engineTime = static_cast<float>(GetTime());
 
-                JobsWakeUp();
+                internal::JobsWakeUp();
 
                 const auto shouldUpdate = UPDATE_WORK >= 1.0F;
                 if (shouldUpdate >= 1.0F)
@@ -42,6 +36,7 @@ namespace magique::mainthread
                 }
                 // Get the newest updates for the ui update
                 global::UI_DATA.onEachTick();
+                global::SCHEDULER.onEachTick();
 
                 if (shouldUpdate >= 1.0)
                 {
@@ -68,14 +63,14 @@ namespace magique::mainthread
                 const auto sleepTime = std::floor((config.sleepTime - nextFrameTime) * 1000) / 1000;
                 const auto target = GetTime() + (config.frameTarget - nextFrameTime); // How long we wait in total
 
-                JobsSleep(target, sleepTime);
+                internal::JobsSleep(target, sleepTime);
                 WaitTime(target, sleepTime);
                 config.frameCounter++;
             }
             PollInputEvents(); // Somehow needed to prevent crash on wayland
             game.onCloseEvent();
         }
-        JobsWakeUp(); // To finish all saving tasks
+        internal::JobsWakeUp(); // To finish all saving tasks
     }
 
 } // namespace magique::mainthread

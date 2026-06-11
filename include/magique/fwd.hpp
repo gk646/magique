@@ -104,8 +104,8 @@ namespace magique
 
     //================= UTIL =================//
     enum LogLevel : int;
-    struct Scheduler;
-    enum class jobHandle : uint16_t;
+    struct JobData;
+    enum class JobID : uint16_t;
     struct IJob;
 
     //================= INTERNAL =================//

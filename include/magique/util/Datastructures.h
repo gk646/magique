@@ -42,7 +42,7 @@ namespace magique
     {
         struct ValueHolder final // This is persisted and loaded from JSON
         {
-            Key key;
+             Key key;
             Value value;
             bool operator==(const ValueHolder& other) const = default;
         };

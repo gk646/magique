@@ -70,13 +70,13 @@ namespace magique
         const int size = global::ENGINE_DATA.collisionVec.size();
         if (size > 500) // Multithreading over certain amount
         {
-            std::array<jobHandle, COL_WORK_PARTS> handles{};
+            std::array<JobID, COL_WORK_PARTS> handles{};
             constexpr float mainThreadPart = 1.0F / COL_WORK_PARTS * 1.19; // 19% more work for main thread
             constexpr float workerPart = (1.0F - mainThreadPart) / (COL_WORK_PARTS - 1);
             float beginPercent = 0.0F;
             for (int j = 0; j < COL_WORK_PARTS - 1; ++j)
             {
-                handles[j] = JobAdd(JobCreateEx(CheckHashGridCells, beginPercent, beginPercent + workerPart, j));
+                handles[j] = JobAdd(CheckHashGridCells, beginPercent, beginPercent + workerPart, j);
                 beginPercent += workerPart;
             }
             CheckHashGridCells(beginPercent, 1.0F, COL_WORK_PARTS - 1);

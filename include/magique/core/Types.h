@@ -181,7 +181,7 @@ namespace magique
         // Flips the rect along the given axis
         Rect mirrorVertical(float xAxis) const;
         Rect mirrorHorizontal(float yAxis) const;
-        Rect mirrorDiagonal(Point p) const;
+        Rect mirrorDiagonal() const;
 
         // Returns random point inside the rect such that a rect with given dims would be fully inside
         // Note: This is useful to position collision entities in a rectangle so that they fit

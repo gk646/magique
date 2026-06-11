@@ -212,7 +212,7 @@ namespace magique
         auto langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');
         for (const auto& lang : langs)
         {
-            res.push_back( LocalizationParseLanguage(ClientAPIToISO(lang)));
+            res.push_back(LocalizationParseLanguage(ClientAPIToISO(lang)));
         }
         return res;
     }
@@ -254,6 +254,19 @@ namespace magique
             }
         }
         return SteamID::INVALID;
+    }
+
+    void SteamShowOverlayForUser(SteamID id)
+    {
+        auto steamId = CSteamID((uint64)id);
+        if (steamId.IsValid())
+        {
+            SteamFriends()->ActivateGameOverlayToUser("steamid", steamId);
+        }
+        else
+        {
+            LOG_WARNING("Cannot show overlay for invalid steam id");
+        }
     }
 
     void SteamRequestStats(SteamID user) { SteamUserStats()->RequestUserStats(CSteamID{static_cast<uint64>(user)}); }

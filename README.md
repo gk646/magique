@@ -1,10 +1,10 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.9.16-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.9.27-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
-`magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine for programmers (or those yet to be!).
+`magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine framework for programmers (or those yet to be!).
 It combines your favourite game libraries (
 *[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
 written modules** into a featureful standalone engine.

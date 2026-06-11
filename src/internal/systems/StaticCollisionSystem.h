@@ -28,23 +28,23 @@ namespace magique
         const auto& data = global::ENGINE_DATA;
         auto& staticData = global::STATIC_COLL_DATA;
         const int size = data.collisionVec.size(); // Multithread over certain amount
-        if (size < 100 || MAGIQUE_WORKER_THREADS == 0)
+        if (size < 500 || MAGIQUE_WORKER_THREADS == 0)
         {
             CheckStaticCollisionRange(0, 0, size);
         }
         else
         {
-            std::array<jobHandle, COL_WORK_PARTS> handles{};
+            std::array<JobID, COL_WORK_PARTS> handles{};
             int end = 0;
             const int partSize = static_cast<int>(static_cast<float>(size) * 0.81F) / COL_WORK_PARTS;
             for (int j = 0; j < COL_WORK_PARTS - 1; ++j) // Gives more work to main thread cause its faster
             {
                 const int start = end;
                 end = start + partSize;
-                handles[j] = JobAdd(JobCreateEx(CheckStaticCollisionRange, j, start, end));
+                handles[j] = JobAddEx(CheckStaticCollisionRange, j, start, end);
             }
             CheckStaticCollisionRange(COL_WORK_PARTS - 1, end, size);
-            JobAwaits(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
+            JobAwait(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
         // Handle unique pairs - we can share the pair set with dynamic
         HandleCollisionPairs(staticData.pairCollector);

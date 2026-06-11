@@ -44,7 +44,7 @@
 #endif
 #include "internal/utils/CollisionPrimitives.h"
 #include "internal/utils/OSUtil.h"
-#include "internal/globals/JobScheduler.h"
+#include "internal/globals/JobData.h"
 
 #include "external/raylib-compat/rcore_compat.h"
 #include "external/raylib/src/external/glad.h"
@@ -97,7 +97,7 @@ namespace magique
 #endif
         global::ENGINE_DATA.init();
         global::CONSOLE_DATA.init(); // Create default commands
-        internal::JobInit();
+        internal::JobsInit();
         internal::LightingInit();
 
         VignetteShader::Init();
@@ -188,7 +188,6 @@ namespace magique
         isLoading = true;
 
         // Run main thread
-        mainthread::Setup();
         mainthread::Run(*this);
         //
         // ----------- Game Runs --------------

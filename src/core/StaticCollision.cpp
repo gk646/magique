@@ -137,7 +137,7 @@ namespace magique
         {
             if (tile.flippedDiagonal)
             {
-                hitbox = hitbox.mirrorDiagonal(tileSize / 2);
+                hitbox = hitbox.mirrorDiagonal();
             }
 
             if (tile.flippedHorizontal)
