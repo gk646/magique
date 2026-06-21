@@ -12,14 +12,13 @@ namespace magique
     struct PairInfo final // Saves entity id and type
     {
         CollisionInfo info;
-        entt::entity e1;
-        entt::entity e2;
+        Entity e1;
+        Entity e2;
     };
 
     using CollPairCollector = AlignedVec<PairInfo>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityCollector = AlignedVec<entt::entity>[MAGIQUE_WORKER_THREADS + 1];
-    using EntityHashGrid =
-        SingleResolutionHashGrid<entt::entity, MAGIQUE_MAX_ENTITIES_CELL, MAGIQUE_COLLISION_CELL_SIZE>;
+    using EntityCollector = AlignedVec<Entity>[MAGIQUE_WORKER_THREADS + 1];
+    using EntityHashGrid = SingleResolutionHashGrid<Entity, MAGIQUE_MAX_ENTITIES_CELL, MAGIQUE_COLLISION_CELL_SIZE>;
 
     struct DynamicCollisionData final
     {
@@ -29,7 +28,7 @@ namespace magique
 
         DynamicCollisionData() { pairSet.reserve(1000); }
 
-        bool isMarked(entt::entity e1, uint32_t e2)
+        bool isMarked(Entity e1, uint32_t e2)
         {
             const auto num = (static_cast<uint64_t>(e1) << 32) | e2;
             const auto it = pairSet.find(num);
@@ -48,4 +47,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_DYNAMIC_COLLISION_DATA_H
+#endif // MAGIQUE_DYNAMIC_COLLISION_DATA_H

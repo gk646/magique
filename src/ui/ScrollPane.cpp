@@ -27,7 +27,10 @@ namespace magique
         return std::max(UIGetScaled(vertical.scrollerWidth), 5.0F);
     }
 
-    Point ScrollPane::getScrollOffset() const { return {horizontal.getScaledOffset(), vertical.getScaledOffset()}; }
+    Point ScrollPane::getScrollOffset() const
+    {
+        return {horizontal.getScaledOffset(contentAnchor), vertical.getScaledOffset(contentAnchor)};
+    }
 
     void ScrollPane::setContent(UIObject& newContent, Anchor anchor, Point inset)
     {
@@ -47,9 +50,9 @@ namespace magique
         contentInset = inset;
     }
 
-    void ScrollPane::setInvertVertScroll(bool invert) { vertical.invertScroll = invert; }
+    void ScrollPane::invertVerticalScrolling(bool invert) { vertical.invertScroll = invert; }
 
-    bool ScrollPane::getInvertVertScroll() const { return vertical.invertScroll; }
+    bool ScrollPane::isVerticalScrollInverted() const { return vertical.invertScroll; }
 
     void ScrollPane::drawContent() const
     {
@@ -65,7 +68,7 @@ namespace magique
     void ScrollPane::drawDefault(const Rect& bounds)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        DrawRectFrameFilled(bounds, theme.background, theme.backOutline);
+        DrawRectFrameFilled(bounds, BLANK, theme.backOutline);
         {
             const auto scroller = getVerticalScrollBounds();
             bool hovered = CheckCollisionMouseRect(scroller);
@@ -213,7 +216,6 @@ namespace magique
             const Point diff = (GetMousePos() - dragStart) * (invertScroll ? -1.0F : 1.0F);
             if (isHorizontal)
             {
-
                 offset = dragStartOffset + diff.x;
                 offset = std::min(offset, pane.width - scroller.width);
             }
@@ -234,10 +236,12 @@ namespace magique
         offset = std::max(offset, 0.0F);
     }
 
-    float ScrollPane::Scroller::getScaledOffset() const
+    float ScrollPane::Scroller::getScaledOffset(Anchor anchor) const
     {
         const auto val = std::ceil(offset * moveFactor);
-        if (invertScroll)
+        bool anchorIsBottom =
+            anchor == Anchor::BOTTOM_LEFT || anchor == Anchor::BOTTOM_CENTER || anchor == Anchor::BOTTOM_RIGHT;
+        if (invertScroll && !anchorIsBottom)
         {
             return val;
         }
@@ -246,6 +250,5 @@ namespace magique
             return -val;
         }
     }
-
 
 } // namespace magique

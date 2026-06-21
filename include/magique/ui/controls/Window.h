@@ -40,13 +40,10 @@ namespace magique
     protected:
         // Same as ui/UIContainer.h
         // Note: The window is responsible to draw all its children!
-        void onDraw(const Rect& bounds) override { drawDefault(bounds); }
-
-        // Same as ui/UIObject.h
-        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override
+        void onDraw(const Rect& bounds) override
         {
-            if (wasDrawn)
-                updateDrag(getTopBarBounds());
+            updateDrag(getTopBarBounds());
+            drawDefault(bounds);
         }
 
         // Default visuals

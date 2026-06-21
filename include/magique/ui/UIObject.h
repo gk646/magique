@@ -47,10 +47,6 @@ namespace magique
         // Note: All UIContainers are updated separately and before objects
         virtual void onUpdate(const Rect& bounds, bool wasDrawn) {}
 
-        // Same as onUpdate() but called at the beginning of the draw tick (before the update tick)
-        // This is essential for real time behavior of components (like dragging windows)
-        virtual void onDrawUpdate(const Rect& bounds, bool wasDrawn) {}
-
         // Called each time the window wasn't drawn prior but drawn now (before its drawn this tick)
         virtual void onShown(const Rect& bounds) {}
 
@@ -58,8 +54,9 @@ namespace magique
         virtual void onHide(const Rect& bounds) {}
 
     public:
-        // Returns the bounds of this object
+        // Sets/gets the bounds of this object
         Rect getBounds() const;
+        void setBounds(const Rect& dims);
 
         // Sets a new position for this object - values are scaled to the CURRENT (target) resolution
         void setPosition(const Point& pos);
@@ -68,9 +65,6 @@ namespace magique
         // Sets new dimensions for this object - values are scaled to the CURRENT (target) resolution
         // Note: Negative values will be ignored
         void setSize(Point size);
-
-        // Sets the position + size
-        void setBounds(const Rect& dims);
 
         // Aligns this object inside the given object according to the anchor point - 'inset' moves the position inwards
         // Note: See ui/UI.h for a detailed description where the anchor points are
@@ -130,6 +124,10 @@ namespace magique
         void setGamepadMapping(GamepadMapping* map);
         GamepadMapping* getGamepadMapping() const;
 
+        // Sets/gets the alpha - if NOT 1.0 will be rendered with an alpha applied (a separate texture is used)
+        void setAlpha(float value);
+        float getAlpha() const;
+
     private:
         Rect pBounds;
         Rect startBounds;                          // Bounds object started with
@@ -137,9 +135,9 @@ namespace magique
         GamepadMapping* mapping = nullptr;         // Input mapping for gamepads/arrow keys
         ScalingMode scaleMode = ScalingMode::FULL; // How the object scales with different screen dimensions
         Anchor anchor = Anchor::NONE;              // Where (and if) the object is anchored to on the screen
+        float alpha = 1.0F;                        // If not 1.0F will be re
         bool wasDrawnLastTick = false;
         bool drawnThisTick = false;
-        bool isContainer = false;
         bool isMenu = false;
         friend UIData;
         friend Window;

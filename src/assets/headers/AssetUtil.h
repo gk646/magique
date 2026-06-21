@@ -65,7 +65,6 @@ namespace magique
     }
 
 
-
 } // namespace magique
 
-#endif //MAGIQUE_ASSET_UTIL_H
+#endif // MAGIQUE_ASSET_UTIL_H

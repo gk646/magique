@@ -9,8 +9,8 @@ namespace magique
     struct HandleRegistry final
     {
         HashMap<uint32_t, handle> handleMap{100};
-     std::vector<handle> handles;
-     std::vector<handle> directHandles;
+        std::vector<handle> handles;
+        std::vector<handle> directHandles;
 
         HandleRegistry()
         {
@@ -27,4 +27,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_HANDLEREGISTRY_H
+#endif // MAGIQUE_HANDLEREGISTRY_H

@@ -31,9 +31,34 @@ namespace magique
     void UIObject::draw()
     {
         auto& ui = global::UI_DATA;
-        ui.registerDrawCall(this, isContainer);
+        ui.registerDrawCall(this, false);
         const auto bounds = getBounds();
-        onDraw(bounds);
+
+        if (alpha != 1.0F) [[unlikely]]
+        {
+            if (ui.alphaTexture.texture.width != ui.targetRes.x || ui.alphaTexture.texture.height != ui.targetRes.y)
+                [[unlikely]]
+            {
+                UnloadRenderTexture(ui.alphaTexture);
+                ui.alphaTexture = LoadRenderTexture(ui.targetRes.x, ui.targetRes.y);
+            }
+
+            auto prevTexture = GetCurrentRenderTexture();
+            BeginTextureMode(ui.alphaTexture);
+            ClearBackground(BLANK);
+            onDraw(bounds);
+            EndTextureMode();
+
+            if (prevTexture.id != 0)
+                BeginTextureMode(prevTexture);
+
+            DrawRenderTexture(ui.alphaTexture, {}, 1, ColorAlpha(WHITE, alpha));
+        }
+        else
+        {
+            onDraw(bounds);
+        }
+
         if (ui.showHitboxes)
         {
             DrawRectangleLinesEx(bounds, 1, BLUE);
@@ -46,6 +71,12 @@ namespace magique
         auto bounds = pBounds;
         ui.scaleBounds(bounds, scaleMode, inset, anchor);
         return bounds;
+    }
+
+    void UIObject::setBounds(const Rect& dims)
+    {
+        setPosition(dims.pos());
+        setSize(dims.size());
     }
 
     void UIObject::setPosition(const Point& pos)
@@ -77,12 +108,6 @@ namespace magique
         }
         pBounds.width = coords.x;
         pBounds.height = coords.y;
-    }
-
-    void UIObject::setBounds(const Rect& dims)
-    {
-        setPosition(dims.pos());
-        setSize(dims.size());
     }
 
     void UIObject::align(const Anchor alignAnchor, const UIObject& relativeTo, Point alignInset)
@@ -180,6 +205,10 @@ namespace magique
     void UIObject::setGamepadMapping(GamepadMapping* map) { mapping = map; }
 
     GamepadMapping* UIObject::getGamepadMapping() const { return mapping; }
+
+    void UIObject::setAlpha(float value) { alpha = value; }
+
+    float UIObject::getAlpha() const { return alpha; }
 
     LabelledObject::LabelledObject(Rect size, std::string_view text, Direction direction, Anchor anchor, Point inset,
                                    ScalingMode scaling) :

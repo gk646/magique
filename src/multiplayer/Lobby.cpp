@@ -39,16 +39,22 @@ namespace magique
 
     void Lobby::sendChatMsg(std::string_view message)
     {
-        MG_SESSION_LOCK()
         if (message.size() > MAGIQUE_MAX_LOBBY_MESSAGE_LEN)
         {
             LOG_WARNING("Sent message longer than limit: %d", MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
             return;
         }
+
         if (message.empty())
-        {
             return;
-        }
+
+        auto& data = global::MP_DATA.lobby;
+        if (data.chatCallback)
+            data.chatCallback(Connection::INVALID, message);
+
+        MG_SESSION_LOCK()
+
+        SteamLobbySendMsg(message);
 
         char buff[MAGIQUE_MAX_LOBBY_MESSAGE_LEN + 2]; // Message + 1 null terminators + 1 type
         buff[0] = (int8_t)LobbyPacketType::CHAT;

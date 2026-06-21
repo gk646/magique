@@ -26,7 +26,7 @@ namespace magique
     struct ConnMapping final
     {
         Connection conn;
-        entt::entity entity;
+        Entity entity;
     };
 
     struct SteamMapping final

@@ -101,7 +101,7 @@ namespace magique
         binary[binaryLength] = '\0';
 
         // Encode base64 back
-        //EncodeBase64(base64Str, binaryLength, base64Str, len + 1);
+        // EncodeBase64(base64Str, binaryLength, base64Str, len + 1);
         base64 = base64Str;
         binaryCode = binary;
     }
@@ -403,7 +403,7 @@ namespace magique
 
         // Copy binary to base64 and encode
         std::memcpy(base64, binary, binaryBytes);
-       // EncodeBase64(base64, binaryBytes, base64, base64Bytes + 1);
+        // EncodeBase64(base64, binaryBytes, base64, base64Bytes + 1);
         return ShareCode{binary, base64};
     }
 

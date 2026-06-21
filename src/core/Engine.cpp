@@ -28,10 +28,7 @@ namespace magique
 
     void EngineSetStateCallback(const GameStateCallback& func) { global::ENGINE_DATA.stateCallback = func; }
 
-    void EngineSetUpdateRange(const float distance)
-    {
-        global::ENGINE_CONFIG.entityUpdateDist = distance;
-    }
+    void EngineSetUpdateRange(const float distance) { global::ENGINE_CONFIG.entityUpdateDist = distance; }
 
     int EngineGetUpdateRange() { return (int)global::ENGINE_CONFIG.entityUpdateDist; }
 
@@ -40,14 +37,14 @@ namespace magique
         global::ENGINE_CONFIG.entityCacheDuration = static_cast<uint16_t>(ticks);
     }
 
-    void EngineAddToCache(const entt::entity e)
+    void EngineAddToCache(const Entity e)
     {
         global::ENGINE_DATA.entityUpdateCache[e] = global::ENGINE_CONFIG.entityCacheDuration;
     }
 
     void EngineClearCache() { global::ENGINE_DATA.entityUpdateCache.clear(); }
 
-    bool EngineIsCached(entt::entity e) { return global::ENGINE_DATA.entityUpdateCache.contains(e); }
+    bool EngineIsCached(Entity e) { return global::ENGINE_DATA.entityUpdateCache.contains(e); }
 
     void EngineEnableCollision(const bool value) { global::ENGINE_CONFIG.enableCollisionSystem = value; }
 
@@ -67,15 +64,15 @@ namespace magique
 
     //----------------- GET -----------------//
 
-    const std::vector<entt::entity>& EngineGetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
+    const std::vector<Entity>& EngineGetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
 
     const std::vector<MapID>& EngineGetActiveMaps() { return global::ENGINE_DATA.loadedMaps; }
 
-    const std::vector<entt::entity>& EngineGetDrawEntities() { return global::ENGINE_DATA.drawVec; }
+    const std::vector<Entity>& EngineGetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
-    void EngineSetPlayer(entt::entity entity) { global::ENGINE_DATA.playerEntity = entity; }
+    void EngineSetPlayer(Entity entity) { global::ENGINE_DATA.playerEntity = entity; }
 
-    entt::entity EngineGetPlayer() { return global::ENGINE_DATA.playerEntity; }
+    Entity EngineGetPlayer() { return global::ENGINE_DATA.playerEntity; }
 
     bool EngineHasPlayer() { return global::ENGINE_DATA.playerEntity != entt::null; }
 

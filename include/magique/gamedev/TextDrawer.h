@@ -27,7 +27,7 @@ namespace magique
 
         // Draw text and resets mods
         // move cursor to the right of the text
-        TextDrawer& left(const std::string_view& txt, Color tint = WHITE);
+        TextDrawer& left(const std::string_view& txt, Color tint = WHITE, bool moveCursor = true);
         TextDrawer& left(Color tint, const char* fmt, ...);
 
         // Draw text centered horizontally - does not move cursor
@@ -50,6 +50,10 @@ namespace magique
         // Must be implemented by the project manually
         TextDrawer& keybind(Keybind keybind, bool centered = true);
 
+        // Draws a line across the bounds
+        //      - length: how long in terms of bounds length the line is
+        TextDrawer& line(float length = 1.0F, Color tint = WHITE);
+
         // ===== CURSOR ======//
 
         // Moves cursor to the beginning of the next line and resets mods
@@ -62,6 +66,9 @@ namespace magique
         // Negative gap for horizontal moves the right end of line cursor
         TextDrawer& gapH(float mult = 1.0F);
         TextDrawer& gapV(float mult = 1.0F);
+
+        // Moves the cursor by the given position
+        TextDrawer& move(Point pos);
 
         // Jumps to the last possible line given the bounds and gap (vertically) - respects modSize()
         TextDrawer& jumpLast();

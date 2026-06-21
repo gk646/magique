@@ -28,26 +28,26 @@ namespace magique
         virtual ~IEventHandler() = default;
 
         // Called each time BEFORE any event method - event method is only called if returns true
-        virtual bool shouldBeCalled(GameEvent event, entt::entity entity, const EventData& data) { return true; }
+        virtual bool shouldBeCalled(GameEvent event, Entity entity, const EventData& data) { return true; }
 
         // Called for each event
-        virtual void onEvent(GameEvent event, entt::entity entity, const EventData& data) {}
+        virtual void onEvent(GameEvent event, Entity entity, const EventData& data) {}
     };
 
-    using EventFunc = std::function<void(GameEvent event, entt::entity entity, const EventData& data)>;
+    using EventFunc = std::function<void(GameEvent event, Entity entity, const EventData& data)>;
 
     // Immediately calls all handlers in correct order if conditions match (e.g. filter matches and shouldBeCalled() is true)
     // Template is only for cleaner signature - MUST be type EventData
     template <typename EventDataT = EventData>
-    void GameEventsEmit(GameEvent event, entt::entity entity = entt::null, const EventDataT& data = {});
+    void GameEventsEmit(GameEvent event, Entity entity = entt::null, const EventDataT& data = {});
 
     // Adds an event handler
     //  - filter: only calls event func if emitted entity matches filter
     //  - priority: called in priority order descending - highest first
-    EventSubID GameEventsSubscribe(IEventHandler* handler, entt::entity filter = entt::null, int priority = 0);
+    EventSubID GameEventsSubscribe(IEventHandler* handler, Entity filter = entt::null, int priority = 0);
 
     // Called every time the filter matches
-    EventSubID GameEventsSubscribe(const EventFunc& func, entt::entity filter = entt::null, int priority = 0);
+    EventSubID GameEventsSubscribe(const EventFunc& func, Entity filter = entt::null, int priority = 0);
 
     // Returns true if the subscription has been removed
     bool GameEventsCancel(EventSubID id);

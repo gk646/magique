@@ -77,8 +77,8 @@ namespace magique::internal
 #undef LOG_WARNING
 #undef LOG_ERROR
 #undef LOG_FATAL
-#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, M_FUNCTION, msg, ## __VA_ARGS__)
-#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, M_FUNCTION, msg, ## __VA_ARGS__)
-#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, M_FUNCTION, msg, ## __VA_ARGS__)
-#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, M_FUNCTION, msg, ## __VA_ARGS__)
-#endif //MAGIQUE_LOGGING_H
+#define LOG_INFO(msg, ...) magique::LogEx(magique::LEVEL_INFO, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_WARNING(msg, ...) magique::LogEx(magique::LEVEL_WARNING, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_ERROR(msg, ...) magique::LogEx(magique::LEVEL_ERROR, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#define LOG_FATAL(msg, ...) magique::LogEx(magique::LEVEL_FATAL, __FILE__, __LINE__, M_FUNCTION, msg, ##__VA_ARGS__)
+#endif // MAGIQUE_LOGGING_H

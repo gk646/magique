@@ -97,7 +97,7 @@ namespace magique
                        {}, 0, tint);
     }
 
-    void DrawRenderTextureEx(const RenderTexture& texture, Rect dest, float rot,Color tint)
+    void DrawRenderTextureEx(const RenderTexture& texture, Rect dest, float rot, Color tint)
     {
         DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height}, dest, {},
                        rot, tint);

@@ -23,7 +23,7 @@ namespace magique
     // Registers the given system - systems are called in the order they are added
     // Note: Methods are only called when the current gamestate is part of the passed "validStates"
     //       empty means all states
-    void GameSystemRegister(GameSystem* system,  std::string_view name, std::initializer_list<GameState> stats = {});
+    void GameSystemRegister(GameSystem* system, std::string_view name, std::initializer_list<GameState> stats = {});
 
     // Prints a table that show average time of each function call for each system
     //      - cutoff: Minimal duration of the system in milliseconds in order to be printed

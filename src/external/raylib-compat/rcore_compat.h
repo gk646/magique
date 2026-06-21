@@ -15,7 +15,6 @@ extern "C"
     char* GetCurrentButtonState();
     char* GetPreviousButtonState();
 
-
     int GetCurrentMousePositionX();
     int GetCurrentMousePositionY();
 
@@ -32,10 +31,11 @@ extern "C"
     char* GetCurrentGamepadState();
     char* GetPreviousGamepadState();
 
-    void TriggerMouseClick(int button);
+    void TriggerMousePress(int button);
+    void TriggerMouseRelease(int button);
 
     Vector2 GetMouseScale();
-
+    RenderTexture GetCurrentRenderTexture();
 }
 
 #endif // RCORE_COMPAT_H

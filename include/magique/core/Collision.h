@@ -35,15 +35,15 @@ namespace magique
                                 const CollisionC& colB, CollisionInfo& info);
 
     // Easier access versions
-    void CheckCollisionEntities(entt::entity a, entt::entity b, CollisionInfo& info);
-    bool CheckCollisionEntities(entt::entity a, entt::entity b);
+    void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info);
+    bool CheckCollisionEntities(Entity a, Entity b);
 
     // Returns true and assign info if a collision occurs between the entity and the given rectangle
     bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
 
     // Returns true if the entity collision shape contains or intersects the mouse pos
     bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
-    bool CheckCollisionEntityMouse(entt::entity e);
+    bool CheckCollisionEntityMouse(Entity e);
 
     //================= CIRCLE =================//
 

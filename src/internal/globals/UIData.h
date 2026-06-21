@@ -20,8 +20,8 @@ namespace magique
     struct UIData final
     {
         std::vector<UIObject*> objects;
-        std::vector<UIObject*> containers;
         std::vector<Popup*> popups;
+        RenderTexture alphaTexture;
         UIObject* mouseConsumedAfter = nullptr; // Object after which the mouse was consumed
         HashSet<UIObject*> objectsSet;
         Point dragStart{-1, -1};
@@ -100,6 +100,12 @@ namespace magique
             {
                 // TODO onButton() generic response
             }
+
+            if (LayeredInput::IsKeyReleased(KEY_ENTER) ||
+                LayeredInput::IsGamepadButtonReleased(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+            {
+                TriggerMouseRelease(MOUSE_BUTTON_LEFT);
+            }
         }
 
         // Before each draw and update tick
@@ -117,39 +123,16 @@ namespace magique
                 dragStart = {mx, my};
             }
 
-            if (mouseConsumedAfter != nullptr)
-                mouseConsumed = true;
-
             // Here we are doing the updates for next tick (instead of right at the end of the draw tick)
             // Using fori to support deletions in the update methods
-            for (size_t i = 0; i < containers.size(); ++i)
-            {
-                auto& container = *containers[i];
-                if (container.wasDrawnLastTick && !container.drawnThisTick)
-                {
-                    container.onHide(container.getBounds());
-                }
-                container.wasDrawnLastTick = container.drawnThisTick;
-                container.drawnThisTick = false;
-
-                if (mouseConsumedAfter == &container)
-                    mouseConsumed = false;
-                container.onDrawUpdate(container.getBounds(), container.wasDrawnLastTick);
-            }
-
             for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
                 if (obj.wasDrawnLastTick && !obj.drawnThisTick)
-                {
                     obj.onHide(obj.getBounds());
-                }
+
                 obj.wasDrawnLastTick = obj.drawnThisTick;
                 obj.drawnThisTick = false;
-
-                if (mouseConsumedAfter == &obj)
-                    mouseConsumed = false;
-                obj.onDrawUpdate(obj.getBounds(), obj.wasDrawnLastTick);
             }
 
             resetConsumed();
@@ -161,16 +144,6 @@ namespace magique
             mouseConsumedAfter = nullptr;
 
             // Using fori to support deletions in the update methods
-            for (size_t i = 0; i < containers.size(); ++i)
-            {
-                auto& container = *containers[i];
-                if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &container)
-                    updateGamePadMapping();
-                container.onUpdate(container.getBounds(), container.wasDrawnLastTick);
-                if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
-                    mouseConsumedAfter = &container;
-            }
-
             for (size_t i = 0; i < objects.size(); ++i)
             {
                 auto& obj = *objects[i];
@@ -223,16 +196,7 @@ namespace magique
         void registerObject(UIObject* object, const bool isContainer = false)
         {
             objectsSet.insert(object);
-            if (isContainer)
-            {
-                object->isContainer = true;
-                containers.push_back(object);
-                objects.pop_back(); // Is added as an object as well
-            }
-            else
-            {
-                objects.push_back(object);
-            }
+            objects.push_back(object);
         }
 
         // All objects are un-registered in the dtor
@@ -250,7 +214,7 @@ namespace magique
             object->drawnThisTick = true;
             if (!objectsSet.contains(object)) [[unlikely]]
             {
-                registerObject(object, object->isContainer);
+                registerObject(object, false);
             }
 
             // Moving 3 to the front
@@ -270,14 +234,7 @@ namespace magique
                 }
             };
 
-            if (isContainer)
-            {
-                sortUpfront(containers, object);
-            }
-            else
-            {
-                sortUpfront(objects, object);
-            }
+            sortUpfront(objects, object);
         }
 
         void scaleBounds(Rect& bounds, const ScalingMode scaleMode, Point inset, Anchor anchor) const

@@ -50,4 +50,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_ACHIEVEMENTS_H
+#endif // MAGIQUE_ACHIEVEMENTS_H

@@ -80,7 +80,7 @@ namespace magique
         return true;
     }
 
-    bool PathRayCast(entt::entity a, entt::entity b)
+    bool PathRayCast(Entity a, Entity b)
     {
         const auto* aPos = ComponentTryGet<PositionC>(a);
         const auto* bPos = ComponentTryGet<PositionC>(b);
@@ -175,7 +175,7 @@ namespace magique
 
     bool PathGetIsSolidType(const EntityType type) { return global::PATH_DATA.solidTypes.contains(type); }
 
-    void PathSetSolidEntity(const entt::entity entity, const bool value)
+    void PathSetSolidEntity(const Entity entity, const bool value)
     {
         if (value)
             global::PATH_DATA.solidEntities.insert(entity);
@@ -183,7 +183,7 @@ namespace magique
             global::PATH_DATA.solidEntities.erase(entity);
     }
 
-    bool PathGetSolidEntity(entt::entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
+    bool PathGetSolidEntity(Entity entity) { return global::PATH_DATA.solidEntities.contains(entity); }
 
     void PathDraw(const std::vector<Point>& path, Color color)
     {

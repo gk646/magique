@@ -29,10 +29,7 @@ namespace magique
         }
     }
 
-    bool Counter::isGoalReached() const
-    {
-        return count == goal;
-    }
+    bool Counter::isGoalReached() const { return count == goal; }
 
     void Counter::setStep(float newStep) { step = newStep; }
 
@@ -43,6 +40,8 @@ namespace magique
     float Counter::getBegin() const { return begin; }
 
     float Counter::getCount() const { return count; }
+
+    float Counter::getProgress() const { return step / goal; }
 
     void Counter::fill() { count = goal; }
 

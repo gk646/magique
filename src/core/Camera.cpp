@@ -22,7 +22,7 @@ namespace magique
 
     void CameraSetSmoothing(const float smoothing) { global::ENGINE_CONFIG.cameraSmoothing = smoothing; }
 
-    entt::entity CameraGetEntity() { return global::ENGINE_DATA.cameraEntity; }
+    Entity CameraGetEntity() { return global::ENGINE_DATA.cameraEntity; }
 
     Camera2D& CameraGet() { return global::ENGINE_DATA.camera; }
 
@@ -74,7 +74,7 @@ namespace magique
         return {camLeft, camTop, camWidth, camHeight};
     }
 
-    bool CameraInLineOfSight(entt::entity entity)
+    bool CameraInLineOfSight(Entity entity)
     {
         const auto& pos = ComponentGet<PositionC>(entity);
         if (pos.map != CameraGetMap())

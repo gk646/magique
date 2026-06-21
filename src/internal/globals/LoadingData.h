@@ -11,4 +11,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //LOADERS_H
+#endif // LOADERS_H

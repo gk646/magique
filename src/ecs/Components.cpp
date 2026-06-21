@@ -52,8 +52,8 @@ namespace magique
     void AnimationC::drawCurrentFrame(const Point& pos, const float rotation) const
     {
         const auto currentFrame = currentAnimation.getCurrentFrame(millisCount);
-         Rect dest = {pos + animation->getOffset(),
-                           {static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
+        Rect dest = {pos + animation->getOffset(),
+                     {static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
                       static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)}};
         dest.floor();
         DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor());
@@ -141,20 +141,29 @@ namespace magique
     {
         for (const auto& [layer, tex] : textures)
         {
-            if (!tex.texture.isValid())
-                continue;
-            Point finalAnchor;
-            if (globalAnchor != -1)
-            {
-                finalAnchor = globalAnchor - tex.offset;
-            }
-            else
-            {
-                finalAnchor = tex.offset + tex.anchor;
-            }
-            const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
-            DrawRegionPro(tex.texture, dest.floored(), std::floor(rotation), finalAnchor, tint);
+            drawLayer(layer, pos, rotation, tint);
         }
+    }
+
+    void LayeredTextureC::drawLayer(AnimationLayer layer, const Point& pos, float rotation, Color tint) const
+    {
+        auto it = textures.find(layer);
+        if (it == textures.end())
+            return;
+        const auto tex = it->second;
+        if (!tex.texture.isValid())
+            return;
+        Point finalAnchor;
+        if (globalAnchor != -1)
+        {
+            finalAnchor = globalAnchor - tex.offset;
+        }
+        else
+        {
+            finalAnchor = tex.offset + tex.anchor;
+        }
+        const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
+        DrawRegionPro(tex.texture, dest.floored(), std::floor(rotation), finalAnchor, tint);
     }
 
     void LayeredTextureC::setTexture(AnimationLayer layer, TextureC texture) { textures[layer] = texture; }
@@ -194,14 +203,14 @@ namespace magique
         anchor = radius;
     }
 
-    void CollisionC::CenterOn(entt::entity e, Point point)
+    void CollisionC::CenterOn(Entity e, Point point)
     {
         auto& pos = ComponentGet<PositionC>(e);
         auto& col = ComponentGet<CollisionC>(e);
         pos.pos = point - col.getMidOffset();
     }
 
-    Point CollisionC::GetMiddle(const entt::entity e)
+    Point CollisionC::GetMiddle(const Entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
         auto* col = ComponentTryGet<CollisionC>(e);

@@ -134,6 +134,12 @@ namespace entt
     enum class entity : std::uint32_t;
 }
 
+namespace magique
+{
+    using Entity = entt::entity;
+}
+
+
 namespace glz
 {
     template <typename T>

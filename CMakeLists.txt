@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.27
+        VERSION 0.9.28
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 
@@ -42,7 +42,7 @@ set(MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2 CACHE STRING "Maximum amount of cust
 set(MAGIQUE_TILE_SET_CUSTOM_PROPERTIES 4 CACHE STRING "Maximum amount of custom tile properties for each tile in a tileset")
 set(MAGIQUE_MAX_ANIM_FRAMES 16 CACHE STRING "Maximum amount of frames per single animation")
 set(MAGIQUE_MAX_PLAYERS 4 CACHE STRING "Maximum amount of actors (players) supported")
-set(MAGIQUE_MAX_LOBBY_MESSAGE_LEN 256 CACHE STRING "Maximum length of a chat message sent in a lobby")
+set(MAGIQUE_MAX_LOBBY_MESSAGE_LEN 255 CACHE STRING "Maximum length of a chat message sent in a lobby")
 set(MAGIQUE_INCLUDE_FONT 1 CACHE BOOL "Include the default magique font: Cascadia Code")
 
 include(ParseOptions)      # Parses options and sets parameters

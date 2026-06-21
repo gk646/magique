@@ -39,4 +39,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGEQUEST_TEXTLINES_H
+#endif // MAGEQUEST_TEXTLINES_H

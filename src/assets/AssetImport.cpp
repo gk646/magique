@@ -210,7 +210,7 @@ namespace magique
 
     template <typename Func>
     static Animation IterateTags(ase_t* import, Func func, StateMapFunc mapFunc, Point offset, Point anchor,
-                                       AtlasID atlas, float scale)
+                                 AtlasID atlas, float scale)
     {
         Animation animation{scale};
         std::vector<Image> images = {};
@@ -239,7 +239,7 @@ namespace magique
     }
 
     Animation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
-                                   Point anchor)
+                             Point anchor)
     {
         if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
         {
@@ -262,8 +262,8 @@ namespace magique
     }
 
     std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
-                                                                                 AtlasID atlas, LayerMapFunc layerMap,
-                                                                                 float scale, Point offset, Point anchor)
+                                                                             AtlasID atlas, LayerMapFunc layerMap,
+                                                                             float scale, Point offset, Point anchor)
     {
         std::vector<std::pair<LayeredAnimation, Animation>> animations;
         auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);

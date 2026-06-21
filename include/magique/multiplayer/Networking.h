@@ -117,14 +117,14 @@ namespace magique
     // Sets the entity for the given connection - allows to create a mapping between the remote client and a local entity
     // Note: Needs to be manually set BUT is automatically deleted AFTER the connection is disconnected or session is closed
     // Note: An existing mapping can be updated with a new entity
-    void NetworkSetConnMapping(Connection conn, entt::entity entity);
+    void NetworkSetConnMapping(Connection conn, Entity entity);
 
     // Returns the entity mapped to this connection - entt::null if none was set
-    entt::entity NetworkGetMappedEntity(Connection conn);
+    Entity NetworkGetMappedEntity(Connection conn);
 
     // Returns the (first) connection mapped to the given entity (if any)
     // Failure: Returns INVALID_CONNECTION if mapping exists for the given entity
-    Connection NetworkGetMappedConnection(entt::entity entity);
+    Connection NetworkGetMappedConnection(Entity entity);
 
 
     // Returns the number of the connection

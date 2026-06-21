@@ -34,7 +34,7 @@ namespace magique
             position = pos;
             isPositional = true;
         }
-        SoundWrapper(Sound sound, float volume, entt::entity e, bool loop) : SoundWrapper(sound, volume, loop)
+        SoundWrapper(Sound sound, float volume, Entity e, bool loop) : SoundWrapper(sound, volume, loop)
         {
             isPositional = true;
             entity = e;
@@ -49,7 +49,7 @@ namespace magique
         Sound sound;
         float playVolume;
         Point position{};
-        entt::entity entity = entt::null;
+        Entity entity = entt::null;
         bool isPositional = false;
         bool loop = false;
 

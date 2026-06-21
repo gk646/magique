@@ -129,7 +129,7 @@ static Font defaultFont = { 0 };
 
 // Text vertical line spacing in pixels (between lines)
 static int textLineSpacing = 2;
-
+#include "rtext_compat.c"
 //----------------------------------------------------------------------------------
 // Other Modules Functions Declaration (required by text)
 //----------------------------------------------------------------------------------

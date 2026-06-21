@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    Menu::Menu() : UIContainer(Rect{}) {}
+    Menu::Menu() : UIContainer(UIGetTargetResolution()) {}
 
     Menu* Menu::addSubMenu(Menu* menu, std::string_view name)
     {
@@ -67,6 +67,20 @@ namespace magique
         }
     }
 
+    Menu* Menu::getNestedMenu(std::string_view name) const
+    {
+        auto menu = getSubMenu(name);
+        if (menu != nullptr)
+            return menu;
+        for (auto& [child, ptr] : getChildren())
+        {
+            auto found = ptr->getAs<Menu>().getNestedMenu(name);
+            if (found != nullptr)
+                return found;
+        }
+        return nullptr;
+    }
+
     void Menu::activateParent() const
     {
         if (parent != nullptr)
@@ -108,16 +122,11 @@ namespace magique
 
     void Menu::onDraw(const Rect& bounds)
     {
+        setBounds({{}, UIGetTargetResolution()});
         if (subMenu != nullptr)
         {
             subMenu->draw();
         }
-    }
-
-    void Menu::onDrawUpdate(const Rect& bounds, bool wasDrawn)
-    {
-        UIContainer::onDrawUpdate(bounds, wasDrawn);
-        setSize(UIGetTargetResolution());
     }
 
     void Menu::updateInputs(KeyboardKey key, GamepadButton button)

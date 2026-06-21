@@ -40,7 +40,7 @@ namespace magique
         global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop);
     }
 
-    void SoundPlay2D(const Sound& sound, const entt::entity entity, const float volume, bool loop)
+    void SoundPlay2D(const Sound& sound, const Entity entity, const float volume, bool loop)
     {
         global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity, loop);
     }

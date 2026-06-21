@@ -8,7 +8,7 @@
 //===============================================
 // .....................................................................
 // magique has built-in lighting using polar-raytracing - this is VERY fast
-// It brings nice lighting with soft shadows for every shape
+// It brings nice lighting with soft shadows and supports any occlusion shape
 // Performance scales with the radius of the light (and the amount) - the larger the slower
 // Note: This system uses texture slot 4 and 5 (rlActiveTextureSlot(int))
 //      - Only important if you manually use them or use a function that does such as DrawMesh()

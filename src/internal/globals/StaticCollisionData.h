@@ -25,7 +25,7 @@ namespace magique
     struct StaticPair final // Caches information when the collision occurs to reuse later on
     {
         CollisionInfo info;    // Collision info
-        entt::entity entity;   // the entity
+        Entity entity;         // the entity
         uint32_t objectNum;    // objectnum (static collider number)
         int data;              // Collider data
         ColliderType type;     // collider type
@@ -142,4 +142,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //STATIC_COLLISION_DATA_H
+#endif // STATIC_COLLISION_DATA_H

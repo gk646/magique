@@ -10,7 +10,7 @@ namespace magique
 
     struct EventSubscription final
     {
-        bool isValid(entt::entity entity) const
+        bool isValid(Entity entity) const
         {
             if (filter != entt::null && filter != entity) [[unlikely]]
             {
@@ -21,7 +21,7 @@ namespace magique
 
         IEventHandler* handler;
         int priority;
-        entt::entity filter;
+        Entity filter;
         EventSubID id;
         GameEvent event;
     };
@@ -30,7 +30,7 @@ namespace magique
     static std::vector<EventSubscription> subscribers;
 
     template <>
-    void GameEventsEmit(GameEvent event, entt::entity entity, const EventData& data)
+    void GameEventsEmit(GameEvent event, Entity entity, const EventData& data)
     {
         for (auto& subscriber : subscribers)
         {
@@ -41,7 +41,7 @@ namespace magique
         }
     }
 
-    EventSubID GameEventsSubscribe(IEventHandler* handler, entt::entity filter, int priority)
+    EventSubID GameEventsSubscribe(IEventHandler* handler, Entity filter, int priority)
     {
         auto& sub = subscribers.emplace_back();
         sub.handler = handler;
@@ -52,15 +52,12 @@ namespace magique
         return curr++;
     }
 
-    EventSubID GameEventsSubscribe(const EventFunc& func, entt::entity filter, int priority)
+    EventSubID GameEventsSubscribe(const EventFunc& func, Entity filter, int priority)
     {
         struct Handler final : IEventHandler
         {
             Handler(const EventFunc& func) : func(func) {}
-            void onEvent(GameEvent event, entt::entity entity, const EventData& data) override
-            {
-                func(event, entity, data);
-            }
+            void onEvent(GameEvent event, Entity entity, const EventData& data) override { func(event, entity, data); }
             EventFunc func;
         };
         return GameEventsSubscribe(new Handler(func), filter, priority);

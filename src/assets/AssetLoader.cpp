@@ -19,8 +19,8 @@ namespace magique
 
     AssetLoader::AssetLoader(const char* assetPath, const uint64_t encryptionKey)
     {
-        addLambdaTask([=](AssetPack& assets) { AssetPackLoad(assets, assetPath, encryptionKey); }, INTERNAL,
-                      THREAD_ANY, 0, true);
+        addLambdaTask([=](AssetPack& assets) { AssetPackLoad(assets, assetPath, encryptionKey); }, INTERNAL, THREAD_ANY,
+                      0, true);
     }
 
     bool AssetLoader::step() { return stepMixed(assets); }

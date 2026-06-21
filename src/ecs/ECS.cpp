@@ -27,7 +27,7 @@ namespace magique
         map[type] = createFunc;
 
         // Iterates all entities
-        for (auto entity : internal::REGISTRY.view<entt::entity>())
+        for (auto entity : internal::REGISTRY.view<Entity>())
         {
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
             (void)b;                                   // Suppress unused variable
@@ -59,13 +59,13 @@ namespace magique
 
     void EntitySetCreateCallback(const EntityCallback& callback) { global::ENGINE_DATA.createCallback = callback; }
 
-    bool EntityExists(const entt::entity e) { return internal::REGISTRY.valid(e); }
+    bool EntityExists(const Entity e) { return internal::REGISTRY.valid(e); }
 
-    bool EntityIsActor(const entt::entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
+    bool EntityIsActor(const Entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
 
-    entt::entity EntityFirstOf(const EntityType type)
+    Entity EntityFirstOf(const EntityType type)
     {
-        for (const auto entity : internal::REGISTRY.view<entt::entity>())
+        for (const auto entity : internal::REGISTRY.view<Entity>())
         {
             const auto& pos = internal::REGISTRY.get<const PositionC>(entity);
             if (pos.type == type)
@@ -76,8 +76,8 @@ namespace magique
         return entt::null;
     }
 
-    static entt::entity CreateEntityInternal(const entt::entity id, EntityType type, const Point& pos, const MapID map,
-                                             const float rotation, const bool withFunc)
+    static Entity CreateEntityInternal(const Entity id, EntityType type, const Point& pos, const MapID map,
+                                       const float rotation, const bool withFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         const auto& config = global::ENGINE_CONFIG;
@@ -85,7 +85,7 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& registry = internal::REGISTRY;
 
-        const auto entity = registry.create(id != entt::null ? id : entt::entity{ecs.entityID++});
+        const auto entity = registry.create(id != entt::null ? id : Entity{ecs.entityID++});
         registry.emplace<PositionC>(entity, pos, map, type, rotation); // PositionC is default
 
         if (withFunc) [[likely]]
@@ -114,13 +114,13 @@ namespace magique
         return entity;
     }
 
-    entt::entity EntityCreate(const EntityType type, Point pos, const MapID map, float rotation, const bool withFunc)
+    Entity EntityCreate(const EntityType type, Point pos, const MapID map, float rotation, const bool withFunc)
     {
         return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
     }
 
-    entt::entity EntityCreateEx(const entt::entity id, const EntityType type, Point pos, const MapID map,
-                                const float rot, const bool withFunc)
+    Entity EntityCreateEx(const Entity id, const EntityType type, Point pos, const MapID map, const float rot,
+                          const bool withFunc)
     {
         MAGIQUE_ASSERT(!EntityExists(id), "Entity already exists!");
         return CreateEntityInternal(id, type, pos, map, rot, withFunc);
@@ -128,7 +128,7 @@ namespace magique
 
     void EntitySetDestroyCallback(const EntityCallback& callback) { global::ENGINE_DATA.destroyCallback = callback; }
 
-    bool EntityDestroy(const entt::entity entity)
+    bool EntityDestroy(const Entity entity)
     {
         const auto& config = global::ENGINE_CONFIG;
         auto& data = global::ENGINE_DATA;
@@ -197,7 +197,7 @@ namespace magique
             return;
         }
 
-        for (const auto e : internal::REGISTRY.view<entt::entity>())
+        for (const auto e : internal::REGISTRY.view<Entity>())
         {
             const auto& pos = group.get<PositionC>(e);
             for (const auto id : ids)
@@ -212,9 +212,9 @@ namespace magique
         // Don't need to patch as its cleared each tick
     }
 
-    void EntityDestroy(const std::function<bool(entt::entity)>& func)
+    void EntityDestroy(const std::function<bool(Entity)>& func)
     {
-        for (const auto e : internal::REGISTRY.view<entt::entity>())
+        for (const auto e : internal::REGISTRY.view<Entity>())
         {
             if (func(e))
             {
@@ -223,11 +223,11 @@ namespace magique
         }
     }
 
-    void EntityDestroyDeferred(entt::entity entity) { global::ENGINE_DATA.deferredDestroyVec.push_back(entity); }
+    void EntityDestroyDeferred(Entity entity) { global::ENGINE_DATA.deferredDestroyVec.push_back(entity); }
 
     void EntityDestroyDeferred(const FilterFunc& func)
     {
-        for (const auto e : internal::REGISTRY.view<entt::entity>())
+        for (const auto e : internal::REGISTRY.view<Entity>())
         {
             if (func(e))
             {
@@ -236,36 +236,36 @@ namespace magique
         }
     }
 
-    CollisionC& ComponentGiveCollisionRect(entt::entity entity, Rect rect, Point anchor)
+    CollisionC& ComponentGiveCollisionRect(Entity entity, Rect rect, Point anchor)
     {
         auto& col = internal::REGISTRY.emplace<CollisionC>(entity);
         col.setRectShape(rect, anchor);
         return col;
     }
 
-    CollisionC& ComponentGiveCollisionCircle(const entt::entity e, const float radius)
+    CollisionC& ComponentGiveCollisionCircle(const Entity e, const float radius)
     {
         auto& col = internal::REGISTRY.emplace<CollisionC>(e);
         col.setCircleShape(radius);
         return col;
     }
 
-    CollisionC& ComponentGiveCollisionTri(const entt::entity e, const Point p2, const Point p3, Point anchor)
+    CollisionC& ComponentGiveCollisionTri(const Entity e, const Point p2, const Point p3, Point anchor)
     {
         return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{}, anchor, Shape::TRIANGLE);
     }
 
-    void ComponentGiveCamera(const entt::entity entity)
+    void ComponentGiveCamera(const Entity entity)
     {
         internal::REGISTRY.emplace<CameraC>(entity);
         global::ENGINE_DATA.cameraMap = ComponentGet<const PositionC>(entity).map;
     }
 
-    void ComponentGiveActor(const entt::entity e) { internal::REGISTRY.emplace<ActorC>(e); }
+    void ComponentGiveActor(const Entity e) { internal::REGISTRY.emplace<ActorC>(e); }
 
     //----------------- CORE -----------------//
 
-    void CameraSetEntity(const entt::entity target)
+    void CameraSetEntity(const Entity target)
     {
         auto& reg = internal::REGISTRY;
         if (!reg.valid(target))
@@ -280,7 +280,7 @@ namespace magique
         global::ENGINE_DATA.cameraEntity = target;
     }
 
-    static HashSet<entt::entity>& QueryLoadedIMPL(MapID map, const Rect& area)
+    static HashSet<Entity>& QueryLoadedIMPL(MapID map, const Rect& area)
     {
         auto& dynamicData = global::DY_COLL_DATA;
         auto& set = global::ENGINE_DATA.queryCache;
@@ -289,7 +289,7 @@ namespace magique
         return set;
     }
 
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
+    const std::vector<Entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
     {
         auto& set = QueryLoadedIMPL(map, Rect{mid - radius, Point{radius * 2}});
         for (auto it = set.begin(); it != set.end();)
@@ -306,7 +306,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter)
+    const std::vector<Entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter)
     {
         auto& set = QueryLoadedIMPL(map, rect);
         for (auto it = set.begin(); it != set.end();)
@@ -323,7 +323,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
+    const std::vector<Entity>& EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
@@ -339,7 +339,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<entt::entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter)
+    const std::vector<Entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
@@ -355,7 +355,7 @@ namespace magique
         return set.values();
     }
 
-    void internal::OnRemoveCollisionC(entt::entity entity)
+    void internal::OnRemoveCollisionC(Entity entity)
     {
         auto& data = global::ENGINE_DATA;
         auto& dynamic = global::DY_COLL_DATA;

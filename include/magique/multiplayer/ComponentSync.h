@@ -7,10 +7,7 @@ namespace magique
     template <typename... T>
     struct ComponentSync
     {
-        bool hasChanged()
-        {
-
-        }
+        bool hasChanged() {}
     };
 
 } // namespace magique

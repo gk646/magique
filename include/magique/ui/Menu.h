@@ -1,9 +1,7 @@
 #ifndef MAGEQUEST_MENU_H
 #define MAGEQUEST_MENU_H
 
-#include "magique/ui/UI.h"
-#include "magique/ui/UIContainer.h"
-#include <magique/ui/UIObject.h>
+#include <magique/ui/UIContainer.h>
 
 //===============================================
 // Menu
@@ -41,6 +39,9 @@ namespace magique
         // Activates the first nested menu with the given name - searches all submenus recursively
         void activateNested(std::string_view name);
 
+        // Searches all submenus recursively
+        Menu* getNestedMenu(std::string_view name) const;
+
         // Gives control back to the parent
         void activateParent() const;
 
@@ -74,8 +75,6 @@ namespace magique
             if (wasDrawn && getIsActive())
                 updateInputs();
         }
-
-        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override;
 
         // Updates the default inputs:
         //      - ESC: Switch to parent

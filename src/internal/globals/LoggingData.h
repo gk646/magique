@@ -55,4 +55,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGEQUEST_LOGGINGDATA_H
+#endif // MAGEQUEST_LOGGINGDATA_H

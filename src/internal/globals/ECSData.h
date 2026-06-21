@@ -20,4 +20,4 @@ namespace magique
 } // namespace magique
 
 
-#endif //MAGIQUE_ECSDATA_H
+#endif // MAGIQUE_ECSDATA_H

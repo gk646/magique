@@ -41,7 +41,7 @@ namespace magique
         GridNode nodePool[MAGIQUE_MAX_PATH_SEARCH_CAPACITY];
 
         // Lookup table for entity types and entities
-        HashSet<entt::entity> solidEntities;
+        HashSet<Entity> solidEntities;
         HashSet<EntityType> solidTypes;
 
         //----------------- METHODS -----------------//
@@ -53,7 +53,7 @@ namespace magique
             return staticGrid.getIsMarked(x, y) || dynamicGrid.getIsMarked(x, y);
         }
 
-        [[nodiscard]] bool getIsPathSolid(const entt::entity e, const EntityType type) const
+        [[nodiscard]] bool getIsPathSolid(const Entity e, const EntityType type) const
         {
             return solidTypes.contains(type) || solidEntities.contains(e);
         }

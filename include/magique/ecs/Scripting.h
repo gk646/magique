@@ -40,10 +40,10 @@ namespace magique
     EntityScript* ScriptingGetScript(EntityType entity);
 
     // Sets the scripted status for the given entity - if set no automatic script methods will be called for this entity
-    void ScriptingSetScripted(entt::entity entity, bool val);
+    void ScriptingSetScripted(Entity entity, bool val);
 
     // Returns true if the given entity receives script updates
-    bool ScriptingGetIsScripted(entt::entity entity);
+    bool ScriptingGetIsScripted(Entity entity);
 
     // Calls the given event function on the given entity
     // Note: If you want to access non-inherited methods you HAVE to pass your subclass type
@@ -52,11 +52,11 @@ namespace magique
     //             InvokeEvent<onItemPickup, MyPlayerScript>(self, item);
     //             InvokeEvent<onExplosion, MyGrenadeScript>(self, radius, damage);
     template <ScriptEvent event, class Script = EntityScript, class... Args>
-    void ScriptingInvokeEvent(entt::entity entity, Args&&... arguments);
+    void ScriptingInvokeEvent(Entity entity, Args&&... arguments);
 
     // Same as 'InvokeEvent' but avoids the type lookup - very fast!
     template <ScriptEvent event, class Script = EntityScript, class... Args>
-    void ScriptingInvokeEventDirect(EntityScript* script, entt::entity entity, Args&&... arguments);
+    void ScriptingInvokeEventDirect(EntityScript* script, Entity entity, Args&&... arguments);
 
     enum ScriptEvent : uint8_t
     {
@@ -77,23 +77,23 @@ namespace magique
         //================= AUTOMATIC =================// // These events are called automatically
 
         // Called once after all components have been added
-        virtual void onCreate(entt::entity self) {}
+        virtual void onCreate(Entity self) {}
 
         // Called once before the entity is destroyed
-        virtual void onDestroy(entt::entity self) {}
+        virtual void onDestroy(Entity self) {}
 
         // Called once at the beginning of each tick
         //      - updated: true if this entity is in update range of any actor (e.g. it's loaded)
-        virtual void onUpdate(entt::entity self, bool updated) {}
+        virtual void onUpdate(Entity self, bool updated) {}
 
         // Called each time this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info)
+        virtual void onDynamicCollision(Entity self, Entity other, CollisionInfo& info)
         {
             AccumulateCollision(info); // Treats the other shape as solid per default
         }
 
         // Called each time this entity collides with a static collision object
-        virtual void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info)
+        virtual void onStaticCollision(Entity self, ColliderInfo collider, CollisionInfo& info)
         {
             AccumulateCollision(info); /// Treats the other shape as solid per default
         }
@@ -101,9 +101,9 @@ namespace magique
         //================= USER =================// // These events have to be called by the user
         // Examples:
 
-        // virtual void onInteract(entt::entity self, entt::entity target) {}
+        // virtual void onInteract(Entity self, Entity target) {}
 
-        // virtual void onItemPickup(entt::entity self, Item& item) {}
+        // virtual void onItemPickup(Entity self, Item& item) {}
 
         // ... feel free to add more global methods or create subclasses with special methods!
 
@@ -123,20 +123,19 @@ namespace magique
 namespace magique
 {
     template <ScriptEvent event, class Script, class... Args>
-    void magique::ScriptingInvokeEvent(entt::entity entity, Args&&... arguments)
+    void magique::ScriptingInvokeEvent(Entity entity, Args&&... arguments)
     {
         const auto& pos = internal::REGISTRY.get<PositionC>(entity); // Every entity has a position
         auto* script = static_cast<Script*>(ScriptingGetScript(pos.type));
         MAGIQUE_ASSERT(script != nullptr, "No Script for this type!");
-        Call<event, Script, entt::entity, Args...>(script, entity, std::forward<Args>(arguments)...);
+        Call<event, Script, Entity, Args...>(script, entity, std::forward<Args>(arguments)...);
     }
 
     template <ScriptEvent event, class Script, class... Args>
-    void magique::ScriptingInvokeEventDirect(EntityScript* script, entt::entity entity, Args&&... arguments)
+    void magique::ScriptingInvokeEventDirect(EntityScript* script, Entity entity, Args&&... arguments)
     {
         MAGIQUE_ASSERT(script != nullptr, "Passing a null script");
-        Call<event, Script, entt::entity, Args...>(static_cast<Script*>(script), entity,
-                                                   std::forward<Args>(arguments)...);
+        Call<event, Script, Entity, Args...>(static_cast<Script*>(script), entity, std::forward<Args>(arguments)...);
     }
 } // namespace magique
 #endif // MAGIQUE_INTERNAL_SCRIPTING_H

@@ -43,7 +43,7 @@ namespace magique
 
     // Plays the given sound attached to the given entity - volume is dynamically updated with entity position
     // Sound is automatically destroyed (stopped) if entity doesn't exist
-    void SoundPlay2D(const Sound& sound, entt::entity entity, float volume = 1.0F, bool loop = false);
+    void SoundPlay2D(const Sound& sound, Entity entity, float volume = 1.0F, bool loop = false);
 
     // Plays the given sound spatially at the given position
     void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F, bool loop = false);

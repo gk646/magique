@@ -69,7 +69,8 @@ namespace magique
 
     struct TextButton : Button
     {
-        TextButton(std::string_view txt, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode mod = ScalingMode::FULL);
+        TextButton(std::string_view txt, Anchor anchor = Anchor::NONE, Point inset = {},
+                   ScalingMode mod = ScalingMode::FULL);
 
         // Fits the width and height to the text height - uses font.baseSize as default
         void fitToText(const Font& font, float size = 0);

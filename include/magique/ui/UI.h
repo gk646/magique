@@ -95,7 +95,7 @@ namespace magique
         // Returns true only if input state AND not consumed
         static bool IsKeyPressed(int key);
         static bool IsKeyDown(int key);
-        static bool IsKeyReleased(int key);
+        static bool IsKeyReleased(int key); // consumed OR Released
         static bool IsKeyPressedRepeat(int key);
 
         static bool IsMouseButtonPressed(int key);
@@ -104,12 +104,11 @@ namespace magique
 
         static bool IsGamepadButtonPressed(int gamepad, int key);
         static bool IsGamepadButtonDown(int gamepad, int key);
-        static bool IsGamepadButtonReleased(int gamepad, int key);
+        static bool IsGamepadButtonReleased(int gamepad, int key); // consumed OR Released
 
-        // Consume the key and gamepad input - all methods will return false
+        // Consume the key and gamepad input or mouse input - all methods will return false
+        //      - deferred: will be set after the current
         static void ConsumeKey();
-
-        // Consume the mouse input - all methods will return false
         static void ConsumeMouse();
         static bool GetIsKeyConsumed();
         static bool GetIsMouseConsumed();
@@ -149,7 +148,6 @@ namespace magique
         // Can be called manually to trigger the corresponding callback
         // Note: These are called AUTOMATICALLY when the appropriate buttons are pressed
         void triggerEvent(GamepadMappingEvent event);
-        void triggerButton(GamepadButton gamepad, KeyboardKey key);
 
     private:
         void setMouse(Point pos);

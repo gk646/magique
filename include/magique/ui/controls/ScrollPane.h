@@ -33,8 +33,8 @@ namespace magique
         // Returns how much the content is offset horizontally and vertically - always >= 0
         Point getScrollOffset() const;
 
-        // Adds content that will be drawn
-        void setContent(UIObject& content, Anchor anchor= Anchor::TOP_LEFT, Point inset ={});
+        // Set the content that will be drawn and where it will be aligned in the scroll pane
+        void setContent(UIObject& content, Anchor anchor = Anchor::TOP_LEFT, Point inset = {});
         UIObject* getContent() const;
 
         // Sets the base anchor position of the content
@@ -45,20 +45,20 @@ namespace magique
 
         // If true scroller starts at the bottom to move up (instead of at the top to move down)
         // Useful for e.g. chat
-        void setInvertVertScroll(bool invert);
-        bool getInvertVertScroll() const;
+        void invertVerticalScrolling(bool invert = true);
+        bool isVerticalScrollInverted() const;
+
+        Rectangle getVerticalScrollBounds();
+        Rectangle getHorizontalScrollBounds();
+        bool getIsVerticalDragging() const;
+        bool getIsHorizontalDragging() const;
 
     protected:
-        void onDrawUpdate(const Rect& bounds, bool wasDrawn) override
-        {
-            if (wasDrawn)
-                updateInputs();
-        }
-
         void onDraw(const Rect& bounds) override
         {
-            drawDefault(bounds);
+            updateInputs();
             drawContent();
+            drawDefault(bounds);
         }
 
         // Correctly aligns and draws the content
@@ -69,11 +69,6 @@ namespace magique
 
         // Updates the dragging for the mouse input and aligns the content
         void updateInputs();
-
-        Rectangle getVerticalScrollBounds();
-        Rectangle getHorizontalScrollBounds();
-        bool getIsVerticalDragging() const;
-        bool getIsHorizontalDragging() const;
 
     private:
         struct Scroller final
@@ -91,7 +86,7 @@ namespace magique
 
             Rectangle getBounds(const Rectangle& cBounds, const Rectangle& pane);
             void updateInputs(const Rectangle& scroller, const Rectangle& pane);
-            float getScaledOffset() const;
+            float getScaledOffset(Anchor anchor) const;
         };
         Scroller horizontal{true};
         Scroller vertical{false};

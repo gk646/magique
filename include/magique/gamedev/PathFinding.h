@@ -49,7 +49,7 @@ namespace magique
     bool PathRayCast(Point start, Point end, MapID map);
 
     // Returns ture IF both entities are on the same map AND the ray cast from their mid-points does not hit any solid cells
-    bool PathRayCast(entt::entity a, entt::entity b);
+    bool PathRayCast(Entity a, Entity b);
 
     // Returns true if the pathfinding tile (that contains the point) is solid (cannot be walked on)
     bool PathIsSolid(const Point& pos, MapID map);
@@ -73,8 +73,8 @@ namespace magique
 
     // Marks the given entity as solid for pathfinding - automatically removed when the entity is deleted
     // IMPORTANT: Marked entity needs to have the CollisionC so collision can be calculated
-    void PathSetSolidEntity(entt::entity entity, bool value);
-    bool PathGetSolidEntity(entt::entity entity);
+    void PathSetSolidEntity(Entity entity, bool value);
+    bool PathGetSolidEntity(Entity entity);
 
     //================= DEBUG =================//
 

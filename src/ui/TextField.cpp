@@ -8,7 +8,6 @@
 #include <magique/ui/UI.h>
 
 #include "external/raylib-compat/rcore_compat.h"
-#include "internal/utils/CollisionPrimitives.h"
 #include "internal/globals/EngineConfig.h"
 #include "magique/core/Draw.h"
 
@@ -40,6 +39,22 @@ namespace magique
         return text;
     }
 
+    void TextField::addLine(std::string_view line)
+    {
+        text += line;
+        text += '\n';
+        textChanged = true;
+    }
+
+    void TextField::popFirstLine()
+    {
+        auto pos = text.find_first_of('\n');
+        if (pos == std::string::npos)
+            text.clear();
+        else
+            text.erase(0, pos);
+    }
+
     void TextField::setHint(const char* newHint)
     {
         if (newHint != nullptr)
@@ -67,18 +82,18 @@ namespace magique
 
     int TextField::getLineCount() const { return lineCount; }
 
-    void TextField::fitBoundsToText(float size, const Font& font, float spacing, bool heightOnly)
+    void TextField::fitToText(float size, const Font& font, float spacing, bool heightOnly)
     {
         const auto dims = MeasureTextEx(font, text.c_str(), size, spacing);
         const auto startDims = getStartBounds();
-        const auto height = std::max(dims.y, startDims.y);
+        const auto height = std::max(dims.y, startDims.height);
         if (heightOnly)
         {
             setSize({getBounds().width, height});
         }
         else
         {
-            setSize({std::max(dims.x + 4, startDims.x), height});
+            setSize({std::max(dims.x + 4, startDims.width), height});
         }
         updateLineState();
     }
@@ -87,6 +102,8 @@ namespace magique
     {
         return LayeredInput::IsKeyPressed(key) || LayeredInput::IsKeyPressedRepeat(key);
     }
+
+    void TextField::setOnEnter(const EnterFunc& func) { enterFunc = func; }
 
     bool TextField::updateInputs(bool allowInput)
     {
@@ -143,7 +160,6 @@ namespace magique
         const auto bounds = getBounds();
         const Point tPos = centered ? getCenteredTextPos(bounds, fontSize) : Point{bounds.x, bounds.y};
 
-
         if (!isFocused && text.empty() && hint != nullptr)
         {
             DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.75));
@@ -170,7 +186,7 @@ namespace magique
         DrawTextEx(font, "|", {tPos.x + cursorOffX, tPos.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
-    void TextField::drawDefault(const Rect& bounds, float fontSize)
+    void TextField::drawDefault(const Rect& bounds, const float fontSize)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         const Color body = theme.getBodyColor(getIsHovered(), getIsFocused());
@@ -178,8 +194,6 @@ namespace magique
         DrawRectFrameFilled(bounds, body, outline);
         drawText(fontSize, getIsFocused() ? theme.textHighlight : theme.text, theme.textPassive);
     }
-
-    void TextField::setOnEnter(const EnterFunc& func) { enterFunc = func; }
 
     bool TextField::pollControls()
     {

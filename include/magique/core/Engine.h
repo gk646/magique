@@ -43,13 +43,13 @@ namespace magique
     void EngineSetCacheDuration(int ticks);
 
     // Adds the entity to the update cache manually regardless of position
-    void EngineAddToCache(entt::entity e);
+    void EngineAddToCache(Entity e);
 
     // Manually clears the entity cache in this tick
     void EngineClearCache();
 
     // Returns true if this entity is in the entity cache (update this tick)
-    bool EngineIsCached(entt::entity e);
+    bool EngineIsCached(Entity e);
 
     // Allows to turn off built-in collision handling - useful if you want to do it on your own
     // Note: if disabled onStaticCollision() and onDynamicCollision() event method will NOT be called anymore
@@ -59,30 +59,29 @@ namespace magique
     //================= DATA ACCESS =================//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!
-    const std::vector<entt::entity>& EngineGetUpdateEntities();
+    const std::vector<Entity>& EngineGetUpdateEntities();
 
     // Returns a list of all entities that should be drawn - culled with the current camera
-    const std::vector<entt::entity>& EngineGetDrawEntities();
+    const std::vector<Entity>& EngineGetDrawEntities();
 
     // Returns the currently loaded maps - a map is loaded if it contains at least 1 actor
     const std::vector<MapID>& EngineGetActiveMaps();
 
     //================= QUERY ENTITIES =================//
 
-    using FilterFunc = std::function<bool(entt::entity)>;
+    using FilterFunc = std::function<bool(Entity)>;
 
     // Returns a vector containing all collision (having CollisionC) entities within the given shape
     // Note: The returned vector is only valid until this method is called again (single instance)
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, Point mid, float radius,
-                                                       const FilterFunc& filter = nullptr);
-    const std::vector<entt::entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
+    const std::vector<Entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    const std::vector<Entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    const std::vector<entt::entity>& EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
-    const std::vector<entt::entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
+    const std::vector<Entity>& EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    const std::vector<Entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     //================= UTILS =================//
 
@@ -91,8 +90,8 @@ namespace magique
     // With this you have a single point of truth which is the currently controlled character
     // e.g. What abilities to draw (hotbar)? Show the health of what entity? Which entity receives inputs?
     // Failure: Returns entt::null if not set - assignment is fully MANUAL!
-    void EngineSetPlayer(entt::entity entity);
-    entt::entity EngineGetPlayer();
+    void EngineSetPlayer(Entity entity);
+    Entity EngineGetPlayer();
     bool EngineHasPlayer();
 
     // Sets the engine font for performance-overlay and console

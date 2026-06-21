@@ -105,8 +105,8 @@ namespace magique::internal
 #define M_GAMESAVE_TYPE_MISMATCH(expected, ret)                                                                         \
     if (cell->type != StorageType::expected)                                                                            \
     {                                                                                                                   \
-        LOG_ERROR("Storage slot type mismatch: Expected: %s Have %s", #expected,                             \
-                  enchantum::to_string(cell->type).data());                                                                    \
+        LOG_ERROR("Storage slot type mismatch: Expected: %s Have %s", #expected,                                        \
+                  enchantum::to_string(cell->type).data());                                                             \
         return ret;                                                                                                     \
     }
 

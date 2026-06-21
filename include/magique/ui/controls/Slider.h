@@ -21,7 +21,7 @@ namespace magique
     {
         // Creates a new slider from coordinates in the logical UI resolution
         Slider(Rect bounds, std::string_view label = "", Direction labelDir = Direction::LEFT,
-                 Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
+               Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         // Sets the scale to be balanced between min and max - the middle will be the arithmetic mid between both values
         void setScaleLinear(float min, float max);

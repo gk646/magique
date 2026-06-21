@@ -43,13 +43,14 @@
 
 namespace magique
 {
-    using LobbyChatCallback = std::function<void(Connection sender, const char* chatMessage)>;
+    // Connection::INVALID is used for the host
+    using LobbyChatCallback = std::function<void(Connection sender, std::string_view msg)>;
 
     // Sets the callback that is called on each new chat message sent in the lobby
     // Note: This will also be called for your OWN message - so you don't have to make a special case for those
     void LobbySetChatCallback(const LobbyChatCallback& callback);
 
-    using LobbyMetadataCallback = std::function<void(Connection sender, const char* key, const char* val)>;
+    using LobbyMetadataCallback = std::function<void(Connection sender, std::string_view key, std::string_view val)>;
 
     // Sets the callback for any metadata actions
     void LobbySetMetadataCallback(const LobbyMetadataCallback& callback);
@@ -63,15 +64,13 @@ namespace magique
         // Note: Only works as the lobby owner
         // Note: Automatically set to false if you leave a lobby
         void setStartSignal(bool value);
+        bool getStartSignal() const;
 
-        // Gets the value of the start signal
-        [[nodiscard]] bool getStartSignal() const;
-
-        // Sends a new chat message in the lobby chat - replicates to steam
-        // Note: requires you to be in a lobby - callback not called for sent messages
+        // Sends a new chat message in the lobby chat - replicates to the steam lobby
+        // Note: requires you to be in a lobby
         void sendChatMsg(std::string_view message);
 
-        // Sets the metadata - behavior differs from clients vs hosts - replicates the change to the steam lobby
+        // Sets the metadata - behavior differs from clients vs hosts - replicates to the steam lobby
         // Host:   Immediately sets the value and sends the update to all clients
         // Client: Sent the change only to the host - host then decides what to do with it
         // Note: metadata is automatically cleared if the multiplayer session closes
@@ -83,4 +82,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_LOBBY_H
+#endif // MAGIQUE_LOBBY_H

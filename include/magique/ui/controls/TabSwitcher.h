@@ -19,7 +19,7 @@ namespace magique
 
         // Sets/gets the align offset applied to the alignment - active tab is aligned after: TOP_CENTER + offset
         void setAlignOffset(Point offset);
-        Point getAlignOffset()const;
+        Point getAlignOffset() const;
 
         void setActive(UIObject* tab);
         void setActive(std::string_view tab);

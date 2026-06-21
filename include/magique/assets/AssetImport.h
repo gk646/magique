@@ -60,16 +60,16 @@ namespace magique
     // Imports all tags from the given aseprite - each tag is mapped to a animation state with the mapping function
     // Note: Only imports frames part of any tag
     Animation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas = {}, float scale = 1.0F,
-                                   Point offset = {}, Point anchor = {-1});
+                             Point offset = {}, Point anchor = {-1});
 
     using LayerMapFunc = LayeredAnimation (*)(const char* layerName);
 
     // Imports each layers separately into its own entity animation
     // Note: Uses the mapping function to map layer name in the editor to AnimationLayer values
     std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
-                                                                                 LayerMapFunc layerMap,
-                                                                                 AtlasID atlas = {}, float scale = 1.0F,
-                                                                                 Point offset = {}, Point anchor = {-1});
+                                                                             LayerMapFunc layerMap, AtlasID atlas = {},
+                                                                             float scale = 1.0F, Point offset = {},
+                                                                             Point anchor = {-1});
 
     //================= Audio =================//
 

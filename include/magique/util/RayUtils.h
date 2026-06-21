@@ -45,7 +45,7 @@ namespace magique
 
     // Draws a scaled render texture at the given position (automatically flips it)
     void DrawRenderTexture(const RenderTexture& texture, Point pos, Point scale = 1, Color tint = WHITE);
-    void DrawRenderTextureEx(const RenderTexture& texture, Rect dest,float rotation = 0, Color tint = WHITE);
+    void DrawRenderTextureEx(const RenderTexture& texture, Rect dest, float rotation = 0, Color tint = WHITE);
 
     // Returns the length of the text up to the specified index
     float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);

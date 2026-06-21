@@ -36,6 +36,42 @@ namespace magique
         // Optionally specify an anchor point the object is anchored to and a scaling mode
         TextField(Rect bounds, Anchor anchor = Anchor::NONE, Point insert = {}, ScalingMode scaling = ScalingMode::FULL);
 
+        // Called everytime the textfield is focused and enter is pressed
+        void setOnEnter(const EnterFunc& func);
+
+        // Returns the current text of the textfield
+        const std::string& getText() const;
+
+        // Sets the textChanged flag to true
+        std::string& getTextToModify();
+
+        // Adds text with a newline appended
+        void addLine(std::string_view line);
+
+        // Removes text from the front until the first newline is found "\n"
+        // Note: Useful for implementing chats or logs
+        void popFirstLine();
+
+        // Sets the hint - drawn on the field if empty
+        void setHint(const char* hint);
+
+        // Returns true if the text has changed since last time this method was called - resets the changed status
+        bool pollTextHasChanged();
+
+        // Sets if the cursor is shown or not and the blink delay in ticks
+        void setCursorStatus(bool shown, int delay);
+
+        // Returns true if the textfield is focused
+        [[nodiscard]] bool getIsFocused() const;
+        void setFocused(bool val = true);
+
+        // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
+        [[nodiscard]] int getLineCount() const;
+
+        // Adjust the bounds such that the text fits inside
+        // Keeps the top left the same
+        void fitToText(float size = 8, const Font& font = EngineGetFont(), float spacing = 1, bool heightOnly = false);
+
     protected:
         // Same as ui/UIObject.h
         // Note: Text needs to be drawn manually
@@ -59,37 +95,8 @@ namespace magique
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rect& bounds, float fontSize = 16);
+        void drawDefault(const Rect& bounds, float fontSize = 8);
 
-    public:
-        // Called everytime the textfield is focused and enter is pressed
-        void setOnEnter(const EnterFunc& func);
-
-        // Returns the current text of the textfield
-        const std::string& getText() const;
-        // Sets the textChanged flag to true
-        std::string& getTextToModify();
-
-        // Sets the hint - drawn on the field if empty
-        void setHint(const char* hint);
-
-        // Returns true if the text has changed since last time this method was called - resets the changed status
-        bool pollTextHasChanged();
-
-        // Sets if the cursor is shown or not and the blink delay in ticks
-        void setCursorStatus(bool shown, int delay);
-
-        // Returns true if the textfield is focused
-        [[nodiscard]] bool getIsFocused() const;
-        void setFocused(bool val);
-
-        // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
-        [[nodiscard]] int getLineCount() const;
-
-        // Adjust the bounds such that the text fits inside
-        // Keeps the top left the same
-        void fitBoundsToText(float size = 14, const Font& font = EngineGetFont(), float spacing = 1,
-                             bool heightOnly = false);
 
     private:
         bool pollControls();

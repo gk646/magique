@@ -85,7 +85,7 @@ namespace magique
         }
 
         auto copy = SYSTEM_DATA.systems;
-        std::ranges::sort(copy, []( auto& one,  auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
+        std::ranges::sort(copy, [](auto& one, auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
 
         LOG_INFO("Gamesystem Stats:");
         printf("\t%-25s || %10s | %10s | %10s \n", "System // Function (ms)", "DrawGame", "UpdateGame", "UpdateEnd");

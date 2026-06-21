@@ -185,7 +185,7 @@ namespace magique
 
     bool NetworkIsLocalPlayer() { return !NetworkInSession() || NetworkIsHost(); }
 
-    void NetworkSetConnMapping(const Connection conn, const entt::entity entity)
+    void NetworkSetConnMapping(const Connection conn, const Entity entity)
     {
         auto& data = global::MP_DATA;
         if (!NetworkInSession())
@@ -209,7 +209,7 @@ namespace magique
         data.connectionMapping.push_back(ConnMapping{conn, entity});
     }
 
-    entt::entity NetworkGetMappedEntity(const Connection conn)
+    Entity NetworkGetMappedEntity(const Connection conn)
     {
         const auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
@@ -222,7 +222,7 @@ namespace magique
         return entt::null;
     }
 
-    Connection NetworkGetMappedConnection(const entt::entity entity)
+    Connection NetworkGetMappedConnection(const Entity entity)
     {
         const auto& data = global::MP_DATA;
         for (auto& mapping : data.connectionMapping)
@@ -310,19 +310,19 @@ namespace magique
 
     bool NetworkIsClient() { return false; }
 
-    void NetworkSetConnMapping(const Connection conn, const entt::entity entity)
+    void NetworkSetConnMapping(const Connection conn, const Entity entity)
     {
         (void)conn;
         (void)entity;
     }
 
-    entt::entity NetworkGetConnMapping(const Connection conn)
+    Entity NetworkGetConnMapping(const Connection conn)
     {
         (void)conn;
         return entt::null;
     }
 
-    Connection NetworkGetConnMapping(const entt::entity entity)
+    Connection NetworkGetConnMapping(const Entity entity)
     {
         (void)entity;
         return Connection::INVALID;

@@ -41,7 +41,7 @@ namespace magique
         return it->second;
     }
 
-    void ScriptingSetScripted(const entt::entity entity, const bool val)
+    void ScriptingSetScripted(const Entity entity, const bool val)
     {
         if (val)
         {
@@ -53,10 +53,7 @@ namespace magique
         }
     }
 
-    bool ScriptingGetIsScripted(const entt::entity entity)
-    {
-        return global::ENGINE_DATA.entityNScriptedSet.contains(entity);
-    }
+    bool ScriptingGetIsScripted(const Entity entity) { return global::ENGINE_DATA.entityNScriptedSet.contains(entity); }
 
     void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
 

@@ -33,4 +33,4 @@
 #define MAGIQUE_WORLD_BOUND_DEPTH (100)
 #define MAGIQUE_LOBBY_PACKET_TYPE (static_cast<MessageType>(UINT8_MAX))
 
-#endif //MAGIQUE_CONFIG_H
+#endif // MAGIQUE_CONFIG_H

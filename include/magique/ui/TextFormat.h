@@ -56,4 +56,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_TEXT_FORMAT_H
+#endif // MAGIQUE_TEXT_FORMAT_H

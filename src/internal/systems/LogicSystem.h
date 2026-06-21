@@ -35,8 +35,8 @@ namespace magique
     using ActorRectsTable = std::array<Rect, MAGIQUE_MAX_PLAYERS>;
     using ActorMapsTable = std::array<bool, UINT8_MAX>;
 
-    inline void HandleCollisionEntity(const entt::entity e, const PositionC pos, const CollisionC& col,
-                                      EntityHashGrid& grid, std::vector<entt::entity>& cVec)
+    inline void HandleCollisionEntity(const Entity e, const PositionC pos, const CollisionC& col, EntityHashGrid& grid,
+                                      std::vector<Entity>& cVec)
     {
         auto& pathData = global::PATH_DATA;
         auto& pathGrid = pathData.mapsDynamicGrids[pos.map]; // Must exist - check in loop before
@@ -229,7 +229,7 @@ namespace magique
         }
 
         // Iterates all entities
-        for (const auto entity : EntityGetRegistry().view<entt::entity>())
+        for (const auto entity : EntityGetRegistry().view<Entity>())
         {
             // Invoke tick event on all entities that are in this tick and are scripted
             if (data.isEntityScripted(entity)) [[likely]]

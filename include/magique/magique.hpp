@@ -50,7 +50,7 @@
 #include "gamedev/UsefulStuff.h"
 
 // Networking
-#if defined( MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
+#if defined(MAGIQUE_LAN) || defined(MAGIQUE_STEAM)
 #include "multiplayer/Networking.h"
 #include "multiplayer/LocalSocket.h"
 #include "multiplayer/Lobby.h"

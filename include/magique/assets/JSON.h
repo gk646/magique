@@ -117,7 +117,7 @@ namespace glz
 
     // Empty so glaze doesnt complain - nonsensical to load textures from json
     // Allows to store it in a serialized struct
-    template<>
+    template <>
     struct from<JSON, magique::Animation>
     {
         template <auto Opts>

@@ -188,7 +188,7 @@ namespace magique
         }
     }
 
-    void CheckCollisionEntities(entt::entity a, entt::entity b, CollisionInfo& info)
+    void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info)
     {
         auto& posA = ComponentGet<PositionC>(a);
         auto& colA = ComponentGet<CollisionC>(a);
@@ -197,7 +197,7 @@ namespace magique
         CheckCollisionEntities(posA, colA, posB, colB, info);
     }
 
-    bool CheckCollisionEntities(entt::entity a, entt::entity b)
+    bool CheckCollisionEntities(Entity a, Entity b)
     {
         CollisionInfo info{};
         CheckCollisionEntities(a, b, info);
@@ -221,7 +221,7 @@ namespace magique
         return info.isColliding();
     }
 
-    bool CheckCollisionEntityMouse(entt::entity e)
+    bool CheckCollisionEntityMouse(Entity e)
     {
         const auto& pos = ComponentGet<PositionC>(e);
         const auto* col = ComponentTryGet<CollisionC>(e);

@@ -30,4 +30,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif //MAGIQUE_BITUTIL_H
+#endif // MAGIQUE_BITUTIL_H

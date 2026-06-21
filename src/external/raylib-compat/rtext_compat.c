@@ -1,0 +1,3 @@
+
+
+int GetTextLineSpacing() { return textLineSpacing; }

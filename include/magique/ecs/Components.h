@@ -67,10 +67,10 @@ namespace magique
         void setCircleShape(float radius);
 
         // Adjust the position of the entity such the collision shape is centered on the give position
-        static void CenterOn(entt::entity e, Point point);
+        static void CenterOn(Entity e, Point point);
 
         // Returns the middle point of the entity (or just the position if CollisionC is missing)
-        static Point GetMiddle(entt::entity e);
+        static Point GetMiddle(Entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         bool detects(const CollisionC& other) const;
@@ -179,13 +179,16 @@ namespace magique
         // Draws all valid layers in ascending order (enum value) - if valid uses the global anchor over the individual ones
         void draw(const Point& pos, float rotation = 0, Color tint = WHITE) const;
 
+        // Draw the specified layer
+        void drawLayer(AnimationLayer layer, const Point& pos, float rotation = 0, Color tint = WHITE) const;
+
         void setTexture(AnimationLayer layer, TextureC texture);
 
         // Returns the texture on the layer or a dummy
         TextureC getTexture(AnimationLayer layer);
 
-        Point globalAnchor = -1;
-        int priority = 0; // Can be used to enforce ordering
+        Point globalAnchor = -1; // Anchor used for all textures
+        int priority = 0;        // Can be used to enforce ordering
 
         // Allows iteration through the layers
         auto begin() { return textures.begin(); }
@@ -204,7 +207,7 @@ namespace magique
     {
         float radius = 50.0F;
         Color color = RED;
-        float intensity = 1.0f; // Multiplier of the color value
+        float intensity = 1.0f;         // Multiplier of the color value
         float randRangePosition = 0.0F; // The range of how much the position can be change by a random value
     };
 

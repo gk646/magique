@@ -80,7 +80,8 @@ void main()
 
     void OutlineShader::Init()
     {
-        shader = LoadShaderFromMemory(nullptr, R"(
+        shader = LoadShaderFromMemory(nullptr,
+                                      TextFormat(R"(
 #version 330
 
 in vec2 fragTexCoord;
@@ -94,7 +95,7 @@ uniform float outlineSize = 1;
 uniform vec4 outlineColor = vec4(1., 1., 1., 0.9);
 
 void main() {
-    vec2 textureSize = vec2(2048, 2048);
+    vec2 textureSize = vec2(%d, %d);
     vec4 texel = texture(texture0, fragTexCoord) * fragColor * colDiffuse;
     vec2 texelScale = outlineSize / textureSize;
 
@@ -112,7 +113,8 @@ void main() {
         finalColor = texel;
     }
 }
-)");
+)",
+                                                 MAGIQUE_MAX_TEXTURE_SIZE, MAGIQUE_MAX_TEXTURE_SIZE));
         colorLoc = GetShaderLocation(shader, "outlineColor");
         sizeLoc = GetShaderLocation(shader, "outlineSize");
     }

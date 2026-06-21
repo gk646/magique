@@ -35,11 +35,11 @@ namespace magique
     void CameraSetSmoothing(float smoothing);
 
     // Removes the CameraC component from the current holder and adds it to the specified entity (making it the new holder)
-    void CameraSetEntity(entt::entity target);
+    void CameraSetEntity(Entity target);
 
     // Returns the current camera holder
     // Failure: returns UINT32_MAX if there is no camera currently
-    entt::entity CameraGetEntity();
+    Entity CameraGetEntity();
 
     // Returns the engine internal camera - used for all getter methods, culling visible entities and drawing debug visuals
     Camera2D& CameraGet();
@@ -63,7 +63,7 @@ namespace magique
     //================= UTIL =================//
 
     // Returns true if the given entity is on the camera map and a path raycast from the camera to its middle is successful
-    bool CameraInLineOfSight(entt::entity entity);
+    bool CameraInLineOfSight(Entity entity);
 
     // Returns true if the given point is inside any actors view bounds (using the camera bounds)
     bool CameraInsideAnyViewBounds(Point pos);

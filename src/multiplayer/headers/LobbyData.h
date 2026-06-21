@@ -27,9 +27,7 @@ namespace magique
             {
                 MAGIQUE_ASSERT(strlen(data) < MAGIQUE_MAX_LOBBY_MESSAGE_LEN, "Missing null terminator");
                 if (chatCallback)
-                {
                     chatCallback(msg.connection, data);
-                }
             }
             else if (type == LobbyPacketType::METADATA)
             {

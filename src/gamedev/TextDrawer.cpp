@@ -13,12 +13,13 @@ namespace magique
         resetMods();
     }
 
-    TextDrawer& TextDrawer::left(const std::string_view& txt, const Color tint)
+    TextDrawer& TextDrawer::left(const std::string_view& txt, const Color tint, bool moveCursor)
     {
         const auto width = textWidth(txt);
         const auto pos = getCursor();
         drawText(pos, txt, tint);
-        cursor.x += width + gapp.x;
+        if (moveCursor)
+            cursor.x += width + gapp.x;
         return *this;
     }
 #define MAX_TEXT_BUFFER_LENGTH 2048
@@ -75,7 +76,7 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::img(const TextureRegion& img, bool centeredOnCursor, bool moveCursor, Color tint )
+    TextDrawer& TextDrawer::img(const TextureRegion& img, bool centeredOnCursor, bool moveCursor, Color tint)
     {
         auto pos = getCursor();
         auto size = img.getSize() * modSizeMult;
@@ -104,10 +105,19 @@ namespace magique
         }
         pos.floor();
         if (img.isValid())
-            DrawRegionPro(img, {pos, size},0,{}, tint);
+            DrawRegionPro(img, {pos, size}, 0, {}, tint);
         if (moveCursor)
             cursorEndX += img.width + gapp.x;
         resetMods();
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::line(float length, Color tint)
+    {
+        auto len = length * bounds.width;
+        float posX = (bounds.width - len) / 2.0F;
+        const auto cursY = getCursor().y;
+        DrawLineV({posX, cursY}, {bounds.x + bounds.width - offf.x, cursY}, tint);
         return *this;
     }
 
@@ -142,6 +152,12 @@ namespace magique
     TextDrawer& TextDrawer::gapV(float mult)
     {
         cursor.y += mult * gapp.y;
+        return *this;
+    }
+
+    TextDrawer& TextDrawer::move(Point pos)
+    {
+        cursor += pos;
         return *this;
     }
 

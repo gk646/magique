@@ -18,8 +18,8 @@ namespace magique
         animation.sheet = sheet;
     }
 
-    void Animation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations,
-                                         Point off, Point anch)
+    void Animation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations, Point off,
+                                   Point anch)
     {
         if (sheet.frames == 0)
         {

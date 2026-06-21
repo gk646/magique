@@ -50,7 +50,7 @@ namespace magique
         HandleCollisionPairs(staticData.pairCollector);
     }
 
-    inline void CheckAgainstWorldBounds(std::vector<StaticPair>& collector, const entt::entity e, const PositionC& pos,
+    inline void CheckAgainstWorldBounds(std::vector<StaticPair>& collector, const Entity e, const PositionC& pos,
                                         const CollisionC& col, const Rectangle& r, const uint32_t num)
     {
         CollisionInfo info{};
@@ -66,7 +66,7 @@ namespace magique
     }
 
     template <class TypeHashGrid>
-    void CheckHashGrid(const entt::entity e, const TypeHashGrid& grid, std::vector<StaticID>& collector,
+    void CheckHashGrid(const Entity e, const TypeHashGrid& grid, std::vector<StaticID>& collector,
                        std::vector<StaticPair>& pairCollector, const ColliderType type,
                        const std::vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
     {

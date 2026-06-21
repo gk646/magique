@@ -10,7 +10,6 @@ namespace magique
     UIContainer::UIContainer(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
         UIObject(bounds, anchor, inset, mode)
     {
-        global::UI_DATA.registerObject(this, true);
     }
 
     UIObject* UIContainer::addChild(UIObject* child, std::string_view name)

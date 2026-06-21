@@ -2,7 +2,8 @@
 #define MAGIQUE_BASESHADERS_H
 
 #include <raylib/raylib.h>
-#include <magique/util/RayUtils.h>
+#include <array>
+#include <magique/internal/Macros.h>
 
 namespace magique
 {

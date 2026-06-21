@@ -141,7 +141,10 @@ namespace magique
                 Point curr = Point{(float)currX, (float)currY} * cellSize;
                 const bool isSolid = PathIsSolid(curr, map);
                 if (isSolid) [[unlikely]]
-                    DrawRectangleRec(Rect{{curr.x - bounds.x, occlusionTex.texture.height - (curr.y - bounds.y) - cellSize}, cellSize}, BLACK);
+                    DrawRectangleRec(
+                        Rect{{curr.x - bounds.x, occlusionTex.texture.height - (curr.y - bounds.y) - cellSize},
+                             cellSize},
+                        BLACK);
             }
         }
 

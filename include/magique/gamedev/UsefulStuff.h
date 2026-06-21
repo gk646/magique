@@ -35,7 +35,11 @@ namespace magique
         void setBegin(float newBegin);
         float getBegin() const;
 
+        // Gets the absolute value of the counter variable
         float getCount() const;
+
+        // Returns the progress in percent 0.0 - 1.0
+        float getProgress() const;
 
         // Sets count to goal such that tick() returns true on next call
         void fill();

@@ -20,7 +20,6 @@ int GetCurrentMousePositionY() { return CORE.Input.Mouse.currentPosition.y; }
 int GetPreviousMousePositionX() { return CORE.Input.Mouse.previousPosition.x; }
 int GetPreviousMousePositionY() { return CORE.Input.Mouse.previousPosition.y; }
 
-int GetTextLineSpacing() { return 2; }
 
 void SetMousePositionDirect(float x, float y)
 {
@@ -31,14 +30,32 @@ void SetMousePositionDirect(float x, float y)
 char* GetCurrentGamepadState() { return CORE.Input.Gamepad.currentButtonState[0]; }
 char* GetPreviousGamepadState() { return CORE.Input.Gamepad.previousButtonState[0]; }
 
-void TriggerMouseClick(int button)
+void TriggerMousePress(int button)
 {
     CORE.Input.Mouse.currentButtonState[button] = 1;
     CORE.Input.Mouse.previousButtonState[button] = 0;
 }
 
+void TriggerMouseRelease(int button)
+{
+    CORE.Input.Mouse.currentButtonState[button] = 0;
+    CORE.Input.Mouse.previousButtonState[button] = 1;
+}
+
 Vector2 GetMouseScale()
 {
     return CORE.Input.Mouse.scale;
+}
+
+
+RenderTexture GetCurrentRenderTexture()
+{
+    RenderTexture2D texture = {0};
+    if (!CORE.Window.usingFbo)
+        return texture;
+    texture.texture.width = CORE.Window.currentFbo.width;
+    texture.texture.height = CORE.Window.currentFbo.height;
+    texture.id = rlGetActiveFramebuffer();
+    return texture;
 }
 

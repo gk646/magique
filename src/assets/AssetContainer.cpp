@@ -117,10 +117,7 @@ namespace magique
 {
     static constexpr Asset emptyAsset{};
 
-    const Asset& AssetPack::operator[](std::string_view name) const
-    {
-        return getAsset(name);
-    }
+    const Asset& AssetPack::operator[](std::string_view name) const { return getAsset(name); }
 
     void AssetPack::forEachIn(const char* name, const std::function<void(Asset)>& func) const
     {
