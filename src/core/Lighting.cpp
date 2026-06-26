@@ -4,8 +4,11 @@
 #include <magique/ecs/ECS.h>
 #include <raylib/rlgl.h> // Needs to be here
 
+#include "external/raylib-compat/rcore_compat.h"
+
 namespace magique
 {
+    std::vector<Entity> entities{}; // Needed as stage need same order of entities
     Shader tracerShader{};
     Shader samplerShader{};
     RenderTexture rayTexture{};
@@ -48,6 +51,16 @@ namespace magique
         SetShaderValue(samplerShader, samplerOcclusionTexLoc, &OCCLUSION_TEX_SLOT, SHADER_UNIFORM_SAMPLER2D);
         SetShaderValue(samplerShader, samplerRayTexLoc, &RAY_TEX_SLOT, SHADER_UNIFORM_SAMPLER2D);
 
+        entities.clear();
+        for (const auto e : EngineGetDrawEntities())
+        {
+            if (entities.size() >= MAX_LIGHTS) [[unlikely]]
+                break;
+            if (EntityHasAll<LightingC>(e)) [[unlikely]]
+                entities.push_back(e);
+        }
+
+
         // Phase 1 - draws all ray lengths of each light below each other
         {
             BeginTextureMode(rayTexture);
@@ -55,16 +68,11 @@ namespace magique
             BeginShaderMode(tracerShader);
 
             float lightIndex = 0;
-            for (const auto e : EngineGetDrawEntities())
+            for (const auto e : entities)
             {
-                if (lightIndex >= MAX_LIGHTS || !EntityHasAll<LightingC>(e))
-                    continue;
-                const auto& pos = ComponentGet<PositionC>(e);
-                if (pos.map != CameraGetMap())
-                    continue;
-
                 const auto& light = ComponentGet<LightingC>(e);
-                const auto mid = GetWorldToScreen2D(CollisionC::GetMiddle(e), camera);
+                Point mid = GetWorldToScreen2D(CollisionC::GetMiddle(e), camera);
+                mid += Point::Random(-light.randRangePosition, light.randRangePosition);
                 const float lightData[3] = {mid.x, mid.y, light.radius};
 
                 SetShaderValue(tracerShader, tracerLightPosLoc, lightData, SHADER_UNIFORM_VEC3);
@@ -87,12 +95,11 @@ namespace magique
             BeginBlendMode(BLEND_ADDITIVE);
 
             float lightIndex = 1;
-            for (const auto e : ComponentGetView<LightingC>())
+            for (const auto e : entities)
             {
-                if (lightIndex >= MAX_LIGHTS)
-                    continue;
-                const auto mid = GetWorldToScreen2D(CollisionC::GetMiddle(e), camera);
                 const auto& light = ComponentGet<LightingC>(e);
+                Point mid = GetWorldToScreen2D(CollisionC::GetMiddle(e), camera);
+                mid += Point::Random(-light.randRangePosition, light.randRangePosition);
                 const float lightData[3] = {mid.x, mid.y, light.radius};
 
                 SetShaderValue(samplerShader, samplerLightLoc, lightData, SHADER_UNIFORM_VEC3);
@@ -121,6 +128,8 @@ namespace magique
             occlusionTex = LoadRenderTexture(cam.width, cam.height);
         }
 
+        const auto prevRenderTarget = GetCurrentRenderTexture();
+
         EndTextureMode();
         BeginTextureMode(occlusionTex);
         ClearBackground(BLANK);
@@ -131,7 +140,7 @@ namespace magique
         const int startX = static_cast<int>(bounds.x) / cellSize;
         const int startY = static_cast<int>(bounds.y) / cellSize;
         const int width = static_cast<int>(bounds.width) / cellSize;
-        const int height = static_cast<int>(bounds.height) / cellSize;
+        const int height = static_cast<int>(bounds.height) / cellSize + 1;
 
         for (int currY = startY; currY < startY + height; ++currY)
         {
@@ -149,6 +158,10 @@ namespace magique
         }
 
         EndTextureMode();
+
+        if (prevRenderTarget.texture.id != 0)
+            BeginTextureMode(prevRenderTarget);
+
         return occlusionTex.texture;
     }
 
@@ -171,14 +184,14 @@ const float TAU = 6.2831853071795864769252867665590;
 
 void main() {
     vec2 mirroredCoords = vec2(fragTexCoord.x, 1.0 - fragTexCoord.y);
-    float RayCount = floor(TAU * lightInfo.z);
-    vec2 Coord = floor(mirroredCoords * RAY_TEX_SIZE);
+    float rayCount = floor(TAU * lightInfo.z);
+    vec2 coord = floor(mirroredCoords * RAY_TEX_SIZE);
 
-    float index = (Coord.y * RAY_TEX_SIZE) + Coord.x;
-    float Theta = TAU * (index / RayCount);
+    float index = (coord.y * RAY_TEX_SIZE) + coord.x;
+    float Theta = TAU * (index / rayCount);
     vec2 Delta = vec2(cos(Theta), -sin(Theta));
 
-    if (index >= RayCount) {
+    if (index >= rayCount) {
         finalColor = vec4(0., 1., 0.0, 1.);
         return;
     }
@@ -229,12 +242,12 @@ float ToneMapFunc(float d, float m) {
 }
 
 void main() {
-    float RayCount = floor(TAU * lightInfo.z);
-    vec2 Coord = fragTexCoord * lightTexSize;
-    vec2 Delta = round(Coord - lightInfo.xy);
+    float rayCount = floor(TAU * lightInfo.z);
+    vec2 coord = fragTexCoord * lightTexSize;
+    vec2 Delta = round(coord - lightInfo.xy);
 
     float angle = atan(-Delta.y, Delta.x);
-    float RayIndex = floor(RayCount * fract(angle / TAU));
+    float RayIndex = floor(rayCount * fract(angle / TAU));
 
     vec2 RayPos = vec2(
     mod(RayIndex, RAY_TEX_SIZE) / RAY_TEX_SIZE,
@@ -247,7 +260,6 @@ void main() {
     float RayLength = TexRay.r * lightInfo.z;
     float Distance = length(Delta);
 
-
     // vec2 collisionUV = (in_Light.xy + Delta) / worldTexSize;
     // collisionUV.y = 1.0 - collisionUV.y;
     // float collision = texture(inColTex, collisionUV).a;
@@ -255,9 +267,7 @@ void main() {
     float RayVisible = step(Distance, RayLength);// * 1.0 - collision;
     float ToneMap = ToneMapFunc(Distance, lightInfo.z);
 
-    //vec4 current = texture(texture0, fragTexCoord);
-    finalColor = vec4(fragColor.xyz * ToneMap, ToneMap * RayVisible);
-    // finalColor = vec4(TexRay.r, 1., 1., 1.);
+    finalColor = vec4(fragColor.xyz * ToneMap, ToneMap * RayVisible * fragColor.a);
 }
 )");
 

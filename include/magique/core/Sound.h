@@ -50,9 +50,11 @@ namespace magique
 
     // Returns true if any instance of this sound was removed
     bool SoundStop(const Sound& sound);
+    bool SoundStop(Entity entity);
 
     // Returns true if any instance of the given sound is currently playing
     bool SoundIsPlaying(const Sound& sound);
+    bool SoundIsPlaying(Entity entity);
 
     // Sets the distance at which the volume becomes 0
     void SoundSetFalloffDistance(float distance = 1000);

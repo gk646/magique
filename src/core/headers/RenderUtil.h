@@ -38,7 +38,7 @@ namespace magique
         const auto cameraEntity = CameraGetEntity();
 
         Point targetPosition{0, 0};
-        if (cameraEntity != entt::null) [[likely]]
+        if (EntityExists(cameraEntity)) [[likely]]
         {
             targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floored();
         }
@@ -135,28 +135,10 @@ namespace magique
             }
         };
 
-        // Static Colliders
-        if (staticData.colliderReferences.tileObjectMap.contains(map))
-        {
-            for (const auto& info : staticData.colliderReferences.tileObjectMap.at(map))
-            {
-                drawStaticObjectVectorHitboxes(info.objectIds);
-            }
-        }
-
         // Static tiles
         if (staticData.colliderReferences.tilesCollisionMap.contains(map))
         {
             drawStaticObjectVectorHitboxes(staticData.colliderReferences.tilesCollisionMap.at(map));
-        }
-
-        // Collision Groups
-        if (staticData.colliderReferences.groupMap.contains(map))
-        {
-            for (const auto& info : staticData.colliderReferences.groupMap.at(map))
-            {
-                drawStaticObjectVectorHitboxes(info.objectIds);
-            }
         }
 
         // WorldBounds

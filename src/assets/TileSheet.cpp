@@ -55,7 +55,7 @@ namespace magique
         const auto tex = LoadTextureFromImage(texImage);
         if (tex.id == 0)
         {
-            LOG_ERROR("Failed to load TileSheet to GPU: %s", asset.getPath());
+            LOG_ERROR("Failed to load TileSheet to GPU: %s", asset.getPath().data());
         }
         textureID = static_cast<uint16_t>(tex.id);
 

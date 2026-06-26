@@ -59,7 +59,6 @@ namespace magique
                 written = snprintf(formatCache, LogData::CACHE_SIZE, "[%s]: ", level_str);
             }
 
-            assert(written >= 0);
             written += vsnprintf(formatCache + written, LogData::CACHE_SIZE - written, msg, args);
 
             if (log.callback != nullptr)

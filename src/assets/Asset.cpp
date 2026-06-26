@@ -3,19 +3,23 @@
 
 namespace magique
 {
-    const char* Asset::getPath() const { return path.data(); }
+    Asset::operator const char*() const { return data.data(); }
 
-    const char* Asset::getData() const { return data.data(); }
+    Asset::operator const unsigned char*() const { return (const unsigned char*)data.data(); }
 
-    const unsigned char* Asset::getUData() const { return (const unsigned char*)data.data(); }
+    Asset::operator std::string_view() const { return data; }
+
+    std::string_view Asset::getData() const { return data.data(); }
+
+    std::string_view Asset::getPath() const { return path.data(); }
 
     int Asset::getSize() const { return data.size(); }
 
-    bool Asset::startsWith(const char* prefix) const { return path.starts_with(prefix); }
+    bool Asset::startsWith(std::string_view prefix) const { return path.starts_with(prefix); }
 
-    bool Asset::endsWith(const char* suffix) const { return path.ends_with(suffix); }
+    bool Asset::endsWith(std::string_view suffix) const { return path.ends_with(suffix); }
 
-    bool Asset::contains(const char* str) const { return path.contains(str); }
+    bool Asset::contains(std::string_view str) const { return path.contains(str); }
 
     bool Asset::isValid() const { return !path.empty(); }
 

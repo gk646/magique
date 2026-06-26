@@ -21,6 +21,11 @@ namespace magique
         std::string name;
         std::vector<TileObject> objects;
 
+        // Tries to fetch an (the first) object that matches the given property
+        // Note: objectID is unique, name is NOT unique
+        TileObject* operator[](int objectId);
+        TileObject* operator[](std::string_view name);
+
         auto begin() const { return objects.begin(); }
         auto end() const { return objects.end(); }
     };
@@ -61,7 +66,6 @@ namespace magique
         auto end() { return tileLayers.end(); }
 
         //================= OBJECTS =================//
-
 
         // Returns true if a object layer with the given name is present
         bool hasObjectLayer(std::string_view layer) const;

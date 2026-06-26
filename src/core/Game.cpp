@@ -122,14 +122,15 @@ namespace magique
         return true;
     }
 
-    Game::Game(const char* name, const char* version) : isRunning(true), gameName(strdup(name)), version(strdup(version))
+    Game::Game(std::string_view name, std::string_view version) :
+        isRunning(true), gameName(strdup(name.data())), version(strdup(version.data()))
     {
         global::ENGINE_DATA.gameInstance = this; // Assign global game instance
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
         SetConfigFlags(FLAG_MSAA_4X_HINT);
-        InitWindow(1280, 720, name);
+        InitWindow(1280, 720, name.data());
         InitAudioDevice();
 
         auto curr = GetCurrentMonitor();
@@ -165,7 +166,7 @@ namespace magique
         LOG_INFO("Shutdown magique");
     }
 
-    int Game::run(const char* assetPath, const char* configPath, const uint64_t encryptionKey)
+    int Game::run(std::string_view assetPath, std::string_view configPath, const uint64_t encryptionKey)
     {
         auto& loader = global::LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};

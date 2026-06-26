@@ -27,18 +27,6 @@ namespace magique
     // Default: Disabled
     void CollisionSetWorldBounds(const Rectangle& rectangle);
 
-    //================= TILE OBJECTS =================//
-
-    // Loads the given tile-objects as static colliders - probably from TileMap::getObjectLayer()
-    // This can be called at any time and has immediate effect - recommended at startup as many objects get expensive
-    // Passed vector is saved and future calls with it are skipped (unless removed)
-    // Note: If you applied scaling to the TileSheet needs to be applied here as well to match
-    void CollisionAddTileObjects(MapID map, const std::vector<TileObject>& collisionObjects, float scale = 1);
-
-    // Removes the TileObjects added by the given vector
-    // This method usually does not need to be called but there might be niche uses cases
-    void CollisionRemoveTileObjects(MapID map, const std::vector<TileObject>& collisionObjects);
-
     //================= TILESET =================//
 
     // Sets the global tileset to use for parsing tile collision and other features
@@ -54,35 +42,6 @@ namespace magique
 
     // Removes the tile collision data associated with this map
     void CollisionRemoveTiles(MapID map);
-
-    //================= MANUAL GROUPS =================//
-
-    struct ColliderGroup final
-    {
-        ColliderGroup();
-
-        // Adds a rect collider with the given dimensions (topleft and dimensions)
-        void addRect(float x, float y, float width, float height);
-
-        // Adds a rect collider centered on the given position
-        void addRectCentered(float x, float y, float width, float height);
-
-        // Returns the id of the collider group
-        [[nodiscard]] int getID() const;
-
-        // Returns the current colliders part of the group
-        [[nodiscard]] const std::vector<StaticCollider>& getColliders() const;
-
-    private:
-        std::vector<StaticCollider> colliders;
-        int id = -1;
-    };
-
-    // Adds all colliders of the given group to the specified map
-    void CollisionAddGroup(MapID map, const ColliderGroup& group);
-
-    // Removes all colliders of the given group from the specified map (if exists)
-    void CollisionRemoveGroup(MapID map, const ColliderGroup& group);
 
 } // namespace magique
 

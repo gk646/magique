@@ -116,6 +116,7 @@ namespace magique
 
 
 //================= RAYLIB =================//
+
 struct Camera2D;
 struct Font;
 struct Vector2;
@@ -132,13 +133,14 @@ struct RenderTexture;
 namespace entt
 {
     enum class entity : std::uint32_t;
-}
+    struct null_t;
+} // namespace entt
 
 namespace magique
 {
     using Entity = entt::entity;
-}
-
+    using NullEntity = entt::null_t;
+} // namespace magique
 
 namespace glz
 {

@@ -28,18 +28,22 @@ namespace magique
         }
     }
 
-    EntityScript* ScriptingGetScript(const EntityType entity)
+    namespace internal
     {
-        const auto& scriptData = global::SCRIPT_DATA;
-        MAGIQUE_ASSERT(scriptData.scripts.find(entity) != scriptData.scripts.end(),
-                       "No script registered for this type! Did you call SetScript()?");
-        auto it = scriptData.scripts.find(entity);
-        if (it == scriptData.scripts.end())
+        EntityScript* ScriptingGetScript(const Entity entity)
         {
-            return scriptData.defaultScript;
+            const auto& scriptData = global::SCRIPT_DATA;
+            const auto type = ComponentGet<PositionC>(entity).type;
+            const auto it = scriptData.scripts.find(type);
+            MAGIQUE_ASSERT(it != scriptData.scripts.end(), "No script registered for this type! ");
+            if (it == scriptData.scripts.end())
+            {
+                return scriptData.defaultScript;
+            }
+            return it->second;
         }
-        return it->second;
-    }
+    } // namespace internal
+
 
     void ScriptingSetScripted(const Entity entity, const bool val)
     {
@@ -56,5 +60,6 @@ namespace magique
     bool ScriptingGetIsScripted(const Entity entity) { return global::ENGINE_DATA.entityNScriptedSet.contains(entity); }
 
     void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
+
 
 } // namespace magique

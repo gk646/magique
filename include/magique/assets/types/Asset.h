@@ -18,24 +18,28 @@ namespace magique
 {
     struct Asset final
     {
-        // Returns the path of this asset relative to the root directory the image was compiled from
-        const char* getPath() const;
+        // Returns the data in the correct type
+        operator const char*() const;
+        operator const unsigned char*() const;
+        operator std::string_view() const;
 
-        // Returns the data pointer of this asset
-        const char* getData() const;
-        const unsigned char* getUData() const;
+        // Returns a view to the data
+        std::string_view getData() const;
+
+        // Returns the path of this asset relative to the root directory the image was compiled from
+        std::string_view getPath() const;
 
         // Returns the valid size of the data pointer
         int getSize() const;
 
         // True if the asset path starts with the given prefix
-        bool startsWith(const char* prefix) const;
+        bool startsWith(std::string_view prefix) const;
 
         // True if the asset path ends with the given prefix e.g. '.png"
-        bool endsWith(const char* suffix) const;
+        bool endsWith(std::string_view suffix) const;
 
         // True if the asset path contains the given sequence anywhere
-        bool contains(const char* str) const;
+        bool contains(std::string_view str) const;
 
         // Returns true if this asset is valid and can be used
         bool isValid() const;

@@ -126,14 +126,6 @@ namespace magique
             }
             const auto map = pos.map;
 
-            // Query object grid if it has any entries
-            if (staticData.mapObjectGrids.contains(map))
-            {
-                const auto& objectGrid = staticData.mapObjectGrids[map];
-                constexpr auto objectType = ColliderType::TILEMAP_OBJECT;
-                CheckHashGrid(e, objectGrid, idCollector, pairCollector, objectType, colliderStorage, pos, col);
-            }
-
             // Query tile grid
             if (staticData.mapTileGrids.contains(map))
             {
@@ -141,20 +133,11 @@ namespace magique
                 constexpr auto tileType = ColliderType::TILESET_TILE;
                 CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
             }
-
-            // Query group grid
-            if (staticData.mapGroupGrids.contains(map))
-            {
-                const auto& groupGrid = staticData.mapGroupGrids[map];
-                constexpr auto groupType = ColliderType::MANUAL_COLLIDER;
-                CheckHashGrid(e, groupGrid, idCollector, pairCollector, groupType, colliderStorage, pos, col);
-            }
         }
     }
 
     inline void HandleCollisionPairs(StaticPairCollector& pairColl)
     {
-        auto& scripts = global::SCRIPT_DATA.scripts;
         auto& dynamic = global::DY_COLL_DATA;
         for (auto& [vec] : pairColl)
         {
@@ -175,7 +158,7 @@ namespace magique
 
                 // Process the collision
                 const auto colliderInfo = ColliderInfo{data, objType};
-                ScriptingInvokeEventDirect<onStaticCollision>(scripts[entType], e, colliderInfo, info);
+                internal::ScriptingGetScript(e)->onStaticCollision(e, colliderInfo, info );
 
                 if (info.getIsAccumulated()) // Accumulate the data if specified
                 {

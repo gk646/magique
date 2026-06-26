@@ -222,7 +222,7 @@ namespace magique
         return *this;
     }
 
-    Point Point::normal() const
+    Point Point::normalized() const
     {
         auto ret = *this;
         return ret.normalize();
@@ -754,7 +754,7 @@ namespace magique
         return floating;
     }
 
-    const char* TiledProperty::getString() const
+    std::string_view TiledProperty::getString() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::STRING, "Property does not contain a string!");
         return string;
@@ -768,7 +768,7 @@ namespace magique
 
     TileObjectPropertyType TiledProperty::getType() const { return type; }
 
-    const char* TiledProperty::getName() const { return name; }
+    std::string_view TiledProperty::getName() const { return std::string_view{name}; }
 
     //----------------- TILE OBJECT -----------------//
 
@@ -776,23 +776,15 @@ namespace magique
 
     int TileObject::getID() const { return id; }
 
-    int TileObject::getTileClass() const { return tileClass; }
 
     int TileObject::getTileID() const { return tileId; }
 
-    const TiledProperty* TileObject::getProperty(std::string_view property) const
+    const TiledProperty* TileObject::getProperty(std::string_view pName) const
     {
-        for (const auto& p : customProperties)
-        {
-            if (p.getName() == nullptr)
-            {
-                continue;
-            }
-            if (p.getName() == property)
-            {
-                return &p;
-            }
-        }
+        const auto it =
+            std::ranges::find_if(properties, [&](const auto& property) { return property.getName() == pName; });
+        if (it != properties.end())
+            return &(*it);
         return nullptr;
     }
 
@@ -806,21 +798,17 @@ namespace magique
             ((value & 0xFF000000U) >> 24);
     }
 
-    const TiledProperty* TileInfo::getProperty(const char* name) const
+    bool TileInfo::hasCollision() const { return bounds.size() != 0 || secBounds.size() != 0; }
+
+    TiledProperty* TileInfo::getProperty(std::string_view name)
     {
-        for (const auto& property : customProperties)
-        {
-            if (property.getName() == nullptr)
-            {
-                continue;
-            }
-            if (strcmp(property.getName(), name) == 0)
-            {
-                return &property;
-            }
-        }
+        const auto it =
+            std::ranges::find_if(properties, [&](const auto& property) { return property.getName() == name; });
+        if (it != properties.end())
+            return &(*it);
         return nullptr;
     }
+
 
     bool TileID::isEmpty() const { return id <= 1; }
 
@@ -869,26 +857,6 @@ namespace magique
 
 
     //----------------- COLLIDER INFO -----------------//
-
-    int ColliderInfo::getColliderClass() const
-    {
-        if (type != ColliderType::TILEMAP_OBJECT) [[unlikely]]
-        {
-            LOG_WARNING("Using the wrong getter. Type has to be TILEMAP_OBJECT");
-            return INT32_MAX;
-        }
-        return data;
-    }
-
-    int ColliderInfo::getManualGroup() const
-    {
-        if (type != ColliderType::MANUAL_COLLIDER) [[unlikely]]
-        {
-            LOG_WARNING("Using the wrong getter. Type has to be MANUAL_COLLIDER");
-            return INT32_MAX;
-        }
-        return data;
-    }
 
     TileClass ColliderInfo::getTileClass() const
     {

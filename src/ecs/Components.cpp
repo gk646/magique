@@ -132,20 +132,23 @@ namespace magique
     {
     }
 
-    void TextureC::draw(Point pos, float rotation, Color tint) const
+    void TextureC::draw(Point pos, float rotation, bool flipX, Color tint) const
     {
-        DrawRegionPro(texture, Rect{pos + offset, texture.getSize()}, std::floor(rotation), anchor, tint);
+        Rect dest{pos + offset, texture.getSize()};
+        if (flipX)
+            dest.width = -dest.width;
+        DrawRegionPro(texture, dest, std::floor(rotation), anchor, tint);
     }
 
-    void LayeredTextureC::draw(const Point& pos, float rotation, Color tint) const
+    void LayeredTextureC::draw(const Point& pos, float rotation, bool flipX,Color tint) const
     {
         for (const auto& [layer, tex] : textures)
         {
-            drawLayer(layer, pos, rotation, tint);
+            drawLayer(layer, pos, rotation, flipX,tint);
         }
     }
 
-    void LayeredTextureC::drawLayer(AnimationLayer layer, const Point& pos, float rotation, Color tint) const
+    void LayeredTextureC::drawLayer(AnimationLayer layer, const Point& pos, float rotation, bool flipX, Color tint) const
     {
         auto it = textures.find(layer);
         if (it == textures.end())

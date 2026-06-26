@@ -201,6 +201,7 @@ void cute_tiled_free_external_tileset(cute_tiled_tileset_t* tileset);
 #endif
 
 typedef struct cute_tiled_layer_t cute_tiled_layer_t;
+typedef struct cute_tiled_chunk_t cute_tiled_chunk_t;
 typedef struct cute_tiled_object_t cute_tiled_object_t;
 typedef struct cute_tiled_frame_t cute_tiled_frame_t;
 typedef struct cute_tiled_tile_descriptor_t cute_tiled_tile_descriptor_t;
@@ -259,11 +260,13 @@ struct cute_tiled_property_t
 struct cute_tiled_object_t
 {
 	int ellipse;                         // 0 or 1. Used to mark an object as an ellipse.
+	int capsule;                         // 0 or 1. Used to mark an object as a capsule.
 	int gid;                             // GID, only if object comes from a Tilemap.
 	float height;                        // Height in pixels. Ignored if using a gid.
 	int id;                              // Incremental id - unique across all objects.
 	cute_tiled_string_t name;            // String assigned to name field in editor.
 	int point;                           // 0 or 1. Used to mark an object as a point.
+	float opacity;                       // Value between 0 and 1.
 
 	// Example to index each vert of a polygon/polyline:
 	/*
@@ -290,7 +293,6 @@ struct cute_tiled_object_t
 	float x;                             // x coordinate in pixels.
 	float y;                             // y coordinate in pixels.
 	cute_tiled_object_t* next;           // Pointer to next object. NULL if final object.
-    float opacity;
 };
 
 /*!
@@ -357,6 +359,7 @@ struct cute_tiled_layer_t
 	int height;                          // Row count. Same as map height for fixed-size maps.
 	cute_tiled_layer_t* layers;          // Linked list of layers. Only appears if `type` is `group`.
 	cute_tiled_string_t name;            // Name assigned to this layer.
+	cute_tiled_string_t mode;            // The blend mode used when rendering the layer.
 	cute_tiled_object_t* objects;        // Linked list of objects. `objectgroup` only.
 	float offsetx;                       // Horizontal layer offset.
 	float offsety;                       // Vertical layer offset.
@@ -2128,9 +2131,7 @@ cute_tiled_object_t* cute_tiled_read_object(cute_tiled_map_internal_t* m)
 		case 644252274336276709U: // x
 			cute_tiled_read_float(m, &object->x);
 			break;
-		case 11746902372727406098U: // opacity
-		    cute_tiled_read_float(m, &object->opacity);
-		    break;
+
 		case 643295699219922364U: // y
 			cute_tiled_read_float(m, &object->y);
 			break;
@@ -2139,6 +2140,14 @@ cute_tiled_object_t* cute_tiled_read_object(cute_tiled_map_internal_t* m)
 			// This is technically different than type, but it used the same way in newer versions of Tiled
 			cute_tiled_intern_string(m, &object->type);
 			break;
+
+		case 11746902372727406098U: // opacity
+		    cute_tiled_read_float(m, &object->opacity);
+		    break;
+
+		case 11745627419723200132U: // capsule
+		    cute_tiled_read_bool(m, &object->capsule);
+		    break;
 
 		default:
 			CUTE_TILED_CHECK(0, "Unknown identifier found.");
@@ -2393,6 +2402,10 @@ cute_tiled_layer_t* cute_tiled_layers(cute_tiled_map_internal_t* m)
 		cute_tiled_read_hex_int(m, &layer->tintcolor);
 		cute_tiled_expect(m, '"');
 		break;
+
+    	case 11377525954796463478U: // mode
+    	    cute_tiled_intern_string(m, &layer->mode);
+    	    break;
 
 		default:
 			CUTE_TILED_CHECK(0, "Unknown identifier found.");
@@ -2948,6 +2961,7 @@ static void cute_tiled_patch_tileset_strings(cute_tiled_map_internal_t* m, cute_
 	{
 		cute_tiled_deintern_string(m, &tile_descriptor->image);
 		cute_tiled_deintern_string(m, &tile_descriptor->type);
+		cute_tiled_deintern_layer(m, tile_descriptor->objectgroup);
 		cute_tiled_deintern_properties(m, tile_descriptor->properties, tile_descriptor->property_count);
 		tile_descriptor = tile_descriptor->next;
 	}

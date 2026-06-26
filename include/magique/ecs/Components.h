@@ -164,7 +164,7 @@ namespace magique
         TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1}, int priority = 0);
 
         // Draws the texture at base size at the given position with offset and rotation around the anchor
-        void draw(Point pos, float rotation, Color tint = WHITE) const;
+        void draw(Point pos, float rotation, bool flipX = false, Color tint = WHITE) const;
 
         TextureRegion texture{};
         Point offset{};
@@ -177,10 +177,11 @@ namespace magique
     struct LayeredTextureC final
     {
         // Draws all valid layers in ascending order (enum value) - if valid uses the global anchor over the individual ones
-        void draw(const Point& pos, float rotation = 0, Color tint = WHITE) const;
+        void draw(const Point& pos, float rotation = 0, bool flipX = false, Color tint = WHITE) const;
 
         // Draw the specified layer
-        void drawLayer(AnimationLayer layer, const Point& pos, float rotation = 0, Color tint = WHITE) const;
+        void drawLayer(AnimationLayer layer, const Point& pos, float rotation = 0, bool flipX = false,
+                       Color tint = WHITE) const;
 
         void setTexture(AnimationLayer layer, TextureC texture);
 
@@ -207,8 +208,7 @@ namespace magique
     {
         float radius = 50.0F;
         Color color = RED;
-        float intensity = 1.0f;         // Multiplier of the color value
-        float randRangePosition = 0.0F; // The range of how much the position can be change by a random value
+        float randRangePosition = 0.0F; // Random offset i [-range;+range] is applied to the light - simulates flickering
     };
 
     // Used to signal a solid entity where light cant pass through - uses the collision shape

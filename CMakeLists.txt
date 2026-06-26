@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.28
+        VERSION 0.9.29
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 
@@ -22,7 +22,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Options - IF USING CMAKE CACHE, CHANGES NEED A CACHE RESET TO APPLY!
 # Values - Use set(MAGIQUE_LOGIC_TICKS 60) in your CMakeLists.txt BEFORE including magique to change options
-# The options here are just defaults, if set before your value takes precedence
+# The options here are just defaults, a custom set() takes precedence
 
 option(MAGIQUE_STEAM "Enable Steam integration (requires STEAM_PATH)" OFF)
 option(MAGIQUE_LAN "Enable local networking" OFF)

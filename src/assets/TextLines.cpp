@@ -7,7 +7,7 @@
 
 namespace magique
 {
-    TextLines::TextLines(const std::string& buff, const char delimiter) : lines(StringSplit(buff, delimiter)), full(buff)
+    TextLines::TextLines(std::string_view buff, const char delimiter) : lines(StringSplit(buff, delimiter)), full(buff)
     {
     }
 

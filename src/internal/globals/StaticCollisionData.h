@@ -32,9 +32,7 @@ namespace magique
         EntityType entityType; // entity type - for the script
     };
 
-    using ColliderHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 64>; // power of two
     using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;     // power of two
-    using GroupHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;    // power of two
 
     using StaticPairCollector = AlignedVec<StaticPair>[MAGIQUE_WORKER_THREADS + 1];
     using ColliderCollector = AlignedVec<StaticID>[MAGIQUE_WORKER_THREADS + 1];
@@ -87,24 +85,8 @@ namespace magique
 
     struct ObjectReferenceHolder final
     {
-        struct TileObjectInfo final // Saves the pointer to the vec and the loaded ids
-        {
-            std::vector<uint32_t> objectIds;
-            const void* vectorPointer = nullptr;
-        };
-
-        struct ManualGroupInfo final // Saves the id and the loaded ids
-        {
-            std::vector<uint32_t> objectIds;
-            int groupId = -1;
-        };
-
-        // Maps + which colliders where loaded for each map (can be many for each map)
-        HashMap<MapID, std::vector<TileObjectInfo>> tileObjectMap;
         // Tiles + what colliders where loaded per map
         HashMap<MapID, std::vector<uint32_t>> tilesCollisionMap;
-        // What groups where loaded for ach map (can be many for each map)
-        HashMap<MapID, std::vector<ManualGroupInfo>> groupMap;
     };
 
     struct StaticCollisionData final
@@ -122,9 +104,7 @@ namespace magique
 
         //----------------- HASHGRIDS -----------------//
 
-        MapHolder<ColliderHashGrid> mapObjectGrids; // Stores all tilemap objects
         MapHolder<TileHashGrid> mapTileGrids;       // Stores all collidable tiles
-        MapHolder<GroupHashGrid> mapGroupGrids;     // Stores all objects from manual collider groups
 
         //----------------- TILESET -----------------//
         const TileSet* tileSet = nullptr; // Only use for equality checks

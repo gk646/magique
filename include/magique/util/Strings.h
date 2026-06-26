@@ -74,7 +74,7 @@ namespace magique
     //================= FORMATTING =================//
 
     // Formats a float number so its nicely readable
-    // If it's lower than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
+    // If it's larger than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
     const char* StringFromFloat(float num, float cutoff = 100.0F, bool withSign = false);
 
     // Formats the given number for displaying it in gameplay context:

@@ -32,7 +32,7 @@ namespace magique
     // Refer to https://stephenberry.github.io/glaze/json/
     //      - append: appends the data instead of replacing if T==std::vector (or others that support it)
     template <bool append = false, typename T>
-    bool JSONImport(Asset asset, T& data);
+    bool JSONImport(Asset asset, T& obj);
 
     template <bool append = false, typename T>
     bool JSONImport(std::string_view json, T& data);
@@ -224,14 +224,14 @@ namespace glz
 namespace magique
 {
     template <bool append, typename T>
-    bool JSONImport(Asset asset, T& data)
+    bool JSONImport(const Asset asset, T& obj)
     {
-        std::string_view buff{asset.getData(), static_cast<size_t>(asset.getSize())};
+        std::string_view data = asset;
         glz::context ctx{};
-        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(data, buff, ctx);
+        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(obj, data, ctx);
         if (ec)
         {
-            LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath(), glz::format_error(ec, buff).c_str());
+            LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath().data(), glz::format_error(ec, data).c_str());
             return false;
         }
         return true;

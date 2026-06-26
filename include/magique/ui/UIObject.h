@@ -125,6 +125,7 @@ namespace magique
         GamepadMapping* getGamepadMapping() const;
 
         // Sets/gets the alpha - if NOT 1.0 will be rendered with an alpha applied (a separate texture is used)
+        // Note: Can be used to hide elements - if 0.0 element will NOT be drawn
         void setAlpha(float value);
         float getAlpha() const;
 

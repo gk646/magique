@@ -23,23 +23,23 @@ namespace magique
 
     // If true shows red hitboxes for collideable entities - can get very expensive if there are a lot of entities.
     // Note: This is the single point of truth - if two hitboxes visually overlap then a collision happened! (else a bug)
-    void EngineShowHitboxes(bool val);
+    void EngineShowHitboxes(bool val = true);
 
     // If enabled, draws the debug grid for the dynamic entity hash grid including entity count - drawn before user content
     // Note: draws the state of the map returned by GetCameraMap() (needs an active camera)
-    void EngineShowEntityOverlay(bool val);
+    void EngineShowEntityOverlay(bool val = true);
 
     // If enabled, draws the current state of the pathfinding grid
     // Transparent (not solid), gray (solid from static source), black (solid from dynamic source)
     // Note: draws the state of the map returned by GetCameraMap() (needs an active camera)
-    void EngineShowPathfindingOverlay(bool val);
+    void EngineShowPathfindingOverlay(bool val = true);
 
     // If enabled, draws a cartesian coordinate system with markings every 250 pixels - drawn before user content
-    void EngineShowCompass(bool val);
+    void EngineShowCompass(bool val = true);
 
     // Sets the amount of logic ticks until the game closes automatically - this ensures the same run length for benchmarks
     // Default: 0 (off)
-    void EngineSetBenchmarkTicks(int ticks);
+    void EngineSetBenchmarkTicks(int ticks = 300);
 
     // Clears the collected performance data collected so far
     void EngineResetBenchmark();
@@ -47,4 +47,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_ENGINE_UTIL_H
+#endif // MAGIQUE_ENGINE_UTIL_H

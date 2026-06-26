@@ -76,9 +76,17 @@ namespace magique
     //      - velocity: how far the shake changes each tick in pixels/s
     //      - decay: how much the maxDistance is reduced in pixels/s
     // Note: the shake stops when maxDistance is 0 - the direction of multiple impulses adds up, the rest overwrites
-    void CameraShakeAddImpulse(Point direction, float maxDistance = 25, float velocity = 5, float decay = 5);
+    void CameraShakeImpulse(Point dir, float maxDistance = 25, float velocity = 5, float decay = 5);
 
 } // namespace magique
 
+
+// IMPLEMENTATION
+
+
+namespace magique :: internal
+{
+    void CameraUpdateShake();
+}
 
 #endif // MAGIQUE_CAMERA_H

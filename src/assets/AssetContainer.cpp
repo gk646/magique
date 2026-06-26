@@ -119,19 +119,16 @@ namespace magique
 
     const Asset& AssetPack::operator[](std::string_view name) const { return getAsset(name); }
 
-    void AssetPack::forEachIn(const char* name, const std::function<void(Asset)>& func) const
+    void AssetPack::forEachIn(std::string_view name, const std::function<void(Asset)>& func) const
     {
-        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
-        const int size = static_cast<int>(strlen(name));
-
-        int pos = FindDirectoryPos(assets, name, size);
+        int pos = FindDirectoryPos(assets, name.data(), name.size());
         if (pos == -1) [[unlikely]]
         {
             LOG_WARNING("No directory with name %s found!", name);
             return;
         }
 
-        while (pos > 0 && strncmp(assets[pos - 1].path.data(), name, size) == 0)
+        while (pos > 0 && assets[pos - 1].path.starts_with(name))
         {
             pos--;
         }
@@ -140,14 +137,13 @@ namespace magique
         {
             func(assets[pos]);
             pos++;
-        } while (pos < static_cast<int>(assets.size()) && strncmp(assets[pos].path.data(), name, size) == 0);
+        } while (pos < static_cast<int>(assets.size()) && assets[pos].path.starts_with(name));
     }
 
-    const Asset& AssetPack::getAssetByPath(const char* name) const
+    const Asset& AssetPack::getAssetByPath(std::string_view name) const
     {
-        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
         MAGIQUE_ASSERT(!assets.empty(), "No assets loaded!");
-        const int pos = FindAssetPos(assets, name);
+        const int pos = FindAssetPos(assets, name.data());
         if (pos == -1) [[unlikely]]
         {
             LOG_ERROR("No asset with name %s found! Returning empty asset", name);
@@ -170,10 +166,9 @@ namespace magique
         return emptyAsset;
     }
 
-    bool AssetPack::hasAsset(const char* name) const
+    bool AssetPack::hasAsset(std::string_view name) const
     {
-        MAGIQUE_ASSERT(name != nullptr, "Passing nullptr!");
-        return std::ranges::any_of(assets, [&](auto& asset) { return asset.contains(name); });
+        return std::ranges::any_of(assets, [&](const Asset& asset) { return asset.contains(name); });
     }
 
     const std::vector<Asset>& AssetPack::getAllAssets() const { return assets; }

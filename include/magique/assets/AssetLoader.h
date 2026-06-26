@@ -47,7 +47,7 @@ namespace magique
 
     private:
         M_MAKE_PUB()
-        AssetLoader(const char* assetPath, uint64_t encryptionKey);
+        AssetLoader(std::string_view assetPath, uint64_t encryptionKey);
         bool step() override;
         AssetPack assets;
         friend Game;

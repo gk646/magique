@@ -56,7 +56,7 @@ namespace magique
         ASSET_CHECK(asset);
         const auto* ext = asset.getExtension().data();
         MAGIQUE_ASSERT(IsSupportedImageFormat(ext), "No valid extension");
-        const auto img = LoadImageFromMemory(ext, asset.getUData(), asset.getSize());
+        const auto img = LoadImageFromMemory(ext, asset, asset.getSize());
         MAGIQUE_ASSERT(img.data != nullptr, "No image data loaded");
         return img;
     }
@@ -247,7 +247,7 @@ namespace magique
             return {};
         }
 
-        auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
         if (anchor == -1)
             anchor = Point{(float)import->w, (float)import->h} / 2;
 
@@ -266,7 +266,7 @@ namespace magique
                                                                              float scale, Point offset, Point anchor)
     {
         std::vector<std::pair<LayeredAnimation, Animation>> animations;
-        auto* import = cute_aseprite_load_from_memory(asset.getData(), asset.getSize(), nullptr);
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
         if (anchor == -1)
             anchor = Point{(float)import->w, (float)import->h} / 2;
 
@@ -294,7 +294,7 @@ namespace magique
             LOG_ERROR("Asset file type is not a sound file!: %s", ext);
             return {};
         }
-        const Wave wave = LoadWaveFromMemory(ext, asset.getUData(), asset.getSize());
+        const Wave wave = LoadWaveFromMemory(ext, asset, asset.getSize());
         const Sound sound = LoadSoundFromWave(wave);
         UnloadWave(wave);
         return sound;
@@ -312,7 +312,7 @@ namespace magique
         // Duplicate data as stream isn't copied
         // This is leaked but until the end of the program - only loaded once?
         auto* newData = new char[asset.getSize()];
-        std::memcpy(newData, asset.getData(), asset.getSize());
+        std::memcpy(newData, (const char*)asset, asset.getSize());
         const auto music = LoadMusicStreamFromMemory(ext, (unsigned char*)newData, asset.getSize());
         return music;
     }
@@ -347,13 +347,13 @@ namespace magique
         {
             if (fragment.getSize() != 0)
             {
-                return LoadShaderFromMemory(vertex.getData(), fragment.getData());
+                return LoadShaderFromMemory(vertex, fragment);
             }
-            return LoadShaderFromMemory(vertex.getData(), nullptr);
+            return LoadShaderFromMemory(vertex, nullptr);
         }
         else if (fragment.getSize() != 0)
         {
-            return LoadShaderFromMemory(nullptr, fragment.getData());
+            return LoadShaderFromMemory(nullptr, fragment);
         }
         LOG_WARNING("Passed empty asset for both vertex and fragment: Cant load shader");
         return {};
@@ -388,7 +388,7 @@ namespace magique
             return TileMap{};
         }
 
-        cute_tiled_map_t* map = cute_tiled_load_map_from_memory(asset.getData(), asset.getSize(), nullptr);
+        cute_tiled_map_t* map = cute_tiled_load_map_from_memory((const char*)asset, asset.getSize(), nullptr);
         if (map == nullptr)
         {
             LOG_ERROR("Failed to load TileMaps: %s", asset.getFileName());
@@ -440,7 +440,7 @@ namespace magique
                         }
                         TiledProperty property;
                         TiledPropertyParser::ParseProperty(property, objectPtr->properties[i]);
-                        object.customProperties[i] = property;
+                        object.properties.emplace_back(property);
                     }
 
                     objectLayer.objects.push_back(object);
@@ -463,7 +463,6 @@ namespace magique
                     auto tileId = layer->data[i];
                     cute_tiled_get_flags(tileId, &hFlip, &vFlip, &dFlip);
                     tileId = cute_tiled_unset_flags(tileId);
-
                     tileLayer.tiles.push_back({(int16_t)tileId, hFlip == 1, vFlip == 1, dFlip == 1});
                 }
             }
@@ -487,7 +486,7 @@ namespace magique
             LOG_WARNING("Invalid extensions for a TileSet: %s | Supported: .tsj", asset.getFileName(true));
             return tileset;
         }
-        auto* import = cute_tiled_load_external_tileset_from_memory(asset.getData(), asset.getSize(), nullptr);
+        auto* import = cute_tiled_load_external_tileset_from_memory((const char*)asset, asset.getSize(), nullptr);
         tileset.tileSize = import->tilewidth;
         tileset.tileCount = import->tilecount;
         cute_tiled_tile_descriptor_t* tile = import->tiles;
@@ -498,8 +497,7 @@ namespace magique
             {
                 info.tileClass = func(tile->type.ptr);
             }
-            info.hasCollision = tile->objectgroup != nullptr;
-            if (info.hasCollision)
+            if (tile->objectgroup != nullptr)
             {
                 auto& object = *tile->objectgroup->objects;
                 info.bounds = {std::round(object.x), std::round(object.y), std::round(object.width),
@@ -527,7 +525,7 @@ namespace magique
                 }
                 TiledProperty property;
                 TiledPropertyParser::ParseProperty(property, tile->properties[i]);
-                info.customProperties[i] = property;
+                info.properties.emplace_back(property);
             }
 
             tileset.infoVec.push_back(info);
@@ -553,10 +551,10 @@ namespace magique
 
     Font ImportFont(const Asset& asset, int baseSize, int characters)
     {
-        return LoadFontFromMemory(".ttf", asset.getUData(), asset.getSize(), baseSize, nullptr, characters);
+        return LoadFontFromMemory(".ttf", asset, asset.getSize(), baseSize, nullptr, characters);
     }
 
-    TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset.getData(), delimiter}; }
+    TextLines ImportText(Asset asset, char delimiter) { return TextLines{asset, delimiter}; }
 
     static size_t findAfter(const std::string_view& str, const char* what, size_t pos = 0)
     {
@@ -577,8 +575,7 @@ namespace magique
             return language;
         }
 
-        const std::string_view file{asset.getData(), (size_t)asset.getSize()};
-
+        const std::string_view file = asset;
         if (asset.getExtension() == ".po")
         {
             const auto langStr = file.substr(findAfter(file, "Language: "), 2);

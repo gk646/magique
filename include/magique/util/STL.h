@@ -1,8 +1,11 @@
 #ifndef MAGEQUEST_STL_H
 #define MAGEQUEST_STL_H
 
+#include <algorithm>
 #include <cfloat>
+#include <span>
 #include <vector>
+#include <raylib/raylib.h>
 
 //===============================================
 // STL (Standard Templates Library)
@@ -20,6 +23,11 @@ namespace magique
     T* max_element(std::vector<T>& vec, Pred pred);
     template <typename T, typename Pred>
     const T* max_element(const std::vector<T>& vec, Pred pred);
+
+    // Randomly picks n unique elements from the given range and returns them
+    // Note: vec MUST not contain duplicates
+    template <typename T, std::size_t Extent = std::dynamic_extent>
+    std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n);
 
 } // namespace magique
 
@@ -60,6 +68,31 @@ namespace magique
         }
         return ret;
     }
+
+    template <typename T, std::size_t Extent>
+    std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n)
+    {
+        using ValueType = std::remove_cv_t<T>;
+        std::vector<ValueType> ret;
+        ret.reserve(n);
+
+        if (n == 0) [[unlikely]]
+            return ret;
+
+        if (vec.size() <= n)
+            return std::vector<ValueType>(vec.begin(), vec.end());
+
+        while (ret.size() < n)
+        {
+            auto index = GetRandomValue(0, vec.size() - 1);
+            if (std::ranges::contains(ret, vec[index]))
+                continue;
+            ret.push_back(vec[index]);
+        }
+
+        return ret;
+    }
+
 } // namespace magique
 
 #endif // MAGEQUEST_STL_H

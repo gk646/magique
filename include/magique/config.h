@@ -6,7 +6,7 @@
 // Config
 //===============================================
 // .....................................................................
-// The config options move to cmake/Config.cmake
+// The config options moved to cmake/Config.cmake
 // To change options add set them BEFORE including magique in your CMakeLists.txt:
 //        set(<Name> <Value>)
 // e.g.   set(MAGIQUE_MAX_PLAYERS 4)

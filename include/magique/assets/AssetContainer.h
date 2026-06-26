@@ -33,13 +33,13 @@ namespace magique
         // Iterates entries in numeric order if they are named as such e.g. 0.mp3, 1.mp3...
         // Pass an empty string to iterate all files
         // Relative to the compiled image root e.g. res/player/idle - compile("./res") - iterate("player/idle");
-        void forEachIn(const char* directory, const std::function<void(Asset asset)>& func) const;
+        void forEachIn(std::string_view directory, const std::function<void(Asset asset)>& func) const;
 
         // Retrieves the first asset that matches the given path - use getAsset() to do a easier name search
         // Note: This should be a path to a file - otherwise will return the first file that matches the given path
         //       e.g. music/Sound - can return - music/Sound/ambient/Animals.wav
         // This is a fast operation  - O (log n)
-        const Asset& getAssetByPath(const char* path) const;
+        const Asset& getAssetByPath(std::string_view path) const;
 
         // Retrieves the first asset that contains the given name
         // This is slower than getAssetByPath() but more convenient - O (n)
@@ -49,7 +49,7 @@ namespace magique
         const Asset& getAsset(std::string_view name) const;
 
         // Returns true if any asset contains the given name (substring)
-        bool hasAsset(const char* name) const;
+        bool hasAsset(std::string_view name) const;
 
         // Returns a reference to the asset vector containing all loaded assets
         const std::vector<Asset>& getAllAssets() const;

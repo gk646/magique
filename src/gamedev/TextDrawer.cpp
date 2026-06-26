@@ -114,10 +114,10 @@ namespace magique
 
     TextDrawer& TextDrawer::line(float length, Color tint)
     {
-        auto len = length * bounds.width;
-        float posX = (bounds.width - len) / 2.0F;
+        const auto len = length * bounds.width;
+        const float posX = bounds.x + (bounds.width - len) / 2.0F;
         const auto cursY = getCursor().y;
-        DrawLineV({posX, cursY}, {bounds.x + bounds.width - offf.x, cursY}, tint);
+        DrawLineV({posX, cursY}, {len + posX, cursY}, tint);
         return *this;
     }
 

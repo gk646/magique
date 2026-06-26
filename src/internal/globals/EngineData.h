@@ -5,6 +5,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/GameConfig.h>
+#include <magique/core/Camera.h>
 #include <magique/util/Datastructures.h>
 #include <magique/ecs/ECS.h>
 
@@ -21,6 +22,7 @@ namespace magique
 
     struct CameraShakeData final
     {
+        Point offset;
         Point direction;
         Point veloc;
         float maxDist;
@@ -49,8 +51,8 @@ namespace magique
         GameConfig gameConfig{};            // Global game config instance
         Camera2D camera{};                  // Current camera
         Game* gameInstance;                 // The game instance created by the user
-        Entity cameraEntity = entt::null;   // Entity id of the camera
-        Entity playerEntity = entt::null;   // Manually set player entity
+        Entity cameraEntity = NullEntity{}; // Entity id of the camera
+        Entity playerEntity = NullEntity{}; // Manually set player entity
         GameState gameState{UINT8_MAX};     // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX); // Map the camera is in
         float engineTime = 0.0F;            // Time since engine start
@@ -65,40 +67,7 @@ namespace magique
             collisionVec.reserve(500);
         }
 
-        void update()
-        {
-
-            return;
-            auto& shake = cameraShake;
-            auto& target = camera.target;
-
-            if (target.x >= shake.direction.x * shake.maxDist || target.y >= shake.direction.y * shake.maxDist)
-            {
-                shake.up = false;
-            }
-            else if (target.x <= shake.direction.x * -shake.maxDist || target.y <= shake.direction.y * -shake.maxDist)
-            {
-                shake.up = true;
-            }
-
-            if (shake.up)
-            {
-                target.x = std::min(shake.maxDist, target.x + shake.veloc.x);
-                target.y = std::min(shake.maxDist, target.y + shake.veloc.y);
-            }
-            else
-            {
-                target.x = std::max(-shake.maxDist, target.x - shake.veloc.x);
-                target.y = std::max(-shake.maxDist, target.y - shake.veloc.y);
-            }
-            shake.maxDist = std::max(shake.maxDist - (shake.decay / MAGIQUE_LOGIC_TICKS), 0.0F);
-            if (shake.maxDist <= 0.1F && std::abs(camera.target.x) < 0.5F && std::abs(camera.target.y) < 0.5F)
-            {
-                shake.veloc = {0, 0};
-                // camera.target.x = 0;
-                // camera.target.y = 0;
-            }
-        }
+        void update() { internal::CameraUpdateShake(); }
 
         [[nodiscard]] bool isEntityScripted(const Entity e) const { return !entityNScriptedSet.contains(e); }
     };

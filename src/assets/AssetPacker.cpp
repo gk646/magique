@@ -41,9 +41,9 @@ namespace magique
         return true;
     }
 
-    bool WriteFile(const char* fileName, std::string_view content)
+    bool WriteFile(std::string_view fileName, std::string_view content)
     {
-        FILE* file = fopen(fileName, "w+b");
+        FILE* file = fopen(fileName.data(), "w+b");
         if (file == nullptr)
         {
             LOG_ERROR("Could not open file for writing: %s", fileName);
@@ -71,7 +71,7 @@ namespace magique
         }
     }
 
-    static bool CreatePathList(const char* directory, PathList& pathList)
+    static bool CreatePathList(std::string_view directory, PathList& pathList)
     {
         fs::path dirPath(directory);
         std::error_code ec;
@@ -252,7 +252,7 @@ namespace magique
         return true;
     }
 
-    bool AssetPackLoad(AssetPack& assets, const char* path, const uint64_t key)
+    bool AssetPackLoad(AssetPack& assets, std::string_view path, const uint64_t key)
     {
         if (!fs::exists(path)) // User cant use AssetPack -> its empty
         {
@@ -280,13 +280,14 @@ namespace magique
         if (originalSize == currentSize)
         {
             auto* logText = "Loaded asset pack %s | Took: %d millis | Total Size: %.2f mb | Assets: %d";
-            LOG_INFO(logText, path, time, originalSize / 1'000'000.0F, assets.getSize());
+            LOG_INFO(logText, path.data(), time, originalSize / 1'000'000.0F, assets.getSize());
         }
         else
         {
             auto* logText = "Loaded asset pack %s | Took: %d millis. Decompressed: %.2f mb -> "
                             "%.2f mb | Assets: %d";
-            LOG_INFO(logText, path, time, originalSize / 1'000'000.0F, currentSize / 1'000'000.0F, assets.getSize());
+            LOG_INFO(logText, path.data(), time, originalSize / 1'000'000.0F, currentSize / 1'000'000.0F,
+                     assets.getSize());
         }
 
         return true;
@@ -342,7 +343,7 @@ namespace magique
         return std::memcmp(packData.data(), newData.data(), packData.size()) != 0;
     }
 
-    bool AssetPackCompile(const char* dir, const char* name, const uint64_t key, const bool compress)
+    bool AssetPackCompile(std::string_view dir, std::string_view name, const uint64_t key, const bool compress)
     {
         const auto startTime = GetTime();
 
@@ -378,13 +379,13 @@ namespace magique
         {
             auto* logText = "Compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb "
                             "(%.0f%%) | Assets: %d";
-            LOG_INFO(logText, dir, name, time, original / 1'000'000.0F, compressed / 1'000'000.0F,
+            LOG_INFO(logText, dir.data(), name.data(), time, original / 1'000'000.0F, compressed / 1'000'000.0F,
                      100.0F - (float)compressed / original * 100.0F, pathList.size());
         }
         else
         {
             auto* logText = "Compiled %s into %s | Took %d millis | Total Size: %.2f mb | Assets: %d";
-            LOG_INFO(logText, dir, name, time, original / 1'000'000.0F, pathList.size());
+            LOG_INFO(logText, dir.data(), name.data(), time, original / 1'000'000.0F, pathList.size());
         }
         return true;
     }

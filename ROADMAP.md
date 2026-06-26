@@ -5,47 +5,20 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 **Camera**
 
-- added interface for camera shake
-- ueses impulse forces
+- add interface for camera shake
+  - uses impulse forces
 
 **Pathfinding**
 
-- Optimize pathfinding by searching both directions: front->end AND end->front
-    - for this we need to figure out when a path is found and how to connect the results of both
-    - this makes pathfinding generally faster and A LOT faster around obstacles
-
+- IMplement pathfinding that is aware of the given collision shape
 
 **Procedural Level Generation**
 
 - Give utilities to generate maps based on manually created room cells
-- Could use wave function collapse
 
-**Simple Minimap**
 
-- Minimap drawing given a tilemap
-- Custom color mappings can be set
-    - To tile categories, solid...
-
-**Canvas UI Controls**
-
-- Panel with zoom able and draggable background
-
-**Plugins**
-
-- make a new header that helps with creating plugins for the game
-- methods for loading and getting methods
-- error handling and permission control
-- => what language (cant be c++ due to safety concerns: prob lua or python or Java?)
 
 ### Core
-
-**Use more SIMD for higher performance**
-
-- Use [xsimd](https://github.com/xtensor-stack/xsimd) to simplify simd usage
-    - Hashgrid: accelerate iteration
-    - Pathfinding:
-    - Shadows:
-    - Collision Detection:
 
 **More Performance Stats**
 
@@ -54,9 +27,9 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 ### UI
 
-**Default Multiplayer Chat**
+**Canvas UI Controls**
 
-- Implement reusable chat for multiplayer with default style
+- Panel with zoom able and draggable background
 
 
 ### Assets

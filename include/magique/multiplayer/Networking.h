@@ -119,7 +119,7 @@ namespace magique
     // Note: An existing mapping can be updated with a new entity
     void NetworkSetConnMapping(Connection conn, Entity entity);
 
-    // Returns the entity mapped to this connection - entt::null if none was set
+    // Returns the entity mapped to this connection or NullEntity if none was set
     Entity NetworkGetMappedEntity(Connection conn);
 
     // Returns the (first) connection mapped to the given entity (if any)

@@ -103,20 +103,6 @@ namespace magique
                 rasterizeRect(r4.x, r4.y, r4.width, r4.height);
             }
 
-            // Add tile objects
-            if (staticData.colliderReferences.tileObjectMap.contains(map))
-            {
-                const auto& tileObjectInfo = staticData.colliderReferences.tileObjectMap.at(map);
-                for (const auto& info : tileObjectInfo)
-                {
-                    for (const auto idx : info.objectIds)
-                    {
-                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
-                        rasterizeRect(x, y, w, h);
-                    }
-                }
-            }
-
             // Add tileset tiles
             if (staticData.colliderReferences.tilesCollisionMap.contains(map))
             {
@@ -125,19 +111,6 @@ namespace magique
                 {
                     const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
                     rasterizeRect(x, y, w, h);
-                }
-            }
-
-            if (staticData.colliderReferences.groupMap.contains(map))
-            {
-                const auto& groupInfoVec = staticData.colliderReferences.groupMap.at(map);
-                for (const auto& groupInfo : groupInfoVec)
-                {
-                    for (const auto idx : groupInfo.objectIds)
-                    {
-                        const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
-                        rasterizeRect(x, y, w, h);
-                    }
                 }
             }
         }

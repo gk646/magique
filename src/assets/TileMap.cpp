@@ -6,6 +6,26 @@
 
 namespace magique
 {
+    TileObject* TiledObjectLayer::operator[](int objectId)
+    {
+        for (auto& object : objects)
+        {
+            if (object.getID() == objectId)
+                return &object;
+        }
+        return nullptr;
+    }
+
+    TileObject* TiledObjectLayer::operator[](std::string_view name)
+    {
+        for (auto& object : objects)
+        {
+            if (object.getName() == name)
+                return &object;
+        }
+        return nullptr;
+    }
+
     const TileID& TiledTileLayer::operator()(size_t x, size_t y) const { return tiles[x + y * (size_t)dims.x]; }
 
     TileID& TiledTileLayer::operator()(size_t x, size_t y) { return tiles[x + y * (size_t)dims.x]; }

@@ -43,7 +43,7 @@ namespace magique
     // Creates a new entity by calling the registered function for that type
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires EntityRegister to be called first with a creation function
-    // Failure: Returns entt::null
+    // Failure: Returns NullEntity
     Entity EntityCreate(EntityType type, Point pos, MapID map, float rotation = 0, bool withFunc = true);
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
@@ -74,7 +74,7 @@ namespace magique
     bool EntityIsActor(Entity entity);
 
     // Returns the first entity with the given type
-    // Failure: Returns entt::null if none with that type could be found
+    // Failure: Returns NullEntity if none with that type could be found
     Entity EntityFirstOf(EntityType type);
 
     // Immediately tries to destroy this entity

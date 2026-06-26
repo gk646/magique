@@ -27,7 +27,7 @@ namespace magique
         volume = std::clamp(volume, 0.0F, 1.0F);
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
-        for (auto& t : ap.tracks)
+        for (const auto& t : ap.tracks)
         {
             SetMusicVolume(t.music, ap.getMusicVolume(t.playBackVolume));
         }
@@ -37,17 +37,26 @@ namespace magique
 
     void SoundPlay(const Sound& sound, const float volume, bool loop)
     {
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop);
+        if (IsSoundValid(sound)) [[likely]]
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop);
+        else
+            LOG_WARNING("Cant play invalid sound");
     }
 
     void SoundPlay2D(const Sound& sound, const Entity entity, const float volume, bool loop)
     {
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity, loop);
+        if (IsSoundValid(sound)) [[likely]]
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity, loop);
+        else
+            LOG_WARNING("Cant play invalid sound");
     }
 
     void SoundPlay2D(const Sound& sound, Point pos, float volume, bool loop)
     {
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos, loop);
+        if (IsSoundValid(sound)) [[likely]]
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos, loop);
+        else
+            LOG_WARNING("Cant play invalid sound");
     }
 
     bool SoundStop(const Sound& sound)
@@ -57,17 +66,23 @@ namespace magique
                              [&](auto& wrapper) { return wrapper.sound.stream.buffer == sound.stream.buffer; }) > 0;
     }
 
+    bool SoundStop(Entity entity)
+    {
+        auto& ap = global::AUDIO_PLAYER;
+        return std::erase_if(ap.sounds, [&](const SoundWrapper& wrapper) { return wrapper.entity == entity; }) > 0;
+    }
+
     bool SoundIsPlaying(const Sound& sound)
     {
-        const auto& sd = global::AUDIO_PLAYER;
-        for (const auto& s : sd.sounds)
-        {
-            if (s.sound.stream.buffer == sound.stream.buffer)
-            {
-                return true;
-            }
-        }
-        return false;
+        auto& ap = global::AUDIO_PLAYER;
+        return std::ranges::any_of(ap.sounds, [&](const SoundWrapper& wrapper)
+                                   { return wrapper.sound.stream.buffer == sound.stream.buffer; });
+    }
+
+    bool SoundIsPlaying(Entity entity)
+    {
+        auto& ap = global::AUDIO_PLAYER;
+        return std::ranges::any_of(ap.sounds, [&](const SoundWrapper& wrapper) { return wrapper.entity == entity; });
     }
 
     void SoundSetFalloffDistance(float distance) { global::AUDIO_PLAYER.maxSoundDistance = distance; }

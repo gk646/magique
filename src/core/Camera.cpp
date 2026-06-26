@@ -105,16 +105,42 @@ namespace magique
         return false;
     }
 
-    void CameraShakeAddImpulse(const Point direction, const float maxDistance, const float velocity, const float decay)
+    void CameraShakeImpulse(const Point dir, const float maxDistance, const float velocity, const float decay)
     {
         auto& shake = global::ENGINE_DATA.cameraShake;
         shake.decay = decay;
-        shake.direction = shake.direction + direction;
-        float const magnitude = sqrtf(shake.direction.x * shake.direction.x + shake.direction.y * shake.direction.y);
-        shake.direction.x /= magnitude;
-        shake.direction.y /= magnitude;
+        shake.direction = shake.direction + dir.normalized();
+        shake.direction.normalize();
         shake.maxDist = maxDistance;
-        shake.veloc = {velocity, velocity};
+        shake.veloc = velocity;
     }
 
+    void internal::CameraUpdateShake()
+    {
+        auto& shake = global::ENGINE_DATA.cameraShake;
+        if (shake.maxDist <= 0)
+        {
+            shake.offset = 0;
+            return;
+        }
+
+        Point maxPositive = shake.direction * shake.maxDist;
+        maxPositive = maxPositive.abs();
+        if (shake.offset.magnitude() >= maxPositive.magnitude())
+        {
+            shake.up = !shake.up;
+        }
+
+        Point moveVec = shake.direction * shake.veloc;
+        if (!shake.up)
+            moveVec.invert();
+
+        shake.offset += moveVec;
+        shake.offset.x = std::clamp(shake.offset.x, -maxPositive.x, maxPositive.x);
+        shake.offset.y = std::clamp(shake.offset.y, -maxPositive.y, maxPositive.y);
+        shake.maxDist = std::max(shake.maxDist - (shake.decay / MAGIQUE_LOGIC_TICKS), 0.0F);
+
+        auto& target = CameraGet().target;
+        target = Point{target} + shake.offset;
+    }
 } // namespace magique

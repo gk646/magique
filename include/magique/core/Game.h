@@ -34,14 +34,14 @@ namespace magique
     {
         // Constructs a game instance - sets the window title to the passed name
         // Note: This MUST only be called once per program
-        explicit Game(const char* name = "MyGame", const char* version = "0.0.0");
+        explicit Game(std::string_view name = "MyGame", std::string_view version = "0.0.0");
         virtual ~Game();
 
         // Call this to start the game - should be call in the main method: return game.run();
         // Tries to load an asset pack from the default path - assets will be empty if none exists!
         // Tries to load the game config from the default path - will be created if none exists!
         // Note: The encryption key is applied to both assets and config - make sure they match
-        int run(const char* assetPath = "data.bin", const char* configPath = "Config.cfg", uint64_t encryptionKey = 0);
+        int run(std::string_view assetPath = "data.bin", std::string_view configPath = "Config.cfg", uint64_t encryptionKey = 0);
 
         // Stops the game gracefully - calls onShutDown()
         void shutDown();

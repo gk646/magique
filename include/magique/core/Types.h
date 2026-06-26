@@ -4,6 +4,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 #include <magique/fwd.hpp>
 #include <raylib/raylib.h>
 
@@ -101,7 +102,7 @@ namespace magique
 
         // Vector normalization - with Euclidean method (L2) max length is 1.4 (creates circle shape)
         Point& normalize();
-        Point normal() const;
+        Point normalized() const;
 
         // Vector normalization with manhattan method (L1) max length is 1 (creates diamond shape)
         Point& normalizeManhattan();
@@ -365,14 +366,14 @@ namespace magique
         bool getBool() const;
         int getInt() const;
         float getFloat() const;
-        const char* getString() const;
+        std::string_view getString() const;
         Color getColor() const;
 
         // the type of the property
         TileObjectPropertyType getType() const;
 
         // the name of the property
-        const char* getName() const;
+        std::string_view getName() const;
 
     private:
         TileObjectPropertyType type = TileObjectPropertyType::INT;
@@ -383,28 +384,31 @@ namespace magique
             int integer{};
             char* string;
             bool boolean;
+            int object;
         };
         friend TileInfo;
         friend TileObject;
         friend struct TiledPropertyParser;
     };
 
-    // Objects defined inside the tile editor
+    // Objects defined inside Tiled
     struct TileObject final
     {
+        std::vector<TiledProperty> properties; // Defined properties
+        Rect bounds{};
+        float rotation = 0;
+        bool visible = false;
+
         std::string_view getName() const;
+
+        // Unique identifier for objects
         int getID() const;
-        int getTileClass() const;
+
         // If the object is a tile object so to the id of the tile
         // If multiple tilesets are used ids are additive
         // e.g. first tileset has 200 tiles - second 20
         // object with image of the 10th tile from second is placed -> tileid: 211 (starts with 1)
         int getTileID() const;
-
-        Rect bounds{};
-        float rotation = 0;
-        bool visible = false;
-        int tileClass = 0; // NOT assigned automatically
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(std::string_view name) const;
@@ -415,21 +419,21 @@ namespace magique
         int tileId = 0;
         const char* name = nullptr;
         int id = INT32_MAX;
-        TiledProperty customProperties[MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES];
     };
 
     struct TileInfo final
     {
-        TiledProperty customProperties[MAGIQUE_TILE_SET_CUSTOM_PROPERTIES]; // Mutable
-        Rect bounds;               // Primary rect - top most (in the object list)
-        Rect secBounds;            // Secondary rect - second top (in the object list)
-        const char* image;         // only valid if it's an image tileset
-        TileClass tileClass{};     // class attribute
-        bool hasCollision = false; // True if has at least one collision shape
-        int16_t tileID = 0;        // tile index of this tile
+        std::vector<TiledProperty> properties; // Defined properties
+        Rect bounds;                           // Primary rect - top most (in the object list)
+        Rect secBounds;                        // Secondary rect
+        const char* image;                     // only valid if it's an image tileset
+        int16_t tileID = 0;                    // tile index of this tile
+        TileClass tileClass{};                 // class attribute
+
+        bool hasCollision() const;
 
         // Returns: the property with the given name or nullptr if not exists
-        const TiledProperty* getProperty(const char* name) const;
+        TiledProperty* getProperty(std::string_view name);
     };
 
     // Tiled allows to flip tiles in both directions
@@ -506,22 +510,14 @@ namespace magique
     enum class ColliderType : uint8_t
     {
         WORLD_BOUNDS,
-        TILEMAP_OBJECT,
         TILESET_TILE,
-        MANUAL_COLLIDER,
     };
 
     struct ColliderInfo final
     {
         // Note: If you used the wrong getter (for the type) returns INT32_MAX with a warning
 
-        // Returns the collider class ONLY IF the type is TILEMAP_OBJECT
-        int getColliderClass() const;
-
-        // Returns the group number ONLY IF the type is MANUAL_COLLIDER
-        int getManualGroup() const;
-
-        // Returns the tile class ONLY IF the type is
+        // Returns the tile class ONLY IF the type is TILESET_TILE
         TileClass getTileClass() const;
 
         const ColliderType type; // The type of the collider

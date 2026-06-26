@@ -89,7 +89,7 @@ namespace magique
     // This is useful, as the camera could be different from the controlled character
     // With this you have a single point of truth which is the currently controlled character
     // e.g. What abilities to draw (hotbar)? Show the health of what entity? Which entity receives inputs?
-    // Failure: Returns entt::null if not set - assignment is fully MANUAL!
+    // Failure: Returns NullEntity if not set - assignment is fully MANUAL!
     void EngineSetPlayer(Entity entity);
     Entity EngineGetPlayer();
     bool EngineHasPlayer();

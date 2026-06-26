@@ -42,14 +42,47 @@ namespace magique
 
         SoundWrapper(const SoundWrapper& other) = delete;
         SoundWrapper& operator=(const SoundWrapper& other) = delete;
-        SoundWrapper(SoundWrapper&& other) = default;
-        SoundWrapper& operator=(SoundWrapper&& other) = default;
+
+        SoundWrapper(SoundWrapper&& other) noexcept :
+            sound(other.sound), playVolume(other.playVolume), position(other.position), entity(other.entity),
+            isPositional(other.isPositional), loop(other.loop)
+        {
+            other.sound = {};
+            other.sound.stream.buffer = nullptr;
+        }
+
+        SoundWrapper& operator=(SoundWrapper&& other) noexcept
+        {
+            if (this != &other)
+            {
+                sound = other.sound;
+                playVolume = other.playVolume;
+                position = other.position;
+                isPositional = other.isPositional;
+                entity = other.entity;
+                loop = other.loop;
+                isPositional = other.isPositional;
+
+                other.sound = {};
+                other.sound.stream.buffer = nullptr;
+            }
+            return *this;
+        }
+
+        ~SoundWrapper()
+        {
+            StopSound(sound);
+            SetAudioBufferLooping(sound.stream.buffer, false);
+            UnloadSoundAlias(sound);
+            sound = {};
+            sound.stream.buffer = nullptr;
+        }
 
 
         Sound sound;
         float playVolume;
         Point position{};
-        Entity entity = entt::null;
+        Entity entity = NullEntity();
         bool isPositional = false;
         bool loop = false;
 
@@ -131,7 +164,6 @@ namespace magique
                               e.update();
                               if (e.shouldRemove())
                               {
-                                  UnloadSoundAlias(e.sound);
                                   return true;
                               }
                               return false;
@@ -220,15 +252,7 @@ namespace magique
         if (isPositional)
         {
             if (EntityExists(entity))
-            {
-                const auto& pos = ComponentGet<PositionC>(entity);
-                auto* col = ComponentTryGet<CollisionC>(entity);
-                position = pos.pos;
-                if (col != nullptr)
-                {
-                    position += col->getMidOffset();
-                }
-            }
+                position = CollisionC::GetMiddle(entity);
             auto cameraPos = CameraGetPosition();
             auto dims = UIGetTargetResolution();
             auto distFactor = (position.x - cameraPos.x) / dims.x;

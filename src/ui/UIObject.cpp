@@ -34,7 +34,10 @@ namespace magique
         ui.registerDrawCall(this, false);
         const auto bounds = getBounds();
 
-        if (alpha != 1.0F) [[unlikely]]
+        if (alpha == 0.0F) [[unlikely]]
+        {
+        }
+        else if (alpha != 1.0F) [[unlikely]]
         {
             if (ui.alphaTexture.texture.width != ui.targetRes.x || ui.alphaTexture.texture.height != ui.targetRes.y)
                 [[unlikely]]
@@ -43,7 +46,7 @@ namespace magique
                 ui.alphaTexture = LoadRenderTexture(ui.targetRes.x, ui.targetRes.y);
             }
 
-            auto prevTexture = GetCurrentRenderTexture();
+            const auto prevTexture = GetCurrentRenderTexture();
             BeginTextureMode(ui.alphaTexture);
             ClearBackground(BLANK);
             onDraw(bounds);

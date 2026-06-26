@@ -104,7 +104,7 @@ namespace magique
 
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
-            ScriptingInvokeEvent<onCreate>(entity);
+            internal::ScriptingGetScript(entity)->onCreate(entity);
         }
         if (registry.all_of<CameraC>(entity)) [[unlikely]]
         {
@@ -145,7 +145,7 @@ namespace magique
             data.destroyCallback(entity);
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
-            ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], entity);
+            internal::ScriptingGetScript(entity)->onDestroy(entity);
         }
 
         data.entityUpdateCache.erase(entity);
@@ -174,14 +174,13 @@ namespace magique
         {
             for (const auto e : group)
             {
-                const auto& pos = group.get<PositionC>(e);
                 if (data.destroyCallback)
                 {
                     data.destroyCallback(e);
                 }
                 if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
-                    ScriptingInvokeEventDirect<onDestroy>(global::SCRIPT_DATA.scripts[pos.type], e);
+                    internal::ScriptingGetScript(e)->onDestroy(e);
                 }
             }
 

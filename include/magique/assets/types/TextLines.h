@@ -17,7 +17,7 @@ namespace magique
     struct TextLines final
     {
         TextLines() = default;
-        TextLines(const std::string& buff, char delimiter = '\n');
+        TextLines( std::string_view buff, char delimiter = '\n');
 
         // Returns a random lines or nullptr if empty
         const std::string* getRandomLine() const;
