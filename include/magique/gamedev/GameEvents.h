@@ -18,8 +18,8 @@
 // Note: You probably want to use a std::variants inside EventData to cleanly store typesafe data
 // ................................................................................
 
-enum class GameEvent : uint8_t; // User implemented to denote different events
-struct EventData;               // User implemented event data
+enum class Event : uint8_t; // User implemented to denote different events
+struct EventData;           // User implemented event data
 
 namespace magique
 {
@@ -28,29 +28,29 @@ namespace magique
         virtual ~IEventHandler() = default;
 
         // Called each time BEFORE any event method - event method is only called if returns true
-        virtual bool shouldBeCalled(GameEvent event, Entity entity, const EventData& data) { return true; }
+        virtual bool shouldBeCalled(Event event, Entity entity, const EventData& data) { return true; }
 
         // Called for each event
-        virtual void onEvent(GameEvent event, Entity entity, const EventData& data) {}
+        virtual void onEvent(Event event, Entity entity, const EventData& data) {}
     };
 
-    using EventFunc = std::function<void(GameEvent event, Entity entity, const EventData& data)>;
+    using EventFunc = std::function<void(Event event, Entity entity, const EventData& data)>;
 
     // Immediately calls all handlers in correct order if conditions match (e.g. filter matches and shouldBeCalled() is true)
     // Template is only for cleaner signature - MUST be type EventData
     template <typename EventDataT = EventData>
-    void GameEventsEmit(GameEvent event, Entity entity = NullEntity{}, const EventDataT& data = {});
+    void EventsEmit(Event event, Entity entity = NullEntity{}, const EventDataT& data = {});
 
     // Adds an event handler
     //  - filter: only calls event func if emitted entity matches filter
     //  - priority: called in priority order descending - highest first
-    EventSubID GameEventsSubscribe(IEventHandler* handler, Entity filter = NullEntity{}, int priority = 0);
+    EventSubscription EventsSubscribe(IEventHandler* handler, Entity filter = NullEntity{}, int priority = 0);
 
     // Called every time the filter matches
-    EventSubID GameEventsSubscribe(const EventFunc& func, Entity filter = NullEntity{}, int priority = 0);
+    EventSubscription EventsSubscribe(const EventFunc& func, Entity filter = NullEntity{}, int priority = 0);
 
     // Returns true if the subscription has been removed
-    bool GameEventsCancel(EventSubID id);
+    bool EventsCancel(EventSubscription id);
 
 } // namespace magique
 

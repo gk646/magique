@@ -41,7 +41,7 @@ namespace magique
 
         // Returns: The given object cast to the given type
         template <typename T = UIObject>
-        T* getObject(const char* name) const;
+        T* getObject(std::string_view name) const;
 
         // Returns: all contained objects
         const std::vector<UIObject*>& getObjects();
@@ -71,9 +71,9 @@ namespace magique
     }
 
     template <typename T>
-    T* Scene::getObject(const char* name) const
+    T* Scene::getObject(std::string_view name) const
     {
-        return static_cast<T*>(getObjectImpl(name));
+        return static_cast<T*>(getObjectImpl(name.data()));
     }
 } // namespace magique
 #endif // MAGIQUE_SCENE_MANAGER_H

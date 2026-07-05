@@ -30,14 +30,14 @@ namespace magique
 
     void UIObject::draw()
     {
+        if (alpha == 0.0F) [[unlikely]]
+            return;
+
         auto& ui = global::UI_DATA;
-        ui.registerDrawCall(this, false);
+        ui.registerDrawCall(this);
         const auto bounds = getBounds();
 
-        if (alpha == 0.0F) [[unlikely]]
-        {
-        }
-        else if (alpha != 1.0F) [[unlikely]]
+        if (alpha != 1.0F) [[unlikely]]
         {
             if (ui.alphaTexture.texture.width != ui.targetRes.x || ui.alphaTexture.texture.height != ui.targetRes.y)
                 [[unlikely]]

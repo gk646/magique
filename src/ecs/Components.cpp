@@ -49,7 +49,7 @@ namespace magique
         setAnimationState(startState);
     }
 
-    void AnimationC::drawCurrentFrame(const Point& pos, const float rotation) const
+    void AnimationC::drawCurrentFrame(const Point& pos, bool flipX, const float rotation, bool flipY) const
     {
         const auto currentFrame = currentAnimation.getCurrentFrame(millisCount);
         Rect dest = {pos + animation->getOffset(),
@@ -68,7 +68,7 @@ namespace magique
             lastState = currentState;
             currentState = state;
             millisCount = 0;
-            currentAnimation = animation->getCurrentAnimation(state);
+            currentAnimation = animation->getAnimation(state);
             animationStart = millisCount;
         }
     }
@@ -84,6 +84,9 @@ namespace magique
 
     float AnimationC::getSpriteCount() const { return millisCount; }
 
+    const Animation& AnimationC::getAnimation() const { return *animation; }
+
+
     //----------------- LAYERED ANIMATION -----------------//
 
     void LayeredAnimationC::draw(const Point& pos, float rotation) const
@@ -92,7 +95,7 @@ namespace magique
         {
             auto& anim = *layered.animation;
             auto layerOffset = layered.offset;
-            auto current = anim.getCurrentAnimation(currentState);
+            auto current = anim.getAnimation(currentState);
             auto frame = current.getCurrentFrame(millisCount);
             Point finalAnchor;
             if (globalAnchor != -1)
@@ -126,9 +129,9 @@ namespace magique
 
     //----------------- TextureC -----------------//
 
-    TextureC::TextureC(TextureRegion texture, Point offset, Point anchor, int priority) :
+    TextureC::TextureC(TextureRegion texture, Point offset, Point anchor) :
         texture(texture), offset(offset.floor()),
-        anchor(anchor == -1 ? Point{texture.getSize() / 2}.floor() : anchor.floor()), priority(priority)
+        anchor(anchor == -1 ? Point{texture.getSize() / 2}.floor() : anchor.floor())
     {
     }
 
@@ -140,11 +143,11 @@ namespace magique
         DrawRegionPro(texture, dest, std::floor(rotation), anchor, tint);
     }
 
-    void LayeredTextureC::draw(const Point& pos, float rotation, bool flipX,Color tint) const
+    void LayeredTextureC::draw(const Point& pos, float rotation, bool flipX, Color tint) const
     {
         for (const auto& [layer, tex] : textures)
         {
-            drawLayer(layer, pos, rotation, flipX,tint);
+            drawLayer(layer, pos, rotation, flipX, tint);
         }
     }
 
@@ -165,7 +168,9 @@ namespace magique
         {
             finalAnchor = tex.offset + tex.anchor;
         }
-        const auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
+        auto dest = Rect{pos + tex.offset, tex.texture.getSize()};
+        if (flipX)
+            dest.width = -dest.width;
         DrawRegionPro(tex.texture, dest.floored(), std::floor(rotation), finalAnchor, tint);
     }
 

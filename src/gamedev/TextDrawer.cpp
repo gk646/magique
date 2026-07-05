@@ -161,6 +161,12 @@ namespace magique
         return *this;
     }
 
+    TextDrawer& TextDrawer::set(Point pos)
+    {
+        cursor = pos - bounds.pos();
+        return *this;
+    }
+
     TextDrawer& TextDrawer::jumpLast()
     {
         cursor.x = offf.x;

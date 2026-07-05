@@ -8,7 +8,7 @@
 namespace magique
 {
 
-    struct EventSubscription final
+    struct EventSubData final
     {
         bool isValid(Entity entity) const
         {
@@ -22,15 +22,14 @@ namespace magique
         IEventHandler* handler;
         int priority;
         Entity filter;
-        EventSubID id;
-        GameEvent event;
+        EventSubscription id;
     };
 
-    static EventSubID curr = 1;
-    static std::vector<EventSubscription> subscribers;
+    static EventSubscription curr = 1;
+    static std::vector<EventSubData> subscribers;
 
     template <>
-    void GameEventsEmit(GameEvent event, Entity entity, const EventData& data)
+    void EventsEmit(Event event, Entity entity, const EventData& data)
     {
         for (auto& subscriber : subscribers)
         {
@@ -41,7 +40,7 @@ namespace magique
         }
     }
 
-    EventSubID GameEventsSubscribe(IEventHandler* handler, Entity filter, int priority)
+    EventSubscription EventsSubscribe(IEventHandler* handler, Entity filter, int priority)
     {
         auto& sub = subscribers.emplace_back();
         sub.handler = handler;
@@ -52,18 +51,18 @@ namespace magique
         return curr++;
     }
 
-    EventSubID GameEventsSubscribe(const EventFunc& func, Entity filter, int priority)
+    EventSubscription EventsSubscribe(const EventFunc& func, Entity filter, int priority)
     {
         struct Handler final : IEventHandler
         {
             Handler(const EventFunc& func) : func(func) {}
-            void onEvent(GameEvent event, Entity entity, const EventData& data) override { func(event, entity, data); }
+            void onEvent(Event event, Entity entity, const EventData& data) override { func(event, entity, data); }
             EventFunc func;
         };
-        return GameEventsSubscribe(new Handler(func), filter, priority);
+        return EventsSubscribe(new Handler(func), filter, priority);
     }
 
-    bool GameEventsCancel(EventSubID id)
+    bool EventsCancel(EventSubscription id)
     {
         if (id == 0)
         {

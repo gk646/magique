@@ -75,8 +75,8 @@ namespace magique
         // Fits the width and height to the text height - uses font.baseSize as default
         void fitToText(const Font& font, float size = 0);
 
-        std::string& getText();
-        const std::string& getText() const;
+        void setText(std::string_view text);
+        std::string_view getText() const;
 
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }

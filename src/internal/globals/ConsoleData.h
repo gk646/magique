@@ -145,7 +145,7 @@ namespace magique
                 {
                     for (const auto& cmd : commands)
                     {
-                        ConsoleAddStringF("%s - %s", cmd.getName().c_str(), cmd.getDescription().c_str());
+                        ConsoleAddStringF("%s - %s", cmd.getName().data(), cmd.getDescription().data());
                     }
                 }));
 
@@ -494,7 +494,7 @@ namespace magique
             float maxWidth = 100;
             auto getSuggestionText = [](const Command& cmd)
             {
-                return TextFormat("%s / %s", cmd.getName().c_str(), cmd.getDescription().c_str());
+                return TextFormat("%s / %s", cmd.getName().data(), cmd.getDescription().data());
             };
 
             // Measure widest suggestion

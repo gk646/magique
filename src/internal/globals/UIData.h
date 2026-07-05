@@ -193,7 +193,7 @@ namespace magique
         }
 
         // All objects are registered in their ctor
-        void registerObject(UIObject* object, const bool isContainer = false)
+        void registerObject(UIObject* object)
         {
             objectsSet.insert(object);
             objects.push_back(object);
@@ -202,7 +202,7 @@ namespace magique
         // All objects are un-registered in the dtor
         void unregisterObject(UIObject* object) { std::erase(objects, object); }
 
-        void registerDrawCall(UIObject* object, const bool isContainer)
+        void registerDrawCall(UIObject* object)
         {
             if (object == mouseConsumedAfter)
                 mouseConsumed = false;
@@ -211,30 +211,20 @@ namespace magique
             {
                 object->onShown(object->getBounds());
             }
+
             object->drawnThisTick = true;
+
             if (!objectsSet.contains(object)) [[unlikely]]
             {
-                registerObject(object, false);
+                registerObject(object);
             }
 
-            // Moving 3 to the front
-            // [1][2][3][4][5]
-            // [3]              -> assign temporary
-            // [0][1][2][4][5]  -> copy everything before 1 back
-            // [3][1][2][4][5]
-            // or using std::iterators ... :(
-
-            auto sortUpfront = [](std::vector<UIObject*>& objects, UIObject* obj)
+            const auto it = std::ranges::find(objects, object);
+            if (it != objects.end())
             {
-                auto it = std::ranges::find(objects, obj);
-                if (it != objects.end())
-                {
-                    objects.erase(it);
-                    objects.insert(objects.begin(), obj);
-                }
-            };
-
-            sortUpfront(objects, object);
+                objects.erase(it);
+                objects.insert(objects.begin(), object);
+            }
         }
 
         void scaleBounds(Rect& bounds, const ScalingMode scaleMode, Point inset, Anchor anchor) const

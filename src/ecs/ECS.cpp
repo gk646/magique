@@ -104,7 +104,7 @@ namespace magique
 
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
-            internal::ScriptingGetScript(entity)->onCreate(entity);
+            internal::GetScriptInternal(entity)->onCreate(entity);
         }
         if (registry.all_of<CameraC>(entity)) [[unlikely]]
         {
@@ -145,7 +145,7 @@ namespace magique
             data.destroyCallback(entity);
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
         {
-            internal::ScriptingGetScript(entity)->onDestroy(entity);
+            internal::GetScriptInternal(entity)->onDestroy(entity);
         }
 
         data.entityUpdateCache.erase(entity);
@@ -180,7 +180,7 @@ namespace magique
                 }
                 if (!config.isClientMode && data.isEntityScripted(e)) [[likely]]
                 {
-                    internal::ScriptingGetScript(e)->onDestroy(e);
+                    internal::GetScriptInternal(e)->onDestroy(e);
                 }
             }
 

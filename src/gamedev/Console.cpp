@@ -25,12 +25,12 @@ namespace magique
         auto* cmd = console.getCommand(command.getName());
         if (cmd != nullptr)
         {
-            LOG_WARNING("Command with name already exists: %s", command.getName().c_str());
+            LOG_WARNING("Command with name already exists: %s", command.getName().data());
             return;
         }
         if (!command.cmdFunc)
         {
-            LOG_ERROR("Cannot register command with no function: %s", command.getName().c_str());
+            LOG_ERROR("Cannot register command with no function: %s", command.getName().data());
             return;
         }
         global::CONSOLE_DATA.commands.emplace_back(command);
@@ -67,66 +67,56 @@ namespace magique
 
     //================= COMMAND =================//
 
-    Command::Command(const char* cmdName, const char* description) :
-        name(cmdName), description((description != nullptr) ? description : "")
-    {
-    }
+    Command::Command(std::string_view cmdName, std::string_view description) : name(cmdName), description(description) {}
 
-    Command& Command::addParam(std::string_view name, const std::array<ParamType, 3>& allowedTypes)
+    Command& Command::addParam(std::string_view param, const std::array<ParamType, 3>& allowedTypes)
     {
         MAGIQUE_ASSERT(parameters.empty() || (!parameters.back().isVariadic && !parameters.back().isOptional),
                        "A variadic/optional parameter must be the last one!");
         MAGIQUE_ASSERT(allowedTypes.size() <= 3, "Only specify the type once!");
-        ParamInfo data;
-        data.name = name;
+        auto& newParam = parameters.emplace_back();
+        newParam.name = param;
         int i = 0;
         for (const auto type : allowedTypes)
         {
-            data.allowedTypes[i++] = type;
+            newParam.allowedTypes[i++] = type;
         }
-        parameters.push_back(data);
         return *this;
     }
 
-    Command& Command::addOptionalNumber(const char* name, const float value)
+    Command& Command::addOptionalNumber(std::string_view param, const float value)
     {
         MAGIQUE_ASSERT(parameters.empty() || !parameters.back().isVariadic,
                        "A variadic parameter must be the last one!");
-        ParamInfo data;
-        data.isOptional = true;
-        data.name = name;
-
-        data.allowedTypes[0] = ParamType::NUMBER;
-        data.number = value;
-        parameters.push_back(data);
+        auto& newParam = parameters.emplace_back();
+        newParam.isOptional = true;
+        newParam.name = param;
+        newParam.allowedTypes[0] = ParamType::NUMBER;
+        newParam.number = value;
         return *this;
     }
 
-    Command& Command::addOptionalString(const char* name, const char* value)
+    Command& Command::addOptionalString(std::string_view param, std::string_view value)
     {
         MAGIQUE_ASSERT(parameters.empty() || !parameters.back().isVariadic,
                        "A variadic parameter must be the last one!");
-        ParamInfo data;
-        data.isOptional = true;
-        data.name = name;
-
-        data.allowedTypes[0] = ParamType::STRING;
-        data.string = strdup(value);
-        parameters.push_back(data);
+        auto& newParam = parameters.emplace_back();
+        newParam.isOptional = true;
+        newParam.name = param;
+        newParam.allowedTypes[0] = ParamType::STRING;
+        newParam.string = value;
         return *this;
     }
 
-    Command& Command::addOptionalBool(const char* name, const bool value)
+    Command& Command::addOptionalBool(std::string_view param, const bool value)
     {
         MAGIQUE_ASSERT(parameters.empty() || !parameters.back().isVariadic,
                        "A variadic parameter must be the last one!");
-        ParamInfo data;
-        data.isOptional = true;
-        data.name = name;
-
-        data.allowedTypes[0] = ParamType::BOOL;
-        data.boolean = value;
-        parameters.push_back(data);
+        auto& newParam = parameters.emplace_back();
+        newParam.isOptional = true;
+        newParam.name = param;
+        newParam.allowedTypes[0] = ParamType::BOOL;
+        newParam.boolean = value;
         return *this;
     }
 
@@ -135,36 +125,31 @@ namespace magique
         MAGIQUE_ASSERT(parameters.empty() || (!parameters.back().isVariadic && !parameters.back().isOptional),
                        "A variadic parameter must be the last one!");
         MAGIQUE_ASSERT(allowedTypes.size() <= 3, "Only specify the type once!");
-        ParamInfo data;
-        data.isVariadic = true;
+        auto& newParam = parameters.emplace_back();
+        newParam.isVariadic = true;
         int i = 0;
         for (const auto type : allowedTypes)
         {
-            data.allowedTypes[i++] = type;
+            newParam.allowedTypes[i++] = type;
         }
-        parameters.push_back(data);
         return *this;
     }
 
     Command& Command::setFunction(const CommandFunction& func)
     {
-        if (cmdFunc)
-        {
-            LOG_WARNING("Command function already set. Replacing ...");
-        }
         cmdFunc = func;
         return *this;
     }
 
-    const std::string& Command::getName() const { return name; }
+    std::string_view Command::getName() const { return name; }
 
-    const std::string& Command::getDescription() const { return description; }
+    std::string_view Command::getDescription() const { return description; }
 
     const std::vector<ParamInfo>& Command::getParamInfo() const { return parameters; }
 
     //================= Environmental Parameters =================//
 
-    void ConsoleSetEnvParam(const std::string_view& name, const std::string_view& value)
+    void ConsoleSetEnvParam(std::string_view name, std::string_view value)
     {
         auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(!name.empty(), "Passed null");
@@ -177,14 +162,14 @@ namespace magique
         }
     }
 
-    bool ConsoleRemoveEnvParam(const std::string_view& name)
+    bool ConsoleRemoveEnvParam(std::string_view name)
     {
         auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(!name.empty(), "Passed null");
         return console.envParams.erase(name) > 0;
     }
 
-    const Param* ConsoleGetEnvParam(const std::string_view& name)
+    const Param* ConsoleGetEnvParam(std::string_view name)
     {
         const auto& paramTable = global::CONSOLE_DATA.envParams;
         const auto it = paramTable.find(name);

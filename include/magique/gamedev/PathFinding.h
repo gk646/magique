@@ -68,12 +68,12 @@ namespace magique
     // If set, all entities of the given type are considered solid for pathfinding and make cells non-traversable
     // The dynamic pathfinding grid will be updated each tick with their position and collision shapes
     // IMPORTANT: Marked entities need to have the CollisionC so collision can be calculated
-    void PathSetSolidType(EntityType type, bool value);
+    void PathSetSolidType(EntityType type, bool value = true);
     bool PathGetIsSolidType(EntityType type);
 
     // Marks the given entity as solid for pathfinding - automatically removed when the entity is deleted
     // IMPORTANT: Marked entity needs to have the CollisionC so collision can be calculated
-    void PathSetSolidEntity(Entity entity, bool value);
+    void PathSetSolidEntity(Entity entity, bool value = true);
     bool PathGetSolidEntity(Entity entity);
 
     //================= DEBUG =================//

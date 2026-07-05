@@ -447,7 +447,7 @@ typedef struct deflate_t
 	uint32_t nlen;
 } deflate_t;
 
-static int s_would_overflow(deflate_t* s, int num_bits)
+[[maybe_unused]] static int s_would_overflow(deflate_t* s, int num_bits)
 {
 	return (s->bits_left + s->count) - num_bits < 0;
 }

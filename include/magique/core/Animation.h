@@ -38,18 +38,21 @@ namespace magique
         // Removes the animation for this state
         void removeAnimation(AnimationState state);
 
-        // Returns the frame of the given state
-        [[nodiscard]] SpriteAnimation getCurrentAnimation(AnimationState state) const;
+        // Returns the animation for the given state
+        SpriteAnimation getAnimation(AnimationState state) const;
 
         // Sets/gets the draw offset applied to every frame
-        [[nodiscard]] Point getOffset() const;
+        Point getOffset() const;
         void setOffset(Point offset);
 
         // The rotation anchor
-        [[nodiscard]] Point getAnchor() const;
+        Point getAnchor() const;
         void setAnchor(Point anchor);
 
-        bool hasAnimation(AnimationState state) const;
+        // Returns true if an animation is set for the given state
+        bool hasState(AnimationState state) const;
+
+        // Returns the animation map
         const HashMap<AnimationState, SpriteAnimation>& getAnimations() const;
 
     private:

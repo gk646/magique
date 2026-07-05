@@ -94,16 +94,16 @@ namespace magique
         Command() = default;
         // Creates a new command instance with the specified name and optional description
         //      - cmdName: the name of the command - must not contain whitespace - can contain numbers
-        explicit Command(const char* cmdName, const char* description = nullptr);
+        explicit Command(std::string_view cmdName, std::string_view description = {});
 
         // Adds a new parameter that accepts any of the specified types
-        Command& addParam(std::string_view name, const std::array<ParamType, 3>& types);
+        Command& addParam(std::string_view param, const std::array<ParamType, 3>& types);
 
         // Adds a new optional parameter - if not specified will have the provided value
         // Note: optional params have to be last, but can be followed by other optional params (exclusive with variadic)
-        Command& addOptionalNumber(const char* name, float value);
-        Command& addOptionalString(const char* name, const char* value);
-        Command& addOptionalBool(const char* name, bool value);
+        Command& addOptionalNumber(std::string_view param, float value);
+        Command& addOptionalString(std::string_view param, std::string_view value);
+        Command& addOptionalBool(std::string_view param, bool value);
 
         // Adds a parameter that matches a variable amount of parsed params - parsed params must have any of the given types
         // Note: MUST be the last parameter added to this command (exclusive with optionals)
@@ -113,8 +113,8 @@ namespace magique
         Command& setFunction(const CommandFunction& func);
 
         // Returns the name of the command
-        const std::string& getName() const;
-        const std::string& getDescription() const;
+        std::string_view getName() const;
+        std::string_view getDescription() const;
         const std::vector<ParamInfo>& getParamInfo() const;
 
         CommandFunction cmdFunc;
@@ -133,15 +133,15 @@ namespace magique
 
     // Sets (or creates) the environment param with the given name to the given value
     // Note: Type is determined automatically
-    void ConsoleSetEnvParam(const std::string_view&, const std::string_view& value);
+    void ConsoleSetEnvParam(std::string_view, std::string_view value);
 
     // Returns true if the environment param with the given name was successfully removed
-    bool ConsoleRemoveEnvParam(const std::string_view& name);
+    bool ConsoleRemoveEnvParam(std::string_view name);
 
     // Returns the environment param with the given name
     // Note: returned pointer might become invalid (don't save it)
     // Failure: returns nullptr
-    const Param* ConsoleGetEnvParam(const std::string_view& name);
+    const Param* ConsoleGetEnvParam(std::string_view name);
 
     // Sets the callback called after any environment param was changed with the changed param
     void ConsoleSetEnvParamCallback(const std::function<void(const Param& param)>& func);

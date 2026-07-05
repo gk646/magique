@@ -87,9 +87,9 @@ namespace magique
         setSize(Point{MeasureTextEx(font, text.c_str(), size == 0 ? font.baseSize : size, 1.0F)} + Point{4});
     }
 
-    std::string& TextButton::getText() { return text; }
+    void TextButton::setText(std::string_view txt) { text = txt; }
 
-    const std::string& TextButton::getText() const { return text; }
+    std::string_view TextButton::getText() const { return text; }
 
     void TextButton::drawDefault(const Rect& bounds)
     {

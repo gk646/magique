@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    Window::Window(const char* name, Rect bounds, const float moverHeight) : UIObject(bounds), name(name)
+    Window::Window(std::string_view name, Rect bounds, const float moverHeight) : UIObject(bounds), name(name)
     {
         const auto& ui = global::UI_DATA;
         if (moverHeight == 0.0F)
@@ -35,9 +35,7 @@ namespace magique
         DrawRectangleRounded(topBar, 0.2F, 30, body);
         DrawRectangleRoundedLinesEx(topBar, 0.1F, 30, 2, outline);
     }
-    std::string& Window::getName() { return name; }
-
-    const char* Window::getName() const { return name.c_str(); }
+    std::string_view Window::getName() const { return name; }
 
     Rectangle Window::getBodyBounds() const
     {

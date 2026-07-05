@@ -512,4 +512,124 @@ namespace magique
 
     bool TextField::hasSelection() const { return selectionStart != -1; }
 
+    TextDisplay::TextDisplay(Rect bounds, Anchor anchor, Point insert, ScalingMode scaling) :
+        UIObject(bounds, anchor, insert, scaling)
+    {
+    }
+
+    void TextDisplay::addSection(std::string_view section, Color color)
+    {
+        sections.emplace_back(std::string{section}, color);
+    }
+
+    void TextDisplay::addLine(std::string_view line, Color color)
+    {
+        std::string str{line};
+        str.push_back('\n');
+        sections.emplace_back(std::move(str), color);
+    }
+
+    void TextDisplay::setInset(Direction dir, float val)
+    {
+        switch (dir)
+        {
+        case Direction::LEFT:
+            inset.x = val;
+            break;
+        case Direction::RIGHT:
+            inset.width = val;
+            break;
+        case Direction::UP:
+            inset.y = val;
+            break;
+        case Direction::DOWN:
+            inset.height = val;
+            break;
+        }
+    }
+
+    std::string_view TextDisplay::getText() const { return rendered; }
+
+    int TextDisplay::getLineCount() const { return lines; }
+
+    void TextDisplay::removeLine()
+    {
+        for (auto it = sections.begin(); it != sections.end();)
+        {
+            std::string& text = it->text;
+            const auto pos = text.find_first_of('\n');
+            if (pos != std::string_view::npos)
+            {
+                text = text.erase(0, pos + 1);
+                if (text.empty())
+                    sections.erase(it);
+                lines--;
+                break;
+            }
+            else
+            {
+                it = sections.erase(it);
+            }
+        }
+    }
+
+    void TextDisplay::removeSection() { sections.erase(sections.begin()); }
+
+    void TextDisplay::clear()
+    {
+        sections.clear();
+        lines = 0;
+    }
+
+    int TextDisplay::getLineLimit() const { return limit; }
+
+    void TextDisplay::setLineLimit(int l) { limit = l; }
+
+    void TextDisplay::onDraw(const Rect& bounds) { drawText(EngineGetFont(), EngineGetFont().baseSize); }
+
+    void TextDisplay::drawText(const Font& f, float fSize)
+    {
+        const auto bounds = getBounds();
+        Point pos = bounds.pos() + inset.pos();
+        const float lineBegin = pos.x;
+        const float lineEnd = lineBegin + bounds.width - inset.width;
+        const float lineHeight = fSize + GetTextLineSpacing();
+
+        rendered.clear();
+        lines = 0;
+        for (const auto& sec : sections)
+        {
+            temp.clear();
+            convertSection(sec.text, temp);
+            std::string_view text = temp;
+            const Point dims = MeasureTextEx(f, text.data(), fSize, 1.0F);
+            if (pos.x != lineBegin && pos.x + dims.x > lineEnd) // If its first section thats too long draw without break
+            {
+                pos.x = lineBegin;
+                pos.y += lineHeight;
+            }
+            drawSection(f, fSize, pos, text, sec.text, sec.color);
+            pos.x += dims.x;
+            rendered += text;
+            int textLines = (int)std::round((dims.y - fSize) / lineHeight);
+            if (textLines > 0) // Text contained at least 1 newlines
+                pos.x = lineBegin;
+            pos.y += textLines * lineHeight;
+            lines += textLines;
+        }
+
+        setSize({bounds.width, pos.y - bounds.y + inset.height});
+        while (lines > limit)
+            removeLine();
+    }
+
+    void TextDisplay::convertSection(std::string_view section, std::string& result) { result = section; }
+
+    void TextDisplay::drawSection(const Font& f, float fSize, Point pos, std::string_view converted,
+                                  std::string_view original, Color color)
+    {
+        DrawTextEx(f, converted.data(), pos, fSize, 1.0F, color);
+    }
+
+
 } // namespace magique

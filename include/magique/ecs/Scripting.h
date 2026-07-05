@@ -15,8 +15,8 @@
 // Note: All entities are scripted per default - you need to explicitly disable this on a per-entity basis
 // Note: You need to specify your custom type if you want to invoke a method that is specific to that type:
 //      - MyEntityScript::onSit() -> ScriptingGetScript<MyEntityScript>(entity).onSit(entity);
-// It is possible to create behavior hierarchies where you rely on default behavior specified in the baseclass
-//      -> see examples/headers/Scripting.h
+// To create behavior hierarchies subclass EntityScript and create new functions or defaults
+//      => See examples/headers/Scripting.h
 // ................................................................................
 
 namespace magique
@@ -55,22 +55,22 @@ namespace magique
         virtual void onUpdate(Entity self, bool updated) {}
 
         // Called each time this entity collides with another entity - called for both entities
-        virtual void onDynamicCollision(Entity self, Entity other, CollisionInfo& info)
+        virtual void onDynamicCollision(Entity self, Entity other, CollisionInfo& collision)
         {
-            AccumulateCollision(info); // Treats the other shape as solid per default
+            AccumulateCollision(collision); // Treats the other shape as solid per default
         }
 
         // Called each time this entity collides with a static collision object
-        virtual void onStaticCollision(Entity self, ColliderInfo collider, CollisionInfo& info)
+        virtual void onStaticCollision(Entity self, ColliderInfo collider, CollisionInfo& collision)
         {
-            AccumulateCollision(info); /// Treats the other shape as solid per default
+            AccumulateCollision(collision); /// Treats the other shape as solid per default
         }
 
         //================= UTIL =================//
 
         // Adds the given info on top the existing info for this entity - will be applied after all collisions are resolved
         // Note: This essentially makes the other shape 'solid' preventing you from entering it!
-        static void AccumulateCollision(CollisionInfo& collisionInfo);
+        static void AccumulateCollision(CollisionInfo& collision);
     };
 
 } // namespace magique
@@ -83,13 +83,13 @@ namespace magique
 {
     namespace internal
     {
-        EntityScript* ScriptingGetScript(Entity entity);
+        EntityScript* GetScriptInternal(Entity entity);
     }
 
     template <class Script>
     Script* ScriptingGetScript(Entity entity)
     {
-        return static_cast<Script*>(internal::ScriptingGetScript(entity));
+        return static_cast<Script*>(internal::GetScriptInternal(entity));
     }
 } // namespace magique
 #endif // MAGIQUE_INTERNAL_SCRIPTING_H

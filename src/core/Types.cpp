@@ -1033,6 +1033,7 @@ namespace magique
         bind(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
     }
+
     Keybind::Keybind(MouseButton mouse, bool layered, bool shift, bool ctrl, bool alt) :
         bind(mouse), type(Mouse), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
@@ -1092,14 +1093,14 @@ namespace magique
             break;
         }
 
-        auto anyModifierReleased = [&]()
+        auto anyModifierReleased = [&]
         {
             bool value = false;
             if (hasShift())
             {
                 bool leftShift = false;
                 KEY_MACRO(leftShift, IsKeyReleased, KEY_LEFT_SHIFT);
-                value = value || leftShift;
+                value = leftShift;
             }
             if (hasCtrl())
             {
@@ -1142,7 +1143,7 @@ namespace magique
         {
             bool leftShift = false;
             KEY_MACRO(leftShift, IsKeyDown, KEY_LEFT_SHIFT);
-            value = value && leftShift;
+            value = leftShift;
         }
         if (hasCtrl())
         {

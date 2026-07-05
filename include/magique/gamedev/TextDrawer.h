@@ -70,6 +70,9 @@ namespace magique
         // Moves the cursor by the given position
         TextDrawer& move(Point pos);
 
+        // Sets the cursor to the given (absolute) coordinate
+        TextDrawer& set(Point pos);
+
         // Jumps to the last possible line given the bounds and gap (vertically) - respects modSize()
         TextDrawer& jumpLast();
 

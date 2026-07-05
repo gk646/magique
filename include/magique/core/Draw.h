@@ -22,7 +22,7 @@ namespace magique
     // Draws a given texture region - rotation happens around the middle point
     void DrawRegion(const TextureRegion& region, Point pos, bool flipX = false, Color tint = WHITE);
 
-    // Draws the region horizontally centered on the given point
+    // Draws the region (horizontally + vertically) centered on the given point
     void DrawRegionCentered(const TextureRegion& region, const Point& pos, bool flipX = false, Color tint = WHITE);
 
     // Draws the given texture region and scales it according to the destination rect

@@ -30,7 +30,7 @@ namespace magique
 
     namespace internal
     {
-        EntityScript* ScriptingGetScript(const Entity entity)
+        EntityScript* GetScriptInternal(const Entity entity)
         {
             const auto& scriptData = global::SCRIPT_DATA;
             const auto type = ComponentGet<PositionC>(entity).type;
@@ -59,7 +59,7 @@ namespace magique
 
     bool ScriptingGetIsScripted(const Entity entity) { return global::ENGINE_DATA.entityNScriptedSet.contains(entity); }
 
-    void EntityScript::AccumulateCollision(CollisionInfo& collisionInfo) { SetIsAccumulated(collisionInfo); }
+    void EntityScript::AccumulateCollision(CollisionInfo& collision) { SetIsAccumulated(collision); }
 
 
 } // namespace magique

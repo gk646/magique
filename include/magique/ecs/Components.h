@@ -85,13 +85,14 @@ namespace magique
     };
 
     // Animation component references an animation and saves its current state
+    // This is efficient as the underlying animation doesn't change - only the state changes
     struct AnimationC final
     {
         explicit AnimationC(const Animation& animation, AnimationState start = {});
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
-        void drawCurrentFrame(const Point& pos, float rotation = 0) const;
+        void drawCurrentFrame(const Point& pos, bool flipX = false, float rotation = 0, bool flipY = false) const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
@@ -114,8 +115,9 @@ namespace magique
         // Returns the current sprite count (in millis)
         [[nodiscard]] float getSpriteCount() const;
 
-        bool flipX = false;
-        bool flipY = false;
+
+        // Returns the underlying animation
+        const Animation& getAnimation() const;
 
     private:
         const Animation* animation = nullptr;
@@ -161,7 +163,7 @@ namespace magique
     {
         TextureC() = default;
         // Sets anchor to the texture mid if invalid
-        TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1}, int priority = 0);
+        TextureC(TextureRegion texture, Point offset = {}, Point anchor = {-1});
 
         // Draws the texture at base size at the given position with offset and rotation around the anchor
         void draw(Point pos, float rotation, bool flipX = false, Color tint = WHITE) const;
@@ -169,7 +171,6 @@ namespace magique
         TextureRegion texture{};
         Point offset{};
         Point anchor{};
-        int priority = 0; // Can be used to enforce ordering
     };
 
     // Allows to layer textures to create more complex look
@@ -189,7 +190,6 @@ namespace magique
         TextureC getTexture(AnimationLayer layer);
 
         Point globalAnchor = -1; // Anchor used for all textures
-        int priority = 0;        // Can be used to enforce ordering
 
         // Allows iteration through the layers
         auto begin() { return textures.begin(); }

@@ -35,7 +35,7 @@ namespace magique
     {
         // Creates a new window from coordinates in the logical UI resolution
         // If not specified the top bar is 10% of the total height
-        Window(const char* name, Rect bounds, float topBarHeight = 0.0);
+        Window(std::string_view name, Rect bounds, float topBarHeight = 0.0);
 
     protected:
         // Same as ui/UIContainer.h
@@ -50,8 +50,7 @@ namespace magique
         void drawDefault(const Rect& bounds) const;
 
     public:
-        std::string& getName();
-        const char* getName() const;
+        std::string_view getName() const;
 
         // Returns the bounds window body
         [[nodiscard]] Rectangle getBodyBounds() const;

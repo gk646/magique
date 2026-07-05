@@ -158,7 +158,7 @@ namespace magique
 
                 // Process the collision
                 const auto colliderInfo = ColliderInfo{data, objType};
-                internal::ScriptingGetScript(e)->onStaticCollision(e, colliderInfo, info );
+                internal::GetScriptInternal(e)->onStaticCollision(e, colliderInfo, info );
 
                 if (info.getIsAccumulated()) // Accumulate the data if specified
                 {

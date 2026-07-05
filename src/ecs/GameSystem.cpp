@@ -60,15 +60,15 @@ namespace magique
         }                                                                                                               \
     }
 
-    void GameSystemRegister(GameSystem* system, std::string_view name, std::initializer_list<GameState> stats)
+    void GameSystemRegister(GameSystem* system, std::string_view name, std::initializer_list<GameState> filter)
     {
-        if (stats.size() == 0)
+        if (filter.size() == 0)
         {
             std::memset(system->validStates.data(), 1, sizeof(bool) * system->validStates.size());
         }
         else
         {
-            std::ranges::for_each(stats, [&](GameState gs) { system->validStates[(int)gs] = true; });
+            std::ranges::for_each(filter, [&](GameState gs) { system->validStates[(int)gs] = true; });
         }
 
         system->name = name;

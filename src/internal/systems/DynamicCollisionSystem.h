@@ -131,7 +131,7 @@ namespace magique
                 if (col1.detects(col2))
                 {
                     // Already checked if both entities exist
-                    internal::ScriptingGetScript(e1)->onDynamicCollision(e1, e2, pairInfo.info);
+                    internal::GetScriptInternal(e1)->onDynamicCollision(e1, e2, pairInfo.info);
                     if (pairInfo.info.getIsAccumulated())
                     {
                         AccumulateInfo(col1, col2.shape, pairInfo.info);
@@ -145,7 +145,7 @@ namespace magique
                     bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
                     if (invokeEvent)
 #endif
-                        internal::ScriptingGetScript(e2)->onDynamicCollision(e2, e1, secondInfo);
+                        internal::GetScriptInternal(e2)->onDynamicCollision(e2, e1, secondInfo);
                     if (secondInfo.getIsAccumulated())
                     {
                         AccumulateInfo(col2, col1.shape, secondInfo);

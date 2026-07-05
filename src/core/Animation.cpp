@@ -42,7 +42,7 @@ namespace magique
 
     void Animation::removeAnimation(AnimationState state) { animations.erase(state); }
 
-    SpriteAnimation Animation::getCurrentAnimation(AnimationState state) const
+    SpriteAnimation Animation::getAnimation(AnimationState state) const
     {
         auto it = animations.find(state);
         if (it != animations.end())
@@ -60,7 +60,7 @@ namespace magique
 
     void Animation::setAnchor(Point newAnchor) { anchor = newAnchor; }
 
-    bool Animation::hasAnimation(AnimationState state) const { return animations.contains(state); }
+    bool Animation::hasState(AnimationState state) const { return animations.contains(state); }
 
     const HashMap<AnimationState, SpriteAnimation>& Animation::getAnimations() const { return animations; }
 

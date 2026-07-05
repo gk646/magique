@@ -155,7 +155,7 @@ namespace magique
 
     bool LayeredInput::IsKeyDown(const int key) { return !global::UI_DATA.keyConsumed && ::IsKeyDown(key); }
 
-    bool LayeredInput::IsKeyReleased(const int key) { return global::UI_DATA.keyConsumed && ::IsKeyReleased(key); }
+    bool LayeredInput::IsKeyReleased(const int key) { return global::UI_DATA.keyConsumed || ::IsKeyReleased(key); }
 
     bool LayeredInput::IsKeyPressedRepeat(int key) { return !global::UI_DATA.keyConsumed && ::IsKeyPressedRepeat(key); }
 
@@ -186,7 +186,7 @@ namespace magique
 
     bool LayeredInput::IsGamepadButtonReleased(int gamepad, int key)
     {
-        return global::UI_DATA.keyConsumed && ::IsGamepadButtonReleased(gamepad, key);
+        return global::UI_DATA.keyConsumed || ::IsGamepadButtonReleased(gamepad, key);
     }
 
     void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }

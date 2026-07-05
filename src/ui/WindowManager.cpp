@@ -45,7 +45,7 @@ namespace magique
     {
         if (std::ranges::contains(WINDOW_DATA.windows, window))
         {
-            LOG_WARNING("Window already managed: %s", window->getName().c_str());
+            LOG_WARNING("Window already managed: %s", window->getName().data());
             return;
         }
         WINDOW_DATA.windows.emplace_back(window);

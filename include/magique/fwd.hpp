@@ -83,7 +83,7 @@ namespace magique
     struct TextDrawer;
     struct EventManager;
     struct VirtualClock;
-    using EventSubID = uint16_t;
+    using EventSubscription = uint16_t;
 
     //================= Multiplayer =================//
 

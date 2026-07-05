@@ -7,7 +7,7 @@
 #include <magique/ui/UI.h>
 
 //===============================================
-// TextField
+// TextField + TextDisplay
 //===============================================
 // .....................................................................
 // The textfield is useful to capture text input and allows editing text inside the field
@@ -125,6 +125,75 @@ namespace magique
         bool textChanged = false; // If the text was changed
         bool showCursor = true;   // If the cursor is shown
         uint8_t blinkCounter = 0; // Blink counter
+    };
+
+    // TextDisplay a simpler than TextField and allows NO editing - its meant for only displaying text
+    // However it allows more customization on how text is drawn such as individual colors per line
+    struct TextDisplay : UIObject
+    {
+        TextDisplay(Rect bounds, Anchor anchor = Anchor::NONE, Point insert = {},
+                    ScalingMode scaling = ScalingMode::FULL);
+
+        // A section is a piece everything from a single letter to a whole text or line
+        void addSection(std::string_view section, Color color = WHITE);
+
+        // Adds text with the given color - just a section with a newline
+        void addLine(std::string_view line, Color color = WHITE);
+
+        // Sets the inset for the given side
+        void setInset(Direction dir, float val);
+
+        // Gets the ALL text that was rendered last tick
+        std::string_view getText() const;
+
+        // Returns the amount of newlines
+        int getLineCount() const;
+
+        // Removes sections from the front until a new lines is reached
+        void removeLine();
+
+        // Removes the first section
+        void removeSection();
+
+        // Removes all sections
+        void clear();
+
+        // Sets/gets the line limit - if the rendered text surpasses this limit lines will be popped from the start
+        // Default: 0 - no limit
+        int getLineLimit() const;
+        void setLineLimit(int limit);
+
+    protected:
+        void onDraw(const Rect& bounds) override;
+
+        // Specify the font and size to draw the text in - automatically fits the height so it contains the text
+        // Text is drawn with linebreaks such that each word is inside the bounds
+        void drawText(const Font& f, float fSize);
+
+        // Called for every section - needed as
+        // Note: Allows to convert a section to a different string for rendering
+        //       e.g. WoW chat when linking items or color codes |#ff0000 Red Text| or item codes |#001 Sword of Khaine|
+        // Default: Passthrough: result = section;
+        virtual void convertSection(std::string_view section, std::string& result);
+
+        // Called for every section - changed is text after convertSection(), original before
+        // Note: This allows for complex effects like different colors for each letter (rainbow effects)
+        // Default: DrawTextEx(args);
+        virtual void drawSection(const Font& f, float fSize, Point pos, std::string_view converted,
+                                 std::string_view original, Color color);
+
+    private:
+        struct Section final
+        {
+            std::string text;
+            Color color = WHITE;
+        };
+        std::vector<Section> sections; // Individual sections
+        std::string temp;              // Temporary used for assignment
+        std::string rendered;          // Complete rendered text of last tick
+        Rect inset = {2, 2, 2, 2};     // Inset in the different directions
+        int lines = 0;                 // Amount of newlines
+        int limit = 0;
     };
 
 } // namespace magique

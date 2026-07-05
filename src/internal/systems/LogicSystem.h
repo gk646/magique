@@ -235,7 +235,7 @@ namespace magique
             if (data.isEntityScripted(entity)) [[likely]]
             {
                 // Pass a boolean whether the entity is updated => if it's in the cache
-                internal::ScriptingGetScript(entity)->onUpdate(entity, cache.contains(entity));
+                internal::GetScriptInternal(entity)->onUpdate(entity, cache.contains(entity));
             }
         }
     }
