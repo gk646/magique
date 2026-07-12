@@ -49,7 +49,7 @@ namespace magique
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)
     // Note: You shouldn't use  this information - but entity ids start with 0 and go up until UINT32_MAX
-    Entity EntityCreateEx(Entity id, EntityType type, Point pos, MapID map, float rotation, bool withFunc);
+    Entity EntityCreateEx(Entity id, EntityType type, Point pos, MapID map, float rotation, bool withFunc = true);
 
     // Sets a function that is called each time AFTER the entity is created or BEFORE the entity is destroyed
     void EntitySetDestroyCallback(const EntityCallback& callback);

@@ -418,7 +418,7 @@ namespace magique
                 cute_tiled_object_t* objectPtr = layer->objects;
                 while (objectPtr != nullptr)
                 {
-                    TileObject object;
+                    TiledObject object;
                     object.bounds = {objectPtr->x, objectPtr->y, objectPtr->width, objectPtr->height};
                     object.rotation = objectPtr->rotation;
                     object.visible = objectPtr->visible == 1;
@@ -526,6 +526,18 @@ namespace magique
                 TiledProperty property;
                 TiledPropertyParser::ParseProperty(property, tile->properties[i]);
                 info.properties.emplace_back(property);
+            }
+
+            if (tile->frame_count != 0)
+            {
+                auto& anim = tileset.animations.emplace_back();
+                anim.baseTile = tile->tile_index + 1;
+                for (int i = 0; i < tile->frame_count; i++)
+                {
+                    const auto& currentFrame = tile->animation[i];
+                    anim.duration += currentFrame.duration;
+                    anim.entries.push_back({(int16_t)(currentFrame.tileid + 1), currentFrame.duration});
+                }
             }
 
             tileset.infoVec.push_back(info);

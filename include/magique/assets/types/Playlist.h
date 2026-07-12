@@ -33,10 +33,10 @@ namespace magique
         bool getIsFading() const;
 
         // Returns the number of total tracks in the playlist
-        [[nodiscard]] int getSize() const;
+        int getSize() const;
 
         // Returns true if the playlist is currently being played
-        [[nodiscard]] bool isPlaying() const;
+        bool isPlaying() const;
 
         // If set this determines the next track - called everytime a track ends to determine the next
         void setForwardFunction(ForwardFunction func);
@@ -45,7 +45,7 @@ namespace magique
         void setVolume(float volume);
 
     private:
-        [[nodiscard]] int getNextTrack();
+        int getNextTrack();
 
         std::vector<Music> tracks;
         ForwardFunction forwardFunction = nullptr;
@@ -58,4 +58,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_PLAYLIST_H
+#endif // MAGIQUE_PLAYLIST_H

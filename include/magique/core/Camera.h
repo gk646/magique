@@ -84,7 +84,7 @@ namespace magique
 // IMPLEMENTATION
 
 
-namespace magique :: internal
+namespace magique ::internal
 {
     void CameraUpdateShake();
 }

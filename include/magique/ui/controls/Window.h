@@ -53,13 +53,13 @@ namespace magique
         std::string_view getName() const;
 
         // Returns the bounds window body
-        [[nodiscard]] Rectangle getBodyBounds() const;
+        Rectangle getBodyBounds() const;
 
         // Returns the bounds of the window top bar
-        [[nodiscard]] Rectangle getTopBarBounds() const;
+        Rectangle getTopBarBounds() const;
 
         // Returns true if the window is currently dragged
-        [[nodiscard]] bool getIsDragged() const;
+        bool getIsDragged() const;
 
         // Returns true if the window was clicked (or is dragged) in the given area with the given mouse button
         // Does not check if anything is in front - use the ui/WindowManager.h

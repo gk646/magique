@@ -287,10 +287,9 @@ namespace magique
         return size;
     }
 
-    void DrawPixelText(const Font& f, std::string_view txt, Vector2 pos, const int fsm, const Color tint)
+    void DrawPixelText(const Font& f, std::string_view txt, Point pos, const int fsm, const Color tint)
     {
-        pos.x = std::round(pos.x);
-        pos.y = std::round(pos.y);
+        pos.round();
         DrawTextEx(f, txt.data(), pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
     }
 

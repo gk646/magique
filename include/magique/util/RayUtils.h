@@ -78,7 +78,7 @@ namespace magique
     void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
 
     // Draws text horizontally & vertically centered inside the rectangle
-    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rectangle& bounds,
+    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds,
                               float spacing = 1.0F, Color tint = WHITE);
 
     // Draws a 2d rectangle with a shade at the bottom

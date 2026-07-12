@@ -52,7 +52,7 @@ namespace magique
 
         // If present returns a copy to the string at the given id
         // Failure: if the value is not present returns the default
-        [[nodiscard]] std::string getStringOrElse(std::string_view slot, const std::string& elseVal = "");
+        std::string getStringOrElse(std::string_view slot, const std::string& elseVal = "");
 
         // If present returns a copy to the value at the given id
         // Failure: if the value is not present returns the default

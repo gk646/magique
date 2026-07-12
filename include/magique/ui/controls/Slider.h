@@ -31,14 +31,14 @@ namespace magique
         void setScaleZones(float min, float mid, float max);
 
         // Gets the slider value according to the previously set scale
-        [[nodiscard]] float getSliderValue() const;
+        float getSliderValue() const;
 
         // Gets the percent value how close to slider is to the right from 0.0 - 1.0 - left = 0, right = 1.0
-        [[nodiscard]] float getSliderPercent() const;
+        float getSliderPercent() const;
 
         // Sets the slider to the given position - from 0.0 - 1.0 - left = 0, right = 1.0
-        //      callback: if true calls the on change callback
-        void setSliderPercent(float value, bool callback = false);
+        //      forceCallback: callback is called even when no change occurs
+        void setSliderPercent(float value, bool forceCallback = false);
 
         // Called everytime the value changes and the control is not dragged
         void setOnChange(const SliderChangeFunc& func);
@@ -68,7 +68,8 @@ namespace magique
         void drawDefault(const Rect& bounds) const;
 
     private:
-        Point getKnobPosition() const;
+        Rect getKnob() const;
+
         SliderChangeFunc func;
         float min = 0, mid = 0.5, max = 1;
         float sliderPos = 0.5;

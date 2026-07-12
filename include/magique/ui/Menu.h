@@ -30,7 +30,9 @@ namespace magique
         // Note: Adds the menu as children to the UIContainer
         Menu* addSubMenu(Menu* menu, std::string_view name);
         bool removeSubMenu(std::string_view name);
-        Menu* getSubMenu(std::string_view name) const;
+
+        template <typename T = Menu>
+        T* getSubMenu(std::string_view name) const;
 
         // Sets the given submenu active
         bool activateSubmenu(std::string_view name);
@@ -91,11 +93,27 @@ namespace magique
 
     private:
         void inactivateChildren();
+        Menu* getSubMenuInternal(std::string_view name) const;
+
         Menu* parent = nullptr;
         Menu* subMenu = nullptr;
         bool isActive = true;
         GamepadMapping* mapping = nullptr;
     };
+
+} // namespace magique
+
+
+// IMPLEMENTATION
+
+namespace magique
+{
+    template <typename T>
+    T* Menu::getSubMenu(std::string_view name) const
+    {
+        return static_cast<T*>(getSubMenuInternal(name));
+    }
+
 } // namespace magique
 
 #endif // MAGEQUEST_MENU_H

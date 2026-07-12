@@ -34,11 +34,11 @@ namespace magique
         return nullptr;
     }
 
-    const TileInfo* TileSet::getInfo(const char* image) const
+    const TileInfo* TileSet::getInfo(std::string_view image) const
     {
         for (const auto& info : infoVec)
         {
-            if (strcmp(info.image, image) == 0)
+            if (info.image == image)
             {
                 return &info;
             }
@@ -47,5 +47,7 @@ namespace magique
     }
 
     int TileSet::getTileCount() const { return tileCount; }
+
+    const std::vector<TileAnimation>& TileSet::getAnimations() const { return animations; }
 
 } // namespace magique

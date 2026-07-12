@@ -6,7 +6,6 @@
 #include <magique/ecs/Scripting.h>
 #include <magique/ecs/Components.h>
 #include <magique/util/Logging.h>
-#include <magique/core/Animation.h>
 #include <magique/core/Camera.h>
 
 #include "internal/globals/ECSData.h"
@@ -14,7 +13,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/PathFindingData.h"
-#include "internal/globals/ScriptData.h"
+#include "magique/multiplayer/Networking.h"
 
 namespace magique
 {
@@ -116,6 +115,8 @@ namespace magique
 
     Entity EntityCreate(const EntityType type, Point pos, const MapID map, float rotation, const bool withFunc)
     {
+        if (NetworkIsClientMode())
+            LOG_WARNING("Created non-networked entity on the client");
         return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
     }
 

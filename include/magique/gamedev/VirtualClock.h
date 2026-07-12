@@ -71,22 +71,22 @@ namespace magique
 
         // Returns the day from starting
         // Range: 0 - infinity
-        [[nodiscard]] int getDay() const;
+        int getDay() const;
 
         // Returns the hours of the day in 24-hour format
         // Range: 0 - 23
-        [[nodiscard]] int getHour() const;
+        int getHour() const;
 
         // Returns the minute of the hour
         // Range: 0 - 59
-        [[nodiscard]] int getMinute() const;
+        int getMinute() const;
 
         // Returns the second of the minute
         // Range: 0 - 59
-        [[nodiscard]] int getSecond() const;
+        int getSecond() const;
 
         // Gets the TOTAL amount of virtual seconds this clock has run
-        [[nodiscard]] int getPassedSeconds() const;
+        int getPassedSeconds() const;
 
         // Sets the given unit to the given value by either jumping forward or backward in time
         // Values have to be within their valid range as shown above - negative values are ignored
@@ -102,11 +102,11 @@ namespace magique
 
         // Sets in real minutes how long a full day (24 hours) of the virtual clock should take
         void setRealMinutes(double realMinutes);
-        [[nodiscard]] double getRealMinutes() const;
+        double getRealMinutes() const;
 
         // Set the paused status - if paused does not tick
         void setPaused(bool isPaused);
-        [[nodiscard]] bool getIsPaused() const;
+        bool getIsPaused() const;
 
         // Sets how fast the time progresses
         // Default: 1.0
@@ -115,7 +115,7 @@ namespace magique
         // Adjusts the time as precisely as possible
         // Useful when syncing over e.g. a network
         void setByTicks(double ticks);
-        [[nodiscard]] double getTicks() const;
+        double getTicks() const;
 
         //================= UTILS =================//
 
@@ -124,7 +124,7 @@ namespace magique
         void syncTimeOfDay();
 
     private:
-        [[nodiscard]] double getRealPassedSeconds() const;
+        double getRealPassedSeconds() const;
         void adjustTicksByRealSeconds(double seconds);
 
         double realSecondSeconds = 1; // Real seconds this clock needs to pass a second

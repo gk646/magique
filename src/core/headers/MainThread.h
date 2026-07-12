@@ -30,15 +30,16 @@ namespace magique::mainthread
                 internal::JobsWakeUp();
 
                 const auto shouldUpdate = UPDATE_WORK >= 1.0F;
-                if (shouldUpdate >= 1.0F)
+                if (shouldUpdate)
                 {
                     PollInputEvents();
                 }
+
                 // Get the newest updates for the ui update
                 global::UI_DATA.onEachTick();
                 global::SCHEDULER.onEachTick();
 
-                if (shouldUpdate >= 1.0)
+                if (shouldUpdate)
                 {
                     UPDATE_WORK -= 1.0;
                     UPDATE_TIME = updater::Tick(GetTime(), game, registry);

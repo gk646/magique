@@ -387,12 +387,12 @@ namespace magique
             int object;
         };
         friend TileInfo;
-        friend TileObject;
+        friend TiledObject;
         friend struct TiledPropertyParser;
     };
 
     // Objects defined inside Tiled
-    struct TileObject final
+    struct TiledObject final
     {
         std::vector<TiledProperty> properties; // Defined properties
         Rect bounds{};
@@ -421,21 +421,6 @@ namespace magique
         int id = INT32_MAX;
     };
 
-    struct TileInfo final
-    {
-        std::vector<TiledProperty> properties; // Defined properties
-        Rect bounds;                           // Primary rect - top most (in the object list)
-        Rect secBounds;                        // Secondary rect
-        const char* image;                     // only valid if it's an image tileset
-        int16_t tileID = 0;                    // tile index of this tile
-        TileClass tileClass{};                 // class attribute
-
-        bool hasCollision() const;
-
-        // Returns: the property with the given name or nullptr if not exists
-        TiledProperty* getProperty(std::string_view name);
-    };
-
     // Tiled allows to flip tiles in both directions
     struct TileID final
     {
@@ -445,6 +430,24 @@ namespace magique
         bool flippedDiagonal = false;
 
         bool isEmpty() const;
+    };
+
+
+    struct TileInfo final
+    {
+        std::vector<TiledProperty> properties; // Defined properties
+        Rect bounds;                           // Primary rect - top most (in the object list)
+        Rect secBounds;                        // Secondary rect
+        std::string_view image;                // only valid if it's an image tileset
+        int duration = 0;                      // Total animation duration
+        int16_t tileID = 0;                    // tile index of this tile
+        TileClass tileClass{};                 // class attribute
+
+        bool hasCollision() const;
+        bool hasAnimation() const;
+
+        // Returns: the property with the given name or nullptr if not exists
+        TiledProperty* getProperty(std::string_view name);
     };
 
     // Checksum (hash) for a file
@@ -736,6 +739,8 @@ namespace magique
         // Should be used together with a switch(type) - and then you can handle each message typesafe
         template <typename T>
         const T& getDataAs() const;
+
+        const char* asString() const;
     };
 
     struct Message final
@@ -814,6 +819,17 @@ namespace magique
         Worldwide, // Lobbies all around the world
     };
 
+    enum class SteamOverlayUserCategory : uint8_t
+    {
+        friends,
+        community,
+        players,
+        settings,
+        officialgamegroup,
+        stats,
+        achievements
+    };
+
     //================= UI =================//
 
     // Anchor position used in the UI module to position objects
@@ -876,6 +892,8 @@ namespace magique
         // Called when back button (ESC or B (Xbox)) has been pressed
         // Automatically tries to activate the parent if attached object is a Menu
         Back,
+        // A button is pressed - the button argument is valid
+        Button,
 
         // Called on the corresponding key (Arrow Keys) or controller (DPAD or left Joystick) input was made
         Left,
@@ -890,9 +908,12 @@ namespace magique
 
     struct GamepadMappingState
     {
-        int row = 0;
-        int col = 0;
+        int row, col;    // Usually menus can be seen as some form of grid - useful to track current pos
+        int counter = 0; // Additional state variable
+
         GamepadMappingEvent event; // Latest event
+        bool backConsumed = false;
+        bool submitConsumed = false;
 
         // Assigns the next value to row/cols such that it stays within 0 <= row < max
         // Use offset to change direction (offset from current value)
@@ -911,6 +932,9 @@ namespace magique
         bool isLeftSwitch() const;
         bool isRightSwitch() const;
         bool isSwitch() const;
+
+        void consumeBack();
+        void consumeSubmit();
     };
 
     //================= HELPER TYPES =================//

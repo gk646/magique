@@ -146,6 +146,9 @@ namespace magique
             anyInput = true;
         }
 
+        if (isFocused)
+            LayeredInput::ConsumeKey();
+
         return anyInput || anyEvent;
     }
 

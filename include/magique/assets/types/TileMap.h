@@ -19,12 +19,12 @@ namespace magique
     struct TiledObjectLayer final
     {
         std::string name;
-        std::vector<TileObject> objects;
+        std::vector<TiledObject> objects;
 
         // Tries to fetch an (the first) object that matches the given property
         // Note: objectID is unique, name is NOT unique
-        TileObject* operator[](int objectId);
-        TileObject* operator[](std::string_view name);
+        TiledObject* operator[](int objectId);
+        TiledObject* operator[](std::string_view name);
 
         auto begin() const { return objects.begin(); }
         auto end() const { return objects.end(); }
@@ -67,7 +67,7 @@ namespace magique
 
         //================= OBJECTS =================//
 
-        // Returns true if a object layer with the given name is present
+        // Returns true if an object layer with the given name is present
         bool hasObjectLayer(std::string_view layer) const;
 
         // Returns the object layer with the given name
@@ -80,6 +80,18 @@ namespace magique
         std::vector<TiledObjectLayer>& getObjectLayers();
 
         //================= MISC =================//
+
+        // Progresses all tile animations
+        //      -rebuild: force a rebuild of internal cache - rescans all tiles and caches their animations
+        //                only needed when you change tiles of the tilemap
+        //                Automatically done once when called for the first time
+        void updateAnimations(const TileSet& tileset, bool rebuild = false);
+
+        // Randomizes the state of tile animations
+        void randomizeAnimations(const TileSet& tileset);
+
+        // Syncs all tile animations
+        void syncAnimations();
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(const std::string_view& name) const;
@@ -98,8 +110,19 @@ namespace magique
         std::vector<TiledObjectLayer> objectLayers;
         std::vector<TiledTileLayer> tileLayers; // Contiguous array for map data
         std::vector<TiledProperty> properties;
+
+        struct AnimatedTile final
+        {
+            uint16_t x, y;     // Tile pos
+            uint8_t layer;     // Layer of the tile
+            uint8_t animation; // Index into the animations vector
+            int millis;
+        };
+        std::vector<AnimatedTile> animatedTiles;
+
         int width = 0, height = 0;
         int tileSize = 0;
+        bool builtAnimationCache = false;
     };
 
 } // namespace magique

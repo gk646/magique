@@ -139,12 +139,12 @@ namespace magique
         DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
     }
 
-    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rectangle& bounds, float spacing,
+    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing,
                               Color tint)
     {
         const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
-        const Point center = {bounds.x + (bounds.width - dims.x) / 2.0F, bounds.y + (bounds.height - dims.y) / 2.0F};
-        DrawTextEx(fnt, txt.data(), center.floored(), fs, spacing, tint);
+        const auto rect = Rect::CenteredOn(bounds.mid(), dims);
+        DrawTextEx(fnt, txt.data(), rect.pos().floored(), fs, spacing, tint);
     }
 
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)

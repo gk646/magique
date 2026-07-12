@@ -21,28 +21,35 @@ namespace magique
         STEAM_CALLBACK(SteamCallback, OnConnectionStatusChange, SteamNetConnectionStatusChangedCallback_t);
         STEAM_CALLBACK(SteamCallback, OnNewUrlLaunch, NewUrlLaunchParameters_t);
         STEAM_CALLBACK(SteamCallback, OnUserStats, UserStatsReceived_t);
+        STEAM_CALLBACK(SteamCallback, OnTextInputDismissed, GamepadTextInputDismissed_t);
     };
 
     struct SteamData final
     {
+        ISteamCallbackHandler* handler = nullptr;
         SteamCallback* callback = nullptr;
+
         CCallResult<SteamData, LobbyCreated_t> m_SteamCallResultCreateLobby;
         CCallResult<SteamData, LobbyMatchList_t> m_CallResultLobbyMatchList;
 
         std::function<void(SteamID, std::string_view)> chatCallback;
         SteamLobbyCallback lobbyEventCallback;
         SteamLobbySearchCallback lobbySearchCallback;
-        SteamOverlayCallback overlayCallback = nullptr;
-        std::function<void()> urlLaunchCallback;
-        std::function<void(const SteamStatResult& res, SteamID)> statsCallback;
 
         std::string cacheString;
         std::vector<SteamLobbyID> lobbySearchResult;
         CSteamID userID;
         CSteamID lobbyID = CSteamID(0, k_EUniverseInvalid, k_EAccountTypeInvalid);
         bool isInitialized = false;
+        bool onscreenKeyboardShown = false;
 
-        void init() { callback = new SteamCallback(); }
+        void init()
+        {
+            callback = new SteamCallback();
+            isInitialized = true;
+            userID = SteamUser()->GetSteamID();
+            LOG_INFO("Initialized Steam");
+        }
 
         void close()
         {
@@ -200,16 +207,37 @@ namespace magique
 
     inline void SteamCallback::OnNewUrlLaunch(NewUrlLaunchParameters_t* pCallback)
     {
-        if (global::STEAM_DATA.urlLaunchCallback)
-            global::STEAM_DATA.urlLaunchCallback();
+        auto& steam = global::STEAM_DATA;
+        steam.cacheString.resize(512);
+        SteamApps()->GetLaunchCommandLine(steam.cacheString.data(), steam.cacheString.capacity());
+        if (steam.handler != nullptr)
+            steam.handler->onLaunchParam(steam.cacheString);
     }
 
     inline void SteamCallback::OnUserStats(UserStatsReceived_t* pParam)
     {
-        SteamStatResult result{static_cast<SteamID>(pParam->m_steamIDUser.ConvertToUint64())};
+        auto& steam = global::STEAM_DATA;
+
+        ISteamCallbackHandler::SteamStatResult result{static_cast<SteamID>(pParam->m_steamIDUser.ConvertToUint64())};
         if (pParam->m_nGameID == SteamGetAppID() && pParam->m_eResult == k_EResultOK)
-            if (global::STEAM_DATA.statsCallback)
-                global::STEAM_DATA.statsCallback(result, result.user);
+            if (steam.handler != nullptr)
+                steam.handler->onStatsRequest(result, result.user);
+    }
+
+    inline void SteamCallback::OnTextInputDismissed(GamepadTextInputDismissed_t* pCallback)
+    {
+        auto& steam = global::STEAM_DATA;
+        steam.cacheString.clear();
+        steam.cacheString.resize(SteamUtils()->GetEnteredGamepadTextLength() + 1);
+        const bool success =
+            SteamUtils()->GetEnteredGamepadTextInput(steam.cacheString.data(), steam.cacheString.capacity());
+        steam.cacheString[steam.cacheString.size()] = '\0';
+        if (!success)
+            LOG_WARNING("Failed to get gamepad text input");
+        else if (steam.handler != nullptr)
+            steam.handler->onScreenKeyboardClose(steam.cacheString.c_str(), pCallback->m_bSubmitted);
+
+        steam.onscreenKeyboardShown = false;
     }
 
 } // namespace magique

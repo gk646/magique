@@ -65,7 +65,7 @@ namespace magique
     struct TileSet;       // Defines the details for all tiles in a project - collision ...
     struct TileSheet;     // Stores the textures (id's) for all tiles in a project
     struct Playlist;      // Stores multiple music objects to easily play and loop them
-    struct TileObject;    // TileObject imported from the Tile Editor
+    struct TiledObject;   // TileObject imported from the Tile Editor
     struct TextLines;     // Text import
 
     using TileClassMapFunc = TileClass (*)(const char*);
@@ -90,6 +90,11 @@ namespace magique
     enum class Connection : uint32_t;
     struct Lobby;
 
+    //================= STEAM =================//
+
+    struct SteamStatResult;
+    struct ISteamCallbackHandler;
+
     //================= UI =================//
     struct UIObject;
     struct UIContainer;
@@ -111,6 +116,7 @@ namespace magique
     //================= INTERNAL =================//
     struct AudioPlayer;
     struct TweenData;
+
 
 } // namespace magique
 

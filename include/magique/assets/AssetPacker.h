@@ -24,7 +24,8 @@ namespace magique
     //      - key: key used to encrypt the data (0 = no encryption)
     // Note: Only writes a new pack if any changes to files happened
     // Failure: Returns false
-    bool AssetPackCompile(std::string_view dir, std::string_view name = "data.bin", uint64_t key = 0, bool compress = true);
+    bool AssetPackCompile(std::string_view dir, std::string_view name = "data.bin", uint64_t key = 0,
+                          bool compress = true);
 
     // Loads a compiled asset pack from disk into the given container
     // Note: compression is automatically detected and decompressed

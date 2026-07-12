@@ -120,7 +120,7 @@ namespace magique
     GridChooser<T>::GridChooser(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
         UIObject(bounds, anchor, inset, mode)
     {
-        setGamepadMapping(new GamepadMapping{*this, [&](GamepadMappingState& state)
+        setGamepadMapping(new GamepadMapping{*this, [&](GamepadMappingState& state, GamepadButton button)
                                              {
                                                  const int totalRows = (entries.size() + columns - 1) / columns;
                                                  const int lastRowEntries = entries.size() % columns;

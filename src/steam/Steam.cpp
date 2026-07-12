@@ -36,9 +36,11 @@ namespace magique
         }
     }
 
-    bool SteamInit(const bool createFile)
+    bool SteamInit(ISteamCallbackHandler* handler, const bool createFile)
     {
         auto& steamData = global::STEAM_DATA;
+        steamData.handler = handler;
+
         if (createFile)
         {
             constexpr auto* filename = "steam_appid.txt";
@@ -74,21 +76,15 @@ namespace magique
         SteamNetworkingUtils()->SetDebugOutputFunction(k_ESteamNetworkingSocketsDebugOutputType_Msg, DebugOutput);
 
         steamData.init();
-
-        // Cache the steam id - will stay the same
-        const auto id = SteamUser()->GetSteamID();
-        std::memcpy(&steamData.userID, &id, sizeof(id));
-
-        steamData.isInitialized = true;
-        LOG_INFO("Initialized Steam");
         return true;
     }
 
-    std::string_view SteamGetLaunchParam(std::string_view key) { return SteamApps()->GetLaunchQueryParam(key.data()); }
-
-    void SteamSetURLLaunchCallback(const std::function<void()>& callback)
+    std::string_view SteamGetLaunchParam(std::string_view key)
     {
-        global::STEAM_DATA.urlLaunchCallback = callback;
+        static std::string buffer;
+        buffer.resize(256);
+        SteamApps()->GetLaunchCommandLine(buffer.data(), buffer.capacity());
+        return buffer;
     }
 
     uint32_t SteamGetAppID() { return SteamUtils()->GetAppID(); }
@@ -230,8 +226,6 @@ namespace magique
 
     const char* SteamGetUserName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
 
-    void SteamSetOverlayCallback(const SteamOverlayCallback& callback) { global::STEAM_DATA.overlayCallback = callback; }
-
     Connection SteamGetMappedConnection(SteamID id)
     {
         for (auto& mapping : global::MP_DATA.steamMapping)
@@ -256,7 +250,12 @@ namespace magique
         return SteamID::INVALID;
     }
 
-    void SteamShowOverlayForUser(SteamID id)
+    void SteamOpenOverlay(SteamOverlayUserCategory category)
+    {
+        SteamFriends()->ActivateGameOverlay(enchantum::to_string(category).data());
+    }
+
+    void SteamOpenOverlayForProfile(SteamID id)
     {
         auto steamId = CSteamID((uint64)id);
         if (steamId.IsValid())
@@ -271,7 +270,7 @@ namespace magique
 
     void SteamRequestStats(SteamID user) { SteamUserStats()->RequestUserStats(CSteamID{static_cast<uint64>(user)}); }
 
-    std::optional<int32_t> SteamStatResult::getInt(std::string_view name) const
+    std::optional<int32_t> ISteamCallbackHandler::SteamStatResult::getInt(std::string_view name) const
     {
         int32_t data{};
         if (SteamUserStats()->GetUserStat(CSteamID(static_cast<uint64>(user)), name.data(), &data))
@@ -279,17 +278,12 @@ namespace magique
         return {};
     }
 
-    std::optional<float> SteamStatResult::getFloat(std::string_view name) const
+    std::optional<float> ISteamCallbackHandler::SteamStatResult::getFloat(std::string_view name) const
     {
         float data{};
         if (SteamUserStats()->GetUserStat(CSteamID(static_cast<uint64>(user)), name.data(), &data))
             return {data};
         return {};
-    }
-
-    void SteamSetStatsRequestCallback(const std::function<void(const SteamStatResult& res, SteamID user)>& callback)
-    {
-        global::STEAM_DATA.statsCallback = callback;
     }
 
     void SteamSetStat(std::string_view name, std::variant<int32_t, float> value)
@@ -308,6 +302,37 @@ namespace magique
     }
 
     uint32_t SteamGetServerTime() { return SteamUtils()->GetServerRealTime(); }
+
+    void SteamShowOnScreenKeyboard(std::string_view description, std::string_view current)
+    {
+        static std::string currBuffer;
+        currBuffer = current;
+
+        if (global::STEAM_DATA.onscreenKeyboardShown)
+        {
+            global::STEAM_DATA.onscreenKeyboardShown = false;
+        }
+
+        const auto res =
+            SteamUtils()->ShowGamepadTextInput(k_EGamepadTextInputModeNormal, k_EGamepadTextInputLineModeSingleLine,
+                                               description.data(), 256, currBuffer.c_str());
+        if (!res)
+        {
+            LOG_WARNING("Failed to show steam on screen keyboard");
+            global::STEAM_DATA.onscreenKeyboardShown = false;
+        }
+        else
+        {
+            global::STEAM_DATA.onscreenKeyboardShown = true;
+        }
+    }
+
+    bool SteamIsOnScreenKeyboardShown() { return global::STEAM_DATA.onscreenKeyboardShown; }
+
+    void SteamSetRichPresence(std::string_view string)
+    {
+       // SteamFriends()->SetRichPresence( "steam_display", bDisp
+    }
 
 } // namespace magique
 #endif

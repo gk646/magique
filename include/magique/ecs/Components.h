@@ -29,10 +29,10 @@ namespace magique
         Rotation rotation{}; // Rotation in degrees clockwise starting at 12 o'clock - applied to collision if present
 
         // Returns the middle point by factoring in the collision shape
-        [[nodiscard]] Point getMiddle(const CollisionC& col) const;
+        Point getMiddle(const CollisionC& col) const;
 
         // Returns the bounding rectangle of the entity (a rect that fully contains its shape)
-        [[nodiscard]] Rect getBounds(const CollisionC& collisionC) const;
+        Rect getBounds(const CollisionC& collisionC) const;
 
         bool operator==(const PositionC&) const = default;
     };
@@ -103,17 +103,17 @@ namespace magique
         //================= GETTERS =================//
 
         // Returns the current animation
-        [[nodiscard]] SpriteAnimation getCurrentAnimation() const;
+        SpriteAnimation getCurrentAnimation() const;
 
         // Returns true if the current animation played at least once
         // Useful for when you want to stop certain animations after they played once
-        [[nodiscard]] bool getHasAnimationPlayed() const;
+        bool getHasAnimationPlayed() const;
 
         // Returns the current animation state
-        [[nodiscard]] AnimationState getCurrentState() const;
+        AnimationState getCurrentState() const;
 
         // Returns the current sprite count (in millis)
-        [[nodiscard]] float getSpriteCount() const;
+        float getSpriteCount() const;
 
 
         // Returns the underlying animation

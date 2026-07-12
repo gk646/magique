@@ -87,7 +87,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_link_options(magique PUBLIC
             -flto=auto
-            -Wl,--rpath='$ORIGIN'
     )
 
     if (MAGIQUE_SANITIZER)

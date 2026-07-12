@@ -4,7 +4,6 @@
 
 #include <string>
 #include <functional>
-#include <magique/core/Types.h>
 
 //===============================================
 // Lobby Module
@@ -12,7 +11,7 @@
 // .....................................................................
 // Note: This module needs either LAN or steam to be enabled (via CMake: MAGIQUE_STEAM or MAGIQUE_LAN)
 //
-// This module works directly on top Local-/Globalsockets - no lobbies are actually created (as separate entites)
+// This module works directly on top Local-/Globalsockets - no lobbies are actually created (as separate entities)
 // So everytime you open a listen socket (host) or connect to one (client) the lobby is open
 // It directly reflects the state of the sockets - this is why there is no lobby callback
 // Note: Use the multiplayer callbacks to react to connection events
@@ -26,7 +25,6 @@
 //      - Pick the map to spawn into
 //      - ...
 // So it comes before sending game simulation updates to all clients - however the lobby is open the whole time
-// Note: You can use the start signal to know when to send game updates: GAME_STATE vs LOBBY_STATE
 //
 // Suggested Workflow :
 //      1. Finding together:
@@ -34,7 +32,7 @@
 //               - LAN:   Connect via IP-address, either manual exchange or use LocalSockets.h helpers
 //      2. Once a connection with either socket type is established this API takes over
 //      3. Use lobby features like chat messages or metadata or configure the gamestate
-//      5. Set the start signal to true - this starts the game for all clients
+//      5. Use metadata to tell clients to start the game
 //      6. Continuously send game updates
 //          - New joining clients read the metadata and immediately join the game
 //
@@ -43,42 +41,23 @@
 
 namespace magique
 {
-    // Connection::INVALID is used for the host
-    using LobbyChatCallback = std::function<void(Connection sender, std::string_view msg)>;
+    using LobbyChatCallback = std::function<void(std::string_view sender, std::string_view msg)>;
+    using LobbyMetadataCallback = std::function<void(std::string_view key, std::string_view val)>;
 
     // Sets the callback that is called on each new chat message sent in the lobby
     // Note: This will also be called for your OWN message - so you don't have to make a special case for those
     void LobbySetChatCallback(const LobbyChatCallback& callback);
 
-    using LobbyMetadataCallback = std::function<void(Connection sender, std::string_view key, std::string_view val)>;
-
-    // Sets the callback for any metadata actions
+    // Sets the callback for any metadata changes
     void LobbySetMetadataCallback(const LobbyMetadataCallback& callback);
 
-    // Returns the global lobby object
-    Lobby& LobbyGet();
+    // Sends a chat message - message replicates to the steam lobby
+    void LobbySendChatMsg(std::string_view sender, std::string_view message);
 
-    struct Lobby final
-    {
-        // Sets the value of the start signal for all members
-        // Note: Only works as the lobby owner
-        // Note: Automatically set to false if you leave a lobby
-        void setStartSignal(bool value);
-        bool getStartSignal() const;
-
-        // Sends a new chat message in the lobby chat - replicates to the steam lobby
-        // Note: requires you to be in a lobby
-        void sendChatMsg(std::string_view message);
-
-        // Sets the metadata - behavior differs from clients vs hosts - replicates to the steam lobby
-        // Host:   Immediately sets the value and sends the update to all clients
-        // Client: Sent the change only to the host - host then decides what to do with it
-        // Note: metadata is automatically cleared if the multiplayer session closes
-        void setMetadata(std::string_view key, std::string_view value);
-
-        // Gets the value for the given key
-        const std::string& getMetadata(std::string_view key);
-    };
+    // Sets the metadata - only works on the host - replicates to the steam lobby
+    // Note: metadata is automatically cleared if the multiplayer session closes
+    std::string_view LobbyGetMetadata(std::string_view key);
+    void LobbySetMetadata(std::string_view key, std::string_view value);
 
 } // namespace magique
 

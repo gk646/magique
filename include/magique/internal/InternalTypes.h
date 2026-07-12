@@ -252,9 +252,9 @@ namespace magique::internal
         EventEnum nextEvent;
         float reward = 0;
 
-        [[nodiscard]] int getNextEvent() const { return static_cast<int>(nextEvent); }
-        [[nodiscard]] int getCausingEvent() const { return static_cast<int>(causingEvent); }
-        [[nodiscard]] int getState() const { return static_cast<int>(state); }
+        int getNextEvent() const { return static_cast<int>(nextEvent); }
+        int getCausingEvent() const { return static_cast<int>(causingEvent); }
+        int getState() const { return static_cast<int>(state); }
     };
 
     // Note: You cannot remove elements

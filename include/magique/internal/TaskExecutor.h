@@ -32,8 +32,8 @@ namespace magique::internal
     {
         virtual ~IExecutor() = default;
         virtual bool step() = 0;
-        [[nodiscard]] virtual float getProgressPercent() const = 0;
-        [[nodiscard]] virtual bool isStartup() const = 0;
+        virtual float getProgressPercent() const = 0;
+        virtual bool isStartup() const = 0;
     };
 
     template <typename Func>
@@ -82,17 +82,17 @@ namespace magique::internal
             }
         }
 
-        [[nodiscard]] float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
+        float getProgressPercent() const final { return 100.0F * loadedImpact / totalImpact; }
 
     protected:
-        [[nodiscard]] bool isStartup() const final { return std::is_same_v<T, AssetPack>; }
+        bool isStartup() const final { return std::is_same_v<T, AssetPack>; }
 
         void printStats() const
         {
             LOG_INFO("Registered %d tasks with a load pensum of: %d", getTotalTasks(), totalImpact);
         }
 
-        [[nodiscard]] int getTotalTasks() const
+        int getTotalTasks() const
         {
             int tasks = 0;
             for (int i = 0; i < CRITICAL; ++i)

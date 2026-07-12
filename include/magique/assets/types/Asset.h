@@ -47,11 +47,11 @@ namespace magique
         // Returns the direct file name without the asset - This means all characters after the last separator ("/")
         // Failure: returns path if the asset's path is empty or no filename can be found
         //      extension - include file extension or not (".png",".wav", ...)
-        [[nodiscard]] std::string_view getFileName(bool extension = true) const;
+        std::string_view getFileName(bool extension = true) const;
 
         // Returns the file extension of the asset - includes all character form last dot until the end e.g. '.png'
         // Failure: returns empty if the asset's path is empty or has no extension
-        [[nodiscard]] std::string_view getExtension() const;
+        std::string_view getExtension() const;
 
     private:
         M_MAKE_PUB()

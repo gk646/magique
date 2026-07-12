@@ -25,6 +25,12 @@ namespace magique
 
     const char* Button::getHoverText() const { return hoverText.c_str(); }
 
+    void Button::callClick(MouseButton button) const
+    {
+        if (clickFunc)
+            clickFunc(getBounds(), button);
+    }
+
     void Button::updateActions(const Rect& bounds)
     {
         if (getIsHovered())

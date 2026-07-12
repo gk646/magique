@@ -18,17 +18,48 @@
 
 namespace magique
 {
+
     // Returns true if the initialization of steam was successful
-    // If specified creates a test steam_appid.txt file with the id 480 (test project)
-    bool SteamInit(bool createAppIDFile = true);
+    //      - handler: pass a new instance of your callback handler
+    //      - createAppIDFile: if true creates a test steam_appid.txt file with the id 480 (test project)
+    bool SteamInit(ISteamCallbackHandler* handler = nullptr, bool createAppIDFile = true);
 
-    // Returns the value of the launch parameter with the given key the game was launched with
-    // Note: Check out https://partner.steamgames.com/doc/api/ISteamApps#GetLaunchCommandLine
-    std::string_view SteamGetLaunchParam(std::string_view key);
+    // Combines all callbacks into a single handler
+    struct ISteamCallbackHandler
+    {
+        virtual ~ISteamCallbackHandler() = default;
 
-    // Sets the callback called when steam launches your game with a commandline
-    // Note: Use SteamGetLaunchParam() to access the params
-    void SteamSetURLLaunchCallback(const std::function<void()>& callback);
+        // Called for NewUrlLaunchParameters_t AND NewLaunchQueryParameters_t
+        // This happens when the game is started with a command line like steam://run/<appid>//?param1=value1;param2=value2;param3=value3;
+        // See: https://partner.steamgames.com/doc/api/ISteamApps#GetLaunchCommandLine
+        virtual void onLaunchParam(std::string_view commandLine) {}
+
+        // Called for GameOverlayActivated_t
+        // This happens when the overlay is (de)activated
+        virtual void onOverlay(bool isActive) {}
+
+        // Helper
+        struct SteamStatResult
+        {
+            // Returns a value only if:
+            //      - The stat exists and is published on the steamworks dashboard
+            //      - The requested type matches the datatype in the dashboard
+            std::optional<int32_t> getInt(std::string_view name) const;
+            std::optional<float> getFloat(std::string_view name) const;
+
+        private:
+            M_MAKE_PUB()
+            SteamID user{};
+        };
+
+        // Called for UserStatsReceived_t
+        // This happens after you requested stats
+        virtual void onStatsRequest(const SteamStatResult& res, SteamID user) {}
+
+        // Called for GamepadTextInputDismissed_t
+        // This happens when the text overlay is closed
+        virtual void onScreenKeyboardClose(std::string_view input, bool submitted) {}
+    };
 
     //================= GAME =================//
 
@@ -45,6 +76,8 @@ namespace magique
     //      - missingFilesOnly: if true only checks for missing files, not if existing files are wrong/out-of-date
     void SteamMarkGameFilesCorrupt(bool missingFilesOnly = false);
 
+    std::string_view SteamGetLaunchParam(std::string_view key);
+
     //================= USER =================//
 
     // Returns your own steam id
@@ -56,11 +89,6 @@ namespace magique
     // Returns the name of the user with the given id (only works if it's your friend or in a common lobby etc.)
     const char* SteamGetUserName(SteamID id);
 
-    using SteamOverlayCallback = std::function<void(bool isOpening)>;
-
-    // Sets the callback function called when the steam overlay is opened or closed
-    void SteamSetOverlayCallback(const SteamOverlayCallback& callback);
-
     // Retrieve the associated connection with the given steam id
     // Note: Automatically updated whenever possible (e.g. before a network event is fired)
     Connection SteamGetMappedConnection(SteamID id);
@@ -68,31 +96,17 @@ namespace magique
 
     //================= OVERLAY =================//
 
-    // Opens the overlay and displays the users profile
-    void SteamShowOverlayForUser(SteamID id);
+    // Opens the overlay for the current user in the given category
+    void SteamOpenOverlay(SteamOverlayUserCategory category);
+
+    // Opens the overlay and displays the given users profile
+    void SteamOpenOverlayForProfile(SteamID id);
 
     //================= STATS =================//
     // Allows access to the Stats API https://partner.steamgames.com/doc/features/achievements
 
     // Requests the latest stat values for the given user - fires a stats callback when done
     void SteamRequestStats(SteamID user = SteamGetID());
-
-    struct SteamStatResult
-    {
-        // Returns a value only if:
-        //      - The stat exists and is published on the steamworks dashboard
-        //      - The requested type matches the datatype in the dashboard
-        std::optional<int32_t> getInt(std::string_view name) const;
-        std::optional<float> getFloat(std::string_view name) const;
-
-    private:
-        M_MAKE_PUB()
-        SteamID user{};
-    };
-
-    // Called when a stat request finishes˛for the given user
-    // Note: The data can be accessed by calling the getters on the result
-    void SteamSetStatsRequestCallback(const std::function<void(const SteamStatResult& res, SteamID user)>& callback);
 
     // Sets the given stats to the given value
     // Note: This is a cheap call and only modifies the in memory value of the steam client -> call often incase of crash
@@ -113,6 +127,16 @@ namespace magique
 
     // Steam server time - Number of SECONDS since January 1, 1970, GMT (unix time)
     uint32_t SteamGetServerTime();
+
+    // Opens the on screen keyboard for controllers - allows to display a text description and current text already filled in
+    void SteamShowOnScreenKeyboard(std::string_view description, std::string_view current = {});
+
+    // Returns true if the onscreen keyboard is visible
+    bool SteamIsOnScreenKeyboardShown();
+
+    // Sets the rich presence text
+    // See https://partner.steamgames.com/doc/features/enhancedrichpresence
+    void SteamSetRichPresence(std::string_view string);
 
 } // namespace magique
 

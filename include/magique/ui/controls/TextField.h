@@ -62,11 +62,11 @@ namespace magique
         void setCursorStatus(bool shown, int delay);
 
         // Returns true if the textfield is focused
-        [[nodiscard]] bool getIsFocused() const;
+        bool getIsFocused() const;
         void setFocused(bool val = true);
 
         // Returns the total amount of lines (count of newlines '\n' + 1 (for first line))
-        [[nodiscard]] int getLineCount() const;
+        int getLineCount() const;
 
         // Adjust the bounds such that the text fits inside
         // Keeps the top left the same

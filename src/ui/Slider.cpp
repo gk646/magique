@@ -13,8 +13,14 @@ namespace magique
 {
     Slider::Slider(Rect bounds, std::string_view label, Direction labelDir, Anchor anchor, Point inset,
                    ScalingMode scaling) : LabelledObject(bounds, label, labelDir, anchor, inset, scaling)
-
     {
+        setGamepadMapping(new GamepadMapping(*this,
+                                             [&](GamepadMappingState& state, GamepadButton button)
+                                             {
+                                                 int direction = state.isLeft() ? -1 : 1;
+                                                 setSliderPercent(sliderPos + 0.05F * direction);
+                                                 return Point{-1};
+                                             }));
     }
 
     void Slider::setScaleLinear(const float min, const float max)
@@ -55,10 +61,11 @@ namespace magique
 
     float Slider::getSliderPercent() const { return sliderPos; }
 
-    void Slider::setSliderPercent(const float value, bool callback)
+    void Slider::setSliderPercent(const float value, bool forceCallback)
     {
-        sliderPos = value;
-        if (callback && func)
+        const float prev = sliderPos;
+        sliderPos = std::clamp(value, 0.0F, 1.0F);
+        if ((forceCallback || sliderPos != prev) && func)
             func(getSliderValue(), sliderPos);
     }
 
@@ -68,14 +75,11 @@ namespace magique
     {
         if (getIsHovered())
         {
-            const auto dragStart = UIGetDragStart();
-            const auto sliderKnob = getKnobPosition();
-            const auto radius = UIGetScaled(15);
-            const auto knobVec = Vector2{sliderKnob.x, sliderKnob.y};
-            const auto dragStarted = CheckCollisionPointCircle(Vector2{dragStart.x, dragStart.y}, knobVec, radius);
+            const auto knob = getKnob();
+            const auto hovered = knob.contains(UIGetDragStart());
 
             // Ensure click started within knob
-            if (!isDragged && dragStarted)
+            if (!isDragged && hovered)
             {
                 for (int i = 0; i < MOUSE_BUTTON_BACK + 1; ++i) // All mouse buttons
                 {
@@ -87,15 +91,17 @@ namespace magique
                 isDragged = true;
                 dragStartVal = sliderPos;
             }
+
+            if (LayeredInput::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            {
+                setSliderPercent((GetMousePos().x - bounds.x) / bounds.width);
+            }
         }
 
         if (isDragged && LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
-            const float prev = sliderPos;
             const auto diff = GetMousePos().x - UIGetDragStart().x;
-            sliderPos = std::clamp(dragStartVal + diff / bounds.width, 0.0F, 1.0F);
-            if (sliderPos != prev && func)
-                func(getSliderValue(), sliderPos);
+            setSliderPercent(dragStartVal + diff / bounds.width);
             LayeredInput::ConsumeMouse();
         }
         else
@@ -107,25 +113,20 @@ namespace magique
     void Slider::drawDefault(const Rect& bounds) const
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
-        Color outline = theme.getOutlineColor(getIsHovered(), getIsPressed());
-        const auto bodyHeight = bounds.height / 4.0F;
+        const auto knob = getKnob();
+        const Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
+        const Color outline = theme.getOutlineColor(getIsHovered(), getIsPressed());
 
-        outline.a = 150;
-        const Rectangle sliderBody = {bounds.x, bounds.y + bodyHeight, bounds.width, bodyHeight * 2};
-        DrawRectangleRounded(sliderBody, 0.5F, 20, outline);
-
-        outline.a = 30;
-        DrawRectangleRoundedLinesEx(bounds, 0.1F, 20, 2, outline);
-
-        const Vector2 sliderKnob = {bounds.x + sliderPos * bounds.width, sliderBody.y + sliderBody.height / 2.0F};
-        DrawCircleV(sliderKnob, bounds.height / 2.0F, body);
+        DrawRectFrameFilled(Rect::CenteredOn(bounds.mid(), {bounds.width, bounds.height * 0.5F}), theme.background,
+                            theme.backOutline);
+        DrawRectFrameFilled(knob, body, outline);
     }
 
-    Point Slider::getKnobPosition() const
+    Rect Slider::getKnob() const
     {
         const auto bounds = getBounds();
-        return Point{bounds.x + sliderPos * bounds.width, bounds.y + bounds.height / 2.0F};
+        return Rect::CenteredOn({bounds.x + sliderPos * bounds.width, bounds.y + bounds.height * 0.5F},
+                                {bounds.width * 0.1F, bounds.height});
     }
 
 

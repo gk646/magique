@@ -9,12 +9,34 @@
 
 #include "internal/globals/EngineConfig.h"
 
-
 namespace magique
 {
     ListChooser::ListChooser(Rect bounds, Anchor anchor, Point inset, ScalingMode mode) :
         UIObject(bounds, anchor, inset, mode)
     {
+        setGamepadMapping(new GamepadMapping(*this,
+                                             [&](GamepadMappingState& state, GamepadButton button)
+                                             {
+                                                 if (state.isUpOrDown())
+                                                 {
+                                                     int direction = state.isUp() ? -1 : 1;
+                                                     state.row =
+                                                         std::clamp(state.row + direction, 0, (int)entries.size() - 1);
+
+                                                     const auto bounds = getBounds();
+                                                     Point pos = {bounds.mid().x, bounds.y};
+                                                     for (int i = 0; i < state.row; i++)
+                                                     {
+                                                         pos.y += entries[i].height + spacing;
+                                                     }
+                                                     return pos;
+                                                 }
+
+                                                 if (state.event == GamepadMappingEvent::Back)
+                                                     LayeredInput::ConsumeKey();
+
+                                                 return Point{-1};
+                                             }));
     }
 
     void ListChooser::onDraw(const Rect& bounds)
@@ -45,6 +67,8 @@ namespace magique
     }
 
     bool ListChooser::empty() const { return entries.empty(); }
+
+    int ListChooser::size() const { return (int)entries.size(); }
 
     bool ListChooser::contains(std::string_view item) const
     {
@@ -200,6 +224,7 @@ namespace magique
                         if (selectFunc)
                             selectFunc(entries[i].text);
                     }
+                    UISetPreviousGamepadMap();
                     LayeredInput::ConsumeMouse();
                 }
             }

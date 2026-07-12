@@ -60,11 +60,11 @@ namespace magique
 
         // Returns a pointer to the child associated with the given name (if any)
         // Failure: returns nullptr if the name doesn't exist
-        [[nodiscard]] UIObject* getChild(std::string_view name) const;
-        [[nodiscard]] UIObject* getChild(int index) const;
+        UIObject* getChild(std::string_view name) const;
+        UIObject* getChild(int index) const;
 
         // Returns a vector that contains all current children
-        [[nodiscard]] const std::vector<ContainerChild>& getChildren() const;
+        const std::vector<ContainerChild>& getChildren() const;
 
         ~UIContainer() override = default;
 

@@ -34,6 +34,9 @@ namespace magique
         void setHoverText(const char* value);
         const char* getHoverText() const;
 
+        // Manually calls the click func (if present)
+        void callClick(MouseButton button = MOUSE_BUTTON_LEFT) const;
+
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }
 

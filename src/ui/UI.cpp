@@ -218,20 +218,25 @@ namespace magique
 
     const GamepadMappingState& GamepadMapping::getState() const { return state_; }
 
-    void GamepadMapping::triggerEvent(GamepadMappingEvent event)
+    void GamepadMapping::triggerEvent(GamepadMappingEvent event, GamepadButton button)
     {
         if (event == GamepadMappingEvent::Start)
             reset();
 
         state_.event = event;
         Point pos = -1;
-        if (func)
-            pos = func(state_);
+        state_.backConsumed = false;
+        state_.submitConsumed = false;
 
-        if (event == GamepadMappingEvent::Submit && pos == -1)
-            UIEmitMousePress();
-        if (event == GamepadMappingEvent::Back && getObject().getIsMenu())
-            getObject().getAs<Menu>().activateParent();
+        if (func)
+            pos = func(state_, button);
+
+        if (event == GamepadMappingEvent::Submit && !state_.submitConsumed)
+            UIEmitMousePress(MOUSE_BUTTON_LEFT, pos);
+        if (event == GamepadMappingEvent::Back && !state_.backConsumed)
+        {
+            UISetPreviousGamepadMap();
+        }
         setMouse(pos);
     }
 
@@ -246,15 +251,32 @@ namespace magique
         }
     }
 
-    void UISetGamepadMap(GamepadMapping* map)
+    void UISetGamepadMap(GamepadMapping* map, bool resetStack)
     {
         if (map == nullptr)
             return;
-        global::UI_DATA.gamepadMapping = map;
-        map->triggerEvent(GamepadMappingEvent::Start);
+        auto& data = global::UI_DATA;
+
+        if (resetStack)
+            while (!data.mappings.empty())
+                data.mappings.pop();
+
+        data.mappings.push(map);
+        data.currentMapping = map;
+        data.currentMapping->triggerEvent(GamepadMappingEvent::Start);
     }
 
-    GamepadMapping* UIGetGamepadMap() { return global::UI_DATA.gamepadMapping; }
+    void UISetPreviousGamepadMap()
+    {
+        auto& data = global::UI_DATA;
+        if (data.mappings.size() <= 1)
+            return;
+
+        data.mappings.pop();
+        data.currentMapping = data.mappings.top();
+    }
+
+    GamepadMapping* UIGetGamepadMap() { return global::UI_DATA.currentMapping; }
 
     MouseToWorld::MouseToWorld()
     {

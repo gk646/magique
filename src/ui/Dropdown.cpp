@@ -10,6 +10,16 @@ namespace magique
                        ScalingMode scaling) :
         LabelledObject(bounds, label, labelDir, anchor, inset, scaling), list(bounds)
     {
+        setGamepadMapping(new GamepadMapping(*this,
+                                             [&](GamepadMappingState& state, GamepadButton button)
+                                             {
+                                                 getList().getGamepadMapping()->triggerEvent(state.event);
+                                                 if (state.event == GamepadMappingEvent::Back)
+                                                     isOpen = false;
+                                                 if (isOpen && state.event == GamepadMappingEvent::Submit)
+                                                     isOpen = false;
+                                                 return Point{-1};
+                                             }));
     }
 
     bool Dropdown::getIsOpen() const { return isOpen; }
@@ -22,6 +32,7 @@ namespace magique
         {
             if (!LayeredInput::GetIsMouseConsumed() && getBounds().contains(GetMousePosition()))
             {
+                UISetGamepadMap(getGamepadMapping());
                 isOpen = !isOpen;
                 LayeredInput::ConsumeMouse();
             }

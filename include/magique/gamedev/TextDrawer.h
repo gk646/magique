@@ -48,7 +48,7 @@ namespace magique
                              Color tint = WHITE);
 
         // Must be implemented by the project manually
-        TextDrawer& keybind(Keybind keybind, bool centered = true);
+        TextDrawer& keybind(Keybind keybind, std::string_view hint = {}, bool centered = true);
 
         // Draws a line across the bounds
         //      - length: how long in terms of bounds length the line is

@@ -46,9 +46,9 @@ namespace magique
         static ActionInput FromVirtual(bool pressed, bool down = false, bool released = false);
 
         // Returns the state of the action
-        [[nodiscard]] bool getIsDown() const;
-        [[nodiscard]] bool getIsPressed() const;
-        [[nodiscard]] bool getIsReleased() const;
+         bool getIsDown() const;
+         bool getIsPressed() const;
+         bool getIsReleased() const;
 
     private:
         bool isPressed = false;

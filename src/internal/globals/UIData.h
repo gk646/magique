@@ -3,6 +3,7 @@
 #define MAGIQUE_UI_DATA_H
 
 #include <cmath>
+#include <stack>
 #include <algorithm>
 #include <raylib/raylib.h>
 #include <raylib/config.h>
@@ -14,6 +15,7 @@
 #include <magique/ui/controls/Popup.h>
 
 #include "external/raylib-compat/rcore_compat.h"
+
 
 namespace magique
 {
@@ -28,7 +30,9 @@ namespace magique
         Point targetRes{1920, 1080};
         Point sourceRes{1920, 1080};
         Point scaling{1.0F, 1.0F};
-        GamepadMapping* gamepadMapping = nullptr;
+        GamepadMapping* currentMapping = nullptr;
+        std::stack<GamepadMapping*> mappings;
+
         bool keyConsumed = false;
         bool mouseConsumed = false;
         bool customTargetRes = false;
@@ -51,60 +55,64 @@ namespace magique
 
         void updateGamePadMapping() const
         {
-            if (gamepadMapping == nullptr)
-            {
+            if (currentMapping == nullptr || !UIUsingGamepad())
                 return;
-            }
-
-            if (LayeredInput::IsKeyPressed(KEY_ENTER) ||
-                LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Submit);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_ESCAPE) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Back);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_DOWN) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Down);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_UP) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Up);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_LEFT) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Left);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_RIGHT) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::Right);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_Q) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::SwitchLeft);
-            }
-            else if (LayeredInput::IsKeyPressed(KEY_E) ||
-                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
-            {
-                gamepadMapping->triggerEvent(GamepadMappingEvent::SwitchRight);
-            }
-            else
-            {
-                // TODO onButton() generic response
-            }
 
             if (LayeredInput::IsKeyReleased(KEY_ENTER) ||
                 LayeredInput::IsGamepadButtonReleased(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
             {
                 TriggerMouseRelease(MOUSE_BUTTON_LEFT);
+            }
+
+            if (LayeredInput::IsKeyPressed(KEY_ENTER) ||
+                LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Submit);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_ESCAPE) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Back);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_DOWN) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_DOWN))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Down);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_UP) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_UP))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Up);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_LEFT) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_LEFT))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Left);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_RIGHT) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_FACE_RIGHT))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::Right);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_Q) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_LEFT_TRIGGER_1))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::SwitchLeft);
+            }
+            else if (LayeredInput::IsKeyPressed(KEY_E) ||
+                     LayeredInput::IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_TRIGGER_1))
+            {
+                currentMapping->triggerEvent(GamepadMappingEvent::SwitchRight);
+            }
+            else
+            {
+                for (int i = 0; i < MAX_GAMEPAD_BUTTONS; i++)
+                {
+                    if (LayeredInput::IsGamepadButtonPressed(0, i))
+                    {
+                        currentMapping->triggerEvent(GamepadMappingEvent::Button, static_cast<GamepadButton>(i));
+                    }
+                }
             }
         }
 
@@ -138,32 +146,13 @@ namespace magique
             resetConsumed();
         }
 
-        // Only before each update tick (if it happens)
-        void onUpdateTick()
+        void detectGamepad()
         {
-            mouseConsumedAfter = nullptr;
-
-            // Using fori to support deletions in the update methods
-            for (size_t i = 0; i < objects.size(); ++i)
-            {
-                auto& obj = *objects[i];
-                if (gamepadMapping != nullptr && &gamepadMapping->getObject() == &obj)
-                    updateGamePadMapping();
-                obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
-                if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
-                    mouseConsumedAfter = &obj;
-            }
-
-            // After the tick
-            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
-            {
-                dragStart = {-1, -1};
-            }
-
             const bool prevStat = usingGamepad;
             if (usingGamepad)
             {
-                usingGamepad = GetKeyPressedQueueCount() == 0 && Point{GetMouseDelta()} == 0;
+                //  GetKeyPressedQueueCount() == 0 &&
+                usingGamepad = Point{GetMouseDelta()} == 0;
             }
             else
             {
@@ -175,6 +164,8 @@ namespace magique
 
             if (prevStat != usingGamepad)
             {
+                keyConsumed = false;
+                mouseConsumed = false;
                 if (usingGamepad)
                 {
                     HideCursor();
@@ -183,6 +174,34 @@ namespace magique
                 {
                     EnableCursor();
                 }
+            }
+        }
+
+        // Only before each update tick (if it happens)
+        void onUpdateTick()
+        {
+            mouseConsumedAfter = nullptr;
+
+            detectGamepad();
+
+            // Using fori to support deletions in the update methods
+            if (currentMapping != nullptr)
+                updateGamePadMapping();
+
+
+            for (size_t i = 0; i < objects.size(); ++i)
+            {
+                auto& obj = *objects[i];
+
+                obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+                if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
+                    mouseConsumedAfter = &obj;
+            }
+
+            // After the tick
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+            {
+                dragStart = {-1, -1};
             }
         }
 

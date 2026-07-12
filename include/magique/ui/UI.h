@@ -119,7 +119,7 @@ namespace magique
 
     // Receives current state - returns the point where the mouse should be next
     // -1 mouse positions will be ignored
-    using GamepadMappingFunc = std::function<Point(GamepadMappingState& state)>;
+    using GamepadMappingFunc = std::function<Point(GamepadMappingState& state, GamepadButton button)>;
 
     // Used to enable gamepad (and arrow keys) navigation of UI menus - without any logic changes
     // Works by positioning the cursor (even when not shown) to the correct position
@@ -147,7 +147,7 @@ namespace magique
 
         // Can be called manually to trigger the corresponding callback
         // Note: These are called AUTOMATICALLY when the appropriate buttons are pressed
-        void triggerEvent(GamepadMappingEvent event);
+        void triggerEvent(GamepadMappingEvent event, GamepadButton button = {});
 
     private:
         void setMouse(Point pos);
@@ -157,8 +157,17 @@ namespace magique
     };
 
     // Sets/gets the current input map
-    // Note: This is set automatically for menus
-    void UISetGamepadMap(GamepadMapping* map);
+    //      - resetStack: clears the stack of mappings and sets this as the top one (default for menus)
+    // Note: This is set automatically called when a menu with a mapping is activated
+    // Stacking mappings allows to delegate logic - when a object is clicked its mapping can be activated and takes over
+    // Once back is pressed (and the back action is not consumed) the previous mapping will be set active
+    void UISetGamepadMap(GamepadMapping* map, bool resetStack = false);
+
+    // Sets the previously active map active - automatically called if the back action is not consumed by the active mapping
+    // Note: Only works if there is at least 1 previous mapping active - else stays on the current one
+    void UISetPreviousGamepadMap();
+
+    // Returns the current active mapping
     GamepadMapping* UIGetGamepadMap();
 
     // Sets the mouse position to the world pos - useful when using ui controls in worldspace not ui space

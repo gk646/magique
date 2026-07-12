@@ -21,7 +21,7 @@ namespace magique
 
     bool Menu::removeSubMenu(std::string_view name) { return removeChild(name); }
 
-    Menu* Menu::getSubMenu(std::string_view name) const
+    Menu* Menu::getSubMenuInternal(std::string_view name) const
     {
         for (auto& [child, ptr] : getChildren())
         {
@@ -69,7 +69,7 @@ namespace magique
 
     Menu* Menu::getNestedMenu(std::string_view name) const
     {
-        auto menu = getSubMenu(name);
+        auto menu = getSubMenuInternal(name);
         if (menu != nullptr)
             return menu;
         for (auto& [child, ptr] : getChildren())
@@ -92,7 +92,7 @@ namespace magique
     void Menu::activate()
     {
         if (getGamepadMapping() != nullptr)
-            UISetGamepadMap(getGamepadMapping());
+            UISetGamepadMap(getGamepadMapping(), true);
 
         inactivateChildren();
         isActive = true;

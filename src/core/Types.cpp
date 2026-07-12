@@ -772,14 +772,14 @@ namespace magique
 
     //----------------- TILE OBJECT -----------------//
 
-    std::string_view TileObject::getName() const { return name; }
+    std::string_view TiledObject::getName() const { return name; }
 
-    int TileObject::getID() const { return id; }
+    int TiledObject::getID() const { return id; }
 
 
-    int TileObject::getTileID() const { return tileId; }
+    int TiledObject::getTileID() const { return tileId; }
 
-    const TiledProperty* TileObject::getProperty(std::string_view pName) const
+    const TiledProperty* TiledObject::getProperty(std::string_view pName) const
     {
         const auto it =
             std::ranges::find_if(properties, [&](const auto& property) { return property.getName() == pName; });
@@ -788,7 +788,7 @@ namespace magique
         return nullptr;
     }
 
-    bool TileObject::hasProperty(std::string_view property) const { return getProperty(property) != nullptr; }
+    bool TiledObject::hasProperty(std::string_view property) const { return getProperty(property) != nullptr; }
 
     //----------------- TILE INFO -----------------//
 
@@ -798,7 +798,11 @@ namespace magique
             ((value & 0xFF000000U) >> 24);
     }
 
+    bool TileID::isEmpty() const { return id <= 1; }
+
     bool TileInfo::hasCollision() const { return bounds.size() != 0 || secBounds.size() != 0; }
+
+    bool TileInfo::hasAnimation() const { return duration != 0; }
 
     TiledProperty* TileInfo::getProperty(std::string_view name)
     {
@@ -808,9 +812,6 @@ namespace magique
             return &(*it);
         return nullptr;
     }
-
-
-    bool TileID::isEmpty() const { return id <= 1; }
 
     Checksum::Checksum(std::string_view hash)
     {
@@ -1000,6 +1001,8 @@ namespace magique
 #define KEY_MACRO_MODIFIER()
 
 
+    const char* Payload::asString() const { return (const char*)data; }
+
     void GamepadMappingState::circulateRows(int offset, int max) { row = MathCirculate(row, offset, max); }
 
     void GamepadMappingState::circulateCols(int offset, int max) { col = MathCirculate(col, offset, max); }
@@ -1028,6 +1031,10 @@ namespace magique
     bool GamepadMappingState::isRightSwitch() const { return event == GamepadMappingEvent::SwitchRight; }
 
     bool GamepadMappingState::isSwitch() const { return isLeftSwitch() || isRightSwitch(); }
+
+    void GamepadMappingState::consumeBack() { backConsumed = true; }
+
+    void GamepadMappingState::consumeSubmit() { submitConsumed = true; }
 
     Keybind::Keybind(KeyboardKey key, bool layered, bool shift, bool ctrl, bool alt) :
         bind(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)

@@ -63,7 +63,7 @@ namespace magique
         // Called each time this entity collides with a static collision object
         virtual void onStaticCollision(Entity self, ColliderInfo collider, CollisionInfo& collision)
         {
-            AccumulateCollision(collision); /// Treats the other shape as solid per default
+            AccumulateCollision(collision); // Treats the other shape as solid per default
         }
 
         //================= UTIL =================//

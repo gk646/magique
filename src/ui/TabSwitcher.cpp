@@ -12,7 +12,7 @@ namespace magique
         UIContainer(bounds, anchor, inset, mode)
     {
         setGamepadMapping(new GamepadMapping(*this,
-                                             [&](GamepadMappingState& state)
+                                             [&](GamepadMappingState& state, GamepadButton button)
                                              {
                                                  if (state.isLeftSwitch())
                                                      switchLeft();

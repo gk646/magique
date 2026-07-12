@@ -61,7 +61,7 @@ namespace magique
     int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);
 
     // Draws pixel perfect text - fsm is font size multiplier of the base font size
-    void DrawPixelText(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
+    void DrawPixelText(const Font& f, std::string_view txt, Point pos, int fsm = 1, Color tint = WHITE);
     void DrawPixelTextCentered(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
     void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
 
