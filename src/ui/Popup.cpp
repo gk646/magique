@@ -8,9 +8,13 @@ namespace magique
 {
     Popup::Popup(Rect size, Anchor anchor, Point inset, ScalingMode scaling) : UIObject(size, anchor, inset, scaling) {}
 
-    void Popup::close() { UIRemovePopup(*this); }
+    void Popup::triggerClose() { UIRemovePopup(*this); }
 
-    void Popup::action() const { actionFunc(); }
+    void Popup::triggerAction()
+    {
+        actionFunc();
+        triggerClose();
+    }
 
     void Popup::setOnAction(const ActionFunction& func) { actionFunc = func; }
 
@@ -25,14 +29,13 @@ namespace magique
 
     ConfirmPopup::ConfirmPopup(std::string_view infoText) : Popup(GetScreenDims()), infoText(infoText)
     {
-        confirm.setOnClick(
-            [&](const Rect& bounds, int button)
-            {
-                action();
-                close();
-            });
-        back.setOnClick([&](const Rect& bounds, int button) { close(); });
+        confirm.setOnClick([&](MouseButton button) { triggerAction(); });
+        back.setOnClick([&](MouseButton button) { triggerClose(); });
     }
+
+    void ConfirmPopup::setInfoText(std::string_view text) { infoText = text; }
+
+    std::string_view ConfirmPopup::getInfoText() const { return infoText; }
 
     void ConfirmPopup::onDraw(const Rect& bounds)
     {
@@ -42,7 +45,8 @@ namespace magique
         DrawRectangleRec(Rect{UIGetTargetResolution()}, ColorAlpha(theme.backActive, 0.6F));
 
         const auto dims = MeasureTextEx(fnt, infoText.c_str(), fnt.baseSize, 1.0F);
-        auto modalSize = Point{dims.x + 12, UIGetTargetResolution().y * 0.15F};
+        auto modalSize =
+            Point{std::min(dims.x + 12, UIGetTargetResolution().x * 0.2F), UIGetTargetResolution().y * 0.15F};
 
         const Rect modal = Rect{UIGetAnchor(Anchor::MID_CENTER, modalSize), modalSize};
         DrawRectFrameFilled(modal, theme.background, theme.backOutline);

@@ -6,7 +6,7 @@
 
 namespace magique
 {
-    Game& GameGetInstance()
+    Game& EngineGetGame()
     {
         MAGIQUE_ASSERT(global::ENGINE_DATA.gameInstance != nullptr, "Called too early");
         return *global::ENGINE_DATA.gameInstance;

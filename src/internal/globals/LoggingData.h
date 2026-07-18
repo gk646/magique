@@ -30,7 +30,7 @@ namespace magique
 
             if (logToFile)
             {
-                file = fopen(TextFormat("./%s.log", GameGetInstance().getName()), "wb");
+                file = fopen(TextFormat("./%s.log", EngineGetGame().getName().data()), "wb");
                 if (file == nullptr)
                 {
                     LOG_ERROR("Failed to open log file");

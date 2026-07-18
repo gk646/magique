@@ -25,10 +25,10 @@ namespace magique
         Popup(Rect size, Anchor anchor = Anchor::NONE, Point inset = {}, ScalingMode scaling = ScalingMode::FULL);
 
         // Closes the popup with no action
-        void close();
+        void triggerClose();
 
-        // Executes the popup action
-        void action() const;
+        // Executes the popup action AND closes the popup
+        void triggerAction();
 
         // Sets the action if the popup resolves no with just closing
         void setOnAction(const ActionFunction& func);
@@ -45,10 +45,12 @@ namespace magique
     {
         ConfirmPopup(std::string_view infoText);
 
+        void setInfoText(std::string_view text);
+        std::string_view getInfoText() const;
+
     protected:
         void onDraw(const Rect& bounds) override;
 
-    private:
         std::string infoText;
         TextButton confirm{"Confirm"};
         TextButton back{"Back"};

@@ -112,10 +112,19 @@ namespace magique
         {
             popups.insert(popups.begin(), &popup);
         }
+
+        if (popup.getGamepadMapping() != nullptr)
+            UISetGamepadMap(popup.getGamepadMapping());
         global::UI_DATA.popups.push_back(&popup);
     }
 
-    bool UIRemovePopup(Popup& popup) { return std::erase(global::UI_DATA.popups, &popup) > 0; }
+    bool UIRemovePopup(Popup& popup)
+    {
+        auto removed = std::erase(global::UI_DATA.popups, &popup) > 0;
+        if (removed && popup.getGamepadMapping() != nullptr)
+            UISetPreviousGamepadMap();
+        return removed;
+    }
 
     const std::vector<Popup*>& UIGetPopups() { return global::UI_DATA.popups; }
 
@@ -216,6 +225,8 @@ namespace magique
 
     void GamepadMapping::setOnEvent(const GamepadMappingFunc& newFunc) { func = newFunc; }
 
+    UIObject& GamepadMapping::getObject() { return *object; }
+
     const GamepadMappingState& GamepadMapping::getState() const { return state_; }
 
     void GamepadMapping::triggerEvent(GamepadMappingEvent event, GamepadButton button)
@@ -234,13 +245,9 @@ namespace magique
         if (event == GamepadMappingEvent::Submit && !state_.submitConsumed)
             UIEmitMousePress(MOUSE_BUTTON_LEFT, pos);
         if (event == GamepadMappingEvent::Back && !state_.backConsumed)
-        {
             UISetPreviousGamepadMap();
-        }
         setMouse(pos);
     }
-
-    UIObject& GamepadMapping::getObject() { return *object; }
 
     void GamepadMapping::setMouse(Point pos)
     {
@@ -253,17 +260,22 @@ namespace magique
 
     void UISetGamepadMap(GamepadMapping* map, bool resetStack)
     {
-        if (map == nullptr)
-            return;
         auto& data = global::UI_DATA;
 
         if (resetStack)
             while (!data.mappings.empty())
                 data.mappings.pop();
 
+        if (map == nullptr)
+        {
+            data.currentMapping = nullptr;
+            return;
+        }
+
         data.mappings.push(map);
         data.currentMapping = map;
-        data.currentMapping->triggerEvent(GamepadMappingEvent::Start);
+        if (UIUsingGamepad())
+            data.currentMapping->triggerEvent(GamepadMappingEvent::Start);
     }
 
     void UISetPreviousGamepadMap()

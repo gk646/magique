@@ -19,6 +19,30 @@
 
 namespace magique
 {
+
+    // Combines all callbacks into a single handler
+    struct ISteamMatchmakingCallbacks
+    {
+        virtual ~ISteamMatchmakingCallbacks() = default;
+
+        // Called for GameLobbyJoinRequested_t
+        // This happens when user clicks a received game invite while in-game
+        // Note: You should probably leave the current lobby and join this new one
+        virtual void onLobbyJoinRequest(SteamLobbyID lobby, SteamID invitee) {}
+
+        // Called for various lobby events: see SteamLobbyEvent
+        virtual void onLobbyEvent(SteamLobbyID lobby, SteamID user, SteamLobbyEvent lobbyEvent) {}
+
+        // Called when data is returned after a call to SteamSearchLobbies()
+        virtual void onLobbySearchResult(const std::vector<SteamLobbyID>& lobbies) {}
+
+        //
+        virtual void onLobbyChatMessage(std::string_view chatMessage, SteamID sender) {}
+
+        // Called when the meta data fields of the lobby change
+        virtual void onLobbyDataUpdate() {}
+    };
+
     // Returns true if the async call trying to create a lobby was successful
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
     bool SteamLobbyCreate(SteamLobbyType type, int maxPlayers = 4);
@@ -30,16 +54,16 @@ namespace magique
     // Returns the LobbyID of your current lobby
     SteamLobbyID SteamLobbyGetID();
 
-    // Sets the value for the specified key - only works if your owner
-    void SteamLobbySetData(std::string_view key, std::string_view value);
-
     // Sends a lobby msg up to 4k characters
     // Note: Using Lobby.h/sendChatMsg() also calls this internally
     bool SteamLobbySendMsg(std::string_view msg);
 
+    // Sets the value for the specified key - only works if your owner
+    void SteamLobbySetData(std::string_view key, std::string_view value);
+
     // Returns the value for the key of the specified lobby
     // Failure: Returns "" (empty string) if the lobby is invalid or no such key
-    std::string_view SteamGetLobbyData(std::string_view key, SteamLobbyID id = SteamLobbyGetID());
+    std::string_view SteamLobbyGetData(std::string_view key, SteamLobbyID id = SteamLobbyGetID());
 
     // Returns the current player count and limit of the given lobby
     std::pair<int, int> SteamLobbyGetPlayerCount(SteamLobbyID id);
@@ -63,18 +87,6 @@ namespace magique
 
     // Returns the SteamID of the owner of the given lobby
     SteamID SteamGetLobbyOwner(SteamLobbyID lobby = SteamLobbyGetID());
-
-    // Called with the lobby id, the protagonist of that event and the event type
-    // See the LobbyEvent enum for a detailed description when each event gets called
-    using SteamLobbyCallback = std::function<void(SteamLobbyID lobby, SteamID steamID, SteamLobbyEvent lobbyEvent)>;
-
-    // Sets the callback that is called for various events that happen in regard to lobbies
-    void SteamSetLobbyCallback(const SteamLobbyCallback& callback);
-
-    // Called with all matching lobbies
-    using SteamLobbySearchCallback = std::function<void(const std::vector<SteamLobbyID>&)>;
-
-    void SteamSetLobbySearchCallback(const SteamLobbySearchCallback& callback);
 
     // Allows to filter for certain properties
     struct SteamSearchFilter

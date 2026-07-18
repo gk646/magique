@@ -67,6 +67,9 @@ namespace magique
 
         //================= OBJECTS =================//
 
+        // Searches all layers and returns the first object matching the given name
+        TiledObject* getObject(std::string_view name);
+
         // Returns true if an object layer with the given name is present
         bool hasObjectLayer(std::string_view layer) const;
 

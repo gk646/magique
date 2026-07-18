@@ -228,7 +228,7 @@ namespace magique
             }
         };
 
-        auto drawPathFindingGrid = [&]()
+        auto drawPathFindingGrid = [&]
         {
             if (!path.mapsDynamicGrids.contains(currentMap)) // Could be called before any entity is created
                 return;

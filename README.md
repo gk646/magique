@@ -4,7 +4,8 @@
 ![Version Badge](https://img.shields.io/badge/Version:-0.9.30-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
-`magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine framework for programmers (or those yet to be!).
+`magique` is a **C++ 23** beginner-friendly cross-platform 2D game engine framework for programmers (or those yet to
+be!).
 It combines your favourite game libraries (
 *[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
 written modules** into a featureful standalone engine.
@@ -22,12 +23,11 @@ and tutorials.
 
 #### Made with magique
 
-|                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     |
-|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-| <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> |
+|                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     | [Space Fighter](https://store.steampowered.com/app/4695600/Space_Fighter) (Steam)                                                                                                                                                                      |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> | <a href="https://store.steampowered.com/app/4695600/Space_Fighter"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4695600/122ee0ece8d8522171634345c677dd4826954154/header.jpg" alt="Screenshot 1" width="250"/> |
 
-I used `magique` in a 1-day game-jam to create the winning
-entry: [A turtle's journey](https://github.com/gk646/turtles_journey).
+
 
 ---
 
@@ -44,7 +44,7 @@ Most notable features:
     - Explicitly _**optimized for compile time**_ internally and externally!
     - Takes advantage of _**multithreading, data-driven design and cache locality**_
 - **Large feature set with `pay for what you use` policy**
-    - Blazingly fast **2D raytracing** with soft shadows for any geometry using polar-tracing optimization 
+    - Blazingly fast **2D raytracing** with soft shadows for any geometry using polar-tracing optimization
     - Asset-Packing and Loading with **compression, encryption and checksum support**
     - Automatic texture stitching into configurable atlases
     - Task based loading interface handling load-priority and background loading of assets
@@ -70,7 +70,8 @@ Most notable features:
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.63)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
 - **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection (often used in gamedev)
-- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for resource loading
+- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for
+  resource loading
 
 ### Quickstart
 

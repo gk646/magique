@@ -763,7 +763,7 @@ namespace magique
     Color TiledProperty::getColor() const
     {
         MAGIQUE_ASSERT(type == TileObjectPropertyType::COLOR, "Property does not contain a color!");
-        return GetColor(integer);
+        return Color{color.b, color.g, color.r, color.a}; // Somehow wrong order?
     }
 
     TileObjectPropertyType TiledProperty::getType() const { return type; }

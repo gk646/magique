@@ -6,9 +6,14 @@
 #include <magique/core/Types.h>
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
+#include <magique/core/Camera.h>
 
-#include "external/raylib-compat/rcore_compat.h"
-#include "magique/core/Camera.h"
+
+#ifdef USING_SDL3_PROJECT
+#include "SDL3/SDL.h"
+#else
+#include "external/glfw/include/GLFW/glfw3.h"
+#endif
 
 namespace magique
 {
@@ -202,6 +207,55 @@ namespace magique
 #else
         DrawRectFrame(bounds.floored(), outline);
 #endif
+    }
+
+    void SetCursorImage(Image img, Point anchor)
+    {
+#ifdef USING_SDL3_PROJECT
+        SDL_Surface* surface =
+            SDL_CreateSurfaceFrom(img.width, img.height, SDL_PIXELFORMAT_RGBA32, img.data, img.width * 4);
+        if (surface)
+        {
+            SDL_Cursor* cursor = SDL_CreateColorCursor(surface, (int)anchor.x, (int)anchor.y);
+            if (cursor)
+            {
+                SDL_SetCursor(cursor);
+            }
+            SDL_DestroySurface(surface);
+        }
+#else
+        const auto img = gdata.ui.cursors[CursorType::Default];
+        GLFWimage glfwImage;
+        glfwImage.width = img.width;
+        glfwImage.height = img.height;
+        glfwImage.pixels = (unsigned char*)img.data;
+        auto* cursor = glfwCreateCursor(&glfwImage, 10, 4);
+        if (cursor != nullptr)
+        {
+            glfwSetCursor(glfwGetCurrentContext(), cursor);
+        }
+#endif
+    }
+
+    const std::vector<int>& GetMonitors()
+    {
+        static std::vector<int> LIST;
+        LIST.clear();
+#ifdef USING_SDL3_PROJECT
+        int monitorCount = 0;
+        SDL_DisplayID* displays = SDL_GetDisplays(&monitorCount);
+        for (int i = 0; i < monitorCount; i++)
+        {
+            LIST.push_back(displays[i]);
+        }
+        SDL_free(displays);
+#else
+        for (int i = 0; i < GetMonitorCount(); i++)
+        {
+            LIST.push_back(i);
+        }
+#endif
+        return LIST;
     }
 
     void DrawTruePixelartScale(RenderTexture texture)

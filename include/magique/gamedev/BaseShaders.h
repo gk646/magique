@@ -40,7 +40,7 @@ namespace magique
         // Default: 0.15
         VignetteShader& setFalloff(float falloff);
 
-        // Default: 0.55
+        // Default: 0.50
         VignetteShader& setSize(float size);
 
     private:

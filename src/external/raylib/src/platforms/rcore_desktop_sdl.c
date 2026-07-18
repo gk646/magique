@@ -1357,6 +1357,26 @@ void SetMouseCursor(int cursor)
 // Get physical key name
 const char *GetKeyName(int key)
 {
+    if (key == KEY_LEFT_CONTROL)
+    {
+        return "CTRL";
+    }
+    if (key == KEY_RIGHT_CONTROL)
+    {
+        return "RCTRL";
+    }
+    if (key == KEY_RIGHT_SHIFT)
+    {
+        return "RCTRL";
+    }
+    if (key == KEY_ESCAPE)
+    {
+        return "ESC";
+    }
+    if (key == KEY_LEFT_SHIFT)
+    {
+        return "SHIFT";
+    }
     return SDL_GetKeyName(key);
 }
 

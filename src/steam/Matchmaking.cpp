@@ -69,7 +69,7 @@ namespace magique
         return SteamMatchmaking()->SendLobbyChatMsg(steam.lobbyID, msg.data(), msg.size() + 1);
     }
 
-    std::string_view SteamGetLobbyData(std::string_view key, SteamLobbyID id)
+    std::string_view SteamLobbyGetData(std::string_view key, SteamLobbyID id)
     {
         return SteamMatchmaking()->GetLobbyData(CSteamID(static_cast<uint64>(id)), key.data());
     }
@@ -86,11 +86,11 @@ namespace magique
             return false;
         auto& steam = global::STEAM_DATA;
         SteamMatchmaking()->LeaveLobby(steam.lobbyID);
-        if (steam.lobbyEventCallback)
+        if (steam.matchmakingHandler)
         {
             const auto lobbyID = LobbyIDFromSteam(steam.lobbyID);
             const auto steamID = MagiqueIDFromSteam(steam.userID);
-            steam.lobbyEventCallback(lobbyID, steamID, SteamLobbyEvent::ON_LOBBY_EXIT);
+            steam.matchmakingHandler->onLobbyEvent(lobbyID, steamID, SteamLobbyEvent::ON_LOBBY_EXIT);
         }
         steam.lobbyID = {};
         return true;
@@ -114,16 +114,6 @@ namespace magique
     SteamID SteamGetLobbyOwner(SteamLobbyID lobby)
     {
         return static_cast<SteamID>(SteamMatchmaking()->GetLobbyOwner(CSteamID((uint64)lobby)).ConvertToUint64());
-    }
-
-    void SteamSetLobbyCallback(const SteamLobbyCallback& callback)
-    {
-        auto& steamData = global::STEAM_DATA;
-        steamData.lobbyEventCallback = callback;
-    }
-    void SteamSetLobbySearchCallback(const SteamLobbySearchCallback& callback)
-    {
-        global::STEAM_DATA.lobbySearchCallback = callback;
     }
 
     SteamSearchFilter& SteamSearchFilter::string(std::string_view key, std::string_view value,

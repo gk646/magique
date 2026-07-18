@@ -276,7 +276,7 @@ namespace magique
                 });
             ConsoleRegisterCommand(setLanguage);
 
-            ConsoleSetEnvParam("MQ_VERSION", global::ENGINE_DATA.gameInstance->getName());
+            ConsoleSetEnvParam("MQ_VERSION", MAGIQUE_VERSION);
             ConsoleSetEnvParam("GAME_NAME", global::ENGINE_DATA.gameInstance->getName());
             ConsoleSetEnvParam("GAME_VERSION", global::ENGINE_DATA.gameInstance->getVersion());
         }

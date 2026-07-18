@@ -42,7 +42,8 @@ namespace magique
         void activateNested(std::string_view name);
 
         // Searches all submenus recursively
-        Menu* getNestedMenu(std::string_view name) const;
+        template <typename T = Menu>
+        T* getNestedMenu(std::string_view name) const;
 
         // Gives control back to the parent
         void activateParent() const;
@@ -94,6 +95,7 @@ namespace magique
     private:
         void inactivateChildren();
         Menu* getSubMenuInternal(std::string_view name) const;
+        Menu* getNestedMenuInternal(std::string_view name) const;
 
         Menu* parent = nullptr;
         Menu* subMenu = nullptr;
@@ -112,6 +114,11 @@ namespace magique
     T* Menu::getSubMenu(std::string_view name) const
     {
         return static_cast<T*>(getSubMenuInternal(name));
+    }
+    template <typename T>
+    T* Menu::getNestedMenu(std::string_view name) const
+    {
+        return static_cast<T*>(getNestedMenuInternal(name));
     }
 
 } // namespace magique

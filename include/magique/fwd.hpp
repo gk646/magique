@@ -93,7 +93,8 @@ namespace magique
     //================= STEAM =================//
 
     struct SteamStatResult;
-    struct ISteamCallbackHandler;
+    struct ISteamCallbacks;
+    struct ISteamMatchmakingCallbacks;
 
     //================= UI =================//
     struct UIObject;

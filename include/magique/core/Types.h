@@ -385,6 +385,7 @@ namespace magique
             char* string;
             bool boolean;
             int object;
+            Color color;
         };
         friend TileInfo;
         friend TiledObject;
@@ -796,13 +797,6 @@ namespace magique
         ON_USER_JOINED,
         // Only called when you are in a lobby and someone ELSE leaves the lobby - called with leaver id
         ON_USER_LEFT,
-
-        // Called when a friend sends you a lobby invite and its clicked - called with others lobby id, called with inviters id
-        // Note: It's up to you to handle a few things:
-        //      - Handle the case you are in a lobby currently
-        //          - Leave the current lobby or display a confirmation message
-        //      - Join the new lobby with JoinSteamLobby(lobbyID);
-        ON_LOBBY_INVITE,
     };
 
     enum class SteamComparisonFilter : uint8_t

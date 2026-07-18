@@ -10,9 +10,11 @@ namespace magique
 {
     bool SteamInit(const bool createFile) { return false; };
     SteamID SteamGetID() { M_ENABLE_STEAM_ERROR({}) };
-    const char* SteamGetUserName() { M_ENABLE_STEAM_ERROR({}); };
-    void SteamSetOverlayCallback(const SteamOverlayCallback& steamOverlayCallback) { M_ENABLE_STEAM_ERROR() }
-    const char* SteamGetUserDataLocation() { M_ENABLE_STEAM_ERROR({}) };
+    std::string_view SteamGetUserName() { M_ENABLE_STEAM_ERROR({}); };
+    void SteamSetOverlayCallback(const SteamOverlayCallback& steamOverlayCallback){
+        M_ENABLE_STEAM_ERROR()} std::string_view SteamGetUserDataLocation() {
+        M_ENABLE_STEAM_ERROR({})
+    };
 } // namespace magique
 #else
 #include <fstream>
@@ -36,10 +38,11 @@ namespace magique
         }
     }
 
-    bool SteamInit(ISteamCallbackHandler* handler, const bool createFile)
+    bool SteamInit(ISteamCallbacks* handler, ISteamMatchmakingCallbacks* matchmaking, const bool createFile)
     {
         auto& steamData = global::STEAM_DATA;
         steamData.handler = handler;
+        steamData.matchmakingHandler = matchmaking;
 
         if (createFile)
         {
@@ -84,7 +87,15 @@ namespace magique
         static std::string buffer;
         buffer.resize(256);
         SteamApps()->GetLaunchCommandLine(buffer.data(), buffer.capacity());
-        return buffer;
+
+        std::string_view view = buffer;
+        const auto keyStart = view.find_first_of(key);
+        if (keyStart == std::string_view::npos)
+            return {};
+
+        const auto valueStart = keyStart + key.length() + 1;
+        const auto valueEnd = buffer.find(' ', valueStart);
+        return view.substr(valueStart, valueEnd - valueStart);
     }
 
     uint32_t SteamGetAppID() { return SteamUtils()->GetAppID(); }
@@ -222,9 +233,9 @@ namespace magique
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
     }
 
-    const char* SteamGetLocalName() { return SteamFriends()->GetPersonaName(); }
+    std::string_view SteamGetLocalName() { return SteamFriends()->GetPersonaName(); }
 
-    const char* SteamGetUserName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
+    std::string_view SteamGetUserName(SteamID id) { return SteamFriends()->GetFriendPersonaName((uint64)id); }
 
     Connection SteamGetMappedConnection(SteamID id)
     {
@@ -270,7 +281,7 @@ namespace magique
 
     void SteamRequestStats(SteamID user) { SteamUserStats()->RequestUserStats(CSteamID{static_cast<uint64>(user)}); }
 
-    std::optional<int32_t> ISteamCallbackHandler::SteamStatResult::getInt(std::string_view name) const
+    std::optional<int32_t> ISteamCallbacks::SteamStatResult::getInt(std::string_view name) const
     {
         int32_t data{};
         if (SteamUserStats()->GetUserStat(CSteamID(static_cast<uint64>(user)), name.data(), &data))
@@ -278,7 +289,7 @@ namespace magique
         return {};
     }
 
-    std::optional<float> ISteamCallbackHandler::SteamStatResult::getFloat(std::string_view name) const
+    std::optional<float> ISteamCallbacks::SteamStatResult::getFloat(std::string_view name) const
     {
         float data{};
         if (SteamUserStats()->GetUserStat(CSteamID(static_cast<uint64>(user)), name.data(), &data))
@@ -293,12 +304,12 @@ namespace magique
 
     void SteamStoreStats() { SteamUserStats()->StoreStats(); }
 
-    const char* SteamGetUserDataLocation()
+    std::string_view SteamGetUserDataLocation()
     {
-        static char TEMP[512]{};
-        MAGIQUE_ASSERT(global::STEAM_DATA.isInitialized, "Steam is not initialized");
-        SteamUser()->GetUserDataFolder(TEMP, 512);
-        return TEMP;
+        auto& data = global::STEAM_DATA;
+        data.cacheString.resize(512);
+        SteamUser()->GetUserDataFolder(data.cacheString.data(), 512);
+        return data.cacheString;
     }
 
     uint32_t SteamGetServerTime() { return SteamUtils()->GetServerRealTime(); }
@@ -331,7 +342,7 @@ namespace magique
 
     void SteamSetRichPresence(std::string_view string)
     {
-       // SteamFriends()->SetRichPresence( "steam_display", bDisp
+        // SteamFriends()->SetRichPresence( "steam_display", bDisp
     }
 
 } // namespace magique

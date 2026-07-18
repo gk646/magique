@@ -51,11 +51,11 @@ namespace magique
             }
             else if (packet.type == LobbyPacketType::METADATA)
             {
-                if (metadataCallback)
-                    metadataCallback(packet.first, packet.second);
-
                 if (NetworkIsClient())
                     metadata[packet.first] = packet.second;
+
+                if (metadataCallback)
+                    metadataCallback(packet.first, packet.second);
             }
             else
             {

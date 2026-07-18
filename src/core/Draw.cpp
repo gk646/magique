@@ -142,9 +142,14 @@ namespace magique
         DrawRegionPro(sheet.getRegion(frame), dest, rot, anchor, tint);
     }
 
-    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, const int layer)
+    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet)
     {
-        DrawTileMapEx({}, CameraGetNativeBounds(), tileMap, tileSheet, layer);
+        Point origin = {};
+        const auto rect = CameraGetNativeBounds();
+        for (int i = 0; i < (int)tileMap.getTileLayers().size(); i++)
+        {
+            DrawTileMapEx(origin, rect, tileMap, tileSheet, i);
+        }
     }
 
     void DrawTileMapEx(const Point& origin, const Rect& rect, const TileMap& tileMap, const TileSheet& tileSheet,

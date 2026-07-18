@@ -59,7 +59,7 @@ namespace magique
         const float camWidth = 2 * halfWidth + (pad * 2);
         const float camHeight = 2 * halfHeight + (pad * 2);
 
-        return {camLeft, camTop, camWidth, camHeight};
+        return Rect{camLeft, camTop, camWidth, camHeight}.floored();
     }
 
     Rect CameraGetNativeBounds()
@@ -71,7 +71,7 @@ namespace magique
         const float camWidth = offset.x * 2 / zoom;
         const float camHeight = offset.y * 2 / zoom;
 
-        return {camLeft, camTop, camWidth, camHeight};
+        return Rect{camLeft, camTop, camWidth, camHeight}.floored();
     }
 
     bool CameraInLineOfSight(Entity entity)

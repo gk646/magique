@@ -88,7 +88,9 @@ namespace magique
 
         bool shouldRemove() const
         {
-            return (isPositional && entity != entt::null && !EntityExists(entity)) || !IsSoundPlaying(sound);
+            if (isPositional)
+                return entity != NullEntity() && !EntityExists(entity);
+            return !IsSoundPlaying(sound);
         }
         float getVolume() const;
         void update();

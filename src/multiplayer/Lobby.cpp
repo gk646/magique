@@ -18,7 +18,8 @@ namespace magique
         for (auto conn : NetworkGetConnections())
             LobbyData::SendChatMessageTo(sender, message, conn);
 
-        SteamLobbySendMsg(message);
+        if (SteamIsInLobby())
+            SteamLobbySendMsg(message);
 
         if (data.chatCallback)
             data.chatCallback(sender, message);
@@ -37,10 +38,11 @@ namespace magique
             return;
         }
 
-        SteamLobbySetData(key, value);
+        if (SteamIsInLobby())
+            SteamLobbySetData(key, value);
 
         for (auto conn : NetworkGetConnections())
-            LobbyData::SendChatMessageTo(key, value, conn);
+            LobbyData::SendMetadataTo(key, value, conn);
 
         if (NetworkIsHost())
             global::MP_DATA.lobby.metadata[key] = value;

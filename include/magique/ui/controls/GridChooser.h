@@ -55,6 +55,7 @@ namespace magique
         void clear();
 
         // Selects the item when key == item
+        // Note: this invokes the select func
         template <typename K>
         void setSelected(const K& key);
         void setSelected(int index);
@@ -163,15 +164,19 @@ namespace magique
                                                      state.col = std::min(maxCol, state.col + 1);
                                                  }
 
+                                                 const int index = state.row * columns + state.col;
                                                  if (state.isDirection())
                                                  {
-                                                     const int index = state.row * columns + state.col;
                                                      if (index >= 0 && index < (int)entries.size())
                                                      {
                                                          return entries[index].bounds.mid();
                                                      }
                                                  }
 
+                                                 if (state.event == GamepadMappingEvent::Submit)
+                                                 {
+                                                     setSelected(index);
+                                                 }
                                                  return Point{-1};
                                              }});
     }
@@ -246,7 +251,7 @@ namespace magique
         {
             if (entries[i].item == key)
             {
-                selected = i;
+                setSelected(i);
                 return;
             }
         }
@@ -256,6 +261,8 @@ namespace magique
     void GridChooser<T>::setSelected(int index)
     {
         selected = index;
+        if (selected != -1 && selectFunc)
+            selectFunc(entries[selected].item);
     }
 
     template <typename T>
@@ -343,8 +350,7 @@ namespace magique
                     if (i != selected)
                     {
                         selected = i;
-                        if (selectFunc)
-                            selectFunc(entries[i].item);
+                        setSelected(i);
                     }
                     LayeredInput::ConsumeMouse();
                 }

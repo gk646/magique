@@ -67,7 +67,7 @@ namespace magique
         }
     }
 
-    Menu* Menu::getNestedMenu(std::string_view name) const
+    Menu* Menu::getNestedMenuInternal(std::string_view name) const
     {
         auto menu = getSubMenuInternal(name);
         if (menu != nullptr)

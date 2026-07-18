@@ -5,13 +5,15 @@
 # Set build params
 set(BUILD_EXAMPLES OFF)
 set(BUILD_GAMES OFF)
-set(PLATFORM "Desktop")
 set(SUPPORT_MODULE_RAUDIO ON)
 
 if (NOT APPLE)
     set(OPENGL_VERSION "4.3")
 endif ()
 
+if(${PLATFORM} STREQUAL "SDL")
+    target_compile_definitions(magique PUBLIC USING_SDL3_PROJECT)
+endif ()
 
 if (UNIX)
     set(GLFW_BUILD_X11 ON)
@@ -26,7 +28,6 @@ add_subdirectory(src/external/raylib)
 
 # Compiler args for raylib
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-
     if (LINUX)
         target_compile_options(magique PUBLIC -march=sandybridge -mtune=generic)
     elseif (APPLE)

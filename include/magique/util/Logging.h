@@ -53,13 +53,13 @@ namespace magique
     // True to enable logging to a ./{GAME_NAME}.log file - captures all logs
     // Note NEEDS to be set before the Game class is constructed (so in the main file at first) - else no effect
     // Default: OFF if compiling in Debug - else ON
-    void LoggingEnableFile(bool value);
+    void LoggingEnableFile(bool value = true);
 
     // Enables creating a detailed crash log file that includes system information and stacktrace
     // FileName: ./crash-log-{GAME_NAME}-{DATE with format dd:mm::yyyy/hh:mm}.txt
     // Note NEEDS to be set before the Game class is constructed (so in the main file at first) - else no effect
     // Default: OFF if compiling in Debug - else ON
-    void LoggingEnableCrashLog(bool value);
+    void LoggingEnableCrashLog(bool value = true);
 
 } // namespace magique
 

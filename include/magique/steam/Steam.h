@@ -20,14 +20,16 @@ namespace magique
 {
 
     // Returns true if the initialization of steam was successful
-    //      - handler: pass a new instance of your callback handler
+    //      - handler: pass a new instance of your callback handler (subclass ISteamCallbacks)
+    //      - handler: pass a new instance of your callback handler (subclass ISteamMatchmakingCallbacks)
     //      - createAppIDFile: if true creates a test steam_appid.txt file with the id 480 (test project)
-    bool SteamInit(ISteamCallbackHandler* handler = nullptr, bool createAppIDFile = true);
+    bool SteamInit(ISteamCallbacks* handler = nullptr, ISteamMatchmakingCallbacks* matchmaking = nullptr,
+                   bool createAppIDFile = true);
 
     // Combines all callbacks into a single handler
-    struct ISteamCallbackHandler
+    struct ISteamCallbacks
     {
-        virtual ~ISteamCallbackHandler() = default;
+        virtual ~ISteamCallbacks() = default;
 
         // Called for NewUrlLaunchParameters_t AND NewLaunchQueryParameters_t
         // This happens when the game is started with a command line like steam://run/<appid>//?param1=value1;param2=value2;param3=value3;
@@ -38,7 +40,7 @@ namespace magique
         // This happens when the overlay is (de)activated
         virtual void onOverlay(bool isActive) {}
 
-        // Helper
+        // Helper struct
         struct SteamStatResult
         {
             // Returns a value only if:
@@ -84,10 +86,10 @@ namespace magique
     SteamID SteamGetID();
 
     // Returns the name of current steam user
-    const char* SteamGetLocalName();
+    std::string_view SteamGetLocalName();
 
     // Returns the name of the user with the given id (only works if it's your friend or in a common lobby etc.)
-    const char* SteamGetUserName(SteamID id);
+    std::string_view SteamGetUserName(SteamID id);
 
     // Retrieve the associated connection with the given steam id
     // Note: Automatically updated whenever possible (e.g. before a network event is fired)
@@ -120,8 +122,7 @@ namespace magique
     //================= PERSISTENCE =================//
 
     // Returns the path of the local user data folder specific to the game and steam id
-    // Note: This should be used to load and store local data for steam games - automatically adjusts to game and user
-    const char* SteamGetUserDataLocation();
+    std::string_view SteamGetUserDataLocation();
 
     //================= UTIL =================//
 

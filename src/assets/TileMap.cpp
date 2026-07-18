@@ -65,6 +65,17 @@ namespace magique
 
     std::vector<TiledTileLayer>& TileMap::getTileLayers() { return tileLayers; }
 
+    TiledObject* TileMap::getObject(std::string_view name)
+    {
+        for (auto& layer : objectLayers)
+        {
+            const auto obj = layer[name];
+            if (obj != nullptr)
+                return obj;
+        }
+        return nullptr;
+    }
+
     bool TileMap::hasObjectLayer(std::string_view layer) const
     {
         const auto it = std::ranges::find_if(objectLayers, [&](const auto& l) { return l.name == layer; });

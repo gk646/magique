@@ -146,7 +146,7 @@ namespace magique
         InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
-        LOG_INFO("Initialized %s %s", gameName, getVersion());
+        LOG_INFO("Initialized %s %s", gameName, this->version);
     }
 
     Game::~Game()
@@ -210,7 +210,7 @@ namespace magique
 
     bool Game::getIsLoading() const { return isLoading; }
 
-    const char* Game::getName() const { return gameName; }
+    std::string_view Game::getName() const { return gameName; }
 
-    const char* Game::getVersion() const { return version; }
+    std::string_view Game::getVersion() const { return version; }
 } // namespace magique

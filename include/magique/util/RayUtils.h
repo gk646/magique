@@ -41,6 +41,15 @@ namespace magique
         ~RenderTextureWrapper();
     };
 
+    // Needed only for SDL3 backend
+    // Returns: a list of monitor ids that can be used by GetMonitor__(int) methods when using SDL3
+    const std::vector<int>& GetMonitors();
+
+    // Sets the cursor to the given image
+    //      - anchor: the point inside the image where the cursor is (0,0)
+    // Note: Does NOT unload the image - should only be called on the main thread
+    void SetCursorImage(Image img, Point anchor = {});
+
     //================= DRAWING =================//
 
     // Draws a scaled render texture at the given position (automatically flips it)
@@ -78,8 +87,8 @@ namespace magique
     void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
 
     // Draws text horizontally & vertically centered inside the rectangle
-    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds,
-                              float spacing = 1.0F, Color tint = WHITE);
+    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing = 1.0F,
+                              Color tint = WHITE);
 
     // Draws a 2d rectangle with a shade at the bottom
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);

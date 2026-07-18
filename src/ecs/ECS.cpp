@@ -62,7 +62,7 @@ namespace magique
 
     bool EntityIsActor(const Entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
 
-    Entity EntityFirstOf(const EntityType type)
+    Entity EntityGetFirstOf(const EntityType type)
     {
         for (const auto entity : internal::REGISTRY.view<Entity>())
         {

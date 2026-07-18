@@ -75,7 +75,7 @@ namespace magique
 
     // Returns the first entity with the given type
     // Failure: Returns NullEntity if none with that type could be found
-    Entity EntityFirstOf(EntityType type);
+    Entity EntityGetFirstOf(EntityType type);
 
     // Immediately tries to destroy this entity
     // Note: It's up to the user to make sure invalid entities are not accessed (destroying in event functions...)

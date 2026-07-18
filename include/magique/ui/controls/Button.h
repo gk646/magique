@@ -16,7 +16,7 @@
 
 namespace magique
 {
-    using ClickFunc = std::function<void(const Rect& bounds, int mouseButton)>;
+    using ClickFunc = std::function<void(MouseButton button)>;
 
     struct Button : UIObject
     {
@@ -35,7 +35,7 @@ namespace magique
         const char* getHoverText() const;
 
         // Manually calls the click func (if present)
-        void callClick(MouseButton button = MOUSE_BUTTON_LEFT) const;
+        void triggerClick(MouseButton button = MOUSE_BUTTON_LEFT) const;
 
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }

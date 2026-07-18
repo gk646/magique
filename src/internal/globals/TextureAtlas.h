@@ -11,6 +11,8 @@ namespace magique
     // Also uses lazy initialization - only loads image and texture if actually used
     struct TextureAtlas final
     {
+        AtlasID atlas;
+        int gap = 1;
         bool initialized = false;
         uint16_t id = 0;                       // Texture id
         int width = MAGIQUE_MAX_TEXTURE_SIZE;  // Total width
@@ -41,7 +43,7 @@ namespace magique
             const Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), static_cast<float>(tarW),
                                     static_cast<float>(tarH)};
             ImageDraw(&atlasImage, image, src, dest, WHITE);
-            posX += tarW;
+            posX += tarW + gap;
             UnloadImage(image);
             return region;
         }
@@ -89,7 +91,7 @@ namespace magique
                 }
             }
 
-            posX = static_cast<int>(dest.x);
+            posX = static_cast<int>(dest.x) + gap;
             UnloadImage(img);
             return sheet;
         }
@@ -152,15 +154,15 @@ namespace magique
             {
                 posY += currentStepHeight;
                 posX = 0;
-                currentStepHeight = texHeight;
+                currentStepHeight = texHeight + gap;
                 if (posY >= height)
                 {
-                    LOG_ERROR("Texture atlas is full!");
+                    LOG_ERROR("TextureAtlas with AtlasID %d is full!", (int)atlas);
                     return false;
                 }
             }
             if (texHeight > currentStepHeight) // Keep track of the highest image
-                currentStepHeight = texHeight;
+                currentStepHeight = texHeight + gap;
             return true;
         }
     };
@@ -174,7 +176,9 @@ namespace magique
             const auto atlasNum = static_cast<int>(type);
             if (atlasNum >= (int)atlases.size())
                 atlases.resize(atlasNum + 1);
-            return atlases[atlasNum];
+            auto& atlas = atlases[atlasNum];
+            atlas.atlas = type;
+            return atlas;
         }
 
         void loadToGPU() const

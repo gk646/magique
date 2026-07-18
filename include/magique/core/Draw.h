@@ -38,10 +38,12 @@ namespace magique
 
     // Automatically culled with the current camera!
     // If you need to scale your textures, provide a scaling factor when you load the sheet
-    // 'layer' is 0-based indexing and starts from the bottom up in draw order
-    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet, int layer);
+    void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet);
 
-    // Allows to specify the origin (zero point) and rectangle (of the tilemap) to draw (in tiles)
+    // Allows to specify extended parameters
+    //      - origin: where to start drawing
+    //      - rect: what rect of the tilemap to draw
+    //      - layer: which tile layer to draw - 0-based index and starting from the bottom up in draw order
     void DrawTileMapEx(const Point& origin, const Rect& rect, const TileMap& tileMap, const TileSheet& tileSheet,
                        int layer);
 

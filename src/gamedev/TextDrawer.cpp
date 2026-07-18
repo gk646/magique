@@ -171,7 +171,7 @@ namespace magique
     {
         cursor.x = offf.x;
         cursorEndX = 0;
-        cursor.y = bounds.height - (bounds.y + offf.y + font.baseSize * modSizeMult);
+        cursor.y = bounds.y + bounds.height - (+offf.y + font.baseSize * modSizeMult);
         resetMods();
         return *this;
     }

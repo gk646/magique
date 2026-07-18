@@ -30,9 +30,9 @@ namespace magique
         {
             state = !state;
             if (func)
-            {
                 func(state);
-            }
+            LayeredInput::ConsumeKey();
+            LayeredInput::ConsumeMouse();
         }
     }
 

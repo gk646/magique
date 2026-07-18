@@ -28,7 +28,7 @@ namespace magique
 
     // Returns the global game instance
     // IMPORTANT: only valid after the game constructor finished (so before game.run(), ... so pretty early)
-    Game& GameGetInstance();
+    Game& EngineGetGame();
 
     struct Game
     {
@@ -86,8 +86,8 @@ namespace magique
 
         bool getIsRunning() const;
         bool getIsLoading() const;
-        const char* getName() const;
-        const char* getVersion() const;
+        std::string_view getName() const;
+        std::string_view  getVersion() const;
 
     private:
         bool isRunning = false;

@@ -25,10 +25,10 @@ namespace magique
 
     const char* Button::getHoverText() const { return hoverText.c_str(); }
 
-    void Button::callClick(MouseButton button) const
+    void Button::triggerClick(MouseButton button) const
     {
         if (clickFunc)
-            clickFunc(getBounds(), button);
+            clickFunc(button);
     }
 
     void Button::updateActions(const Rect& bounds)
@@ -41,7 +41,7 @@ namespace magique
                 {
                     onClick(bounds, i);
                     if (clickFunc)
-                        clickFunc(bounds, i);
+                        clickFunc((MouseButton)i);
                     LayeredInput::ConsumeMouse();
                 }
             }
