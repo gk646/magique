@@ -33,7 +33,7 @@ namespace magique
 
     // Note: This can be further optimized to reduce draw calls by introduction of a lightInfoTexture
     // Then both shaders operator on this texture where they get light info from => 2 draw calls
-    void LightingDrawRaytracing(RenderTexture texture)
+    void LightingDrawRaytracing(RenderTexture texture, const FilterFunc& filter)
     {
         const auto& camera = CameraGet();
         (void)LightingGetScreenOcclusion(); // call to build it
@@ -52,14 +52,15 @@ namespace magique
         SetShaderValue(samplerShader, samplerRayTexLoc, &RAY_TEX_SLOT, SHADER_UNIFORM_SAMPLER2D);
 
         entities.clear();
+        const auto validFilter = (bool)filter;
         for (const auto e : EngineGetDrawEntities())
         {
             if (entities.size() >= MAX_LIGHTS) [[unlikely]]
                 break;
-            if (EntityHasAll<LightingC>(e)) [[unlikely]]
+            const auto* lighting = ComponentTryGet<LightingC>(e);
+            if (lighting != nullptr && lighting->color.a > 0 && validFilter && filter(e)) [[unlikely]]
                 entities.push_back(e);
         }
-
 
         // Phase 1 - draws all ray lengths of each light below each other
         {

@@ -108,7 +108,7 @@ namespace magique
         }
 
         const auto start = getStartBounds();
-        setSize({std::max(bounds.width, start.width), std::max(height, start.height)});
+        setSize({bounds.width, std::max(height, start.height)});
     }
 
     void VerticalContainer::setHorizontalAlign(Anchor align)
@@ -143,5 +143,47 @@ namespace magique
 
     void VerticalContainer::setReverseDraw(bool reverse) { reverseDraw = reverse; }
 
+    void HorizontalContainer::onDraw(const Rect& bounds)
+    {
+        float width = gap;
+        for (auto [name, ptr] : getChildren())
+        {
+            ptr->align(anchor, *this, {width, 0});
+            ptr->draw();
+            width += ptr->getBounds().width + gap;
+        }
+        const auto start = getStartBounds();
+        setSize({std::max(width, start.width), bounds.height});
+    }
+
+    void HorizontalContainer::setVerticalAlign(Anchor align)
+    {
+        switch (align)
+        {
+        case Anchor::NONE:
+            break;
+        case Anchor::TOP_LEFT:
+        case Anchor::TOP_CENTER:
+        case Anchor::TOP_RIGHT:
+            anchor = Anchor::TOP_LEFT;
+            break;
+        case Anchor::MID_LEFT:
+        case Anchor::MID_RIGHT:
+        case Anchor::BOTTOM_LEFT:
+            anchor = Anchor::MID_LEFT;
+            break;
+        case Anchor::MID_CENTER:
+        case Anchor::BOTTOM_CENTER:
+        case Anchor::BOTTOM_RIGHT:
+            anchor = Anchor::BOTTOM_LEFT;
+            break;
+        }
+    }
+
+    Anchor HorizontalContainer::getVerticalAlign() const { return anchor; }
+
+    float HorizontalContainer::getGap() const { return gap; }
+
+    void HorizontalContainer::setGap(float newGap) { gap = newGap; }
 
 } // namespace magique

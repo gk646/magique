@@ -81,12 +81,13 @@ namespace magique
         auto pos = getCursor();
         auto size = img.getSize() * modSizeMult;
         if (centeredOnCursor)
-        {
             pos.y -= (size.y - font.baseSize) / 2.0F;
-        }
-        pos.floor();
-        if (img.isValid())
-            DrawRegionPro(img, {pos, size}, 0, {}, tint);
+        const Rect destRect = Rect{pos, size}.floor();
+
+        if (backgroundColor.a > 0)
+            DrawRectangleRec(destRect.enlarge(size * 0.1F), backgroundColor);
+        DrawRegionPro(img, destRect, 0, {}, tint);
+
         if (moveCursor)
             cursor.x += size.x + gapp.x;
         resetMods();
@@ -100,12 +101,13 @@ namespace magique
         auto pos = Point{lineEnd - (width + cursorEndX), bounds.y + cursor.y} + modOfffset;
         const auto size = img.getSize() * modSizeMult;
         if (centeredOnCursor)
-        {
             pos.y -= (img.height - font.baseSize) / 2.0F;
-        }
-        pos.floor();
-        if (img.isValid())
-            DrawRegionPro(img, {pos, size}, 0, {}, tint);
+        const Rect destRect = Rect{pos, size}.floor();
+
+        if (backgroundColor.a > 0)
+            DrawRectangleRec(destRect.enlarge(size * 0.1F), backgroundColor);
+        DrawRegionPro(img, destRect, 0, {}, tint);
+
         if (moveCursor)
             cursorEndX += img.width + gapp.x;
         resetMods();

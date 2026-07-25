@@ -81,10 +81,10 @@ namespace magique
     void ConsoleRegisterCommand(const Command& command);
 
     // Returns true if the command with the given name is successfully removed
-    bool ConsoleRemoveCommand(const std::string_view& name);
+    bool ConsoleRemoveCommand(std::string_view name);
 
-    // Returns ture if a command with the given name was found and executed (must have no params)
-    bool ConsoleExecuteCommand(const std::string_view& name);
+    // Executes the given input as if it were typed inside the console
+    void ConsoleExecute(std::string_view input);
 
     // Function is passed the parsed parameters - function is only called if the parsed parameters match the definition
     using CommandFunction = std::function<void(const std::vector<Param>& params)>;

@@ -82,6 +82,8 @@ namespace magique
         return true;
     }
 
+    bool SteamIsLaunchedBySteam(uint32_t appid) { return !SteamAPI_RestartAppIfNecessary(appid); }
+
     std::string_view SteamGetLaunchParam(std::string_view key)
     {
         static std::string buffer;
@@ -97,6 +99,8 @@ namespace magique
         const auto valueEnd = buffer.find(' ', valueStart);
         return view.substr(valueStart, valueEnd - valueStart);
     }
+
+    bool SteamOwnsApp(uint32_t appId) { return SteamApps()->BIsSubscribedApp(appId); }
 
     uint32_t SteamGetAppID() { return SteamUtils()->GetAppID(); }
 
@@ -266,7 +270,7 @@ namespace magique
         SteamFriends()->ActivateGameOverlay(enchantum::to_string(category).data());
     }
 
-    void SteamOpenOverlayForProfile(SteamID id)
+    void SteamOpenOverlayToProfile(SteamID id)
     {
         auto steamId = CSteamID((uint64)id);
         if (steamId.IsValid())
@@ -277,6 +281,11 @@ namespace magique
         {
             LOG_WARNING("Cannot show overlay for invalid steam id");
         }
+    }
+
+    void SteamOpenOverlayToStore(uint32_t appid)
+    {
+        SteamFriends()->ActivateGameOverlayToStore(appid, k_EOverlayToStoreFlag_None);
     }
 
     void SteamRequestStats(SteamID user) { SteamUserStats()->RequestUserStats(CSteamID{static_cast<uint64>(user)}); }

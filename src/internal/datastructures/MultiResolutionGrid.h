@@ -49,7 +49,7 @@ int floordiv(const float x)
 }
 
 template <int cellSize, typename Func>
-static void RasterizeRect(Func func, const float x, const float y, const float w, const float h)
+static void RasterizeRect(const Func& func, const float x, const float y, const float w, const float h)
 {
     const int x1 = floordiv<cellSize>(x);
     const int y1 = floordiv<cellSize>(y);
@@ -236,14 +236,14 @@ struct SingleResolutionHashGrid final
     }
 
     template <typename Container>
-    void query(Container& elems, const float x, const float y, const float w, const float h) const
+    void query(Container& elems, const magique::Rect& r) const
     {
         const auto queryFunction = [this, &elems](const int cellX, const int cellY)
         {
             const auto cellID = GetCellID(cellX, cellY);
             queryElements(cellID, elems);
         };
-        RasterizeRect<cellSize>(queryFunction, x, y, w, h);
+        RasterizeRect<cellSize>(queryFunction, r.x, r.y, r.width, r.height);
     }
 
     void clear()

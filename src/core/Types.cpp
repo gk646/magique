@@ -547,18 +547,18 @@ namespace magique
 
     Rect Rect::scale(const float factor) const { return {x * factor, y * factor, width * factor, height * factor}; }
 
-    Rect Rect::enlarge(const float size) const
+    Rect Rect::enlarge(const Point size) const
     {
         const auto change = size / 2;
         Rect rect;
-        rect.x = x - change;
-        rect.y = y - change;
-        rect.width = width + size;
-        rect.height = height + size;
+        rect.x = x - change.x;
+        rect.y = y - change.y;
+        rect.width = width + size.x;
+        rect.height = height + size.x;
         return rect;
     }
 
-    Rect Rect::shrink(float size) const { return this->enlarge(-size); }
+    Rect Rect::shrink(Point size) const { return this->enlarge(-size); }
 
     float Rect::shortestDist(const Point& p) const
     {
@@ -581,6 +581,17 @@ namespace magique
     Point Rect::rightMid() const { return {x + width, y + height / 2.0F}; }
 
     //----------------- ROTATION -----------------//
+
+    bool Circle::contains(const Point& p) const { return center.euclidean(p) <= radius; }
+
+    float Circle::area() const { return std::numbers::pi_v<float> * (radius * radius); }
+
+    Point Circle::random() const
+    {
+        const auto rot = MathRandom(0, 360);
+        const auto dist = MathRandom(0, radius);
+        return center + Point::FromRotation(rot) * dist;
+    }
 
     Rotation::Rotation(float angle) : rotation(angle)
     {

@@ -109,7 +109,7 @@ namespace magique
                 const auto& objectIndices = staticData.colliderReferences.tilesCollisionMap.at(map);
                 for (const auto idx : objectIndices)
                 {
-                    const auto& [x, y, w, h] = staticData.colliderStorage.get(idx).bounds;
+                    const auto& [x, y, w, h] = staticData.colliderStorage[idx].bounds;
                     rasterizeRect(x, y, w, h);
                 }
             }

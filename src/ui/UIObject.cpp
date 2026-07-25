@@ -63,9 +63,7 @@ namespace magique
         }
 
         if (ui.showHitboxes)
-        {
             DrawRectangleLinesEx(bounds, 1, BLUE);
-        }
     }
 
     Rect UIObject::getBounds() const

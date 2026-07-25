@@ -100,11 +100,15 @@ namespace magique
         bool reverseDraw = false;
     };
 
+    // Same as VerticalContainer but order elements from left to right
+    // Content can be aligned top, mid or bottom
     struct HorizontalContainer : UIContainer
     {
+        HorizontalContainer(const Rect& bounds = {}) : UIContainer(bounds) {}
+
         // Sets/gets the vertical alignment of the children - only determines if UP | MID | BOTTOM
-        void setHorizontalAlign(Anchor align = Anchor::MID_CENTER);
-        Anchor getHorizontalAlign() const;
+        void setVerticalAlign(Anchor align = Anchor::MID_LEFT);
+        Anchor getVerticalAlign() const;
 
         float getGap() const;
         void setGap(float gap = 3.0F);
@@ -113,7 +117,7 @@ namespace magique
         void onDraw(const Rect& bounds) override;
 
     private:
-        Anchor anchor = Anchor::MID_CENTER;
+        Anchor anchor = Anchor::MID_LEFT;
         float gap = 3.0F;
     };
 

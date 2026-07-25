@@ -246,7 +246,9 @@ namespace magique
             UIEmitMousePress(MOUSE_BUTTON_LEFT, pos);
         if (event == GamepadMappingEvent::Back && !state_.backConsumed)
             UISetPreviousGamepadMap();
-        setMouse(pos);
+
+        if (UIUsingGamepad())
+            setMouse(pos);
     }
 
     void GamepadMapping::setMouse(Point pos)

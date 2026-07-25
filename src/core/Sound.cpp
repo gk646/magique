@@ -35,6 +35,8 @@ namespace magique
 
     float SoundGetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }
 
+    void SoundSetRandomPitchInterval(Point interval) { global::AUDIO_PLAYER.soundPitchInterval = interval; }
+
     void SoundPlay(const Sound& sound, const float volume, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]

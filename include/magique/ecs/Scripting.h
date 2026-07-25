@@ -54,6 +54,10 @@ namespace magique
         //      - updated: true if this entity is in update range of any actor (e.g. it's loaded)
         virtual void onUpdate(Entity self, bool updated) {}
 
+        // Called once after the update tick - so after Game::onUpdateGame() but before Game::onUpdateEnd()
+        //      - updated: true if this entity is in update range of any actor (e.g. it's loaded)
+        virtual void onUpdateEnd(Entity self, bool updated) {}
+
         // Called each time this entity collides with another entity - called for both entities
         virtual void onDynamicCollision(Entity self, Entity other, CollisionInfo& collision)
         {

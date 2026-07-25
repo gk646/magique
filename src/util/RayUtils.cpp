@@ -22,11 +22,9 @@ namespace magique
 
     float MeasureTextUpTo(const char* text, const int index, const Font& f, const float fontSize, const float spacing)
     {
-        char* nonConstText = const_cast<char*>(text);
-        const auto temp = text[index];
-        nonConstText[index] = '\0';
-        const float ret = MeasureTextEx(f, text, fontSize, spacing).x;
-        nonConstText[index] = temp;
+        static std::string buffer;
+        buffer.assign(text, index);
+        const float ret = MeasureTextEx(f, buffer.c_str(), fontSize, spacing).x;
         return std::floor(ret);
     }
 

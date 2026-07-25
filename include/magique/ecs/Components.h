@@ -71,6 +71,7 @@ namespace magique
 
         // Returns the middle point of the entity (or just the position if CollisionC is missing)
         static Point GetMiddle(Entity e);
+        static Rect GetBounds(Entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         bool detects(const CollisionC& other) const;
@@ -79,6 +80,7 @@ namespace magique
         Point getMidOffset() const;
 
         bool operator==(const CollisionC& other) const;
+
         // Should NOT be modified
         Point resolutionVec{}; // Accumulated normals * depth
         float dirs[4]{};       // X coordinates of rectangle collision - to fix sticky edges bug
@@ -92,7 +94,8 @@ namespace magique
 
         // Draws the current frame applying the offset and rotation around the defined anchor
         // Note: More complex and custom drawing can be done with the SpriteAnimation
-        void drawCurrentFrame(const Point& pos, bool flipX = false, float rotation = 0, bool flipY = false) const;
+        void drawCurrentFrame(const Point& pos, bool flipX = false, float rotation = 0, bool flipY = false,
+                              Color tint = WHITE) const;
 
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
@@ -114,7 +117,6 @@ namespace magique
 
         // Returns the current sprite count (in millis)
         float getSpriteCount() const;
-
 
         // Returns the underlying animation
         const Animation& getAnimation() const;

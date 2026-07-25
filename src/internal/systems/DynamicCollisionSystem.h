@@ -196,7 +196,7 @@ namespace magique
                             continue; // Not checking for each other
                         }
                         CollisionInfo info{};
-                        CheckCollisionEntities(posA, colA, posB, colB, info);
+                        internal::CheckCollisionEntities(posA, colA, posB, colB, info);
                         if (info.isColliding())
                         {
                             pairs.push_back(PairInfo{info, first, second});

@@ -51,7 +51,6 @@ namespace magique
     {
         std::string text;
         Color color;
-
         ConsoleLine(const std::string& text, const Color& color) : text(text), color(color) {}
     };
 
@@ -87,6 +86,25 @@ namespace magique
         int commandHistoryLen = 15;
         int consoleHistoryLen = 20;
         char envPrefix = '$';
+
+        void static SubmitLine(std::string_view input)
+        {
+            // Must be separated by spaces
+            auto chunks = StringSplit(input, ' ');
+            const Command* cmd = ParamParser::ParseCommand(chunks);
+            if (cmd == nullptr)
+            {
+                LOG_WARNING("No such command: %s", chunks.front().c_str());
+                return;
+            }
+
+            auto params = ParamParser::ParseParams(*cmd, chunks);
+            if (!ParamParser::ValidateParams(*cmd, params))
+            {
+                return;
+            }
+            cmd->cmdFunc(params);
+        }
 
         // Register default commands
         void init()
@@ -325,25 +343,6 @@ namespace magique
             {
                 ConsoleHandler::Update(*this);
             }
-        }
-
-        void submit() const
-        {
-            // Must be separated by spaces
-            auto chunks = StringSplit(line, ' ');
-            const Command* cmd = ParamParser::ParseCommand(chunks);
-            if (cmd == nullptr)
-            {
-                LOG_WARNING("No such command: %s", chunks.front().c_str());
-                return;
-            }
-
-            auto params = ParamParser::ParseParams(*cmd, chunks);
-            if (!ParamParser::ValidateParams(*cmd, params))
-            {
-                return;
-            }
-            cmd->cmdFunc(params);
         }
 
         void addString(const char* string, Color color = global::ENGINE_CONFIG.theme.textPassive)
@@ -591,7 +590,7 @@ namespace magique
             suggestionPos = 0;
             historyPos = -1;
             cursorPos = 0;
-            data.submit();
+            ConsoleData::SubmitLine(data.line);
             data.parsedCommand = nullptr;
             data.line.clear();
             data.scrollOffset = 0;

@@ -25,19 +25,21 @@ namespace magique
             std::string_view second;
         };
 
-        static void SendChatMessageTo(std::string_view sender, std::string_view message, Connection conn)
+        static void SendLobbyPacket(std::string_view first, std::string_view second, Connection conn,
+                                    LobbyPacketType type)
         {
-            if (message.empty())
+            // meta data value or chat message
+            if (second.empty())
                 return;
-            auto payload = FormatMessage(LobbyPacketType::CHAT, sender, message);
-            NetworkSend(conn, payload);
-        }
 
-        static void SendMetadataTo(std::string_view key, std::string_view value, Connection conn)
-        {
-            if (value.empty())
-                return;
-            auto payload = FormatMessage(LobbyPacketType::METADATA, key, value);
+            first = first.substr(0, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
+            second = second.substr(0, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
+
+            char buffer[MAGIQUE_MAX_LOBBY_MESSAGE_LEN * 3]{};
+            std::memcpy(buffer, &type, 1);
+            std::memcpy(buffer + 1, first.data(), first.size() + 1);
+            std::memcpy(buffer + (1 + first.size() + 1), second.data(), second.size() + 1);
+            Payload payload{buffer, (int)first.size() + (int)second.size() + 3, MAGIQUE_LOBBY_PACKET_TYPE};
             NetworkSend(conn, payload);
         }
 
@@ -69,26 +71,9 @@ namespace magique
                 {
                     if (conn == msg.connection)
                         continue;
-
-                    if (packet.type == LobbyPacketType::CHAT)
-                        SendChatMessageTo(packet.first, packet.second, conn);
-
-                    if (packet.type == LobbyPacketType::METADATA)
-                        SendMetadataTo(packet.first, packet.second, conn);
+                    SendLobbyPacket(packet.first, packet.second, conn, packet.type);
                 }
             }
-        }
-
-        static Payload FormatMessage(LobbyPacketType type, std::string_view first, std::string_view second)
-        {
-            first = first.substr(0, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
-            second = second.substr(0, MAGIQUE_MAX_LOBBY_MESSAGE_LEN);
-
-            char buffer[MAGIQUE_MAX_LOBBY_MESSAGE_LEN * 3]{};
-            std::memcpy(buffer, &type, 1);
-            std::memcpy(buffer + 1, first.data(), first.size() + 1);
-            std::memcpy(buffer + 1 + first.size() + 1, second.data(), second.size() + 1);
-            return Payload{buffer, (int)first.size() + (int)second.size() + 3, MAGIQUE_LOBBY_PACKET_TYPE};
         }
 
         LobbyPacket readMessage(const Message& msg)
@@ -96,10 +81,10 @@ namespace magique
             auto data = msg.payload.asString();
             const auto type = LobbyPacketType{*(int8_t*)data};
 
-            auto firstEnd = strlen(data + 1);
+            auto firstEnd = (int)strlen(data + 1);
             firstCache = data + 1;
-            secondCache = data + 1 + firstEnd + 1;
-            return {type, firstCache, secondCache};
+            secondCache = data + (1 + firstEnd + 1);
+            return LobbyPacket{.type = type, .first = firstCache, .second = secondCache};
         }
 
         void closeLobby() { metadata.clear(); }

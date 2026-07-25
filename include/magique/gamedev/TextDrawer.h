@@ -39,7 +39,7 @@ namespace magique
         TextDrawer& right(const std::string_view& txt, Color tint = WHITE);
         TextDrawer& right(Color tint, const char* fmt, ...);
 
-        // Images - works with modSize()
+        // Images - works with modSize() and modBackground()
         TextDrawer& img(const TextureRegion& img, bool centeredOnCursor = true, bool moveCursor = true,
                         Color tint = WHITE);
 

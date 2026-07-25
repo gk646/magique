@@ -2,191 +2,15 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/Collision.h>
-#include <magique/ecs/Components.h>
+#include <magique/ecs/ECS.h>
+#include <magique/core/Camera.h>
 
-
+#include "internal/globals/DynamicCollisionData.h"
+#include "internal/globals/StaticCollisionData.h"
 #include "internal/utils/CollisionPrimitives.h"
-#include "magique/core/Camera.h"
-#include "magique/ecs/ECS.h"
 
 namespace magique
 {
-
-    // Should be the most efficient way - allows jump tables and inlining - this is actually very fast!
-    // With 15k entities skipping all switches and returning immediately only saves around 0.1 ms
-    void CheckCollisionEntities(const PositionC& pA, const CollisionC& cA, const PositionC& pB, const CollisionC& cB,
-                                CollisionInfo& i)
-    {
-        MAGIQUE_ASSERT(i.isColliding() == false, "Not passing in a new CollisionInfo object");
-        switch (cA.shape)
-        {
-        case Shape::RECT:
-            switch (cB.shape)
-            {
-            case Shape::RECT:
-                {
-                    if (pA.rotation == 0) [[likely]]
-                    {
-                        if (pB.rotation == 0) [[likely]]
-                        {
-                            return RectToRect(pA.pos.x + cA.offset.x, pA.pos.y + cA.offset.y, cA.p1, cA.p2,
-                                              pB.pos.x + cB.offset.x, pB.pos.y + cB.offset.y, cB.p1, cB.p2, i);
-                        }
-                        else
-                        {
-                            RECT_TO_POINTS(pa, pA.pos, cA);
-                            RECT_ROTATE_POINTS(pb, pB, cB);
-                            return SAT(paX, paY, pbX, pbY, i);
-                        }
-                    }
-                    else if (pB.rotation == 0) [[likely]] // Only A is rotated
-                    {
-                        RECT_ROTATE_POINTS(pa, pA, cA);
-                        RECT_TO_POINTS(pb, pB.pos, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                    else // Both are rotated
-                    {
-                        RECT_ROTATE_POINTS(pa, pA, cA);
-                        RECT_ROTATE_POINTS(pb, pB, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                }
-            case Shape::CIRCLE:
-                {
-                    if (pA.rotation == 0)
-                    {
-                        return RectToCircle(pA.pos.x + cA.offset.x, pA.pos.y + cA.offset.y, cA.p1, cA.p2,
-                                            pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
-                    }
-                    else
-                    {
-                        RECT_ROTATE_POINTS(pa, pA, cA);
-                        return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
-                    }
-                }
-            case Shape::TRIANGLE:
-                {
-                    if (pA.rotation == 0) [[likely]]
-                    {
-                        if (pB.rotation == 0)
-                        {
-                            RECT_TO_POINTS(pa, pA.pos, cA);
-                            TRI_TO_POINTS(pb, pB.pos, cB);
-                            return SAT(paX, paY, pbX, pbY, i);
-                        }
-                        else
-                        {
-                            RECT_TO_POINTS(pa, pA.pos, cA);
-                            TRI_ROTATE_POINTS(pb, pB, cB);
-                            return SAT(paX, paY, pbX, pbY, i);
-                        }
-                    }
-                    else if (pB.rotation == 0)
-                    {
-                        RECT_ROTATE_POINTS(pa, pA, cA);
-                        TRI_TO_POINTS(pb, pB.pos, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                    else
-                    {
-                        RECT_ROTATE_POINTS(pa, pA, cA);
-                        TRI_ROTATE_POINTS(pb, pB, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                }
-            }
-            break;
-        case Shape::CIRCLE:
-            switch (cB.shape)
-            {
-            case Shape::RECT:
-                {
-                    if (pB.rotation == 0)
-                    {
-                        return CircleToRect(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pB.pos.x + cB.offset.x,
-                                            pB.pos.y + cB.offset.y, cB.p1, cB.p2, i);
-                    }
-                    else
-                    {
-                        RECT_ROTATE_POINTS(pb, pB, cB)
-                        return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
-                    }
-                }
-            case Shape::CIRCLE:
-                {
-                    // We can skip the translation to the middle point as both are in the same system
-                    return CircleToCircle(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pB.pos.x + cB.p1, pB.pos.y + cB.p1,
-                                          cB.p1, i);
-                }
-            case Shape::TRIANGLE:
-                {
-                    if (pB.rotation == 0)
-                    {
-                        TRI_TO_POINTS(pb, pB.pos, cB)
-                        return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
-                    }
-                    else
-                    {
-                        TRI_ROTATE_POINTS(pb, pB, cB)
-                        return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
-                    }
-                }
-            }
-            break;
-        case Shape::TRIANGLE:
-            switch (cB.shape)
-            {
-            case Shape::RECT:
-                {
-                    if (pA.rotation == 0) [[likely]]
-                    {
-                        if (pB.rotation == 0) [[likely]]
-                        {
-                            TRI_TO_POINTS(pa, pA.pos, cA)
-                            RECT_TO_POINTS(pb, pB.pos, cB);
-                            return SAT(paX, paY, pbX, pbY, i);
-                        }
-                        else
-                        {
-                            TRI_TO_POINTS(pa, pA.pos, cA)
-                            RECT_ROTATE_POINTS(pb, pB, cB);
-                            return SAT(paX, paY, pbX, pbY, i);
-                        }
-                    }
-                    else if (pB.rotation == 0)
-                    {
-                        TRI_ROTATE_POINTS(pa, pA, cA)
-                        RECT_TO_POINTS(pb, pB.pos, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                    else
-                    {
-                        TRI_ROTATE_POINTS(pa, pA, cA)
-                        RECT_ROTATE_POINTS(pb, pB, cB);
-                        return SAT(paX, paY, pbX, pbY, i);
-                    }
-                }
-            case Shape::CIRCLE:
-                {
-                    if (pA.rotation == 0)
-                    {
-                        TRI_TO_POINTS(pa, pA.pos, cA)
-                        return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
-                    }
-                    TRI_ROTATE_POINTS(pa, pA, cA)
-                    return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
-                }
-            case Shape::TRIANGLE:
-                {
-                    TRI_ROTATE_POINTS(pa, pA, cA)
-                    TRI_ROTATE_POINTS(pb, pB, cB)
-                    return SAT(paX, paY, pbX, pbY, i);
-                }
-            }
-            break;
-        }
-    }
 
     void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info)
     {
@@ -194,7 +18,7 @@ namespace magique
         auto& colA = ComponentGet<CollisionC>(a);
         auto& posB = ComponentGet<PositionC>(b);
         auto& colB = ComponentGet<CollisionC>(b);
-        CheckCollisionEntities(posA, colA, posB, colB, info);
+        internal::CheckCollisionEntities(posA, colA, posB, colB, info);
     }
 
     bool CheckCollisionEntities(Entity a, Entity b)
@@ -204,42 +28,96 @@ namespace magique
         return info.isColliding();
     }
 
-    bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
-    {
-        // Avoids doubling logic - like offset handling
-        const PositionC posR{r.pos(), pos.map, pos.type, 0};
-        const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
-        CheckCollisionEntities(pos, col, posR, colR, info);
-        return info.isColliding();
-    }
-
-    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
-    {
-        CollisionInfo info;
-        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
-        CheckCollisionEntityRect(pos, col, Rect{worldMouse.x, worldMouse.y, 1, 1}, info);
-        return info.isColliding();
-    }
-
     bool CheckCollisionEntityMouse(Entity e)
     {
         const auto& pos = ComponentGet<PositionC>(e);
         const auto* col = ComponentTryGet<CollisionC>(e);
-        if (col != nullptr) [[likely]]
+        if (col == nullptr) [[unlikely]]
         {
-            return CheckCollisionEntityMouse(pos, *col);
+            return pos.pos == GetScreenToWorld2D(GetMousePosition(), CameraGet());
         }
-        const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
-        return worldMouse.x == pos.pos.x && worldMouse.y == pos.pos.y;
+        return internal::CheckCollisionEntityMouse(pos, *col);
     }
 
-    void CheckCollisionCircleToQuadrilateral(const Point center, const float r, const Point q1, const Point q2,
-                                             const Point q3, const Point q4, CollisionInfo& info)
+    bool CheckCollisionEntityCircle(Entity e, const Circle& c)
+    {
+        const auto& pos = ComponentGet<PositionC>(e);
+        const auto* col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr) [[unlikely]]
+        {
+            return c.contains(pos.pos);
+        }
+
+        CollisionInfo info{};
+        const PositionC posR{c.center - c.radius, pos.map, pos.type, 0};
+        const CollisionC colR{c.radius, c.radius, 0, 0, {}, {}, Shape::CIRCLE};
+        internal::CheckCollisionEntities(pos, *col, posR, colR, info);
+        return info.isColliding();
+    }
+
+    bool CheckCollisionEntityAny(Entity e)
+    {
+        static std::vector<Entity> CACHE{64};
+        auto& dynamic = global::DY_COLL_DATA;
+        const auto& pos = ComponentGet<PositionC>(e);
+        const auto& col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr) [[unlikely]]
+            return false;
+
+        const auto& mapGrid = dynamic.mapEntityGrids[pos.map];
+        const auto bounds = pos.getBounds(*col);
+
+        CACHE.clear();
+        mapGrid.query(CACHE, bounds);
+
+        for (auto nearby : CACHE)
+        {
+            if (nearby == e) [[unlikely]]
+                continue;
+            const auto& posB = ComponentGet<PositionC>(nearby);
+            const auto& colB = ComponentGet<CollisionC>(nearby);
+            CollisionInfo info{};
+            internal::CheckCollisionEntities(pos, *col, posB, colB, info);
+            if (info.isColliding()) [[unlikely]]
+                return true;
+        }
+        return false;
+    }
+
+    bool CheckCollisionEntityStatic(Entity e)
+    {
+        static std::vector<StaticID> CACHE{64};
+
+        auto& staticCol = global::STATIC_COLL_DATA;
+        const auto& pos = ComponentGet<PositionC>(e);
+        const auto& col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr) [[unlikely]]
+            return false;
+
+        const auto& mapGrid = staticCol.mapTileGrids[pos.map];
+        const auto bounds = pos.getBounds(*col);
+
+        CACHE.clear();
+        mapGrid.query(CACHE, bounds);
+
+        for (auto objId : CACHE)
+        {
+            const auto& obj = staticCol.colliderStorage[objId.idx];
+            CollisionInfo info{};
+            internal::CheckCollisionEntityRect(pos, *col, obj.bounds, info);
+            if (info.isColliding()) [[unlikely]]
+                return true;
+        }
+        return false;
+    }
+
+    void CheckCollisionCircleToQuadrilateral(const Circle& c, const Point q1, const Point q2, const Point q3,
+                                             const Point q4, CollisionInfo& info)
     {
         MAGIQUE_ASSERT(info.isColliding() == false, "Not passing in a new CollisionInfo object");
         const float pxs[4] = {q1.x, q2.x, q3.x, q4.x};
         const float pys[4] = {q1.y, q2.y, q3.y, q4.y};
-        CircleToQuadrilateral(center.x, center.y, r, pxs, pys, info);
+        CircleToQuadrilateral(c.center.x, c.center.y, c.radius, pxs, pys, info);
     }
 
     void CheckCollisionQuadrilaterals(const Point p1, const Point p2, const Point p3, const Point p4, const Point q1,
@@ -275,6 +153,203 @@ namespace magique
         p4.x = pxs[3];
         p4.y = pys[3];
     }
+
+    namespace internal
+    {
+        bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
+        {
+            // Avoids doubling logic - like offset handling
+            const PositionC posR{r.pos(), pos.map, pos.type, 0};
+            const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
+            CheckCollisionEntities(pos, col, posR, colR, info);
+            return info.isColliding();
+        }
+
+        bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
+        {
+            CollisionInfo info;
+            const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
+            CheckCollisionEntityRect(pos, col, Rect{worldMouse.x, worldMouse.y, 1, 1}, info);
+            return info.isColliding();
+        }
+
+        // Should be the most efficient way - allows jump tables and inlining - this is actually very fast!
+        // With 15k entities skipping all switches and returning immediately only saves around 0.1 ms
+        void CheckCollisionEntities(const PositionC& pA, const CollisionC& cA, const PositionC& pB, const CollisionC& cB,
+                                    CollisionInfo& i)
+        {
+            MAGIQUE_ASSERT(i.isColliding() == false, "Not passing in a new CollisionInfo object");
+            switch (cA.shape)
+            {
+            case Shape::RECT:
+                switch (cB.shape)
+                {
+                case Shape::RECT:
+                    {
+                        if (pA.rotation == 0) [[likely]]
+                        {
+                            if (pB.rotation == 0) [[likely]]
+                            {
+                                return RectToRect(pA.pos.x + cA.offset.x, pA.pos.y + cA.offset.y, cA.p1, cA.p2,
+                                                  pB.pos.x + cB.offset.x, pB.pos.y + cB.offset.y, cB.p1, cB.p2, i);
+                            }
+                            else
+                            {
+                                RECT_TO_POINTS(pa, pA.pos, cA);
+                                RECT_ROTATE_POINTS(pb, pB, cB);
+                                return SAT(paX, paY, pbX, pbY, i);
+                            }
+                        }
+                        else if (pB.rotation == 0) [[likely]] // Only A is rotated
+                        {
+                            RECT_ROTATE_POINTS(pa, pA, cA);
+                            RECT_TO_POINTS(pb, pB.pos, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                        else // Both are rotated
+                        {
+                            RECT_ROTATE_POINTS(pa, pA, cA);
+                            RECT_ROTATE_POINTS(pb, pB, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                    }
+                case Shape::CIRCLE:
+                    {
+                        if (pA.rotation == 0)
+                        {
+                            return RectToCircle(pA.pos.x + cA.offset.x, pA.pos.y + cA.offset.y, cA.p1, cA.p2,
+                                                pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
+                        }
+                        else
+                        {
+                            RECT_ROTATE_POINTS(pa, pA, cA);
+                            return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
+                        }
+                    }
+                case Shape::TRIANGLE:
+                    {
+                        if (pA.rotation == 0) [[likely]]
+                        {
+                            if (pB.rotation == 0)
+                            {
+                                RECT_TO_POINTS(pa, pA.pos, cA);
+                                TRI_TO_POINTS(pb, pB.pos, cB);
+                                return SAT(paX, paY, pbX, pbY, i);
+                            }
+                            else
+                            {
+                                RECT_TO_POINTS(pa, pA.pos, cA);
+                                TRI_ROTATE_POINTS(pb, pB, cB);
+                                return SAT(paX, paY, pbX, pbY, i);
+                            }
+                        }
+                        else if (pB.rotation == 0)
+                        {
+                            RECT_ROTATE_POINTS(pa, pA, cA);
+                            TRI_TO_POINTS(pb, pB.pos, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                        else
+                        {
+                            RECT_ROTATE_POINTS(pa, pA, cA);
+                            TRI_ROTATE_POINTS(pb, pB, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                    }
+                }
+                break;
+            case Shape::CIRCLE:
+                switch (cB.shape)
+                {
+                case Shape::RECT:
+                    {
+                        if (pB.rotation == 0)
+                        {
+                            return CircleToRect(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pB.pos.x + cB.offset.x,
+                                                pB.pos.y + cB.offset.y, cB.p1, cB.p2, i);
+                        }
+                        else
+                        {
+                            RECT_ROTATE_POINTS(pb, pB, cB)
+                            return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
+                        }
+                    }
+                case Shape::CIRCLE:
+                    {
+                        // We can skip the translation to the middle point as both are in the same system
+                        return CircleToCircle(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pB.pos.x + cB.p1,
+                                              pB.pos.y + cB.p1, cB.p1, i);
+                    }
+                case Shape::TRIANGLE:
+                    {
+                        if (pB.rotation == 0)
+                        {
+                            TRI_TO_POINTS(pb, pB.pos, cB)
+                            return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
+                        }
+                        else
+                        {
+                            TRI_ROTATE_POINTS(pb, pB, cB)
+                            return CircleToQuadrilateral(pA.pos.x + cA.p1, pA.pos.y + cA.p1, cA.p1, pbX, pbY, i);
+                        }
+                    }
+                }
+                break;
+            case Shape::TRIANGLE:
+                switch (cB.shape)
+                {
+                case Shape::RECT:
+                    {
+                        if (pA.rotation == 0) [[likely]]
+                        {
+                            if (pB.rotation == 0) [[likely]]
+                            {
+                                TRI_TO_POINTS(pa, pA.pos, cA)
+                                RECT_TO_POINTS(pb, pB.pos, cB);
+                                return SAT(paX, paY, pbX, pbY, i);
+                            }
+                            else
+                            {
+                                TRI_TO_POINTS(pa, pA.pos, cA)
+                                RECT_ROTATE_POINTS(pb, pB, cB);
+                                return SAT(paX, paY, pbX, pbY, i);
+                            }
+                        }
+                        else if (pB.rotation == 0)
+                        {
+                            TRI_ROTATE_POINTS(pa, pA, cA)
+                            RECT_TO_POINTS(pb, pB.pos, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                        else
+                        {
+                            TRI_ROTATE_POINTS(pa, pA, cA)
+                            RECT_ROTATE_POINTS(pb, pB, cB);
+                            return SAT(paX, paY, pbX, pbY, i);
+                        }
+                    }
+                case Shape::CIRCLE:
+                    {
+                        if (pA.rotation == 0)
+                        {
+                            TRI_TO_POINTS(pa, pA.pos, cA)
+                            return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
+                        }
+                        TRI_ROTATE_POINTS(pa, pA, cA)
+                        return QuadrilateralToCircle(paX, paY, pB.pos.x + cB.p1, pB.pos.y + cB.p1, cB.p1, i);
+                    }
+                case Shape::TRIANGLE:
+                    {
+                        TRI_ROTATE_POINTS(pa, pA, cA)
+                        TRI_ROTATE_POINTS(pb, pB, cB)
+                        return SAT(paX, paY, pbX, pbY, i);
+                    }
+                }
+                break;
+            }
+        }
+
+    } // namespace internal
 
 
 } // namespace magique

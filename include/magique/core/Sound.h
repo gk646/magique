@@ -35,6 +35,11 @@ namespace magique
     void SoundSetMusicVolume(float volume);
     float SoundGetMusicVolume();
 
+    // Sets a interval where a pitch is randomly picked for each played sound
+    // Note: This is useful to make sounds less monotonous (e.g. button clicks, abilities)
+    // Default: (1.0,1.0)
+    void SoundSetRandomPitchInterval(Point interval);
+
     //================= SOUND & SOUND2D =================//
     // Looping automatically restarts the sound when it ends
 

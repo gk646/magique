@@ -19,9 +19,14 @@
 namespace magique
 {
 
+    // Returns true if this executable was started through steam - else end it fast as its relaunched through steam
+    // Note: See https://partner.steamgames.com/doc/api/steam_api#SteamAPI_RestartAppIfNecessary
+    //       Should be called before SteamInit()
+    bool SteamIsLaunchedBySteam(uint32_t appid);
+
     // Returns true if the initialization of steam was successful
     //      - handler: pass a new instance of your callback handler (subclass ISteamCallbacks)
-    //      - handler: pass a new instance of your callback handler (subclass ISteamMatchmakingCallbacks)
+    //      - matchmaking: pass a new instance of your callback handler (subclass ISteamMatchmakingCallbacks)
     //      - createAppIDFile: if true creates a test steam_appid.txt file with the id 480 (test project)
     bool SteamInit(ISteamCallbacks* handler = nullptr, ISteamMatchmakingCallbacks* matchmaking = nullptr,
                    bool createAppIDFile = true);
@@ -78,7 +83,13 @@ namespace magique
     //      - missingFilesOnly: if true only checks for missing files, not if existing files are wrong/out-of-date
     void SteamMarkGameFilesCorrupt(bool missingFilesOnly = false);
 
+    // Gets the a parameter from the launch command line
+    // See https://partner.steamgames.com/doc/api/ISteamApps#:~:text=GetLaunchCommandLine
     std::string_view SteamGetLaunchParam(std::string_view key);
+
+    // Returns true if the user has ownership of the given appid
+    // Note: This should be used to check if its a demo or not
+    bool SteamOwnsApp(uint32_t appID);
 
     //================= USER =================//
 
@@ -102,12 +113,14 @@ namespace magique
     void SteamOpenOverlay(SteamOverlayUserCategory category);
 
     // Opens the overlay and displays the given users profile
-    void SteamOpenOverlayForProfile(SteamID id);
+    void SteamOpenOverlayToProfile(SteamID id);
+
+    void SteamOpenOverlayToStore(uint32_t appid);
 
     //================= STATS =================//
     // Allows access to the Stats API https://partner.steamgames.com/doc/features/achievements
 
-    // Requests the latest stat values for the given user - fires a stats callback when done
+    // Requests the latest stat values for the given user - access to the stats is inside the callback it fires when done
     void SteamRequestStats(SteamID user = SteamGetID());
 
     // Sets the given stats to the given value

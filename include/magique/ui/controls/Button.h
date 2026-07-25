@@ -70,6 +70,7 @@ namespace magique
         bool isDisabled = false;
     };
 
+    // Button that displays text
     struct TextButton : Button
     {
         TextButton(std::string_view txt, Anchor anchor = Anchor::NONE, Point inset = {},
@@ -88,6 +89,26 @@ namespace magique
 
     private:
         std::string text;
+    };
+
+    // Button that displays a clickable icon - pressed icon will be displayed if the button is pressed
+    struct IconButton : Button
+    {
+        IconButton(TextureRegion icon = {}, TextureRegion pressed = {}, Anchor anchor = Anchor::NONE, Point inset = {},
+                   ScalingMode mod = ScalingMode::FULL);
+
+        void setIcons(TextureRegion icon, TextureRegion pressed = {});
+        std::pair<TextureRegion, TextureRegion> getIcons() const;
+
+    protected:
+        void onDraw(const Rect& bounds) override;
+
+        // Icons will be tinted based on hover/pressed state
+        void drawDefault(const Rect& bounds) override;
+
+    private:
+        TextureRegion icon;
+        TextureRegion pressedIcon;
     };
 
 } // namespace magique

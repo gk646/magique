@@ -285,7 +285,7 @@ namespace magique
         auto& dynamicData = global::DY_COLL_DATA;
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
-        dynamicData.mapEntityGrids[map].query(set, area.x, area.y, area.width, area.height);
+        dynamicData.mapEntityGrids[map].query(set, area);
         return set;
     }
 

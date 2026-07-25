@@ -49,14 +49,14 @@ namespace magique
         setAnimationState(startState);
     }
 
-    void AnimationC::drawCurrentFrame(const Point& pos, bool flipX, const float rotation, bool flipY) const
+    void AnimationC::drawCurrentFrame(const Point& pos, bool flipX, const float rotation, bool flipY, Color tint) const
     {
         const auto currentFrame = currentAnimation.getCurrentFrame(millisCount);
         Rect dest = {pos + animation->getOffset(),
                      {static_cast<float>(flipX ? -currentFrame.width : currentFrame.width),
                       static_cast<float>(flipY ? -currentFrame.height : currentFrame.height)}};
         dest.floor();
-        DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor());
+        DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor(), tint);
     }
 
     void AnimationC::update() { millisCount += MAGIQUE_TICK_TIME * 1000.0F; }
@@ -216,6 +216,7 @@ namespace magique
         auto& pos = ComponentGet<PositionC>(e);
         auto& col = ComponentGet<CollisionC>(e);
         pos.pos = point - col.getMidOffset();
+        pos.pos.floor();
     }
 
     Point CollisionC::GetMiddle(const Entity e)
@@ -227,6 +228,17 @@ namespace magique
             return pos.pos;
         }
         return pos.getMiddle(*col);
+    }
+
+    Rect CollisionC::GetBounds(Entity e)
+    {
+        const auto& pos = magique::ComponentGet<PositionC>(e);
+        auto* col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr)
+        {
+            return pos.pos;
+        }
+        return pos.getBounds(*col);
     }
 
     bool CollisionC::detects(const CollisionC& other) const

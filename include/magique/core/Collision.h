@@ -31,25 +31,30 @@ namespace magique
     // Performs a collision check between two entities based on their position and collision components
     // This automatically takes into account their current position, shape and dimensions!
     // This ignores layers and masks!
-    void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
-                                const CollisionC& colB, CollisionInfo& info);
-
-    // Easier access versions
-    void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info);
     bool CheckCollisionEntities(Entity a, Entity b);
+    void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info);
 
     // Returns true and assign info if a collision occurs between the entity and the given rectangle
-    bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
+    bool CheckCollisionEntityRect(Entity e, const Rect& r, CollisionInfo& info);
 
     // Returns true if the entity collision shape contains or intersects the mouse pos
-    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
     bool CheckCollisionEntityMouse(Entity e);
+
+    bool CheckCollisionEntityCircle(Entity e, const Circle& c);
+
+    // Returns true if the entity collides with any other collision entity
+    // Note: This performs a direct collision check with all relevant entities nearby each time
+    bool CheckCollisionEntityAny(Entity e);
+
+    // Returns true if the entity collides with any static collision objects
+    // Note: This performs a direct collision check with all relevant static objects nearby each time
+    bool CheckCollisionEntityStatic(Entity e);
 
     //================= CIRCLE =================//
 
     // Performs a collision check between a circle given by its center and radius
     // and a quadrilateral given by its 4 points
-    void CheckCollisionCircleToQuadrilateral(Point c, float r, Point q1, Point q2, Point q3, Point q4, CollisionInfo& i);
+    void CheckCollisionCircleToQuadrilateral(const Circle& c, Point q1, Point q2, Point q3, Point q4, CollisionInfo& i);
 
     //================= QUADRILATERAL & TRIANGLES =================//
 
@@ -65,5 +70,16 @@ namespace magique
 
 } // namespace magique
 
+
+namespace magique::internal
+{
+    void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
+                                const CollisionC& colB, CollisionInfo& info);
+
+    bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
+
+    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
+
+} // namespace magique::internal
 
 #endif // MAGIQUE_COLLISION_DETECTION_H

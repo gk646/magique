@@ -88,6 +88,8 @@ namespace magique
     // Draw a triangle using lines - points must be provided in counter-clockwise order
     void DrawTriangleLinesRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, Point anchor, Color color);
 
+    void DrawCircleLines(const Circle& circle,  Color color = WHITE);
+
 } // namespace magique
 
 #endif // MAGIQUE_DRAW_H

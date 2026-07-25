@@ -384,8 +384,8 @@ namespace magique
                             MeasureTextUpTo(lineStart + (drawStart - lineStartPos), drawEnd - drawStart, f, fs, spc);
                         Rectangle lineRect = baseRect;
                         lineRect.x += offset + (drawStart == 0 ? 0.0F : 1.0F);
-                        lineRect.x = std::floor(lineRect.x);
                         lineRect.width = width + 2;
+                        lineRect.x = std::floor(lineRect.x);
                         lineRect.width = std::floor(lineRect.width);
                         DrawRectangleRec(lineRect, tint);
                     }
@@ -433,5 +433,8 @@ namespace magique
         RotatePoints4(p1.x, p1.y, txs, tys, rot, anchor.x, anchor.y);
         DrawTriangleLines({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
+
+    void DrawCircleLines(const Circle& circle, Color color) { DrawCircleLinesV(circle.center, circle.radius, color); }
+
 
 } // namespace magique

@@ -114,31 +114,17 @@ namespace magique
             }
         }
 
-        auto drawStaticObjectVectorHitboxes = [&](const std::vector<uint32_t>& objectIds)
-        {
-            for (const auto idx : objectIds)
-            {
-                const auto& [x, y, p1, p2] = staticData.colliderStorage.get(idx).bounds;
-                if (p1 == 0 || !camBounds.contains(Point{x, y}))
-                {
-                    continue;
-                }
-
-                if (p2 != 0)
-                {
-                    DrawRectangleLinesEx({x, y, p1, p2}, 1, RED);
-                }
-                else
-                {
-                    DrawCircleLinesV({x + p1, y + p1}, p1, RED);
-                }
-            }
-        };
-
         // Static tiles
         if (staticData.colliderReferences.tilesCollisionMap.contains(map))
         {
-            drawStaticObjectVectorHitboxes(staticData.colliderReferences.tilesCollisionMap.at(map));
+            const auto& objectIds = staticData.colliderReferences.tilesCollisionMap.at(map);
+            for (const auto idx : objectIds)
+            {
+                const auto& bounds = staticData.colliderStorage[idx].bounds;
+                if (!camBounds.contains(bounds.pos()))
+                    continue;
+                DrawRectangleLinesEx(bounds, 1, RED);
+            }
         }
 
         // WorldBounds

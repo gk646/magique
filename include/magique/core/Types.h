@@ -213,8 +213,8 @@ namespace magique
         Rect scale(float factor) const;
 
         // Enlarges the rect in x and y direction by size such that it stays centered on its current center
-        Rect enlarge(float size) const;
-        Rect shrink(float size) const;
+        Rect enlarge(Point size) const;
+        Rect shrink(Point size) const;
 
         // Returns the shortest possible distance to connect point p with rect r
         float shortestDist(const Point& p) const;
@@ -229,6 +229,24 @@ namespace magique
         Point bottomMid() const;
         Point leftMid() const;
         Point rightMid() const;
+    };
+
+    struct Circle final
+    {
+        Point center;
+        float radius;
+
+        Circle() : center(0), radius(0) {};
+        Circle(Point center, float radius) : center(center), radius(radius) {}
+
+        // Returns true if the point is inside (or on the border)
+        bool contains(const Point& p) const;
+
+        // Returns the total area of the circle
+        float area() const;
+
+        // Returns a random point within the circle
+        Point random() const;
     };
 
     // Represents a (2D) rotation angle - 0 degree is looking up (north), rotates clockwise

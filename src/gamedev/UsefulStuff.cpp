@@ -41,7 +41,7 @@ namespace magique
 
     float Counter::getCount() const { return count; }
 
-    float Counter::getProgress() const { return step / goal; }
+    float Counter::getProgress() const { return count / goal; }
 
     void Counter::fill() { count = goal; }
 

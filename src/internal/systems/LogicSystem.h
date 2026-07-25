@@ -128,45 +128,45 @@ namespace magique
         const auto view = registry.view<const PositionC>();
         for (const auto e : view)
         {
-            const auto& pos = group.get<const PositionC>(e);
-            const auto map = pos.map;
+            const auto& posC = group.get<const PositionC>(e);
+            const auto* colC = ComponentTryGet<CollisionC>(e);
+            const bool hasCollision = colC != nullptr;
+            Point pos = posC.pos;
+
+            if (hasCollision)
+                pos += colC->getMidOffset();
+
+            const auto map = posC.map;
 
             loadedMaps[static_cast<int>(map)] = true;
             auto& hashGrid = dynamicData.mapEntityGrids[map];
 
-            if (loadedMaps[static_cast<int>(map)]) [[likely]] // entity is in any map where at least 1 actor is
+            if (!loadedMaps[static_cast<int>(map)]) [[unlikely]] // No actor is in the map of the entity
+                continue;
+
+            // Check if inside the camera bounds already
+            if (map == cameraMap && camBound.contains(pos))
             {
-                // Check if inside the camera bounds already
-                if (map == cameraMap && camBound.contains(pos.pos))
+                drawVec.push_back(e); // Should be drawn
+                cache[e] = cacheDuration;
+                if (hasCollision)
+                    HandleCollisionEntity(e, posC, *colC, hashGrid, collisionVec);
+            }
+            else
+            {
+                for (int i = 0; i < actorCount; ++i) // Iterate through the different actors within the map
                 {
-                    drawVec.push_back(e); // Should be drawn
-                    cache[e] = cacheDuration;
-                    if (group.contains(e))
+                    const int8_t actorNum = actorDist.getActorNum(map, i);
+                    if (actorNum == -1) [[unlikely]] // No more actors in that map
+                        break;
+
+                    // Check if inside any update rect - rect is an enlarged rectangle
+                    if (actorRects[actorNum].contains(pos))
                     {
-                        auto& col = group.get<CollisionC>(e);
-                        HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < actorCount; ++i) // Iterate through the different actors within the map
-                    {
-                        const int8_t actorNum = actorDist.getActorNum(map, i);
-                        if (actorNum == -1) // No more actors in that map
-                        {
-                            break;
-                        }
-                        // Check if inside any update rect - rect is an enlarged rectangle
-                        if (actorRects[actorNum].contains(pos.pos))
-                        {
-                            cache[e] = cacheDuration;
-                            if (group.contains(e))
-                            {
-                                auto& col = group.get<CollisionC>(e);
-                                HandleCollisionEntity(e, pos, col, hashGrid, collisionVec);
-                            }
-                            break;
-                        }
+                        cache[e] = cacheDuration;
+                        if (group.contains(e))
+                            HandleCollisionEntity(e, posC, *colC, hashGrid, collisionVec);
+                        break;
                     }
                 }
             }
@@ -182,12 +182,37 @@ namespace magique
         }
     }
 
+    template <bool isEnd>
+    void CallUpdateEntityScript()
+    {
+        auto& config = global::ENGINE_CONFIG;
+        if (config.isClientMode) // Skip script methods in client mode
+            return;
+
+        auto& data = global::ENGINE_DATA;
+        auto& cache = data.entityUpdateCache;
+
+        // Iterates all entities
+        for (const auto entity : EntityGetRegistry().view<Entity>())
+        {
+            // Invoke tick event on all entities that are in this tick and are scripted
+            if (data.isEntityScripted(entity)) [[likely]]
+            {
+                // Pass a boolean whether the entity is updated => if it's in the cache
+                if constexpr (isEnd)
+                    internal::GetScriptInternal(entity)->onUpdate(entity, cache.contains(entity));
+                else
+                    internal::GetScriptInternal(entity)->onUpdateEnd(entity, cache.contains(entity));
+            }
+        }
+    }
+
+
     inline void LogicSystem(const entt::registry& registry)
     {
         auto& data = global::ENGINE_DATA;
         auto& dynamicData = global::DY_COLL_DATA;
         auto& pathData = global::PATH_DATA;
-        auto& config = global::ENGINE_CONFIG;
 
         auto& drawVec = data.drawVec;
         auto& cache = data.entityUpdateCache;
@@ -223,21 +248,7 @@ namespace magique
             }
         }
 
-        if (config.isClientMode) // Skip script methods in client mode
-        {
-            return;
-        }
-
-        // Iterates all entities
-        for (const auto entity : EntityGetRegistry().view<Entity>())
-        {
-            // Invoke tick event on all entities that are in this tick and are scripted
-            if (data.isEntityScripted(entity)) [[likely]]
-            {
-                // Pass a boolean whether the entity is updated => if it's in the cache
-                internal::GetScriptInternal(entity)->onUpdate(entity, cache.contains(entity));
-            }
-        }
+        CallUpdateEntityScript<false>();
     }
 
 } // namespace magique

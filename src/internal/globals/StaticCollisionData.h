@@ -20,7 +20,12 @@
 
 namespace magique
 {
-    using StaticID = uint64_t; // 32 bits the object num - rest is data (collider class, tilenum, group num)
+    // 32 bits the object num - rest is data (collider class, tilenum, group num)
+    struct StaticID
+    {
+        uint32_t idx; // Index into collider storage
+        int data;
+    };
 
     struct StaticPair final // Caches information when the collision occurs to reuse later on
     {
@@ -32,8 +37,7 @@ namespace magique
         EntityType entityType; // entity type - for the script
     };
 
-    using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;     // power of two
-
+    using TileHashGrid = SingleResolutionHashGrid<StaticID, MAGIQUE_MAX_ENTITIES_CELL, 32>;
     using StaticPairCollector = AlignedVec<StaticPair>[MAGIQUE_WORKER_THREADS + 1];
     using ColliderCollector = AlignedVec<StaticID>[MAGIQUE_WORKER_THREADS + 1];
 
@@ -42,7 +46,7 @@ namespace magique
         std::vector<StaticCollider> colliders;
         std::vector<uint32_t> freeList;
 
-        [[nodiscard]] const StaticCollider& get(const uint32_t index) const { return colliders[index]; }
+        const StaticCollider& operator[](const uint32_t index) const { return colliders[index]; }
 
         uint32_t insert(const Rect& r)
         {
@@ -68,21 +72,6 @@ namespace magique
         }
     };
 
-    struct StaticIDHelper final // Helps to get individual parts from the static ids
-    {
-        static uint32_t GetObjectNum(const StaticID id) { return static_cast<uint32_t>(id >> 32); }
-
-        static int GetData(const StaticID id) { return static_cast<int32_t>(id & 0xFFFFFFFF); }
-
-        static StaticID CreateID(const uint32_t objectNum, const int data)
-        {
-            const auto ret = (static_cast<StaticID>(objectNum) << 32) | static_cast<uint32_t>(data);
-            MAGIQUE_ASSERT(GetData(ret) == data, "Wrong conversion");
-            MAGIQUE_ASSERT(GetObjectNum(ret) == objectNum, "Wrong conversion");
-            return ret;
-        }
-    };
-
     struct ObjectReferenceHolder final
     {
         // Tiles + what colliders where loaded per map
@@ -91,23 +80,13 @@ namespace magique
 
     struct StaticCollisionData final
     {
-        Rectangle worldBounds{}; // World bounds
-
-        //----------------- COLLISION SYSTEM  -----------------//
-        StaticPairCollector pairCollector;     // Collects pairs for all types entity + (world, object, tiles, custom)
-        ColliderCollector colliderCollector{}; // Collects collider ids
-
-        //----------------- STORAGE-----------------//
-
+        Rectangle worldBounds{};                  // World bounds
+        StaticPairCollector pairCollector;        // Collects pairs for all types entity + (world, object, tiles, custom)
+        ColliderCollector colliderCollector{};    // Collects collider ids
         ColliderStorage colliderStorage;          // Holds all objects - uses a free list to preserve indices
         ObjectReferenceHolder colliderReferences; // Saves data about the static collision object so they can be removed
-
-        //----------------- HASHGRIDS -----------------//
-
-        MapHolder<TileHashGrid> mapTileGrids;       // Stores all collidable tiles
-
-        //----------------- TILESET -----------------//
-        const TileSet* tileSet = nullptr; // Only use for equality checks
+        MapHolder<TileHashGrid> mapTileGrids;     // Stores all collidable tiles
+        const TileSet* tileSet = nullptr;         // Only use for equality checks
         float tileSetScale = 1.0f;
         HashMap<uint16_t, TileInfo> markedTilesMap; // which tiles are marked and their tile info
 

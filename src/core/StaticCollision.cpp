@@ -74,14 +74,12 @@ namespace magique
             hitbox += tilePos;
             hitbox = hitbox.scale(data.tileSetScale);
 
-            if (hitbox.size() == 0)
-            {
+            if (hitbox.area() == 0)
                 return;
-            }
 
             const auto objectNum = data.colliderStorage.insert(hitbox);
             tileVec.push_back(objectNum);
-            const auto objectId = StaticIDHelper::CreateID(objectNum, (int)tileClass);
+            const auto objectId = StaticID{objectNum, (int)tileClass};
             grid.insert(objectId, hitbox.x, hitbox.y, hitbox.width, hitbox.height);
         };
 

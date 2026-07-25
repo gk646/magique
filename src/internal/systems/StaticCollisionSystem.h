@@ -54,7 +54,7 @@ namespace magique
                                         const CollisionC& col, const Rectangle& r, const uint32_t num)
     {
         CollisionInfo info{};
-        CheckCollisionEntityRect(pos, col, r, info);
+        internal::CheckCollisionEntityRect(pos, col, r, info);
         if (info.isColliding())
         {
             // subtract 0-3 depending on the world bound
@@ -67,19 +67,17 @@ namespace magique
 
     template <class TypeHashGrid>
     void CheckHashGrid(const Entity e, const TypeHashGrid& grid, std::vector<StaticID>& collector,
-                       std::vector<StaticPair>& pairCollector, const ColliderType type,
-                       const std::vector<StaticCollider>& colliders, const PositionC& pos, const CollisionC& col)
+                       std::vector<StaticPair>& pairCollector, const ColliderType type, const ColliderStorage& storage,
+                       const PositionC& pos, const CollisionC& col)
     {
-        const auto bb = pos.getBounds(col);
-        grid.query(collector, bb.x, bb.y, bb.width, bb.height);
+        grid.query(collector, pos.getBounds(col));
         for (const auto num : collector)
         {
-            const auto objectNum = StaticIDHelper::GetObjectNum(num);
             CollisionInfo info{};
-            CheckCollisionEntityRect(pos, col, colliders[(int)objectNum].bounds, info);
+            internal::CheckCollisionEntityRect(pos, col, storage[num.idx].bounds, info);
             if (info.isColliding()) [[unlikely]]
             {
-                pairCollector.push_back({info, e, objectNum, StaticIDHelper::GetData(num), type, pos.type});
+                pairCollector.push_back({info, e, num.idx, num.data, type, pos.type});
             }
         }
         collector.clear();
@@ -87,13 +85,12 @@ namespace magique
 
     inline void CheckStaticCollisionRange(const int thread, const int start, const int end) // Runs on each thread
     {
-
         const auto& data = global::ENGINE_DATA;
         const auto& group = internal::POSITION_GROUP;
         auto& staticData = global::STATIC_COLL_DATA; // non const - modifying the collectors
 
         const auto& collisionVec = data.collisionVec;
-        const auto& colliderStorage = staticData.colliderStorage.colliders;
+        const auto& colliderStorage = staticData.colliderStorage;
 
         // Just use for the hash grid queries
         auto& idCollector = staticData.colliderCollector[thread].vec; // non const
@@ -127,12 +124,9 @@ namespace magique
             const auto map = pos.map;
 
             // Query tile grid
-            if (staticData.mapTileGrids.contains(map))
-            {
-                const auto& tileGrid = staticData.mapTileGrids[map];
-                constexpr auto tileType = ColliderType::TILESET_TILE;
-                CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
-            }
+            const auto& tileGrid = staticData.mapTileGrids[map];
+            constexpr auto tileType = ColliderType::TILESET_TILE;
+            CheckHashGrid(e, tileGrid, idCollector, pairCollector, tileType, colliderStorage, pos, col);
         }
     }
 
@@ -158,7 +152,7 @@ namespace magique
 
                 // Process the collision
                 const auto colliderInfo = ColliderInfo{data, objType};
-                internal::GetScriptInternal(e)->onStaticCollision(e, colliderInfo, info );
+                internal::GetScriptInternal(e)->onStaticCollision(e, colliderInfo, info);
 
                 if (info.getIsAccumulated()) // Accumulate the data if specified
                 {

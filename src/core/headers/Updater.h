@@ -16,6 +16,7 @@ namespace magique::updater
             InternalUpdatePre(reg, game); // Internal update upfront
             game.onUpdateGame(gameState);
             InternalUpdatePost();
+            CallUpdateEntityScript<true>();
             game.onUpdateEnd(gameState);
         }
         return EndTick(startTime);

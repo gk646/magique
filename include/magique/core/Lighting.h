@@ -1,7 +1,7 @@
 #ifndef MAGIQUE_LIGHTING_H
 #define MAGIQUE_LIGHTING_H
 
-#include <raylib/raylib.h>
+#include <magique/core/Engine.h>
 
 //===============================================
 // Lighting
@@ -20,9 +20,10 @@
 namespace magique
 {
 
-    // Draws raytraced lighting using LightingC components - culled to the camera area
+    // Draws raytraced lighting using LightingC components - culled to the camera area (draw entities)
     //      - texture: if specified will be drawn to the given texture else directly to the implicit framebuffer
-    void LightingDrawRaytracing(RenderTexture texture = {});
+    //      - filter : light is only drawn if filter function returns true
+    void LightingDrawRaytracing(RenderTexture texture = {}, const FilterFunc& filter = {});
 
     // Draws simpler lighting
     void LightingDrawSimple(RenderTexture texture = {});

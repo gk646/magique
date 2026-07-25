@@ -57,8 +57,8 @@ namespace magique
         // Selects the item when key == item
         // Note: this invokes the select func
         template <typename K>
-        void setSelected(const K& key);
-        void setSelected(int index);
+        void setSelected(const K&, bool callback = true);
+        void setSelected(int index, bool callback = true);
 
         int getSelectedIndex() const;
 
@@ -245,23 +245,23 @@ namespace magique
 
     template <typename T>
     template <typename K>
-    void GridChooser<T>::setSelected(const K& key)
+    void GridChooser<T>::setSelected(const K& key, bool callback)
     {
         for (int i = 0; i < (int)entries.size(); i++)
         {
             if (entries[i].item == key)
             {
-                setSelected(i);
+                setSelected(i, callback);
                 return;
             }
         }
     }
 
     template <typename T>
-    void GridChooser<T>::setSelected(int index)
+    void GridChooser<T>::setSelected(int index, bool callback)
     {
         selected = index;
-        if (selected != -1 && selectFunc)
+        if (callback && selected != -1 && selectFunc)
             selectFunc(entries[selected].item);
     }
 

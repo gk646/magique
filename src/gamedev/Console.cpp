@@ -36,7 +36,7 @@ namespace magique
         global::CONSOLE_DATA.commands.emplace_back(command);
     }
 
-    bool ConsoleRemoveCommand(const std::string_view& name)
+    bool ConsoleRemoveCommand(std::string_view name)
     {
         const auto predicate = [&](const Command& cmd)
         {
@@ -45,7 +45,7 @@ namespace magique
         return std::erase_if(global::CONSOLE_DATA.commands, predicate) > 0;
     }
 
-    bool ConsoleExecuteCommand(const std::string_view& name)
+    bool ConsoleExecuteCommand(std::string_view name)
     {
         auto& console = global::CONSOLE_DATA;
         MAGIQUE_ASSERT(!name.empty(), "Command name is null!");
@@ -64,6 +64,8 @@ namespace magique
         cmd->cmdFunc({});
         return true;
     }
+
+    void ConsoleExecute(std::string_view input) { ConsoleData::SubmitLine(input); }
 
     //================= COMMAND =================//
 

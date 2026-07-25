@@ -11,7 +11,7 @@ if (NOT APPLE)
     set(OPENGL_VERSION "4.3")
 endif ()
 
-if(${PLATFORM} STREQUAL "SDL")
+if (${PLATFORM} STREQUAL "SDL")
     target_compile_definitions(magique PUBLIC USING_SDL3_PROJECT)
 endif ()
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#ifndef SOUNDDATA_H
-#define SOUNDDATA_H
+#ifndef MAGIQUE_SOUND_DATA_H
+#define MAGIQUE_SOUND_DATA_H
 
 #include <raylib/raylib.h>
 #include <magique/assets/types/Playlist.h>
@@ -105,6 +105,7 @@ namespace magique
         float maxSoundDistance = 1000;
         float soundVolume = 1.0F;
         float musicVolume = 1.0F;
+        Point soundPitchInterval = 1;
 
         void addTrack(const Music& music, float volume, const bool fadeIn, bool looping = false)
         {
@@ -230,6 +231,8 @@ namespace magique
         sound(LoadSoundAlias(originalSound)), playVolume(volume), loop(loop)
     {
         SetSoundVolume(sound, global::AUDIO_PLAYER.getSoundVolume(volume));
+        auto [min, max] = global::AUDIO_PLAYER.soundPitchInterval;
+        SetSoundPitch(sound, MathRandom(min, max));
         PlaySound(sound);
         SetAudioBufferLooping(sound.stream.buffer, loop);
     }
@@ -264,4 +267,4 @@ namespace magique
     }
 } // namespace magique
 
-#endif // SOUNDDATA_H
+#endif // MAGIQUE_SOUND_DATA_H

@@ -4,9 +4,10 @@
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>
 #include <magique/core/Engine.h>
+#include <magique/core/Draw.h>
+#include <magique/util/RayUtils.h>
 
 #include "internal/globals/EngineConfig.h"
-#include "magique/util/RayUtils.h"
 
 namespace magique
 {
@@ -33,11 +34,14 @@ namespace magique
 
     void Button::updateActions(const Rect& bounds)
     {
+        if (getIsPressed())
+            LayeredInput::ConsumeMouse();
+
         if (getIsHovered())
         {
             for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
             {
-                if (LayeredInput::IsMouseButtonPressed(i) && !isDisabled)
+                if (LayeredInput::IsMouseButtonReleased(i) && bounds.contains(UIGetDragStart()) && !isDisabled)
                 {
                     onClick(bounds, i);
                     if (clickFunc)
@@ -61,8 +65,8 @@ namespace magique
     void Button::drawDefault(const Rect& bounds)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        const Color body = theme.getBodyColor(getIsHovered(), getIsClicked());
-        const Color outline = theme.getOutlineColor(getIsHovered(), getIsClicked());
+        const Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
+        const Color outline = theme.getOutlineColor(getIsHovered(), getIsPressed());
         DrawRectFrameFilled(bounds.floored(), body, outline);
         drawHoverText(EngineGetFont(), UIGetScaled(1), theme.backActive, theme.backHighlight, theme.textHighlight);
     }
@@ -104,5 +108,30 @@ namespace magique
         DrawTextCenteredRect(font, text, font.baseSize, bounds, 1.0F, global::ENGINE_CONFIG.theme.text);
     }
 
+    IconButton::IconButton(TextureRegion icon, TextureRegion pressed, Anchor anchor, Point inset, ScalingMode mode) :
+        Button({0, icon.getSize()}, anchor, inset, mode)
+    {
+        setIcons(icon, pressed);
+    }
+
+    void IconButton::setIcons(TextureRegion newIcon, TextureRegion pressed)
+    {
+        icon = newIcon;
+        pressedIcon = pressed;
+        setSize(newIcon.getSize());
+    }
+
+    std::pair<TextureRegion, TextureRegion> IconButton::getIcons() const { return {icon, pressedIcon}; }
+
+    void IconButton::onDraw(const Rect& bounds) { drawDefault(bounds); }
+
+    void IconButton::drawDefault(const Rect& bounds)
+    {
+        const auto tint = getIsPressed() ? GRAY : getIsHovered() ? LIGHTGRAY : WHITE;
+        if (getIsPressed() && pressedIcon.isValid())
+            DrawRegion(pressedIcon, bounds.pos(), false, tint);
+        else
+            DrawRegion(icon, bounds.pos(), false, tint);
+    }
 
 } // namespace magique

@@ -43,6 +43,7 @@ namespace magique
             if (file != nullptr)
             {
                 fclose(file);
+                file = nullptr;
             }
         }
     };

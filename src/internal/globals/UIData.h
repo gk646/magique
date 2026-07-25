@@ -227,16 +227,12 @@ namespace magique
                 mouseConsumed = false;
 
             if (!object->wasDrawnLastTick)
-            {
                 object->onShown(object->getBounds());
-            }
 
             object->drawnThisTick = true;
 
             if (!objectsSet.contains(object)) [[unlikely]]
-            {
                 registerObject(object);
-            }
 
             const auto it = std::ranges::find(objects, object);
             if (it != objects.end())
