@@ -8,7 +8,6 @@
 #include <magique/ui/UI.h>
 #include <magique/core/Camera.h>
 
-
 #ifdef USING_SDL3_PROJECT
 #include "SDL3/SDL.h"
 #else

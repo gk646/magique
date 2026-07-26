@@ -24,6 +24,7 @@ namespace magique
 
         // Returns the list
         ListChooser& getList();
+        const ListChooser& getList()const ;
 
     protected:
         void onDraw(const Rect& bounds) override

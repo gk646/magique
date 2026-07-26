@@ -101,12 +101,12 @@ elseif (MSVC)
     target_compile_options(magique PUBLIC /bigobj)
 
     target_compile_options(magique PUBLIC
-            $<$<CONFIG:Debug>:/W3 /RTCsu /Zi /Zc:preprocessor>
+            $<$<CONFIG:Debug>:/W3 /Zi /Zc:preprocessor /O1>
             $<$<CONFIG:Release>:/DNDEBUG /W4 /O2 /fp:fast /arch:AVX /Zc:inline /Zc:preprocessor /GS- /Gy /Oi /Gw /GF /GL /GR- /Oi >
     )
 
     target_link_options(magique PUBLIC
-            /LTCG /OPT:REF /OPT:ICF /RELEASE
+            $<$<CONFIG:Release>:/LTCG /OPT:REF /OPT:ICF /RELEASE>
     )
 
     if (MAGIQUE_SANITIZER)

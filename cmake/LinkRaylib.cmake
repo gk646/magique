@@ -13,6 +13,8 @@ endif ()
 
 if (${PLATFORM} STREQUAL "SDL")
     target_compile_definitions(magique PUBLIC USING_SDL3_PROJECT)
+    target_include_directories(magique PRIVATE ${SDL3_INCLUDE_DIRS})
+    target_link_libraries(magique PRIVATE ${SDL3_LIBRARIES})
 endif ()
 
 if (UNIX)

@@ -26,6 +26,10 @@ namespace magique
 
     ListChooser& Dropdown::getList() { return list; }
 
+   const ListChooser& Dropdown::getList() const{
+        return list;
+    }
+
     void Dropdown::updateInputs()
     {
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))

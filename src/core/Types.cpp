@@ -584,7 +584,7 @@ namespace magique
 
     bool Circle::contains(const Point& p) const { return center.euclidean(p) <= radius; }
 
-    float Circle::area() const { return std::numbers::pi_v<float> * (radius * radius); }
+    float Circle::area() const { return PI * (radius * radius); }
 
     Point Circle::random() const
     {
