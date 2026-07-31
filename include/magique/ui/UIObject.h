@@ -153,11 +153,11 @@ namespace magique
 
         // Gets/Sets the label text
         std::string_view getText() const;
-        void setText(std::string_view text);
+        LabelledObject& setText(std::string_view text);
 
         // Sets/Gets the label direction
         // Either horizontally centered above/below OR vertically centered left/right
-        void setDirection(Direction direction);
+        LabelledObject& setDirection(Direction direction);
         Direction getDirection() const;
 
     protected:

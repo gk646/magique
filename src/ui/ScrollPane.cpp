@@ -186,7 +186,9 @@ namespace magique
 
     void ScrollPane::Scroller::updateInputs(const Rectangle& scroller, const Rectangle& pane)
     {
-        if (LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT) && CheckCollisionMouseRect(scroller))
+        const auto hovered = CheckCollisionMouseRect(scroller);
+
+        if (LayeredInput::IsMouseButtonDown(MOUSE_BUTTON_LEFT) && hovered)
         {
             isDragging = true;
         }
@@ -195,7 +197,8 @@ namespace magique
             isDragging = false;
         }
 
-        const auto scroll = GetMouseWheelMove() * (invertScroll ? -2.0F : 2.0F);
+        const auto mouseWheelMult = std::max(pane.width, pane.height) / 50;
+        const auto scroll = GetMouseWheelMove() * (invertScroll ? -mouseWheelMult : mouseWheelMult);
         if (CheckCollisionMouseRect(pane) && scroll != 0 && scroller.width != 0)
         {
             isDragging = false;
@@ -234,6 +237,8 @@ namespace magique
         }
 
         offset = std::max(offset, 0.0F);
+        if (hovered)
+            LayeredInput::ConsumeMouse();
     }
 
     float ScrollPane::Scroller::getScaledOffset(Anchor anchor) const

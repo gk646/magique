@@ -28,7 +28,7 @@ namespace magique
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
     //      - port: a number between 0 and 65536
     // Note: On success the connection is stored internally as well and can be accessed via GetCurrentConnections()
-    Connection LocalSocketConnect(const char* ip, uint16_t port = 60000);
+    Connection LocalSocketConnect(std::string_view ip, uint16_t port = 60000);
 
     // Returns a pointer to the local ip as a string - always save to access and cached after the first call
     // Failure: returns nullptr if it's not possible to retrieve the ip

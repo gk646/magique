@@ -28,6 +28,13 @@ namespace magique
 
     struct SoundWrapper final
     {
+        Sound sound;
+        float playVolume;
+        Point position{};
+        Entity entity = NullEntity{};
+        bool isPositional = false;
+        bool loop = false;
+
         SoundWrapper(Sound sound, float volume, bool loop);
         SoundWrapper(Sound sound, float volume, Point pos, bool loop) : SoundWrapper(sound, volume, loop)
         {
@@ -48,23 +55,23 @@ namespace magique
             isPositional(other.isPositional), loop(other.loop)
         {
             other.sound = {};
-            other.sound.stream.buffer = nullptr;
         }
 
         SoundWrapper& operator=(SoundWrapper&& other) noexcept
         {
             if (this != &other)
             {
+                StopSound(sound);
+                SetAudioBufferLooping(sound.stream.buffer, false);
                 sound = other.sound;
                 playVolume = other.playVolume;
                 position = other.position;
-                isPositional = other.isPositional;
                 entity = other.entity;
-                loop = other.loop;
                 isPositional = other.isPositional;
+                loop = other.loop;
+                SetAudioBufferLooping(sound.stream.buffer, loop);
 
                 other.sound = {};
-                other.sound.stream.buffer = nullptr;
             }
             return *this;
         }
@@ -72,24 +79,15 @@ namespace magique
         ~SoundWrapper()
         {
             StopSound(sound);
-            SetAudioBufferLooping(sound.stream.buffer, false);
             UnloadSoundAlias(sound);
             sound = {};
-            sound.stream.buffer = nullptr;
         }
 
-
-        Sound sound;
-        float playVolume;
-        Point position{};
-        Entity entity = NullEntity();
-        bool isPositional = false;
-        bool loop = false;
 
         bool shouldRemove() const
         {
             if (isPositional)
-                return entity != NullEntity() && !EntityExists(entity);
+                return entity != NullEntity{} && !EntityExists(entity);
             return !IsSoundPlaying(sound);
         }
         float getVolume() const;
@@ -111,8 +109,7 @@ namespace magique
         {
             PlayMusicStream(music);
             tracks.emplace_back(music, volume, fadeIn ? 0.0F : volume, false, fadeIn, looping);
-            if (looping)
-                SetAudioBufferLooping(music.stream.buffer, true);
+            SetAudioBufferLooping(music.stream.buffer, looping);
         }
 
         void removeTrack(const Music& music)
@@ -165,11 +162,7 @@ namespace magique
                           [](SoundWrapper& e)
                           {
                               e.update();
-                              if (e.shouldRemove())
-                              {
-                                  return true;
-                              }
-                              return false;
+                              return e.shouldRemove();
                           });
             std::erase_if(tracks, [](Track& e) { return e.update(); });
 

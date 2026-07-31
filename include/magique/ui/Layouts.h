@@ -38,10 +38,10 @@ namespace magique
 
 
     // Splits the given area into two pieces by making a vertical slice at the given width (in percent of the total width)
-    // gap specifies the width of a gap in the middle that's kept free - for left side on the right, for right side on the left
-    struct VerticalLayout : Layout
+    struct VerticalSplit: Layout
     {
-        VerticalLayout(const Rect& area, float where = 0.5F, float gap = 0.0F);
+        //      - gap: the size of the gap in the middle in percent of total width
+        VerticalSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
 
         Layout left() const;
         Layout right() const;
@@ -53,13 +53,16 @@ namespace magique
 
 
     // Splits the given area into two pieces by making a horizontal slice at the given height (in percent of the total height)
-    struct HorizontalLayout : Layout
+    struct HorizontalSplit : Layout
     {
-        HorizontalLayout(const Rect& area, float where = 0.5F);
+        //      - gap: the size of the gap in the middle in percent of total width
+        HorizontalSplit(const Rect& area, float where = 0.5F, float gap = 0.0F);
 
         Layout upper() const;
         Layout lower() const;
 
+    private:
+        float gap = 0.0F;
         float split = 0.5F;
     };
 

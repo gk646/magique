@@ -192,9 +192,7 @@ namespace magique
     {
         shape = Shape::RECT;
         if (newAnchor == -1)
-        {
             newAnchor = rect.size() / 2;
-        }
         anchor = newAnchor;
         offset = rect.pos();
         anchor.floor();

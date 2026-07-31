@@ -137,17 +137,14 @@ namespace magique
         auto& registry = internal::REGISTRY;
 
         if (!registry.valid(entity))
-        {
             return false;
-        }
-
         const auto& pos = internal::POSITION_GROUP.get<const PositionC>(entity);
+
         if (data.destroyCallback)
             data.destroyCallback(entity);
+
         if (!config.isClientMode && data.isEntityScripted(entity)) [[likely]]
-        {
             internal::GetScriptInternal(entity)->onDestroy(entity);
-        }
 
         data.entityUpdateCache.erase(entity);
         std::erase(data.drawVec, entity);
@@ -157,9 +154,7 @@ namespace magique
         dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
         global::PATH_DATA.solidEntities.erase(entity);
         if (entity == CameraGetEntity())
-        {
             data.cameraEntity = entt::null;
-        }
         registry.destroy(entity);
         return true;
     }

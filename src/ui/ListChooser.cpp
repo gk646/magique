@@ -17,19 +17,27 @@ namespace magique
         setGamepadMapping(new GamepadMapping(*this,
                                              [&](GamepadMappingState& state, GamepadButton button)
                                              {
+                                                 auto getRowPos = [&](int row)
+                                                 {
+                                                     const auto bounds = getBounds();
+                                                     Point pos = {bounds.mid().x, bounds.y};
+                                                     for (int i = 0; i < row; i++)
+                                                         pos.y += entries[i].height + spacing;
+                                                     return pos;
+                                                 };
+
+                                                 if (state.event == GamepadMappingEvent::Start)
+                                                 {
+                                                     state.row = getSelectedIndex();
+                                                     return getRowPos(state.row);
+                                                 }
+
                                                  if (state.isUpOrDown())
                                                  {
                                                      int direction = state.isUp() ? -1 : 1;
                                                      state.row =
                                                          std::clamp(state.row + direction, 0, (int)entries.size() - 1);
-
-                                                     const auto bounds = getBounds();
-                                                     Point pos = {bounds.mid().x, bounds.y};
-                                                     for (int i = 0; i < state.row; i++)
-                                                     {
-                                                         pos.y += entries[i].height + spacing;
-                                                     }
-                                                     return pos;
+                                                     return getRowPos(state.row);
                                                  }
 
                                                  if (state.event == GamepadMappingEvent::Back)
@@ -66,9 +74,9 @@ namespace magique
         entries.clear();
     }
 
-    bool ListChooser::empty() const { return entries.empty(); }
+    bool ListChooser::getIsEmpty() const { return entries.empty(); }
 
-    int ListChooser::size() const { return (int)entries.size(); }
+    int ListChooser::getSize() const { return (int)entries.size(); }
 
     bool ListChooser::contains(std::string_view item) const
     {
@@ -219,11 +227,7 @@ namespace magique
                 if (pressed)
                 {
                     if (i != selected)
-                    {
-                        selected = i;
-                        if (selectFunc)
-                            selectFunc(entries[i].text);
-                    }
+                        setSelected(i, true);
                     UISetPreviousGamepadMap();
                     LayeredInput::ConsumeMouse();
                 }

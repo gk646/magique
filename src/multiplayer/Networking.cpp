@@ -60,13 +60,10 @@ namespace magique
         MAGIQUE_ASSERT(flag <= SendFlag::RELIABLE, "Invalid flag");
 
         if (payload.data == nullptr || !NetworkInSession()) [[unlikely]] // This can cause runtime crash
-        {
             return false;
-        }
 
         auto* msg = SteamNetworkingUtils()->AllocateMessage(payload.size + 1);
 
-        // Reserved message type
         static_cast<char*>(msg->m_pData)[0] = static_cast<char>(payload.type);
         std::memcpy(static_cast<char*>(msg->m_pData) + 1, payload.data, payload.size);
 
@@ -83,9 +80,7 @@ namespace magique
     {
         bool success = true;
         for (const auto conn : NetworkGetConnections())
-        {
             success &= NetworkSend(conn, payload, flag);
-        }
         return success;
     }
 
@@ -118,9 +113,7 @@ namespace magique
         }
 
         if (!NetworkInSession()) [[unlikely]]
-        {
             return data.incMsgVec;
-        }
 
         // Lambda to process received messages
         auto processMessages = [&](const int startIdx, const int count)

@@ -156,21 +156,15 @@ namespace magique
                              const float spacing, bool centered)
     {
         if (isFocused)
-        {
             updateSelection(fontSize, font, spacing);
-        }
 
         const auto bounds = getBounds();
         const Point tPos = centered ? getCenteredTextPos(bounds, fontSize) : Point{bounds.x, bounds.y};
 
         if (!isFocused && text.empty() && hint != nullptr)
-        {
-            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorAlpha(color, 0.75));
-        }
+            DrawTextEx(font, hint, tPos, fontSize, spacing, ColorBrightness(ColorAlpha(color, 0.55), -0.1F));
         else
-        {
             DrawTextEx(font, text.c_str(), tPos, fontSize, spacing, color);
-        }
 
         if (hasSelection())
         {

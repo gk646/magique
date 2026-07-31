@@ -2,6 +2,9 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
+#include "entt/entity/entity.hpp"
+
+
 #include <cstdint> // My favourite header
 #include <magique/config.h>
 #include <magique/internal/Macros.h>

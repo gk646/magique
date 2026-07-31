@@ -60,18 +60,26 @@ namespace magique
         return data.listenSocket != k_HSteamListenSocket_Invalid;
     }
 
-    Connection LocalSocketConnect(const char* ip, const uint16_t port)
+    Connection LocalSocketConnect(std::string_view ip, const uint16_t port)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
-        MAGIQUE_ASSERT(ip != nullptr, "passed nullptr");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
+
+        if (data.inSession)
+            return Connection::INVALID;
+
 
         SteamNetworkingIPAddr addr{};
         addr.Clear();
-        if (!addr.ParseString(TextFormat("%s:%d", ip, port)))
+        if (ip == "localhost")
         {
-            LOG_WARNING("Given IP or port is not valid: %s:%d", ip, port);
+            ip = OSUtilGetLocalIP();
+        }
+
+        if (!addr.ParseString(TextFormat("%s:%d", ip.data(), port)))
+        {
+            LOG_WARNING("Given IP or port is not valid: %s:%d", ip.data(), port);
             return Connection::INVALID;
         }
 

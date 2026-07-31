@@ -31,6 +31,12 @@ namespace magique
         return hSteamAPICall != k_uAPICallInvalid;
     }
 
+    void SteamLobbySetType(SteamLobbyType type)
+    {
+        auto& steamData = global::STEAM_DATA;
+        SteamMatchmaking()->SetLobbyType(steamData.lobbyID, static_cast<ELobbyType>(type));
+    }
+
     void SteamLobbyJoin(SteamLobbyID lobbyID)
     {
         if (SteamIsInLobby())

@@ -42,8 +42,9 @@ namespace magique
 
         // Removes all values
         void clear();
-        bool empty() const;
-        int size() const;
+
+        bool getIsEmpty() const;
+        int getSize() const;
 
         bool contains(std::string_view item) const;
 

@@ -57,6 +57,7 @@ namespace magique
     //================= SENDING =================//
 
     // Directly sends the message - should only be used for single messages else use BatchMessage() and SendBatch()
+    // Note: Directly copies the data inside this method - payload can be local memory
     // Failure: returns false if passed data is invalid, invalid connection or invalid send flag
     bool NetworkSend(Connection conn, Payload payload, SendFlag flag = SendFlag::RELIABLE);
 
@@ -74,7 +75,7 @@ namespace magique
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
     // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna store its information)
-    const std::vector<Message>& NetworkReceive(int maxMessages = 150);
+    const std::vector<Message>& NetworkReceive(int maxMessages = 500);
 
     //================= UTIL =================//
 

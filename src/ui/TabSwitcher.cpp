@@ -99,6 +99,7 @@ namespace magique
 
     void TabSwitcher::onDraw(const Rect& bounds)
     {
+        DrawRectFrameFilled(bounds.enlarge(4), EngineGetTheme().backHighlight, EngineGetTheme().background);
         Point pos = bounds.pos();
         float biggestY = 0;
         for (int i = 0; i < (int)getChildren().size(); i++)
@@ -110,8 +111,10 @@ namespace magique
             {
                 setActive(child.object);
             }
-            pos.x += dims.x + 2;
-            biggestY = std::max(biggestY, pos.y);
+            pos.x += dims.x;
+            if (i != (int)getChildren().size() - 1)
+                pos.x += 2;
+            biggestY = std::max(biggestY, tab.height);
         }
 
         setBounds(Rect::FromSpanPoints(bounds.pos(), {pos.x, pos.y + biggestY}));
@@ -127,7 +130,7 @@ namespace magique
     {
         const auto& theme = EngineGetTheme();
         const auto& fnt = EngineGetFont();
-        const Point dims = Point{8, 4} + Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize * 1.0F, 0.5F)};
+        const Point dims = Point{8, 2} + Point{MeasureTextEx(fnt, child.name.data(), fnt.baseSize, 1.0F)};
         const Rect tab{pos, dims};
         const auto hovered = tab.contains(GetMousePos());
         DrawRectFrameFilled(tab, theme.getBodyColor(hovered, isActive), theme.getOutlineColor(hovered, isActive));

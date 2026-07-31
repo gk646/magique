@@ -8,15 +8,13 @@
 #include <magique/ui/UIObject.h>
 
 //===============================================
-// UIContainer
+// UIContainer + (VerticalContainer, HorizontalContainer)
 //===============================================
 // .....................................................................
 // UIContainer allows to programmatically store and retrieve UIObjects
 // As a rule of thumb:
 //  - If you have only a few distinct classes that make up the whole thing use a UIObject with UIObject members
 //  - If you have many members and need to access them programmatically (loops, ...) use UIContainer
-// Note: UIContainer::onUpdate() is called before its children
-// Note: Also contains VerticalContainer˛- auto expands vertically
 // .....................................................................
 
 namespace magique
@@ -40,8 +38,6 @@ namespace magique
 
     public:
         // Adds a new child to the container with an optional name identifier
-        // Pass a new instance of your class new MyClass() - the name will be copied if specified
-        // Note: the container takes ownership of the child pointer
         // Returns: the added child if successful, otherwise nullptr
         UIObject* addChild(UIObject* child, std::string_view name = {});
 
@@ -57,6 +53,9 @@ namespace magique
         bool removeChild(std::string_view name);
         bool removeChild(int index);
         bool removeChild(UIObject* child);
+
+        // Removes all children
+        void clear();
 
         // Returns a pointer to the child associated with the given name (if any)
         // Failure: returns nullptr if the name doesn't exist
@@ -85,11 +84,11 @@ namespace magique
         Anchor getHorizontalAlign() const;
 
         float getGap() const;
-        void setGap(float gap = 3.0F);
+        VerticalContainer& setGap(float gap = 3.0F);
 
         // If true draws them in reverse
         // Note: This is useful when drawing dropdowns so the list doesn't get overdrawn by controls below
-        void setReverseDraw(bool reverse = true);
+        VerticalContainer& setReverseDraw(bool reverse = true);
 
     protected:
         void onDraw(const Rect& bounds) override;

@@ -6,8 +6,8 @@
 extern "C"
 {
     void SetAudioBufferLooping(rAudioBuffer* buffer, bool value);
+    bool IsAudioBufferLooping(rAudioBuffer* buffer);
 }
-
 
 
 #endif // MAGIQUE_RAUDIO_COMPAT_H

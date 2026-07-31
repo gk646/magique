@@ -28,14 +28,14 @@ namespace magique
 
         // Sets the disabled state - prevents only the onClick and wireOnClick activations
         // Does NOT affect the base UIObject methods
-        void setDisabled(bool value);
+        void setDisabled(bool value = true);
         bool getIsDisabled() const;
 
         void setHoverText(const char* value);
         const char* getHoverText() const;
 
         // Manually calls the click func (if present)
-        void triggerClick(MouseButton button = MOUSE_BUTTON_LEFT) const;
+        void triggerClick(MouseButton button = MOUSE_BUTTON_LEFT);
 
     protected:
         void onDraw(const Rect& bounds) override { drawDefault(bounds); }

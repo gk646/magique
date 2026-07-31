@@ -47,6 +47,9 @@ namespace magique
     // Note: This causes both LOBBY_CREATED and LOBBY_ENTERED events
     bool SteamLobbyCreate(SteamLobbyType type, int maxPlayers = 4);
 
+    // Updates the lobby type
+    void SteamLobbySetType(SteamLobbyType type);
+
     // Tries to connect to the lobby specified by the given id (or id as string)
     void SteamLobbyJoin(SteamLobbyID lobbyID);
     void SteamLobbyJoin(std::string_view lobbyID);
@@ -102,6 +105,7 @@ namespace magique
 
     // Start a search with the currently applied filters - returns up to 50 lobbies
     // Note: Filters are cleared after each search call - need to be reapplied
+    // Create a temporary SteamSearchFilter and set the filters - state is global
     // Per default sorts after geographical distance, doesn't show full lobbies and uses the Default distance filter
     void SteamSearchLobbies();
 

@@ -221,7 +221,7 @@ namespace magique
             const auto& staticGrid = path.mapsStaticGrids[currentMap];
             const auto& dynamicGrid = path.mapsDynamicGrids[currentMap];
 
-            const auto bounds = CameraGetNativeBounds();
+            const auto bounds = CameraGetBounds();
             constexpr int cellSize = MAGIQUE_PATHFINDING_CELL_SIZE;
             const int startX = static_cast<int>(bounds.x) / cellSize;
             const int startY = static_cast<int>(bounds.y) / cellSize;

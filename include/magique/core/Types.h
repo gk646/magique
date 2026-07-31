@@ -429,6 +429,10 @@ namespace magique
         // object with image of the 10th tile from second is placed -> tileid: 211 (starts with 1)
         int getTileID() const;
 
+        // When the object is rotated visually in the editor (not through properties) the coordinates change (????...)
+        // This returns the original top left coordinates so the object is positioned properly
+        Point getOriginalTopLeft() const;
+
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(std::string_view name) const;
         bool hasProperty(std::string_view name) const;
@@ -796,14 +800,15 @@ namespace magique
         INVALID = 0
     };
 
-    enum class SteamLobbyType
+
+    enum class SteamLobbyType : uint8_t
     {
-        Private,
-        FriendsOnly,
-        Public,
+        Private,     // Only way to join is to invite to someone else
+        FriendsOnly, // Shows for friends or invitees, but not in public lobby list - allows members to invite friends
+        Public,      // Joinable by everyone - shows up in lobby search
     };
 
-    enum class SteamLobbyEvent
+    enum class SteamLobbyEvent : uint8_t
     {
         // Called only when you created a lobby - called with your id
         ON_LOBBY_CREATED,

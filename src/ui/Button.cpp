@@ -26,10 +26,11 @@ namespace magique
 
     const char* Button::getHoverText() const { return hoverText.c_str(); }
 
-    void Button::triggerClick(MouseButton button) const
+    void Button::triggerClick(MouseButton button)
     {
         if (clickFunc)
             clickFunc(button);
+        onClick(getBounds(), button);
     }
 
     void Button::updateActions(const Rect& bounds)
@@ -65,7 +66,9 @@ namespace magique
     void Button::drawDefault(const Rect& bounds)
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
-        const Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
+        Color body = theme.getBodyColor(getIsHovered(), getIsPressed());
+        if (isDisabled)
+            body = DARKGRAY;
         const Color outline = theme.getOutlineColor(getIsHovered(), getIsPressed());
         DrawRectFrameFilled(bounds.floored(), body, outline);
         drawHoverText(EngineGetFont(), UIGetScaled(1), theme.backActive, theme.backHighlight, theme.textHighlight);

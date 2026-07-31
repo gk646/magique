@@ -130,9 +130,7 @@ namespace magique
                                                  if (state.event == GamepadMappingEvent::Start)
                                                  {
                                                      if (entries.empty())
-                                                     {
                                                          return getBounds().mid();
-                                                     }
 
                                                      state.row = 0;
                                                      state.col = 0;

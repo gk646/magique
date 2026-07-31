@@ -51,7 +51,6 @@ namespace magique
         const auto& config = global::ENGINE_CONFIG;
         if (!config.isClientMode && config.enableCollisionSystem) [[likely]]
         {
-            // GetMovementDeltas();
             StaticCollisionSystem();  // After cause user systems can modify entity state
             DynamicCollisionSystem(); // After cause user systems can modify entity state
             ResolveCollisions();
@@ -60,9 +59,7 @@ namespace magique
         WindowManagerGet().update();
         auto& data = global::ENGINE_DATA;
         for (auto e : data.deferredDestroyVec)
-        {
             EntityDestroy(e);
-        }
         data.deferredDestroyVec.clear();
     }
 } // namespace magique

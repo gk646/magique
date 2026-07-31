@@ -119,6 +119,7 @@ namespace magique
     void UIObject::align(const Direction direction, const UIObject& relativeTo, Point offset)
     {
         const auto otherBounds = relativeTo.getBounds();
+        const auto myBounds = getBounds();
         Point pos = {otherBounds.x, otherBounds.y};
         offset = {UIGetScaled(offset.x), UIGetScaled(offset.y)};
         switch (direction)
@@ -133,7 +134,7 @@ namespace magique
             break;
         case Direction::UP:
             pos.x += offset.x;
-            pos.y -= offset.y;
+            pos.y -= myBounds.height + offset.y;
             break;
         case Direction::DOWN:
             pos.x += offset.x;
@@ -219,9 +220,17 @@ namespace magique
 
     std::string_view LabelledObject::getText() const { return label; }
 
-    void LabelledObject::setText(std::string_view text) { label = text; }
+    LabelledObject& LabelledObject::setText(std::string_view text)
+    {
+        label = text;
+        return *this;
+    }
 
-    void LabelledObject::setDirection(Direction direction) { dir = direction; }
+    LabelledObject& LabelledObject::setDirection(Direction direction)
+    {
+        dir = direction;
+        return *this;
+    }
 
     Direction LabelledObject::getDirection() const { return dir; }
 
@@ -245,10 +254,10 @@ namespace magique
             DrawTextEx(font, label.data(), bounds.topRight() + Point{2, centerYOff}, fSize, 1.0F, WHITE);
             break;
         case Direction::UP:
-            DrawTextCentered(font, label, bounds.bottomMid() - Point{0, fSize + 4}, fSize);
+            DrawTextEx(font, label.data(), bounds.pos() - Point{4, fSize + 1}, fSize, 1.0F, WHITE);
             break;
         case Direction::DOWN:
-            DrawTextCentered(font, label, bounds.topMid() + Point{0, 4}, fSize);
+            DrawTextEx(font, label.data(), bounds.bottomLeft() + Point{-4, 1}, fSize, 1.0F, WHITE);
             break;
         }
     }

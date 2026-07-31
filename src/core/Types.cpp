@@ -790,6 +790,16 @@ namespace magique
 
     int TiledObject::getTileID() const { return tileId; }
 
+    Point TiledObject::getOriginalTopLeft() const
+    {
+        const float theta = rotation * (M_PI / 180.0F);
+        const float cos_theta = cosf(theta);
+        const float sin_theta = sinf(theta);
+        float x = bounds.x - (bounds.width / 2.0F) * (1.0F - cos_theta) - (bounds.height / 2.0F) * sin_theta;
+        float y = bounds.y - (bounds.height / 2.0F) * (1.0F - cos_theta) + (bounds.width / 2.0F) * sin_theta;
+        return {x, y};
+    }
+
     const TiledProperty* TiledObject::getProperty(std::string_view pName) const
     {
         const auto it =

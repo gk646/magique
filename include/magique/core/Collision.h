@@ -42,13 +42,16 @@ namespace magique
 
     bool CheckCollisionEntityCircle(Entity e, const Circle& c);
 
+    //================= GRIDS =================//
+
     // Returns true if the entity collides with any other collision entity
     // Note: This performs a direct collision check with all relevant entities nearby each time
     bool CheckCollisionEntityAny(Entity e);
 
-    // Returns true if the entity collides with any static collision objects
+    // Returns true if the thing collides with any static collision objects
     // Note: This performs a direct collision check with all relevant static objects nearby each time
     bool CheckCollisionEntityStatic(Entity e);
+    bool CheckCollisionRectStatic(const Rect& r, Entity e);
 
     //================= CIRCLE =================//
 

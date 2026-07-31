@@ -65,6 +65,8 @@ namespace magique
         return std::erase_if(children, [&](auto& e) { return e.object == child; }) > 0;
     }
 
+    void UIContainer::clear() { children.clear(); }
+
     UIObject* UIContainer::getChild(std::string_view name) const
     {
         MAGIQUE_ASSERT(!name.empty(), "Name must be non-null");
@@ -139,9 +141,17 @@ namespace magique
 
     float VerticalContainer::getGap() const { return gap; }
 
-    void VerticalContainer::setGap(float newGap) { gap = newGap; }
+    VerticalContainer& VerticalContainer::setGap(float newGap)
+    {
+        gap = newGap;
+        return *this;
+    }
 
-    void VerticalContainer::setReverseDraw(bool reverse) { reverseDraw = reverse; }
+    VerticalContainer& VerticalContainer::setReverseDraw(bool reverse)
+    {
+        reverseDraw = reverse;
+        return *this;
+    }
 
     void HorizontalContainer::onDraw(const Rect& bounds)
     {

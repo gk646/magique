@@ -15,9 +15,7 @@ namespace magique
         auto& ap = global::AUDIO_PLAYER;
         ap.soundVolume = volume;
         for (auto& s : ap.sounds)
-        {
             SetSoundVolume(s.sound, ap.getSoundVolume(s.getVolume()));
-        }
     }
 
     float SoundGetSoundVolume() { return global::AUDIO_PLAYER.soundVolume; }
@@ -28,9 +26,7 @@ namespace magique
         auto& ap = global::AUDIO_PLAYER;
         ap.musicVolume = volume;
         for (const auto& t : ap.tracks)
-        {
             SetMusicVolume(t.music, ap.getMusicVolume(t.playBackVolume));
-        }
     }
 
     float SoundGetMusicVolume() { return global::AUDIO_PLAYER.musicVolume; }

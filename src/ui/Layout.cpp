@@ -11,16 +11,16 @@ namespace magique
 
     Layout::operator Rectangle() const { return bounds; }
 
-    VerticalLayout::VerticalLayout(const Rect& area, float where, float gap) : Layout(area), gap(gap), split(where) {}
+    VerticalSplit::VerticalSplit(const Rect& area, float where, float gap) : Layout(area), gap(gap), split(where) {}
 
-    Layout VerticalLayout::left() const
+    Layout VerticalSplit::left() const
     {
         auto ret = area();
         ret.width = ret.width * (split - gap / 2.0F);
         return ret.floor();
     }
 
-    Layout VerticalLayout::right() const
+    Layout VerticalSplit::right() const
     {
         auto ret = area();
         ret.x += ret.width * (split + gap / 2.0F);
@@ -28,20 +28,20 @@ namespace magique
         return ret.floor();
     }
 
-    HorizontalLayout::HorizontalLayout(const Rect& area, float where) : Layout(area), split(where) {}
+    HorizontalSplit::HorizontalSplit(const Rect& area, float where, float gap) : Layout(area), gap(gap), split(where) {}
 
-    Layout HorizontalLayout::upper() const
+    Layout HorizontalSplit::upper() const
     {
         auto ret = area();
-        ret.height = ret.height * split;
+        ret.height = ret.height * (split - gap / 2.0F);
         return ret.floor();
     }
 
-    Layout HorizontalLayout::lower() const
+    Layout HorizontalSplit::lower() const
     {
         auto ret = area();
-        ret.y += ret.height * split;
-        ret.height = ret.height * (1.0F - split);
+        ret.y += ret.height * (split + gap / 2.0F);
+        ret.height = ret.height * (1.0F - split - gap / 2.0F);
         return ret.floor();
     }
 
