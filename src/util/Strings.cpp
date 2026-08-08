@@ -269,7 +269,7 @@ namespace magique
 
     std::string StringFromBase64(std::string_view input) { return glz::read_base64(input); }
 
-    const char* StringFromFloat(float num, float cutoff, bool withSign)
+    std::string_view StringFromFloat(float num, float cutoff, bool withSign)
     {
         if (withSign)
         {
@@ -295,7 +295,7 @@ namespace magique
         }
     }
 
-    const char* StringFromGameNumber(float num)
+    std::string_view StringFromGameNumber(float num)
     {
         if (num < 1e3)
         {
@@ -315,7 +315,15 @@ namespace magique
         }
     }
 
-    const char* StringFromGameNumber(int64_t num)
+    std::string_view StringFromTimeMillis(float seconds)
+    {
+        const auto min = seconds / 60.0F;
+        const auto sec = (int)seconds % 60;
+        const auto millis = (seconds - (int)seconds) * 1000.0F;
+        return TextFormat("%02d:%02d:%03d", (int)min, sec, (int)millis);
+    }
+
+    std::string_view StringFromGameNumber(int64_t num)
     {
         if (num < 1000)
         {

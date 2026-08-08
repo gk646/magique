@@ -94,7 +94,7 @@ namespace magique
     void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);
 
     // Draws a frame - leaves out the edges for a slightly rounded look
-    void DrawRectFrame(const Rectangle& bounds, const Color& tint);
+    void DrawRectFrame(const Rect& bounds, const Color& tint);
 
     // Draws a frame but filled
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline);

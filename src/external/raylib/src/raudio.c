@@ -2715,7 +2715,6 @@ static void StopAudioBufferInLockedState(AudioBuffer *buffer)
         {
             buffer->playing = false;
             buffer->paused = false;
-            buffer->looping = false;
             buffer->frameCursorPos = 0;
             buffer->framesProcessed = 0;
             buffer->isSubBufferProcessed[0] = true;

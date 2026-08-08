@@ -286,18 +286,21 @@ namespace magique::internal
         UIObject* object = nullptr;
     };
 
-    struct MessageCount
+    struct PacketTypeStats
     {
         MessageType type;
-        uint32_t count;
+        float count;   // How many times it was sent
+        float size;    // Size of a single packet
+        float total;   // Total size in bytes
+        float contrib; // Contribution to total in %
     };
 
     struct MultiplayerStatsData
     {
-        std::array<MessageCount, UINT8_MAX> incoming;
-        std::array<MessageCount, UINT8_MAX> outgoing;
-        uint32_t bytesIn;
-        uint32_t bytesOut;
+        std::vector<PacketTypeStats> incoming;
+        std::vector<PacketTypeStats> outgoing;
+        float bytesIn;
+        float bytesOut;
     };
 
 

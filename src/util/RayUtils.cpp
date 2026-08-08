@@ -156,54 +156,31 @@ namespace magique
         DrawRectangleRec(shadeRect, shade);
     }
 
-    void DrawRectFrame(const Rectangle& bounds, const Color& tint)
+    void DrawRectFrame(const Rect& bounds, const Color& tint)
     {
-        const float x = bounds.x;
-        const float y = bounds.y;
-        const float width = bounds.width;
-        const float height = bounds.height;
+        const auto[x,y, width, height] = bounds;
+        const Point topStart = {x + 1.0F, y};
+        const Point topEnd = {x + width - 1.0F, y};
 
-#ifdef _MSC_VER
-        const Vector2 topStart = {x + 1, y};
-        const Vector2 topEnd = {x + width - 1, y};
+        const Point bottomStart = {x + 1.0F, y + height - 1.0F};
+        const Point bottomEnd = {x + width - 1.0F, y + height - 1.0F};
 
-        const Vector2 bottomStart = {x + 1, y + height - 1};
-        const Vector2 bottomEnd = {x + width - 1, y + height - 1};
+        const Point leftStart = {x+0.01F , y + 1.0F};
+        const Point leftEnd = {x +0.01F, y + height - 1.0F};
 
-        const Vector2 leftStart = {x + 0.01F, y};
-        const Vector2 leftEnd = {x + 0.01F, y + height - 2};
+        const Point rightStart = {x + width, y + 1.0F};
+        const Point rightEnd = {x + width, y + height - 1.0F};
 
-        const Vector2 rightStart = {x + width, y};
-        const Vector2 rightEnd = {x + width, y + height - 2};
-#else
-        const Vector2 topStart = {x + 1, y};
-        const Vector2 topEnd = {x + width - 1, y};
-
-        const Vector2 bottomStart = {x + 1, y + height - 1};
-        const Vector2 bottomEnd = {x + width - 1, y + height - 1};
-
-        const Vector2 leftStart = {x + 0.01F, y + 1};
-        const Vector2 leftEnd = {x + 0.01F, y + height - 1};
-
-        const Vector2 rightStart = {x + width, y + 1};
-        const Vector2 rightEnd = {x + width, y + height - 1};
-#endif
-
-
-        DrawLineV(topStart, topEnd, tint);
-        DrawLineV(bottomStart, bottomEnd, tint);
-        DrawLineV(leftStart, leftEnd, tint);
-        DrawLineV(rightStart, rightEnd, tint);
+        DrawLineV(topStart.floored(), topEnd, tint);
+        DrawLineV(bottomStart.floored(), bottomEnd, tint);
+        DrawLineV(leftStart.floored(), leftEnd, tint);
+        DrawLineV(rightStart.floored(), rightEnd, tint);
     }
 
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
     {
-        DrawRectangleRec(bounds.floored().shrink(2), fill);
-#ifdef _MSC_VER
-        DrawRectFrame(bounds.floored() + Point{0, 1}, outline);
-#else
+        DrawRectangleRec(bounds.shrink(2.0F).floored(), fill);
         DrawRectFrame(bounds.floored(), outline);
-#endif
     }
 
     void SetCursorImage(Image img, Point anchor)

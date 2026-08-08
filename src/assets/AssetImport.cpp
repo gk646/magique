@@ -494,9 +494,8 @@ namespace magique
         {
             TileInfo info{};
             if (tile->type.ptr != nullptr && func != nullptr)
-            {
                 info.tileClass = func(tile->type.ptr);
-            }
+
             if (tile->objectgroup != nullptr)
             {
                 auto& object = *tile->objectgroup->objects;

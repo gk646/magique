@@ -221,9 +221,7 @@ namespace magique
         for (auto& mapping : data.connectionMapping)
         {
             if (mapping.entity == entity)
-            {
                 return mapping.conn;
-            }
         }
         return Connection::INVALID;
     }

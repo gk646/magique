@@ -2,7 +2,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/Steam.h>
 
-
 #ifndef MAGIQUE_STEAM
 #include "magique/core/Types.h"
 #include "magique/util/Logging.h"

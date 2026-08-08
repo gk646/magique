@@ -14,9 +14,7 @@ namespace magique
     void ScriptingSetScript(const EntityType type, EntityScript* script)
     {
         auto& scData = global::SCRIPT_DATA;
-        // Dont delete the default script
-        if (scData.scripts[type] != ScriptData::defaultScript)
-            delete scData.scripts[type];
+        // Dont delete scripts to avoid funny bugs
         scData.scripts[type] = script;
     }
 

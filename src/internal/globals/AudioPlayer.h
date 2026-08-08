@@ -35,17 +35,8 @@ namespace magique
         bool isPositional = false;
         bool loop = false;
 
-        SoundWrapper(Sound sound, float volume, bool loop);
-        SoundWrapper(Sound sound, float volume, Point pos, bool loop) : SoundWrapper(sound, volume, loop)
-        {
-            position = pos;
-            isPositional = true;
-        }
-        SoundWrapper(Sound sound, float volume, Entity e, bool loop) : SoundWrapper(sound, volume, loop)
-        {
-            isPositional = true;
-            entity = e;
-        }
+        SoundWrapper(Sound sound, float volume, bool loop, bool isPositional = false, Point position = {},
+                     Entity entity = NullEntity{});
 
         SoundWrapper(const SoundWrapper& other) = delete;
         SoundWrapper& operator=(const SoundWrapper& other) = delete;
@@ -87,7 +78,11 @@ namespace magique
         bool shouldRemove() const
         {
             if (isPositional)
-                return entity != NullEntity{} && !EntityExists(entity);
+            {
+                if (entity == NullEntity{})
+                    return !IsSoundPlaying(sound);
+                return !EntityExists(entity);
+            }
             return !IsSoundPlaying(sound);
         }
         float getVolume() const;
@@ -220,14 +215,16 @@ namespace magique
         return markedForRemoval && currentVolume <= 0;
     }
 
-    inline SoundWrapper::SoundWrapper(Sound originalSound, float volume, bool loop) :
-        sound(LoadSoundAlias(originalSound)), playVolume(volume), loop(loop)
+    inline SoundWrapper::SoundWrapper(Sound original, float volume, bool loop, bool isPositional, Point position,
+                                      Entity entity) :
+        sound(LoadSoundAlias(original)), playVolume(volume), position(position), entity(entity),
+        isPositional(isPositional), loop(loop)
     {
-        SetSoundVolume(sound, global::AUDIO_PLAYER.getSoundVolume(volume));
+        SetAudioBufferLooping(sound.stream.buffer, loop);
+        update();
         auto [min, max] = global::AUDIO_PLAYER.soundPitchInterval;
         SetSoundPitch(sound, MathRandom(min, max));
         PlaySound(sound);
-        SetAudioBufferLooping(sound.stream.buffer, loop);
     }
 
     inline float SoundWrapper::getVolume() const
@@ -237,6 +234,7 @@ namespace magique
         {
             auto dist = CameraGetPosition().euclidean(position);
             float distMult = 1.0F - MathLerpInverse(0, ap.maxSoundDistance, std::min(ap.maxSoundDistance, dist));
+            distMult = std::clamp(distMult, 0.0F, 1.0F);
             return ap.getSoundVolume(playVolume * distMult);
         }
         else

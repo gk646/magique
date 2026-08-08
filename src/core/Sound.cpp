@@ -44,7 +44,7 @@ namespace magique
     void SoundPlay2D(const Sound& sound, const Entity entity, const float volume, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]
-            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, entity, loop);
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop, true, Point{}, entity);
         else
             LOG_WARNING("Cant play invalid sound");
     }
@@ -52,7 +52,7 @@ namespace magique
     void SoundPlay2D(const Sound& sound, Point pos, float volume, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]
-            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pos, loop);
+        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop, true, pos);
         else
             LOG_WARNING("Cant play invalid sound");
     }

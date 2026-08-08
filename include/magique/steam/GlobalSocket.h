@@ -25,8 +25,9 @@ namespace magique
     bool GlobalSocketInit();
 
     // Creates a global steam sockets so others can connect to you - makes you the host
+    //      - sendBufferSize: Upper limit of buffered pending bytes to be sent
     // Returns true if it was successful
-    bool GlobalSocketCreate();
+    bool GlobalSocketCreate(int sendBufferSize = 524288);
 
     // Connects to a global socket via the steam id
     // Note: To get the steam id of the clients you usually have to create a lobby

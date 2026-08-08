@@ -75,14 +75,17 @@ namespace magique
 
     // Formats a float number so its nicely readable
     // If it's larger than cutoff OR a whole number (e.g. 3.0) its formatted as integer, else with 1 decimal as float
-    const char* StringFromFloat(float num, float cutoff = 100.0F, bool withSign = false);
+    std::string_view StringFromFloat(float num, float cutoff = 100.0F, bool withSign = false);
 
     // Formats the given number for displaying it in gameplay context:
     // Shortens to at most 5 digits: 3 before dot, 2 after
     // Uses K/M/B to shorten thousands, millions and billions
     // e.g. 2.4 / 32.45K / 332.53K / 233.41M / 33.52B
-    const char* StringFromGameNumber(float num);
-    const char* StringFromGameNumber(int64_t num);
+    std::string_view StringFromGameNumber(float num);
+    std::string_view StringFromGameNumber(int64_t num);
+
+    // Formats the given time into mm:ss:lll (l = milli)
+    std::string_view StringFromTimeMillis(float seconds);
 
     //================= HASHING =================//
 

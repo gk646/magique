@@ -27,12 +27,16 @@ namespace magique
         return res == k_ESteamNetworkingAvailability_Current;
     }
 
-    bool GlobalSocketCreate()
+    bool GlobalSocketCreate(int sendBufferSize)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.inSession, "Already in a session. Close any existing connections or sockets first!");
 
-        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, nullptr);
+        std::vector<SteamNetworkingConfigValue_t> configs;
+        auto& buffSize = configs.emplace_back();
+        buffSize.SetInt32(k_ESteamNetworkingConfig_SendBufferSize, sendBufferSize);
+
+        data.listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, configs.size(), configs.data());
         if (data.listenSocket == k_HSteamListenSocket_Invalid)
         {
             LOG_WARNING("Failed to create global listen socket");

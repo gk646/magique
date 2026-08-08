@@ -269,7 +269,6 @@ namespace magique
                 bounds.x = pos.x;
                 bounds.y = pos.y;
             }
-            // Floating points...
             bounds.x = std::floor(bounds.x + 0.01F);
             bounds.y = std::floor(bounds.y + 0.01F);
             bounds.width = std::floor(bounds.width + 0.01F);

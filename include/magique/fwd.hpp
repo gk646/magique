@@ -91,7 +91,6 @@ namespace magique
     //================= Multiplayer =================//
 
     enum class Connection : uint32_t;
-    struct Lobby;
 
     //================= STEAM =================//
 

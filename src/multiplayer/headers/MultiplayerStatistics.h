@@ -22,39 +22,49 @@ struct MultiplayerStatistics final
 
     magique::internal::MultiplayerStatsData getStats() const
     {
-        return {incoming.getSorted(), outgoing.getSorted(), incoming.size, outgoing.size};
+        return {incoming.getSorted(), outgoing.getSorted(), incoming.totalBytes, outgoing.totalBytes};
     }
 
 private:
     struct DirectionData final
     {
-        uint32_t counts[UINT8_MAX]{};
-        uint32_t size;
+        std::array<float, UINT8_MAX> counts{};
+        std::array<float, UINT8_MAX> packetSize{};
+        std::array<float, UINT8_MAX> totals{};
+        float totalBytes;
 
         void reset()
         {
-            std::memset(counts, 0, sizeof(counts));
-            size = 0;
+            counts = {};
+            packetSize = {};
+            totals = {};
+            totalBytes = 0;
         }
+
         void add(MessageType type, int addSize)
         {
             counts[(int)type]++;
-            size += addSize;
+            packetSize[(int)type] = addSize;
+            totals[(int)type] += addSize;
+            totalBytes += addSize;
         }
-        std::array<magique::internal::MessageCount, UINT8_MAX> getSorted() const
+
+        std::vector<magique::internal::PacketTypeStats> getSorted() const
         {
-            std::array<magique::internal::MessageCount, UINT8_MAX> arr{};
+            std::vector<magique::internal::PacketTypeStats> ret{};
             for (int i = 0; i < UINT8_MAX; i++)
             {
-                arr[i] = {(MessageType)i, counts[i]};
+                if (counts[i] > 0)
+                    ret.emplace_back((MessageType)i, counts[i], packetSize[i], totals[i], totals[i] / totalBytes);
             }
+
             auto compareDescending =
-                [](const magique::internal::MessageCount& a, const magique::internal::MessageCount& b)
+                [](const magique::internal::PacketTypeStats& a, const magique::internal::PacketTypeStats& b)
             {
-                return a.count > b.count;
+                return a.contrib > b.contrib;
             };
-            std::ranges::sort(arr, compareDescending);
-            return arr;
+            std::ranges::sort(ret, compareDescending);
+            return ret;
         }
     };
     DirectionData incoming{};

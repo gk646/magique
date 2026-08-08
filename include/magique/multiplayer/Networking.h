@@ -167,35 +167,35 @@ namespace magique
         MultiplayerStatsData getStats();
 
         template <typename T = MessageType>
-        void PrintDirectionStats(const std::array<MessageCount, UINT8_MAX>& stats, uint32_t bytes)
+        void PrintDirectionStats(const std::vector<PacketTypeStats>& stats, float totalBytes)
         {
             static_assert(std::is_enum_v<MessageType> && sizeof(MessageType) > 0,
                           "Include the header where enum class MessageTypes is defined!");
-
-            uint32_t total = 0;
             const auto ticks = EngineGetTicks();
 
-            printf("\t%-25s || %10s | %10s\n", "Message // Stat", "Count", "Avg/tick");
+            float totalCount = 0;
+            float totalAvg = 0;
+            float totalContrib = 0;
+            printf("\t%-25s || %10s | %10s | %5s | %3s \n", "Message // Stat", "Count", "Avg/tick", "Size", "%");
             for (const auto& entry : stats)
             {
-                if (entry.count == 0)
-                    continue;
                 const float avg = static_cast<float>(entry.count) / ticks;
-
                 auto enumName = enchantum::to_string(static_cast<T>(entry.type));
                 if (enumName.empty())
-                {
                     enumName = TextFormat("%d", (int)entry.type);
-                }
-                printf("\t%-25s || %10d | %10.2f \n", enumName.data(), entry.count, avg);
-                total += entry.count;
-            }
-            puts("\t---------------------------------------------------");
 
-            printf("\t%-25s || %10d | %10.2f \n", "Total", (int)total, static_cast<float>(total) / ticks);
-            printf("\t%-25s || %10d | %10.2f", "Bytes", (int)bytes, static_cast<float>(bytes) / ticks);
-            const auto passedSeconds = ticks / MAGIQUE_LOGIC_TICKS;
-            printf(" => %.2f MB/h\n", ((static_cast<float>(bytes) / passedSeconds) * 60 * 60) / 1'000'000);
+                const auto fmt = "\t%-25s || %10.0f | %10.1f | %5.0f kb | %3.1f \n";
+                printf(fmt, enumName.data(), entry.count, avg, entry.total / 1'000.0F, entry.contrib * 100.0F);
+
+                totalCount += entry.count;
+                totalAvg += avg;
+                totalContrib += entry.contrib;
+            }
+            puts("\t---------------------------------------------------------------------------------");
+            const auto fmt = "\t%-25s || %10.0f | %10.1f | %5.0f kb | %3.0f ";
+            printf(fmt, "Total", totalCount, totalAvg, totalBytes / 1'000.0F, totalContrib * 100.0F);
+            const auto passedSeconds = (float)ticks / MAGIQUE_LOGIC_TICKS;
+            printf(" => %.2f MB/h\n", (totalBytes / passedSeconds * 60 * 60) / 1'000'000);
         }
 
     } // namespace internal
