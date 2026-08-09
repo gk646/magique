@@ -1057,6 +1057,13 @@ namespace magique
 
     void GamepadMappingState::consumeSubmit() { submitConsumed = true; }
 
+    int GamepadMappingState::menuIndex(int menuStart, int width, int curr)
+    {
+        if (curr < menuStart || curr >= menuStart + width)
+            return -1;
+        return curr - menuStart;
+    }
+
     Keybind::Keybind(KeyboardKey key, bool layered, bool shift, bool ctrl, bool alt) :
         bind(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {

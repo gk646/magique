@@ -33,8 +33,9 @@ namespace magique
         GamepadMapping* currentMapping = nullptr;
         std::stack<GamepadMapping*> mappings;
 
-        bool keyConsumed = false;
-        bool mouseConsumed = false;
+        int mouseConsumedPreRender = 0; // Used to cache real value to manupulate it for the render tick
+        int keyConsumed = 0;
+        int mouseConsumed = 0;
         bool customTargetRes = false;
         bool showHitboxes = false;
         bool usingGamepad = false;
@@ -47,10 +48,18 @@ namespace magique
         // So we consume before drawing and clear it when the object is drawn that consumed in the first place
         // This is done for both onDraw() and onDrawUpdate()
 
-        void resetConsumed()
+        void resetConsumed(bool hard = false)
         {
-            keyConsumed = false;
-            mouseConsumed = false;
+            if (hard) [[unlikely]]
+            {
+                keyConsumed = 0;
+                mouseConsumed = 0;
+            }
+            else
+            {
+                keyConsumed = std::max(0, keyConsumed - 1);
+                mouseConsumed = std::max(0, mouseConsumed - 1);
+            }
         }
 
         void updateGamePadMapping() const
@@ -142,8 +151,6 @@ namespace magique
                 obj.wasDrawnLastTick = obj.drawnThisTick;
                 obj.drawnThisTick = false;
             }
-
-            resetConsumed();
         }
 
         void detectGamepad()
@@ -151,7 +158,6 @@ namespace magique
             const bool prevStat = usingGamepad;
             if (usingGamepad)
             {
-                //  GetKeyPressedQueueCount() == 0 &&
                 usingGamepad = Point{GetMouseDelta()} == 0;
             }
             else
@@ -164,8 +170,7 @@ namespace magique
 
             if (prevStat != usingGamepad)
             {
-                keyConsumed = false;
-                mouseConsumed = false;
+                resetConsumed(true);
                 if (usingGamepad)
                 {
                     HideCursor();
@@ -181,7 +186,9 @@ namespace magique
         void onUpdateTick()
         {
             mouseConsumedAfter = nullptr;
+            mouseConsumed = mouseConsumedPreRender;
 
+            resetConsumed();
             detectGamepad();
 
             // Using fori to support deletions in the update methods
@@ -207,6 +214,7 @@ namespace magique
 
         void onRenderTick()
         {
+            mouseConsumedPreRender = mouseConsumed;
             if (mouseConsumedAfter != nullptr)
                 mouseConsumed = true;
         }

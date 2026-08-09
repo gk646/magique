@@ -198,7 +198,6 @@ namespace magique
             SDL_DestroySurface(surface);
         }
 #else
-        const auto img = gdata.ui.cursors[CursorType::Default];
         GLFWimage glfwImage;
         glfwImage.width = img.width;
         glfwImage.height = img.height;

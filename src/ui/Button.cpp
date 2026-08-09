@@ -35,22 +35,33 @@ namespace magique
 
     void Button::updateActions(const Rect& bounds)
     {
-        if (getIsPressed())
-            LayeredInput::ConsumeMouse();
-
-        if (getIsHovered())
+        for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
         {
-            for (int i = 0; i < MOUSE_BUTTON_MIDDLE + 1; ++i) // All mouse buttons
+            if (isHovered && LayeredInput::IsMouseButtonPressed(i))
             {
-                if (LayeredInput::IsMouseButtonReleased(i) && bounds.contains(UIGetDragStart()) && !isDisabled)
+                isPressed = true;
+                LayeredInput::ConsumeMouse();
+            }
+
+            if (LayeredInput::IsMouseButtonReleased(i))
+            {
+                if (isHovered && isPressed && !isDisabled)
                 {
                     onClick(bounds, i);
                     if (clickFunc)
                         clickFunc((MouseButton)i);
                     LayeredInput::ConsumeMouse();
+                    isPressed = false;
+                }
+                else
+                {
+                    isPressed = false;
                 }
             }
+        }
 
+        if (getIsHovered())
+        {
             if (!isHovered)
             {
                 isHovered = true;

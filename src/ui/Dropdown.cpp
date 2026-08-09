@@ -15,7 +15,11 @@ namespace magique
                                              {
                                                  getList().getGamepadMapping()->triggerEvent(state.event);
                                                  if (state.event == GamepadMappingEvent::Back)
+                                                 {
                                                      isOpen = false;
+                                                     LayeredInput::ConsumeKey(5);
+                                                     LayeredInput::ConsumeMouse(5);
+                                                 }
                                                  if (isOpen && state.event == GamepadMappingEvent::Submit)
                                                      isOpen = false;
                                                  return Point{-1};
@@ -26,9 +30,7 @@ namespace magique
 
     ListChooser& Dropdown::getList() { return list; }
 
-   const ListChooser& Dropdown::getList() const{
-        return list;
-    }
+    const ListChooser& Dropdown::getList() const { return list; }
 
     void Dropdown::updateInputs()
     {

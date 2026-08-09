@@ -952,6 +952,8 @@ namespace magique
 
         void consumeBack();
         void consumeSubmit();
+
+        int menuIndex(int menuStart, int menuWidth, int curr);
     };
 
     //================= HELPER TYPES =================//

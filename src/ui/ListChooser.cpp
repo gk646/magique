@@ -40,9 +40,6 @@ namespace magique
                                                      return getRowPos(state.row);
                                                  }
 
-                                                 if (state.event == GamepadMappingEvent::Back)
-                                                     LayeredInput::ConsumeKey();
-
                                                  return Point{-1};
                                              }));
     }

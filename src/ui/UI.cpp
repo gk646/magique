@@ -198,13 +198,19 @@ namespace magique
         return global::UI_DATA.keyConsumed || ::IsGamepadButtonReleased(gamepad, key);
     }
 
-    void LayeredInput::ConsumeKey() { global::UI_DATA.keyConsumed = true; }
+    void LayeredInput::ConsumeKey(int ticks)
+    {
+        global::UI_DATA.keyConsumed = std::max(global::UI_DATA.keyConsumed, ticks);
+    }
 
-    void LayeredInput::ConsumeMouse() { global::UI_DATA.mouseConsumed = true; }
+    void LayeredInput::ConsumeMouse(int ticks)
+    {
+        global::UI_DATA.mouseConsumed = std::max(global::UI_DATA.mouseConsumed, ticks);
+    }
 
-    bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed; }
+    bool LayeredInput::GetIsKeyConsumed() { return global::UI_DATA.keyConsumed > 0; }
 
-    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed; }
+    bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed > 0; }
 
     void UIEmitMousePress(MouseButton button, Point mouse)
     {

@@ -107,9 +107,9 @@ namespace magique
         static bool IsGamepadButtonReleased(int gamepad, int key); // consumed OR Released
 
         // Consume the key and gamepad input or mouse input - all methods will return false
-        //      - deferred: will be set after the current
-        static void ConsumeKey();
-        static void ConsumeMouse();
+        //      - ticks: how many ticks
+        static void ConsumeKey(int ticks = 1);
+        static void ConsumeMouse(int ticks = 1);
         static bool GetIsKeyConsumed();
         static bool GetIsMouseConsumed();
     };

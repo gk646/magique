@@ -68,6 +68,7 @@ namespace magique
         std::string hoverText;
         bool isHovered = false;
         bool isDisabled = false;
+        bool isPressed = false;
     };
 
     // Button that displays text
