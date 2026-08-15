@@ -2,6 +2,8 @@
 
 namespace magique
 {
+    VignetteShader::VignetteShader() { setFalloff().setSize(); }
+
     VignetteShader::operator Shader() const { return shader; }
 
     VignetteShader& VignetteShader::setColor(Color color)

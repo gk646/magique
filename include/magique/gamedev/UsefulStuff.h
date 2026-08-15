@@ -29,6 +29,9 @@ namespace magique
         // Returns true if goal is reached
         bool isGoalReached() const;
 
+        float getGoal() const;
+        void setGoal(float goal);
+
         void setStep(float newStep);
         float getStep() const;
 

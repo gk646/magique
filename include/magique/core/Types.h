@@ -36,6 +36,7 @@ namespace magique
 
         // Given two points in world space returns a direction vector that is perpendicular to the given direction
         // Useful when you want to knock things out of your way
+        // TODO refactor just give a straight by two points, direcion is given py point order
         static Point PerpendicularTowardsPoint(Point startPoint, Point direction, Point target);
 
         // Returns the normalized direction vector of the given angle
@@ -410,6 +411,8 @@ namespace magique
         friend struct TiledPropertyParser;
     };
 
+    using TileObjectID = int;
+
     // Objects defined inside Tiled
     struct TiledObject final
     {
@@ -421,7 +424,7 @@ namespace magique
         std::string_view getName() const;
 
         // Unique identifier for objects
-        int getID() const;
+        TileObjectID getID() const;
 
         // If the object is a tile object so to the id of the tile
         // If multiple tilesets are used ids are additive
@@ -435,13 +438,14 @@ namespace magique
 
         // Returns: the property with the given name or nullptr if not exists
         const TiledProperty* getProperty(std::string_view name) const;
+
         bool hasProperty(std::string_view name) const;
 
     private:
         M_MAKE_PUB()
         int tileId = 0;
         const char* name = nullptr;
-        int id = INT32_MAX;
+        TileObjectID id = INT32_MAX;
     };
 
     // Tiled allows to flip tiles in both directions

@@ -136,7 +136,7 @@ namespace magique
         DrawTextureV(texture, center, tint);
     }
 
-    void DrawFilledRect(const Rectangle& bounds, const float fillPercent, const Direction dir, Color tint)
+    void DrawRectFilled(const Rectangle& bounds, const float fillPercent, const Direction dir, Color tint)
     {
         DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
     }
@@ -158,15 +158,15 @@ namespace magique
 
     void DrawRectFrame(const Rect& bounds, const Color& tint)
     {
-        const auto[x,y, width, height] = bounds;
+        const auto [x, y, width, height] = bounds;
         const Point topStart = {x + 1.0F, y};
         const Point topEnd = {x + width - 1.0F, y};
 
         const Point bottomStart = {x + 1.0F, y + height - 1.0F};
         const Point bottomEnd = {x + width - 1.0F, y + height - 1.0F};
 
-        const Point leftStart = {x+0.01F , y + 1.0F};
-        const Point leftEnd = {x +0.01F, y + height - 1.0F};
+        const Point leftStart = {x + 0.01F, y + 1.0F};
+        const Point leftEnd = {x + 0.01F, y + height - 1.0F};
 
         const Point rightStart = {x + width, y + 1.0F};
         const Point rightEnd = {x + width, y + height - 1.0F};
@@ -177,10 +177,12 @@ namespace magique
         DrawLineV(rightStart.floored(), rightEnd, tint);
     }
 
-    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline)
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillPercent,
+                             Direction dir)
     {
-        DrawRectangleRec(bounds.shrink(2.0F).floored(), fill);
-        DrawRectFrame(bounds.floored(), outline);
+        if (bounds.width * fillPercent > 2.0F)
+            DrawRectangleRec(Rect::Filled(bounds.shrink(2.0F), fillPercent, dir).floored(), fill);
+        DrawRectFrame(Rect::Filled(bounds, fillPercent, dir).floored(), outline);
     }
 
     void SetCursorImage(Image img, Point anchor)

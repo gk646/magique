@@ -58,6 +58,10 @@ namespace magique
     // Returns true if the given entity exist in the registry
     bool EntityExists(Entity entity);
 
+    // Returns true if any entity exists that has the given component
+    template <typename Component>
+    bool EntityExistsWith();
+
     // Returns true and executes the given function if the entity exists
     template <typename Func>
     bool EntityIfExists(Entity entity, const Func& func);
@@ -210,6 +214,12 @@ namespace magique
     struct contains : std::disjunction<std::is_same<T, Args>...>
     {
     };
+
+    template <typename Component>
+    bool EntityExistsWith()
+    {
+        return !internal::REGISTRY.owned<Component>();
+    }
 
     template <typename Func>
     bool EntityIfExists(Entity entity, const Func& func)

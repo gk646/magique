@@ -44,14 +44,14 @@ namespace magique
     // Looping automatically restarts the sound when it ends
 
     // Plays the given sound - multiple calls play it multiple times
-    void SoundPlay(const Sound& sound, float volume = 1.0F, bool loop = false);
+    void SoundPlay(const Sound& sound, float volume = 1.0F, float pitch = 1.0F, bool loop = false);
 
     // Plays the given sound attached to the given entity - volume is dynamically updated with entity position
     // Sound is automatically destroyed (stopped) if entity doesn't exist
-    void SoundPlay2D(const Sound& sound, Entity entity, float volume = 1.0F, bool loop = false);
+    void SoundPlay2D(const Sound& sound, Entity entity, float volume = 1.0F, float pitch = 1.0F, bool loop = false);
 
     // Plays the given sound spatially at the given position
-    void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F, bool loop = false);
+    void SoundPlay2D(const Sound& sound, Point pos, float volume = 1.0F, float pitch = 1.0F, bool loop = false);
 
     // Returns true if any instance of this sound was removed
     bool SoundStop(const Sound& sound);

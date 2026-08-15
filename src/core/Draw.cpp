@@ -145,7 +145,7 @@ namespace magique
     void DrawTileMap(const TileMap& tileMap, const TileSheet& tileSheet)
     {
         Point origin = {};
-        const auto rect = CameraGetNativeBounds();
+        const auto rect = CameraGetNativeBounds().enlarge(8);
         for (int i = 0; i < (int)tileMap.getTileLayers().size(); i++)
         {
             DrawTileMapEx(origin, rect, tileMap, tileSheet, i);

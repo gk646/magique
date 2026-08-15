@@ -30,20 +30,21 @@ namespace magique
     {
         Sound sound;
         float playVolume;
+        float originalPitch;
         Point position{};
         Entity entity = NullEntity{};
         bool isPositional = false;
         bool loop = false;
 
-        SoundWrapper(Sound sound, float volume, bool loop, bool isPositional = false, Point position = {},
+        SoundWrapper(Sound sound, float volume, float pitch, bool loop, bool isPositional = false, Point position = {},
                      Entity entity = NullEntity{});
 
         SoundWrapper(const SoundWrapper& other) = delete;
         SoundWrapper& operator=(const SoundWrapper& other) = delete;
 
         SoundWrapper(SoundWrapper&& other) noexcept :
-            sound(other.sound), playVolume(other.playVolume), position(other.position), entity(other.entity),
-            isPositional(other.isPositional), loop(other.loop)
+            sound(other.sound), playVolume(other.playVolume), originalPitch(other.originalPitch),
+            position(other.position), entity(other.entity), isPositional(other.isPositional), loop(other.loop)
         {
             other.sound = {};
         }
@@ -215,14 +216,14 @@ namespace magique
         return markedForRemoval && currentVolume <= 0;
     }
 
-    inline SoundWrapper::SoundWrapper(Sound original, float volume, bool loop, bool isPositional, Point position,
-                                      Entity entity) :
-        sound(LoadSoundAlias(original)), playVolume(volume), position(position), entity(entity),
+    inline SoundWrapper::SoundWrapper(Sound original, float volume, float pitch, bool loop, bool isPositional,
+                                      Point position, Entity entity) :
+        sound(LoadSoundAlias(original)), playVolume(volume), originalPitch(pitch), position(position), entity(entity),
         isPositional(isPositional), loop(loop)
     {
         SetAudioBufferLooping(sound.stream.buffer, loop);
         update();
-        auto [min, max] = global::AUDIO_PLAYER.soundPitchInterval;
+        auto [min, max] = global::AUDIO_PLAYER.soundPitchInterval * pitch;
         SetSoundPitch(sound, MathRandom(min, max));
         PlaySound(sound);
     }

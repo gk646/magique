@@ -32,16 +32,19 @@ namespace magique
     // Applies a vignette effect to the target area
     struct VignetteShader final
     {
+        // Resets to default values
+        VignetteShader();
+
         operator Shader() const;
 
         // Default: RED
         VignetteShader& setColor(Color color);
 
         // Default: 0.15
-        VignetteShader& setFalloff(float falloff);
+        VignetteShader& setFalloff(float falloff = 0.15);
 
         // Default: 0.50
-        VignetteShader& setSize(float size);
+        VignetteShader& setSize(float size = 0.5F);
 
     private:
         M_MAKE_PUB()

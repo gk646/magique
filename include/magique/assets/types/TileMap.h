@@ -23,8 +23,10 @@ namespace magique
 
         // Tries to fetch an (the first) object that matches the given property
         // Note: objectID is unique, name is NOT unique
-        TiledObject* operator[](int objectId);
+        TiledObject* operator[](TileObjectID id);
         TiledObject* operator[](std::string_view name);
+        const TiledObject* operator[](TileObjectID id) const;
+        const TiledObject* operator[](std::string_view name) const;
 
         auto begin() const { return objects.begin(); }
         auto end() const { return objects.end(); }
@@ -69,6 +71,9 @@ namespace magique
 
         // Searches all layers and returns the first object matching the given name
         TiledObject* getObject(std::string_view name);
+        const TiledObject* getObject(std::string_view name) const;
+        TiledObject* getObject(TileObjectID id);
+        const TiledObject* getObject(TileObjectID id) const;
 
         // Returns true if an object layer with the given name is present
         bool hasObjectLayer(std::string_view layer) const;

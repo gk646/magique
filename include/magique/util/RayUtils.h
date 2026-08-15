@@ -84,7 +84,7 @@ namespace magique
 
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
-    void DrawFilledRect(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
+    void DrawRectFilled(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
 
     // Draws text horizontally & vertically centered inside the rectangle
     void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing = 1.0F,
@@ -97,7 +97,8 @@ namespace magique
     void DrawRectFrame(const Rect& bounds, const Color& tint);
 
     // Draws a frame but filled
-    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline);
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillPercent = 1.0F,
+                             Direction dir = Direction::RIGHT);
 
     // Returns the normalized position on the screen of the given world pos (e.g. 0.0 - 1.0)
     // Uses GetWorldToScreen2D() with the engine camera

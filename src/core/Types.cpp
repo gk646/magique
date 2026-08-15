@@ -787,7 +787,6 @@ namespace magique
 
     int TiledObject::getID() const { return id; }
 
-
     int TiledObject::getTileID() const { return tileId; }
 
     Point TiledObject::getOriginalTopLeft() const

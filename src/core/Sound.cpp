@@ -33,26 +33,26 @@ namespace magique
 
     void SoundSetRandomPitchInterval(Point interval) { global::AUDIO_PLAYER.soundPitchInterval = interval; }
 
-    void SoundPlay(const Sound& sound, const float volume, bool loop)
+    void SoundPlay(const Sound& sound, const float volume, float pitch, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]
-            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop);
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pitch, loop);
         else
             LOG_WARNING("Cant play invalid sound");
     }
 
-    void SoundPlay2D(const Sound& sound, const Entity entity, const float volume, bool loop)
+    void SoundPlay2D(const Sound& sound, const Entity entity, const float volume, float pitch, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]
-            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop, true, Point{}, entity);
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pitch, loop, true, Point{}, entity);
         else
             LOG_WARNING("Cant play invalid sound");
     }
 
-    void SoundPlay2D(const Sound& sound, Point pos, float volume, bool loop)
+    void SoundPlay2D(const Sound& sound, Point pos, float volume, float pitch, bool loop)
     {
         if (IsSoundValid(sound)) [[likely]]
-        global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, loop, true, pos);
+            global::AUDIO_PLAYER.sounds.emplace_back(sound, volume, pitch, loop, true, pos);
         else
             LOG_WARNING("Cant play invalid sound");
     }

@@ -11,7 +11,7 @@
 
 namespace magique
 {
-    TiledObject* TiledObjectLayer::operator[](int objectId)
+    TiledObject* TiledObjectLayer::operator[](TileObjectID objectId)
     {
         for (auto& object : objects)
         {
@@ -22,6 +22,26 @@ namespace magique
     }
 
     TiledObject* TiledObjectLayer::operator[](std::string_view name)
+    {
+        for (auto& object : objects)
+        {
+            if (object.getName() == name)
+                return &object;
+        }
+        return nullptr;
+    }
+
+    const TiledObject* TiledObjectLayer::operator[](TileObjectID objectId) const
+    {
+        for (auto& object : objects)
+        {
+            if (object.getID() == objectId)
+                return &object;
+        }
+        return nullptr;
+    }
+
+    const TiledObject* TiledObjectLayer::operator[](std::string_view name) const
     {
         for (auto& object : objects)
         {
@@ -70,6 +90,39 @@ namespace magique
         for (auto& layer : objectLayers)
         {
             const auto obj = layer[name];
+            if (obj != nullptr)
+                return obj;
+        }
+        return nullptr;
+    }
+
+    const TiledObject* TileMap::getObject(std::string_view name) const
+    {
+        for (auto& layer : objectLayers)
+        {
+            const auto obj = layer[name];
+            if (obj != nullptr)
+                return obj;
+        }
+        return nullptr;
+    }
+
+    TiledObject* TileMap::getObject(TileObjectID id)
+    {
+        for (auto& layer : objectLayers)
+        {
+            const auto obj = layer[id];
+            if (obj != nullptr)
+                return obj;
+        }
+        return nullptr;
+    }
+
+    const TiledObject* TileMap::getObject(TileObjectID id) const
+    {
+        for (auto& layer : objectLayers)
+        {
+            const auto obj = layer[id];
             if (obj != nullptr)
                 return obj;
         }
