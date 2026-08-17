@@ -2,8 +2,8 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
-#include <glaze/json/write.hpp>
-#include <enchantum/enchantum.hpp>
+#include <magique/internal/glaze/json/write.hpp>
+#include <magique/internal/enchantum/enchantum.hpp>
 #include <raylib/raylib.h>
 #include <magique/assets/types/Asset.h>
 #include <magique/gamedev/VirtualClock.h>

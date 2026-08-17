@@ -69,6 +69,8 @@ namespace magique
     {
         const auto& theme = global::ENGINE_CONFIG.theme;
         DrawRectFrameFilled(bounds, BLANK, theme.backOutline);
+        if (!showScroller)
+            return;
         {
             const auto scroller = getVerticalScrollBounds();
             bool hovered = CheckCollisionMouseRect(scroller);
@@ -126,6 +128,10 @@ namespace magique
     bool ScrollPane::getIsVerticalDragging() const { return vertical.isDragging; }
 
     bool ScrollPane::getIsHorizontalDragging() const { return horizontal.isDragging; }
+
+    bool ScrollPane::getShowScroller() const { return showScroller; }
+
+    void ScrollPane::setShowScroller(bool show) { showScroller = show; }
 
     Rectangle ScrollPane::Scroller::getBounds(const Rectangle& cBounds, const Rectangle& pane)
     {

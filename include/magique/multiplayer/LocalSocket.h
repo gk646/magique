@@ -22,7 +22,7 @@ namespace magique
 
     // Creates a LAN-socket so others can connect to you on the given port - makes you the host
     // Returns true if it was successful
-    bool LocalSocketCreate(uint16_t port = 60000);
+    bool LocalSocketCreate(uint16_t port = 60000, int sendBuffSize = 524288, int recvBuffSize = 524288 * 2);
 
     // Connects to an open local socket at the given ip and port
     //      - ip : the ip address in the form XXX.XXX.X.XX (normal ip4)
@@ -36,4 +36,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_LOCAL_SOCKETS_H
+#endif // MAGIQUE_LOCAL_SOCKETS_H

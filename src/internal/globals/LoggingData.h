@@ -13,29 +13,22 @@ namespace magique
         LogCallbackFunc callback = nullptr;
         FILE* file = nullptr;
         SpinLock lock{};
-#ifdef MAGIQUE_DEBUG
         bool crashLog = false;
         bool logToFile = false;
-#else
-        bool crashLog = true;
-        bool logToFile = true;
-#endif
 
         void init()
         {
-            if (crashLog)
-            {
-                RegisterCrashLoggers();
-            }
-
-            if (logToFile)
-            {
-                file = fopen(TextFormat("./%s.log", EngineGetGame().getName().data()), "wb");
-                if (file == nullptr)
+            SetTraceLogCallback(
+                [](int logLevel, const char* text, va_list args)
                 {
-                    LOG_ERROR("Failed to open log file");
-                }
-            }
+                    logLevel = std::max(logLevel - 3, 0);
+                    internal::LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
+                });
+
+#ifndef MAGIQUE_DEBUG
+            LoggingEnableFile();
+            LoggingEnableCrashLog();
+#endif
         }
 
         ~LogData()

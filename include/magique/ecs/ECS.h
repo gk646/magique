@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_ECS_H
 #define MAGIQUE_ECS_H
 
-#include <entt/entity/registry.hpp>
+#include <magique/internal/entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
 #include <magique/core/Engine.h>
 

@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <span>
-#include <ankerl/unordered_dense.h>
+#include <magique/internal/ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
 

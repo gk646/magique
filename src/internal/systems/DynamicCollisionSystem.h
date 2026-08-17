@@ -109,33 +109,27 @@ namespace magique
 
                 // This cannot be avoided as duplicates are inserted into the hashgrid
                 if (dynamic.isMarked(e1, static_cast<uint32_t>(e2)))
-                {
                     continue;
-                }
 
                 // this checks existence as well - also needed cause deletion caused reference invalidation
                 const auto p1 = ComponentTryGet<const PositionC>(e1);
                 const auto p2 = ComponentTryGet<const PositionC>(e2);
                 if (p1 == nullptr || p2 == nullptr) [[unlikely]]
-                {
                     continue;
-                }
+
                 auto& col1 = ComponentGet<CollisionC>(e1);
                 auto& col2 = ComponentGet<CollisionC>(e2);
 
                 // Prepare second info - with the fresh data
                 auto secondInfo = pairInfo.info;
-                secondInfo.normalVector.x *= -1;
-                secondInfo.normalVector.y *= -1;
+                secondInfo.normalVector *= -1;
 
                 if (col1.detects(col2))
                 {
                     // Already checked if both entities exist
                     internal::GetScriptInternal(e1)->onDynamicCollision(e1, e2, pairInfo.info);
                     if (pairInfo.info.getIsAccumulated())
-                    {
                         AccumulateInfo(col1, col2.shape, pairInfo.info);
-                    }
                 }
 
                 if (col2.detects(col1))
@@ -147,9 +141,7 @@ namespace magique
 #endif
                         internal::GetScriptInternal(e2)->onDynamicCollision(e2, e1, secondInfo);
                     if (secondInfo.getIsAccumulated())
-                    {
                         AccumulateInfo(col2, col1.shape, secondInfo);
-                    }
                 }
             }
             vec.clear();

@@ -3,7 +3,6 @@
 
 #include <functional>
 #include <magique/fwd.hpp>
-#include <entt/entity/entity.hpp>
 
 //===============================================
 // Events

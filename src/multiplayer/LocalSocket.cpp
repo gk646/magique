@@ -39,12 +39,20 @@ namespace magique
 #endif
     }
 
-    bool LocalSocketCreate(const uint16_t port)
+    bool LocalSocketCreate(const uint16_t port, int sendBuffSize, int recvBuffSize)
     {
         auto& data = global::MP_DATA;
         MAGIQUE_ASSERT(!data.inSession, "Already in session. Close any existing connections or sockets first!");
         MAGIQUE_ASSERT(port < UINT16_MAX, "Port has to be smaller than 65536");
         MAGIQUE_ASSERT(data.isInitialized, "Local multiplayer is not initialized");
+
+        // Options
+        std::vector<SteamNetworkingConfigValue_t> configs;
+        auto& buffSize = configs.emplace_back();
+        buffSize.SetInt32(k_ESteamNetworkingConfig_SendBufferSize, sendBuffSize);
+
+        auto& recvSize = configs.emplace_back();
+        recvSize.SetInt32(k_ESteamNetworkingConfig_RecvBufferSize, recvBuffSize);
 
         SteamNetworkingIPAddr ip{};
         ip.Clear();

@@ -312,7 +312,7 @@ namespace magique
     }
 
 #if defined(__linux__) || defined(__APPLE__)
-    inline std::string GetSignalName(int signal)
+    inline std::string_view GetSignalName(int signal)
     {
         switch (signal)
         {
@@ -332,11 +332,12 @@ namespace magique
             return "Unknown signal" + std::to_string(signal);
         }
     }
-    inline void crashLogHandler(int signal)
+
+    inline void CrashLogHandler(int signal)
     {
         const auto signalName = GetSignalName(signal);
 #elif _WIN32
-    inline LONG WINAPI crashLogHandler(EXCEPTION_POINTERS* exceptionPointers)
+    inline LONG WINAPI CrashLogHandler(EXCEPTION_POINTERS* exceptionPointers)
     {
         const auto signalName = std::to_string(exceptionPointers->ExceptionRecord->ExceptionCode);
 #endif
@@ -344,7 +345,9 @@ namespace magique
         crashData.reserve(1024);
         const auto& game = EngineGetGame();
         crashData += "magique CrashLog File\n";
-        crashData += "Exception received: " + signalName + "\n\n";
+        crashData += "Exception received: ";
+        crashData += signalName;
+        crashData += "\n\n";
         crashData += "magique: " + std::string{MAGIQUE_VERSION} + "\n";
         crashData += std::string{game.getName()} + ": " + std::string{game.getVersion()} + "\n\n";
         crashData += "System Information:\n";
@@ -360,17 +363,32 @@ namespace magique
 #endif
     } // namespace magique
 
+#if _WIN32
+#include <eh.h>
+    void static se_translator(unsigned int code, _EXCEPTION_POINTERS* ep)
+    {
+        throw std::exception("SEH exception occurred");
+    }
+#endif
 
     void RegisterCrashLoggers()
     {
 #if defined(__linux__) || defined(__APPLE__)
-        signal(SIGSEGV, crashLogHandler);
-        signal(SIGABRT, crashLogHandler);
+        signal(SIGSEGV, CrashLogHandler); // Segmentation fault
+        signal(SIGABRT, CrashLogHandler); // Abort
+        signal(SIGFPE, CrashLogHandler);  // Floating-point exception
+        signal(SIGILL, CrashLogHandler);  // Illegal instruction
+        signal(SIGBUS, CrashLogHandler);  // Bus error
+        signal(SIGPIPE, CrashLogHandler); // Broken pipe
+        signal(SIGSYS, CrashLogHandler);  // Bad system call
 #ifndef MAGIQUE_DEBUG
-        signal(SIGTRAP, crashLogHandler);
+        signal(SIGTRAP, CrashLogHandler);
 #endif
+
 #elif _WIN32
-        SetUnhandledExceptionFilter(crashLogHandler);
+        _set_se_translator(se_translator);
+        SetUnhandledExceptionFilter(CrashLogHandler);
 #endif
     }
+
 } // namespace magique

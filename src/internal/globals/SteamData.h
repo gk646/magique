@@ -21,6 +21,7 @@ namespace magique
         STEAM_CALLBACK(SteamCallback, OnNewUrlLaunch, NewUrlLaunchParameters_t);
         STEAM_CALLBACK(SteamCallback, OnUserStats, UserStatsReceived_t);
         STEAM_CALLBACK(SteamCallback, OnTextInputDismissed, GamepadTextInputDismissed_t);
+        STEAM_CALLBACK(SteamCallback, OnHTTPRequest, HTTPRequestCompleted_t);
     };
 
     struct SteamData final
@@ -28,9 +29,10 @@ namespace magique
         ISteamCallbacks* handler = nullptr;
         ISteamMatchmakingCallbacks* matchmakingHandler = nullptr;
         SteamCallback* callback = nullptr;
-        
+
         CCallResult<SteamData, LobbyCreated_t> m_SteamCallResultCreateLobby;
         CCallResult<SteamData, LobbyMatchList_t> m_CallResultLobbyMatchList;
+        SteamAPICall_t httpRequest;
 
         std::string cacheString;
         std::vector<SteamLobbyID> lobbySearchResult;
@@ -224,6 +226,16 @@ namespace magique
             steam.handler->onScreenKeyboardClose(steam.cacheString.c_str(), pCallback->m_bSubmitted);
 
         steam.onscreenKeyboardShown = false;
+    }
+
+    inline void SteamCallback::OnHTTPRequest(HTTPRequestCompleted_t* pCallback)
+    {
+        auto& steam = global::STEAM_DATA;
+        if (pCallback->m_bRequestSuccessful)
+        {
+            steam.handler->onHTTPRequestComplete(pCallback->m_eStatusCode);
+            SteamHTTP()->ReleaseHTTPRequest(pCallback->m_hRequest);
+        }
     }
 
 } // namespace magique

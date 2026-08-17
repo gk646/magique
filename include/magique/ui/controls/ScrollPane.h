@@ -53,6 +53,9 @@ namespace magique
         bool getIsVerticalDragging() const;
         bool getIsHorizontalDragging() const;
 
+        bool getShowScroller() const;
+        void setShowScroller(bool show = true);
+
     protected:
         void onDraw(const Rect& bounds) override
         {
@@ -88,6 +91,7 @@ namespace magique
             void updateInputs(const Rectangle& scroller, const Rectangle& pane);
             float getScaledOffset(Anchor anchor) const;
         };
+        bool showScroller = true;
         Scroller horizontal{true};
         Scroller vertical{false};
         UIObject* content = nullptr;

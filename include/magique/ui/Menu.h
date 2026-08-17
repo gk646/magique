@@ -67,7 +67,6 @@ namespace magique
         // Returns the parent
         Menu* getParent() const;
 
-
     protected:
         // Needs to be called (as the first thing) in all implementing versions
         // After that you should return if the current menu is not active (getIsActive())

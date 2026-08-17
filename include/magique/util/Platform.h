@@ -10,7 +10,6 @@
 
 namespace magique
 {
-
 }
 
 #endif // MAGIQUE_PLATFORM_H

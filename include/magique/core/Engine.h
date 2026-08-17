@@ -115,7 +115,7 @@ namespace magique
     {
         // Initializes the engine - does not need to be called when using the game template (Game class)
         // Needs to be called after InitWindow();
-        bool MagiqueInit();
+        bool InitMagique();
     } // namespace internal
 
 } // namespace magique

@@ -127,8 +127,26 @@ namespace magique
 
     void LoggingSetCallback(const LogCallbackFunc func) { global::LOG_DATA.callback = func; }
 
-    void LoggingEnableFile(bool value) { global::LOG_DATA.logToFile = value; }
+    void LoggingEnableFile(bool value)
+    {
+        auto& data = global::LOG_DATA;
+        if (value && !data.logToFile)
+        {
+            data.logToFile = true;
+            data.file = fopen(TextFormat("./%s.log", EngineGetGame().getName().data()), "wb");
+            if (data.file == nullptr)
+                LOG_ERROR("Failed to open log file");
+        }
+    }
 
-    void LoggingEnableCrashLog(bool value) { global::LOG_DATA.crashLog = value; }
+    void LoggingEnableCrashLog(bool value)
+    {
+        auto& data = global::LOG_DATA;
+        if (value && !data.crashLog)
+        {
+            RegisterCrashLoggers();
+            data.crashLog = true;
+        }
+    }
 
 } // namespace magique

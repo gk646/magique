@@ -4,7 +4,6 @@
 
 #include <magique/core/Types.h>
 #include <string_view>
-#include <functional>
 #include <optional>
 #include <variant>
 
@@ -66,6 +65,8 @@ namespace magique
         // Called for GamepadTextInputDismissed_t
         // This happens when the text overlay is closed
         virtual void onScreenKeyboardClose(std::string_view input, bool submitted) {}
+
+        virtual void onHTTPRequestComplete(int status) {}
     };
 
     //================= GAME =================//
@@ -151,6 +152,8 @@ namespace magique
     // Sets the rich presence text
     // See https://partner.steamgames.com/doc/features/enhancedrichpresence
     void SteamSetRichPresence(std::string_view string);
+
+    void SteamSendPOST(std::string_view url, std::string_view body, std::string_view contentType = "application/json");
 
 } // namespace magique
 

@@ -33,10 +33,13 @@ namespace magique
 
     const std::string& TextField::getText() const { return text; }
 
-    std::string& TextField::getTextToModify()
+    void TextField::setText(std::string_view newText)
     {
-        textChanged = true;
-        return text;
+        const bool changed = text != newText;
+        textChanged = textChanged || changed;
+        text = newText;
+        if (changed)
+            updateLineState();
     }
 
     void TextField::addLine(std::string_view line)
@@ -44,15 +47,20 @@ namespace magique
         text += line;
         text += '\n';
         textChanged = true;
+        updateLineState();
     }
 
     void TextField::popFirstLine()
     {
         auto pos = text.find_first_of('\n');
+        const bool changed = !text.empty();
+        textChanged = textChanged || changed;
         if (pos == std::string::npos)
             text.clear();
         else
             text.erase(0, pos);
+        if (changed)
+            updateLineState();
     }
 
     void TextField::setHint(const char* newHint)
@@ -95,7 +103,6 @@ namespace magique
         {
             setSize({std::max(dims.x + 4, startDims.width), height});
         }
-        updateLineState();
     }
 
     static bool IsKeyPressedAnyWay(const int key)
@@ -144,6 +151,7 @@ namespace magique
             text.insert(text.begin() + cursorPos, pressedChar);
             ++cursorPos;
             anyInput = true;
+            updateLineState();
         }
 
         if (isFocused)
@@ -378,9 +386,6 @@ namespace magique
         {
             const auto newLineEnter = !enterFunc ||
                 !enterFunc(IsKeyDown(KEY_LEFT_CONTROL), IsKeyDown(KEY_LEFT_SHIFT), IsKeyDown(KEY_LEFT_ALT));
-
-            cursorPos = std::clamp(cursorPos, 0, static_cast<int>(text.size()));
-            updateLineState();
             if (newLineEnter)
             {
                 removeSelectionContent();
@@ -389,6 +394,10 @@ namespace magique
                 ++cursorPos;
                 updateLineState();
                 return true;
+            }
+            else
+            {
+                updateLineState();
             }
         }
         return false;
@@ -456,7 +465,6 @@ namespace magique
             std::swap(selectionStart, selectionEnd);
         }
         cursorPos = selectionStart;
-        updateLineState();
         if (selectionStart == selectionEnd)
         {
             resetSelection();
@@ -465,6 +473,7 @@ namespace magique
 
     void TextField::updateLineState()
     {
+        cursorPos = std::clamp(cursorPos, 0, static_cast<int>(text.size()));
         currLineStart = 0;
         cursorLine = 0;
         lineCount = 1;

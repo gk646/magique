@@ -42,8 +42,7 @@ namespace magique
         // Returns the current text of the textfield
         const std::string& getText() const;
 
-        // Sets the textChanged flag to true
-        std::string& getTextToModify();
+        void setText(std::string_view text);
 
         // Adds text with a newline appended
         void addLine(std::string_view line);

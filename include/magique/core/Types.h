@@ -179,6 +179,8 @@ namespace magique
         Rect floored() const;
         Rect& round();
         Rect rounded() const;
+        Rect& ceil();
+        Rect ceiled() const;
 
         // Flips the rect along the given axis
         Rect mirrorVertical(float xAxis) const;

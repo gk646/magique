@@ -1,6 +1,6 @@
 
 # Set include directories for the main library
-target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE})
+target_include_directories(magique PUBLIC ${MAGIQUE_PUBLIC_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}/include/magique/internal)
 
 target_include_directories(magique PRIVATE
         ${MAGIQUE_PUBLIC_INCLUDE} # Public includes
@@ -71,6 +71,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             # -D_GLIBCXX_ASSERTIONS
             -D_DEBUG
             >
+
+            $<$<CONFIG:RelWithDebInfo>:
+            -O2
+            -g1
+            -gz
+            -DNDEBUG
+            >
+
             $<$<CONFIG:Release>:
             -Ofast
             -ffast-math

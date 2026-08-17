@@ -2,10 +2,7 @@
 #define MAGIQUE_LOCALIZATION_DEMO_H
 
 #include <raylib/raylib.h>
-
-#include <magique/assets/AssetLoader.h>
-#include <magique/gamedev/Localization.h>
-#include <magique/core/Game.h>
+#include <magique/magique.hpp>
 
 using namespace magique;
 
@@ -13,36 +10,36 @@ struct LocalizationDemo final : Game
 {
     void onStartup(AssetLoader& loader) override
     {
-        const auto loadLocalization = [](AssetContainer& assets)
+        const auto loadLocalization = [](AssetPack& assets)
         {
-            LoadLocalization(assets["english.mtf"]);
-            LoadLocalization(assets["german.mtf"]);
+            LocalizationAdd(ImportMTF(assets["english.mtf"]));
+            LocalizationAdd(ImportMTF(assets["german.mtf"]));
         };
         loader.registerTask(loadLocalization, MAIN_THREAD);
-        SetLocalizationLanguage("EN");
+        LocalizationSetLanguage(Language::EN);
     }
 
     void onLoadingFinished() override
     {
-        AddLocalization("jam", "DE", "Marmelade");
-        ValidateLocalizations("DE");
+        LocalizationAdd("jam", "Marmelade", Language::DE);
+        LocalizationValidate(Language::DE);
     }
 
     void updateGame(GameState gameState) override
     {
         if (IsKeyPressed(KEY_SPACE)) // Toggle between the languages
         {
-            if (GetLocalizationLanguage() == "DE")
-                SetLocalizationLanguage("EN");
+            if (LocalizationGetLanguage() == Language::DE)
+                LocalizationSetLanguage(Language::EN);
             else
-                SetLocalizationLanguage("DE");
+                LocalizationSetLanguage(Language::DE);
         }
     }
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
         const auto* msg = Localize("greeting");
-        const auto text = TextFormat("Current Language: %s", GetLocalizationLanguage().c_str());
+        const auto text = TextFormat("Current Language: %s", enchantum::to_string(LocalizationGetLanguage()).data());
         DrawText(text, 50, 50, 25, BLACK);
         DrawText(msg, 50, 100, 25, BLACK);
     }

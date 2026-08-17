@@ -2,10 +2,7 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
-#include "entt/entity/entity.hpp"
-
-
-#include <cstdint> // My favourite header
+#include <magique/internal/entt/entity/entity.hpp>
 #include <magique/config.h>
 #include <magique/internal/Macros.h>
 
@@ -16,7 +13,7 @@ enum class EntityType : uint16_t; // Identifies entity types       - uses uint16
 enum class MapID : uint8_t;       // Identifies maps               - uses uint8_t  to be small for networking
 enum class TileClass : uint8_t;   // Identifies different classes of tiles
 
-// IMPORTANT: MessageType=UINT8_MAX and UINT8_MAX-1 are reserved for magique
+// IMPORTANT: MessageType=UINT8_MAX is reserved for magique
 enum class MessageType : uint8_t;    // Identifies different network messages - uses uint8_t to be small for networking
 enum class AtlasID : int;            // Identifies different texture atlas
 enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS

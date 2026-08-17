@@ -180,9 +180,13 @@ namespace magique
     void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillPercent,
                              Direction dir)
     {
-        if (bounds.width * fillPercent > 2.0F)
-            DrawRectangleRec(Rect::Filled(bounds.shrink(2.0F), fillPercent, dir).floored(), fill);
-        DrawRectFrame(Rect::Filled(bounds, fillPercent, dir).floored(), outline);
+        auto fillRect = Rect::Filled(bounds.shrink(2.0F), fillPercent, dir).floor();
+        const auto outRect = Rect::Filled(bounds, fillPercent, dir).floor();
+        fillRect.width = std::min(outRect.width - 1, fillRect.width);
+
+        DrawRectangleRec(fillRect, fill);
+        if (outRect.width > 1)
+            DrawRectFrame(outRect, outline);
     }
 
     void SetCursorImage(Image img, Point anchor)

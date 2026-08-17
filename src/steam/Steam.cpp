@@ -353,5 +353,13 @@ namespace magique
         // SteamFriends()->SetRichPresence( "steam_display", bDisp
     }
 
+    void SteamSendPOST(std::string_view url, std::string_view body, std::string_view contentType)
+    {
+        auto request = SteamHTTP()->CreateHTTPRequest(k_EHTTPMethodPOST, url.data());
+        SteamHTTP()->SetHTTPRequestHeaderValue(request, "Accept", "application/json");
+        SteamHTTP()->SetHTTPRequestRawPostBody(request, contentType.data(), (uint8_t*)body.data(), body.size());
+        SteamHTTP()->SendHTTPRequest(request, &global::STEAM_DATA.httpRequest);
+    }
+
 } // namespace magique
 #endif

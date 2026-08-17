@@ -68,64 +68,61 @@
 
 namespace magique
 {
-    bool InitMagique()
+    namespace internal
     {
-        static bool initCalled = false;
-        if (initCalled)
+        bool InitMagique()
         {
-            LOG_WARNING("Init called twice. Skipping...");
-            return false;
-        }
-        initCalled = true;
-        // Apparently this is necessary for shaders to work with shapes
-        Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
-        SetShapesTexture(texture, Rectangle{0, 0, 1, 1});
-
-        // Setup raylib callback
-        SetTraceLogCallback(
-            [](int logLevel, const char* text, va_list args)
+            static bool initCalled = false;
+            if (initCalled)
             {
-                logLevel = std::max(logLevel - 3, 0);
-                internal::LogInternal(static_cast<LogLevel>(logLevel), "(unknown)", 0, "(unknown)", text, args);
-            });
-        global::LOG_DATA.init();
-        global::ENGINE_CONFIG.onInit();
-#if MAGIQUE_INCLUDE_FONT == 1
-        global::ENGINE_CONFIG.font = LoadFont_Probably8Denser();
-#else
-        global::ENGINE_CONFIG.font = GetFontDefault();
-#endif
-        global::ENGINE_DATA.init();
-        global::CONSOLE_DATA.init(); // Create default commands
-        internal::JobsInit();
-        internal::LightingInit();
+                LOG_WARNING("Init called twice. Skipping...");
+                return false;
+            }
+            initCalled = true;
+            // Apparently this is necessary for shaders to work with shapes
+            Texture2D texture = {rlGetTextureIdDefault(), 1, 1, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+            SetShapesTexture(texture, Rectangle{0, 0, 1, 1});
 
-        VignetteShader::Init();
-        OutlineShader::Init();
+            global::ENGINE_CONFIG.onInit();
+#if MAGIQUE_INCLUDE_FONT == 1
+            global::ENGINE_CONFIG.font = LoadFont_Probably8Denser();
+#else
+            global::ENGINE_CONFIG.font = GetFontDefault();
+#endif
+            global::ENGINE_DATA.init();
+            global::CONSOLE_DATA.init(); // Create default commands
+            JobsInit();
+            LightingInit();
+
+            VignetteShader::Init();
+            OutlineShader::Init();
 
 #ifdef MAGIQUE_DEBUG
-        GameSystemEnableStats(true);
+            GameSystemEnableStats(true);
 #endif
 
-        int steam = 0;
-        int lan = 0;
+            int steam = 0;
+            int lan = 0;
 #ifdef MAGIQUE_STEAM
-        steam = 1;
-        lan = 1;
+            steam = 1;
+            lan = 1;
 #endif
 #ifdef MAGIQUE_LAN
-        lan = 1;
+            lan = 1;
 #endif
 
-        LOG_INFO("Initialized magique %s (raylib %s; %d Workers; Steam %d; LAN: %d)", MAGIQUE_VERSION, RAYLIB_VERSION,
-                 MAGIQUE_WORKER_THREADS, steam, lan);
-        return true;
-    }
-
+            LOG_INFO("Initialized magique %s (raylib %s; %d Workers; Steam %d; LAN: %d)", MAGIQUE_VERSION,
+                     RAYLIB_VERSION, MAGIQUE_WORKER_THREADS, steam, lan);
+            return true;
+        }
+    } // namespace internal
+    // namespace internal
     Game::Game(std::string_view name, std::string_view version) :
         isRunning(true), gameName(strdup(name.data())), version(strdup(version.data()))
     {
         global::ENGINE_DATA.gameInstance = this; // Assign global game instance
+        global::LOG_DATA.init();
+
         SetTraceLogLevel(LOG_WARNING);
         SetConfigFlags(FLAG_WINDOW_ALWAYS_RUN);
         SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -143,7 +140,7 @@ namespace magique
         SetRandomSeed(random_device{}() ^ static_cast<unsigned int>(steady_clock::now().time_since_epoch().count()));
 
         // Setup magique
-        InitMagique();
+        internal::InitMagique();
 
         LOG_INFO("Working Directory: %s", GetWorkingDirectory());
         LOG_INFO("Initialized %s %s", gameName, this->version);

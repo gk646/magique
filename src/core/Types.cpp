@@ -464,6 +464,22 @@ namespace magique
         return ret.round();
     }
 
+    Rect& Rect::ceil()
+    {
+        x = std::ceil(x);
+        y = std::ceil(y);
+        width = std::ceil(width);
+        height = std::ceil(height);
+        return *this;
+    }
+
+    Rect Rect::ceiled() const
+    {
+        auto ret = *this;
+        return ret.ceil();
+    }
+
+
     Rect Rect::mirrorVertical(float xAxis) const
     {
         const Point topLeft = {x, MathMirror(y, xAxis)};

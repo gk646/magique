@@ -6,7 +6,7 @@
 #include <magique/core/Engine.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/InternalTypes.h>
-#include <enchantum/enchantum.hpp>
+#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Networking Module
