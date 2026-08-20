@@ -44,6 +44,7 @@ set(MAGIQUE_MAX_ANIM_FRAMES 16 CACHE STRING "Maximum amount of frames per single
 set(MAGIQUE_MAX_PLAYERS 4 CACHE STRING "Maximum amount of actors (players) supported")
 set(MAGIQUE_MAX_LOBBY_MESSAGE_LEN 255 CACHE STRING "Maximum length of a chat message sent in a lobby")
 set(MAGIQUE_INCLUDE_FONT 1 CACHE BOOL "Include the default magique font: Cascadia Code")
+set(MAGIQUE_USE_NAMESPACE 1 CACHE BOOL "Declares using namespace magique in fwd.hpp (so for everything)")
 
 include(ParseOptions)      # Parses options and sets parameters
 

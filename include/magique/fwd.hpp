@@ -2,9 +2,14 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
+
 #include <magique/internal/entt/entity/entity.hpp>
 #include <magique/config.h>
 #include <magique/internal/Macros.h>
+
+#if MAGIQUE_USE_NAMESPACE == 1
+using namespace magique;
+#endif
 
 //================= USER DEFINED =================//
 
@@ -40,7 +45,7 @@ namespace magique
     struct AssetLoader; // Handles loading all major game files -  Start -> MainMenu
     struct AssetPack;   // Asset list loaded from a compiled asset pack
     struct SaveLoader;  // Handles loading individual world state and player save - MainMenu -> Game
-    struct GameSave;    // The game save object
+    struct GameStorage; // The game save object
     struct GameConfig;  // The config persistence object
 
     struct IExecutor; // Task loading interface

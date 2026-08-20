@@ -57,8 +57,7 @@
 #endif
 
 // Persistence
-#include "persistence/GameSave.h"
-#include "persistence/SaveLoader.h"
+#include "persistence/GameStorage.h"
 
 // Steam
 #ifdef MAGIQUE_STEAM
