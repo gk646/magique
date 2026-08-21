@@ -9,7 +9,7 @@
 #include <magique/gamedev/VirtualClock.h>
 #include <magique/util/Datastructures.h>
 #include <magique/internal/InternalTypes.h>
-#include <magique/core/Animation.h>
+#include <magique/graphics/Animation.h>
 
 //===============================================
 // JSON Import/Exports

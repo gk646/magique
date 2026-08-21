@@ -42,7 +42,6 @@ namespace magique
         bool showHitboxes = false;              // Shows red outlines for the hitboxes
         bool enableCollisionSystem = true;      // Enables the static and dynamic collision systems
         bool isClientMode = false;              // Flag to disable certain engine tasks on multiplayer clients
-        bool useGameConfig = true;
 
         float getFontSize() const { return std::ceil(UIGetScaled(1) * font.baseSize); }
 

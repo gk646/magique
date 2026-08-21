@@ -6,7 +6,7 @@
 #include <magique/fwd.hpp>
 
 //===============================================
-// Gamesystem Module
+// GameSystem Module
 //===============================================
 // ................................................................................
 // A gamesystem operates on components and contains all the logic that makes up the game
@@ -16,6 +16,7 @@
 // Splitting by system also allows for easy benchmarking:
 //      - For each system the average time is tracked for each event method
 // Make sure to have enough modular systems so the data is meaningful and its also good practice to do so
+// Note: Usually it makes sense to have Systems (mainly to update/logic stuff) and Stages (mainly do drawing stuff)
 // ................................................................................
 
 namespace magique
@@ -31,7 +32,7 @@ namespace magique
 
     // If true all systems are benchmarked - existing data is cleared on enabling
     // Default: Enabled if in debug mode (MAGIQUE_DEBUG)
-    void GameSystemEnableStats(bool value);
+    void GameSystemEnableStats(bool value = true);
 
     struct GameSystem
     {

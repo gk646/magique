@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include <entt/entity/entity.hpp>
-#include <magique/core/Particles.h>
+#include <magique/graphics/Particles.h>
 
 #include "enchantum/enchantum.hpp"
 

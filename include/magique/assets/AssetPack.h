@@ -3,10 +3,9 @@
 #define MAGIQUE_ASSET_CONTAINER_H
 
 #include <vector>
-#include <magique/fwd.hpp>
-#include <magique/assets/types/Asset.h>
 #include <functional>
 #include <string>
+#include <magique/assets/types/Asset.h>
 
 //===============================================
 // Asset Container

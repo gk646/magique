@@ -248,11 +248,11 @@ namespace magique
         }
         // Use for both axis the smallest common scalar
         scale.y = std::min(scale.x, scale.y);
-        scale.x = std::min(scale.y, scale.x);
+        scale.x = std::min(scale.x, scale.y);
         canvas *= scale;
         canvas.floor();
         SetMouseScale(1.0F / scale.x, 1.0F / scale.y);
-        const auto drawPos = Rect::CenteredIn({canvas}, display).pos();
+        const auto drawPos = Rect::CenteredIn(canvas, display).pos();
         SetMouseOffset((int)-drawPos.x, (int)-drawPos.y);
         DrawRenderTexture(texture, drawPos, scale);
     }

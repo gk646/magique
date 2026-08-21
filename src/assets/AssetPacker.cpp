@@ -7,7 +7,7 @@
 #include <raylib/raylib.h>
 
 #include <magique/assets/AssetPacker.h>
-#include <magique/assets/AssetContainer.h>
+#include <magique/assets/AssetPack.h>
 #include <magique/util/Logging.h>
 
 #include "internal/utils/EncryptionUtil.h"
@@ -256,7 +256,7 @@ namespace magique
     {
         if (!fs::exists(path)) // User cant use AssetPack -> its empty
         {
-            LOG_WARNING("No asset pack at: %s", path);
+            LOG_WARNING("No asset pack at: %s", path.data());
             return false;
         }
 
@@ -266,6 +266,7 @@ namespace magique
             LOG_ERROR("Failed to open asset pack file: %s", path);
             return false;
         }
+
         const int originalSize = assets.nativeData.size();
         const bool res = ParseImage(assets, key);
         const int currentSize = assets.nativeData.size();
@@ -355,7 +356,7 @@ namespace magique
 
         if (pathList.empty())
         {
-            LOG_ERROR("No files to compile into asset pack");
+            LOG_WARNING("No files give to compile asset pack");
             return true;
         }
 

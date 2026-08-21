@@ -2,7 +2,7 @@
 #include <magique/ui/UI.h>
 #include <magique/ui/UIObject.h>
 #include <magique/core/Types.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 #include <magique/core/Engine.h>
 #include <magique/util/RayUtils.h>
 

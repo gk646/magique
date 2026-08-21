@@ -50,7 +50,7 @@ namespace magique::internal
             return false;
         }
 
-        if (pl > CRITICAL)
+        if (pl > PriorityLevel::CRITICAL)
         {
             LOG_WARNING("Tried to register task with invalid priority");
             return false;

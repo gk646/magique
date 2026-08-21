@@ -20,10 +20,10 @@ using namespace magique;
 static void testImpl(const uint64_t key, const bool compress)
 {
     namespace fs = std::filesystem;
-    CompileAssetImage("./", DATA_PATH, key, compress);
+    AssetPackCompile("./", DATA_PATH, key, compress);
 
     AssetPack container;
-    LoadAssetImage(container, DATA_PATH, key); // Compression detected automatically
+    AssetPackLoad(container, DATA_PATH, key); // Compression detected automatically
 
     const auto& assets = container.getAllAssets();
 
@@ -51,8 +51,8 @@ static void testImpl(const uint64_t key, const bool compress)
         bool found = false;
         for (const auto& asset : assets)
         {
-            if (relativePath == asset.path && fileSize == asset.size &&
-                memcmp(fileData.data(), asset.data, fileSize) == 0)
+            if (relativePath == asset.path && fileSize == asset.getSize() &&
+                memcmp(fileData.data(), (const char*)asset, fileSize) == 0)
             {
                 found = true;
                 break;

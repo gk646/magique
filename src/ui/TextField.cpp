@@ -9,7 +9,7 @@
 
 #include "external/raylib-compat/rcore_compat.h"
 #include "internal/globals/EngineConfig.h"
-#include "magique/core/Draw.h"
+#include "magique/graphics/Draw.h"
 
 namespace magique
 {

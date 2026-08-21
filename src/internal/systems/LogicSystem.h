@@ -55,20 +55,16 @@ namespace magique
     {
         const auto view = registry.view<const CameraC, const PositionC>();
         auto& data = global::ENGINE_DATA;
+        const auto& conf = global::ENGINE_CONFIG;
 #ifdef MAGIQUE_DEBUG
         int count = 0;
 #endif
-        data.camera.offset = GetScreenDims() / 2;
+        data.camera.offset = conf.cameraViewOff != 0 ? conf.cameraViewOff : GetScreenDims() / 2;
         for (const auto e : view)
         {
             const auto& pos = view.get<PositionC>(e);
             data.cameraMap = pos.map;
             data.cameraEntity = e;
-            const auto manualOff = global::ENGINE_CONFIG.cameraViewOff;
-            if (manualOff != 0) // Use the custom offset if supplied
-            {
-                data.camera.offset = manualOff;
-            }
 #ifdef MAGIQUE_DEBUG
             count++;
 #endif

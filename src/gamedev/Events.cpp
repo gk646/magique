@@ -1,8 +1,8 @@
 #include <algorithm>
 
-#include <magique/gamedev/GameEvents.h>
+#include <magique/gamedev/Events.h>
 
-#include <magique/multiplayer/Networking.h>
+#include <magique/networking/Networking.h>
 #include <magique/ecs/ECS.h>
 
 namespace magique

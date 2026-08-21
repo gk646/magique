@@ -1,4 +1,5 @@
-#include <magique/gamedev/BaseShaders.h>
+// SPDX-License-Identifier: zlib-acknowledgement
+#include <magique/graphics/BaseShaders.h>
 
 namespace magique
 {

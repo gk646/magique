@@ -25,7 +25,7 @@ namespace magique
     inline std::vector<Achievement> ACHIEVEMENTS{};
     inline AchievementCallback CALL_BACK;
 
-    Achievement* GetAchievement(const std::string& name)
+    static Achievement* GetAchievement(std::string_view name)
     {
         for (auto& a : ACHIEVEMENTS)
         {
@@ -37,13 +37,13 @@ namespace magique
         return nullptr;
     }
 
-    bool AchievementAdd(const std::string& name, const std::function<bool()>& constraint)
+    bool AchievementAdd(std::string_view name, const std::function<bool()>& constraint)
     {
         const auto* existing = GetAchievement(name);
         if (existing != nullptr)
             return false;
 
-        ACHIEVEMENTS.emplace_back(constraint, name, false);
+        ACHIEVEMENTS.emplace_back(constraint, std::string{name}, false);
         return true;
     }
 

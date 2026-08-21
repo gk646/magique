@@ -13,7 +13,7 @@
 #include "internal/globals/EngineConfig.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/PathFindingData.h"
-#include "magique/multiplayer/Networking.h"
+#include "magique/networking/Networking.h"
 
 namespace magique
 {

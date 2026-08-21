@@ -6,12 +6,14 @@
 #include <magique/internal/ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
+#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Datastructures
 //===============================================
 // ................................................................................
 // This is an advanced module that contains a selection of useful datastructures
+// Note: The hash types are massively faster then unordered_map etc. and should be preferred
 // ................................................................................
 
 namespace magique
@@ -86,7 +88,7 @@ namespace magique
             }
         }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<ValueHolder, manual_size == 0 ? (int)Key::COUNT : manual_size> data{};
+        std::array<ValueHolder, manual_size == 0 ? enchantum::count<Key> : manual_size> data{};
     };
 
     // Like a bitflag but for enums
@@ -217,7 +219,8 @@ namespace magique
     struct StackVector final
     {
         StackVector() = default;
-        StackVector(const std::initializer_list<T>& list)
+
+        constexpr StackVector(const std::initializer_list<T>& list)
         {
             for (auto& elem : list)
             {
@@ -233,7 +236,7 @@ namespace magique
             }
         }
 
-        bool push_back(const T& elem)
+        constexpr bool push_back(const T& elem)
         {
             if (size_ < capacity)
             {
@@ -266,7 +269,8 @@ namespace magique
         alignas(64) std::vector<T> vec;
     };
 
-    // This is useful for dynamically size 2D grids where for each cell you store data
+    // Dynamically sized 2D grid where for each cell you can store custom data
+    // Stored in row-major format e.g. data lies in memory row-per-row flattened out
     // E.g. the fog of war for a map
     template <typename T>
     struct DynamicGridContainer final
@@ -276,17 +280,10 @@ namespace magique
 
         const T& operator()(const Point& point) const
         {
-            const int x = static_cast<int>(point.x);
-            const int y = static_cast<int>(point.y);
-            return data[y * cols + x];
+            return data[static_cast<int>(point.y) * cols + static_cast<int>(point.x)];
         }
 
-        T& operator()(const Point& point)
-        {
-            const int x = static_cast<int>(point.x);
-            const int y = static_cast<int>(point.y);
-            return data[y * cols + x];
-        }
+        T& operator()(const Point& point) { return data[static_cast<int>(point.y) * cols + static_cast<int>(point.x)]; }
 
         int getCols() const { return cols; }
 
@@ -296,16 +293,25 @@ namespace magique
 
         std::vector<T>& getData() { return data; }
 
-        // Sets the given cell - expands the grid if needed
-        void insert(const Point& point, const T& val)
+        // Resizes the grid to ensure it can hold a value at the given position
+        void ensure(const Point& point)
         {
-            if (!isInside(point)) [[unlikely]]
-            {
+            if (!isContained(point)) [[unlikely]]
                 resize(std::max(cols, (int)point.x), std::max(rows, (int)point.y));
-            }
-            operator()(point) = val;
         }
 
+        // Sets the given cell - expands the grid if needed
+        bool insert(const Point& point, const T& val)
+        {
+            if (!isContained(point)) [[unlikely]]
+            {
+                operator()(point) = val;
+                return true;
+            }
+            return false;
+        }
+
+        // Inserts the given value into all cells contained in the given rect
         void insert(const Rect rect, const T& elem)
         {
             for (int i = 0; i < (int)rect.height; ++i)
@@ -316,14 +322,13 @@ namespace magique
                     const int yCo = i + (int)rect.y;
                     if (xCo >= 0 && yCo >= 0 && xCo < cols && yCo < rows)
                     {
-                        int idx = yCo * cols + xCo;
-                        data[idx] = elem;
+                        data[yCo * cols + xCo] = elem;
                     }
                 }
             }
         }
 
-        bool isInside(const Point& point) const
+        bool isContained(const Point& point) const
         {
             const int x = static_cast<int>(point.x);
             const int y = static_cast<int>(point.y);
@@ -343,9 +348,7 @@ namespace magique
                 data.resize(nCols * nRows, elem);
                 std::ranges::fill(data, {});
                 for (auto [pos, val] : copy)
-                {
                     this->operator()(pos) = val;
-                }
             }
 
             cols = nCols;
@@ -359,25 +362,26 @@ namespace magique
             rows = 0;
         }
 
+        template <typename GridType>
         class Iterator
         {
-            DynamicGridContainer* grid;
+            GridType* grid;
             int index;
 
         public:
             using iterator_category = std::input_iterator_tag;
             using value_type = std::pair<Point, T>;
             using difference_type = std::ptrdiff_t;
-            using reference = std::pair<Point, T&>;
+            using reference = std::pair<Point, decltype(std::declval<GridType>().data[0])>;
             using pointer = value_type*;
 
-            Iterator(DynamicGridContainer* grid, int index) : grid(grid), index(index) {}
+            Iterator(GridType* grid, int index) : grid(grid), index(index) {}
 
             reference operator*() const
             {
                 const int x = index % grid->cols;
                 const int y = index / grid->cols;
-                return reference{Point::FromInt(x, y), grid->data[index]};
+                return reference{Point{(float)x, (float)y}, grid->data[index]};
             }
 
             Iterator& operator++()
@@ -398,10 +402,14 @@ namespace magique
             bool operator!=(const Iterator& other) const { return !(*this == other); }
         };
 
-        // Iterates over the vector directly without jumps - NOT in row-major order
+        // Iterates directly over the flattened vector - so row per row
+        // The point will however always be correct
         // Returns [Point: pos, T&: value]
-        Iterator begin() { return Iterator(this, 0); }
-        Iterator end() { return Iterator(this, cols * rows); }
+        Iterator<DynamicGridContainer> begin() { return Iterator(this, 0); }
+        Iterator<DynamicGridContainer> end() { return Iterator(this, cols * rows); }
+
+        Iterator<const DynamicGridContainer> begin() const { return Iterator(this, 0); }
+        Iterator<const DynamicGridContainer> end() const { return Iterator(this, cols * rows); }
 
     private:
         std::vector<T> data;
@@ -410,7 +418,7 @@ namespace magique
     };
 
     // A faster version of std::priority_queue
-    template <typename T, typename Compare = std::greater<T>, typename Allocator = std::allocator<T>>
+    template <typename T, typename Compare = std::greater<T>>
     struct PriorityQueue final
     {
         explicit PriorityQueue(size_t len = 32) { data_.reserve(len); }
@@ -482,7 +490,7 @@ namespace magique
             }
         }
 
-        std::vector<T, Allocator> data_;
+        std::vector<T> data_;
         Compare comp;
     };
 

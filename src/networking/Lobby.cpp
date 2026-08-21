@@ -1,4 +1,4 @@
-#include <magique/multiplayer/Lobby.h>
+#include <magique/networking/Lobby.h>
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #include "internal/globals/NetworkingData.h"
@@ -57,23 +57,9 @@ namespace magique
 
     void LobbySetMetadataCallback(const LobbyMetadataCallback& callback) { (void)callback; }
 
-    inline Lobby LOBBY{};
 
-    Lobby& GetLobby() { return LOBBY; }
 
-    void Lobby::setStartSignal(const bool value) { (void)value; }
-
-    bool Lobby::getStartSignal() const { return false; }
-
-    void Lobby::sendChatMsg(std::string_view message) { (void)message; }
-
-    void Lobby::setMetadata(std::string_view key, std::string_view value)
-    {
-        (void)key;
-        (void)value;
-    }
-
-    const std::string& Lobby::getMetadata(std::string_view key)
+   std::string_view LobbyGetMetadata(std::string_view key)
     {
         (void)key;
         static std::string empty;

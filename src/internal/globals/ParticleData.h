@@ -5,7 +5,7 @@
 #include <functional>
 #include <raylib/rlgl.h>
 
-#include <magique/core/Particles.h>
+#include <magique/graphics/Particles.h>
 #include <magique/util/Logging.h>
 
 #include "external/raylib-compat/rshapes_compat.h"

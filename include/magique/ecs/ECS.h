@@ -27,7 +27,7 @@ namespace magique
     // Returns the magique registry
     entt::registry& EntityGetRegistry();
 
-    //============== ENTITIY ==============//
+    //============== ENTITY ==============//
 
     using CreateFunc = std::function<void(Entity entity, EntityType type)>;
 
@@ -52,8 +52,8 @@ namespace magique
     Entity EntityCreateEx(Entity id, EntityType type, Point pos, MapID map, float rotation, bool withFunc = true);
 
     // Sets a function that is called each time AFTER the entity is created or BEFORE the entity is destroyed
-    void EntitySetDestroyCallback(const EntityCallback& callback);
     void EntitySetCreateCallback(const EntityCallback& callback);
+    void EntitySetDestroyCallback(const EntityCallback& callback);
 
     // Returns true if the given entity exist in the registry
     bool EntityExists(Entity entity);
@@ -62,19 +62,15 @@ namespace magique
     template <typename Component>
     bool EntityExistsWith();
 
-    // Returns true and executes the given function if the entity exists
-    template <typename Func>
-    bool EntityIfExists(Entity entity, const Func& func);
-
     // Returns true if the given entity has ALL the specified component types
     template <typename... Args>
     bool EntityHasAll(Entity entity);
 
-    // Returns true if the given
+    // Returns true if the given entity has ANY the specified component types
     template <typename... Args>
     bool EntityHasAny(Entity entity);
 
-    // Returns true if the given entity is an actor - has the actor component
+    // Returns true if the given entity has the actor component
     bool EntityIsActor(Entity entity);
 
     // Returns the first entity with the given type
@@ -92,7 +88,7 @@ namespace magique
     // Iterates ALL enemies and destroys them if the filter returns true
     void EntityDestroy(const FilterFunc& func);
 
-    // Saves the entity and destroys it AFTER onGameUpdate() but BEFORE onUpdateEnd()
+    // Saves the entity and destroys it AFTER onGameUpdate() but BEFORE onUpdateEnd() (where you should send network updates)
     // Note: This avoids crashes when systems access entities after they are destroyed immediately during the tick
     void EntityDestroyDeferred(Entity entity);
     void EntityDestroyDeferred(const FilterFunc& func);
@@ -219,17 +215,6 @@ namespace magique
     bool EntityExistsWith()
     {
         return !internal::REGISTRY.owned<Component>();
-    }
-
-    template <typename Func>
-    bool EntityIfExists(Entity entity, const Func& func)
-    {
-        if (EntityExists(entity))
-        {
-            func(entity);
-            return true;
-        }
-        return false;
     }
 
     template <typename... Args>

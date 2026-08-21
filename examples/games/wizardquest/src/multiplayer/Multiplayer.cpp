@@ -7,8 +7,8 @@
 #include <ankerl/unordered_dense.h>
 #include <magique/core/Core.h>
 #include <magique/ecs/ECS.h>
-#include <magique/multiplayer/LocalSockets.h>
-#include <magique/multiplayer/Multiplayer.h>
+#include <magique/networking/LocalSockets.h>
+#include <magique/networking/Multiplayer.h>
 #include <magique/util/Logging.h>
 
 using namespace magique;

@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_INTERNAL_SCRIPTING_H
 #define MAGIQUE_INTERNAL_SCRIPTING_H
 
-#include <magique/ecs/ECS.h>
+#include <magique/ecs/Components.h>
 
 //===============================================
 // Internal Scripting Module

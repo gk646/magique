@@ -3,7 +3,7 @@
 #include <vector>
 #include <magique/core/Types.h>
 #include <entt/entity/entity.hpp>
-#include <magique/multiplayer/Networking.h>
+#include <magique/networking/Networking.h>
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 

@@ -38,15 +38,15 @@ namespace magique
     // Immediately calls all handlers in correct order if conditions match (e.g. filter matches and shouldBeCalled() is true)
     // Template is only for cleaner signature - MUST be type EventData
     template <typename EventDataT = EventData>
-    void EventsEmit(Event event, Entity entity = NullEntity{}, const EventDataT& data = {});
+    void EventsEmit(Event event, Entity entity = NullEntity, const EventDataT& data = {});
 
     // Adds an event handler
     //  - filter: only calls event func if emitted entity matches filter
     //  - priority: called in priority order descending - highest first
-    EventSubscription EventsSubscribe(IEventHandler* handler, Entity filter = NullEntity{}, int priority = 0);
+    EventSubscription EventsSubscribe(IEventHandler* handler, Entity filter = NullEntity, int priority = 0);
 
     // Called every time the filter matches
-    EventSubscription EventsSubscribe(const EventFunc& func, Entity filter = NullEntity{}, int priority = 0);
+    EventSubscription EventsSubscribe(const EventFunc& func, Entity filter = NullEntity, int priority = 0);
 
     // Returns true if the subscription has been removed
     bool EventsCancel(EventSubscription id);

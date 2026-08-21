@@ -10,10 +10,6 @@ namespace magique
     bool SteamInit(const bool createFile) { return false; };
     SteamID SteamGetID() { M_ENABLE_STEAM_ERROR({}) };
     std::string_view SteamGetUserName() { M_ENABLE_STEAM_ERROR({}); };
-    void SteamSetOverlayCallback(const SteamOverlayCallback& steamOverlayCallback){
-        M_ENABLE_STEAM_ERROR()} std::string_view SteamGetUserDataLocation() {
-        M_ENABLE_STEAM_ERROR({})
-    };
 } // namespace magique
 #else
 #include <fstream>

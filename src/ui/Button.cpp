@@ -4,7 +4,7 @@
 #include <magique/ui/controls/Button.h>
 #include <magique/ui/UI.h>
 #include <magique/core/Engine.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 #include <magique/util/RayUtils.h>
 
 #include "internal/globals/EngineConfig.h"

@@ -3,12 +3,12 @@
 #define MAGIQUE_MULTIPLAYER_DATA_H
 
 #include <magique/util/Logging.h>
-#include <magique/multiplayer/Networking.h>
-#include <magique/multiplayer/Lobby.h>
+#include <magique/networking/Networking.h>
+#include <magique/networking/Lobby.h>
 
-#include "multiplayer/headers/MultiplayerStatistics.h"
-#include "multiplayer/headers/LobbyData.h"
-#include "multiplayer/headers/ConnectionMapping.h"
+#include "networking/headers/MultiplayerStatistics.h"
+#include "networking/headers/LobbyData.h"
+#include "networking/headers/ConnectionMapping.h"
 
 #ifdef MAGIQUE_LAN
 #include "external/networkingsockets/steamnetworkingsockets.h"

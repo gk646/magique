@@ -12,7 +12,7 @@ using namespace magique;
 
 struct Setup final
 {
-    Setup() { CompileAssetImage("./", "test-data.bin"); }
+    Setup() { AssetPackCompile("./", "test-data.bin"); }
 
     ~Setup()
     {
@@ -25,8 +25,8 @@ TEST_CASE("execution order")
 {
     Setup SETUP{};
 
-    internal::InitJobSystem();
-    WakeUpJobs();
+    internal::JobsInit();
+    internal::JobsWakeUp();
     AssetLoader loader("test-data.bin", 0);
 
     std::vector<std::string> executionOrder;
@@ -38,13 +38,13 @@ TEST_CASE("execution order")
     auto registerTestTask = [&](const std::string& name, ThreadType thread, PriorityLevel priority)
     {
         loader.registerTask(
-            [&, name, thread](AssetContainer& assets)
+            [&, name, thread](AssetPack& assets)
             {
                 std::lock_guard const lock(orderMutex);
                 executionOrder.push_back(name);
                 threadMap[name] = std::this_thread::get_id();
 
-                //printf("Task executed: %s\n", name.c_str());
+                // printf("Task executed: %s\n", name.c_str());
 
                 if (thread == THREAD_MAIN)
                 {

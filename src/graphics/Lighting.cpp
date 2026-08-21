@@ -1,4 +1,5 @@
-#include <magique/core/Lighting.h>
+// SPDX-License-Identifier: zlib-acknowledgement
+#include <magique/graphics/Lighting.h>
 #include <magique/gamedev/PathFinding.h>
 #include <magique/core/Camera.h>
 #include <magique/ecs/ECS.h>

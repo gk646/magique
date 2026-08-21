@@ -2,8 +2,6 @@
 #ifndef MAGIQUE_STRINGS_H
 #define MAGIQUE_STRINGS_H
 
-#include <string>
-#include <vector>
 #include <magique/core/Types.h>
 
 //===============================================
@@ -45,7 +43,7 @@ namespace magique
 
     // Returns a vector of string containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-    std::vector<std::string> StringSplit(std::string_view s, char delim);
+    std::vector<std::string> StringSplit(std::string_view s, char delim = '\n');
 
     // Returns true if the given string conforms to:
     //  - At least "minLen" but not longer than "maxLen"

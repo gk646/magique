@@ -41,8 +41,7 @@ namespace magique
         // Tries to load an asset pack from the default path - assets will be empty if none exists!
         // Tries to load the game config from the default path - will be created if none exists!
         // Note: The encryption key is applied to both assets and config - make sure they match
-        int run(std::string_view assetPath = "data.bin", std::string_view configPath = "Config.cfg",
-                uint64_t encryptionKey = 0);
+        int run(std::string_view assetPath = "data.bin", uint64_t encryptionKey = 0);
 
         // Stops the game gracefully - calls onShutDown()
         void shutDown();
@@ -87,7 +86,7 @@ namespace magique
         bool getIsRunning() const;
         bool getIsLoading() const;
         std::string_view getName() const;
-        std::string_view  getVersion() const;
+        std::string_view getVersion() const;
 
     private:
         bool isRunning = false;

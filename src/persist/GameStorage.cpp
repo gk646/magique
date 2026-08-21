@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/persistence/GameStorage.h>
+#include <magique/persist/GameStorage.h>
 #include <magique/util/Logging.h>
 
 namespace magique

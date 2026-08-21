@@ -4,7 +4,6 @@
 
 #include <raylib/raylib.h>
 
-#include <magique/core/GameConfig.h>
 #include <magique/core/Camera.h>
 #include <magique/util/Datastructures.h>
 #include <magique/ecs/ECS.h>
@@ -48,11 +47,10 @@ namespace magique
         HashSet<Entity> queryCache;
 
         CameraShakeData cameraShake{};      // Data about the current camera shake
-        GameConfig gameConfig{};            // Global game config instance
         Camera2D camera{};                  // Current camera
         Game* gameInstance;                 // The game instance created by the user
-        Entity cameraEntity = NullEntity{}; // Entity id of the camera
-        Entity playerEntity = NullEntity{}; // Manually set player entity
+        Entity cameraEntity = NullEntity; // Entity id of the camera
+        Entity playerEntity = NullEntity; // Manually set player entity
         GameState gameState{UINT8_MAX};     // Global gamestate
         MapID cameraMap = MapID(UINT8_MAX); // Map the camera is in
         float engineTime = 0.0F;            // Time since engine start

@@ -20,7 +20,7 @@ namespace magique
     // Defines a new achievable achievement and adds it to the system
     // Note: If constraint evaluates to true the achievement is done - only evaluated if not finished
     // Failure: returns false if the name already exists
-    bool AchievementAdd(const std::string& name, const std::function<bool()>& constraint);
+    bool AchievementAdd(std::string_view name, const std::function<bool()>& constraint);
 
     // Returns true if the achievement exists and is finished
     // Failure: returns false otherwise

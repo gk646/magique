@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include <magique/gamedev/Console.h>
+#include <magique/core/Console.h>
 #include <raylib/raylib.h>
 
 #include "internal/globals/ConsoleData.h"
@@ -9,6 +9,7 @@ using namespace magique;
 
 TEST_CASE("fuzzing console")
 {
+    global::ENGINE_DATA.gameInstance = new Game();
     global::CONSOLE_DATA.init();
     // Buffer to hold fuzzed input data
     std::string fuzzInput(100, '\0');
@@ -22,24 +23,19 @@ TEST_CASE("fuzzing console")
         // Generate random characters, with a 10% chance of being a space
         for (int i = 0; i < inputLength; ++i)
         {
-            if (GetRandomValue(1, 100) <= 25) // 10% chance
+            if (GetRandomValue(1, 100) <= 25)
             {
-                fuzzInput[i] = ' '; // Insert a space
+                fuzzInput[i] = ' ';
             }
             else
             {
-                fuzzInput[i] = static_cast<char>(GetRandomValue(33, 126)); // Printable ASCII excluding space
+                fuzzInput[i] = static_cast<char>(GetRandomValue(33, 126));
             }
         }
 
-        // Assign fuzzed input to the console's global data
         global::CONSOLE_DATA.line = fuzzInput;
-
-        // Perform parsing
-        auto parseResult = ParamParser::parse(global::CONSOLE_DATA);
-
-        // Check the result (adapt this assertion as per your expected behavior)
-        REQUIRE(parseResult == nullptr); // Expect no commands registered by default
+        auto parseResult = ParamParser::ParseCommand(StringSplit(global::CONSOLE_DATA.line, ' '));
+        REQUIRE(parseResult == nullptr);
     }
 }
 
@@ -124,19 +120,19 @@ TEST_CASE("fuzzing with random Params and additional commands")
                 }
             });
 
-    RegisterConsoleCommand(greet);
-    RegisterConsoleCommand(addNumbers);
-    RegisterConsoleCommand(logMessages);
-    RegisterConsoleCommand(setDefaults);
-    RegisterConsoleCommand(broadcast);
-    RegisterConsoleCommand(printHello);
-    RegisterConsoleCommand(likes);
+    ConsoleRegisterCommand(greet);
+    ConsoleRegisterCommand(addNumbers);
+    ConsoleRegisterCommand(logMessages);
+    ConsoleRegisterCommand(setDefaults);
+    ConsoleRegisterCommand(broadcast);
+    ConsoleRegisterCommand(printHello);
+    ConsoleRegisterCommand(likes);
     global::CONSOLE_DATA.init();
     for (const Command& cmd : global::CONSOLE_DATA.commands)
     {
         for (int i = 0; i < 50; ++i)
         {
-            std::string commandLine = cmd.getName();
+            std::string commandLine = cmd.getName().data();
             commandLine.append(" ");
             int paramCount = GetRandomValue(5, 10);
             for (int b = 0; b < paramCount; ++b)
@@ -161,7 +157,7 @@ TEST_CASE("fuzzing with random Params and additional commands")
                 }
             }
             global::CONSOLE_DATA.line = commandLine;
-            auto parseResult = ParamParser::parse(global::CONSOLE_DATA);
+            auto parseResult = ParamParser::ParseCommand(StringSplit(global::CONSOLE_DATA.line, ' '));
         }
     }
 }

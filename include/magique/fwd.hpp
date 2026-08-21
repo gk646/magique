@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_FWD_HPP
 #define MAGIQUE_FWD_HPP
 
-
 #include <magique/internal/entt/entity/entity.hpp>
 #include <magique/config.h>
 #include <magique/internal/Macros.h>
@@ -150,7 +149,7 @@ namespace entt
 namespace magique
 {
     using Entity = entt::entity;
-    using NullEntity = entt::null_t;
+    inline constexpr entt::null_t NullEntity{};
 } // namespace magique
 
 namespace glz

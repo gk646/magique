@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/core/Animation.h>
+#include <magique/graphics/Animation.h>
 #include <magique/ecs/ECS.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 #include <magique/ecs/Components.h>
 
 #include "internal/utils/CollisionPrimitives.h"

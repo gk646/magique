@@ -1,8 +1,9 @@
+// SPDX-License-Identifier: zlib-acknowledgement
 #include <cmath>
 
-#include <magique/gamedev/TextDrawer.h>
+#include <magique/graphics/TextDrawer.h>
 #include <magique/util/Strings.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 
 namespace magique
 {

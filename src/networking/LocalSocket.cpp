@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/multiplayer/LocalSocket.h>
+#include <magique/networking/LocalSocket.h>
 
 #if defined(MAGIQUE_STEAM) || defined(MAGIQUE_LAN)
 #ifdef MAGIQUE_STEAM

@@ -32,12 +32,12 @@ namespace magique
         float playVolume;
         float originalPitch;
         Point position{};
-        Entity entity = NullEntity{};
+        Entity entity = NullEntity;
         bool isPositional = false;
         bool loop = false;
 
         SoundWrapper(Sound sound, float volume, float pitch, bool loop, bool isPositional = false, Point position = {},
-                     Entity entity = NullEntity{});
+                     Entity entity = NullEntity);
 
         SoundWrapper(const SoundWrapper& other) = delete;
         SoundWrapper& operator=(const SoundWrapper& other) = delete;
@@ -80,7 +80,7 @@ namespace magique
         {
             if (isPositional)
             {
-                if (entity == NullEntity{})
+                if (entity == NullEntity)
                     return !IsSoundPlaying(sound);
                 return !EntityExists(entity);
             }

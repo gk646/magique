@@ -13,7 +13,6 @@ namespace magique
     SteamLobbyID SteamGetLobbyID() { M_ENABLE_STEAM_ERROR({}); }
     bool SteamOpenInviteDialog() { M_ENABLE_STEAM_ERROR(false); }
     bool SteamSendLobbyInvite(SteamID userID) { M_ENABLE_STEAM_ERROR(false); }
-    void SteamSetLobbyCallback(const SteamLobbyCallback& callback) {}
 } // namespace magique
 #else
 #include <magique/steam/Matchmaking.h>

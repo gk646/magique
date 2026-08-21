@@ -3,7 +3,6 @@
 
 namespace magique
 {
-
     // In seconds
     struct BenchmarkEntry
     {

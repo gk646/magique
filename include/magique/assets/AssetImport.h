@@ -5,7 +5,7 @@
 #include <vector>
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
-#include <magique/core/Animation.h>
+#include <magique/graphics/Animation.h>
 #include <magique/gamedev/Localization.h>
 
 //===============================================

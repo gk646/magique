@@ -4,7 +4,7 @@
 #include <magique/util/RayUtils.h>
 #include <magique/ui/UI.h>
 #include <magique/core/Engine.h>
-#include <magique/gamedev/TextDrawer.h>
+#include <magique/graphics/TextDrawer.h>
 
 namespace magique
 {

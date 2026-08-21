@@ -16,7 +16,6 @@
 
 #include "external/raylib-compat/rcore_compat.h"
 
-
 namespace magique
 {
     struct UIData final
@@ -33,7 +32,7 @@ namespace magique
         GamepadMapping* currentMapping = nullptr;
         std::stack<GamepadMapping*> mappings;
 
-        int mouseConsumedPreRender = 0; // Used to cache real value to manupulate it for the render tick
+        int mouseConsumedPreRender = 0; // Used to cache real value to manipulate it for the render tick
         int keyConsumed = 0;
         int mouseConsumed = 0;
         bool customTargetRes = false;

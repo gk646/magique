@@ -3,7 +3,7 @@
 #define MAGIQUE_COMPONENTS_H
 
 #include <magique/core/Types.h>
-#include <magique/core/Animation.h>
+#include <magique/graphics/Animation.h>
 #include <magique/util/Datastructures.h>
 
 //===============================================

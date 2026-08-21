@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <magique/ui/controls/ListChooser.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 #include <magique/ui/UI.h>
 #include <magique/util/Logging.h>
 

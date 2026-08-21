@@ -8,15 +8,14 @@
 #include <magique/core/Game.h>
 #include <magique/core/Engine.h>
 #include <magique/core/Camera.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 #include <magique/ecs/ECS.h>
 #include <magique/assets/AssetLoader.h>
 #include <magique/util/JobSystem.h>
 #include <magique/util/Logging.h>
-#include <magique/core/GameConfig.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
-#include <magique/gamedev/BaseShaders.h>
+#include <magique/graphics/BaseShaders.h>
 
 #include "internal/globals/TweenData.h"
 #include "internal/globals/EngineData.h"
@@ -34,7 +33,7 @@
 #include "internal/globals/StaticCollisionData.h"
 #include "internal/globals/DynamicCollisionData.h"
 #include "internal/globals/LoggingData.h"
-#include "magique/core/Lighting.h"
+#include "magique/graphics/Lighting.h"
 
 #ifdef MAGIQUE_STEAM
 #include "internal/globals/SteamData.h"
@@ -60,7 +59,7 @@
 #include "core/headers/Renderer.h"
 #include "core/headers/MainThread.h"
 #if MAGIQUE_INCLUDE_FONT == 1
-#include "internal/misc/Probably8Denser.h"
+#include "headers/Probably8Denser.h"
 #endif
 
 // Note: All includes are pulled out topside for clarity
@@ -116,7 +115,7 @@ namespace magique
             return true;
         }
     } // namespace internal
-    // namespace internal
+
     Game::Game(std::string_view name, std::string_view version) :
         isRunning(true), gameName(strdup(name.data())), version(strdup(version.data()))
     {
@@ -163,15 +162,10 @@ namespace magique
         LOG_INFO("Shutdown magique");
     }
 
-    int Game::run(std::string_view assetPath, std::string_view configPath, const uint64_t encryptionKey)
+    int Game::run(std::string_view assetPath, const uint64_t encryptionKey)
     {
         auto& loader = global::LOADER;
         loader = new AssetLoader{assetPath, encryptionKey};
-
-        if (global::ENGINE_CONFIG.useGameConfig)
-        {
-            GameConfig::FromFile(global::ENGINE_DATA.gameConfig, configPath, "GameConfig", encryptionKey);
-        }
 
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader));
@@ -193,10 +187,6 @@ namespace magique
         onShutDown();
         mainthread::Close();
 
-        if (global::ENGINE_CONFIG.useGameConfig)
-        {
-            GameConfig::ToFile(global::ENGINE_DATA.gameConfig, configPath, "GameConfig", encryptionKey);
-        }
         global::PERF_DATA.printPerformanceStats();
         return 0;
     }

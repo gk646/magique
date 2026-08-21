@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/gamedev/Console.h>
+#include <magique/core/Console.h>
 
 #include "internal/globals/ConsoleData.h"
 

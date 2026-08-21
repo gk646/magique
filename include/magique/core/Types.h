@@ -29,8 +29,6 @@ namespace magique
         constexpr Point(float both) : x(both), y(both) {}
         operator Vector2() const;
 
-        static Point FromInt(int x, int y);
-
         // Initializes both values randomly within the given range
         static Point Random(float min, float max);
 

@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_PERFDATA_H
 #define MAGIQUE_PERFDATA_H
 
-#include <magique/multiplayer/Networking.h>
+#include <magique/networking/Networking.h>
 #include <magique/gamedev/UsefulStuff.h>
 #include <magique/util/RayUtils.h>
 

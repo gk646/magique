@@ -44,7 +44,6 @@ namespace magique
     // Clears the collected performance data collected so far
     void EngineResetBenchmark();
 
-
 } // namespace magique
 
 #endif // MAGIQUE_ENGINE_UTIL_H

@@ -22,12 +22,12 @@ namespace magique
     // Manually sets the camera view offset from the top left of the screen - automatically set to be half the screen dimensions
     // Note: If any offset other than (0,0) is set there are no automatic adjustments - useful if for different render target
     // Default: (0,0)
-    void CameraSetViewOffset(float x, float y);
+    void CameraSetViewOffset(Point viewOffset);
 
     // Sets the cameras position offset - automatically centered within the camera entities collision shape (if it exists)
     // Note: If any offset other than (0,0) is set there are no automatic adjustments
     // Default: (0,0)
-    void CameraSetTargetOffset(float x, float y);
+    void CameraSetTargetOffset(Point targetOffset);
 
     // Sets a smoothing value from 0.0 - 1.0 with 1.0 being the fastest
     // Controls how fast the camera position catches up to the position of the camera holder

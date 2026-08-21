@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <raylib/raylib.h>
 
-#include <magique/config.h>
-#include <magique/ui/TextFormat.h>
+#include <magique/gamedev/TextFormat.h>
 #include <magique/util/Datastructures.h>
 
 

@@ -4,7 +4,7 @@
 #include <cctype>
 
 #include <magique/core/Camera.h>
-#include <magique/core/Draw.h>
+#include <magique/graphics/Draw.h>
 
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
