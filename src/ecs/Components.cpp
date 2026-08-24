@@ -42,6 +42,10 @@ namespace magique
         return {};
     }
 
+    PositionC::operator Point() const { return pos; }
+
+    PositionC::operator MapID() const { return map; }
+
     //----------------- ANIMATION -----------------//
 
     AnimationC::AnimationC(const Animation& animation, const AnimationState startState) : animation(&animation)

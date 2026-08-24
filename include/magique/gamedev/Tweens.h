@@ -24,24 +24,29 @@ namespace magique
         LINEAR,
         IN_OUT_CUBIC,
         IN_OUT_SINE,
+        OUT_SINE,
         IN_OUT_QUAD,
+        IN_QUINT,
+        OUT_QUINT,
         IN_OUT_CIRC,
+        OUT_ELASTIC
     };
 
     struct Tween final
     {
         using TweenFunc = std::function<void(const Tween&)>;
 
-        explicit Tween(TweenMode mode, float seconds = 1.0F);
+        explicit Tween(TweenMode mode = TweenMode::IN_OUT_CUBIC, float seconds = 1.0F);
+        explicit Tween(TweenMode forward, TweenMode backward, float seconds = 1.0F);
 
         // Resets the step value to 0 and removes internally so its not updated anymore
         void reset();
 
         // Starts the tween (if it's not already started) and sets the update direction
-        // forward: 0 -> 1 || reverse: 1 -> 0 (only sets direction, values are not changed)
+        // forward: 0 -> 1 || backward: 1 -> 0 (only sets direction, values are not changed)
         // Note: This tween object MUST NOT go out of scope or be deleted!
         void forward();
-        void reverse();
+        void backward();
 
         // Called each update tick with the tween
         void setOnTick(const TweenFunc& callback);
@@ -62,6 +67,8 @@ namespace magique
         // Returns true if the tween was started (and is getting updated)
         bool isStarted() const;
 
+        TweenMode getMode() const;
+
     private:
         void update();
         TweenFunc tickFunc;
@@ -69,7 +76,8 @@ namespace magique
         float stepWidth = 1.0F / MAGIQUE_LOGIC_TICKS;
         bool started = false;
         bool isForward = true;
-        TweenMode mode;
+        TweenMode forwardMode;
+        TweenMode backwardMode;
         friend TweenData;
     };
 } // namespace magique

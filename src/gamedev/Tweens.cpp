@@ -7,7 +7,12 @@
 #endif
 namespace magique
 {
-    Tween::Tween(TweenMode mode, float seconds) : mode(mode) { setDuration(seconds); }
+    Tween::Tween(TweenMode mode, float seconds) : forwardMode(mode), backwardMode(mode) { setDuration(seconds); }
+
+    Tween::Tween(TweenMode forward, TweenMode backward, float seconds) : forwardMode(forward), backwardMode(backward)
+    {
+        setDuration(seconds);
+    }
 
     void Tween::reset()
     {
@@ -26,7 +31,7 @@ namespace magique
         }
     }
 
-    void Tween::reverse()
+    void Tween::backward()
     {
         isForward = false;
         if (!started)
@@ -42,7 +47,8 @@ namespace magique
 
     float Tween::getValue() const
     {
-        switch (mode)
+        constexpr float c4 = (2 * PI) / 3;
+        switch (getMode())
         {
         case TweenMode::IN_OUT_SINE:
             return -(std::cos(PI * step) - 1.0F) / 2.0F;
@@ -55,6 +61,14 @@ namespace magique
         case TweenMode::IN_OUT_CIRC:
             return step < 0.5 ? (1.0F - std::sqrtf(1.0F - std::pow(2.0F * step, 2.0F))) / 2.0F
                               : (std::sqrtf(1.0F - std::pow(-2.0F * step + 2.0F, 2.0F)) + 1.0F) / 2.0F;
+        case TweenMode::IN_QUINT:
+            return step * step * step * step;
+        case TweenMode::OUT_SINE:
+            return std::sin((step * PI) / 2.0F);
+        case TweenMode::OUT_ELASTIC:
+            return step == 0 ? 0 : step == 1 ? 1 : -std::pow(2, -10 * step) * sin((step * 10 - 0.75F) * c4) + 1;
+        case TweenMode::OUT_QUINT:
+            return 1.0F - std::pow(1.0F - step, 5);
         }
         return 0.0F;
     }
@@ -66,6 +80,8 @@ namespace magique
     bool Tween::isDone() const { return (isForward && step >= 1.0F) || (!isForward && step <= 0.0F); }
 
     bool Tween::isStarted() const { return started; }
+
+    TweenMode Tween::getMode() const { return isForward ? forwardMode : backwardMode; }
 
     void Tween::update()
     {

@@ -70,6 +70,8 @@ namespace magique
         return (fractionalPart < EPSILON) || (1.0F - fractionalPart < EPSILON);
     }
 
+    bool MathIsEven(int num) { return num % 2 == 0; }
+
     bool IsEvenNumber(const float num)
     {
         const auto integer = static_cast<int64_t>(std::floor(num));

@@ -35,6 +35,9 @@ namespace magique
         Rect getBounds(const CollisionC& collisionC) const;
 
         bool operator==(const PositionC&) const = default;
+        operator Point() const;
+        operator MapID() const;
+
     };
 
     // Denotes an actor

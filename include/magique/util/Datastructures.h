@@ -212,6 +212,55 @@ namespace magique
         StoreType data_ = 0;
     };
 
+    // Small abstraction that cleanly allows iterating over a subset of enum values
+    template <class E>
+    struct EnumRange final
+    {
+        // Iterates from "from" to "to" (inclusive)
+        EnumRange(E from, E to) : from(from), to(to) {}
+
+        class Iterator
+        {
+            E curr;
+
+        public:
+            using iterator_category = std::input_iterator_tag;
+            using value_type = E;
+            using difference_type = std::ptrdiff_t;
+            using pointer = value_type*;
+
+            explicit Iterator(E from) : curr(from) {}
+
+            value_type operator*() const { return curr; }
+
+            Iterator& operator++()
+            {
+                curr = static_cast<E>(static_cast<std::underlying_type_t<E>>(curr) + 1);
+                return *this;
+            }
+
+            Iterator operator++(int)
+            {
+                Iterator tmp = *this;
+                curr = static_cast<E>(static_cast<std::underlying_type<E>>(curr) + 1);
+                return tmp;
+            }
+
+            bool operator==(const Iterator& other) const { return curr == other.curr; }
+
+            bool operator!=(const Iterator& other) const { return curr != other.curr; }
+        };
+
+
+        auto begin() { return Iterator{from}; }
+
+        auto end() { return Iterator{to}; }
+
+    private:
+        E from;
+        E to;
+    };
+
     // Statically sized vector (coming as inplace_vector in c++26)
     // Useful when you want to track the size but want an array as storage
     // Does not support complex types without a default constructor

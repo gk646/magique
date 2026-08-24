@@ -53,6 +53,9 @@ namespace magique
     // Returns true of the given float is a whole number (e.g. 3.0F)
     bool MathIsWhole(float num);
 
+    // Returns true if the number is even
+    bool MathIsEven(int num);
+
     // Mirrors the given value vertically
     template <typename T>
     T MathMirror(T value, T border);

@@ -12,7 +12,8 @@ namespace magique
 
     void Popup::triggerAction()
     {
-        actionFunc();
+        if (actionFunc)
+            actionFunc();
         triggerClose();
     }
 
