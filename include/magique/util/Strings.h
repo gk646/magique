@@ -86,11 +86,6 @@ namespace magique
     // Formats the given time into mm:ss:lll (l = milli)
     std::string_view StringFromTimeMillis(float seconds);
 
-    // Returns the enum value as string
-    // Note: This requires the whole enum definition to be visible when used
-    template <class E>
-    std::string_view StringFromEnum(E val);
-
     //================= HASHING =================//
 
     // Uses fnav32a1 to hash the string - aimed to be fast not secure!
@@ -144,12 +139,6 @@ namespace magique
             hash *= 16777619U;
         }
         return hash;
-    }
-
-    template <class E>
-    std::string_view StringFromEnum(E val)
-    {
-        return enchantum::to_string(val);
     }
 
 } // namespace magique

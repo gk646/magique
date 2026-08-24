@@ -6,6 +6,7 @@
 #include <magique/internal/ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
+#include <magique/util/STL.h>
 #include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
@@ -218,6 +219,7 @@ namespace magique
     {
         // Iterates from "from" to "to" (inclusive)
         EnumRange(E from, E to) : from(from), to(to) {}
+        EnumRange() : from(0), to(EnumSize<E>()) {}
 
         class Iterator
         {

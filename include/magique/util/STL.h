@@ -3,9 +3,9 @@
 
 #include <algorithm>
 #include <cfloat>
-#include <span>
 #include <vector>
 #include <raylib/raylib.h>
+#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // STL (Standard Templates Library)
@@ -28,6 +28,23 @@ namespace magique
     // Note: vec MUST not contain duplicates
     template <typename T, std::size_t Extent = std::dynamic_extent>
     std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n);
+
+    // Returns the enum value as string
+    // Note: This requires the whole enum definition to be visible when used
+    template <class E>
+    std::string_view EnumToString(E val);
+
+    // Returns an optional that contains the matching enum value if it exists
+    template <class E>
+    std::optional<E> EnumFromString(std::string_view input);
+
+    // Returns the amount of value part of the given enum
+    template <class E>
+    size_t EnumSize();
+
+    // Returns a iterable view of all values of this enum
+    template <class E>
+    std::span<const E> EnumValues();
 
 } // namespace magique
 
@@ -91,6 +108,30 @@ namespace magique
         }
 
         return ret;
+    }
+
+    template <class E>
+    std::string_view EnumToString(E val)
+    {
+        return enchantum::to_string(val);
+    }
+
+    template <class E>
+    std::optional<E> EnumFromString(std::string_view input)
+    {
+        return enchantum::cast<E>(input);
+    }
+
+    template <class E>
+    size_t EnumSize()
+    {
+        return enchantum::count<E>;
+    }
+
+    template <class E>
+    std::span<const E> EnumValues()
+    {
+        return enchantum::values<E>;
     }
 
 } // namespace magique
