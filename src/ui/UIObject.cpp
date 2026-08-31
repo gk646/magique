@@ -62,6 +62,9 @@ namespace magique
             onDraw(bounds);
         }
 
+        if (UIUsingGamepad() && getIsHovered(true, true))
+            DrawRectFrame(bounds.enlarge(2), WHITE);
+
         if (ui.showHitboxes)
             DrawRectangleLinesEx(bounds, 1, BLUE);
     }
@@ -149,9 +152,10 @@ namespace magique
         setPosition(UIGetAnchor(alignAnchor, relativeTo, getBounds().size(), UIGetScaled(alignInset)));
     }
 
-    bool UIObject::getIsHovered(bool layered) const
+    bool UIObject::getIsHovered(bool layered, bool topmost) const
     {
-        return (!layered || !LayeredInput::GetIsMouseConsumed()) && getBounds().contains(GetMousePos());
+        return (!topmost || isTopmostHovered) && (!layered || !LayeredInput::GetIsMouseConsumed()) &&
+            getBounds().contains(GetMousePos());
     }
 
     bool UIObject::getIsClicked(const int button, bool layered) const

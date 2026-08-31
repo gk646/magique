@@ -90,7 +90,7 @@ namespace magique
         void static SubmitLine(std::string_view input)
         {
             // Must be separated by spaces
-            auto chunks = StringSplit(input, ' ');
+            const auto& chunks = StringSplit(input, ' ');
             const Command* cmd = ParamParser::ParseCommand(chunks);
             if (cmd == nullptr)
             {
@@ -322,7 +322,7 @@ namespace magique
             };
             std::ranges::sort(suggestions, pred);
 
-            const auto chunks = StringSplit(line, ' ');
+            const auto& chunks = StringSplit(line, ' ');
             parsedCommand = ParamParser::ParseCommand(chunks);
         }
 

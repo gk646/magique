@@ -197,44 +197,55 @@ namespace magique
         return lineBreaks;
     }
 
-    std::vector<std::string> StringSplit(std::string_view s, char delim)
+    const std::vector<std::string>& StringSplit(std::string_view s, char delim)
     {
-        std::vector<std::string> result;
-        result.reserve(16);
+        static std::vector<std::string> CACHE;
+
+        // Count to get the exact number
+        size_t count = 0;
         size_t start = 0;
         size_t end = 0;
         while ((end = s.find(delim, start)) != std::string_view::npos)
         {
             if (end != start)
+                count++;
+            start = end + 1;
+        }
+        if (start < s.size())
+            count++;
+        CACHE.resize(count);
+
+        start = 0;
+        size_t index = 0;
+        while ((end = s.find(delim, start)) != std::string_view::npos)
+        {
+            if (end != start)
             {
-                result.emplace_back(s.substr(start, end - start));
+                CACHE[index++].assign(s.data() + start, end - start);
             }
             start = end + 1;
         }
         if (start < s.size())
         {
-            result.emplace_back(s.substr(start));
+            CACHE[index].assign(s.data() + start, s.size() - start);
         }
-        return result;
+        return CACHE;
     }
 
-    bool StringIsValidName(const char* text, int minLen, int maxLen)
+    bool StringIsValidName(std::string_view s, int minLen, int maxLen)
     {
-        if (text == nullptr)
-        {
+        if (s.empty())
             return false;
-        }
-        int len = 0;
-        while (*text != '\0')
+
+        if ((int)s.size() > maxLen || (int)s.size() < minLen)
+            return false;
+
+        for (auto c : s)
         {
-            if ((*text < 'A' || *text > 'Z') && (*text < 'a' || *text > 'z') && (*text < '0' || *text > '9'))
-            {
+            if ((c < 'A' || c > 'Z') && (c < 'a' || c > 'z') && (c < '0' || c > '9'))
                 return false;
-            }
-            len++;
-            text++;
         }
-        return len >= minLen && len <= maxLen;
+        return true;
     }
 
     bool strcmpnc(const char* s1, const char* s2)

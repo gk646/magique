@@ -49,7 +49,7 @@ namespace magique
 
     //================= TEXT =================//
 
-    // Draws the given text centered around the given position
+    // Draws the given text centered around the given position - supports multiline strings (all lines are centered)
     // Drop in replacement for DrawTextEx()
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
                           Color tint = WHITE);

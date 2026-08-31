@@ -80,7 +80,8 @@ namespace magique
         void align(Anchor alignAnchor, const Rect& relativeTo, Point alignInset = {});
 
         // Returns true if the cursor is over the object
-        bool getIsHovered(bool layered = true) const;
+        //      - topMost: only returns true if its the topmost hovered UIObject (sorted in update order, only true for 1 object)
+        bool getIsHovered(bool layered = true, bool topMost = false) const;
 
         // Returns true if mouse button is pressed while the object is hovered
         bool getIsClicked(int mouseButton = MOUSE_BUTTON_LEFT, bool layered = true) const;
@@ -140,6 +141,7 @@ namespace magique
         bool wasDrawnLastTick = false;
         bool drawnThisTick = false;
         bool isMenu = false;
+        bool isTopmostHovered = false;
         friend UIData;
         friend Window;
     };

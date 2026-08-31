@@ -79,11 +79,14 @@ namespace magique
         const auto& pos = ComponentGet<PositionC>(entity);
         if (pos.map != CameraGetMap())
             return false;
-        Point mid = pos.pos;
-        const auto* col = ComponentTryGet<CollisionC>(entity);
-        if (col != nullptr)
-            mid += col->getMidOffset();
-        return PathRayCast(CameraGetPosition(), mid, CameraGetMap());
+
+        const Rect bounds = CollisionC::GetBounds(entity);
+        const Point camera = CameraGetPosition();
+
+        return PathRayCast(camera, bounds.mid(), CameraGetMap()) || PathRayCast(camera, bounds.pos(), CameraGetMap()) ||
+            PathRayCast(camera, bounds.topRight(), CameraGetMap()) ||
+            PathRayCast(camera, bounds.bottomLeft(), CameraGetMap()) ||
+            PathRayCast(camera, bounds.bottomRight(), CameraGetMap());
     }
 
     bool CameraInsideAnyViewBounds(Point point)

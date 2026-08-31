@@ -5,9 +5,9 @@
 
 #include <magique/core/Camera.h>
 #include <magique/graphics/Draw.h>
-
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
+#include <magique/util/Strings.h>
 
 #include <raylib/rlgl.h> // Has to be here
 
@@ -233,8 +233,14 @@ namespace magique
 
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, const float fs, const float spc, const Color c)
     {
-        const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
-        DrawTextEx(f, txt.data(), Point{pos.x - width / 2.0F, pos.y}.floored(), fs, spc, c);
+        auto& parts = StringSplit(txt);
+        float offset = 0;
+        for (auto& part : parts)
+        {
+            const auto width = MeasureTextEx(f, part.data(), fs, spc).x;
+            DrawTextEx(f, part.data(), Point{pos.x - width / 2.0F, pos.y+offset}.floored(), fs, spc, c);
+            offset+= fs + GetTextLineSpacing();
+        }
     }
 
     void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, const float fs, const float spc,

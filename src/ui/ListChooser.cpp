@@ -178,9 +178,7 @@ namespace magique
             auto& entry = entries[i];
             if (entry.text == item)
             {
-                selected = i;
-                if (triggerCallback && selectFunc)
-                    selectFunc(entry.text);
+                setSelected(i, triggerCallback);
                 return;
             }
         }

@@ -215,7 +215,7 @@ namespace magique
     std::vector<Language> SteamGetGameLanguages()
     {
         std::vector<Language> res;
-        auto langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');
+        const auto& langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');
         for (const auto& lang : langs)
         {
             res.push_back(LocalizationParseLanguage(ClientAPIToISO(lang)));

@@ -47,8 +47,8 @@ namespace magique
 
     TextDrawer& TextDrawer::center(const std::string_view& txt, const Color tint)
     {
-        const auto width = textWidth(txt);
-        const auto pos = Point{bounds.x + (bounds.width - width) / 2.0F, bounds.y + cursor.y} + modOfffset;
+        const auto pos = Point{bounds.x + bounds.width / 2.0F, bounds.y + cursor.y} + modOfffset;
+        modCenterH = true;
         drawText(pos, txt, tint);
         return *this;
     }
@@ -239,6 +239,9 @@ namespace magique
         const auto fntSize = (float)font.baseSize * (float)modSizeMult;
         const auto width = textWidth(txt);
 
+        if (modCenterH)
+            pos.x -= width / 2;
+
         if (modCenterVert)
         {
             pos.y = bounds.mid().y - fntSize / 2.0F;
@@ -268,6 +271,11 @@ namespace magique
         {
             DrawPixelTextWithNumberHighlight(font, txt.data(), pos, modSizeMult, tint, modHighlightColor);
         }
+        else if (modCenterH)
+        {
+            pos.x += width / 2;
+            DrawTextCentered(font, txt, pos, fntSize, modSizeMult, tint);
+        }
         else
         {
             DrawPixelText(font, txt, pos, modSizeMult, tint);
@@ -288,6 +296,7 @@ namespace magique
         shadeColor = BLANK;
         backgroundColor = BLANK;
         modCenterVert = false;
+        modCenterH = false;
     }
 
 } // namespace magique

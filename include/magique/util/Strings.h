@@ -42,9 +42,9 @@ namespace magique
     // Returns: the number of linebreak inserted
     int StringSetNewlines(char* buffer, int bufferSize, float width, const Font& font, float fontSize);
 
-    // Returns a vector of string containing the chunks by splitting the string by delim
+    // Returns a vector of strings containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-    std::vector<std::string> StringSplit(std::string_view s, char delim = '\n');
+    const std::vector<std::string>& StringSplit(std::string_view s, char delim = '\n');
 
     // Returns true if the given string conforms to:
     //  - At least "minLen" but not longer than "maxLen"
@@ -52,7 +52,7 @@ namespace magique
     //      - Letters a-zA-Z
     //      - Numbers 0-9
     // That means no symbols like "%!?-_" or spaces
-    bool StringIsValidName(const char* text, int minLen = 3, int maxLen = 16);
+    bool StringIsValidName(std::string_view  s, int minLen = 3, int maxLen = 16);
 
     // Returns true if the given strings match regardless of case
     // string-compare-no-case

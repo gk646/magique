@@ -38,6 +38,7 @@ namespace magique
         bool customTargetRes = false;
         bool showHitboxes = false;
         bool usingGamepad = false;
+        bool hadHover = false;
 
         // Consumed status
         // Reset each tick (before render and update)
@@ -186,6 +187,7 @@ namespace magique
         {
             mouseConsumedAfter = nullptr;
             mouseConsumed = mouseConsumedPreRender;
+            hadHover = false;
 
             resetConsumed();
             detectGamepad();
@@ -200,6 +202,16 @@ namespace magique
                 auto& obj = *objects[i];
 
                 obj.onUpdate(obj.getBounds(), obj.wasDrawnLastTick);
+                if (obj.getIsHovered(false) && !hadHover)
+                {
+                    hadHover = true;
+                    obj.isTopmostHovered = true;
+                }
+                else
+                {
+                    obj.isTopmostHovered = false;
+                }
+
                 if (mouseConsumedAfter == nullptr && LayeredInput::GetIsMouseConsumed())
                     mouseConsumedAfter = &obj;
             }

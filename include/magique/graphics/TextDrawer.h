@@ -130,6 +130,7 @@ namespace magique
         Color backgroundColor{};
         int modSizeMult = 1;
         bool modCenterVert = false;
+        bool modCenterH = false;
 
         Font font;
     };
