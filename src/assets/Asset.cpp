@@ -13,7 +13,7 @@ namespace magique
 
     std::string_view Asset::getPath() const { return path.data(); }
 
-    int Asset::getSize() const { return data.size(); }
+    int Asset::getSize() const { return (int)data.size(); }
 
     bool Asset::startsWith(std::string_view prefix) const { return path.starts_with(prefix); }
 

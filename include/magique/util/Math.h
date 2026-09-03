@@ -31,10 +31,6 @@ namespace magique
     // Note: Chance must be between 0.0 and 1.0F - 0 is never true 1 is always true
     bool MathRoll(float chance);
 
-    // Picks a random element form the given pool
-    template <typename T>
-    const T* MathPickRandom(const std::vector<T>& pool);
-
     // Returns the value of val + offset wraps it around such that it stays within 0 <= row < max
     int MathCirculate(int val, int offset, int max);
 
@@ -87,16 +83,6 @@ namespace magique
 
 namespace magique
 {
-
-    template <typename T>
-    const T* MathPickRandom(const std::vector<T>& pool)
-    {
-        if (pool.empty())
-        {
-            return nullptr;
-        }
-        return &pool[GetRandomValue(0, pool.size() - 1)];
-    }
 
     template <typename T>
     bool MathInRange(const T& val, const T& min, const T& max)

@@ -3,15 +3,11 @@
 #include <raylib/raylib.h>
 #include <algorithm>
 
-#include <entt/entity/entity.hpp>
 #include <magique/graphics/Particles.h>
-
-#include "enchantum/enchantum.hpp"
-
 #include <magique/core/Engine.h>
 #include <magique/util/Math.h>
-#include <magique/util/RayUtils.h>
 #include <magique/core/Collision.h>
+#include <magique/ecs/Components.h>
 
 #include "internal/globals/ParticleData.h"
 
@@ -187,6 +183,13 @@ namespace magique
         {
             data.emissionDims = {radius, radius};
         }
+        return *this;
+    }
+
+    EmitterBase& EmitterBase::setEmissionShape(const CollisionC& col)
+    {
+        data.emShape = col.shape;
+        data.emissionDims = {col.p1, col.p2};
         return *this;
     }
 

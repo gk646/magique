@@ -20,7 +20,7 @@ namespace magique
         TextLines(std::string_view buff, char delimiter = '\n');
 
         // Returns a random lines or nullptr if empty
-        const std::string* getRandomLine() const;
+        std::optional<std::string_view> getRandomLine() const;
 
         // Returns the lines vector
         const std::vector<std::string>& getLines() const;

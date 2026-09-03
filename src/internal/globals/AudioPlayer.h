@@ -103,6 +103,15 @@ namespace magique
 
         void addTrack(const Music& music, float volume, const bool fadeIn, bool looping = false)
         {
+            for (auto& t : tracks)
+            {
+                if (t.music.stream.buffer == music.stream.buffer)
+                {
+                    t.markedForRemoval = false;
+                    return;
+                }
+            }
+
             PlayMusicStream(music);
             tracks.emplace_back(music, volume, fadeIn ? 0.0F : volume, false, fadeIn, looping);
             SetAudioBufferLooping(music.stream.buffer, looping);

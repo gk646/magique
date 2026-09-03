@@ -1,8 +1,7 @@
 #include <algorithm>
 
 #include <magique/assets/types/TextLines.h>
-
-#include <magique/util/Math.h>
+#include <magique/util/STL.h>
 #include <magique/util/Strings.h>
 
 namespace magique
@@ -11,7 +10,13 @@ namespace magique
     {
     }
 
-    const std::string* TextLines::getRandomLine() const { return MathPickRandom(lines); }
+    std::optional<std::string_view> TextLines::getRandomLine() const
+    {
+        auto val = PickRandom(std::span{lines});
+        if (!val.has_value())
+            return {};
+        return {val.value().get()};
+    }
 
     const std::vector<std::string>& TextLines::getLines() const { return lines; }
 

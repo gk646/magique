@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <vector>
+#include <span>
 #include <raylib/raylib.h>
 #include <magique/internal/enchantum/enchantum.hpp>
 
@@ -18,16 +19,19 @@
 namespace magique
 {
     // Returns the max element of the vector based on the return value of pred
+    //      - pred: takes the object and returns a float <float(const T&)>
     // Note: calls pred only ONCE for all elements (unlike std::max_element)
     template <typename T, typename Pred>
-    T* max_element(std::vector<T>& vec, Pred pred);
-    template <typename T, typename Pred>
-    const T* max_element(const std::vector<T>& vec, Pred pred);
+    T* MaxElement(std::span<T> range, Pred pred);
 
     // Randomly picks n unique elements from the given range and returns them
     // Note: vec MUST not contain duplicates
     template <typename T, std::size_t Extent = std::dynamic_extent>
     std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n);
+
+    // Picks a random element form the given range
+    template <typename T>
+    std::optional<std::reference_wrapper<T>> PickRandom(std::span<T> range);
 
     // Returns the enum value as string
     // Note: This requires the whole enum definition to be visible when used
@@ -53,11 +57,11 @@ namespace magique
 namespace magique
 {
     template <typename T, typename Pred>
-    T* max_element(std::vector<T>& vec, Pred pred)
+    T* MaxElement(std::span<T> range, Pred pred)
     {
         float highest = FLT_MIN;
         T* ret = nullptr;
-        for (auto& elem : vec)
+        for (auto& elem : range)
         {
             const float val = pred(elem);
             if (val > highest)
@@ -67,6 +71,15 @@ namespace magique
             }
         }
         return ret;
+    }
+
+
+    template <typename T>
+    std::optional<std::reference_wrapper<T>> PickRandom(std::span<T> range)
+    {
+        if (range.empty())
+            return {};
+        return {range[GetRandomValue(0, range.size() - 1)]};
     }
 
     template <typename T, typename Pred>

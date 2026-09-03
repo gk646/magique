@@ -84,7 +84,7 @@ namespace magique
     std::string_view StringFromGameNumber(int64_t num);
 
     // Formats the given time into mm:ss:lll (l = milli)
-    std::string_view StringFromTimeMillis(float seconds);
+    std::string_view StringFromMillis(float seconds);
 
     //================= HASHING =================//
 

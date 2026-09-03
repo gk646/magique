@@ -6,9 +6,10 @@
 #include <thread>
 #include <raylib/raylib.h>
 
+#include <magique/util/Datastructures.h>
+
 #include "internal/utils/OSUtil.h"
 #include "internal/types/SpinLock.h"
-#include "external/cxstructs/cxallocator/SlotAllocator.h"
 
 namespace magique
 {
@@ -17,7 +18,7 @@ namespace magique
         alignas(64) std::deque<IJob*> queuedJobs;        // Global job queue
         alignas(64) std::vector<const IJob*> workedJobs; // Currently processed jobs
         std::vector<std::thread> threads;                // All working threads
-        cxstructs::SlotAllocator<50> jobAllocator;       // Allocator for jobs
+        PoolAllocator jobAllocator;                      // Allocator for jobs
         SpinLock queueLock;                              // The lock to make queue access thread safe
         SpinLock workedLock;                             // The lock to worked vector thread safe
         std::atomic<bool> shutDown = false;              // Signal to shut down all threads
@@ -51,8 +52,10 @@ namespace magique
             {
                 if ((*it)->execTime <= EngineGetTime())
                 {
-                    (*it)->run();
+                    IJob* job = (*it);
+                    job->run();
                     it = queuedJobs.erase(it);
+                    jobAllocator.free(job);
                 }
                 else
                     ++it;

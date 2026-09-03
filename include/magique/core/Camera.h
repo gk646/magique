@@ -15,7 +15,7 @@
 namespace magique
 {
     // Adds additional padding to the sides of the normal camera rectangle to be used to cull entities inside visible space
-    // Entities are checked with their topleft to be inside the enlarged rectangle (so necessary when you have large entities)
+    // Entities are checked with their top-left to be inside the enlarged rectangle (so necessary when you have large entities)
     // Default: 250
     void CameraSetCullPadding(int distance);
 

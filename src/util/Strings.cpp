@@ -326,7 +326,7 @@ namespace magique
         }
     }
 
-    std::string_view StringFromTimeMillis(float seconds)
+    std::string_view StringFromMillis(float seconds)
     {
         const auto min = seconds / 60.0F;
         const auto sec = (int)seconds % 60;

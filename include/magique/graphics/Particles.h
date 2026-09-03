@@ -71,6 +71,7 @@ namespace magique
         // A random point inside the emission shape is chosen for each particle
         // Default: None - is directly spawned on the emission point
         EmitterBase& setEmissionShape(Shape shape, float width, float height, float radius = 0.0F);
+        EmitterBase& setEmissionShape(const CollisionC& col);
 
         // Sets the angle of rotation - rotates around the anchor point
         // Note: only works for RECT - angle starts at 12 and clockwise until 360 degrees

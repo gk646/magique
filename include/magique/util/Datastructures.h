@@ -545,6 +545,59 @@ namespace magique
         Compare comp;
     };
 
+    struct PoolAllocator
+    {
+        struct MemorySlot final
+        {
+            std::string data;
+            bool used = false;
+        };
+
+        std::vector<MemorySlot> slots;
+        int size = 0;
+
+        ~PoolAllocator() { destroy(); }
+
+        // Returns a valid memory region with size 'sizeof(T)'
+        template <typename T>
+        T* allocate()
+        {
+            return static_cast<T*>(allocate(sizeof(T)));
+        }
+
+        // Returns a valid memory region with size 'bytes'
+        void* allocate(const size_t bytes)
+        {
+            for (auto& slot : slots)
+            {
+                if (!slot.used && slot.data.size() == bytes)
+                {
+                    slot.used = true;
+                    return slot.data.data();
+                }
+            }
+
+            auto& slot = slots.emplace_back();
+            slot.data = std::string(bytes, '\0');
+            slot.used = true;
+            return slot.data.data();
+        }
+
+        void free(const void* ptr)
+        {
+            for (auto& slot : slots)
+            {
+                if (slot.used && slot.data.data() == ptr)
+                {
+                    slot.used = false;
+                    return;
+                }
+            }
+        }
+
+        // Resets the allocator to its start state
+        void destroy() { slots.clear(); }
+    };
 
 } // namespace magique
 
