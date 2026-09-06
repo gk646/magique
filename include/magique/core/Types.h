@@ -4,6 +4,7 @@
 
 #include <array>
 #include <string>
+#include <format>
 #include <vector>
 #include <magique/fwd.hpp>
 #include <raylib/raylib.h>
@@ -31,11 +32,6 @@ namespace magique
 
         // Initializes both values randomly within the given range
         static Point Random(float min, float max);
-
-        // Given two points in world space returns a direction vector that is perpendicular to the given direction
-        // Useful when you want to knock things out of your way
-        // TODO refactor just give a straight by two points, direcion is given py point order
-        static Point PerpendicularTowardsPoint(Point startPoint, Point direction, Point target);
 
         // Returns the normalized direction vector of the given angle
         static Point FromRotation(const Rotation& a);
@@ -133,6 +129,8 @@ namespace magique
         // Assigns x to the max of "this.x" and "other.x"; same for y (separate check)
         void max(const Point& other);
         void min(const Point& other);
+
+        std::string_view toString() const;
     };
 
     struct Rect final
@@ -327,8 +325,10 @@ namespace magique
         int16_t height;  // Height of the texture
         uint16_t id = 0; // The texture id
 
+
         Point getSize() const { return {(float)width, (float)height}; }
         bool isValid() const { return id != 0; }
+        bool operator==(const TextureRegion&) const = default;
     };
 
     struct SpriteSheet final
@@ -341,6 +341,8 @@ namespace magique
 
         int getFrameCount() const;
         bool isBlank() const;
+
+        bool operator==(const SpriteSheet&) const = default;
 
     private:
         M_MAKE_PUB()
@@ -358,9 +360,13 @@ namespace magique
         float durationMillis = 0;
 
         TextureRegion getCurrentFrame(float millis) const;
+
         // Returns duration in ticks
         int getDurationUntil(int frame) const;
+
         bool isValid() const;
+
+        bool operator==(const SpriteAnimation&) const = default;
     };
 
     // The type of the property

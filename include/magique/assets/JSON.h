@@ -2,6 +2,9 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
+#include "magique/ecs/Components.h"
+
+
 #include <magique/internal/glaze/json/write.hpp>
 #include <magique/internal/enchantum/enchantum.hpp>
 #include <raylib/raylib.h>
@@ -106,6 +109,20 @@ namespace glz
     {
         using T = Color;
         static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
+    };
+
+    template <>
+    struct meta<magique::Rotation>
+    {
+        using T = Rotation;
+        static constexpr auto value = object(&T::rotation);
+    };
+
+    template <>
+    struct meta<magique::AnimationC>
+    {
+        using T = AnimationC;
+        static constexpr auto value = object(&T::currentState, &T::lastState);
     };
 
     template <>
@@ -227,8 +244,7 @@ namespace magique
     bool JSONImport(const Asset asset, T& obj)
     {
         std::string_view data = asset;
-        glz::context ctx{};
-        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(obj, data, ctx);
+        auto ec = glz::read<glz::opts{.comments = true}>(obj, data);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath().data(), glz::format_error(ec, data).c_str());
@@ -241,7 +257,7 @@ namespace magique
     bool JSONImport(std::string_view json, T& data)
     {
         glz::context ctx{};
-        auto ec = read<glz::opts{.comments = true, .append_arrays = append}>(data, json, ctx);
+        auto ec = read<glz::opts{.comments = true}>(data, json, ctx);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON:%s", glz::format_error(ec, json).c_str());
@@ -253,7 +269,7 @@ namespace magique
     template <bool prettify, typename T>
     bool JSONExport(const T& data, std::string& buffer)
     {
-        const auto ec = glz::write<glz::opts{.prettify = prettify, .new_lines_in_arrays = false}>(data, buffer);
+        const auto ec = glz::write<glz::opts{.prettify = prettify}>(data, buffer);
         if (ec)
         {
             LOG_ERROR("Failed to export JSON: %s", glz::format_error(ec, buffer).c_str());

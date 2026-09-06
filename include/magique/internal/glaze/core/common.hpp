@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <string>
@@ -21,17 +22,33 @@
 #include "glaze/util/bit_array.hpp"
 #include "glaze/util/expected.hpp"
 #include "glaze/util/for_each.hpp"
-#include "glaze/util/hash_map.hpp"
 #include "glaze/util/help.hpp"
 #include "glaze/util/string_literal.hpp"
 #include "glaze/util/tuple.hpp"
 #include "glaze/util/type_traits.hpp"
-#include "glaze/util/utility.hpp"
 #include "glaze/util/validate.hpp"
 #include "glaze/util/variant.hpp"
 
+// These std headers are only needed on the P2996 path, where the specializations
+// in the `#if GLZ_REFLECTION26` block below (glz::specified<std::complex<T>>,
+// std::bitset<N>, std::atomic<T>) prevent auto-reflection from producing incorrect
+// serialization for these stdlib types. Pre-C++26 users save the per-TU parse cost.
+// Included at file scope, not inside `namespace glz`, so std names stay in ::std.
+#if GLZ_REFLECTION26
+#include <atomic>
+#include <bitset>
+#include <complex>
+#endif
+
 namespace glz
 {
+   // We use an error buffer to avoid multiple allocations in the case that errors occur multiple times.
+   inline std::string& error_buffer() noexcept
+   {
+      static thread_local std::string buffer(256, '\0');
+      return buffer;
+   }
+
    // write out a string like type without quoting it
    template <class T>
    struct raw_t
@@ -209,23 +226,44 @@ namespace glz
    template <class T>
    concept meta_value_t = glaze_t<std::decay_t<T>>;
 
-   // this concept requires that T is just a view
+   // Concept for byte-sized string views (std::string_view, std::u8string_view)
+   // Excludes wide string views (wstring_view, u16string_view, u32string_view)
    template <class T>
-   concept string_view_t = std::same_as<std::decay_t<T>, std::string_view>;
+   concept string_view_t =
+      is_specialization_v<std::decay_t<T>, std::basic_string_view> && sizeof(typename std::decay_t<T>::value_type) == 1;
+
+   // Concept for byte-sized basic_string types (std::string, std::u8string)
+   // Excludes wide strings (wstring, u16string, u32string)
+   template <class T>
+   concept basic_string_t =
+      is_specialization_v<std::decay_t<T>, std::basic_string> && sizeof(typename std::decay_t<T>::value_type) == 1;
 
    template <class T>
    concept array_char_t =
       requires { std::tuple_size<T>::value; } && std::same_as<T, std::array<char, std::tuple_size_v<T>>>;
 
+   // Concept for char8_t-based string types (std::u8string, std::u8string_view)
    template <class T>
-   concept str_t = (!std::same_as<std::nullptr_t, T> && std::constructible_from<std::string_view, std::decay_t<T>>) ||
-                   array_char_t<T>;
+   concept u8str_t =
+      (basic_string_t<T> || string_view_t<T>) && std::same_as<typename std::decay_t<T>::value_type, char8_t>;
+
+   // Helper to detect optional-like types (have has_value() method)
+   // Used to exclude from concepts that would otherwise match due to C++26 optional being a range
+   template <class T>
+   concept has_value_method = requires(T t) {
+      { t.has_value() } -> std::convertible_to<bool>;
+   };
+
+   template <class T>
+   concept str_t = (!std::same_as<std::nullptr_t, T> && !has_value_method<T> &&
+                    std::constructible_from<std::string_view, std::decay_t<T>>) ||
+                   array_char_t<T> || u8str_t<T>;
 
    template <class T>
    concept is_static_string =
       requires { meta<std::decay_t<T>>::glaze_static_string == true; } || std::decay_t<T>::glaze_static_string == true;
 
-   // this concept requires that T is a writeable string. It can be resized, appended to, or assigned to
+   // this concept requires that T is a writable string. It can be resized, appended to, or assigned to
    template <class T>
    concept string_t = str_t<T> && !string_view_t<T> &&
                       (has_assign<T> || (resizable<T> && has_data<T>) || has_append<T>) && !is_static_string<T>;
@@ -237,6 +275,50 @@ namespace glz
 
    template <class T>
    concept char_array_t = str_t<T> && std::is_array_v<std::remove_pointer_t<std::remove_reference_t<T>>>;
+
+   // Views a `str_t` value as a string_view for writing. Every format writes strings through this
+   // so the rules stay in one place.
+   //
+   // A type reaches `str_t` as long as a string_view is constructible from it, which an implicit
+   // `operator const char*` satisfies. Converting through that operator stops at the first embedded
+   // null and discards the type's own size(), so prefer the type's bounds whenever it reports them.
+   // Standard string types agree either way. Null pointers become empty rather than dereferencing.
+   template <class T>
+   [[nodiscard]] GLZ_ALWAYS_INLINE constexpr std::string_view str_view(auto&& value) noexcept
+   {
+      if constexpr (std::same_as<std::decay_t<T>, std::string_view>) {
+         return value; // already the answer; rebuilding it from data() and size() costs instructions
+      }
+      else if constexpr (!char_array_t<T> && std::is_pointer_v<std::decay_t<T>>) {
+         return value ? std::string_view{value} : std::string_view{};
+      }
+      else if constexpr (has_data<T> && has_size<T>) {
+         return std::string_view{value.data(), value.size()};
+      }
+      else {
+         return std::string_view{value};
+      }
+   }
+
+   // Concept: does T's mimic type satisfy str_t?
+   // This allows checking if a custom type mimics string behavior.
+   // Prevents double-quoting when used as a map key.
+   template <class T>
+   concept mimics_str_t = has_mimic<T> && str_t<mimic_type<T>>;
+
+   // Concept: does T's mimic type satisfy num_t?
+   // This allows checking if a custom type mimics numeric behavior.
+   // Enables proper variant type deduction for custom numeric types.
+   template <class T>
+   concept mimics_num_t = has_mimic<T> && num_t<mimic_type<T>>;
+
+   // Concept: does T's mimic type satisfy bool_t?
+   // This allows checking if a custom type mimics boolean behavior.
+   template <class T>
+   concept mimics_bool_t = has_mimic<T> && bool_t<mimic_type<T>>;
+
+   // Note: custom_num_t, custom_str_t, custom_bool_t concepts are defined in core/custom_meta.hpp
+   // (requires custom_t from wrappers.hpp which is not included here)
 
    template <class T>
    concept readable_map_t = !custom_read<T> && !meta_value_t<T> && !str_t<T> && range<T> && pair_t<range_value_t<T>> &&
@@ -255,15 +337,16 @@ namespace glz
    };
 
    template <class T>
-   concept array_t = (!meta_value_t<T> && !str_t<T> && !(readable_map_t<T> || writable_map_t<T>) && range<T>);
+   concept array_t =
+      (!meta_value_t<T> && !str_t<T> && !(readable_map_t<T> || writable_map_t<T>) && range<T> && !has_value_method<T>);
 
    template <class T>
-   concept readable_array_t =
-      (range<T> && !custom_read<T> && !meta_value_t<T> && !str_t<T> && !readable_map_t<T> && !filesystem_path<T>);
+   concept readable_array_t = (range<T> && !custom_read<T> && !meta_value_t<T> && !str_t<T> && !readable_map_t<T> &&
+                               !filesystem_path<T> && !has_value_method<T>);
 
    template <class T>
-   concept writable_array_t =
-      (range<T> && !custom_write<T> && !meta_value_t<T> && !str_t<T> && !writable_map_t<T> && !filesystem_path<T>);
+   concept writable_array_t = (range<T> && !custom_write<T> && !meta_value_t<T> && !str_t<T> && !writable_map_t<T> &&
+                               !filesystem_path<T> && !has_value_method<T>);
 
    template <class T>
    concept fixed_array_value_t =
@@ -273,8 +356,14 @@ namespace glz
    concept boolean_like = std::same_as<std::remove_cvref_t<T>, bool> || std::same_as<T, std::vector<bool>::reference> ||
                           std::same_as<T, std::vector<bool>::const_reference>;
 
+   // Check if type opts out of automatic reflection
+   // Users can set glaze_reflect = false either:
+   // 1. On the type itself: static constexpr bool glaze_reflect = false;
+   // 2. Via glz::meta specialization: template<> struct glz::meta<T> { static constexpr bool glaze_reflect = false; };
+   // This allows users to define custom glz::to/from specializations without editing the library
    template <class T>
-   concept is_no_reflect = requires(T t) { requires std::remove_cvref_t<T>::glaze_reflect == false; };
+   concept is_no_reflect = requires { requires std::remove_cvref_t<T>::glaze_reflect == false; } ||
+                           requires { requires meta<std::decay_t<T>>::glaze_reflect == false; };
 
    /// \brief check if container has fixed size and its subsequent T::value_type
    template <class T>
@@ -335,17 +424,43 @@ namespace glz
    concept always_null_t =
       std::same_as<T, std::nullptr_t> || std::convertible_to<T, std::monostate> || std::same_as<T, std::nullopt_t>;
 
+   // Allows any type to opt out of serialization entirely by setting its meta
+   // value to glz::skip{}. Fields of such a type are never written, and any
+   // matching key in an input stream is silently consumed on read. Two opt-in
+   // forms are supported, matching the local/external metadata convention used
+   // elsewhere in Glaze:
+   //   1. Local metadata inside the type (preferred when you control the type):
+   //        struct glaze { static constexpr auto value = glz::skip{}; };
+   //   2. External metadata via glz::meta specialization (for third-party types):
+   //        template <> struct glz::meta<T> { static constexpr auto value = glz::skip{}; };
+   // Useful for marker classes used purely for compile-time metadata that
+   // should never appear in serialized output.
+   //
+   // The same_as<T, skip> clause is not redundant with the meta_wrapper check:
+   // glz::skip itself has no meta, so meta_wrapper_t<skip> is empty, not skip.
    template <class T>
-   concept always_skipped = is_includer<T> || std::same_as<T, hidden> || std::same_as<T, skip>;
+   concept always_skipped =
+      is_includer<T> || std::same_as<T, hidden> || std::same_as<T, skip> || std::same_as<meta_wrapper_t<T>, skip>;
+
+   // Detect function pointers and function references (which should not be treated as nullable)
+   template <class T>
+   concept is_function_ptr_or_ref =
+      std::is_function_v<std::remove_cvref_t<T>> || // function reference: void(&)(int)
+      (std::is_pointer_v<std::remove_cvref_t<T>> &&
+       std::is_function_v<std::remove_pointer_t<std::remove_cvref_t<T>>>); // function pointer: void(*)(int)
+
+   // Combined concept for any function pointer type (member or non-member)
+   template <class T>
+   concept is_any_function_ptr = is_member_function_pointer<T> || is_function_ptr_or_ref<T>;
 
    template <class T>
-   concept nullable_t = !meta_value_t<T> && !str_t<T> && requires(T t) {
+   concept nullable_t = !meta_value_t<T> && !str_t<T> && !is_function_ptr_or_ref<T> && requires(T t) {
       bool(t);
       { *t };
    };
 
    template <class T>
-   concept nullable_like = nullable_t<T> && (!is_expected<T> && !std::is_array_v<T>);
+   concept nullable_like = nullable_t<T> && !is_expected<T> && !std::is_array_v<T>;
 
    // For optional like types that cannot overload `operator bool()`
    template <class T>
@@ -371,11 +486,35 @@ namespace glz
 
    template <class T>
    concept glaze_object_t = glaze_t<T> && (is_specialization_v<meta_wrapper_t<T>, detail::Object> ||
-                                           (not std::is_enum_v<std::decay_t<T>> && meta_keys<T>));
+                                           (not std::is_enum_v<std::decay_t<T>> && meta_keys<T>) ||
+                                           is_specialization_v<meta_wrapper_t<T>, glz::merge>);
+
+   // Detects types whose glz::meta value is a glz::merge of member pointers
+   template <class T>
+   concept glaze_merge_t = glaze_t<T> && is_specialization_v<meta_wrapper_t<T>, glz::merge>;
 
    template <class T>
    concept glaze_enum_t = glaze_t<T> && is_specialization_v<meta_wrapper_t<T>, detail::Enum>;
 
+   // Marker type for P2996 automatic enum reflection
+   // Usage: template<> struct glz::meta<MyEnum> : glz::reflect_enum {};
+   // Can combine with name transformers: struct glz::meta<MyEnum> : glz::reflect_enum, glz::snake_case {};
+   struct reflect_enum
+   {
+      static constexpr bool glaze_reflect_enum = true;
+   };
+
+   // Concept to detect enums using P2996 reflection (only available with GLZ_REFLECTION26)
+#if GLZ_REFLECTION26
+   template <class T>
+   concept is_reflect_enum =
+      std::is_enum_v<std::remove_cvref_t<T>> && requires { requires meta<std::remove_cvref_t<T>>::glaze_reflect_enum; };
+#else
+   template <class T>
+   concept is_reflect_enum = false;
+#endif
+
+   // Note: is_reflect_enum is handled separately because P2996 requires inline consteval context
    template <class T>
    concept is_named_enum = ((glaze_enum_t<T> || (meta_keys<T> && std::is_enum_v<T>)) && !custom_read<T>);
 
@@ -386,10 +525,61 @@ namespace glz
    concept glaze_value_t =
       glaze_t<T> && !(glaze_array_t<T> || glaze_object_t<T> || glaze_enum_t<T> || meta_keys<T> || glaze_flags_t<T>);
 
+   // With C++26 P2996 reflection, we can reflect non-aggregate types (classes with custom constructors)
+   // skip / hidden are empty marker structs with dedicated to<>/from<>
+   // specializations, so they must not be treated as reflectable aggregates.
+   // Registered in both P2996 and pre-P2996 modes.
+   template <>
+   struct specified<skip> : std::true_type
+   {};
+
+   template <>
+   struct specified<hidden> : std::true_type
+   {};
+
+   // Without P2996, we require aggregate types for reflection
+#if GLZ_REFLECTION26
+   // Register std library types as having specified Glaze serialization
+   template <class... Ts>
+   struct specified<std::tuple<Ts...>> : std::true_type
+   {};
+
+   template <class... Ts>
+   struct specified<std::variant<Ts...>> : std::true_type
+   {};
+
+   template <class T>
+   struct specified<std::reference_wrapper<T>> : std::true_type
+   {};
+
+   template <class T>
+   struct specified<std::complex<T>> : std::true_type
+   {};
+
+   template <size_t N>
+   struct specified<std::bitset<N>> : std::true_type
+   {};
+
+   template <class T>
+   struct specified<std::atomic<T>> : std::true_type
+   {};
+
+   // P2996 can reflect any class, but we must exclude types with their own Glaze specializations.
+   // Types with custom serialization should specialize glz::specified<T> to std::true_type.
+   template <class T>
+   concept reflectable = std::is_class_v<std::remove_cvref_t<T>> &&
+                         !(is_no_reflect<T> || glaze_t<T> || meta_keys<T> || range<T> || pair_t<T> || null_t<T> ||
+                           str_t<T> || bool_t<T> || tuple_t<T> || func_t<T> || is_specified<T>);
+#else
+   // Traditional reflection requires aggregates. The exclusion list mirrors P2996 for consistency.
+   // These exclusions handle aggregate types that shouldn't be reflected as objects:
+   // str_t: aggregate string-like types, tuple_t: std::array and custom tuple-like aggregates,
+   // func_t: aggregate callables, is_specified: types with explicit serialization.
    template <class T>
    concept reflectable = std::is_aggregate_v<std::remove_cvref_t<T>> && std::is_class_v<std::remove_cvref_t<T>> &&
-                         !(is_no_reflect<T> || glaze_value_t<T> || glaze_object_t<T> || glaze_array_t<T> ||
-                           glaze_flags_t<T> || range<T> || pair_t<T> || null_t<T> || meta_keys<T>);
+                         !(is_no_reflect<T> || glaze_t<T> || meta_keys<T> || range<T> || pair_t<T> || null_t<T> ||
+                           str_t<T> || bool_t<T> || tuple_t<T> || func_t<T> || is_specified<T>);
+#endif
 
    template <class T>
    concept is_memory_object = is_memory_type<T> && (glaze_object_t<memory_type<T>> || reflectable<memory_type<T>>);
@@ -407,38 +597,6 @@ namespace glz
       To{from};
 #endif
    };
-
-   template <is_variant T, size_t... I>
-   constexpr auto make_variant_sv_id_map_impl(std::index_sequence<I...>, auto&& variant_ids)
-   {
-      // Use the actual size of the ids array, not the variant size
-      return normal_map<sv, size_t, sizeof...(I)>(std::array{pair<sv, size_t>{sv(variant_ids[I]), I}...});
-   }
-
-   template <is_variant T, size_t... I>
-   constexpr auto make_variant_id_map_impl(std::index_sequence<I...>, auto&& variant_ids)
-   {
-      using id_type = std::decay_t<decltype(ids_v<T>[0])>;
-      // Use the actual size of the ids array, not the variant size
-      return normal_map<id_type, size_t, sizeof...(I)>(std::array{pair{variant_ids[I], I}...});
-   }
-
-   template <is_variant T>
-   constexpr auto make_variant_id_map()
-   {
-      // Use the size of the ids array, not the variant size
-      // This allows unlabeled variant types to serve as defaults
-      constexpr auto indices = std::make_index_sequence<ids_v<T>.size()>{};
-
-      using id_type = std::decay_t<decltype(ids_v<T>[0])>;
-
-      if constexpr (std::integral<id_type>) {
-         return make_variant_id_map_impl<T>(indices, ids_v<T>);
-      }
-      else {
-         return make_variant_sv_id_map_impl<T>(indices, ids_v<T>);
-      }
-   }
 
    /**
     * @brief Extracts the underlying member from a struct.
@@ -556,6 +714,10 @@ namespace glz
       }
    }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-braces"
+#endif
    constexpr auto array(auto&&... args) noexcept { return detail::Array{glz::tuple{conv_sv(args)...}}; }
 
    template <class... Args>
@@ -567,12 +729,16 @@ namespace glz
    constexpr auto enumerate(auto&&... args) noexcept { return detail::Enum{tuple{args...}}; }
 
    constexpr auto flags(auto&&... args) noexcept { return detail::Flags{tuple{args...}}; }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 }
 
 namespace glz
 {
    // This wraps glz::expected error (unexpected) values in an object with an "error" key
-   // This makes them discernable from the expected value
+   // This makes them discernible from the expected value
    template <class T>
    struct unexpected_wrapper final
    {

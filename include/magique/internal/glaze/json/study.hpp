@@ -161,7 +161,7 @@ namespace glz
                },
                state, dist.ptr);
             if (!found) {
-               pe.ec = error_code::get_nonexistent_json_ptr;
+               pe.ec = error_code::nonexistent_json_ptr;
                return unexpected(pe);
             }
 
@@ -188,8 +188,8 @@ namespace glz
             }
             else if (dist.distribution == "linspace") {
                if (dist.range.size() != 3) {
-                  return unexpected(
-                     error_ctx{error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
+                  return unexpected(error_ctx{
+                     0, error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
                }
 
                double start{};
@@ -215,7 +215,7 @@ namespace glz
                }
             }
             else {
-               return unexpected(error_ctx{error_code::unknown_distribution});
+               return unexpected(error_ctx{0, error_code::unknown_distribution});
             }
 
             return param_set;
@@ -295,7 +295,7 @@ namespace glz
                auto& params = params_per_state.front();
                params.resize(dim);
                for (std::size_t i = 0; i < dim; i++) {
-                  // TODO: Fix this. It is unsafe to derefrence this but we cant return an error code.
+                  // TODO: Fix this. It is unsafe to dereference this but we cant return an error code.
                   params[i] = *param_from_dist(design.params[i]);
                }
             }
@@ -353,7 +353,7 @@ namespace glz
                },
                state, dist.ptr);
             if (!found) {
-               pe.ec = error_code::get_nonexistent_json_ptr;
+               pe.ec = error_code::nonexistent_json_ptr;
                return unexpected(pe);
             }
 
@@ -363,7 +363,7 @@ namespace glz
 
             if (dist.distribution == "elements") {
                if (dist.range.size() == 0) {
-                  return unexpected(error_ctx{error_code::invalid_distribution_elements});
+                  return unexpected(error_ctx{0, error_code::invalid_distribution_elements});
                }
                std::vector<basic> elements{};
                std::visit(
@@ -383,8 +383,8 @@ namespace glz
             }
             else if (dist.distribution == "linspace") {
                if (dist.range.size() != 3) {
-                  return unexpected(
-                     error_ctx{error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
+                  return unexpected(error_ctx{
+                     0, error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
                }
 
                double start{};
@@ -407,8 +407,8 @@ namespace glz
             }
             else if (dist.distribution == "uniform") {
                if (dist.range.size() != 2) {
-                  return unexpected(
-                     error_ctx{error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
+                  return unexpected(error_ctx{
+                     0, error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
                }
 
                double start{};
@@ -431,8 +431,8 @@ namespace glz
             }
             else if (dist.distribution == "normal") {
                if (dist.range.size() != 2) {
-                  return unexpected(
-                     error_ctx{error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
+                  return unexpected(error_ctx{
+                     0, error_code::invalid_distribution_elements}); // distribution's range must have 3 elements
                }
 
                double mean{};
@@ -450,7 +450,7 @@ namespace glz
                };
             }
             else {
-               return unexpected(error_ctx{error_code::unknown_distribution});
+               return unexpected(error_ctx{0, error_code::unknown_distribution});
             }
          }
       };

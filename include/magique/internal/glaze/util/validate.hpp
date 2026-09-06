@@ -106,37 +106,41 @@ namespace glz
 
          glz::context ctx{};
 
+         // Diagnostic numbers (index/line/column) are always formatted with size-optimized
+         // integer conversion: error formatting is never a throughput path, and this keeps
+         // glz::format_error from pulling in the 40 KB integer table regardless of the
+         // optimization level used elsewhere in the program.
          if (info.context.empty()) {
-            dump<"index ">(b, ix);
-            write_chars::op<opts{}>(info.index, ctx, b, ix);
-            dump<": ">(b, ix);
+            dump("index ", b, ix);
+            write_chars::op<opts_size{}>(info.index, ctx, b, ix);
+            dump(": ", b, ix);
             dump_maybe_empty(error, b, ix);
          }
          else {
-            write_chars::op<opts{}>(info.line, ctx, b, ix);
+            write_chars::op<opts_size{}>(info.line, ctx, b, ix);
             dump(':', b, ix);
-            write_chars::op<opts{}>(info.column, ctx, b, ix);
-            dump<": ">(b, ix);
+            write_chars::op<opts_size{}>(info.column, ctx, b, ix);
+            dump(": ", b, ix);
             dump_maybe_empty(error, b, ix);
             dump('\n', b, ix);
             if (info.front_truncation) {
                if (info.rear_truncation) {
-                  dump<"...">(b, ix);
+                  dump("...", b, ix);
                   dump_maybe_empty(info.context, b, ix);
-                  dump<"...\n   ">(b, ix);
+                  dump("...\n   ", b, ix);
                }
                else {
-                  dump<"...">(b, ix);
+                  dump("...", b, ix);
                   dump_maybe_empty(info.context, b, ix);
-                  dump<"\n   ">(b, ix);
+                  dump("\n   ", b, ix);
                }
             }
             else {
-               dump<"   ">(b, ix);
+               dump("   ", b, ix);
                dump_maybe_empty(info.context, b, ix);
-               dump<"\n   ">(b, ix);
+               dump("\n   ", b, ix);
             }
-            dumpn<' '>(info.column - 1 - info.front_truncation, b, ix);
+            dumpn(' ', info.column - 1 - info.front_truncation, b, ix);
             dump('^', b, ix);
          }
 

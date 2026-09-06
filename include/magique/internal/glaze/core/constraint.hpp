@@ -8,12 +8,12 @@
 #include "glaze/core/common.hpp"
 #include "glaze/core/context.hpp"
 #include "glaze/core/opts.hpp"
-#include "glaze/tuplet/tuple.hpp"
+#include "glaze/core/tuple.hpp"
 #include "glaze/util/string_literal.hpp"
 
 namespace glz
 {
-   // read_constraint allows a user to register a contraint lambda or member function
+   // read_constraint allows a user to register a constraint lambda or member function
    // that returns a boolean, which indicates true for success and false for failure
    // this allows arguments to be validated
    template <class T, auto Target, auto Constraint, string_literal Message>
@@ -42,7 +42,7 @@ namespace glz
    struct from<Format, T>
    {
       template <auto Opts>
-      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto&& end)
+      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto end)
       {
          using V = std::decay_t<decltype(value)>;
          using Constraint = typename V::constraint_t;
@@ -72,11 +72,13 @@ namespace glz
                      parse<Format>::template op<Opts>(input, ctx, it, end);
                      if (bool(ctx.error)) [[unlikely]]
                         return;
-                     auto success = (value.val.*(value.constraint))(input);
-                     if (not success) {
-                        ctx.error = error_code::constraint_violated;
-                        ctx.custom_error_message = V::message;
-                        return;
+                     if constexpr (!check_skip_read_constraint(Opts)) {
+                        auto success = (value.val.*(value.constraint))(input);
+                        if (not success) {
+                           ctx.error = error_code::constraint_violated;
+                           ctx.custom_error_message = V::message;
+                           return;
+                        }
                      }
                      assign_to_target(std::move(input));
                   }
@@ -101,11 +103,13 @@ namespace glz
                         parse<Format>::template op<Opts>(input, ctx, it, end);
                         if (bool(ctx.error)) [[unlikely]]
                            return;
-                        auto success = constraint(input);
-                        if (not success) {
-                           ctx.error = error_code::constraint_violated;
-                           ctx.custom_error_message = V::message;
-                           return;
+                        if constexpr (!check_skip_read_constraint(Opts)) {
+                           auto success = constraint(input);
+                           if (not success) {
+                              ctx.error = error_code::constraint_violated;
+                              ctx.custom_error_message = V::message;
+                              return;
+                           }
                         }
                         assign_to_target(std::move(input));
                      }
@@ -141,11 +145,13 @@ namespace glz
                      parse<Format>::template op<Opts>(input, ctx, it, end);
                      if (bool(ctx.error)) [[unlikely]]
                         return;
-                     auto success = value.constraint(value.val, input);
-                     if (not success) {
-                        ctx.error = error_code::constraint_violated;
-                        ctx.custom_error_message = V::message;
-                        return;
+                     if constexpr (!check_skip_read_constraint(Opts)) {
+                        auto success = value.constraint(value.val, input);
+                        if (not success) {
+                           ctx.error = error_code::constraint_violated;
+                           ctx.custom_error_message = V::message;
+                           return;
+                        }
                      }
                      assign_to_target(std::move(input));
                   }

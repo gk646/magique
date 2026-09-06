@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "glaze/core/context.hpp"
+#include "glaze/core/opts.hpp"
 #include "glaze/core/read.hpp"
 #include "glaze/core/wrappers.hpp"
 #include "glaze/core/write.hpp"
@@ -14,7 +16,7 @@ namespace glz
    struct from<Format, T>
    {
       template <auto Opts>
-      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto&& end)
+      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto end)
       {
          using V = std::decay_t<decltype(value)>;
          using From = typename V::from_t;
@@ -35,9 +37,15 @@ namespace glz
                   }
                   else if constexpr (glz::tuple_size_v<Tuple> == 1) {
                      std::decay_t<glz::tuple_element_t<0, Tuple>> input{};
-                     parse<Format>::template op<Opts>(input, ctx, it, end);
-                     if (bool(ctx.error)) [[unlikely]]
-                        return;
+                     glz::from<Format, std::decay_t<decltype(input)>>::template op<Opts>(input, ctx, it, end);
+                     if constexpr (check_null_terminated(Opts)) {
+                        if (bool(ctx.error)) [[unlikely]]
+                           return;
+                     }
+                     else {
+                        if (size_t(ctx.error) > size_t(error_code::end_reached)) [[unlikely]]
+                           return;
+                     }
                      (value.val.*(value.from))(std::move(input));
                   }
                   else {
@@ -64,9 +72,15 @@ namespace glz
                      }
                      else if constexpr (glz::tuple_size_v<Tuple> == 1) {
                         std::decay_t<glz::tuple_element_t<0, Tuple>> input{};
-                        parse<Format>::template op<Opts>(input, ctx, it, end);
-                        if (bool(ctx.error)) [[unlikely]]
-                           return;
+                        glz::from<Format, std::decay_t<decltype(input)>>::template op<Opts>(input, ctx, it, end);
+                        if constexpr (check_null_terminated(Opts)) {
+                           if (bool(ctx.error)) [[unlikely]]
+                              return;
+                        }
+                        else {
+                           if (size_t(ctx.error) > size_t(error_code::end_reached)) [[unlikely]]
+                              return;
+                        }
                         from(std::move(input));
                      }
                      else {
@@ -78,7 +92,7 @@ namespace glz
                   }
                }
                else {
-                  parse<Format>::template op<Opts>(from, ctx, it, end);
+                  glz::from<Format, std::decay_t<decltype(from)>>::template op<Opts>(from, ctx, it, end);
                }
             }
             else {
@@ -102,9 +116,15 @@ namespace glz
                   }
                   else if constexpr (N > 1) {
                      std::decay_t<glz::tuple_element_t<1, Tuple>> input{};
-                     parse<Format>::template op<Opts>(input, ctx, it, end);
-                     if (bool(ctx.error)) [[unlikely]]
-                        return;
+                     glz::from<Format, std::decay_t<decltype(input)>>::template op<Opts>(input, ctx, it, end);
+                     if constexpr (check_null_terminated(Opts)) {
+                        if (bool(ctx.error)) [[unlikely]]
+                           return;
+                     }
+                     else {
+                        if (size_t(ctx.error) > size_t(error_code::end_reached)) [[unlikely]]
+                           return;
+                     }
                      if constexpr (N == 2) {
                         value.from(value.val, std::move(input));
                      }
@@ -119,10 +139,12 @@ namespace glz
                }
             }
             else if constexpr (std::invocable<From, decltype(value.val)>) {
-               parse<Format>::template op<Opts>(value.from(value.val), ctx, it, end);
+               decltype(auto) ref = value.from(value.val);
+               glz::from<Format, std::decay_t<decltype(ref)>>::template op<Opts>(ref, ctx, it, end);
             }
             else if constexpr (std::invocable<From, decltype(value.val), context&>) {
-               parse<Format>::template op<Opts>(value.from(value.val, ctx), ctx, it, end);
+               decltype(auto) ref = value.from(value.val, ctx);
+               glz::from<Format, std::decay_t<decltype(ref)>>::template op<Opts>(ref, ctx, it, end);
             }
             else {
                static_assert(

@@ -139,8 +139,8 @@ uint64_t GetMemoryWorkingSet()
     return 0;
 
 #else
-    return 0; // Unsupported platform
 #endif
+    return 0; // Unsupported platform
 }
 
 static std::string IP_ADDR{};

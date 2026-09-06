@@ -13,7 +13,7 @@ namespace glz
    struct skip_value<CSV>
    {
       template <auto Opts>
-      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto end) noexcept
       {
          if (it != end && *it == '"') {
             ++it;
@@ -36,7 +36,7 @@ namespace glz
                      continue;
                   }
 
-                  if (*it == ',' || *it == '\n' || *it == '\r') {
+                  if (*it == csv_delimiter<Opts>() || *it == '\n' || *it == '\r') {
                      return;
                   }
 
@@ -50,7 +50,7 @@ namespace glz
          else {
             while (it != end) {
                const auto ch = *it;
-               if (ch == ',' || ch == '\n' || ch == '\r') {
+               if (ch == csv_delimiter<Opts>() || ch == '\n' || ch == '\r') {
                   return;
                }
                ++it;

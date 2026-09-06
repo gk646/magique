@@ -185,8 +185,8 @@ namespace glz::fast_float {
 enum class chars_format : uint64_t;
 
 namespace detail {
-constexpr chars_format basic_json_fmt = chars_format(1 << 5);
-constexpr chars_format basic_fortran_fmt = chars_format(1 << 6);
+inline constexpr chars_format basic_json_fmt = chars_format(1 << 5);
+inline constexpr chars_format basic_fortran_fmt = chars_format(1 << 6);
 } // namespace detail
 
 enum class chars_format : uint64_t {
@@ -577,10 +577,10 @@ struct adjusted_mantissa {
 };
 
 // Bias so we can get the real exponent with an invalid adjusted_mantissa.
-constexpr static int32_t invalid_am_bias = -0x8000;
+inline constexpr int32_t invalid_am_bias = -0x8000;
 
 // used for binary_format_lookup_tables<T>::max_mantissa
-constexpr uint64_t constant_55555 = 5 * 5 * 5 * 5 * 5;
+inline constexpr uint64_t constant_55555 = 5 * 5 * 5 * 5 * 5;
 
 template <typename T, typename U = void> struct binary_format_lookup_tables;
 
@@ -1167,7 +1167,7 @@ template <typename UC> constexpr bool is_space(UC c) {
   return c < 256 && space_lut<>::value[uint8_t(c)];
 }
 
-template <typename UC> static constexpr uint64_t int_cmp_zeros() {
+template <typename UC> constexpr uint64_t int_cmp_zeros() {
   static_assert((sizeof(UC) == 1) || (sizeof(UC) == 2) || (sizeof(UC) == 4),
                 "Unsupported character size");
   return (sizeof(UC) == 1) ? 0x3030303030303030
@@ -1177,7 +1177,7 @@ template <typename UC> static constexpr uint64_t int_cmp_zeros() {
              : (uint64_t(UC('0')) << 32 | UC('0'));
 }
 
-template <typename UC> static constexpr int int_cmp_len() {
+template <typename UC> constexpr int int_cmp_len() {
   return sizeof(uint64_t) / sizeof(UC);
 }
 
@@ -1396,7 +1396,7 @@ constexpr chars_format adjust_for_feature_macros(chars_format fmt) {
 namespace glz::fast_float {
 /**
  * This function parses the character sequence [first,last) for a number. It
- * parses floating-point numbers expecting a locale-indepent format equivalent
+ * parses floating-point numbers expecting a locale-independent format equivalent
  * to what is used by std::strtod in the default ("C") locale. The resulting
  * floating-point value is the closest floating-point values (using either float
  * or double), using the "round to even" convention for values that would
@@ -1480,6 +1480,14 @@ template <typename UC> fastfloat_really_inline constexpr bool has_simd_opt() {
 template <typename UC>
 fastfloat_really_inline constexpr bool is_integer(UC c) noexcept {
   return !(c > UC('9') || c < UC('0'));
+}
+
+// Optimized digit parsing: returns digit value [0-9] for digits, or value > 9 for non-digits.
+// Uses unsigned underflow to combine bounds check and digit extraction in one operation.
+// This is faster than separate is_integer() check + digit computation.
+template <typename UC>
+fastfloat_really_inline constexpr uint64_t digit_value(UC c) noexcept {
+  return uint64_t(uint8_t(c) - uint8_t('0'));
 }
 
 fastfloat_really_inline constexpr uint64_t byteswap(uint64_t val) {
@@ -1765,12 +1773,11 @@ parse_number_string(UC const *p, UC const *pend,
 
   uint64_t i = 0; // an unsigned int avoids signed overflows (which are bad)
 
-  while ((p != pend) && is_integer(*p)) {
+  uint64_t digit;
+  while ((p != pend) && (digit = digit_value(*p)) <= 9) {
     // a multiplication by 10 is cheaper than an arbitrary integer
     // multiplication
-    i = 10 * i +
-        uint64_t(*p -
-                 UC('0')); // might overflow, we will handle the overflow later
+    i = 10 * i + digit; // might overflow, we will handle the overflow later
     ++p;
   }
   UC const *const end_of_integer_part = p;
@@ -1796,8 +1803,7 @@ parse_number_string(UC const *p, UC const *pend,
     // for integers with many digits, digit parsing is the primary bottleneck.
     loop_parse_if_eight_digits(p, pend, i);
 
-    while ((p != pend) && is_integer(*p)) {
-      uint8_t digit = uint8_t(*p - UC('0'));
+    while ((p != pend) && (digit = digit_value(*p)) <= 9) {
       ++p;
       i = i * 10 + digit; // in rare cases, this will overflow, but that's ok
     }
@@ -1846,9 +1852,9 @@ parse_number_string(UC const *p, UC const *pend,
       p = location_of_e;
     } else {
       while ((p != pend) && is_integer(*p)) {
-        uint8_t digit = uint8_t(*p - UC('0'));
+        uint8_t exp_digit = uint8_t(*p - UC('0'));
         if (exp_number < 0x10000000) {
-          exp_number = 10 * exp_number + digit;
+          exp_number = 10 * exp_number + exp_digit;
         }
         ++p;
       }
@@ -2000,7 +2006,7 @@ parse_int_string(UC const *p, UC const *pend, T &value,
 
   // check other types overflow
   if (!std::is_same<T, uint64_t>::value) {
-    if (i > uint64_t(std::numeric_limits<T>::max()) + uint64_t(negative)) {
+    if (i > uint64_t((std::numeric_limits<T>::max)()) + uint64_t(negative)) {
       answer.ec = std::errc::result_out_of_range;
       return answer;
     }
@@ -2017,8 +2023,8 @@ parse_int_string(UC const *p, UC const *pend, T &value,
     // - reinterpret_casting (~i + 1) would work, but it is not constexpr
     // this is always optimized into a neg instruction (note: T is an integer
     // type)
-    value = T(-std::numeric_limits<T>::max() -
-              T(i - uint64_t(std::numeric_limits<T>::max())));
+    value = T(-(std::numeric_limits<T>::max)() -
+              T(i - uint64_t((std::numeric_limits<T>::max)())));
 #ifdef GLZ_FASTFLOAT_VISUAL_STUDIO
 #pragma warning(pop)
 #endif
@@ -2974,11 +2980,11 @@ namespace glz::fast_float {
 #if defined(GLZ_FASTFLOAT_64BIT) && !defined(__sparc)
 #define GLZ_FASTFLOAT_64BIT_LIMB 1
 typedef uint64_t limb;
-constexpr size_t limb_bits = 64;
+inline constexpr size_t limb_bits = 64;
 #else
 #define GLZ_FASTFLOAT_32BIT_LIMB
 typedef uint32_t limb;
-constexpr size_t limb_bits = 32;
+inline constexpr size_t limb_bits = 32;
 #endif
 
 typedef span<limb> limb_span;
@@ -2987,8 +2993,8 @@ typedef span<limb> limb_span;
 // of bits required to store the largest bigint, which is
 // `log2(10**(digits + max_exp))`, or `log2(10**(767 + 342))`, or
 // ~3600 bits, so we round to 4000.
-constexpr size_t bigint_bits = 4000;
-constexpr size_t bigint_limbs = bigint_bits / limb_bits;
+inline constexpr size_t bigint_bits = 4000;
+inline constexpr size_t bigint_limbs = bigint_bits / limb_bits;
 
 // vector-like type that is allocated on the stack. the entire
 // buffer is pre-allocated, and only the length changes.
@@ -3604,7 +3610,7 @@ struct bigint : pow5_tables<> {
 namespace glz::fast_float {
 
 // 1e0 to 1e19
-constexpr static uint64_t powers_of_ten_uint64[] = {1UL,
+inline constexpr uint64_t powers_of_ten_uint64[] = {1UL,
                                                     10UL,
                                                     100UL,
                                                     1000UL,
@@ -3703,7 +3709,7 @@ fastfloat_really_inline GLZ_FASTFLOAT_CONSTEXPR14 void round(adjusted_mantissa &
   if (-am.power2 >= mantissa_shift) {
     // have a denormal float
     int32_t shift = -am.power2 + 1;
-    cb(am, std::min<int32_t>(shift, 64));
+    cb(am, (std::min<int32_t>)(shift, 64));
     // check for round-up: if rounding-nearest carried us to the hidden bit.
     am.power2 = (am.mantissa <
                  (uint64_t(1) << binary_format<T>::mantissa_explicit_bits()))
@@ -4141,7 +4147,7 @@ fastfloat_really_inline bool rounds_to_nearest() noexcept {
   // asm). The value does not need to be std::numeric_limits<float>::min(), any
   // small value so that 1 + x should round to 1 would do (after accounting for
   // excess precision, as in 387 instructions).
-  static float volatile fmin = std::numeric_limits<float>::min();
+  static float volatile fmin = (std::numeric_limits<float>::min)();
   float fmini = fmin; // we copy it so that it gets loaded at most once.
 //
 // Explanation:

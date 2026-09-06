@@ -128,17 +128,47 @@ namespace glz
       using type = Result;
    };
 
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) volatile>
+   {
+      using type = Result;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) const volatile>
+   {
+      using type = Result;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) noexcept>
+   {
+      using type = Result;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) const noexcept>
+   {
+      using type = Result;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) volatile noexcept>
+   {
+      using type = Result;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct return_type<Result (ClassType::*)(Args...) const volatile noexcept>
+   {
+      using type = Result;
+   };
+
    template <class T>
    struct inputs_as_tuple;
 
    template <class ClassType, class Result, class... Args>
    struct inputs_as_tuple<Result (ClassType::*)(Args...)>
-   {
-      using type = std::tuple<Args...>;
-   };
-
-   template <class ClassType, class Result, class... Args>
-   struct inputs_as_tuple<Result (ClassType::*)(Args...) noexcept>
    {
       using type = std::tuple<Args...>;
    };
@@ -150,7 +180,37 @@ namespace glz
    };
 
    template <class ClassType, class Result, class... Args>
+   struct inputs_as_tuple<Result (ClassType::*)(Args...) volatile>
+   {
+      using type = std::tuple<Args...>;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct inputs_as_tuple<Result (ClassType::*)(Args...) const volatile>
+   {
+      using type = std::tuple<Args...>;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct inputs_as_tuple<Result (ClassType::*)(Args...) noexcept>
+   {
+      using type = std::tuple<Args...>;
+   };
+
+   template <class ClassType, class Result, class... Args>
    struct inputs_as_tuple<Result (ClassType::*)(Args...) const noexcept>
+   {
+      using type = std::tuple<Args...>;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct inputs_as_tuple<Result (ClassType::*)(Args...) volatile noexcept>
+   {
+      using type = std::tuple<Args...>;
+   };
+
+   template <class ClassType, class Result, class... Args>
+   struct inputs_as_tuple<Result (ClassType::*)(Args...) const volatile noexcept>
    {
       using type = std::tuple<Args...>;
    };
@@ -279,6 +339,36 @@ namespace glz
       using object_type = T;
    };
 
+   // Function pointer specializations
+   template <class R, class... Args>
+   struct invocable_traits<R (*)(Args...)> : std::true_type
+   {
+      using result_type = R;
+      using arguments = std::tuple<Args...>;
+   };
+
+   template <class R, class... Args>
+   struct invocable_traits<R (*)(Args...) noexcept> : std::true_type
+   {
+      using result_type = R;
+      using arguments = std::tuple<Args...>;
+   };
+
+   // Function type specializations (for function references)
+   template <class R, class... Args>
+   struct invocable_traits<R(Args...)> : std::true_type
+   {
+      using result_type = R;
+      using arguments = std::tuple<Args...>;
+   };
+
+   template <class R, class... Args>
+   struct invocable_traits<R(Args...) noexcept> : std::true_type
+   {
+      using result_type = R;
+      using arguments = std::tuple<Args...>;
+   };
+
    template <class T>
    using invocable_args_t = typename invocable_traits<decltype(&T::operator())>::arguments;
 
@@ -288,6 +378,18 @@ namespace glz
    // checks if type is a lambda with all known arguments
    template <class T>
    concept is_invocable_concrete = requires { typename invocable_traits<decltype(&T::operator())>::result_type; };
+
+   // checks if type is a function pointer with known arguments
+   template <class T>
+   concept is_function_ptr_invocable =
+      std::is_pointer_v<std::decay_t<T>> && std::is_function_v<std::remove_pointer_t<std::decay_t<T>>> &&
+      requires { typename invocable_traits<std::decay_t<T>>::result_type; };
+
+   template <class T>
+   using function_ptr_args_t = typename invocable_traits<std::decay_t<T>>::arguments;
+
+   template <class T>
+   using function_ptr_result_t = typename invocable_traits<std::decay_t<T>>::result_type;
 
    template <class T>
    using decay_keep_volatile_t = std::remove_const_t<std::remove_reference_t<T>>;

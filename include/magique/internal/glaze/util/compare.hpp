@@ -3,13 +3,34 @@
 
 #pragma once
 
+#include <array>
+#include <bit>
 #include <cstdint>
 #include <cstring>
 #include <string_view>
 #include <type_traits>
 
+#include "glaze/util/inline.hpp"
+
 namespace glz
 {
+   namespace detail
+   {
+      // Lowercases 8 packed bytes at once. Only 'A'..'Z' are changed.
+      // The high-bit mask keeps per-byte additions from carrying into neighbors
+      // and excludes non-ASCII bytes from classification.
+      inline constexpr uint64_t ascii_tolower_u64(const uint64_t v) noexcept
+      {
+         constexpr uint64_t ones = 0x0101010101010101ull;
+         constexpr uint64_t high = 0x8080808080808080ull;
+         const uint64_t seven = v & ~high;
+         const uint64_t ge_A = seven + (0x80 - 'A') * ones;
+         const uint64_t gt_Z = seven + (0x80 - ('Z' + 1)) * ones;
+         const uint64_t is_upper = ge_A & ~gt_Z & ~v & high;
+         return v | (is_upper >> 2);
+      }
+   }
+
    template <class Char>
    inline bool compare(const Char* lhs, const Char* rhs, uint64_t count) noexcept
    {
@@ -222,46 +243,70 @@ namespace glz
    template <const std::string_view& Str, size_t N = Str.size()>
    GLZ_ALWAYS_INLINE bool comparitor(const auto* other) noexcept
    {
+      // pack() builds values in little-endian order (byte 0 in LSB position).
+      // On big-endian systems, memcpy produces native (big-endian) values,
+      // so we need to byteswap to match the packed representation.
       if constexpr (N == 8) {
          static constexpr auto packed = pack<Str, 8>();
          uint64_t in;
          std::memcpy(&in, other, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed);
       }
       else if constexpr (N == 7) {
          static constexpr auto packed = pack_buffered<Str, 8>();
          uint64_t in{};
          std::memcpy(&in, other, 7);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed);
       }
       else if constexpr (N == 6) {
          static constexpr auto packed = pack_buffered<Str, 8>();
          uint64_t in{};
          std::memcpy(&in, other, 6);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed);
       }
       else if constexpr (N == 5) {
          static constexpr auto packed = pack<Str, 4>();
          uint32_t in;
          std::memcpy(&in, other, 4);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed) & (Str[4] == other[4]);
       }
       else if constexpr (N == 4) {
          static constexpr auto packed = pack<Str, 4>();
          uint32_t in;
          std::memcpy(&in, other, 4);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed);
       }
       else if constexpr (N == 3) {
          static constexpr auto packed = pack<Str, 2>();
          uint16_t in;
          std::memcpy(&in, other, 2);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed) & (Str[2] == other[2]);
       }
       else if constexpr (N == 2) {
          static constexpr auto packed = pack<Str, 2>();
          uint16_t in;
          std::memcpy(&in, other, 2);
+         if constexpr (std::endian::native == std::endian::big) {
+            in = std::byteswap(in);
+         }
          return (in == packed);
       }
       else if constexpr (N == 1) {
@@ -278,10 +323,51 @@ namespace glz
       }
    }
 
+   // ASCII case-insensitive equality, checks sizes
+   inline constexpr bool striequal(const std::string_view lhs, const std::string_view rhs) noexcept
+   {
+      if (lhs.size() != rhs.size()) {
+         return false;
+      }
+
+      if consteval {
+         for (size_t i = 0; i < lhs.size(); ++i) {
+            const auto lower = [](char c) { return (c >= 'A' && c <= 'Z') ? char(c + 32) : c; };
+            if (lower(lhs[i]) != lower(rhs[i])) {
+               return false;
+            }
+         }
+         return true;
+      }
+      else {
+         const char* l = lhs.data();
+         const char* r = rhs.data();
+         uint64_t count = lhs.size();
+
+         for (; count >= 8; l += 8, r += 8, count -= 8) {
+            uint64_t a, b;
+            std::memcpy(&a, l, 8);
+            std::memcpy(&b, r, 8);
+            if (glz::detail::ascii_tolower_u64(a) != glz::detail::ascii_tolower_u64(b)) {
+               return false;
+            }
+         }
+
+         if (count) {
+            // Zero padding is safe, both sides pad identically and 0 is not 'A'..'Z'
+            uint64_t a{}, b{};
+            std::memcpy(&a, l, count);
+            std::memcpy(&b, r, count);
+            return glz::detail::ascii_tolower_u64(a) == glz::detail::ascii_tolower_u64(b);
+         }
+         return true;
+      }
+   }
+
    // compare_sv checks sizes
    inline constexpr bool compare_sv(const std::string_view lhs, const std::string_view rhs) noexcept
    {
-      if (std::is_constant_evaluated()) {
+      if consteval {
          return lhs == rhs;
       }
       else {
@@ -292,7 +378,7 @@ namespace glz
    template <const std::string_view& lhs>
    inline constexpr bool compare_sv(const std::string_view rhs) noexcept
    {
-      if (std::is_constant_evaluated()) {
+      if consteval {
          return lhs == rhs;
       }
       else {

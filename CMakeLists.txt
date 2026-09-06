@@ -41,7 +41,6 @@ set(MAGIQUE_MAX_TEXTURE_SIZE 4096 CACHE STRING "Maximum size of any texture made
 set(MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES 2 CACHE STRING "Maximum amount of custom tile properties for each tile object")
 set(MAGIQUE_TILE_SET_CUSTOM_PROPERTIES 4 CACHE STRING "Maximum amount of custom tile properties for each tile in a tileset")
 set(MAGIQUE_MAX_ANIM_FRAMES 16 CACHE STRING "Maximum amount of frames per single animation")
-set(MAGIQUE_MAX_PLAYERS 4 CACHE STRING "Maximum amount of actors (players) supported")
 set(MAGIQUE_MAX_LOBBY_MESSAGE_LEN 255 CACHE STRING "Maximum length of a chat message sent in a lobby")
 set(MAGIQUE_INCLUDE_FONT 1 CACHE BOOL "Include the default magique font: Cascadia Code")
 set(MAGIQUE_USE_NAMESPACE 1 CACHE BOOL "Declares using namespace magique in fwd.hpp (so for everything)")

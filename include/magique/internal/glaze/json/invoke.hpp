@@ -9,7 +9,7 @@
 
 namespace glz
 {
-   // invoker_t is intended to cause a funtion invocation when read
+   // invoker_t is intended to cause a function invocation when read
    template <class T>
    struct invoke_t;
 
@@ -34,7 +34,7 @@ namespace glz
    struct from<JSON, invoke_t<T>>
    {
       template <auto Opts>
-      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto&& end)
+      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto end)
       {
          using V = std::decay_t<decltype(value.val)>;
 
@@ -100,7 +100,7 @@ namespace glz
       static void op(auto&& value, is_context auto&& ctx, auto&&... args)
       {
          using V = std::decay_t<decltype(value.val)>;
-         dump<'['>(args...);
+         dump('[', args...);
          if constexpr (is_specialization_v<V, std::function>) {
             using Ret = typename function_traits<V>::result_type;
 
@@ -114,7 +114,7 @@ namespace glz
                static_assert(false_v<T>, "std::function must have void return");
             }
          }
-         dump<']'>(args...);
+         dump(']', args...);
       }
    };
 
@@ -153,7 +153,6 @@ namespace glz
       std::function<Signature> func{};
       std::string prev{};
       bool initialized = false;
-      static constexpr auto glaze = true;
    };
 
    template <class T>
@@ -161,14 +160,18 @@ namespace glz
       T::func;
       T::prev;
       T::initialized;
-      T::glaze;
    };
+
+   // Register invoke_update as having specified Glaze serialization
+   template <class Signature>
+   struct specified<invoke_update<Signature>> : std::true_type
+   {};
 
    template <is_invoke_update T>
    struct from<JSON, T>
    {
       template <auto Opts>
-      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto&& end)
+      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto end)
       {
          using V = std::decay_t<decltype(value.func)>;
 
@@ -220,12 +223,12 @@ namespace glz
       static void op(auto&& value, is_context auto&& ctx, auto&&... args)
       {
          using V = std::decay_t<decltype(value.val)>;
-         dump<'['>(args...);
+         dump('[', args...);
          using Tuple = typename function_traits<V>::arguments;
          Tuple inputs{};
          using Inputs = std::remove_cvref_t<decltype(inputs)>;
          to<JSON, Inputs>::template op<Opts>(inputs, ctx, args...);
-         dump<']'>(args...);
+         dump(']', args...);
       }
    };
 }

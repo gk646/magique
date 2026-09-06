@@ -1,9 +1,6 @@
 #ifndef MAGEQUEST_STL_H
 #define MAGEQUEST_STL_H
 
-#include <algorithm>
-#include <cfloat>
-#include <vector>
 #include <span>
 #include <raylib/raylib.h>
 #include <magique/internal/enchantum/enchantum.hpp>
@@ -18,20 +15,17 @@
 
 namespace magique
 {
-    // Returns the max element of the vector based on the return value of pred
-    //      - pred: takes the object and returns a float <float(const T&)>
-    // Note: calls pred only ONCE for all elements (unlike std::max_element)
-    template <typename T, typename Pred>
-    T* MaxElement(std::span<T> range, Pred pred);
+    // Returns the value type of the container
+    template <typename Container>
+    using value_type_of = std::iterator_traits<decltype(std::cbegin(std::declval<Container>()))>::value_type;
 
     // Randomly picks n unique elements from the given range and returns them
     // Note: vec MUST not contain duplicates
-    template <typename T, std::size_t Extent = std::dynamic_extent>
-    std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n);
+    template <typename Container>
+    std::optional<std::vector<value_type_of<Container>>> PickRandomSequence(const Container& c, int n);
 
-    // Picks a random element form the given range
-    template <typename T>
-    std::optional<std::reference_wrapper<T>> PickRandom(std::span<T> range);
+    template <typename Container>
+    std::optional<value_type_of<Container>> PickRandom(const Container& c);
 
     // Returns the enum value as string
     // Note: This requires the whole enum definition to be visible when used
@@ -40,9 +34,9 @@ namespace magique
 
     // Returns an optional that contains the matching enum value if it exists
     template <class E>
-    std::optional<E> EnumFromString(std::string_view input);
+    std::optional<E> EnumFromString(std::string_view value);
 
-    // Returns the amount of value part of the given enum
+    // Returns the amount of values part of the given enum
     template <class E>
     size_t EnumSize();
 
@@ -50,78 +44,59 @@ namespace magique
     template <class E>
     std::span<const E> EnumValues();
 
+    // Minimal read-only view type that allows implicit conversion from any container
+    template <typename Container>
+    class View
+    {
+        using iterator_type = decltype(std::cbegin(std::declval<Container>()));
+        iterator_type begin_;
+        iterator_type end_;
+
+    public:
+        View(const Container& c) : begin_(std::cbegin(c)), end_(std::cend(c)) {}
+        auto operator[](size_t index) const -> decltype(*begin_) { return begin_[index]; }
+        iterator_type begin() const { return begin_; }
+        iterator_type end() const { return end_; }
+        size_t size() const { return std::distance(begin_, end_); }
+        bool empty() const { return begin_ == end_; }
+    };
+
+
 } // namespace magique
 
 // IMPLEMENTATION
 
 namespace magique
 {
-    template <typename T, typename Pred>
-    T* MaxElement(std::span<T> range, Pred pred)
+    template <typename Container>
+    std::optional<std::vector<value_type_of<Container>>> PickRandomSequence(const Container& view, int n)
     {
-        float highest = FLT_MIN;
-        T* ret = nullptr;
-        for (auto& elem : range)
-        {
-            const float val = pred(elem);
-            if (val > highest)
-            {
-                ret = &elem;
-                highest = val;
-            }
-        }
-        return ret;
-    }
-
-
-    template <typename T>
-    std::optional<std::reference_wrapper<T>> PickRandom(std::span<T> range)
-    {
-        if (range.empty())
+        using T = value_type_of<Container>;
+        if ((int)view.size() < n)
             return {};
-        return {range[GetRandomValue(0, range.size() - 1)]};
-    }
 
-    template <typename T, typename Pred>
-    const T* max_element(const std::vector<T>& vec, Pred pred)
-    {
-        float highest = FLT_MIN;
-        const T* ret = nullptr;
-        for (const auto& elem : vec)
+        if ((int)view.size() == n)
+            return {std::vector<T>{view.begin(), view.end()}};
+
+
+        std::vector<T> result;
+        while ((int)result.size() < n)
         {
-            const float val = pred(elem);
-            if (val > highest)
-            {
-                ret = &elem;
-                highest = val;
-            }
+            const auto& rand = view[GetRandomValue(0, view.size() - 1)];
+            if (!std::ranges::contains(result, rand))
+                result.push_back(rand);
         }
-        return ret;
+        return result;
     }
 
-    template <typename T, std::size_t Extent>
-    std::vector<std::remove_cv_t<T>> pick_unique_rand(std::span<T, Extent> vec, size_t n)
+    template <typename Container>
+    std::optional<value_type_of<Container>> PickRandom(const Container& c)
     {
-        using ValueType = std::remove_cv_t<T>;
-        std::vector<ValueType> ret;
-        ret.reserve(n);
-
-        if (n == 0) [[unlikely]]
-            return ret;
-
-        if (vec.size() <= n)
-            return std::vector<ValueType>(vec.begin(), vec.end());
-
-        while (ret.size() < n)
-        {
-            auto index = GetRandomValue(0, vec.size() - 1);
-            if (std::ranges::contains(ret, vec[index]))
-                continue;
-            ret.push_back(vec[index]);
-        }
-
-        return ret;
+        if (c.empty())
+            return {};
+        return {c[GetRandomValue(0, c.size() - 1)]};
     }
+
 
     template <class E>
     std::string_view EnumToString(E val)

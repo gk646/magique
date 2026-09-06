@@ -33,7 +33,6 @@ namespace magique
             const auto& scriptData = global::SCRIPT_DATA;
             const auto type = ComponentGet<PositionC>(entity).type;
             const auto it = scriptData.scripts.find(type);
-            MAGIQUE_ASSERT(it != scriptData.scripts.end(), "No script registered for this type! ");
             if (it == scriptData.scripts.end())
             {
                 return scriptData.defaultScript;

@@ -3,6 +3,7 @@
 #define MAGIQUE_SCRIPTENGINE_H
 
 #include <magique/ecs/Scripting.h>
+#include <magique/util/Datastructures.h>
 
 namespace magique
 {

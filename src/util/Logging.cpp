@@ -83,7 +83,7 @@ namespace magique
             if (level >= LEVEL_ERROR) [[unlikely]]
             {
 #ifdef MAGIQUE_DEBUG
-#if defined(_MSC_VER)
+#if defined(_WIN32)
                 __debugbreak();
 #elif defined(__GNUC__)
                 raise(SIGTRAP);

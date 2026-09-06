@@ -3,7 +3,198 @@
 
 #pragma once
 
+#include <version>
+
+// Detect constexpr std::string support
+// The old GCC ABI (_GLIBCXX_USE_CXX11_ABI=0) does not have constexpr std::string::size()
+// This affects features like rename_key returning std::string
+#if defined(__GLIBCXX__) && defined(_GLIBCXX_USE_CXX11_ABI) && _GLIBCXX_USE_CXX11_ABI == 0
+#define GLZ_HAS_CONSTEXPR_STRING 0
+#else
+#define GLZ_HAS_CONSTEXPR_STRING 1
+#endif
+
+// C++26 P2996 Reflection Support
+// Can be enabled via:
+// 1. CMake option: glaze_ENABLE_REFLECTION26
+// 2. Compiler define: -DGLZ_REFLECTION26=1
+// 3. Automatic detection via __cpp_lib_reflection or __cpp_impl_reflection
+#ifndef GLZ_REFLECTION26
+#if defined(__cpp_lib_reflection) || defined(__cpp_impl_reflection)
+#define GLZ_REFLECTION26 1
+#else
+#define GLZ_REFLECTION26 0
+#endif
+#endif
+
+// C++26 P2988 std::optional<T&> support.
+#ifndef GLZ_HAS_OPTIONAL_REF
+#if defined(__cpp_lib_optional) && __cpp_lib_optional >= 202506L
+#define GLZ_HAS_OPTIONAL_REF 1
+#else
+#define GLZ_HAS_OPTIONAL_REF 0
+#endif
+#endif
+
+namespace glz
+{
+   // Constexpr bool for use in if constexpr or other compile-time contexts
+   // Use GLZ_HAS_CONSTEXPR_STRING macro for #if preprocessor guards
+   inline constexpr bool has_constexpr_string = GLZ_HAS_CONSTEXPR_STRING;
+
+   // C++26 P2996 reflection support
+   // Use GLZ_REFLECTION26 macro for #if preprocessor guards
+   inline constexpr bool has_reflection26 = GLZ_REFLECTION26;
+
+   // C++26 P2988 std::optional<T&> support
+   // Use GLZ_HAS_OPTIONAL_REF macro for #if preprocessor guards
+   inline constexpr bool has_optional_ref = GLZ_HAS_OPTIONAL_REF;
+}
+
 // Glaze Feature Test Macros for breaking changes
+
+// v8.3.0 fixes GLZ_NO_UNIQUE_ADDRESS on the MSVC ABI
+//
+// The macro tested the standard [[no_unique_address]] before [[msvc::no_unique_address]].
+// MSVC accepts the standard spelling but gives it no layout effect, so a front end that
+// reports it through __has_cpp_attribute would select the inert form and lose the empty
+// member optimization. This can shrink glz::tuple, glz::lazy_document and glz::ordered_map
+// on MSVC, which is a layout change for object files built against an older Glaze.
+#define glaze_v8_3_0_msvc_no_unique_address
+
+// v8.3.0 reimplements glz::tuple and moves it to <glaze/core/tuple.hpp>
+//
+// glz::tuple keeps its API but is now a fresh implementation with no third-party
+// lineage, so <glaze/glaze.hpp> no longer carries a non-MIT dependency. Element
+// access is a base-class cast rather than an operator[] overload set, which cuts
+// tuple compile time without changing generated code.
+//
+// <glaze/tuplet/tuple.hpp> still forwards to the new location and will be removed
+// in a future major release. The glz::tuplet namespace retains make_tuple,
+// forward_as_tuple, tuple_cat and convert; its internal metaprogramming helpers
+// (tag, type_list, base_list, tuple_elem, ...) are gone.
+#define glaze_v8_3_0_tuple
+
+// v7.7.0 drops glaze/msgpack.hpp from the glaze/glaze.hpp aggregate header.
+//
+// MessagePack support is opt-in. Users who relied on the umbrella include
+// must now include the format header explicitly:
+//   #include <glaze/msgpack.hpp>
+//
+// Rationale: MessagePack pulls in its own parser/writer chain. Excluding it
+// from the aggregate header reduces compile time for translation units that
+// only need JSON / BEVE / etc.
+#define glaze_v7_7_0_msgpack_header
+
+// v7.7.0 drops glaze/record/recorder.hpp from the glaze/glaze.hpp aggregate header.
+//
+// The recorder is a niche utility; users who need it must now include the
+// header directly:
+//   #include <glaze/record/recorder.hpp>
+//
+// Rationale: avoid paying the recorder's template / <variant> / <deque>
+// instantiation cost in every TU that includes glaze.hpp.
+#define glaze_v7_7_0_recorder_header
+
+// v7.0.1 moves std::error_code integration to separate optional header
+//
+// The glaze_error_category struct, error_category global, and make_error_code() function
+// are now in <glaze/core/std_error_code.hpp> instead of being included by default.
+//
+// This reduces binary size by ~34KB for users who don't need std::error_code integration.
+// The overhead comes from the global error_category variable with std::error_category vtable
+// which forces a DATA segment with page alignment overhead.
+//
+// To restore std::error_code integration, include:
+//   #include <glaze/core/std_error_code.hpp>
+#define glaze_v7_0_1_std_error_code_header
+
+// v7.0.0 renames write_member_functions to write_function_pointers
+//
+// Options:
+// - 'write_member_functions' renamed to 'write_function_pointers'
+// - This option now controls serialization of both member and non-member function pointers
+// - check_write_member_functions() renamed to check_write_function_pointers()
+//
+// context struct:
+// - 'indentation_level' renamed to 'depth'
+// - This field tracks nesting depth of structures (objects/arrays)
+// - Used for indentation when writing and stack overflow protection when reading
+//
+// is_context concept:
+// - Now checks for 'depth' member instead of 'indentation_level'
+#define glaze_v7_0_0_write_function_pointers
+#define glaze_v7_0_0_depth
+
+// v7.0.0 moves additional options out of glz::opts to inheritable options pattern
+//
+// Options moved out of glz::opts (use custom opts struct or opt tags in glz::meta):
+// - 'quoted_num' - treat numbers as quoted strings
+// - 'raw_string' - skip escape sequence processing for strings
+// - 'structs_as_arrays' - serialize structs as arrays without field keys
+//
+// Options renamed AND moved out of glz::opts:
+// - 'raw' renamed to 'unquoted' - write string values without surrounding quotes
+// - 'number' renamed to 'string_as_number' - treat string types as numbers
+//
+// Wrapper aliases glz::raw and glz::number are deprecated (use glz::unquoted and glz::string_as_number)
+//
+// Migration for custom opts structs:
+//   // OLD:
+//   struct my_opts : glz::opts { bool raw = true; bool number = true; };
+//   // NEW:
+//   struct my_opts : glz::opts { bool unquoted = true; bool string_as_number = true; };
+//
+// New opt tags for glz::meta:
+// - glz::quoted_num_opt_tag
+// - glz::string_as_number_opt_tag (replaces number semantics)
+// - glz::unquoted_opt_tag (replaces raw semantics)
+// - glz::raw_string_opt_tag
+// - glz::structs_as_arrays_opt_tag
+#define glaze_v7_0_0_opts_quoted_num
+#define glaze_v7_0_0_opts_string_as_number
+#define glaze_v7_0_0_opts_unquoted
+#define glaze_v7_0_0_opts_raw_string
+#define glaze_v7_0_0_opts_structs_as_arrays
+
+// v6.5.0 unified error_ctx and streaming I/O support
+//
+// error_ctx struct:
+// - Field order changed: {count, ec, custom_error_message}
+//   (was {ec, custom_error_message, location, includer_error})
+// - 'location' field renamed to 'count' for consistency across read/write
+// - 'includer_error' field removed (use custom_error_message)
+//
+// context struct:
+// - No longer 'final' (now inheritable for streaming_context)
+// - 'includer_error' field removed (use custom_error_message)
+//
+// is_context concept:
+// - Changed from exact type match to structural concept
+// - Old: std::same_as<std::decay_t<T>, context>
+// - New: Checks for 'error' and 'indentation_level' members
+//
+// Return types:
+// - Raw buffer writes (write_json(value, char*)) now return error_ctx
+//   instead of expected<size_t, error_ctx>. Byte count is in error_ctx::count.
+//
+// New error code:
+// - error_code::buffer_overflow: Returned when writing to fixed-size buffers
+//   that are too small
+#define glaze_v6_5_0_error_ctx
+
+// v6.2.0 moves append_arrays and error_on_const_read out of glz::opts
+// Use a custom opts struct inheriting from glz::opts to enable these options
+#define glaze_v6_2_0_opts_append_arrays
+#define glaze_v6_2_0_opts_error_on_const_read
+
+// v6.2.0 changes std::array<char, N> serialization to respect array bounds instead of scanning for null terminator
+// This fixes a potential buffer overflow when arrays lack null terminators
+// Use const char* for null-terminated C-style string semantics
+#define glaze_v6_2_0_array_char_bounds
+
+// v6.1.0 removes bools_as_numbers from default glz::opts
+#define glaze_v6_1_0_bools_as_numbers_opt
 
 // v6.0.0 renames json/json_t.hpp to json/generic.hpp and deprecates glz::json_t alias
 #define glaze_v6_0_0_generic_header

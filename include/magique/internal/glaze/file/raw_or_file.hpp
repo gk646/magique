@@ -21,7 +21,7 @@ namespace glz
    struct from<JSON, raw_or_file>
    {
       template <auto Options>
-      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto&& end)
+      static void op(auto&& value, is_context auto&& ctx, auto&& it, auto end)
       {
          constexpr auto Opts = ws_handled_off<Options>();
          auto& v = value;
@@ -42,7 +42,7 @@ namespace glz
                   ctx.error = error_code::includer_error;
                   auto& error_msg = error_buffer();
                   error_msg = "file failed to open: " + string_path;
-                  ctx.includer_error = error_msg;
+                  ctx.custom_error_message = error_msg;
                   return;
                }
 
@@ -51,7 +51,7 @@ namespace glz
                   ctx.error = error_code::includer_error;
                   auto& error_msg = error_buffer();
                   error_msg = glz::format_error(ecode, v.str);
-                  ctx.includer_error = error_msg;
+                  ctx.custom_error_message = error_msg;
                   return;
                }
             }
@@ -76,7 +76,7 @@ namespace glz
    struct to<JSON, raw_or_file>
    {
       template <auto Opts>
-      GLZ_ALWAYS_INLINE static void op(auto&& value, is_context auto&&, auto&& b, auto&& ix)
+      GLZ_ALWAYS_INLINE static void op(auto&& value, is_context auto&&, auto&& b, auto& ix)
       {
          dump_maybe_empty(value.str, b, ix);
       }

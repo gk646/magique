@@ -55,15 +55,14 @@ TEST_CASE("execution order")
     };
 
     registerTestTask("Task A", THREAD_MAIN, CRITICAL);
-    registerTestTask("Task B", THREAD_ANY, HIGH);
-    registerTestTask("Task C", THREAD_MAIN, MEDIUM);
-    registerTestTask("Task D", THREAD_ANY, MEDIUM);
     registerTestTask("Task E", THREAD_ANY, LOW);
+    registerTestTask("Task D", THREAD_ANY, MEDIUM);
+    registerTestTask("Task C", THREAD_MAIN, MEDIUM);
+    registerTestTask("Task B", THREAD_ANY, HIGH);
     registerTestTask("Task F", THREAD_MAIN, LOW);
 
     while (!loader.step())
     {
-        // Simulate task execution
     }
 
     REQUIRE(executionOrder.size() == 6);

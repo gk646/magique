@@ -23,10 +23,9 @@ and tutorials.
 
 #### Made with magique
 
-|                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     | [Space Fighter](https://store.steampowered.com/app/4695600?utm_source=github) (Steam)                                                                                                                                                         |
-|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     | [Space Fighter](https://store.steampowered.com/app/4695600?utm_source=github) (Steam)                                                                                                                                                             |
+|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> | <a href="https://store.steampowered.com/app/4695600?utm_source=github"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4695600/122ee0ece8d8522171634345c677dd4826954154/header.jpg" alt="Screenshot 1" width="250"/> |
-
 
 ---
 
@@ -60,17 +59,16 @@ Most notable features:
 
 `magique` is using the following popular libraries:
 
-- **[raylib](https://github.com/raysan5/raylib)** _(5.5-dev)_: rendering, resource loading, sound,...
+- **[raylib](https://github.com/raysan5/raylib)** _(6.1-dev)_: rendering, resource loading, sound,...
 - **[EnTT](https://github.com/skypjack/entt)** _(3.16)_: fast and modern entity-component system
 - **[ankerl](https://github.com/martinus/unordered_dense)** _(4.8.1)_: optimized dense hashmap and hashset
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
   IP
-- **[Steam SDK](https://partner.steamgames.com/)** _(1.63)_:  steam features and global P2P networking
-- **[glaze](https://github.com/stephenberry/glaze)** _(6.0.1)_: Fast JSON serialization with reflection support
-- **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection (often used in gamedev)
-- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for
-  resource loading
+- **[Steam SDK](https://partner.steamgames.com/)** _(1.65)_:  steam features and global P2P networking
+- **[glaze](https://github.com/stephenberry/glaze)** _(8.3.0)_: Fast JSON serialization with reflection support
+- **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection
+- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for resource loading
 
 ### Quickstart
 
@@ -135,7 +133,7 @@ tries to offer many optional general purpose modules that find usage in a multit
     - The PositionC component is implicit for every object! (look at _ecs/Components.h_)
 - Physics
     - There is no builtin physics system apart from your reaction to a collision
-        - To add a custom physics system you can disable the collision SetEnableCollisionHandling(false); and integrate
+        - To add a custom physics system you can disable the collision SetEnableCollisionHandling (false); and integrate
           a physics engine
 
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
@@ -183,7 +181,7 @@ internally to achieve that.
 > _What if raylib was an engine? ..._
 
 `magique` follows the API design of raylib. For me this means a clear pascal case naming
-scheme with descriptive names and baked in namespacing: e.g. SetFormat(), GetFormat(). Similarly, every public method
+scheme with descriptive names and baked in namespacing: e.g. SetFormat (), GetFormat (). Similarly, every public method
 struct or enum is documented and each module has a documentation header as well. Often this documentation is also
 enriched with tips or warnings about pitfalls. The API also specifically only uses the most common types like std::
 vector and std::string and avoids the use of templates. If explicitly needed magique exposes types that are completely

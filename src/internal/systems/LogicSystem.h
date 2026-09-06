@@ -4,6 +4,7 @@
 
 namespace magique
 {
+#define MAGIQUE_MAX_PLAYERS 10
     // Flattened array
     struct ActorMapDistribution final
     {

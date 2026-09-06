@@ -60,7 +60,7 @@ struct glz::meta<glz::error_code>
                                     "file_include_error",
                                     "file_extension_not_supported",
                                     "could_not_determine_extension",
-                                    "get_nonexistent_json_ptr",
+                                    "nonexistent_json_ptr",
                                     "get_wrong_type",
                                     "seek_failure",
                                     "cannot_be_referenced",
@@ -75,7 +75,15 @@ struct glz::meta<glz::error_code>
                                     "invalid_distribution_elements",
                                     "hostname_failure",
                                     "includer_error",
-                                    "feature_not_supported"};
+                                    "feature_not_supported",
+                                    "invalid_json_pointer",
+                                    "patch_test_failed",
+                                    "buffer_overflow",
+                                    "invalid_length",
+                                    "invalid_utf8",
+                                    "invalid_control_character",
+                                    "streaming_unsupported",
+                                    "exceeded_max_expansion"};
    static constexpr std::array value{none, //
                                      version_mismatch, //
                                      invalid_header, //
@@ -129,7 +137,7 @@ struct glz::meta<glz::error_code>
                                      file_extension_not_supported, //
                                      could_not_determine_extension, //
                                      // JSON pointer access errors
-                                     get_nonexistent_json_ptr, //
+                                     nonexistent_json_ptr, //
                                      get_wrong_type, //
                                      seek_failure, //
                                      // Other errors
@@ -145,29 +153,19 @@ struct glz::meta<glz::error_code>
                                      invalid_distribution_elements, //
                                      hostname_failure, //
                                      includer_error, //
-                                     feature_not_supported};
+                                     feature_not_supported, //
+                                     // JSON Pointer errors (RFC 6901)
+                                     invalid_json_pointer, //
+                                     // JSON Patch errors (RFC 6902)
+                                     patch_test_failed, //
+                                     // Buffer errors
+                                     buffer_overflow, //
+                                     invalid_length, //
+                                     // Encoding errors
+                                     invalid_utf8, //
+                                     invalid_control_character, //
+                                     // Streaming errors
+                                     streaming_unsupported, //
+                                     // Expansion errors
+                                     exceeded_max_expansion};
 };
-
-#include <system_error>
-
-namespace glz
-{
-   struct glaze_error_category : public std::error_category
-   {
-      const char* name() const noexcept override { return "glaze"; }
-
-      std::string message(int ev) const override { return {meta<error_code>::keys[uint32_t(ev)]}; }
-   };
-
-   inline glaze_error_category error_category{};
-
-   inline std::error_code make_error_code(error_code e) { return {static_cast<int>(e), error_category}; }
-}
-
-// Make Glaze error_code compatible with std::error_code
-namespace std
-{
-   template <>
-   struct is_error_code_enum<glz::error_code> : true_type
-   {};
-}

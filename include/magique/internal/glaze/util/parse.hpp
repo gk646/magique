@@ -5,15 +5,17 @@
 
 #include <algorithm>
 #include <bit>
-#include <charconv>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <iterator>
-#include <span>
 
 #include "glaze/core/context.hpp"
 #include "glaze/core/meta.hpp"
 #include "glaze/core/opts.hpp"
+#include "glaze/simd/utf8_validation.hpp"
 #include "glaze/util/atoi.hpp"
+#include "glaze/util/bit.hpp"
 #include "glaze/util/compare.hpp"
 #include "glaze/util/convert.hpp"
 #include "glaze/util/expected.hpp"
@@ -78,6 +80,49 @@ namespace glz
       return t;
    }();
 
+   // Whitespace plus JSON separators (comma, colon)
+   inline constexpr std::array<bool, 256> whitespace_separator_table = [] {
+      std::array<bool, 256> t{};
+      t['\n'] = true;
+      t['\t'] = true;
+      t['\r'] = true;
+      t[' '] = true;
+      t[','] = true;
+      t[':'] = true;
+      return t;
+   }();
+
+   // Character classification for lazy JSON value skipping
+   enum class lazy_char_type : uint8_t {
+      other = 0, // whitespace, separators, literals - just advance
+      quote = 1, // " - skip string
+      open = 2, // { or [ - increase depth
+      close = 3, // } or ] - decrease depth
+      number = 4 // - or 0-9 - skip number
+   };
+
+   inline constexpr std::array<lazy_char_type, 256> lazy_char_class = [] {
+      using enum lazy_char_type;
+      std::array<lazy_char_type, 256> t{};
+      t['"'] = quote;
+      t['{'] = open;
+      t['['] = open;
+      t['}'] = close;
+      t[']'] = close;
+      t['-'] = number;
+      t['0'] = number;
+      t['1'] = number;
+      t['2'] = number;
+      t['3'] = number;
+      t['4'] = number;
+      t['5'] = number;
+      t['6'] = number;
+      t['7'] = number;
+      t['8'] = number;
+      t['9'] = number;
+      return t;
+   }();
+
    inline constexpr std::array<bool, 256> whitespace_comment_table = [] {
       std::array<bool, 256> t{};
       t['\n'] = true;
@@ -117,7 +162,17 @@ namespace glz
    }();
 
    inline constexpr std::array<uint16_t, 256> char_escape_table = [] {
-      auto combine = [](const char chars[2]) -> uint16_t { return uint16_t(chars[0]) | (uint16_t(chars[1]) << 8); };
+      // Build uint16_t so that memcpy produces chars in correct order.
+      // On LE: chars[0] in low byte, chars[1] in high byte -> memcpy writes [chars[0]][chars[1]]
+      // On BE: chars[0] in high byte, chars[1] in low byte -> memcpy writes [chars[0]][chars[1]]
+      auto combine = [](const char chars[2]) -> uint16_t {
+         if constexpr (std::endian::native == std::endian::big) {
+            return (uint16_t(uint8_t(chars[0])) << 8) | uint16_t(uint8_t(chars[1]));
+         }
+         else {
+            return uint16_t(uint8_t(chars[0])) | (uint16_t(uint8_t(chars[1])) << 8);
+         }
+      };
 
       std::array<uint16_t, 256> t{};
       t['\b'] = combine(R"(\b)");
@@ -148,13 +203,17 @@ namespace glz
    {
       constexpr auto& t = digit_hex_table;
       const uint8_t arr[4]{t[uint8_t(c[3])], t[uint8_t(c[2])], t[uint8_t(c[1])], t[uint8_t(c[0])]};
-      const auto chunk = std::bit_cast<uint32_t>(arr);
+      auto chunk = std::bit_cast<uint32_t>(arr);
+      // On big-endian, bit_cast produces bytes in opposite order than expected
+      // byteswap to get consistent little-endian representation
+      if constexpr (std::endian::native == std::endian::big) {
+         chunk = std::byteswap(chunk);
+      }
       // check that all hex characters are valid
       if (chunk & repeat_byte4(0b11110000u)) [[unlikely]] {
          return 0xFFFFFFFFu;
       }
 
-      // TODO: can you use std::bit_cast here?
       // now pack into first four bytes of uint32_t
       uint32_t packed{};
       packed |= (chunk & 0x0000000F);
@@ -211,21 +270,21 @@ namespace glz
 
    namespace unicode
    {
-      constexpr uint32_t generic_surrogate_mask = 0xF800;
-      constexpr uint32_t generic_surrogate_value = 0xD800;
+      inline constexpr uint32_t generic_surrogate_mask = 0xF800;
+      inline constexpr uint32_t generic_surrogate_value = 0xD800;
 
-      constexpr uint32_t surrogate_mask = 0xFC00;
-      constexpr uint32_t high_surrogate_value = 0xD800;
-      constexpr uint32_t low_surrogate_value = 0xDC00;
+      inline constexpr uint32_t surrogate_mask = 0xFC00;
+      inline constexpr uint32_t high_surrogate_value = 0xD800;
+      inline constexpr uint32_t low_surrogate_value = 0xDC00;
 
-      constexpr uint32_t surrogate_codepoint_offset = 0x10000;
-      constexpr uint32_t surrogate_codepoint_mask = 0x03FF;
-      constexpr uint32_t surrogate_codepoint_bits = 10;
+      inline constexpr uint32_t surrogate_codepoint_offset = 0x10000;
+      inline constexpr uint32_t surrogate_codepoint_mask = 0x03FF;
+      inline constexpr uint32_t surrogate_codepoint_bits = 10;
    }
 
-   template <class Char>
-   [[nodiscard]] GLZ_ALWAYS_INLINE uint32_t handle_unicode_code_point(const Char*& it, Char*& dst,
-                                                                      const Char* end) noexcept
+   template <class SrcChar, class DstChar = SrcChar>
+   [[nodiscard]] GLZ_ALWAYS_INLINE uint32_t handle_unicode_code_point(const SrcChar*& it, DstChar*& dst,
+                                                                      const SrcChar* end) noexcept
    {
       using namespace unicode;
 
@@ -332,9 +391,23 @@ namespace glz
       return skip_code_point(code_point) > 0;
    }
 
+   // Options struct for match_invalid_end - reduces template instantiations
+   struct match_invalid_end_opts
+   {
+      bool null_terminated;
+
+      // Convert from any opts-like type
+      template <typename T>
+      consteval match_invalid_end_opts(const T& opts) noexcept : null_terminated{opts.null_terminated}
+      {}
+
+      // Direct construction
+      explicit consteval match_invalid_end_opts(bool null_terminated_) noexcept : null_terminated{null_terminated_} {}
+   };
+
    // Checks for a character and validates that we are not at the end (considered an error)
-   template <char C, auto Opts>
-   GLZ_ALWAYS_INLINE bool match_invalid_end(is_context auto& ctx, auto&& it, auto&& end) noexcept
+   template <char C, match_invalid_end_opts Opts>
+   GLZ_ALWAYS_INLINE bool match_invalid_end(is_context auto& ctx, auto&& it, auto end) noexcept
    {
       if (*it != C) [[unlikely]] {
          if constexpr (C == '"') {
@@ -401,7 +474,7 @@ namespace glz
 
    template <string_literal str, auto Opts>
       requires(check_is_padded(Opts) && str.size() <= padding_bytes)
-   GLZ_ALWAYS_INLINE void match(is_context auto&& ctx, auto&& it, auto&&) noexcept
+   GLZ_ALWAYS_INLINE void match(is_context auto&& ctx, auto&& it, auto) noexcept
    {
       static constexpr auto S = str.sv();
       if (not comparitor<S>(it)) [[unlikely]] {
@@ -414,7 +487,7 @@ namespace glz
 
    template <string_literal str, auto Opts>
       requires(!check_is_padded(Opts))
-   GLZ_ALWAYS_INLINE void match(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void match(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       const auto n = size_t(end - it);
       static constexpr auto S = str.sv();
@@ -426,7 +499,7 @@ namespace glz
       }
    }
 
-   GLZ_ALWAYS_INLINE void skip_comment(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_comment(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       ++it;
       if (it == end) [[unlikely]] {
@@ -478,6 +551,39 @@ namespace glz
       return has_zero(chunk ^ repeat_byte8(Char));
    }
 
+   // Advance to the first byte equal to any of Chars, or to end if there is none.
+   //
+   // Eight bytes at a time via the has_char SWAR test above, which is the same technique the
+   // skip_until_closed loops use inline; this is the bounded, reusable form for callers that
+   // have an explicit end rather than a padded buffer. Never reads past end, so it is safe on
+   // buffers that are neither padded nor null terminated.
+   template <char... Chars>
+      requires(sizeof...(Chars) > 0)
+   GLZ_ALWAYS_INLINE const char* find_first_of(const char* p, const char* const end) noexcept
+   {
+      // end - p rather than p + 8 <= end: the latter forms a pointer past one-past-the-end for
+      // short ranges, and is diagnosable UB on a null range. Pointer difference is well defined
+      // for both, including two null pointers.
+      while (end - p >= 8) {
+         uint64_t chunk;
+         std::memcpy(&chunk, p, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            chunk = std::byteswap(chunk);
+         }
+         // has_char marks the low bit-group of each matching byte, so the first match is the
+         // lowest set bit regardless of how many bytes in the chunk match.
+         const uint64_t test = (has_char<Chars>(chunk) | ...);
+         if (test) {
+            return p + (countr_zero(test) >> 3);
+         }
+         p += 8;
+      }
+      while (p < end && not((*p == Chars) || ...)) {
+         ++p;
+      }
+      return p;
+   }
+
    GLZ_ALWAYS_INLINE constexpr uint64_t is_less_32(const uint64_t chunk) noexcept
    {
       return has_zero(chunk & repeat_byte8(0b11100000u));
@@ -491,13 +597,32 @@ namespace glz
 
 namespace glz
 {
+   // Options struct for skip_ws - reduces template instantiations
+   struct ws_opts
+   {
+      bool minified;
+      bool null_terminated;
+      bool comments;
+
+      // Convert from any opts-like type
+      template <typename T>
+      consteval ws_opts(const T& opts) noexcept
+         : minified{opts.minified}, null_terminated{opts.null_terminated}, comments{opts.comments}
+      {}
+
+      // Direct construction - all values required
+      consteval ws_opts(bool minified_, bool null_terminated_, bool comments_) noexcept
+         : minified{minified_}, null_terminated{null_terminated_}, comments{comments_}
+      {}
+   };
+
    // skip whitespace
-   template <auto Opts>
-   GLZ_ALWAYS_INLINE bool skip_ws(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   template <ws_opts Opts>
+   GLZ_ALWAYS_INLINE bool skip_ws(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       using namespace glz::detail;
 
-      if constexpr (!Opts.minified) {
+      if constexpr (not Opts.minified) {
          if constexpr (Opts.null_terminated) {
             if constexpr (Opts.comments) {
                while (whitespace_comment_table[uint8_t(*it)]) {
@@ -547,6 +672,15 @@ namespace glz
             }
          }
       }
+      else if constexpr (not Opts.null_terminated) {
+         // Minified input has no whitespace to skip, but a non-null-terminated buffer can still
+         // be exhausted at this point. The non-minified branch above performs the same check; a
+         // null-terminated buffer relies on the trailing sentinel and keeps this a pure no-op.
+         if (it == end) [[unlikely]] {
+            ctx.error = error_code::end_reached;
+            return true;
+         }
+      }
 
       return false;
    }
@@ -572,6 +706,10 @@ namespace glz
 
          std::memcpy(v, ws, 8);
          std::memcpy(v + 1, it, 8);
+         if (v[0] != v[1]) {
+            return;
+         }
+         it += 8;
          return;
       }
       {
@@ -610,49 +748,107 @@ namespace glz
       }*/
    }
 
-   // std::countr_zero uses another branch check whether the input is zero,
-   // we use this function when we know that x > 0
-   GLZ_ALWAYS_INLINE auto countr_zero(const uint32_t x) noexcept
+   inline bool validate_utf8_scalar(const uint8_t* it, const uint8_t* end) noexcept
    {
-#ifdef _MSC_VER
-      return std::countr_zero(x);
-#else
-#if __has_builtin(__builtin_ctzll)
-      return __builtin_ctzl(x);
-#else
-      return std::countr_zero(x);
-#endif
-#endif
+      while (it < end) {
+         // Optimistic SWAR check for ASCII
+         if (it + 8 <= end) {
+            uint64_t chunk;
+            std::memcpy(&chunk, it, 8);
+            if ((chunk & glz::repeat_byte8(0x80)) == 0) {
+               it += 8;
+               continue;
+            }
+         }
+
+         // Byte-by-byte validation (standard conformant)
+         uint8_t byte = *it;
+
+         if (byte < 0x80) {
+            it++;
+         }
+         else if ((byte & 0xE0) == 0xC0) {
+            // 2-byte sequence
+            if (it + 2 > end || (it[1] & 0xC0) != 0x80) return false;
+            if (byte < 0xC2) return false; // Overlong
+            it += 2;
+         }
+         else if ((byte & 0xF0) == 0xE0) {
+            // 3-byte sequence
+            if (it + 3 > end || (it[1] & 0xC0) != 0x80 || (it[2] & 0xC0) != 0x80) return false;
+            if (byte == 0xE0 && it[1] < 0xA0) return false; // Overlong
+            if (byte == 0xED && it[1] >= 0xA0) return false; // Surrogate
+            it += 3;
+         }
+         else if ((byte & 0xF8) == 0xF0) {
+            // 4-byte sequence
+            if (it + 4 > end || (it[1] & 0xC0) != 0x80 || (it[2] & 0xC0) != 0x80 || (it[3] & 0xC0) != 0x80)
+               return false;
+            if (byte == 0xF0 && it[1] < 0x90) return false; // Overlong
+            if (byte == 0xF4 && it[1] >= 0x90) return false; // > U+10FFFF
+            if (byte > 0xF4) return false; // > U+10FFFF
+            it += 4;
+         }
+         else {
+            return false;
+         }
+      }
+
+      return true;
    }
 
-   GLZ_ALWAYS_INLINE auto countr_zero(const uint64_t x) noexcept
+   inline bool validate_utf8(const auto* str, const size_t size) noexcept
    {
-#ifdef _MSC_VER
-      return std::countr_zero(x);
-#else
-#if __has_builtin(__builtin_ctzll)
-      return __builtin_ctzll(x);
-#else
-      return std::countr_zero(x);
+      const uint8_t* it = reinterpret_cast<const uint8_t*>(str);
+      const uint8_t* const end = it + size;
+#if defined(GLZ_UTF8_SIMD)
+      // 16 is a measured compromise, not a register-size coincidence. The scalar path skips ASCII 8
+      // bytes at a time, so on ASCII it stays ahead of the vector path's fixed setup cost until the
+      // input is long enough for the 64 byte ASCII step to engage; on non-ASCII the vector path
+      // wins from roughly 8 bytes. Raising the threshold buys a few percent on short ASCII and
+      // costs up to 2.3x on mid length non-ASCII strings, so it stays low.
+      if (size >= 16) {
+         return detail::utf8_simd::validate(it, end);
+      }
 #endif
-#endif
+      return validate_utf8_scalar(it, end);
    }
 
-#if defined(__SIZEOF_INT128__)
-   GLZ_ALWAYS_INLINE auto countr_zero(__uint128_t x) noexcept
+   // Validates the raw bytes of a JSON string. RFC 8259 section 8.1 requires JSON text to be UTF-8,
+   // and read input is by definition someone else's, so this is on by default; the inheritable
+   // `validate_utf8` option turns it off. Only the raw span needs checking: escape sequences are
+   // ASCII, and handle_unicode_code_point independently rejects unpaired surrogates in \uXXXX
+   // escapes.
+   //
+   // ascii_acc lets a caller skip the pass entirely for pure ASCII strings, which is the common
+   // case. Scan loops already load the string in 8 byte chunks to find the closing quote, so they
+   // OR those chunks together for free and pass the result here. The accumulator may cover more
+   // bytes than the string itself (a chunk can overrun the closing quote); that only costs a
+   // needless validation pass, it never skips one. Callers with no accumulator take the default
+   // and always validate.
+   template <auto Opts>
+   GLZ_ALWAYS_INLINE bool validate_utf8_span(is_context auto&& ctx, const auto* start, const auto* fin,
+                                             const uint64_t ascii_acc = repeat_byte8(0b10000000)) noexcept
    {
-      uint64_t low = uint64_t(x);
-      if (low != 0) {
-         return countr_zero(low);
+      if constexpr (not check_validate_utf8(Opts)) {
+         // Everything the caller computed for us is dead, which lets its scan loop drop the
+         // accumulator entirely.
+         (void)ctx, (void)start, (void)fin, (void)ascii_acc;
+         return false;
       }
       else {
-         uint64_t high = uint64_t(x >> 64);
-         return countr_zero(high) + 64;
+         if ((ascii_acc & repeat_byte8(0b10000000)) == 0) {
+            return false; // pure ASCII is trivially well formed UTF-8
+         }
+         if (!validate_utf8(start, size_t(fin - start))) [[unlikely]] {
+            ctx.error = error_code::invalid_utf8;
+            return true;
+         }
+         return false;
       }
    }
-#endif
 
-   GLZ_ALWAYS_INLINE void skip_till_quote(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_till_quote(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       const auto* pc = std::memchr(it, '"', size_t(end - it));
       if (pc) [[likely]] {
@@ -663,8 +859,7 @@ namespace glz
       ctx.error = error_code::expected_quote;
    }
 
-   template <auto Opts>
-   GLZ_ALWAYS_INLINE void skip_string_view(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_string_view(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       while (it < end) [[likely]] {
          const auto* pc = std::memchr(it, '"', size_t(end - it));
@@ -687,18 +882,56 @@ namespace glz
       ctx.error = error_code::expected_quote;
    }
 
-   template <auto Opts>
-      requires(check_is_padded(Opts))
-   GLZ_ALWAYS_INLINE void skip_string(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   // Options struct for skip_string - reduces template instantiations
+   struct skip_string_opts
    {
-      if constexpr (!check_opening_handled(Opts)) {
+      bool padded;
+      bool opening_handled;
+      bool validate_skipped;
+      bool validate_utf8;
+      bool null_terminated;
+
+      // Convert from any opts-like type (consteval because check_* functions are consteval)
+      template <typename T>
+      consteval skip_string_opts(const T& opts) noexcept
+         : padded{check_is_padded(opts)},
+           opening_handled{check_opening_handled(opts)},
+           validate_skipped{check_validate_skipped(opts)},
+           validate_utf8{check_validate_utf8(opts)},
+           null_terminated{check_null_terminated(opts)}
+      {}
+
+      // Direct construction - all values required. No defaults on purpose: a caller that forgets
+      // validate_utf8_ would silently validate against the user's explicit choice to turn it off,
+      // and a caller that forgets null_terminated_ would silently read past the end of a bounded
+      // buffer. Both are invisible at the call site, so make omission a compile error instead.
+      consteval skip_string_opts(bool padded_, bool opening_handled_, bool validate_skipped_, bool validate_utf8_,
+                                 bool null_terminated_) noexcept
+         : padded{padded_},
+           opening_handled{opening_handled_},
+           validate_skipped{validate_skipped_},
+           validate_utf8{validate_utf8_},
+           null_terminated{null_terminated_}
+      {}
+   };
+
+   template <skip_string_opts Opts>
+      requires(Opts.padded)
+   GLZ_ALWAYS_INLINE void skip_string(is_context auto&& ctx, auto&& it, auto end) noexcept
+   {
+      if constexpr (not Opts.opening_handled) {
          ++it;
       }
 
-      if constexpr (check_validate_skipped(Opts)) {
+      const auto* const utf8_start = it;
+
+      if constexpr (Opts.validate_skipped) {
          while (true) {
-            uint64_t swar{};
+            uint64_t swar;
             std::memcpy(&swar, it, 8);
+            if constexpr (std::endian::native == std::endian::big) {
+               swar = std::byteswap(swar);
+            }
 
             constexpr uint64_t lo7_mask = repeat_byte8(0b01111111);
             const uint64_t lo7 = swar & lo7_mask;
@@ -735,6 +968,7 @@ namespace glz
                }
                if ((backslash_count & 1) == 0) {
                   // Even number of backslashes => not escaped => closing quote found
+                  validate_utf8_span<Opts>(ctx, utf8_start, it);
                   ++it;
                   return;
                }
@@ -769,24 +1003,38 @@ namespace glz
          ctx.error = error_code::unexpected_end;
       }
       else {
-         skip_string_view<Opts>(ctx, it, end);
+         skip_string_view(ctx, it, end);
          if (bool(ctx.error)) [[unlikely]] {
+            return;
+         }
+         if (validate_utf8_span<Opts>(ctx, utf8_start, it)) [[unlikely]] {
             return;
          }
          ++it; // skip the quote
       }
    }
 
-   template <auto Opts>
-      requires(not check_is_padded(Opts))
-   GLZ_ALWAYS_INLINE void skip_string(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   template <skip_string_opts Opts>
+      requires(not Opts.padded)
+   GLZ_ALWAYS_INLINE void skip_string(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
-      if constexpr (!check_opening_handled(Opts)) {
+      if constexpr (not Opts.opening_handled) {
          ++it;
       }
 
-      if constexpr (check_validate_skipped(Opts)) {
+      const auto* const utf8_start = it;
+
+      if constexpr (Opts.validate_skipped) {
          while (true) {
+            // A null-terminated buffer terminates on the trailing '\0' (caught by the control
+            // character check below); a non-null-terminated buffer has no sentinel, so bound the
+            // scan before each dereference.
+            if constexpr (not Opts.null_terminated) {
+               if (it == end) [[unlikely]] {
+                  ctx.error = error_code::unexpected_end;
+                  return;
+               }
+            }
             if ((*it & 0b11100000) == 0) [[unlikely]] {
                ctx.error = error_code::syntax_error;
                return;
@@ -794,11 +1042,18 @@ namespace glz
 
             switch (*it) {
             case '"': {
+               validate_utf8_span<Opts>(ctx, utf8_start, it);
                ++it;
                return;
             }
             case '\\': {
                ++it;
+               if constexpr (not Opts.null_terminated) {
+                  if (it == end) [[unlikely]] {
+                     ctx.error = error_code::unexpected_end;
+                     return;
+                  }
+               }
                if (char_unescape_table[uint8_t(*it)]) {
                   ++it;
                   continue;
@@ -821,30 +1076,62 @@ namespace glz
          }
       }
       else {
-         skip_string_view<Opts>(ctx, it, end);
+         skip_string_view(ctx, it, end);
          if (bool(ctx.error)) [[unlikely]] {
+            return;
+         }
+         if (validate_utf8_span<Opts>(ctx, utf8_start, it)) [[unlikely]] {
             return;
          }
          ++it; // skip the quote
       }
    }
 
-   template <auto Opts, char open, char close, size_t Depth = 1>
-      requires(check_is_padded(Opts) && not bool(Opts.comments))
-   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   // Options struct for skip_until_closed - reduces template instantiations
+   struct skip_until_closed_opts
    {
+      bool padded;
+      bool comments;
+      bool validate_utf8;
+
+      // Convert from any opts-like type (consteval because check_is_padded is consteval)
+      template <typename T>
+      consteval skip_until_closed_opts(const T& opts) noexcept
+         : padded{check_is_padded(opts)}, comments{opts.comments}, validate_utf8{check_validate_utf8(opts)}
+      {}
+
+      // Direct construction - all values required
+      consteval skip_until_closed_opts(bool padded_, bool comments_, bool validate_utf8_) noexcept
+         : padded{padded_}, comments{comments_}, validate_utf8{validate_utf8_}
+      {}
+   };
+
+   template <skip_until_closed_opts Opts, char open, char close, size_t Depth = 1>
+      requires(Opts.padded && not Opts.comments)
+   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto end) noexcept
+   {
+      static constexpr bool opening_not_handled = false;
+      static constexpr bool skip_validation = false;
+      // skip_validation routes skip_string through the end-bounded skip_string_view path, which
+      // stops on `end` rather than on a sentinel, so this flag has no effect from here.
+      static constexpr bool null_terminated_unused = true;
+
       size_t depth = Depth;
 
       while (it < end) [[likely]] {
          uint64_t chunk;
          std::memcpy(&chunk, it, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            chunk = std::byteswap(chunk);
+         }
          const uint64_t test = has_quote(chunk) | has_char<open>(chunk) | has_char<close>(chunk);
          if (test) {
             it += (countr_zero(test) >> 3);
 
             switch (*it) {
             case '"': {
-               skip_string<opts{}>(ctx, it, end);
+               skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                            null_terminated_unused}>(ctx, it, end);
                if (bool(ctx.error)) [[unlikely]] {
                   return;
                }
@@ -877,22 +1164,32 @@ namespace glz
       ctx.error = error_code::unexpected_end;
    }
 
-   template <auto Opts, char open, char close, size_t Depth = 1>
-      requires(check_is_padded(Opts) && bool(Opts.comments))
-   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   template <skip_until_closed_opts Opts, char open, char close, size_t Depth = 1>
+      requires(Opts.padded && Opts.comments)
+   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
+      static constexpr bool opening_not_handled = false;
+      static constexpr bool skip_validation = false;
+      // skip_validation routes skip_string through the end-bounded skip_string_view path, which
+      // stops on `end` rather than on a sentinel, so this flag has no effect from here.
+      static constexpr bool null_terminated_unused = true;
+
       size_t depth = Depth;
 
       while (it < end) [[likely]] {
          uint64_t chunk;
          std::memcpy(&chunk, it, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            chunk = std::byteswap(chunk);
+         }
          const uint64_t test = has_quote(chunk) | has_char<'/'>(chunk) | has_char<open>(chunk) | has_char<close>(chunk);
          if (test) {
             it += (countr_zero(test) >> 3);
 
             switch (*it) {
             case '"': {
-               skip_string<opts{}>(ctx, it, end);
+               skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                            null_terminated_unused}>(ctx, it, end);
                if (bool(ctx.error)) [[unlikely]] {
                   return;
                }
@@ -932,22 +1229,32 @@ namespace glz
       ctx.error = error_code::unexpected_end;
    }
 
-   template <auto Opts, char open, char close, size_t Depth = 1>
-      requires(!check_is_padded(Opts) && not bool(Opts.comments))
-   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   template <skip_until_closed_opts Opts, char open, char close, size_t Depth = 1>
+      requires(not Opts.padded && not Opts.comments)
+   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
+      static constexpr bool opening_not_handled = false;
+      static constexpr bool skip_validation = false;
+      // skip_validation routes skip_string through the end-bounded skip_string_view path, which
+      // stops on `end` rather than on a sentinel, so this flag has no effect from here.
+      static constexpr bool null_terminated_unused = true;
+
       size_t depth = Depth;
 
       for (const auto fin = end - 7; it < fin;) {
          uint64_t chunk;
          std::memcpy(&chunk, it, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            chunk = std::byteswap(chunk);
+         }
          const uint64_t test = has_quote(chunk) | has_char<open>(chunk) | has_char<close>(chunk);
          if (test) {
             it += (countr_zero(test) >> 3);
 
             switch (*it) {
             case '"': {
-               skip_string<opts{}>(ctx, it, end);
+               skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                            null_terminated_unused}>(ctx, it, end);
                if (bool(ctx.error)) [[unlikely]] {
                   return;
                }
@@ -981,7 +1288,8 @@ namespace glz
       while (it < end) {
          switch (*it) {
          case '"': {
-            skip_string<opts{}>(ctx, it, end);
+            skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                         null_terminated_unused}>(ctx, it, end);
             if (bool(ctx.error)) [[unlikely]] {
                return;
             }
@@ -1016,22 +1324,32 @@ namespace glz
       ctx.error = error_code::unexpected_end;
    }
 
-   template <auto Opts, char open, char close, size_t Depth = 1>
-      requires(!check_is_padded(Opts) && bool(Opts.comments))
-   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   template <skip_until_closed_opts Opts, char open, char close, size_t Depth = 1>
+      requires(not Opts.padded && Opts.comments)
+   GLZ_ALWAYS_INLINE void skip_until_closed(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
+      static constexpr bool opening_not_handled = false;
+      static constexpr bool skip_validation = false;
+      // skip_validation routes skip_string through the end-bounded skip_string_view path, which
+      // stops on `end` rather than on a sentinel, so this flag has no effect from here.
+      static constexpr bool null_terminated_unused = true;
+
       size_t depth = Depth;
 
       for (const auto fin = end - 7; it < fin;) {
          uint64_t chunk;
          std::memcpy(&chunk, it, 8);
+         if constexpr (std::endian::native == std::endian::big) {
+            chunk = std::byteswap(chunk);
+         }
          const uint64_t test = has_quote(chunk) | has_char<'/'>(chunk) | has_char<open>(chunk) | has_char<close>(chunk);
          if (test) {
             it += (countr_zero(test) >> 3);
 
             switch (*it) {
             case '"': {
-               skip_string<opts{}>(ctx, it, end);
+               skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                            null_terminated_unused}>(ctx, it, end);
                if (bool(ctx.error)) [[unlikely]] {
                   return;
                }
@@ -1072,7 +1390,8 @@ namespace glz
       while (it < end) {
          switch (*it) {
          case '"': {
-            skip_string<opts{}>(ctx, it, end);
+            skip_string<skip_string_opts{Opts.padded, opening_not_handled, skip_validation, Opts.validate_utf8,
+                                         null_terminated_unused}>(ctx, it, end);
             if (bool(ctx.error)) [[unlikely]] {
                return;
             }
@@ -1107,6 +1426,14 @@ namespace glz
       ctx.error = error_code::unexpected_end;
    }
 
+   // Parses a JSON unsigned integer, returning nullopt if `s` does not start with one or if the
+   // value is out of range for uint64_t. Trailing content is ignored: "12abc" reads as 12.
+   //
+   // `s` must be null terminated. Scanning stops on the first non-digit rather than at s.size(), so
+   // without a terminator there is nothing to halt it inside the view: a std::string_view over a
+   // bare character array reads past its end, and a view of the first few digits of a longer run
+   // consumes the rest of them. String literals and std::string satisfy this; a subview of a larger
+   // buffer does not, unless the character just past it is a non-digit.
    inline constexpr std::optional<uint64_t> stoui(const std::string_view s) noexcept
    {
       if (s.empty()) {
@@ -1122,14 +1449,25 @@ namespace glz
       return {};
    }
 
-   GLZ_ALWAYS_INLINE void skip_number_with_validation(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_number_with_validation(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
-      it += *it == '-';
+      // Every standalone *it read below is guarded by it != end so the scan stays inside the
+      // buffer for non-null-terminated input (the std::find_if_not calls are already bounded by
+      // end). A null-terminated buffer is unaffected: it reaches end only once the number is
+      // fully consumed, where these guards short-circuit exactly as the trailing '\0' sentinel
+      // would have.
+      it += (it != end) && (*it == '-');
       const auto sig_start_it = it;
       auto frac_start_it = end;
-      if (*it == '0') {
+      if (it != end && *it == '0') {
          ++it;
-         if (*it != '.') {
+         // RFC 8259 section 6: number = [ minus ] int [ frac ] [ exp ]. The exponent may follow
+         // the integer part directly, with no fractional part in between (e.g. "0e4").
+         if (it != end && (*it | ('E' ^ 'e')) == 'e') {
+            ++it;
+            goto exp_start;
+         }
+         if (it == end || *it != '.') {
             return;
          }
          ++it;
@@ -1140,11 +1478,11 @@ namespace glz
          ctx.error = error_code::syntax_error;
          return;
       }
-      if ((*it | ('E' ^ 'e')) == 'e') {
+      if (it != end && (*it | ('E' ^ 'e')) == 'e') {
          ++it;
          goto exp_start;
       }
-      if (*it != '.') return;
+      if (it == end || *it != '.') return;
       ++it;
    frac_start:
       frac_start_it = it;
@@ -1153,10 +1491,10 @@ namespace glz
          ctx.error = error_code::syntax_error;
          return;
       }
-      if ((*it | ('E' ^ 'e')) != 'e') return;
+      if (it == end || (*it | ('E' ^ 'e')) != 'e') return;
       ++it;
    exp_start:
-      it += *it == '+' || *it == '-';
+      it += (it != end) && (*it == '+' || *it == '-');
       const auto exp_start_it = it;
       it = std::find_if_not(it, end, is_digit);
       if (it == exp_start_it) {
@@ -1165,12 +1503,38 @@ namespace glz
       }
    }
 
-   template <auto Opts>
-   GLZ_ALWAYS_INLINE void skip_number(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   // Options struct for skip_number - reduces template instantiations
+   struct skip_number_opts
    {
-      if constexpr (!check_validate_skipped(Opts)) {
-         while (numeric_table[uint8_t(*it)]) {
-            ++it;
+      bool validate;
+      bool null_terminated;
+
+      // Convert from any opts-like type (consteval because check_* functions are consteval)
+      template <typename T>
+      consteval skip_number_opts(const T& opts) noexcept
+         : validate{check_validate_skipped(opts)}, null_terminated{check_null_terminated(opts)}
+      {}
+
+      // Direct construction
+      explicit consteval skip_number_opts(bool validate_, bool null_terminated_ = true) noexcept
+         : validate{validate_}, null_terminated{null_terminated_}
+      {}
+   };
+
+   template <skip_number_opts Opts>
+   GLZ_ALWAYS_INLINE void skip_number(is_context auto&& ctx, auto&& it, auto end) noexcept
+   {
+      if constexpr (not Opts.validate) {
+         if constexpr (Opts.null_terminated) {
+            // Relies on the trailing '\0' sentinel (numeric_table['\0'] == false) to terminate.
+            while (numeric_table[uint8_t(*it)]) {
+               ++it;
+            }
+         }
+         else {
+            while (it < end && numeric_table[uint8_t(*it)]) {
+               ++it;
+            }
          }
       }
       else {
@@ -1179,7 +1543,7 @@ namespace glz
    }
 
    // expects opening whitespace to be handled
-   GLZ_ALWAYS_INLINE sv parse_key(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE sv parse_key(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       // TODO this assumes no escapes.
       if (bool(ctx.error)) [[unlikely]]
@@ -1200,130 +1564,438 @@ namespace glz
    {
       return val + (multiple - (val % multiple)) % multiple;
    }
-}
 
-namespace glz
-{
-   // TODO: GCC 12 lacks constexpr std::from_chars
-   // Remove this code when dropping GCC 12 support
-   namespace detail
+   struct utf8_stream_validator
    {
-      struct from_chars_result
+      GLZ_ALWAYS_INLINE void reset() noexcept
       {
-         const char* ptr;
-         std::errc ec;
-      };
-
-      inline constexpr int char_to_digit(char c) noexcept
-      {
-         if (c >= '0' && c <= '9') return c - '0';
-         if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-         if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
-         return -1;
+         remaining_ = 0;
+         lower_bound_ = 0x80;
+         upper_bound_ = 0xBF;
+         valid_ = true;
       }
 
-      template <class I>
-      constexpr from_chars_result from_chars(const char* first, const char* last, I& value, int base = 10)
+      GLZ_ALWAYS_INLINE bool consume(const auto* str, const size_t size) noexcept
       {
-         from_chars_result result{first, std::errc{}};
-
-         // Basic validation of base
-         if (base < 2 || base > 36) {
-            // Not standard behavior to check base validity here, but let's return invalid_argument
-            result.ec = std::errc::invalid_argument;
-            return result;
+         if (!valid_) [[unlikely]] {
+            return false;
          }
 
-         using U = std::make_unsigned_t<I>;
-         constexpr bool is_signed = std::is_signed<I>::value;
-         constexpr U umax = (std::numeric_limits<U>::max)();
-
-         if (first == last) {
-            // Empty range
-            result.ec = std::errc::invalid_argument;
-            return result;
+         if (size == 0) {
+            return true;
          }
 
-         bool negative = false;
-         // Check for sign only if signed type
-         if constexpr (is_signed) {
-            if (*first == '-') {
-               negative = true;
-               ++first;
-            }
-            else if (*first == '+') {
-               ++first;
-            }
-         }
+         const uint8_t* it = reinterpret_cast<const uint8_t*>(str);
+         const uint8_t* end = it + size;
 
-         if (first == last) {
-            // After sign there's nothing
-            result.ec = std::errc::invalid_argument;
-            return result;
-         }
+         // Copy state to locals to avoid intermediate stores to 'this' in the hot loop.
+         // When uint8_t == unsigned char, '*it' may alias the object representation of
+         // this validator, so the compiler cannot reliably move direct member updates
+         // out of the loop on its own since loop reads '*it' between writes
+         uint32_t remaining = remaining_;
+         uint32_t lower_bound = lower_bound_;
+         uint32_t upper_bound = upper_bound_;
+         const bool had_pending = remaining != 0;
 
-         U acc = 0;
-         bool any = false;
-
-         // We'll do overflow checking as we parse
-         // For accumulation: acc * base + digit
-         // Overflow if acc > (umax - digit)/base
-
-         while (first != last) {
-            int d = char_to_digit(*first);
-            if (d < 0 || d >= base) break;
-
-            // Check overflow before multiplying/adding
-            if (acc > (umax - static_cast<U>(d)) / static_cast<U>(base)) {
-               // Overflow
-               result.ec = std::errc::result_out_of_range;
-               // We still move ptr to the last valid digit parsed
-               result.ptr = first;
-               // No need to parse further; we know it's out of range.
-               return result;
+         // First finish a codepoint that was saved from the previous .consume()
+         if (remaining != 0) [[unlikely]] {
+            if (!consume_pending(it, end, remaining, lower_bound, upper_bound)) {
+               return fail();
             }
 
-            acc = acc * base + static_cast<U>(d);
-            any = true;
-            ++first;
+            if (it == end) {
+               store_pending(remaining, lower_bound, upper_bound);
+               return true;
+            }
          }
 
-         if (!any) {
-            // No digits parsed
-            result.ec = std::errc::invalid_argument;
-            return result;
+         // Small chunks probably won't benefit much from the wider bulk loop
+         if (static_cast<size_t>(end - it) <= 32) {
+            if (!consume_small(it, end, remaining, lower_bound, upper_bound)) [[unlikely]] {
+               return fail();
+            }
+
+            if (remaining != 0 || had_pending) {
+               store_pending(remaining, lower_bound, upper_bound);
+            }
+
+            return true;
          }
 
-         // If signed and negative, check if result fits
-         if constexpr (is_signed) {
-            using S = std::make_signed_t<U>;
-            // The largest magnitude we can represent in a negative value is (max + 1)
-            // since -(min()) = max() + 1.
-            U limit = static_cast<U>((std::numeric_limits<I>::max)()) + 1U;
-            if (negative) {
-               if (acc > limit) {
-                  result.ec = std::errc::result_out_of_range;
-                  result.ptr = first;
-                  return result;
+         // Bulk path. Four bytes for checking any complete UTF-8 code point safely
+         while (static_cast<size_t>(end - it) >= 4) {
+            uint32_t byte = *it;
+
+            // Avoid wide ASCII probes when already at a non-ASCII byte
+            if (byte < 0x80) {
+               it = skip_ascii_adaptive(it, end);
+               if (static_cast<size_t>(end - it) < 4) {
+                  break;
                }
-               value = static_cast<I>(0 - static_cast<S>(acc));
+
+               byte = *it;
             }
-            else {
-               if (acc > static_cast<U>((std::numeric_limits<I>::max)())) {
-                  result.ec = std::errc::result_out_of_range;
-                  result.ptr = first;
-                  return result;
+
+            // Non-ASCII, keep validating full codepoints until ASCII
+            // appears or the safe bulk window ends
+            do {
+               if (!consume_full_non_ascii(it, byte)) [[unlikely]] {
+                  return fail();
                }
-               value = static_cast<I>(acc);
-            }
+
+               if (static_cast<size_t>(end - it) < 4) {
+                  break;
+               }
+
+               byte = *it;
+            } while (byte >= 0x80);
+         }
+
+         // Finish the last 0..3 bytes and save incomplete codepoint if present
+         if (!consume_tail(it, end, remaining, lower_bound, upper_bound)) [[unlikely]] {
+            return fail();
+         }
+
+         if (remaining != 0 || had_pending) {
+            store_pending(remaining, lower_bound, upper_bound);
+         }
+
+         return true;
+      }
+
+      [[nodiscard]] GLZ_ALWAYS_INLINE bool complete() const noexcept { return valid_ && remaining_ == 0; }
+
+     private:
+      GLZ_ALWAYS_INLINE static bool is_continuation(const uint32_t byte) noexcept { return (byte & 0xC0) == 0x80; }
+
+      GLZ_ALWAYS_INLINE static bool is_in_range(const uint32_t byte, const uint32_t lower_bound,
+                                                const uint32_t upper_bound) noexcept
+      {
+         return byte - lower_bound <= upper_bound - lower_bound;
+      }
+
+      GLZ_ALWAYS_INLINE static uint64_t load_u64(const uint8_t* ptr) noexcept
+      {
+         uint64_t value;
+         std::memcpy(&value, ptr, sizeof(value));
+         return value;
+      }
+
+      GLZ_ALWAYS_INLINE static size_t first_non_ascii_offset(const uint64_t high_bits) noexcept
+      {
+         // Offset of the first non-ASCII byte within the 8-byte word
+         if constexpr (std::endian::native == std::endian::big) {
+            return static_cast<size_t>(std::countl_zero(high_bits) >> 3);
          }
          else {
-            // Unsigned type
-            value = acc;
+            return static_cast<size_t>(std::countr_zero(high_bits) >> 3);
+         }
+      }
+
+      GLZ_ALWAYS_INLINE static const uint8_t* skip_ascii8(const uint8_t* it, const uint8_t* end) noexcept
+      {
+         constexpr uint64_t mask = glz::repeat_byte8(0x80);
+
+         // Cheap scanner for small buffers
+         while (static_cast<size_t>(end - it) >= 8) {
+            const uint64_t high_bits = load_u64(it) & mask;
+            if (high_bits != 0) {
+               return it + first_non_ascii_offset(high_bits);
+            }
+
+            it += 8;
          }
 
-         result.ptr = first;
-         return result;
+         while (it != end && *it < 0x80) {
+            ++it;
+         }
+
+         return it;
       }
-   }
+
+      GLZ_ALWAYS_INLINE static const uint8_t* skip_ascii_adaptive(const uint8_t* it, const uint8_t* end) noexcept
+      {
+         constexpr uint64_t mask = glz::repeat_byte8(0x80);
+
+         // Probe the first few chunks one at a time. This will make short ASCII
+         // runs cheaper, which matters for mixed cases
+         for (uint32_t checked_chunks = 0; checked_chunks < 4; ++checked_chunks) {
+            if (static_cast<size_t>(end - it) < 8) {
+               while (it != end && *it < 0x80) {
+                  ++it;
+               }
+
+               return it;
+            }
+
+            const uint64_t high_bits = load_u64(it) & mask;
+            if (high_bits != 0) {
+               return it + first_non_ascii_offset(high_bits);
+            }
+
+            it += 8;
+         }
+
+         // After 32 ASCII bytes, assume this is a longer ASCII run and use the
+         // wider scanner to reduce loop overhead
+         while (static_cast<size_t>(end - it) >= 32) {
+            const uint64_t first_high_bits = load_u64(it) & mask;
+            const uint64_t second_high_bits = load_u64(it + 8) & mask;
+            const uint64_t third_high_bits = load_u64(it + 16) & mask;
+            const uint64_t fourth_high_bits = load_u64(it + 24) & mask;
+
+            if ((first_high_bits | second_high_bits | third_high_bits | fourth_high_bits) == 0) {
+               it += 32;
+               continue;
+            }
+
+            if (first_high_bits != 0) {
+               return it + first_non_ascii_offset(first_high_bits);
+            }
+
+            if (second_high_bits != 0) {
+               return it + 8 + first_non_ascii_offset(second_high_bits);
+            }
+
+            if (third_high_bits != 0) {
+               return it + 16 + first_non_ascii_offset(third_high_bits);
+            }
+
+            return it + 24 + first_non_ascii_offset(fourth_high_bits);
+         }
+
+         return skip_ascii8(it, end);
+      }
+
+      GLZ_ALWAYS_INLINE static bool consume_full_non_ascii(const uint8_t*& it, const uint32_t byte0) noexcept
+      {
+         // Called only when at least four bytes remaining, so
+         // no boundary checks are needed here
+
+         if ((byte0 & 0xE0) == 0xC0) {
+            const uint32_t byte1 = it[1];
+
+            // C0/C1 would be overlong encodings for ASCII
+            if (((byte1 & 0xC0) != 0x80) || ((byte0 & 0x1E) == 0)) [[unlikely]] {
+               return false;
+            }
+
+            it += 2;
+            return true;
+         }
+
+         if ((byte0 & 0xF0) == 0xE0) {
+            const uint32_t byte1 = it[1];
+            const uint32_t byte2 = it[2];
+
+            // E0 requires A0-BF to reject overlong 3-byte sequences.
+            // ED requires 80-9F to reject UTF-16 surrogate codepoints
+            if (((byte1 & 0xC0) != 0x80) || ((byte2 & 0xC0) != 0x80) || (byte0 == 0xE0 && (byte1 & 0x20) == 0) ||
+                (byte0 == 0xED && (byte1 & 0x20) != 0)) [[unlikely]] {
+               return false;
+            }
+
+            it += 3;
+            return true;
+         }
+
+         if ((byte0 & 0xF8) == 0xF0) {
+            const uint32_t byte1 = it[1];
+            const uint32_t byte2 = it[2];
+            const uint32_t byte3 = it[3];
+
+            // F5..FF are invalid. F0 requires 90-BF to reject overlong sequences.
+            // F4 requires 80-8F to keep the decoded value within U+10FFFF
+            if (((byte0 & 0x07) >= 0x05) || ((byte1 & 0xC0) != 0x80) || ((byte2 & 0xC0) != 0x80) ||
+                ((byte3 & 0xC0) != 0x80) || (byte0 == 0xF0 && (byte1 & 0x30) == 0) || (byte0 == 0xF4 && byte1 > 0x8F))
+               [[unlikely]] {
+               return false;
+            }
+
+            it += 4;
+            return true;
+         }
+
+         return false;
+      }
+
+      GLZ_ALWAYS_INLINE static bool consume_non_ascii_checked(const uint8_t*& it, const uint8_t* end,
+                                                              uint32_t& remaining, uint32_t& lower_bound,
+                                                              uint32_t& upper_bound) noexcept
+      {
+         // Boundary-safe version for small chunks and tails.
+         // May leave pending state instead of failing at the buffer end
+
+         const uint32_t byte0 = *it++;
+
+         if ((byte0 & 0xE0) == 0xC0) {
+            // C0/C1 would be overlong encodings for ASCII
+            if ((byte0 & 0x1E) == 0) [[unlikely]] {
+               return false;
+            }
+
+            if (it == end) {
+               remaining = 1;
+               lower_bound = 0x80;
+               upper_bound = 0xBF;
+               return true;
+            }
+
+            const uint32_t byte1 = *it++;
+
+            if (!is_continuation(byte1)) [[unlikely]] {
+               return false;
+            }
+
+            return true;
+         }
+
+         if ((byte0 & 0xF0) == 0xE0) {
+            // Normal 3-byte starts use 80-BF for the first continuation.
+            // E0 and ED are special to preserve shortest form and reject surrogates
+            const uint32_t first_lower_bound = byte0 == 0xE0 ? 0xA0 : 0x80;
+            const uint32_t first_upper_bound = byte0 == 0xED ? 0x9F : 0xBF;
+
+            // Not enough bytes to finish this codepoint in the current buffer.
+            // Validate what is available and keep the remaining bounds as state
+            if (static_cast<size_t>(end - it) < 2) [[unlikely]] {
+               remaining = 2;
+               lower_bound = first_lower_bound;
+               upper_bound = first_upper_bound;
+               return consume_pending(it, end, remaining, lower_bound, upper_bound);
+            }
+
+            const uint32_t byte1 = *it++;
+            const uint32_t byte2 = *it++;
+
+            if (!is_in_range(byte1, first_lower_bound, first_upper_bound) || !is_continuation(byte2)) [[unlikely]] {
+               return false;
+            }
+
+            return true;
+         }
+
+         if ((byte0 & 0xF8) == 0xF0) {
+            // F5..FF are not valid UTF-8 lead bytes.
+            if ((byte0 & 0x07) >= 0x05) [[unlikely]] {
+               return false;
+            }
+
+            // Normal 4-byte starts use 80-BF for the first continuation.
+            // F0 rejects overlong sequences
+            const uint32_t first_lower_bound = byte0 == 0xF0 ? 0x90 : 0x80;
+            // F4 rejects values above U+10FFFF
+            const uint32_t first_upper_bound = byte0 == 0xF4 ? 0x8F : 0xBF;
+
+            // Same split-sequence handling as the 3-byte path but with three
+            // continuation bytes in total
+            if (static_cast<size_t>(end - it) < 3) [[unlikely]] {
+               remaining = 3;
+               lower_bound = first_lower_bound;
+               upper_bound = first_upper_bound;
+               return consume_pending(it, end, remaining, lower_bound, upper_bound);
+            }
+
+            const uint32_t byte1 = *it++;
+            const uint32_t byte2 = *it++;
+            const uint32_t byte3 = *it++;
+
+            if (!is_in_range(byte1, first_lower_bound, first_upper_bound) || !is_continuation(byte2) ||
+                !is_continuation(byte3)) [[unlikely]] {
+               return false;
+            }
+
+            return true;
+         }
+
+         return false;
+      }
+
+      GLZ_ALWAYS_INLINE static bool consume_small(const uint8_t*& it, const uint8_t* end, uint32_t& remaining,
+                                                  uint32_t& lower_bound, uint32_t& upper_bound) noexcept
+      {
+         // Small-buffer path. Avoid the larger bulk-loop setup and still
+         // use 8-byte ASCII skipping when useful
+         while (it != end) {
+            if (*it < 0x80) {
+               it = skip_ascii8(it, end);
+
+               if (it == end) {
+                  return true;
+               }
+            }
+
+            if (!consume_non_ascii_checked(it, end, remaining, lower_bound, upper_bound)) [[unlikely]] {
+               return false;
+            }
+
+            if (remaining != 0) {
+               return true;
+            }
+         }
+
+         return true;
+      }
+
+      GLZ_ALWAYS_INLINE static bool consume_tail(const uint8_t*& it, const uint8_t* end, uint32_t& remaining,
+                                                 uint32_t& lower_bound, uint32_t& upper_bound) noexcept
+      {
+         // Tail normally should be 0..3 bytes after bulk loop
+         while (it != end) {
+            if (*it < 0x80) {
+               ++it;
+               continue;
+            }
+
+            if (!consume_non_ascii_checked(it, end, remaining, lower_bound, upper_bound)) [[unlikely]] {
+               return false;
+            }
+
+            if (remaining != 0) {
+               return true;
+            }
+         }
+
+         return true;
+      }
+
+      GLZ_ALWAYS_INLINE static bool consume_pending(const uint8_t*& it, const uint8_t* end, uint32_t& remaining,
+                                                    uint32_t& lower_bound, uint32_t& upper_bound) noexcept
+      {
+         // Continue a partially consumed codepoint.
+         // Only the first continuation byte may have a tightened bound
+         while (remaining != 0 && it != end) {
+            const uint32_t byte = *it++;
+            if (!is_in_range(byte, lower_bound, upper_bound)) [[unlikely]] {
+               return false;
+            }
+
+            --remaining;
+            lower_bound = 0x80;
+            upper_bound = 0xBF;
+         }
+
+         return true;
+      }
+
+      GLZ_ALWAYS_INLINE void store_pending(const uint32_t remaining, const uint32_t lower_bound,
+                                           const uint32_t upper_bound) noexcept
+      {
+         remaining_ = static_cast<uint8_t>(remaining);
+         lower_bound_ = static_cast<uint8_t>(lower_bound);
+         upper_bound_ = static_cast<uint8_t>(upper_bound);
+      }
+
+      GLZ_ALWAYS_INLINE bool fail() noexcept
+      {
+         valid_ = false;
+         return false;
+      }
+
+      uint8_t remaining_{};
+      uint8_t lower_bound_{0x80};
+      uint8_t upper_bound_{0xBF};
+      bool valid_{true};
+   };
+
 }

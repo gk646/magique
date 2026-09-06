@@ -8,7 +8,6 @@
 
 #include "networking/headers/MultiplayerStatistics.h"
 #include "networking/headers/LobbyData.h"
-#include "networking/headers/ConnectionMapping.h"
 
 #ifdef MAGIQUE_LAN
 #include "external/networkingsockets/steamnetworkingsockets.h"
@@ -47,7 +46,6 @@ namespace magique
         std::vector<Message> incMsgVec;                                 // Incoming magique::Messages
         MessageVec outMsgBuffer;                                        // Outgoing message buffer
         MessageVec incMsgBuffer;                                        // Incoming message buffer
-        ConnNumberMapping numberMapping{};                              // Maps connection to a consistent number
         HSteamListenSocket listenSocket = k_HSteamListenSocket_Invalid; // The global listen socket
         bool isHost = false;                                            // If the program is host or client
         bool inSession = false;                                         // If program is part of multiplayer activity
@@ -79,7 +77,6 @@ namespace magique
             else if (conn != Connection::INVALID)
             {
                 connections.push_back(conn);
-                numberMapping.addConnection(conn);
             }
             isHost = host;
             statistics.reset();
@@ -110,7 +107,6 @@ namespace magique
             steamMapping.clear();
             isHost = false;
             inSession = false;
-            numberMapping.clear();
             lobby.closeLobby();
         }
 
@@ -127,7 +123,6 @@ namespace magique
         // Called a connection is disconnected
         void onConnectionDisconnect(Connection conn)
         {
-            numberMapping.removeConnection(conn);
             std::erase_if(connectionMapping, [&](auto& mapping) { return mapping.conn == conn; });
             std::erase_if(steamMapping, [&](auto& mapping) { return mapping.conn == conn; });
             std::erase(connections, conn);
@@ -152,18 +147,10 @@ namespace magique
                     pParam->m_eOldState == k_ESteamNetworkingConnectionState_None &&
                     pParam->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
                 {
-                    if (connections.size() == MAGIQUE_MAX_PLAYERS - 1)
-                    {
-                        callback(NetworkEvent::HOST_TOO_MANY_CONNECTIONS, conn, eventData);
-                        LOG_WARNING("Configured client limit is reached! MAGIQUE_MAX_PLAYERS: %d", MAGIQUE_MAX_PLAYERS);
-                        return;
-                    }
-
                     if (SteamNetworkingSockets()->AcceptConnection(pParam->m_hConn) == k_EResultOK &&
                         (!acceptCallback || acceptCallback()))
                     {
                         connections.push_back(conn);
-                        numberMapping.addConnection(conn);
 #ifdef MAGIQUE_STEAM
                         steamMapping.push_back({conn, steamId});
 #endif

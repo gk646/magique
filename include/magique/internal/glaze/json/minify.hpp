@@ -13,7 +13,7 @@ namespace glz
    {
       // We can use unchecked dumping to the output because we know minifying will not make the output any larger
       template <auto Opts>
-      inline void minify_json(is_context auto&& ctx, auto&& it, auto&& end, auto&& b, auto&& ix) noexcept
+      inline void minify_json(is_context auto&& ctx, auto&& it, auto&& end, auto&& b, auto& ix) noexcept
       {
          using enum json_type;
 
@@ -71,7 +71,7 @@ namespace glz
                break;
             }
             case Comma: {
-               dump<',', false>(b, ix);
+               dump<false>(',', b, ix);
                ++it;
                skip_expected_whitespace();
                break;
@@ -83,51 +83,51 @@ namespace glz
                break;
             }
             case Colon: {
-               dump<':', false>(b, ix);
+               dump<false>(':', b, ix);
                ++it;
                skip_whitespace();
                break;
             }
             case Array_Start: {
-               dump<'[', false>(b, ix);
+               dump<false>('[', b, ix);
                ++it;
                skip_expected_whitespace();
                break;
             }
             case Array_End: {
-               dump<']', false>(b, ix);
+               dump<false>(']', b, ix);
                ++it;
                skip_whitespace();
                break;
             }
             case Null: {
-               dump<"null", false>(b, ix);
+               dump<false>("null", b, ix);
                it += 4;
                skip_whitespace();
                break;
             }
             case Bool: {
                if (*it == 't') {
-                  dump<"true", false>(b, ix);
+                  dump<false>("true", b, ix);
                   it += 4;
                   skip_whitespace();
                   break;
                }
                else {
-                  dump<"false", false>(b, ix);
+                  dump<false>("false", b, ix);
                   it += 5;
                   skip_whitespace();
                   break;
                }
             }
             case Object_Start: {
-               dump<'{', false>(b, ix);
+               dump<false>('{', b, ix);
                ++it;
                skip_expected_whitespace();
                break;
             }
             case Object_End: {
-               dump<'}', false>(b, ix);
+               dump<false>('}', b, ix);
                ++it;
                skip_whitespace();
                break;

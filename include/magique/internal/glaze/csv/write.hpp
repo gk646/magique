@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include "glaze/core/buffer_traits.hpp"
+#include "glaze/core/chrono.hpp"
 #include "glaze/core/opts.hpp"
 #include "glaze/core/write.hpp"
 #include "glaze/core/write_chars.hpp"
@@ -38,8 +40,38 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
+         // write_chars assumes callers ensure capacity for bounded buffers.
+         // CSV can write numerics in tight loops, so guard bounded buffers here.
+         if constexpr (!check_write_unchecked(Opts) && has_bounded_capacity<B>) {
+            constexpr size_t max_numeric_chars = [] {
+               if constexpr (std::floating_point<T>) {
+                  if constexpr (sizeof(T) > 8) {
+                     return size_t{64};
+                  }
+                  else if constexpr (sizeof(T) > 4) {
+                     return size_t{32};
+                  }
+                  else {
+                     return size_t{24};
+                  }
+               }
+               else if constexpr (sizeof(T) > 4) {
+                  return size_t{24};
+               }
+               else if constexpr (sizeof(T) > 2) {
+                  return size_t{16};
+               }
+               else {
+                  return size_t{8};
+               }
+            }();
+
+            if (!ensure_space(ctx, b, ix + max_numeric_chars)) [[unlikely]] {
+               return;
+            }
+         }
          write_chars::op<Opts>(value, ctx, b, ix);
       }
    };
@@ -48,13 +80,16 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&&, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
+         if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+            return;
+         }
          if (value) {
-            dump<'1'>(b, ix);
+            dump('1', b, ix);
          }
          else {
-            dump<'0'>(b, ix);
+            dump('0', b, ix);
          }
       }
    };
@@ -63,16 +98,25 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          if constexpr (resizable<T>) {
             if constexpr (check_layout(Opts) == rowwise) {
                const auto n = value.size();
                for (size_t i = 0; i < n; ++i) {
                   serialize<CSV>::op<Opts>(value[i], ctx, b, ix);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
 
                   if (i != (n - 1)) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
             }
@@ -84,9 +128,18 @@ namespace glz
             const auto n = value.size();
             for (size_t i = 0; i < n; ++i) {
                serialize<CSV>::op<Opts>(value[i], ctx, b, ix);
+               if (bool(ctx.error)) [[unlikely]] {
+                  return;
+               }
 
                if (i != (n - 1)) {
-                  dump<','>(b, ix);
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump(csv_delimiter<Opts>(), b, ix);
+                  if constexpr (is_output_streaming<B>) {
+                     flush_buffer(b, ix);
+                  }
                }
             }
          }
@@ -101,7 +154,7 @@ namespace glz
       using Row = typename T::value_type;
 
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          if constexpr (check_layout(Opts) == rowwise) {
             // Write row by row
@@ -118,18 +171,33 @@ namespace glz
                   }
 
                   if (c < n_cols - 1) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
 
                if (r < n_rows - 1) {
-                  dump<'\n'>(b, ix);
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump('\n', b, ix);
+                  if constexpr (is_output_streaming<B>) {
+                     flush_buffer(b, ix);
+                  }
                }
             }
 
             // Always add a trailing newline for consistency
             if (n_rows > 0) {
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
             }
          }
          else {
@@ -141,7 +209,7 @@ namespace glz
             // Find maximum column count
             size_t max_cols = 0;
             for (const auto& row : value) {
-               max_cols = std::max(max_cols, row.size());
+               max_cols = (std::max)(max_cols, row.size());
             }
 
             // Write transposed data
@@ -157,29 +225,44 @@ namespace glz
                   // else write empty cell (nothing to write)
 
                   if (r < value.size() - 1) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
 
                if (c < max_cols - 1) {
-                  dump<'\n'>(b, ix);
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump('\n', b, ix);
+                  if constexpr (is_output_streaming<B>) {
+                     flush_buffer(b, ix);
+                  }
                }
             }
 
             // Add trailing newline for consistency
             if (max_cols > 0) {
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
             }
          }
       }
    };
 
    // Helper function to check if a string needs CSV quoting
-   template <class Str>
+   template <char delim = ',', class Str>
    inline bool needs_csv_quoting(const Str& str)
    {
       for (const auto c : str) {
-         if (c == ',' || c == '"' || c == '\n' || c == '\r') {
+         if (c == delim || c == '"' || c == '\n' || c == '\r') {
             return true;
          }
       }
@@ -187,65 +270,62 @@ namespace glz
    }
 
    // Dump a CSV string with proper quoting and escaping
-   template <class B>
-   inline void dump_csv_string(const sv str, B& b, size_t& ix)
+   template <char delim = ',', class B>
+   inline void dump_csv_string(is_context auto& ctx, const sv str, B& b, size_t& ix)
    {
-      if (needs_csv_quoting(str)) {
-         // Need to quote this string
-         dump<'"'>(b, ix);
+      if (needs_csv_quoting<delim>(str)) {
+         // Need to quote this string - worst case: every char is a quote (doubled) plus surrounding quotes
+         if (!ensure_space(ctx, b, ix + str.size() * 2 + 2 + write_padding_bytes)) [[unlikely]] {
+            return;
+         }
+
+         dump('"', b, ix);
 
          // Write the string, escaping quotes by doubling them
          for (const auto c : str) {
             if (c == '"') {
-               dump<'"'>(b, ix);
-               dump<'"'>(b, ix);
+               dump('"', b, ix);
+               dump('"', b, ix);
             }
             else {
-               if constexpr (vector_like<B>) {
-                  if (ix >= b.size()) [[unlikely]] {
-                     b.resize(2 * (ix + 1));
-                  }
-               }
                b[ix] = c;
                ++ix;
             }
          }
 
-         dump<'"'>(b, ix);
+         dump('"', b, ix);
       }
       else {
          // No special characters, write as-is
+         if (!ensure_space(ctx, b, ix + str.size() + write_padding_bytes)) [[unlikely]] {
+            return;
+         }
          dump_maybe_empty(str, b, ix);
       }
    }
 
    // Dump a single character with CSV quoting if needed
-   template <class B>
-   inline void dump_csv_char(const char c, B& b, size_t& ix)
+   template <char delim = ',', class B>
+   inline void dump_csv_char(is_context auto& ctx, const char c, B& b, size_t& ix)
    {
-      if (c == ',' || c == '"' || c == '\n' || c == '\r') {
-         dump<'"'>(b, ix);
+      // Worst case: quoted double-quote = 4 chars (""")
+      if (!ensure_space(ctx, b, ix + 4 + write_padding_bytes)) [[unlikely]] {
+         return;
+      }
+
+      if (c == delim || c == '"' || c == '\n' || c == '\r') {
+         dump('"', b, ix);
          if (c == '"') {
-            dump<'"'>(b, ix);
-            dump<'"'>(b, ix);
+            dump('"', b, ix);
+            dump('"', b, ix);
          }
          else {
-            if constexpr (vector_like<B>) {
-               if (ix >= b.size()) [[unlikely]] {
-                  b.resize(2 * (ix + 1));
-               }
-            }
             b[ix] = c;
             ++ix;
          }
-         dump<'"'>(b, ix);
+         dump('"', b, ix);
       }
       else {
-         if constexpr (vector_like<B>) {
-            if (ix >= b.size()) [[unlikely]] {
-               b.resize(2 * (ix + 1));
-            }
-         }
          b[ix] = c;
          ++ix;
       }
@@ -256,13 +336,13 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&&, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          if constexpr (char_t<T>) {
-            dump_csv_char(value, b, ix);
+            dump_csv_char<csv_delimiter<Opts>()>(ctx, value, b, ix);
          }
          else {
-            dump_csv_string(value, b, ix);
+            dump_csv_string<csv_delimiter<Opts>()>(ctx, value, b, ix);
          }
       }
    };
@@ -271,22 +351,40 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          if constexpr (check_layout(Opts) == rowwise) {
             for (auto& [name, data] : value) {
                if constexpr (check_use_headers(Opts)) {
+                  if (!ensure_space(ctx, b, ix + name.size() + 2 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
                   dump_maybe_empty(name, b, ix);
-                  dump<','>(b, ix);
+                  dump(csv_delimiter<Opts>(), b, ix);
                }
                const auto n = data.size();
                for (size_t i = 0; i < n; ++i) {
                   serialize<CSV>::op<Opts>(data[i], ctx, b, ix);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
                   if (i < n - 1) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
+               if constexpr (is_output_streaming<B>) {
+                  flush_buffer(b, ix);
+               }
             }
          }
          else {
@@ -295,13 +393,25 @@ namespace glz
             if constexpr (check_use_headers(Opts)) {
                size_t i = 0;
                for (auto& [name, data] : value) {
+                  if (!ensure_space(ctx, b, ix + name.size() + 2 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
                   dump_maybe_empty(name, b, ix);
                   ++i;
                   if (i < n) {
-                     dump<','>(b, ix);
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
+               if constexpr (is_output_streaming<B>) {
+                  flush_buffer(b, ix);
+               }
             }
 
             size_t row = 0;
@@ -315,9 +425,18 @@ namespace glz
                   }
 
                   serialize<CSV>::op<Opts>(data[row], ctx, b, ix);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
                   ++i;
                   if (i < n) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
+                     if constexpr (is_output_streaming<B>) {
+                        flush_buffer(b, ix);
+                     }
                   }
                }
 
@@ -325,7 +444,13 @@ namespace glz
                   break;
                }
 
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
+               if constexpr (is_output_streaming<B>) {
+                  flush_buffer(b, ix);
+               }
 
                ++row;
             }
@@ -338,7 +463,7 @@ namespace glz
    struct to<CSV, T>
    {
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          static constexpr auto N = reflect<T>::size;
 
@@ -353,6 +478,9 @@ namespace glz
 
          if constexpr (check_layout(Opts) == rowwise) {
             for_each<N>([&]<auto I>() {
+               if (bool(ctx.error)) [[unlikely]] {
+                  return;
+               }
                using value_type = typename std::decay_t<refl_t<T, I>>::value_type;
 
                static constexpr sv key = reflect<T>::keys[I];
@@ -372,32 +500,53 @@ namespace glz
                   const auto size = member[0].size();
                   for (size_t i = 0; i < size; ++i) {
                      if constexpr (check_use_headers(Opts)) {
+                        if (!ensure_space(ctx, b, ix + key.size() + 32 + write_padding_bytes)) [[unlikely]] {
+                           return;
+                        }
                         dump<key>(b, ix);
-                        dump<'['>(b, ix);
+                        dump('[', b, ix);
                         write_chars::op<Opts>(i, ctx, b, ix);
-                        dump<']'>(b, ix);
-                        dump<','>(b, ix);
+                        dump(']', b, ix);
+                        dump(csv_delimiter<Opts>(), b, ix);
                      }
 
                      for (size_t j = 0; j < count; ++j) {
                         serialize<CSV>::op<Opts>(member[j][i], ctx, b, ix);
+                        if (bool(ctx.error)) [[unlikely]] {
+                           return;
+                        }
                         if (j != count - 1) {
-                           dump<','>(b, ix);
+                           if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                              return;
+                           }
+                           dump(csv_delimiter<Opts>(), b, ix);
                         }
                      }
 
                      if (i != size - 1) {
-                        dump<'\n'>(b, ix);
+                        if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                           return;
+                        }
+                        dump('\n', b, ix);
                      }
                   }
                }
                else {
                   if constexpr (check_use_headers(Opts)) {
+                     if (!ensure_space(ctx, b, ix + key.size() + 2 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
                      dump<key>(b, ix);
-                     dump<','>(b, ix);
+                     dump(csv_delimiter<Opts>(), b, ix);
                   }
                   serialize<CSV>::op<Opts>(get_member(value, mem), ctx, b, ix);
-                  dump<'\n'>(b, ix);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump('\n', b, ix);
                }
             });
          }
@@ -405,6 +554,9 @@ namespace glz
             // write titles
             if constexpr (check_use_headers(Opts)) {
                for_each<N>([&]<auto I>() {
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
                   using X = refl_t<T, I>;
 
                   static constexpr sv key = reflect<T>::keys[I];
@@ -421,12 +573,15 @@ namespace glz
                   if constexpr (fixed_array_value_t<X>) {
                      const auto size = get_member(value, member)[0].size();
                      for (size_t i = 0; i < size; ++i) {
+                        if (!ensure_space(ctx, b, ix + key.size() + 32 + write_padding_bytes)) [[unlikely]] {
+                           return;
+                        }
                         dump<key>(b, ix);
-                        dump<'['>(b, ix);
+                        dump('[', b, ix);
                         write_chars::op<Opts>(i, ctx, b, ix);
-                        dump<']'>(b, ix);
+                        dump(']', b, ix);
                         if (i != size - 1) {
-                           dump<','>(b, ix);
+                           dump(csv_delimiter<Opts>(), b, ix);
                         }
                      }
                   }
@@ -435,11 +590,17 @@ namespace glz
                   }
 
                   if constexpr (I != N - 1) {
-                     dump<','>(b, ix);
+                     if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                        return;
+                     }
+                     dump(csv_delimiter<Opts>(), b, ix);
                   }
                });
 
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
             }
 
             size_t row = 0;
@@ -447,6 +608,9 @@ namespace glz
 
             while (true) {
                for_each<N>([&]<auto I>() {
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
                   using X = std::decay_t<refl_t<T, I>>;
 
                   decltype(auto) mem = [&]() -> decltype(auto) {
@@ -468,8 +632,14 @@ namespace glz
                      const auto n = member[0].size();
                      for (size_t i = 0; i < n; ++i) {
                         serialize<CSV>::op<Opts>(member[row][i], ctx, b, ix);
+                        if (bool(ctx.error)) [[unlikely]] {
+                           return;
+                        }
                         if (i != n - 1) {
-                           dump<','>(b, ix);
+                           if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                              return;
+                           }
+                           dump(csv_delimiter<Opts>(), b, ix);
                         }
                      }
                   }
@@ -481,20 +651,29 @@ namespace glz
                      }
 
                      serialize<CSV>::op<Opts>(member[row], ctx, b, ix);
+                     if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
 
-                     if (I != N - 1) {
-                        dump<','>(b, ix);
+                     if constexpr (I != N - 1) {
+                        if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                           return;
+                        }
+                        dump(csv_delimiter<Opts>(), b, ix);
                      }
                   }
                });
 
-               if (end) {
+               if (end || bool(ctx.error)) {
                   break;
                }
 
                ++row;
 
-               dump<'\n'>(b, ix);
+               if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                  return;
+               }
+               dump('\n', b, ix);
             }
          }
       }
@@ -508,27 +687,45 @@ namespace glz
       using U = typename T::value_type;
 
       template <auto Opts, class B>
-      static void op(auto&& value, is_context auto&& ctx, B&& b, auto&& ix)
+      static void op(auto&& value, is_context auto&& ctx, B&& b, auto& ix)
       {
          static constexpr auto N = reflect<U>::size;
 
          // Write headers (field names) if enabled
          if constexpr (check_use_headers(Opts)) {
             for_each<N>([&]<auto I>() {
+               if (bool(ctx.error)) [[unlikely]] {
+                  return;
+               }
                static constexpr sv key = reflect<U>::keys[I];
                serialize<CSV>::op<Opts>(key, ctx, b, ix);
 
-               if (I < N - 1) {
-                  dump<','>(b, ix);
+               if constexpr (I < N - 1) {
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump(csv_delimiter<Opts>(), b, ix);
                }
             });
 
-            dump<'\n'>(b, ix);
+            if (bool(ctx.error)) [[unlikely]] {
+               return;
+            }
+            if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+               return;
+            }
+            dump('\n', b, ix);
          }
 
          // Write each struct as a row
          for (const auto& item : value) {
+            if (bool(ctx.error)) [[unlikely]] {
+               return;
+            }
             for_each<N>([&]<auto I>() {
+               if (bool(ctx.error)) [[unlikely]] {
+                  return;
+               }
                decltype(auto) mem = [&]() -> decltype(auto) {
                   if constexpr (reflectable<U>) {
                      return get<I>(to_tie(item));
@@ -540,12 +737,21 @@ namespace glz
 
                serialize<CSV>::op<Opts>(get_member(item, mem), ctx, b, ix);
 
-               if (I < N - 1) {
-                  dump<','>(b, ix);
+               if constexpr (I < N - 1) {
+                  if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+                     return;
+                  }
+                  dump(csv_delimiter<Opts>(), b, ix);
                }
             });
 
-            dump<'\n'>(b, ix);
+            if (bool(ctx.error)) [[unlikely]] {
+               return;
+            }
+            if (!ensure_space(ctx, b, ix + 1 + write_padding_bytes)) [[unlikely]] {
+               return;
+            }
+            dump('\n', b, ix);
          }
       }
    };
@@ -569,6 +775,10 @@ namespace glz
       if (bool(ec)) [[unlikely]] {
          return ec;
       }
-      return {buffer_to_file(buffer, file_name)};
+      const auto file_ec = buffer_to_file(buffer, file_name);
+      if (bool(file_ec)) [[unlikely]] {
+         return {0, file_ec};
+      }
+      return {buffer.size(), error_code::none};
    }
 }

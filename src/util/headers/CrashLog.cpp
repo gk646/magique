@@ -365,10 +365,7 @@ namespace magique
 
 #if _WIN32
 #include <eh.h>
-    void static se_translator(unsigned int code, _EXCEPTION_POINTERS* ep)
-    {
-        throw std::exception("SEH exception occurred");
-    }
+
 #endif
 
     void RegisterCrashLoggers()
@@ -386,7 +383,6 @@ namespace magique
 #endif
 
 #elif _WIN32
-        _set_se_translator(se_translator);
         SetUnhandledExceptionFilter(CrashLogHandler);
 #endif
     }

@@ -12,10 +12,10 @@ namespace glz
    namespace detail
    {
       template <auto Opts>
-      inline void prettify_json(is_context auto&& ctx, auto&& it, auto&& end, auto&& b, auto&& ix)
+      inline void prettify_json(is_context auto&& ctx, auto&& it, auto&& end, auto&& b, auto& ix)
       {
-         constexpr bool use_tabs = Opts.indentation_char == '\t';
-         constexpr auto indent_width = Opts.indentation_width;
+         constexpr bool use_tabs = check_indentation_char(Opts) == '\t';
+         constexpr auto indent_width = check_indentation_width(Opts);
 
          using enum json_type;
 
@@ -30,9 +30,9 @@ namespace glz
                break;
             }
             case Comma: {
-               dump<','>(b, ix);
+               dump(',', b, ix);
                ++it;
-               if constexpr (Opts.new_lines_in_arrays) {
+               if constexpr (check_new_lines_in_arrays(Opts)) {
                   append_new_line<use_tabs, indent_width>(b, ix, indent);
                }
                else {
@@ -41,10 +41,10 @@ namespace glz
                   }
                   else {
                      if constexpr (use_tabs) {
-                        dump<'\t'>(b, ix);
+                        dump('\t', b, ix);
                      }
                      else {
-                        dump<' '>(b, ix);
+                        dump(' ', b, ix);
                      }
                   }
                }
@@ -57,16 +57,16 @@ namespace glz
             }
             case Colon: {
                if constexpr (use_tabs) {
-                  dump<":\t">(b, ix);
+                  dump(":\t", b, ix);
                }
                else {
-                  dump<": ">(b, ix);
+                  dump(": ", b, ix);
                }
                ++it;
                break;
             }
             case Array_Start: {
-               dump<'['>(b, ix);
+               dump('[', b, ix);
                ++it;
                ++indent;
                if (size_t(indent) >= state.size()) [[unlikely]] {
@@ -77,7 +77,7 @@ namespace glz
                   }
                }
                state[indent] = Array_Start;
-               if constexpr (Opts.new_lines_in_arrays) {
+               if constexpr (check_new_lines_in_arrays(Opts)) {
                   if constexpr (not Opts.null_terminated) {
                      if (it != end && *it != ']') {
                         append_new_line<use_tabs, indent_width>(b, ix, indent);
@@ -97,34 +97,34 @@ namespace glz
                   ctx.error = error_code::syntax_error;
                   return;
                }
-               if constexpr (Opts.new_lines_in_arrays) {
+               if constexpr (check_new_lines_in_arrays(Opts)) {
                   if (it[-1] != '[') {
                      append_new_line<use_tabs, indent_width>(b, ix, indent);
                   }
                }
-               dump<']'>(b, ix);
+               dump(']', b, ix);
                ++it;
                break;
             }
             case Null: {
-               dump<"null">(b, ix);
+               dump("null", b, ix);
                it += 4;
                break;
             }
             case Bool: {
                if (*it == 't') {
-                  dump<"true">(b, ix);
+                  dump("true", b, ix);
                   it += 4;
                   break;
                }
                else {
-                  dump<"false">(b, ix);
+                  dump("false", b, ix);
                   it += 5;
                   break;
                }
             }
             case Object_Start: {
-               dump<'{'>(b, ix);
+               dump('{', b, ix);
                ++it;
                ++indent;
                if (size_t(indent) >= state.size()) [[unlikely]] {
@@ -156,7 +156,7 @@ namespace glz
                if (it[-1] != '{') {
                   append_new_line<use_tabs, indent_width>(b, ix, indent);
                }
-               dump<'}'>(b, ix);
+               dump('}', b, ix);
                ++it;
                break;
             }

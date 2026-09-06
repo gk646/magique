@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "glaze/core/streaming_state.hpp"
 #include "glaze/util/parse.hpp"
 
 namespace glz
@@ -12,15 +13,15 @@ namespace glz
    {
       template <auto Opts>
          requires(not Opts.comments)
-      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto&& end) noexcept;
+      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto end) noexcept;
 
       template <auto Opts>
          requires(bool(Opts.comments))
-      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto&& end) noexcept;
+      GLZ_ALWAYS_INLINE static void op(is_context auto&& ctx, auto&& it, auto end) noexcept;
    };
 
    template <auto Opts>
-   void skip_object(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   void skip_object(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       if constexpr (!check_validate_skipped(Opts)) {
          ++it;
@@ -33,8 +34,10 @@ namespace glz
          skip_until_closed<Opts, '{', '}'>(ctx, it, end);
       }
       else {
-         if constexpr (not Opts.null_terminated) {
-            ++ctx.indentation_level;
+         // one nesting level (see enter_depth): counted in both modes so the limit binds,
+         // released at each syntactic close below
+         if (enter_depth(ctx)) [[unlikely]] {
+            return;
          }
          ++it;
          if constexpr (not Opts.null_terminated) {
@@ -47,9 +50,7 @@ namespace glz
             return;
          }
          if (*it == '}') {
-            if constexpr (not Opts.null_terminated) {
-               --ctx.indentation_level;
-            }
+            --ctx.depth;
             ++it;
             if constexpr (not Opts.null_terminated) {
                if (it == end) {
@@ -95,9 +96,7 @@ namespace glz
             }
          }
          match<'}'>(ctx, it);
-         if constexpr (not Opts.null_terminated) {
-            --ctx.indentation_level;
-         }
+         --ctx.depth;
          if constexpr (not Opts.null_terminated) {
             if (it == end) {
                ctx.error = error_code::end_reached;
@@ -109,7 +108,7 @@ namespace glz
 
    template <auto Opts>
       requires(Opts.format == JSON || Opts.format == NDJSON)
-   void skip_array(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   void skip_array(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       if constexpr (!check_validate_skipped(Opts)) {
          ++it;
@@ -122,8 +121,10 @@ namespace glz
          skip_until_closed<Opts, '[', ']'>(ctx, it, end);
       }
       else {
-         if constexpr (not Opts.null_terminated) {
-            ++ctx.indentation_level;
+         // one nesting level (see enter_depth): counted in both modes so the limit binds,
+         // released at each syntactic close below
+         if (enter_depth(ctx)) [[unlikely]] {
+            return;
          }
          ++it;
          if constexpr (not Opts.null_terminated) {
@@ -136,9 +137,7 @@ namespace glz
             return;
          }
          if (*it == ']') {
-            if constexpr (not Opts.null_terminated) {
-               --ctx.indentation_level;
-            }
+            --ctx.depth;
             ++it;
             if constexpr (not Opts.null_terminated) {
                if (it == end) {
@@ -168,9 +167,7 @@ namespace glz
             }
          }
          match<']'>(ctx, it);
-         if constexpr (not Opts.null_terminated) {
-            --ctx.indentation_level;
-         }
+         --ctx.depth;
          if constexpr (not Opts.null_terminated) {
             if (it == end) {
                ctx.error = error_code::end_reached;
@@ -180,12 +177,134 @@ namespace glz
       }
    }
 
+   // Streaming-aware value skip. The fixed-position skip routines error with
+   // unexpected_end when a value extends past the current buffer, so when a
+   // streaming context is active we instead scan character by character,
+   // refilling the input buffer whenever it runs dry. String, escape, and
+   // nesting state is tracked across refills, so skipped values may be
+   // arbitrarily larger than the buffer (e.g. unknown keys holding large arrays).
+   // Skipped bytes are consumed and not validated, matching the non-validating
+   // skip path. After this returns, the caller's `end` may be stale; callers
+   // resynchronize iterators at their streaming refill checkpoints.
+   template <auto Opts>
+      requires(not Opts.comments)
+   void skip_value_streaming(is_context auto&& ctx, auto&& it, auto end) noexcept
+   {
+      const auto refill = [&]() -> bool {
+         const size_t consumed = static_cast<size_t>(it - ctx.stream.data());
+         const char* new_it;
+         const char* new_end;
+         ctx.stream.consume_and_refill(consumed, new_it, new_end);
+         it = new_it;
+         end = new_end;
+         return it < end;
+      };
+
+      // Skip leading whitespace, refilling as needed
+      while (true) {
+         while (it < end && whitespace_table[uint8_t(*it)]) {
+            ++it;
+         }
+         if (it < end) break;
+         if (!refill()) {
+            ctx.error = error_code::unexpected_end;
+            return;
+         }
+      }
+
+      const char open = *it;
+      if (open == '{' || open == '[') {
+         ++it;
+         size_t depth = 1;
+         bool in_string = false;
+         bool escaped = false;
+         while (depth) {
+            if (it == end) {
+               if (!refill()) {
+                  ctx.error = error_code::unexpected_end;
+                  return;
+               }
+               continue;
+            }
+            const char c = *it;
+            ++it;
+            if (in_string) {
+               if (escaped) {
+                  escaped = false;
+               }
+               else if (c == '\\') {
+                  escaped = true;
+               }
+               else if (c == '"') {
+                  in_string = false;
+               }
+            }
+            else {
+               switch (c) {
+               case '"':
+                  in_string = true;
+                  break;
+               case '{':
+               case '[':
+                  ++depth;
+                  break;
+               case '}':
+               case ']':
+                  --depth;
+                  break;
+               }
+            }
+         }
+      }
+      else if (open == '"') {
+         ++it;
+         bool escaped = false;
+         while (true) {
+            if (it == end) {
+               if (!refill()) {
+                  ctx.error = error_code::unexpected_end;
+                  return;
+               }
+               continue;
+            }
+            const char c = *it;
+            ++it;
+            if (escaped) {
+               escaped = false;
+            }
+            else if (c == '\\') {
+               escaped = true;
+            }
+            else if (c == '"') {
+               break;
+            }
+         }
+      }
+      else {
+         // Numbers and literals (true/false/null): scan until a delimiter.
+         // End of stream also terminates the value.
+         while (true) {
+            if (it == end) {
+               if (!refill()) {
+                  break;
+               }
+               continue;
+            }
+            const char c = *it;
+            if (whitespace_table[uint8_t(c)] || c == ',' || c == '}' || c == ']') {
+               break;
+            }
+            ++it;
+         }
+      }
+   }
+
    // parse_value is used for JSON pointer reading
    // we want the JSON pointer access to not care about trailing whitespace
    // so we use validate_skipped for precise validation and value skipping
    // expects opening whitespace to be handled
    template <auto Opts>
-   GLZ_ALWAYS_INLINE auto parse_value(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE auto parse_value(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       auto start = it;
       struct opts_validate_skipped : std::decay_t<decltype(Opts)>
@@ -198,9 +317,18 @@ namespace glz
 
    template <auto Opts>
       requires(not Opts.comments)
-   GLZ_ALWAYS_INLINE void skip_value<JSON>::op(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_value<JSON>::op(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       using namespace glz::detail;
+
+      // Validating skips (parse_value/JSON pointer) require the full value in a
+      // contiguous buffer, so streaming refill is not applied there.
+      if constexpr (has_streaming_state<decltype(ctx)> && not check_validate_skipped(Opts)) {
+         if (ctx.stream.enabled()) {
+            skip_value_streaming<Opts>(ctx, it, end);
+            return;
+         }
+      }
 
       if constexpr (not check_validate_skipped(Opts)) {
          if constexpr (not check_ws_handled(Opts)) {
@@ -308,7 +436,7 @@ namespace glz
 
    template <auto Opts>
       requires(bool(Opts.comments))
-   GLZ_ALWAYS_INLINE void skip_value<JSON>::op(is_context auto&& ctx, auto&& it, auto&& end) noexcept
+   GLZ_ALWAYS_INLINE void skip_value<JSON>::op(is_context auto&& ctx, auto&& it, auto end) noexcept
    {
       using namespace glz::detail;
 

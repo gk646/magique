@@ -28,7 +28,7 @@ namespace magique
     //      - sendBuffSize: Upper limit of bytes that can be sent per tick
     //      - recvBufSize : Upper limit of bytes that can be received per tick
     // Returns true if it was successful
-    bool GlobalSocketCreate(int sendBuffSize = 524288, int recvBufSize = 524288 * 2);
+    bool GlobalSocketCreate(int sendBuffSize = 524288, int recvBufSize = 524288 * 4);
 
     // Connects to a global socket via the steam id
     // Note: To get the steam id of the clients you usually have to create a lobby

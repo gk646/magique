@@ -72,7 +72,7 @@ namespace magique
         msg->m_conn = static_cast<HSteamNetConnection>(conn);
 
         global::MP_DATA.statistics.addOutgoing(payload);
-        SteamNetworkingSockets()->SendMessages(1, &msg, nullptr);
+        SteamNetworkingSockets()->SendMessages(1, &msg, nullptr, true);
         return true;
     }
 
@@ -194,11 +194,6 @@ namespace magique
                 return;
             }
         }
-        if (data.connectionMapping.size() >= MAGIQUE_MAX_PLAYERS - 1)
-        {
-            LOG_WARNING("Too many mapped connections. Limit %d", MAGIQUE_MAX_PLAYERS - 1);
-            return;
-        }
         data.connectionMapping.push_back(ConnMapping{conn, entity});
     }
 
@@ -225,8 +220,6 @@ namespace magique
         }
         return Connection::INVALID;
     }
-
-    int NetworkGetConnNumber(const Connection conn) { return global::MP_DATA.numberMapping.getNum(conn); }
 
     void NetworkEnterClientMode() { global::ENGINE_CONFIG.isClientMode = true; }
 

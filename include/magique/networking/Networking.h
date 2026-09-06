@@ -127,13 +127,6 @@ namespace magique
     // Failure: Returns INVALID_CONNECTION if mapping exists for the given entity
     Connection NetworkGetMappedConnection(Entity entity);
 
-
-    // Returns the number of the connection
-    // This numbers stays the same for as long as the connection doesn't terminate (regardless of other disconnects or joins)
-    // Note: This is very useful if you want to index into an array based on the connection
-    // Failure: -1 if connection is not valid
-    int NetworkGetConnNumber(Connection conn);
-
     // Prints statistics on the amount of sent packages
     // Only works in debug mode
     // Note: The definition of MessageType NEEDS to be included (so enum names can be printed)

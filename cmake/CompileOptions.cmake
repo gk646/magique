@@ -12,12 +12,13 @@ target_include_directories(magique PRIVATE
 if (MAGIQUE_STEAM)
     target_compile_definitions(magique PUBLIC MAGIQUE_STEAM)
     set(FULL_STEAM_PATH "${STEAM_PATH}/public")
-    if (WIN32)
+
+    if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
+        set(HOME_DIR "$ENV{HOME}")
+    else ()
         set(HOME_DIR "$ENV{USERPROFILE}")
         # Replace backslashes with forward slashes
         string(REPLACE "\\" "/" HOME_DIR "${HOME_DIR}")
-    else ()
-        set(HOME_DIR "$ENV{HOME}")
     endif ()
     string(REGEX REPLACE "^~" "${HOME_DIR}" FULL_STEAM_PATH "${FULL_STEAM_PATH}")
     target_include_directories(magique PRIVATE ${FULL_STEAM_PATH})
@@ -66,7 +67,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             $<$<CONFIG:Debug>:
             -Og
             -g2
-            -gz
             # -D_GLIBCXX_DEBUG
             # -D_GLIBCXX_ASSERTIONS
             -D_DEBUG
@@ -75,7 +75,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             $<$<CONFIG:RelWithDebInfo>:
             -O2
             -g1
-            -gz
             -DNDEBUG
             >
 
@@ -141,7 +140,6 @@ target_compile_definitions(magique PUBLIC
         MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES=${MAGIQUE_TILE_OBJECT_CUSTOM_PROPERTIES}
         MAGIQUE_TILE_SET_CUSTOM_PROPERTIES=${MAGIQUE_TILE_SET_CUSTOM_PROPERTIES}
         MAGIQUE_MAX_ANIM_FRAMES=${MAGIQUE_MAX_ANIM_FRAMES}
-        MAGIQUE_MAX_PLAYERS=${MAGIQUE_MAX_PLAYERS}
         MAGIQUE_MAX_LOBBY_MESSAGE_LEN=${MAGIQUE_MAX_LOBBY_MESSAGE_LEN}
         MAGIQUE_PARTICLE_COLORPOOL_SIZE=${MAGIQUE_PARTICLE_COLORPOOL_SIZE}
         MAGIQUE_MAX_SUPPORTED_TIMERS=${MAGIQUE_MAX_SUPPORTED_TIMERS}

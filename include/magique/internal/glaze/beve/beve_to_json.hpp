@@ -11,17 +11,21 @@ namespace glz
    namespace detail
    {
       template <auto Opts>
-      inline void beve_to_json_number(auto&& tag, auto&& ctx, auto&& it, auto&& end, auto& out, auto&& ix) noexcept
+      inline void beve_to_json_number(auto&& tag, auto&& ctx, auto&& it, auto&& end, auto& out, auto& ix) noexcept
       {
          const auto number_type = (tag & 0b000'11'000) >> 3;
          const uint8_t byte_count = byte_count_lookup[tag >> 5];
 
          auto write_number = [&]<class T>(T&& value) {
-            if ((it + sizeof(T)) > end) [[unlikely]] {
+            if (size_t(end - it) < sizeof(T)) [[unlikely]] {
                ctx.error = error_code::syntax_error;
                return;
             }
-            std::memcpy(&value, it, sizeof(T));
+            using V = std::remove_cvref_t<T>;
+            std::memcpy(&value, it, sizeof(V));
+            if constexpr (std::endian::native == std::endian::big) {
+               byteswap_le(value);
+            }
             to<JSON, T>::template op<Opts>(value, ctx, out, ix);
             it += sizeof(T);
          };
@@ -124,14 +128,14 @@ namespace glz
          case tag::null: {
             if (tag & tag::boolean) {
                if (tag >> 4) {
-                  dump<"true">(out, ix);
+                  if (!emit_literal<"true">(ctx, out, ix)) return;
                }
                else {
-                  dump<"false">(out, ix);
+                  if (!emit_literal<"false">(ctx, out, ix)) return;
                }
             }
             else {
-               dump<"null">(out, ix);
+               if (!emit_literal<"null">(ctx, out, ix)) return;
             }
             ++it;
             break;
@@ -153,118 +157,238 @@ namespace glz
                return;
             }
             const sv value{reinterpret_cast<const char*>(it), n};
-            to<JSON, sv>::template op<Opts>(value, ctx, out, ix);
+            detail::emit_untrusted_string<Opts>(ctx, value, out, ix);
+            if (bool(ctx.error)) [[unlikely]]
+               return;
             it += n;
             break;
          }
          case tag::object: {
             ++it;
 
-            dump<'{'>(out, ix);
-            if constexpr (Opts.prettify) {
-               ctx.indentation_level += Opts.indentation_width;
-               dump<'\n'>(out, ix);
-               dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
-            }
-            else {
-               ++ctx.indentation_level;
-            }
+            if (!emit_char(ctx, '{', out, ix)) return;
+            {
+               // The indentation this object adds belongs to it, so every way out -- including an
+               // error return from a nested value -- puts the depth back.
+               const indent_guard indent{ctx, Opts.prettify ? check_indentation_width(Opts) : 1};
 
-            const auto key_type = (tag & 0b000'11'000) >> 3;
-            switch (key_type) {
-            case 0: {
-               // string key
-               const auto n_fields = int_from_compressed(ctx, it, end);
-               if (bool(ctx.error)) {
-                  return;
+               if constexpr (Opts.prettify) {
+                  if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
                }
-               for (size_t i = 0; i < n_fields; ++i) {
-                  // convert the key
-                  const auto n = int_from_compressed(ctx, it, end);
-                  if (bool(ctx.error)) [[unlikely]] {
+
+               const auto key_type = (tag & 0b000'11'000) >> 3;
+               switch (key_type) {
+               case 0: {
+                  // string key
+                  const auto n_fields = int_from_compressed(ctx, it, end);
+                  if (bool(ctx.error)) {
                      return;
                   }
-                  if (uint64_t(end - it) < n) [[unlikely]] {
-                     ctx.error = error_code::unexpected_end;
-                     return;
-                  }
-                  const sv key{reinterpret_cast<const char*>(it), n};
-                  to<JSON, sv>::template op<Opts>(key, ctx, out, ix);
-                  if constexpr (Opts.prettify) {
-                     dump<": ">(out, ix);
-                  }
-                  else {
-                     dump<':'>(out, ix);
-                  }
-                  it += n;
-                  beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
-                  if (bool(ctx.error)) [[unlikely]] {
-                     return;
-                  }
-                  if (i != n_fields - 1) {
-                     dump<','>(out, ix);
+                  for (size_t i = 0; i < n_fields; ++i) {
+                     // convert the key
+                     const auto n = int_from_compressed(ctx, it, end);
+                     if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
+                     if (uint64_t(end - it) < n) [[unlikely]] {
+                        ctx.error = error_code::unexpected_end;
+                        return;
+                     }
+                     const sv key{reinterpret_cast<const char*>(it), n};
+                     detail::emit_untrusted_string<Opts>(ctx, key, out, ix);
+                     if (bool(ctx.error)) [[unlikely]]
+                        return;
                      if constexpr (Opts.prettify) {
-                        dump<'\n'>(out, ix);
-                        dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
+                        if (!emit_literal<": ">(ctx, out, ix)) return;
+                     }
+                     else {
+                        if (!emit_char(ctx, ':', out, ix)) return;
+                     }
+                     it += n;
+                     beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
+                     if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
+                     if (i != n_fields - 1) {
+                        if (!emit_char(ctx, ',', out, ix)) return;
+                        if constexpr (Opts.prettify) {
+                           if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
+                        }
                      }
                   }
+                  break;
                }
-               break;
-            }
-            case 1:
-               [[fallthrough]]; // signed integer key
-            case 2: {
-               // unsigned integer key
-               const auto n_fields = int_from_compressed(ctx, it, end);
-               if (bool(ctx.error)) {
-                  return;
-               }
-               for (size_t i = 0; i < n_fields; ++i) {
-                  // convert the key
-                  dump<'"'>(out, ix);
-                  beve_to_json_number<Opts>(tag, ctx, it, end, out, ix);
-                  if (bool(ctx.error)) [[unlikely]] {
+               case 1:
+                  [[fallthrough]]; // signed integer key
+               case 2: {
+                  // unsigned integer key
+                  const auto n_fields = int_from_compressed(ctx, it, end);
+                  if (bool(ctx.error)) {
                      return;
                   }
-                  dump<'"'>(out, ix);
-                  if constexpr (Opts.prettify) {
-                     dump<": ">(out, ix);
-                  }
-                  else {
-                     dump<':'>(out, ix);
-                  }
-                  beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
-                  if (bool(ctx.error)) [[unlikely]] {
-                     return;
-                  }
-                  if (i != n_fields - 1) {
-                     dump<','>(out, ix);
+                  for (size_t i = 0; i < n_fields; ++i) {
+                     // convert the key
+                     if (!emit_char(ctx, '"', out, ix)) return;
+                     beve_to_json_number<Opts>(tag, ctx, it, end, out, ix);
+                     if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
+                     if (!emit_char(ctx, '"', out, ix)) return;
                      if constexpr (Opts.prettify) {
-                        dump<'\n'>(out, ix);
-                        dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
+                        if (!emit_literal<": ">(ctx, out, ix)) return;
+                     }
+                     else {
+                        if (!emit_char(ctx, ':', out, ix)) return;
+                     }
+                     beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
+                     if (bool(ctx.error)) [[unlikely]] {
+                        return;
+                     }
+                     if (i != n_fields - 1) {
+                        if (!emit_char(ctx, ',', out, ix)) return;
+                        if constexpr (Opts.prettify) {
+                           if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
+                        }
                      }
                   }
+                  break;
                }
-               break;
-            }
-            default: {
-               ctx.error = error_code::syntax_error;
-               return;
-            }
+               default: {
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+               }
             }
 
             if constexpr (Opts.prettify) {
-               ctx.indentation_level -= Opts.indentation_width;
-               dump<'\n'>(out, ix);
-               dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
+               if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
             }
-            else {
-               --ctx.indentation_level;
-            }
-            dump<'}'>(out, ix);
+            if (!emit_char(ctx, '}', out, ix)) return;
             break;
          }
          case tag::typed_array: {
+            // Check for aligned typed array (tag == 0x5C)
+            if (tag == tag::aligned_typed_array) {
+               ++it; // skip aligned header
+               if (it >= end) [[unlikely]] {
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+               // Read the numeric header byte
+               const auto numeric_tag = uint8_t(*it);
+               if ((numeric_tag & 0b00000'111) != tag::typed_array) [[unlikely]] {
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+               ++it; // skip numeric header
+               const auto value_type_inner = (numeric_tag & 0b000'11'000) >> 3;
+               const uint8_t byte_count_inner = byte_count_lookup[numeric_tag >> 5];
+
+               const auto n = int_from_compressed(ctx, it, end);
+               if (bool(ctx.error)) [[unlikely]] {
+                  return;
+               }
+
+               // Read padding length byte and skip padding
+               if (it >= end) [[unlikely]] {
+                  ctx.error = error_code::unexpected_end;
+                  return;
+               }
+               const uint8_t padding = uint8_t(*it);
+               ++it;
+               if (padding >= byte_count_inner) [[unlikely]] {
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+               if (typed_array_out_of_bounds(ctx, it, end, n, byte_count_inner, padding)) return;
+               it += padding;
+
+               // Now decode as a normal numeric typed array
+               if (!emit_char(ctx, '[', out, ix)) return;
+
+               auto write_aligned_array = [&]<class T>(T&& value) {
+                  for (size_t i = 0; i < n; ++i) {
+                     if (size_t(end - it) < sizeof(T)) [[unlikely]] {
+                        ctx.error = error_code::unexpected_end;
+                        return;
+                     }
+                     using V = std::remove_cvref_t<T>;
+                     std::memcpy(&value, it, sizeof(V));
+                     if constexpr (std::endian::native == std::endian::big) {
+                        byteswap_le(value);
+                     }
+                     to<JSON, T>::template op<Opts>(value, ctx, out, ix);
+                     it += sizeof(T);
+                     if (i != n - 1) {
+                        if (!emit_char(ctx, ',', out, ix)) return;
+                     }
+                  }
+               };
+
+               switch (value_type_inner) {
+               case 0: {
+                  switch (byte_count_inner) {
+                  case 4:
+                     write_aligned_array(float{});
+                     break;
+                  case 8:
+                     write_aligned_array(double{});
+                     break;
+                  default:
+                     ctx.error = error_code::syntax_error;
+                     return;
+                  }
+                  break;
+               }
+               case 1: {
+                  switch (byte_count_inner) {
+                  case 1:
+                     write_aligned_array(int8_t{});
+                     break;
+                  case 2:
+                     write_aligned_array(int16_t{});
+                     break;
+                  case 4:
+                     write_aligned_array(int32_t{});
+                     break;
+                  case 8:
+                     write_aligned_array(int64_t{});
+                     break;
+                  default:
+                     ctx.error = error_code::syntax_error;
+                     return;
+                  }
+                  break;
+               }
+               case 2: {
+                  switch (byte_count_inner) {
+                  case 1:
+                     write_aligned_array(uint8_t{});
+                     break;
+                  case 2:
+                     write_aligned_array(uint16_t{});
+                     break;
+                  case 4:
+                     write_aligned_array(uint32_t{});
+                     break;
+                  case 8:
+                     write_aligned_array(uint64_t{});
+                     break;
+                  default:
+                     ctx.error = error_code::syntax_error;
+                     return;
+                  }
+                  break;
+               }
+               default:
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+
+               if (!emit_char(ctx, ']', out, ix)) return;
+               break;
+            }
+
             ++it;
             const auto value_type = (tag & 0b000'11'000) >> 3;
             const uint8_t byte_count = byte_count_lookup[tag >> 5];
@@ -275,20 +399,24 @@ namespace glz
                   return;
                }
                for (size_t i = 0; i < n; ++i) {
-                  if ((it + sizeof(T)) > end) [[unlikely]] {
+                  if (size_t(end - it) < sizeof(T)) [[unlikely]] {
                      ctx.error = error_code::unexpected_end;
                      return;
                   }
-                  std::memcpy(&value, it, sizeof(T));
+                  using V = std::remove_cvref_t<T>;
+                  std::memcpy(&value, it, sizeof(V));
+                  if constexpr (std::endian::native == std::endian::big) {
+                     byteswap_le(value);
+                  }
                   to<JSON, T>::template op<Opts>(value, ctx, out, ix);
                   it += sizeof(T);
                   if (i != n - 1) {
-                     dump<','>(out, ix);
+                     if (!emit_char(ctx, ',', out, ix)) return;
                   }
                }
             };
 
-            dump<'['>(out, ix);
+            if (!emit_char(ctx, '[', out, ix)) return;
 
             switch (value_type) {
             case 0: {
@@ -387,10 +515,12 @@ namespace glz
                         return;
                      }
                      const sv value{reinterpret_cast<const char*>(it), n};
-                     to<JSON, sv>::template op<Opts>(value, ctx, out, ix);
+                     detail::emit_untrusted_string<Opts>(ctx, value, out, ix);
+                     if (bool(ctx.error)) [[unlikely]]
+                        return;
                      it += n;
                      if (i != n_strings - 1) {
-                        dump<','>(out, ix);
+                        if (!emit_char(ctx, ',', out, ix)) return;
                      }
                   }
                   break;
@@ -408,7 +538,7 @@ namespace glz
             }
             }
 
-            dump<']'>(out, ix);
+            if (!emit_char(ctx, ']', out, ix)) return;
 
             break;
          }
@@ -418,17 +548,17 @@ namespace glz
             if (bool(ctx.error)) [[unlikely]] {
                return;
             }
-            dump<'['>(out, ix);
+            if (!emit_char(ctx, '[', out, ix)) return;
             for (size_t i = 0; i < n; ++i) {
                beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
                if (bool(ctx.error)) [[unlikely]] {
                   return;
                }
                if (i != n - 1) {
-                  dump<','>(out, ix);
+                  if (!emit_char(ctx, ',', out, ix)) return;
                }
             }
-            dump<']'>(out, ix);
+            if (!emit_char(ctx, ']', out, ix)) return;
             break;
          }
          case tag::extensions: {
@@ -437,11 +567,13 @@ namespace glz
             case 0: {
                // delimiter
                ++it;
-               dump<'\n'>(out, ix);
+               if (!emit_char(ctx, '\n', out, ix)) return;
                break;
             }
             case 1: {
-               // variants
+               // legacy (Version 1) type tag: transcode by dropping the positional index and
+               // emitting the value. Version 2 variants are ordinary objects/values transcoded by
+               // their normal cases and never reach here.
                ++it;
                skip_compressed_int(ctx, it, end);
                if (bool(ctx.error)) return;
@@ -462,71 +594,70 @@ namespace glz
                const auto matrix_header = uint8_t(*it);
                ++it;
 
-               dump<'{'>(out, ix);
-               if constexpr (Opts.prettify) {
-                  ctx.indentation_level += Opts.indentation_width;
-                  dump<'\n'>(out, ix);
-                  dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
-               }
-               else {
-                  ++ctx.indentation_level;
+               if (!emit_char(ctx, '{', out, ix)) return;
+               {
+                  // The indentation this matrix adds belongs to it, so every way out -- including an
+                  // error return from a nested value -- puts the depth back.
+                  const indent_guard indent{ctx, Opts.prettify ? check_indentation_width(Opts) : 1};
+
+                  if constexpr (Opts.prettify) {
+                     if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
+                  }
+
+                  if constexpr (Opts.prettify) {
+                     if (!emit_literal<R"("layout": )">(ctx, out, ix)) return;
+                  }
+                  else {
+                     if (!emit_literal<R"("layout":)">(ctx, out, ix)) return;
+                  }
+
+                  const auto layout = matrix_header & 0b0000000'1;
+                  if (layout) {
+                     if (!emit_literal<R"("layout_right")">(ctx, out, ix)) return;
+                  }
+                  else {
+                     if (!emit_literal<R"("layout_left")">(ctx, out, ix)) return;
+                  }
+
+                  if (!emit_char(ctx, ',', out, ix)) return;
+                  if constexpr (Opts.prettify) {
+                     if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
+                  }
+
+                  if constexpr (Opts.prettify) {
+                     if (!emit_literal<R"("extents": )">(ctx, out, ix)) return;
+                  }
+                  else {
+                     if (!emit_literal<R"("extents":)">(ctx, out, ix)) return;
+                  }
+
+                  beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
+
+                  if (!emit_char(ctx, ',', out, ix)) return;
+                  if constexpr (Opts.prettify) {
+                     if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
+                  }
+
+                  if constexpr (Opts.prettify) {
+                     if (!emit_literal<R"("value": )">(ctx, out, ix)) return;
+                  }
+                  else {
+                     if (!emit_literal<R"("value":)">(ctx, out, ix)) return;
+                  }
+
+                  beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
+                  if (bool(ctx.error)) [[unlikely]] {
+                     return;
+                  }
                }
 
                if constexpr (Opts.prettify) {
-                  dump<R"("layout": )">(out, ix);
+                  if (!emit_newline_indent<Opts>(ctx, out, ix)) return;
                }
-               else {
-                  dump<R"("layout":)">(out, ix);
-               }
-
-               const auto layout = matrix_header & 0b0000000'1;
-               layout ? dump<R"("layout_right")">(out, ix) : dump<R"("layout_left")">(out, ix);
-
-               dump<','>(out, ix);
-               if constexpr (Opts.prettify) {
-                  dump<'\n'>(out, ix);
-                  dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
-               }
-
-               if constexpr (Opts.prettify) {
-                  dump<R"("extents": )">(out, ix);
-               }
-               else {
-                  dump<R"("extents":)">(out, ix);
-               }
-
-               beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
-               if (bool(ctx.error)) [[unlikely]] {
-                  return;
-               }
-
-               dump<','>(out, ix);
-               if constexpr (Opts.prettify) {
-                  dump<'\n'>(out, ix);
-                  dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
-               }
-
-               if constexpr (Opts.prettify) {
-                  dump<R"("value": )">(out, ix);
-               }
-               else {
-                  dump<R"("value":)">(out, ix);
-               }
-
-               beve_to_json_value<Opts>(ctx, it, end, out, ix, recursive_depth + 1);
-               if (bool(ctx.error)) [[unlikely]] {
-                  return;
-               }
-
-               if constexpr (Opts.prettify) {
-                  ctx.indentation_level -= Opts.indentation_width;
-                  dump<'\n'>(out, ix);
-                  dumpn<Opts.indentation_char>(ctx.indentation_level, out, ix);
-               }
-               else {
-                  --ctx.indentation_level;
-               }
-               dump<'}'>(out, ix);
+               if (!emit_char(ctx, '}', out, ix)) return;
                break;
             }
             case 3: {
@@ -547,39 +678,39 @@ namespace glz
                   if (bool(ctx.error)) [[unlikely]] {
                      return;
                   }
-                  dump<'['>(out, ix);
+                  if (!emit_char(ctx, '[', out, ix)) return;
                   for (size_t i = 0; i < n; ++i) {
-                     dump<'['>(out, ix);
+                     if (!emit_char(ctx, '[', out, ix)) return;
                      beve_to_json_number<Opts>(number_tag, ctx, it, end, out, ix);
                      if (bool(ctx.error)) [[unlikely]] {
                         return;
                      }
-                     dump<','>(out, ix);
+                     if (!emit_char(ctx, ',', out, ix)) return;
                      beve_to_json_number<Opts>(number_tag, ctx, it, end, out, ix);
                      if (bool(ctx.error)) [[unlikely]] {
                         return;
                      }
-                     dump<']'>(out, ix);
+                     if (!emit_char(ctx, ']', out, ix)) return;
                      if (i != n - 1) {
-                        dump<','>(out, ix);
+                        if (!emit_char(ctx, ',', out, ix)) return;
                      }
                   }
-                  dump<']'>(out, ix);
+                  if (!emit_char(ctx, ']', out, ix)) return;
                }
                else {
                   // complex number
                   const auto number_tag = complex_header & 0b111'00000;
-                  dump<'['>(out, ix);
+                  if (!emit_char(ctx, '[', out, ix)) return;
                   beve_to_json_number<Opts>(number_tag, ctx, it, end, out, ix);
                   if (bool(ctx.error)) [[unlikely]] {
                      return;
                   }
-                  dump<','>(out, ix);
+                  if (!emit_char(ctx, ',', out, ix)) return;
                   beve_to_json_number<Opts>(number_tag, ctx, it, end, out, ix);
                   if (bool(ctx.error)) [[unlikely]] {
                      return;
                   }
-                  dump<']'>(out, ix);
+                  if (!emit_char(ctx, ']', out, ix)) return;
                }
 
                break;
@@ -599,6 +730,15 @@ namespace glz
       }
    }
 
+   // Convert a BEVE buffer directly to JSON without intermediate C++ types
+   //
+   // An empty buffer holds no value, which is not a document, and is reported rather than
+   // converted into empty output.
+   //
+   // A buffer holding several values converts to one JSON document per line, the way NDJSON
+   // separates its documents. A delimiter tag writes that newline itself. Where a stream was
+   // concatenated without delimiters -- which read_beve_delimited also accepts -- the newline is
+   // written here instead, so two values never run together into text that is no longer JSON.
    template <auto Opts = glz::opts{}, class BEVEBuffer, class JSONBuffer>
    [[nodiscard]] inline error_ctx beve_to_json(const BEVEBuffer& beve, JSONBuffer& out)
    {
@@ -609,10 +749,25 @@ namespace glz
 
       context ctx{};
 
+      if (it >= end) {
+         return {0, error_code::unexpected_end};
+      }
+
+      bool needs_separator = false;
+
       while (it < end) {
+         const bool is_delimiter = uint8_t(*it) == tag::delimiter;
+
+         if (needs_separator && !is_delimiter) {
+            if (!detail::emit_char(ctx, '\n', out, ix)) {
+               return {ix, ctx.error};
+            }
+         }
+         needs_separator = !is_delimiter;
+
          detail::beve_to_json_value<Opts>(ctx, it, end, out, ix, 0);
          if (bool(ctx.error)) {
-            return {ctx.error};
+            return {ix, ctx.error};
          }
       }
 
@@ -620,6 +775,8 @@ namespace glz
          out.resize(ix);
       }
 
-      return {};
+      // count is the number of bytes written. A resizable buffer carries its own size, but a
+      // fixed-size one has no other way to learn how much of it now holds JSON.
+      return {ix};
    }
 }

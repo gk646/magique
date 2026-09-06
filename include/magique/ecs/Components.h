@@ -37,7 +37,6 @@ namespace magique
         bool operator==(const PositionC&) const = default;
         operator Point() const;
         operator MapID() const;
-
     };
 
     // Denotes an actor
@@ -124,6 +123,8 @@ namespace magique
         // Returns the underlying animation
         const Animation& getAnimation() const;
 
+        bool operator==(const AnimationC&) const = default;
+
     private:
         const Animation* animation = nullptr;
         SpriteAnimation currentAnimation{};
@@ -131,6 +132,7 @@ namespace magique
         uint16_t animationStart = 0;
         AnimationState lastState{UINT8_MAX};
         AnimationState currentState{UINT8_MAX};
+        friend struct glz::meta<AnimationC>;
     };
 
     // A layered animation is more complex and allows to stack animation ontop of each other

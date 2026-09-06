@@ -22,20 +22,6 @@ namespace magique
 
     Point Point::Random(float min, float max) { return {MathRandom(min, max), MathRandom(min, max)}; }
 
-    Point Point::PerpendicularTowardsPoint(Point startPoint, Point direction, Point target)
-    {
-        const auto diff = target - startPoint;
-        const float crossProduct = direction.cross(diff);
-        if (crossProduct > 0)
-        {
-            return direction.perpendicular(true);
-        }
-        else
-        {
-            return direction.perpendicular(false);
-        }
-    }
-
     Point Point::FromRotation(const Rotation& a)
     {
         const float radians = (a.rotation + 180) * DEG2RAD;
@@ -330,6 +316,8 @@ namespace magique
         x = std::min(x, other.x);
         y = std::min(y, other.y);
     }
+
+    std::string_view Point::toString() const { return TextFormat("(%.2f, %.2f)", x, y); }
 
     //----------------- RECT -----------------//
 

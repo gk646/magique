@@ -300,7 +300,7 @@ namespace glz
             return std::nullopt;
          }
          int value;
-         auto result = detail::from_chars(s.data(), s.data() + s.size(), value);
+         auto result = std::from_chars(s.data(), s.data() + s.size(), value);
          if (result.ec == std::errc()) {
             return value;
          }
@@ -393,7 +393,13 @@ namespace glz
                   result.error = true;
                }
                else {
+                  // A step of 0 is invalid. Preserve the value (rather than discarding it) so the
+                  // step==0 guard in handle_slice rejects it even though the read paths do not yet
+                  // consult `error`, and also flag the token as malformed for callers that do.
                   result.step = val;
+                  if (*val == 0) {
+                     result.error = true;
+                  }
                }
             }
          };
@@ -423,17 +429,24 @@ namespace glz
 
    namespace detail
    {
-      template <auto Opts = opts{}, class T>
-         requires(Opts.format == JSON && not readable_array_t<T>)
+      // The slice/index helpers below intentionally do not default `Opts`. They must inherit the
+      // caller's parse options, and a defaulted `Opts` makes a call site that forgets `<Opts>`
+      // compile silently against `opts{}`, resetting every option. That is how #2710 read past the
+      // end of a non-null-terminated buffer: `null_terminated` reverted to true, so the end guards
+      // in `handle_slice` compiled out while the caller was parsing a buffer with no '\0' sentinel.
+      // Requiring an explicit `Opts` turns that mistake into a compile error.
+      template <auto Opts, class T>
+         requires(Opts.format == JSON && not readable_array_t<T> &&
+                  not(tuple_t<std::decay_t<T>> || is_std_tuple<std::decay_t<T>>))
       inline void handle_slice(const jmespath::ArrayParseResult&, T&&, context& ctx, auto&&, auto&&)
       {
          ctx.error = error_code::syntax_error;
       }
 
-      template <auto Opts = opts{}, class T>
-         requires(Opts.format == JSON && readable_array_t<T>)
+      template <auto Opts, class T>
+         requires(Opts.format == JSON && (tuple_t<std::decay_t<T>> || is_std_tuple<std::decay_t<T>>))
       inline void handle_slice(const jmespath::ArrayParseResult& decomposed_key, T&& value, context& ctx, auto&& it,
-                               auto&& end)
+                               auto end)
       {
          if (skip_ws<Opts>(ctx, it, end)) {
             return;
@@ -443,11 +456,212 @@ namespace glz
          int32_t step_idx = decomposed_key.step.value_or(1);
          bool has_negative_index = (decomposed_key.start.value_or(0) < 0) || (decomposed_key.end.value_or(0) < 0);
 
+         // Only support step == 1 and positive indices for now for tuples
+         if (step_idx != 1 || has_negative_index) {
+            ctx.error = error_code::syntax_error;
+            return;
+         }
+
+         // A non-null-terminated buffer has no '\0' sentinel, so guard each structural *it read
+         // against the end of input. Compiles out entirely when null_terminated.
+         const auto at_end = [&]() -> bool {
+            if constexpr (not Opts.null_terminated) {
+               if (it == end) [[unlikely]] {
+                  ctx.error = error_code::unexpected_end;
+                  return true;
+               }
+            }
+            return false;
+         };
+
+         const int32_t start_idx = decomposed_key.start.value_or(0);
+         const int32_t end_idx = decomposed_key.end.value_or((std::numeric_limits<int32_t>::max)());
+
+         if (at_end()) return;
+         if (*it == ']') {
+            ++it;
+            return;
+         }
+
+         int32_t current_index = 0;
+
+         // Iterate tuple elements
+         using TupleType = std::decay_t<T>;
+         constexpr size_t N = glz::tuple_size_v<TupleType>;
+
+         for_each<N>([&]<size_t I>() {
+            if (bool(ctx.error)) return;
+
+            int32_t target_idx = start_idx + I;
+
+            // If target is beyond the slice request
+            if (target_idx >= end_idx) {
+               return;
+            }
+
+            // Skip until target_idx
+            while (current_index < target_idx) {
+               if (at_end()) return;
+               if (*it == ']') {
+                  // Array ended before we reached target
+                  ctx.error = error_code::array_element_not_found;
+                  return;
+               }
+               skip_value<JSON>::op<Opts>(ctx, it, end);
+               if (bool(ctx.error)) return;
+               if (at_end()) return;
+               if (*it == ',') {
+                  ++it;
+                  skip_ws<Opts>(ctx, it, end);
+               }
+               else if (*it == ']') {
+                  return;
+               }
+               current_index++;
+            }
+
+            // Now current_index == target_idx
+            if (at_end()) return;
+            if (*it == ']') {
+               ctx.error = error_code::array_element_not_found;
+               return;
+            }
+
+            if constexpr (is_std_tuple<TupleType>) {
+               parse<Opts.format>::template op<Opts>(std::get<I>(value), ctx, it, end);
+            }
+            else {
+               parse<Opts.format>::template op<Opts>(glz::get<I>(value), ctx, it, end);
+            }
+            if (bool(ctx.error)) return;
+
+            if (at_end()) return;
+            if (*it == ',') {
+               ++it;
+               skip_ws<Opts>(ctx, it, end);
+            }
+            current_index++;
+         });
+
+         if (bool(ctx.error)) return;
+
+         // Consume remainder of array
+         while (true) {
+            if (at_end()) return;
+            if (*it == ']') break;
+            skip_value<JSON>::op<Opts>(ctx, it, end);
+            if (bool(ctx.error)) return;
+            if (at_end()) return;
+            if (*it == ',') {
+               ++it;
+               skip_ws<Opts>(ctx, it, end);
+            }
+         }
+         ++it; // consume ']'
+      }
+
+      // Advances `it` to the first character of array element `n`, resolving a negative index
+      // against the array length per JMESPath (e.g. [-1] is the last element). On entry `it`
+      // must point at the first element (just past '['), or at ']' for an empty array. On
+      // success `it` is positioned at element `n`; otherwise ctx.error is set.
+      template <auto Opts>
+      inline void seek_array_index(int32_t n, context& ctx, auto&& it, auto end)
+      {
+         const auto at_end = [&]() -> bool {
+            if constexpr (not Opts.null_terminated) {
+               if (it == end) [[unlikely]] {
+                  ctx.error = error_code::unexpected_end;
+                  return true;
+               }
+            }
+            return false;
+         };
+
+         if (n < 0) {
+            // A negative index counts from the back, so the length must be known first. Scan the
+            // array to count elements, then rewind and fall through to the forward skip below.
+            if (skip_ws<Opts>(ctx, it, end)) return;
+            auto* const array_start = it;
+            int32_t count = 0;
+            if (at_end()) return;
+            if (*it != ']') {
+               while (true) {
+                  skip_value<JSON>::op<Opts>(ctx, it, end);
+                  if (bool(ctx.error)) [[unlikely]]
+                     return;
+                  ++count;
+                  if (skip_ws<Opts>(ctx, it, end)) return;
+                  if (at_end()) return;
+                  if (*it == ']') break;
+                  if (*it != ',') {
+                     ctx.error = error_code::array_element_not_found;
+                     return;
+                  }
+                  ++it;
+                  if (skip_ws<Opts>(ctx, it, end)) return;
+               }
+            }
+            it = array_start;
+            n += count;
+            if (n < 0) {
+               ctx.error = error_code::array_element_not_found;
+               return;
+            }
+         }
+
+         for (int32_t i = 0; i < n; ++i) {
+            skip_value<JSON>::op<Opts>(ctx, it, end);
+            if (bool(ctx.error)) [[unlikely]]
+               return;
+            if (skip_ws<Opts>(ctx, it, end)) return;
+            if (at_end()) return;
+            if (*it != ',') {
+               ctx.error = error_code::array_element_not_found;
+               return;
+            }
+            ++it;
+            if (skip_ws<Opts>(ctx, it, end)) return;
+         }
+      }
+
+      template <auto Opts, class T>
+         requires(Opts.format == JSON && readable_array_t<T>)
+      inline void handle_slice(const jmespath::ArrayParseResult& decomposed_key, T&& value, context& ctx, auto&& it,
+                               auto end)
+      {
+         if (skip_ws<Opts>(ctx, it, end)) {
+            return;
+         }
+
+         // A non-null-terminated buffer has no '\0' sentinel, so guard each structural *it read
+         // against the end of input. Compiles out entirely when null_terminated.
+         const auto at_end = [&]() -> bool {
+            if constexpr (not Opts.null_terminated) {
+               if (it == end) [[unlikely]] {
+                  ctx.error = error_code::unexpected_end;
+                  return true;
+               }
+            }
+            return false;
+         };
+
+         // Determine slice parameters
+         int32_t step_idx = decomposed_key.step.value_or(1);
+         bool has_negative_index = (decomposed_key.start.value_or(0) < 0) || (decomposed_key.end.value_or(0) < 0);
+
+         // A step of 0 is not a valid slice; without this guard the loops below would never
+         // terminate (the index never advances).
+         if (step_idx == 0) [[unlikely]] {
+            ctx.error = error_code::syntax_error;
+            return;
+         }
+
          // If we have negative indices or step != 1, fall back to the original method (read all then slice)
          if (step_idx != 1 || has_negative_index) {
             // Original fallback behavior:
             // Read entire array into value first
             value.clear();
+            if (at_end()) return;
             if (*it == ']') {
                // empty array
                ++it; // consume ']'
@@ -461,6 +675,7 @@ namespace glz
                   if (skip_ws<Opts>(ctx, it, end)) {
                      return;
                   }
+                  if (at_end()) return;
                   if (*it == ']') {
                      ++it;
                      break;
@@ -478,13 +693,25 @@ namespace glz
 
             // Now do the slicing
             const int32_t size = static_cast<int32_t>(value.size());
+            const bool negative_step = step_idx < 0;
+
+            // Resolve a (possibly negative) bound to a concrete index following Python/JMESPath
+            // slice semantics. The valid range depends on direction: a forward step walks
+            // [0, size]; a negative step walks the range [size-1, -1], where the -1 sentinel
+            // means "past the front, include index 0".
+            const int32_t lower = negative_step ? -1 : 0;
+            const int32_t upper = negative_step ? size - 1 : size;
             auto wrap_index = [&](int32_t idx) {
                if (idx < 0) idx += size;
-               return std::clamp(idx, int32_t{0}, size);
+               return std::clamp(idx, lower, upper);
             };
 
-            const int32_t start_idx = wrap_index(decomposed_key.start.value_or(0));
-            const int32_t end_idx = wrap_index(decomposed_key.end.value_or(size));
+            // An omitted bound defaults to the start/end of the iteration range for the
+            // chosen direction (e.g. "[::-1]" reverses the whole array).
+            const int32_t start_idx =
+               decomposed_key.start.has_value() ? wrap_index(*decomposed_key.start) : (negative_step ? upper : lower);
+            const int32_t end_idx =
+               decomposed_key.end.has_value() ? wrap_index(*decomposed_key.end) : (negative_step ? lower : upper);
 
             if (step_idx == 1) {
                if (start_idx < end_idx) {
@@ -499,21 +726,25 @@ namespace glz
                   value.clear();
                }
             }
-            else {
-               // For steps != 1 (or negative steps), the fallback path was already chosen.
-               // Just apply the same logic as before.
+            else if (step_idx > 0) {
+               // Positive step compacts in place: the write index never overtakes the
+               // read index, so every read stays within the live range.
                std::size_t dest = 0;
-               if (step_idx > 0) {
-                  for (int32_t i = start_idx; i < end_idx; i += step_idx) {
-                     value[dest++] = std::move(value[i]);
-                  }
-               }
-               else {
-                  for (int32_t i = start_idx; i > end_idx; i += step_idx) {
-                     value[dest++] = std::move(value[i]);
-                  }
+               for (int32_t i = start_idx; i < end_idx; i += step_idx) {
+                  value[dest++] = std::move(value[i]);
                }
                value.resize(dest);
+            }
+            else {
+               // A negative step reads in reverse, so compacting in place would overwrite
+               // elements before they are read. Build the slice in a separate buffer instead.
+               // wrap_index already clamps start_idx to at most size-1 and end_idx to at
+               // least -1, so every read below stays within [0, size).
+               std::decay_t<T> result;
+               for (int32_t i = start_idx; i > end_idx; i += step_idx) {
+                  result.emplace_back(std::move(value[i]));
+               }
+               value = std::move(result);
             }
 
             return;
@@ -525,6 +756,7 @@ namespace glz
          const int32_t end_idx = decomposed_key.end.value_or((std::numeric_limits<int32_t>::max)());
 
          // If empty array
+         if (at_end()) return;
          if (*it == ']') {
             ++it; // consume ']'
             return;
@@ -536,6 +768,7 @@ namespace glz
             if (skip_ws<Opts>(ctx, it, end)) {
                return;
             }
+            if (at_end()) return;
 
             // Decide whether we read or skip this element
             if (current_index < start_idx) {
@@ -560,6 +793,7 @@ namespace glz
             if (skip_ws<Opts>(ctx, it, end)) {
                return;
             }
+            if (at_end()) return;
             if (*it == ']') {
                ++it; // finished reading array
                break;
@@ -618,173 +852,56 @@ namespace glz
             static constexpr auto decomposed_key = jmespath::parse_jmespath_token(tokens[I]);
             static constexpr auto key = decomposed_key.key;
 
+            // A malformed token (e.g. an index/bound literal that overflows int32, or an
+            // invalid slice) is rejected at compile time, matching tokenize_as_array which
+            // already fails to compile on tokenization errors.
+            static_assert(not decomposed_key.error, "invalid JMESPath expression");
+
             if constexpr (decomposed_key.is_array_access) {
-               // If we have a key, that means we're looking into an object like: key[0:5]
-               if constexpr (key.empty()) {
-                  if (skip_ws<Opts>(ctx, it, end)) {
-                     return;
-                  }
-                  // We expect the JSON at this level to be an array
-                  if (match_invalid_end<'[', Opts>(ctx, it, end)) {
-                     return;
-                  }
+               // `finalize_tokens` splits every token at '[' and pushes any key prefix out as its
+               // own token, so a bracketed token always begins with '['. An array-access token
+               // therefore always has an empty key: "a[0]" tokenizes as "a" then "[0]", and the
+               // object-member step is handled by the preceding key token. The `key[...]` form is
+               // consequently unreachable, so there is no branch for it here. If tokenization ever
+               // stops splitting, this fires rather than silently taking an unexercised path.
+               static_assert(key.empty(), "array-access token carries a key; jmespath tokenization changed");
 
-                  // If this is a slice (colon_count > 0)
-                  if constexpr (decomposed_key.colon_count > 0) {
-                     detail::handle_slice<Opts>(decomposed_key, value, ctx, it, end);
-                  }
-                  else {
-                     // SINGLE INDEX SCENARIO (no slice, just an index)
-                     if constexpr (decomposed_key.start.has_value()) {
-                        constexpr auto n = decomposed_key.start.value();
-
-                        if constexpr (I == (N - 1)) {
-                           // Skip until we reach the target element n
-                           for (int32_t i = 0; i < n; ++i) {
-                              skip_value<JSON>::op<Opts>(ctx, it, end);
-                              if (bool(ctx.error)) [[unlikely]]
-                                 return;
-
-                              if (skip_ws<Opts>(ctx, it, end)) {
-                                 return;
-                              }
-                              if (*it != ',') {
-                                 ctx.error = error_code::array_element_not_found;
-                                 return;
-                              }
-                              ++it;
-                              if (skip_ws<Opts>(ctx, it, end)) {
-                                 return;
-                              }
-                           }
-
-                           // Now read the element at index n
-                           parse<Opts.format>::template op<Opts>(value, ctx, it, end);
-                        }
-                        else {
-                           // Not the last token. We must still parse the element at index n so the next indexing can
-                           // proceed.
-                           for (int32_t i = 0; i < n; ++i) {
-                              skip_value<JSON>::op<Opts>(ctx, it, end);
-                              if (bool(ctx.error)) [[unlikely]]
-                                 return;
-
-                              if (skip_ws<Opts>(ctx, it, end)) {
-                                 return;
-                              }
-                              if (*it != ',') {
-                                 ctx.error = error_code::array_element_not_found;
-                                 return;
-                              }
-                              ++it;
-                              if (skip_ws<Opts>(ctx, it, end)) {
-                                 return;
-                              }
-                           }
-                        }
-                     }
-                     else {
-                        ctx.error = error_code::array_element_not_found;
-                        return;
-                     }
-                  }
-
-                  // After handling the array access, we're done for this token
+               if (skip_ws<Opts>(ctx, it, end)) {
                   return;
                }
+               // We expect the JSON at this level to be an array
+               if (match_invalid_end<'[', Opts>(ctx, it, end)) {
+                  return;
+               }
+
+               // If this is a slice (colon_count > 0)
+               if constexpr (decomposed_key.colon_count > 0) {
+                  detail::handle_slice<Opts>(decomposed_key, value, ctx, it, end);
+               }
                else {
-                  // Object scenario with a key, like: key[0:5]
-                  if (match_invalid_end<'{', Opts>(ctx, it, end)) {
-                     return;
-                  }
+                  // SINGLE INDEX SCENARIO (no slice, just an index)
+                  if constexpr (decomposed_key.start.has_value()) {
+                     constexpr auto n = decomposed_key.start.value();
 
-                  while (true) {
-                     if (skip_ws<Opts>(ctx, it, end)) {
-                        return;
-                     }
-                     if (match<'"'>(ctx, it)) {
-                        return;
-                     }
-
-                     auto* start = it;
-                     skip_string_view<Opts>(ctx, it, end);
+                     // Position `it` at element n (negative indices count from the back).
+                     detail::seek_array_index<Opts>(int32_t(n), ctx, it, end);
                      if (bool(ctx.error)) [[unlikely]]
                         return;
-                     const sv k = {start, size_t(it - start)};
-                     ++it;
 
-                     if (key.size() == k.size() && comparitor<key>(k.data())) {
-                        if (skip_ws<Opts>(ctx, it, end)) {
-                           return;
-                        }
-                        if (match_invalid_end<':', Opts>(ctx, it, end)) {
-                           return;
-                        }
-                        if (skip_ws<Opts>(ctx, it, end)) {
-                           return;
-                        }
-                        if (match_invalid_end<'[', Opts>(ctx, it, end)) {
-                           return;
-                        }
-
-                        // Distinguish single index vs slice using colon_count
-                        if constexpr (decomposed_key.colon_count > 0) {
-                           detail::handle_slice<Opts, decomposed_key>(value, ctx, it, end);
-                        }
-                        else {
-                           // SINGLE INDEX SCENARIO (colon_count == 0)
-                           if constexpr (decomposed_key.start.has_value()) {
-                              // Skip until we reach the target element
-                              constexpr auto n = decomposed_key.start.value();
-                              for (int32_t i = 0; i < n; ++i) {
-                                 skip_value<JSON>::op<Opts>(ctx, it, end);
-                                 if (bool(ctx.error)) [[unlikely]]
-                                    return;
-
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                                 if (*it != ',') {
-                                    ctx.error = error_code::array_element_not_found;
-                                    return;
-                                 }
-                                 ++it;
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                              }
-
-                              if (skip_ws<Opts>(ctx, it, end)) {
-                                 return;
-                              }
-
-                              if constexpr (I == (N - 1)) {
-                                 parse<Opts.format>::template op<Opts>(value, ctx, it, end);
-                              }
-                              return;
-                           }
-                           else {
-                              ctx.error = error_code::array_element_not_found;
-                              return;
-                           }
-                        }
-                     }
-                     else {
-                        skip_value<JSON>::op<Opts>(ctx, it, end);
-                        if (bool(ctx.error)) [[unlikely]] {
-                           return;
-                        }
-                        if (skip_ws<Opts>(ctx, it, end)) {
-                           return;
-                        }
-                        if (*it != ',') {
-                           ctx.error = error_code::key_not_found;
-                           return;
-                        }
-                        ++it;
+                     // For the final token read the element into value; otherwise leave `it`
+                     // positioned so the next token can continue indexing into it.
+                     if constexpr (I == (N - 1)) {
+                        parse<Opts.format>::template op<Opts>(value, ctx, it, end);
                      }
                   }
+                  else {
+                     ctx.error = error_code::array_element_not_found;
+                     return;
+                  }
                }
+
+               // After handling the array access, we're done for this token
+               return;
             }
             else {
                // If it's not array access, we are dealing with an object key
@@ -801,7 +918,7 @@ namespace glz
                   }
 
                   auto* start = it;
-                  skip_string_view<Opts>(ctx, it, end);
+                  skip_string_view(ctx, it, end);
                   if (bool(ctx.error)) [[unlikely]]
                      return;
                   const sv k = {start, size_t(it - start)};
@@ -847,7 +964,7 @@ namespace glz
          buffer.resize(buffer.size() - padding_bytes);
       }
 
-      return {ctx.error, ctx.custom_error_message, size_t(it - start), ctx.includer_error};
+      return {size_t(it - start), ctx.error, ctx.custom_error_message};
    }
 
    // A "compiled" jmespath expression, which can be pre-computed for efficient traversal
@@ -880,7 +997,7 @@ namespace glz
    [[nodiscard]] inline error_ctx read_jmespath(const jmespath_expression& expression, T&& value, Buffer&& buffer)
    {
       if (bool(expression.error)) {
-         return {error_code::syntax_error, "JMESPath invalid expression"};
+         return {0, error_code::syntax_error, "JMESPath invalid expression"};
       }
 
       const auto& tokens = expression.tokens;
@@ -917,170 +1034,56 @@ namespace glz
                const auto decomposed_key = jmespath::parse_jmespath_token(tokens[I]);
                const auto& key = decomposed_key.key;
 
+               // A malformed token (e.g. an index/bound literal that overflows int32, or an
+               // invalid slice) must error rather than silently fall back to default bounds.
+               if (decomposed_key.error) {
+                  ctx.error = error_code::syntax_error;
+                  return;
+               }
+
                if (decomposed_key.is_array_access) {
-                  if (key.empty()) {
-                     // Top-level array scenario
-                     if (skip_ws<Opts>(ctx, it, end)) {
-                        return;
-                     }
-                     if (match_invalid_end<'[', Opts>(ctx, it, end)) {
-                        return;
-                     }
+                  // Unreachable by construction: `finalize_tokens` splits every token at '[', so an
+                  // array-access token always has an empty key (see the static_assert on the
+                  // compile-time path). Guard rather than silently mis-parse if that ever changes.
+                  if (not key.empty()) [[unlikely]] {
+                     ctx.error = error_code::syntax_error;
+                     return;
+                  }
 
-                     if (decomposed_key.colon_count > 0) {
-                        // Slice scenario
-                        detail::handle_slice(decomposed_key, value, ctx, it, end);
-                        return;
-                     }
-                     else {
-                        // Single index scenario
-                        if (decomposed_key.start.has_value()) {
-                           const int32_t n = decomposed_key.start.value();
+                  // Top-level array scenario
+                  if (skip_ws<Opts>(ctx, it, end)) {
+                     return;
+                  }
+                  if (match_invalid_end<'[', Opts>(ctx, it, end)) {
+                     return;
+                  }
 
-                           if (I == (N - 1)) {
-                              // Skip until we reach the target element n
-                              for (int32_t i = 0; i < n; ++i) {
-                                 skip_value<JSON>::op<Opts>(ctx, it, end);
-                                 if (bool(ctx.error)) [[unlikely]]
-                                    return;
-
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                                 if (*it != ',') {
-                                    ctx.error = error_code::array_element_not_found;
-                                    return;
-                                 }
-                                 ++it;
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                              }
-
-                              // Now read the element at index n
-                              parse<Opts.format>::template op<Opts>(value, ctx, it, end);
-                           }
-                           else {
-                              // Not the last token. We must still parse the element at index n so the next indexing can
-                              // proceed.
-                              for (int32_t i = 0; i < n; ++i) {
-                                 skip_value<JSON>::op<Opts>(ctx, it, end);
-                                 if (bool(ctx.error)) [[unlikely]]
-                                    return;
-
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                                 if (*it != ',') {
-                                    ctx.error = error_code::array_element_not_found;
-                                    return;
-                                 }
-                                 ++it;
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-                              }
-                           }
-                        }
-                        else {
-                           ctx.error = error_code::array_element_not_found;
-                           return;
-                        }
-                        return;
-                     }
+                  if (decomposed_key.colon_count > 0) {
+                     // Slice scenario
+                     detail::handle_slice<Opts>(decomposed_key, value, ctx, it, end);
+                     return;
                   }
                   else {
-                     // Object scenario: key[...]
-                     if (match_invalid_end<'{', Opts>(ctx, it, end)) {
-                        return;
-                     }
+                     // Single index scenario
+                     if (decomposed_key.start.has_value()) {
+                        const int32_t n = decomposed_key.start.value();
 
-                     while (true) {
-                        if (skip_ws<Opts>(ctx, it, end)) {
-                           return;
-                        }
-                        if (match<'"'>(ctx, it)) {
-                           return;
-                        }
-
-                        auto* start_pos = it;
-                        skip_string_view<Opts>(ctx, it, end);
+                        // Position `it` at element n (negative indices count from the back).
+                        detail::seek_array_index<Opts>(n, ctx, it, end);
                         if (bool(ctx.error)) [[unlikely]]
                            return;
-                        const sv k = {start_pos, size_t(it - start_pos)};
-                        ++it;
 
-                        if (key.size() == k.size() && memcmp(key.data(), k.data(), key.size()) == 0) {
-                           if (skip_ws<Opts>(ctx, it, end)) {
-                              return;
-                           }
-                           if (match_invalid_end<':', Opts>(ctx, it, end)) {
-                              return;
-                           }
-                           if (skip_ws<Opts>(ctx, it, end)) {
-                              return;
-                           }
-                           if (match_invalid_end<'[', Opts>(ctx, it, end)) {
-                              return;
-                           }
-
-                           if (decomposed_key.colon_count > 0) {
-                              // Slice scenario
-                              detail::handle_slice(decomposed_key, value, ctx, it, end);
-                              return;
-                           }
-                           else {
-                              // Single index scenario
-                              if (decomposed_key.start.has_value()) {
-                                 int32_t n = decomposed_key.start.value();
-                                 for (int32_t i = 0; i < n; ++i) {
-                                    skip_value<JSON>::op<Opts>(ctx, it, end);
-                                    if (bool(ctx.error)) [[unlikely]]
-                                       return;
-
-                                    if (skip_ws<Opts>(ctx, it, end)) {
-                                       return;
-                                    }
-                                    if (*it != ',') {
-                                       ctx.error = error_code::array_element_not_found;
-                                       return;
-                                    }
-                                    ++it;
-                                    if (skip_ws<Opts>(ctx, it, end)) {
-                                       return;
-                                    }
-                                 }
-
-                                 if (skip_ws<Opts>(ctx, it, end)) {
-                                    return;
-                                 }
-
-                                 if (I == (N - 1)) {
-                                    parse<Opts.format>::template op<Opts>(value, ctx, it, end);
-                                 }
-                                 return;
-                              }
-                              else {
-                                 ctx.error = error_code::array_element_not_found;
-                                 return;
-                              }
-                           }
-                        }
-                        else {
-                           skip_value<JSON>::op<Opts>(ctx, it, end);
-                           if (bool(ctx.error)) [[unlikely]] {
-                              return;
-                           }
-                           if (skip_ws<Opts>(ctx, it, end)) {
-                              return;
-                           }
-                           if (*it != ',') {
-                              ctx.error = error_code::key_not_found;
-                              return;
-                           }
-                           ++it;
+                        // For the final token read the element into value; otherwise leave `it`
+                        // positioned so the next token can continue indexing into it.
+                        if (I == (N - 1)) {
+                           parse<Opts.format>::template op<Opts>(value, ctx, it, end);
                         }
                      }
+                     else {
+                        ctx.error = error_code::array_element_not_found;
+                        return;
+                     }
+                     return;
                   }
                }
                else {
@@ -1098,7 +1101,7 @@ namespace glz
                      }
 
                      auto* start_pos = it;
-                     skip_string_view<Opts>(ctx, it, end);
+                     skip_string_view(ctx, it, end);
                      if (bool(ctx.error)) [[unlikely]]
                         return;
                      const sv k = {start_pos, size_t(it - start_pos)};
@@ -1154,7 +1157,7 @@ namespace glz
          buffer.resize(buffer.size() - padding_bytes);
       }
 
-      return {ctx.error, ctx.custom_error_message, size_t(it - start), ctx.includer_error};
+      return {size_t(it - start), ctx.error, ctx.custom_error_message};
    }
 
 }

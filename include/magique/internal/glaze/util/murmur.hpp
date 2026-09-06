@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <bit>
 #include <cstdint>
 #include <cstring>
 #include <string>
@@ -15,7 +16,8 @@ namespace glz
    constexpr uint32_t to_uint32(const auto* bytes) noexcept
    {
       uint32_t res{};
-      if (std::is_constant_evaluated()) {
+      if consteval {
+         // Compile-time: build value byte-by-byte in little-endian order
          for (size_t i = 0; i < 4; ++i) {
             res |= static_cast<uint32_t>(bytes[i]) << (8 * i);
          }
@@ -23,6 +25,10 @@ namespace glz
       else {
          // Note: memcpy is way faster with compiletime known length
          std::memcpy(&res, bytes, 4);
+         // On big endian: byteswap to match little-endian layout
+         if constexpr (std::endian::native == std::endian::big) {
+            res = std::byteswap(res);
+         }
       }
       return res;
    }

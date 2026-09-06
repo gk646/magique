@@ -1,4 +1,3 @@
-#include <magique/util/STL.h>
 
 namespace magique
 {

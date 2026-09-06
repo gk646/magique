@@ -253,9 +253,7 @@ namespace magique
             bool operator!=(const Iterator& other) const { return curr != other.curr; }
         };
 
-
         auto begin() { return Iterator{from}; }
-
         auto end() { return Iterator{to}; }
 
     private:
@@ -320,14 +318,14 @@ namespace magique
         alignas(64) std::vector<T> vec;
     };
 
-    // Dynamically sized 2D grid where for each cell you can store custom data
+    // Dynamically sized 2D container where for each cell you can store custom data
     // Stored in row-major format e.g. data lies in memory row-per-row flattened out
     // E.g. the fog of war for a map
     template <typename T>
-    struct DynamicGridContainer final
+    struct DynamicGrid final
     {
-        DynamicGridContainer() = default;
-        DynamicGridContainer(int cols, int rows, const T& val = {}) : data(cols * rows, val), cols(cols), rows(rows) {}
+        DynamicGrid() = default;
+        DynamicGrid(int cols, int rows, const T& val = {}) : data(cols * rows, val), cols(cols), rows(rows) {}
 
         const T& operator()(const Point& point) const
         {
@@ -456,11 +454,11 @@ namespace magique
         // Iterates directly over the flattened vector - so row per row
         // The point will however always be correct
         // Returns [Point: pos, T&: value]
-        Iterator<DynamicGridContainer> begin() { return Iterator(this, 0); }
-        Iterator<DynamicGridContainer> end() { return Iterator(this, cols * rows); }
+        Iterator<DynamicGrid> begin() { return Iterator(this, 0); }
+        Iterator<DynamicGrid> end() { return Iterator(this, cols * rows); }
 
-        Iterator<const DynamicGridContainer> begin() const { return Iterator(this, 0); }
-        Iterator<const DynamicGridContainer> end() const { return Iterator(this, cols * rows); }
+        Iterator<const DynamicGrid> begin() const { return Iterator(this, 0); }
+        Iterator<const DynamicGrid> end() const { return Iterator(this, cols * rows); }
 
     private:
         std::vector<T> data;
@@ -598,6 +596,8 @@ namespace magique
         // Resets the allocator to its start state
         void destroy() { slots.clear(); }
     };
+
+
 
 } // namespace magique
 
