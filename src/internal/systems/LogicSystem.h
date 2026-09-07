@@ -131,7 +131,7 @@ namespace magique
             Point pos = posC.pos;
 
             if (hasCollision)
-                pos += colC->getMidOffset();
+                pos = posC.getMiddle(*colC);
 
             const auto map = posC.map;
 

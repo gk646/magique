@@ -51,7 +51,6 @@ namespace magique
     // Returns true if the thing collides with any static collision objects
     // Note: This performs a direct collision check with all relevant static objects nearby each time
     bool CheckCollisionEntityStatic(Entity e);
-    bool CheckCollisionRectStatic(const Rect& r, Entity e);
 
     //================= CIRCLE =================//
 

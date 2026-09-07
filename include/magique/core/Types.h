@@ -161,6 +161,10 @@ namespace magique
         //      - fill [0-1] how much the rectangle is filled
         static Rect Filled(const Rect& area, float fill, Direction direction);
 
+        // Returns the mid point of any rectangle specified by two diagonal corner points
+        // Note: This is useful for rotated rectangles
+        static Point Mid(Point topLeft, Point bottomRight);
+
         Rect& operator+=(const Point& p);     // only x and y
         Rect operator+(const Point& p) const; // only x and y
         Rect& operator=(const Point& p);      // only x and y

@@ -97,7 +97,7 @@ namespace magique
     void DrawRectFrame(const Rect& bounds, const Color& tint);
 
     // Draws a frame but filled
-    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillPercent = 1.0F,
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillRatio = 1.0F,
                              Direction dir = Direction::RIGHT);
 
     // Returns the normalized position on the screen of the given world pos (e.g. 0.0 - 1.0)

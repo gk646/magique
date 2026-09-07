@@ -92,7 +92,7 @@ namespace magique
             const auto it = ecs.typeMap.find(type);
             if (it == ecs.typeMap.end())
             {
-                LOG_ERROR("No method create method registered for that entity type!");
+                LOG_ERROR("No method create method registered for that entity type: %d", (int)type);
                 return entt::null; // EntityType not registered
             }
             it->second(entity, type);

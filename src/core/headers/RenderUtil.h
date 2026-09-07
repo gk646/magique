@@ -37,37 +37,21 @@ namespace magique
         const auto smoothing = 1.0F - config.cameraSmoothing; // The higher the value the smoother
         const auto cameraEntity = CameraGetEntity();
 
+        if (!EntityExists(cameraEntity))
+            return;
+
         Point targetPosition{0, 0};
-        if (EntityExists(cameraEntity)) [[likely]]
-        {
-            targetPosition = internal::REGISTRY.get<const PositionC>(cameraEntity).pos.floored();
-        }
+        targetPosition = ComponentGet<PositionC>(cameraEntity).pos;
 
         // Apply manual offset if specified
-        if (config.cameraPositionOff.x != 0.0F || config.cameraPositionOff.y != 0.0F)
+        if (config.cameraTargetOff != 0) [[unlikely]]
         {
-            targetPosition.x += config.cameraPositionOff.x;
-            targetPosition.y += config.cameraPositionOff.y;
+            targetPosition += config.cameraTargetOff;
         }
-        else // Center the camera on the collision shape if provided
+        // Center the camera on the collision shape
+        else [[likely]]
         {
-            const CollisionC* coll = internal::REGISTRY.try_get<CollisionC>(cameraEntity);
-            if (coll != nullptr)
-            {
-                switch (coll->shape)
-                {
-                case Shape::RECT:
-                    targetPosition.x += coll->p1 / 2.0F;
-                    targetPosition.y += coll->p2 / 2.0F;
-                    break;
-                case Shape::CIRCLE:
-                    targetPosition.x += coll->p1;
-                    targetPosition.y += coll->p1;
-                    break;
-                case Shape::TRIANGLE:
-                    break;
-                }
-            }
+            targetPosition = CollisionC::GetMiddle(cameraEntity);
         }
 
         data.camera.target.x = std::lerp(data.camera.target.x, targetPosition.x, smoothing);

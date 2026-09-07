@@ -8,7 +8,33 @@
 
 namespace magique
 {
-    Point PositionC::getMiddle(const CollisionC& col) const { return pos + col.getMidOffset(); }
+    Point PositionC::getMiddle(const CollisionC& col) const
+    {
+        switch (col.shape)
+        {
+        [[likely]] case Shape::RECT:
+            {
+                if (rotation == 0) [[likely]]
+                    return pos + col.offset + Point{col.p1 * 0.5F, col.p2};
+
+                RECT_ROTATE_POINTS(pa, (*this), col)
+                return Rect::Mid({paX[0], paY[0]}, {paX[2], paY[2]});
+            }
+        case Shape::CIRCLE:
+            return pos + col.offset + Point{col.p1, col.p1};
+        case Shape::TRIANGLE:
+            {
+                if (rotation == 0)
+                {
+                    return GetBBTriangle(pos.x, pos.y, pos.x + col.p1, pos.y + col.p2, pos.x + col.p3, pos.y + col.p4)
+                        .mid();
+                }
+                TRI_ROTATE_POINTS(pa, (*this), col);
+                return GetBBTriangle(paX[0], paY[0], paX[1], paY[1], paX[2], paY[2]).mid();
+            }
+        }
+        return pos;
+    }
 
     Rect PositionC::getBounds(const CollisionC& col) const
     {

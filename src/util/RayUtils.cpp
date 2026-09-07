@@ -177,11 +177,11 @@ namespace magique
         DrawLineV(rightStart.floored(), rightEnd, tint);
     }
 
-    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillPercent,
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillRatio,
                              Direction dir)
     {
-        auto fillRect = Rect::Filled(bounds.shrink(2.0F), fillPercent, dir).floor();
-        const auto outRect = Rect::Filled(bounds, fillPercent, dir).floor();
+        auto fillRect = Rect::Filled(bounds.shrink(2.0F), fillRatio, dir).floor();
+        const auto outRect = Rect::Filled(bounds, fillRatio, dir).floor();
         fillRect.width = std::min(outRect.width - 1, fillRect.width);
 
         DrawRectangleRec(fillRect, fill);

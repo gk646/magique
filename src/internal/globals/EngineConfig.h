@@ -24,9 +24,9 @@ namespace magique
     {
         Theme theme{};
         Font font{};
-        Timing timing;                          // Thread timing information
+        Timing timing{};                        // Thread timing information
         Point cameraViewOff{};                  // Manual camera view offset
-        Point cameraPositionOff{};              // Manual camera position offset
+        Point cameraTargetOff{};              // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr; // The loading screen instance
         float entityUpdateDist = 2500;          // Update distance
         float cameraCullPadding = 250;          // Padding around the cameras native bounds

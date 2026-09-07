@@ -60,7 +60,7 @@ namespace magique
         static std::vector<Entity> CACHE{64};
         auto& dynamic = global::DY_COLL_DATA;
         const auto& pos = ComponentGet<PositionC>(e);
-        const auto& col = ComponentTryGet<CollisionC>(e);
+        const auto col = ComponentTryGet<CollisionC>(e);
         if (col == nullptr) [[unlikely]]
             return false;
 
@@ -74,8 +74,10 @@ namespace magique
         {
             if (nearby == e) [[unlikely]]
                 continue;
-            const auto& posB = ComponentGet<PositionC>(nearby);
             const auto& colB = ComponentGet<CollisionC>(nearby);
+            if (!colB.detects(*col) || col->detects(colB))
+                continue;
+            const auto& posB = ComponentGet<PositionC>(nearby);
             CollisionInfo info{};
             internal::CheckCollisionEntities(pos, *col, posB, colB, info);
             if (info.isColliding()) [[unlikely]]
@@ -89,6 +91,7 @@ namespace magique
         static std::vector<StaticID> CACHE{64};
 
         auto& staticCol = global::STATIC_COLL_DATA;
+
         const auto& pos = ComponentGet<PositionC>(e);
         const auto& col = ComponentTryGet<CollisionC>(e);
         if (col == nullptr) [[unlikely]]
@@ -158,7 +161,7 @@ namespace magique
     {
         bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
         {
-            // Avoids doubling logic - like offset handling
+            // Avoids doubling logic
             const PositionC posR{r.pos(), pos.map, pos.type, 0};
             const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
             CheckCollisionEntities(pos, col, posR, colR, info);
