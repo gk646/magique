@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <functional>
-#include <cstring>
-
 #include <magique/gamedev/Achievements.h>
 #include <magique/assets/JSON.h>
 #include <magique/util/Logging.h>
 
-struct Achievement final
+namespace
 {
-    std::function<bool()> condition;
-    std::string name;
-    bool isFinished = false;
-};
+    struct Achievement final
+    {
+        std::function<bool()> condition;
+        std::string name;
+        bool isFinished = false;
+    };
+} // namespace
 
 template <>
 struct glz::meta<Achievement>

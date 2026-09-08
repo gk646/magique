@@ -212,6 +212,8 @@ namespace magique
 
     bool LayeredInput::GetIsMouseConsumed() { return global::UI_DATA.mouseConsumed > 0; }
 
+    Rotation UIGetMouseRotation() { return (UIGetTargetResolution() / 2.0F).dir(GetMousePos()).rotation(); }
+
     void UIEmitMousePress(MouseButton button, Point mouse)
     {
         if (mouse != -1)

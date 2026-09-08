@@ -329,7 +329,6 @@ namespace magique
         int16_t height;  // Height of the texture
         uint16_t id = 0; // The texture id
 
-
         Point getSize() const { return {(float)width, (float)height}; }
         bool isValid() const { return id != 0; }
         bool operator==(const TextureRegion&) const = default;

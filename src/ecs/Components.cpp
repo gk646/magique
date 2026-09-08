@@ -183,11 +183,11 @@ namespace magique
 
     void LayeredTextureC::drawLayer(AnimationLayer layer, const Point& pos, float rotation, bool flipX, Color tint) const
     {
-        auto it = textures.find(layer);
-        if (it == textures.end())
+        const auto it = textures.find(layer);
+        if (it == textures.end()) [[unlikely]]
             return;
         const auto tex = it->second;
-        if (!tex.texture.isValid())
+        if (!tex.texture.isValid()) [[unlikely]]
             return;
         Point finalAnchor;
         if (globalAnchor != -1)
@@ -242,15 +242,17 @@ namespace magique
     void CollisionC::CenterOn(Entity e, Point point)
     {
         auto& pos = ComponentGet<PositionC>(e);
-        auto& col = ComponentGet<CollisionC>(e);
-        pos.pos = point - col.getMidOffset();
-        pos.pos.floor();
+        const auto& col = ComponentGet<CollisionC>(e);
+        pos.pos = point;
+        auto mid = pos.getMiddle(col);
+        Point offest = point - mid;
+        pos.pos += offest;
     }
 
     Point CollisionC::GetMiddle(const Entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
-        auto* col = ComponentTryGet<CollisionC>(e);
+        const auto* col = ComponentTryGet<CollisionC>(e);
         if (col == nullptr)
         {
             return pos.pos;
@@ -261,7 +263,7 @@ namespace magique
     Rect CollisionC::GetBounds(Entity e)
     {
         const auto& pos = magique::ComponentGet<PositionC>(e);
-        auto* col = ComponentTryGet<CollisionC>(e);
+        const auto* col = ComponentTryGet<CollisionC>(e);
         if (col == nullptr)
         {
             return pos.pos;
@@ -277,20 +279,6 @@ namespace magique
         //      &
         // 0100  - at least one 1 => not 0 so true
         return mask.any_of(other.layer);
-    }
-
-    Point CollisionC::getMidOffset() const
-    {
-        switch (shape)
-        {
-        case Shape::RECT:
-            return offset + Point{p1, p2} / 2.0F;
-        case Shape::CIRCLE:
-            return offset + Point{p1, p1};
-        case Shape::TRIANGLE:
-            break;
-        }
-        return {0, 0};
     }
 
     bool CollisionC::operator==(const CollisionC& other) const

@@ -78,9 +78,6 @@ namespace magique
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         bool detects(const CollisionC& other) const;
 
-        // Returns the offset from the position (top left) to the middle
-        Point getMidOffset() const;
-
         bool operator==(const CollisionC& other) const;
 
         // Should NOT be modified

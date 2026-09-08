@@ -72,6 +72,12 @@ namespace magique
     // Return the world mouse pos using CameraGet()
     Point GetWorldMousePos();
 
+    // Artificially creates a mouse press - optionally allows to set the mouse position before
+    void UIEmitMousePress(MouseButton button = MOUSE_BUTTON_LEFT, Point mouse = {-1});
+
+    // Returns the mouse rotation relative to the center of the screen
+    Rotation UIGetMouseRotation();
+
     // If enabled, shows the hitboxes off all ui elements in BLUE
     void UIShowHitboxes(bool value);
 
@@ -114,8 +120,6 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-    // Artificially creates a mouse press - optionally allows to set the mouse position before
-    void UIEmitMousePress(MouseButton button = MOUSE_BUTTON_LEFT, Point mouse = {-1});
 
     // Receives current state - returns the point where the mouse should be next
     // -1 mouse positions will be ignored

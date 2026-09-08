@@ -2,9 +2,7 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
-#include "magique/ecs/Components.h"
-
-
+#include <magique/ecs/Components.h>
 #include <magique/internal/glaze/json/write.hpp>
 #include <magique/internal/enchantum/enchantum.hpp>
 #include <raylib/raylib.h>
