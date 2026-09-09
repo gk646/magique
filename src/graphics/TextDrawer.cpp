@@ -264,7 +264,7 @@ namespace magique
 
         if (shadeColor.a > 0)
         {
-            DrawPixelText(font, txt, pos + Point{(float)modSizeMult, 0}, modSizeMult, shadeColor);
+            DrawPixelText(font, txt, pos + Point{std::max((float)modSizeMult, 1.0F), 0}, modSizeMult, shadeColor);
         }
 
         if (modHighlightColor.a > 0)

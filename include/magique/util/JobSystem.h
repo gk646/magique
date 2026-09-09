@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_JOBSYSTEM_H
 #define MAGIQUE_JOBSYSTEM_H
 
-#include <functional>
 #include <span>
 #include <magique/fwd.hpp>
 
@@ -26,7 +25,7 @@ namespace magique
     };
 
     // Adds a new job from the given callable or function
-    // Called at least after the given delay passed (seconds)
+    // Called earliest after the given delay passed (seconds)
     // Note: A callable can be any lambda or std::function() e.g. [captures](arguments){ return myVar + 3;}, ...
     template <typename Callable>
     JobID JobAdd(Callable callable, float delay = 0.0F);

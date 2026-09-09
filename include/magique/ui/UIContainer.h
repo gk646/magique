@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_UI_CONTAINER_H
 #define MAGIQUE_UI_CONTAINER_H
 
-#include <functional>
 #include <span>
 #include <vector>
 #include <magique/ui/UIObject.h>

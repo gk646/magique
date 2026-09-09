@@ -98,7 +98,7 @@ namespace magique
         }
     }
 
-    const std::vector<Message>& NetworkReceive(const int max)
+    std::span<const Message> NetworkReceive(const int max)
     {
         auto& data = global::MP_DATA;
         if (!data.incMsgBuffer.empty()) [[likely]]
@@ -162,7 +162,7 @@ namespace magique
         return data.incMsgVec;
     }
 
-    const std::vector<Connection>& NetworkGetConnections() { return global::MP_DATA.connections; }
+    std::span<const Connection> NetworkGetConnections() { return global::MP_DATA.connections; }
 
     //----------------- UTIL -----------------//
 
@@ -200,20 +200,20 @@ namespace magique
     Entity NetworkGetMappedEntity(const Connection conn)
     {
         const auto& data = global::MP_DATA;
-        for (auto& mapping : data.connectionMapping)
+        for (const auto& mapping : data.connectionMapping)
         {
             if (mapping.conn == conn)
             {
                 return mapping.entity;
             }
         }
-        return entt::null;
+        return NullEntity;
     }
 
     Connection NetworkGetMappedConnection(const Entity entity)
     {
         const auto& data = global::MP_DATA;
-        for (auto& mapping : data.connectionMapping)
+        for (const auto& mapping : data.connectionMapping)
         {
             if (mapping.entity == entity)
                 return mapping.conn;
@@ -303,7 +303,7 @@ namespace magique
     Entity NetworkGetConnMapping(const Connection conn)
     {
         (void)conn;
-        return entt::null;
+        return NullEntity;
     }
 
     Connection NetworkGetConnMapping(const Entity entity)

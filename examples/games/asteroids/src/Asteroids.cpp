@@ -6,7 +6,7 @@ using namespace magique;
 
 // For simplicity some global variable
 ScreenEmitter ROCK_PARTICLES;        // Particle emitter
-entt::entity PLAYER_ID = entt::null; // Saving the player id
+entt::entity PLAYER_ID = NullEntity; // Saving the player id
 ScoreCounter SCORE_COUNTER;          // The score counter UI
 int SCORE = 0;                       // The player score
 int ROCK_COUNTER = 0;                // Respawn counter for rocks

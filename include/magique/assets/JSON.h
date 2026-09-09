@@ -124,9 +124,9 @@ namespace glz
     };
 
     template <>
-    struct meta<magique::internal::StorageCell>
+    struct meta<magique::StorageCell>
     {
-        using T = magique::internal::StorageCell;
+        using T = magique::StorageCell;
         static constexpr auto values = object(&T::name, &T::type, &T::data);
     };
 

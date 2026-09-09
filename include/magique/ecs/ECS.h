@@ -75,7 +75,10 @@ namespace magique
 
     // Returns the first entity with the given type
     // Failure: Returns NullEntity if none with that type could be found
-    Entity EntityGetFirstOf(EntityType type);
+    std::optional<Entity> EntityFindFirstOf(EntityType type);
+
+    // Returns all entities matching the given filter
+    std::span<Entity> EntityFindIf(const FilterFunc& filter);
 
     // Immediately tries to destroy this entity
     // Note: It's up to the user to make sure invalid entities are not accessed (destroying in event functions...)
@@ -128,18 +131,6 @@ namespace magique
     // Same as ComponentGive but if the entity already has the component returns the existing one
     template <typename Component, typename... Args>
     Component& ComponentTryGive(Entity entity, Args... args);
-
-    // Makes the entity collidable with others - Shape: RECT
-    // x & y of the rect is offset from the position - anchor is set to the mid-point unless specified (relative to offset)
-    CollisionC& ComponentGiveCollisionRect(Entity entity, Rect rect, Point anchor = {-1});
-
-    // Makes the entity collidable with others - Shape: CIRCLE
-    // Circles always rotated around their middle point!
-    CollisionC& ComponentGiveCollisionCircle(Entity entity, float radius);
-
-    // Makes the entity collidable with others - Shape: TRIANGLE
-    // Pass the offsets for the two remaining points in counterclockwise order - first one is (pos.x, pos.y)
-    CollisionC& ComponentGiveCollisionTri(Entity entity, Point p2, Point p3, Point anchor = {});
 
     // Adds the camera component
     void ComponentGiveCamera(Entity entity);

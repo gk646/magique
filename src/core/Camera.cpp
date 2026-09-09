@@ -142,8 +142,5 @@ namespace magique
         shake.offset.x = std::clamp(shake.offset.x, -maxPositive.x, maxPositive.x);
         shake.offset.y = std::clamp(shake.offset.y, -maxPositive.y, maxPositive.y);
         shake.maxDist = std::max(shake.maxDist - (shake.decay / MAGIQUE_LOGIC_TICKS), 0.0F);
-
-        auto& target = CameraGet().target;
-        target = Point{target} + shake.offset;
     }
 } // namespace magique

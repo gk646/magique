@@ -3,6 +3,7 @@
 #define MAGIQUE_TEXT_FORMAT_H
 
 #include <string>
+#include <optional>
 #include <raylib/raylib.h>
 
 //===============================================
@@ -28,15 +29,14 @@ namespace magique
     // Given string has to be valid until this method returns!
     // Note: If a given format already exists it will be overwritten silently!
     // Note: "placeholder" is only the value without prefix and braces e.g. PLAYER_NAME instead of ${PLAYER_NAME}
-    void FormatSetValue(const char* placeholder, const std::string_view& val);
-    void FormatSetValue(const char* placeholder, float val);
-    void FormatSetValue(const char* placeholder, int val);
+    void FormatSetValue(std::string_view placeholder, const std::string_view& val);
+    void FormatSetValue(std::string_view placeholder, float val);
+    void FormatSetValue(std::string_view placeholder, int val);
 
     // Returns a modifiable reference to the value of this placeholder
     // Note: Type has to be specified manually - int, float or std::string
-    // Failure: returns nullptr
     template <typename T>
-    T* FormatGetValue(const std::string_view& placeholder);
+    std::optional<std::reference_wrapper<T>> FormatGetValue(const std::string_view& placeholder);
 
     //================= FORMAT =================//
 
@@ -45,8 +45,7 @@ namespace magique
     void DrawTextFmt(const Font& font, const char* fmt, Vector2 pos, float size, float spacing = 1, Color color = WHITE);
 
     // Formats and returns the given text with the current placeholder state
-    // IMPORTANT: returned string will only be valid until this method OR DrawTextFmt() is called again
-    const char* FormatGetText(const char* text);
+    std::string_view FormatGetText(std::string_view text);
 
     //================= CUSTOMIZE =================//
 

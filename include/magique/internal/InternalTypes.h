@@ -16,14 +16,7 @@
 
 namespace magique::internal
 {
-    struct StorageCell final
-    {
-        StorageType type = StorageType::EMPTY;
-        std::string name;
-        std::string data;
-    };
-
-    struct StorageContainer
+      struct StorageContainer
     {
         StorageContainer() = default;
         StorageContainer(const StorageContainer& other) = delete; // Involves potentially copying a lot of data

@@ -24,7 +24,7 @@ struct Example final : Game
 
     void onUpdateGame(GameState gameState) override
     {
-        auto player = EntityGetFirstOf(EntityType::Player);
+        auto player = EntityFindFirstOf(EntityType::Player);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
             ComponentGet<PositionC>(player).pos += 5;
@@ -62,7 +62,7 @@ struct Example final : Game
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
-        auto player = EntityGetFirstOf(EntityType::Player);
+        auto player = EntityFindFirstOf(EntityType::Player);
         const auto& position = ComponentGet<PositionC>(player);
         DrawRectangleRec(Rect{position, {50}}, RED);
     }

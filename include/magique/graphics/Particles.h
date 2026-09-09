@@ -25,8 +25,7 @@
 
 namespace magique
 {
-
-    // Immediately renders all particles in that layer
+    // Immediately renders all particles part of the given layer
     void ParticlesDraw(ParticleLayer layer = {});
 
     // Allows to set a global modifier to the amount of particles created

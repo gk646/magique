@@ -212,22 +212,24 @@ namespace magique
         return LocalizationParseLanguage(res);
     }
 
-    std::vector<Language> SteamGetGameLanguages()
+    std::span<const Language> SteamGetGameLanguages()
     {
-        std::vector<Language> res;
+        static std::vector<Language> CACHE{};
+        CACHE.clear();
+
         const auto& langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');
         for (const auto& lang : langs)
         {
-            res.push_back(LocalizationParseLanguage(ClientAPIToISO(lang)));
+            CACHE.push_back(LocalizationParseLanguage(ClientAPIToISO(lang)));
         }
-        return res;
+        return CACHE;
     }
 
     void SteamMarkGameFilesCorrupt(bool missingFilesOnly) { SteamApps()->MarkContentCorrupt(missingFilesOnly); }
 
     SteamID SteamGetID()
     {
-        auto& steamData = global::STEAM_DATA;
+        const auto& steamData = global::STEAM_DATA;
         MAGIQUE_ASSERT(steamData.isInitialized, "Steam is not initialized");
         return static_cast<SteamID>(steamData.userID.ConvertToUint64());
     }

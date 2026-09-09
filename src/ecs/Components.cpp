@@ -218,36 +218,29 @@ namespace magique
 
     //----------------- COLLISION -----------------//
 
-    void CollisionC::setRectShape(const Rect& rect, Point newAnchor)
+    Rect CollisionC::GetBounds(Entity e)
     {
-        shape = Shape::RECT;
-        if (newAnchor == -1)
-            newAnchor = rect.size() / 2;
-        anchor = newAnchor;
-        offset = rect.pos();
-        anchor.floor();
-        offset.floor();
-        p1 = rect.width;
-        p2 = rect.height;
+        const auto& pos = magique::ComponentGet<PositionC>(e);
+        const auto* col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr)
+        {
+            return pos.pos;
+        }
+        return pos.getBounds(*col);
     }
 
-    void CollisionC::setCircleShape(float radius)
+    CollisionC CollisionC::Rectangle(Point size, Point offset, Point anchor)
     {
-        p1 = radius;
-        p2 = radius;
-        shape = Shape::CIRCLE;
-        anchor = radius;
+        CollisionC c{};
+        c.offset = offset;
+        c.anchor = anchor;
+        c.p1 = size.x;
+        c.p2 = size.y;
+        c.shape = Shape::RECT;
+        return c;
     }
 
-    void CollisionC::CenterOn(Entity e, Point point)
-    {
-        auto& pos = ComponentGet<PositionC>(e);
-        const auto& col = ComponentGet<CollisionC>(e);
-        pos.pos = point;
-        auto mid = pos.getMiddle(col);
-        Point offest = point - mid;
-        pos.pos += offest;
-    }
+    CollisionC CollisionC::Rectangle(Point size, Point offset) { return Rectangle(size, offset, size / 2); }
 
     Point CollisionC::GetMiddle(const Entity e)
     {
@@ -260,15 +253,34 @@ namespace magique
         return pos.getMiddle(*col);
     }
 
-    Rect CollisionC::GetBounds(Entity e)
+    CollisionC CollisionC::Circle(float radius)
     {
-        const auto& pos = magique::ComponentGet<PositionC>(e);
-        const auto* col = ComponentTryGet<CollisionC>(e);
-        if (col == nullptr)
-        {
-            return pos.pos;
-        }
-        return pos.getBounds(*col);
+        CollisionC c;
+        c.shape = Shape::CIRCLE;
+        c.p1 = radius;
+        c.p2 = radius;
+        c.anchor = radius;
+        return c;
+    }
+
+    CollisionC CollisionC::Triangle(Point p2, Point p3, Point anchor)
+    {
+        CollisionC c;
+        // Assuming the class has a way to set triangle points.
+        // If not, you'll need to implement this based on your internal structure.
+        // Example: If you have a `setTriangleShape` method:
+        // c.setTriangleShape(p2, p3, anchor);
+        return c;
+    }
+
+    void CollisionC::CenterOn(Entity e, Point point)
+    {
+        auto& pos = ComponentGet<PositionC>(e);
+        const auto& col = ComponentGet<CollisionC>(e);
+        pos.pos = point;
+        auto mid = pos.getMiddle(col);
+        Point offest = point - mid;
+        pos.pos += offest;
     }
 
     bool CollisionC::detects(const CollisionC& other) const

@@ -31,8 +31,8 @@ namespace magique
     Connection LocalSocketConnect(std::string_view ip, uint16_t port = 60000);
 
     // Returns a pointer to the local ip as a string - always save to access and cached after the first call
-    // Failure: returns nullptr if it's not possible to retrieve the ip
-    const char* LocalSocketGetIP();
+    // Failure: empty string
+    std::string_view LocalSocketGetIP();
 
 } // namespace magique
 

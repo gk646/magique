@@ -8,7 +8,7 @@
 // UIObject
 //===============================================
 // .....................................................................
-// The UIObject is the base class of all ui elements.
+// The UIObject is the base class of all UI elements
 // UIObjects can be positioned in multiple ways:
 //  - At construction:
 //      - Specify a position - will stay at this position until changed (does not adjust to the objects size!)

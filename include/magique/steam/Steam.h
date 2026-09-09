@@ -78,7 +78,7 @@ namespace magique
     Language SteamGetGameLanguage();
 
     // Returns a list of all available languages for this game
-    std::vector<Language> SteamGetGameLanguages();
+    std::span<const Language> SteamGetGameLanguages();
 
     // Signals steam to verify and redownload the game files
     //      - missingFilesOnly: if true only checks for missing files, not if existing files are wrong/out-of-date

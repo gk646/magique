@@ -55,9 +55,8 @@ namespace magique
 
         // Returns a copy of the data from this slot
         // Optional: Specify the type to get the correct type back
-        // Failure: returns {nullptr,0} if the storage doesn't exist or type doesn't match
-        template <typename T = unsigned char>
-        DataPointer<T> getBytes(std::string_view slot);
+        // Failure: returns {} if the storage doesn't exist or type doesn't match
+        std::string_view getBytes(std::string_view slot);
 
         // Returns a view to the vector data stored at this slot
         // Failure: returns an empty view
@@ -71,6 +70,10 @@ namespace magique
         // Returns the JSON as view if present
         // Failure: empty view
         std::string_view getJSON(std::string_view slot);
+
+        // Allows iteration over storage cells
+        auto begin() const;
+        auto end() const;
 
         //================= UTIL =================//
 
@@ -100,34 +103,6 @@ namespace magique
     }
 
     template <typename T>
-    DataPointer<T> GameStorage::getBytes(const std::string_view slot)
-    {
-        const auto* cell = getCell(slot);
-        M_GAMESAVE_SLOT_MISSING(DataPointer<T>(nullptr, 0));
-        M_GAMESAVE_TYPE_MISMATCH(DATA, DataPointer<T>(nullptr, 0));
-        const auto size = (int)cell->data.size();
-        if constexpr (std::is_same_v<T, unsigned char>)
-        {
-            auto* copy = new unsigned char[size];
-            std::memcpy(copy, cell->data.data(), size);
-            return DataPointer{copy, size};
-        }
-        else
-        {
-            if (size % sizeof(T) != 0)
-            {
-                LOG_ERROR("Type error - Saved data doesnt match to the given type - You likely used the wrong type or "
-                          "wrong slot!");
-                return {nullptr, 0};
-            }
-            const auto numElements = size / sizeof(T);
-            auto* data = new T[numElements];
-            std::memcpy(data, cell->data.data(), size);
-            return {data, size};
-        }
-    }
-
-    template <typename T>
     std::span<T> GameStorage::getVector(const std::string_view slot)
     {
         const auto* cell = getCell(slot);
@@ -144,6 +119,10 @@ namespace magique
         M_GAMESAVE_TYPE_MISMATCH(JSON, );
         JSONImport(cell->data, obj);
     }
+
+    inline auto GameStorage::begin() const { return cells.begin(); }
+
+    inline auto GameStorage::end() const { return cells.end(); }
 
 } // namespace magique
 

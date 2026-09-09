@@ -9,11 +9,11 @@
 // Window
 //===============================================
 // .....................................................................
-// Generic window class which can be subclassed to achieve custom visuals.
+// Generic window class which can be subclassed to achieve custom visuals
 // Windows are meant to be used with the window manager (see ui/WindowManager.h) - it handles visibility and layering
 // A window consists out of 2 main parts:
-//      - Body: Everything that's not the top bar (mover) is considered body
 //      - TopBar: The area starting from the top to the topBarHeight - area is automatically draggable
+//      - Body: Everything that's not the top bar is considered body
 //|======================|
 //| TopBar               |
 //|======================|
@@ -26,7 +26,7 @@
 //            Use its accessor to determine window overlap and layering (e.g. getHoveredWindow(), ...)
 // Note: The window is a subclass of the UIContainer and has all its functionality
 // Note: Window buttons (close button, maximize, minimize, ...) have to be added manually as children - anchor them accordingly
-// Note: Everything requiring real time updates like dragging, should be called in the drawUpdate method as it runs every draw tick!
+// Note: Everything requiring real time updates like dragging, should be called in the onDraw() method as it runs every draw tick!
 // .....................................................................
 
 namespace magique

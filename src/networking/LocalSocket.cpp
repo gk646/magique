@@ -103,7 +103,7 @@ namespace magique
         return data.connections[0];
     }
 
-    const char* LocalSocketGetIP() { return OSUtilGetLocalIP(); }
+    std::string_view LocalSocketGetIP() { return OSUtilGetLocalIP(); }
 } // namespace magique
 #else
 namespace magique

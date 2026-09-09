@@ -198,6 +198,7 @@ namespace magique
                         const auto newPathLen = static_cast<uint16_t>(current.stepCount + 1U);
                         const auto newFCost = hCost + gCost;
 
+                        // Already have better path to this tile
                         if (bestValueForTile != 0.0F && newFCost >= bestValueForTile)
                         {
                             continue;

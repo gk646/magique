@@ -120,7 +120,6 @@ namespace magique
         static bool GetIsMouseConsumed();
     };
 
-
     // Receives current state - returns the point where the mouse should be next
     // -1 mouse positions will be ignored
     using GamepadMappingFunc = std::function<Point(GamepadMappingState& state, GamepadButton button)>;

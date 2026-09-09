@@ -75,12 +75,12 @@ namespace magique
     // Returns a reference to a message vector containing up to "maxMessages" incoming messages
     // Can be called multiple times until the size is 0 -> no more incoming messages
     // IMPORTANT: Each call cleans up the previously returned messages (copy if you wanna store its information)
-    const std::vector<Message>& NetworkReceive(int maxMessages = 500);
+    std::span<const Message> NetworkReceive(int maxMessages = 500);
 
     //================= UTIL =================//
 
     // Returns the vector that contains all current valid connections
-    const std::vector<Connection>& NetworkGetConnections();
+    std::span<const Connection> NetworkGetConnections();
 
     struct NetworkEventData
     {

@@ -63,17 +63,20 @@ namespace magique
         EnumSet<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
         EnumSet<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
 
-        // Sets the values to be a rectangle - anchor is relative to the offset
-        // x and y = offset / size = size / anchor = size/2
-        void setRectShape(const Rect& rect, Point anchor = {-1});
-        void setCircleShape(float radius);
+        // Returns the middle point of the entity (or just the position if CollisionC is missing)
+        static Point GetMiddle(Entity e);
+
+        // Returns the bounding box that contains the entities collision shape
+        static Rect GetBounds(Entity e);
+
+        // Returns a correctly constructed collision object with the given shape
+        static CollisionC Rectangle(Point size, Point offset, Point anchor);
+        static CollisionC Rectangle(Point size, Point offset = {0}); // Anchor default to middle
+        static CollisionC Circle(float radius);
+        static CollisionC Triangle(Point p2, Point p3, Point anchor = {});
 
         // Adjust the position of the entity such the collision shape is centered on the give position
         static void CenterOn(Entity e, Point point);
-
-        // Returns the middle point of the entity (or just the position if CollisionC is missing)
-        static Point GetMiddle(Entity e);
-        static Rect GetBounds(Entity e);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         bool detects(const CollisionC& other) const;

@@ -54,6 +54,8 @@ namespace magique
             targetPosition = CollisionC::GetMiddle(cameraEntity);
         }
 
+        targetPosition += data.cameraShake.offset;
+
         data.camera.target.x = std::lerp(data.camera.target.x, targetPosition.x, smoothing);
         data.camera.target.y = std::lerp(data.camera.target.y, targetPosition.y, smoothing);
         data.camera.target.x = std::floor(data.camera.target.x);

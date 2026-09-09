@@ -268,7 +268,7 @@ struct Example final : Game
 
                     const auto inputUpdate = msg.payload.getDataAs<InputUpdate>();
                     const auto entity = GetConnectionEntityMapping(msg.connection);
-                    MAGIQUE_ASSERT(entity != entt::null, "Entity must be registered");
+                    MAGIQUE_ASSERT(entity != NullEntity, "Entity must be registered");
 
                     auto& pos = ComponentGet<PositionC>(entity);
                     if (inputUpdate.key == KEY_W)

@@ -468,7 +468,6 @@ namespace magique
         bool isEmpty() const;
     };
 
-
     struct TileInfo final
     {
         std::vector<TiledProperty> properties; // Defined properties
@@ -798,6 +797,13 @@ namespace magique
         VALUE,      // Stores an 8 bytes value (used only by GameConfig)
         JSON,       // Stores JSON
         EMPTY,      // Storage is empty
+    };
+
+    struct StorageCell final
+    {
+        StorageType type = StorageType::EMPTY;
+        std::string name;
+        std::string data;
     };
 
     //================= STEAM =================//

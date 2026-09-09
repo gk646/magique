@@ -59,13 +59,13 @@ namespace magique
     //================= DATA ACCESS =================//
 
     // Returns a list of all entities within update range of any actor - works across multiple maps!
-    const std::vector<Entity>& EngineGetUpdateEntities();
+    std::span<const Entity> EngineGetUpdateEntities();
 
     // Returns a list of all entities that should be drawn - culled with the current camera
-    const std::vector<Entity>& EngineGetDrawEntities();
+    std::span<const Entity> EngineGetDrawEntities();
 
     // Returns the currently loaded maps - a map is loaded if it contains at least 1 actor
-    const std::vector<MapID>& EngineGetActiveMaps();
+    std::span<const MapID> EngineGetActiveMaps();
 
     //================= QUERY ENTITIES =================//
 
@@ -75,13 +75,13 @@ namespace magique
     // Note: The returned vector is only valid until this method is called again (single instance)
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
-    const std::vector<Entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
-    const std::vector<Entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    const std::vector<Entity>& EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
-    const std::vector<Entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     //================= UTILS =================//
 

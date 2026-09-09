@@ -127,7 +127,7 @@ namespace magique
     }
 
     template <typename T>
-    static void SetFormatValueImpl(const char* key, const auto& val)
+    static void SetFormatValueImpl(std::string_view key, const auto& val)
     {
         const auto it = VALUES.find(key);
         auto& valueVec = VALUE_STORAGE.getValueVec<T>(); // where to insert new value
@@ -152,7 +152,7 @@ namespace magique
         {
             const auto size = static_cast<int>(valueVec.size());
             valueVec.emplace_back(val);
-            VALUES.insert({key, {getValueType<T>(), static_cast<uint8_t>(size)}});
+            VALUES.insert({std::string{key}, {getValueType<T>(), static_cast<uint8_t>(size)}});
         }
     }
 
@@ -180,25 +180,25 @@ namespace magique
 
     //----------------- IMPLEMENTATION -----------------//
 
-    void FormatSetValue(const char* placeholder, const std::string_view& val)
+    void FormatSetValue(std::string_view placeholder, const std::string_view& val)
     {
         SetFormatValueImpl<std::string>(placeholder, val);
     }
 
-    void FormatSetValue(const char* placeholder, const float val) { SetFormatValueImpl<float>(placeholder, val); }
+    void FormatSetValue(std::string_view placeholder, const float val) { SetFormatValueImpl<float>(placeholder, val); }
 
-    void FormatSetValue(const char* placeholder, const int val) { SetFormatValueImpl<int>(placeholder, val); }
+    void FormatSetValue(std::string_view placeholder, const int val) { SetFormatValueImpl<int>(placeholder, val); }
 
     void DrawTextFmt(const Font& f, const char* t, const Vector2 p, const float s, const float sp, const Color c)
     {
-        auto* fmtText = FormatGetText(t);
-        DrawTextEx(f, fmtText, p, s, sp, c);
+        auto fmtText = FormatGetText(t);
+        DrawTextEx(f, fmtText.data(), p, s, sp, c);
     }
 
-    const char* FormatGetText(const char* text)
+    std::string_view FormatGetText(std::string_view text)
     {
-        if (text == nullptr) [[unlikely]]
-            return nullptr;
+        if (text.empty()) [[unlikely]]
+            return {};
 
         int i = 0;
         STRING_BUILDER.clear();
@@ -216,7 +216,7 @@ namespace magique
                 }
                 if (text[j] == FMT_ENCAP_END)
                 {
-                    FORMAT_CACHE.assign(text + placeStart, j - placeStart);
+                    FORMAT_CACHE.assign(text.data() + placeStart, j - placeStart);
                     const auto it = VALUES.find(FORMAT_CACHE);
                     if (it != VALUES.end())
                     {
@@ -240,47 +240,40 @@ namespace magique
             }
             ++i;
         }
-        return STRING_BUILDER.c_str();
+        return STRING_BUILDER;
     }
 
     void FormatSetPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
     template <typename T>
-    T* FormatGetValue(const std::string_view& placeholder)
+    std::optional<std::reference_wrapper<T>> FormatGetValue(const std::string_view& placeholder)
     {
         const auto it = VALUES.find(placeholder);
         if (it == VALUES.end())
-        {
-            return nullptr;
-        }
+            return {};
 
         if constexpr (std::is_same_v<T, std::string>)
         {
             if (it->second.type != STRING)
-            {
-                return nullptr;
-            }
-            return &VALUE_STORAGE.getValueVec<std::string>()[it->second.index];
+                return {};
+            return VALUE_STORAGE.getValueVec<std::string>()[it->second.index];
         }
         else if constexpr (std::is_same_v<T, int>)
         {
             if (it->second.type != INT)
-            {
-                return nullptr;
-            }
+                return {};
+            return VALUE_STORAGE.getValueVec<int>()[it->second.index];
         }
         else if constexpr (std::is_same_v<T, float>)
         {
             if (it->second.type != FLOAT)
-            {
-                return nullptr;
-            }
+                return {};
         }
-        return &VALUE_STORAGE.getValueVec<T>()[it->second.index];
+        return VALUE_STORAGE.getValueVec<T>()[it->second.index];
     }
 
-    template float* FormatGetValue(const std::string_view&);
-    template std::string* FormatGetValue(const std::string_view&);
-    template int* FormatGetValue(const std::string_view&);
+    template std::optional<std::reference_wrapper<float>> FormatGetValue(const std::string_view&);
+    template std::optional<std::reference_wrapper<std::string>> FormatGetValue(const std::string_view&);
+    template std::optional<std::reference_wrapper<int>> FormatGetValue(const std::string_view&);
 
 } // namespace magique

@@ -64,16 +64,16 @@ namespace magique
 
     //----------------- GET -----------------//
 
-    const std::vector<Entity>& EngineGetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
+    std::span<const Entity> EngineGetUpdateEntities() { return global::ENGINE_DATA.entityUpdateVec; }
 
-    const std::vector<MapID>& EngineGetActiveMaps() { return global::ENGINE_DATA.loadedMaps; }
+    std::span<const Entity> EngineGetDrawEntities() { return global::ENGINE_DATA.drawVec; }
 
-    const std::vector<Entity>& EngineGetDrawEntities() { return global::ENGINE_DATA.drawVec; }
+    std::span<const MapID> EngineGetActiveMaps() { return global::ENGINE_DATA.loadedMaps; }
 
     void EngineSetPlayer(Entity entity) { global::ENGINE_DATA.playerEntity = entity; }
 
     Entity EngineGetPlayer() { return global::ENGINE_DATA.playerEntity; }
 
-    bool EngineHasPlayer() { return global::ENGINE_DATA.playerEntity != entt::null; }
+    bool EngineHasPlayer() { return global::ENGINE_DATA.playerEntity != NullEntity; }
 
 } // namespace magique

@@ -7,26 +7,29 @@
 
 namespace magique
 {
-
-    struct EventSubData final
+    namespace
     {
-        bool isValid(Entity entity) const
+        struct EventSubData final
         {
-            if (filter != entt::null && filter != entity) [[unlikely]]
+            bool isValid(Entity entity) const
             {
-                return false;
+                if (filter != NullEntity && filter != entity) [[unlikely]]
+                {
+                    return false;
+                }
+                return true;
             }
-            return true;
-        }
 
-        IEventHandler* handler;
-        int priority;
-        Entity filter;
-        EventSubscription id;
-    };
+            IEventHandler* handler;
+            int priority;
+            Entity filter;
+            EventSubscription id;
+        };
 
-    static EventSubscription curr = 1;
-    static std::vector<EventSubData> subscribers;
+        EventSubscription curr = 1;
+        std::vector<EventSubData> subscribers;
+    } // namespace
+
 
     template <>
     void EventsEmit(Event event, Entity entity, const EventData& data)

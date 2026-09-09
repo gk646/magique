@@ -69,7 +69,7 @@ struct RobotScript final : EntityScript
 
         if (UIInput::IsKeyPressed(KEY_E) && STATS.defuses > 0)
         {
-            entt::entity closest = entt::null;
+            entt::entity closest = NullEntity;
             float minDist = FLT_MAX;
             auto mid = pos.getMiddle(col);
             for (auto entity : GetNearbyEntities(MapID::LEVEL_1, pos.getMiddle(col), 50))
@@ -87,7 +87,7 @@ struct RobotScript final : EntityScript
                 }
             }
 
-            if (closest != entt::null)
+            if (closest != NullEntity)
             {
                 auto& oPos = ComponentGet<PositionC>(closest);
 
@@ -175,7 +175,7 @@ struct MineScript final : EntityScript
     }
 };
 
-entt::entity TARGET_ENT = entt::null;
+entt::entity TARGET_ENT = NullEntity;
 
 void resetGame()
 {

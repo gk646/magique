@@ -43,14 +43,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         endif ()
     endif ()
 
-    if (CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux") # Cross Compile
-        target_link_options(magique PUBLIC
-                -static
-                -static-libstdc++
-                -static-libgcc
-        )
-    endif ()
-
     target_compile_options(magique PUBLIC
             -std=c++23
             -flto
@@ -74,7 +66,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique PUBLIC
             $<$<CONFIG:Debug>:
             -Og
-            -g2
+            -g
             # -D_GLIBCXX_DEBUG
             # -D_GLIBCXX_ASSERTIONS
             -D_DEBUG

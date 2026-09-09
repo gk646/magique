@@ -3,6 +3,7 @@
 #define MAGIQUE_OBSERVER_H
 
 #include "external/sdefl.h"
+#include <magique/fwd.hpp>
 #include <magique/internal/entt/entity/registry.hpp>
 #include <magique/internal/glaze/json/patch.hpp>
 
@@ -11,10 +12,10 @@
 //===============================================
 // ................................................................................
 // The observer API allows to react to arbitrary changes made to components in ANY way
-// It works by saving a copy of the component data and using == (equality operator) to check for changes
+// It works by saving a copy of the component data and using operator== to check for changes
 // This is primarily intended for multiplayer syncing, but there are probably many other applications
 //
-// Note: Your component needs to implement (or default) == in order to work
+// Note: Your component needs to implement (or default) operator== in order to work
 // ................................................................................
 
 namespace magique

@@ -62,7 +62,7 @@ namespace magique
 
     bool EntityIsActor(const Entity entity) { return internal::REGISTRY.all_of<ActorC>(entity); }
 
-    Entity EntityGetFirstOf(const EntityType type)
+    std::optional<Entity> EntityFindFirstOf(const EntityType type)
     {
         for (const auto entity : internal::REGISTRY.view<Entity>())
         {
@@ -72,7 +72,20 @@ namespace magique
                 return entity;
             }
         }
-        return entt::null;
+        return {};
+    }
+
+    std::span<Entity> EntityFindIf(const FilterFunc& filter)
+    {
+        static std::vector<Entity> CACHE{32};
+        CACHE.clear();
+
+        for (const auto e : internal::REGISTRY.view<Entity>())
+        {
+            if (filter(e))
+                CACHE.push_back(e);
+        }
+        return CACHE;
     }
 
     static Entity CreateEntityInternal(const Entity id, EntityType type, const Point& pos, const MapID map,
@@ -84,7 +97,7 @@ namespace magique
         auto& data = global::ENGINE_DATA;
         auto& registry = internal::REGISTRY;
 
-        const auto entity = registry.create(id != entt::null ? id : Entity{ecs.entityID++});
+        const auto entity = registry.create(id != NullEntity ? id : Entity{ecs.entityID++});
         registry.emplace<PositionC>(entity, pos, map, type, rotation); // PositionC is default
 
         if (withFunc) [[likely]]
@@ -93,7 +106,7 @@ namespace magique
             if (it == ecs.typeMap.end())
             {
                 LOG_ERROR("No method create method registered for that entity type: %d", (int)type);
-                return entt::null; // EntityType not registered
+                return NullEntity; // EntityType not registered
             }
             it->second(entity, type);
         }
@@ -117,7 +130,7 @@ namespace magique
     {
         if (NetworkIsClientMode())
             LOG_WARNING("Created non-networked entity on the client");
-        return CreateEntityInternal(entt::null, type, pos, map, rotation, withFunc);
+        return CreateEntityInternal(NullEntity, type, pos, map, rotation, withFunc);
     }
 
     Entity EntityCreateEx(const Entity id, const EntityType type, Point pos, const MapID map, const float rot,
@@ -154,7 +167,7 @@ namespace magique
         dynamic.mapEntityGrids[pos.map].removeWithHoles(entity);
         global::PATH_DATA.solidEntities.erase(entity);
         if (entity == CameraGetEntity())
-            data.cameraEntity = entt::null;
+            data.cameraEntity = NullEntity;
         registry.destroy(entity);
         return true;
     }
@@ -188,7 +201,7 @@ namespace magique
             dyCollData.mapEntityGrids.clear();
             internal::REGISTRY.clear();
             global::PATH_DATA.solidEntities.clear();
-            data.cameraEntity = entt::null;
+            data.cameraEntity = NullEntity;
             return;
         }
 
@@ -231,25 +244,6 @@ namespace magique
         }
     }
 
-    CollisionC& ComponentGiveCollisionRect(Entity entity, Rect rect, Point anchor)
-    {
-        auto& col = internal::REGISTRY.emplace<CollisionC>(entity);
-        col.setRectShape(rect, anchor);
-        return col;
-    }
-
-    CollisionC& ComponentGiveCollisionCircle(const Entity e, const float radius)
-    {
-        auto& col = internal::REGISTRY.emplace<CollisionC>(e);
-        col.setCircleShape(radius);
-        return col;
-    }
-
-    CollisionC& ComponentGiveCollisionTri(const Entity e, const Point p2, const Point p3, Point anchor)
-    {
-        return internal::REGISTRY.emplace<CollisionC>(e, p2.x, p2.y, p3.x, p3.y, Point{}, anchor, Shape::TRIANGLE);
-    }
-
     void ComponentGiveCamera(const Entity entity)
     {
         internal::REGISTRY.emplace<CameraC>(entity);
@@ -284,7 +278,7 @@ namespace magique
         return set;
     }
 
-    const std::vector<Entity>& EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
+    std::span<const Entity> EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
     {
         auto& set = QueryLoadedIMPL(map, Rect{mid - radius, Point{radius * 2}});
         for (auto it = set.begin(); it != set.end();)
@@ -301,7 +295,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<Entity>& EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter)
+    std::span<const Entity> EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter)
     {
         auto& set = QueryLoadedIMPL(map, rect);
         for (auto it = set.begin(); it != set.end();)
@@ -318,7 +312,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<Entity>& EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
+    std::span<const Entity> EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
@@ -334,7 +328,7 @@ namespace magique
         return set.values();
     }
 
-    const std::vector<Entity>& EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter)
+    std::span<const Entity> EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
