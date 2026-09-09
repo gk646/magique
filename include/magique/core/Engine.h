@@ -2,7 +2,7 @@
 #ifndef MAGIQUE_ENGINE_H
 #define MAGIQUE_ENGINE_H
 
-#include <vector>
+#include <span>
 #include <functional>
 #include <magique/core/Types.h>
 

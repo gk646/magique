@@ -2,10 +2,11 @@
 #ifndef MAGIQUE_STEAM_H
 #define MAGIQUE_STEAM_H
 
-#include <magique/core/Types.h>
 #include <string_view>
 #include <optional>
 #include <variant>
+#include <span>
+#include <magique/core/Types.h>
 
 //===============================================
 // Steam Module
