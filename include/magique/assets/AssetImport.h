@@ -30,45 +30,47 @@ namespace magique
 
     // Loads the whole image as texture into the given atlas
     // scale    - controls the final dimensions of the resulting texture
-    TextureRegion ImportTexture(const Asset& asset, AtlasID atlas = {}, float scale = 1);
+    TextureRegion ImportTexture(Asset asset, AtlasID atlas = {}, float scale = 1);
 
     // Loads the asset as image
-    Image ImportImage(const Asset& asset);
+    Image ImportImage(Asset asset);
 
     //================= Animations =================//
 
-    // Tries to load a .png file as sprite sheet
-    // Starts at (0,0) top left and then tries to split the image into frames row by row with the given dimensions
-    // 'scale' allows to scale the resulting texture (rounded down)
+    // Tries to load a .png file as sprite sheet - parses row wise from left to right and top to bottom
+    //      - dims: size of a single frame
+    //      - atlas: which atlas to load the spritesheet into
+    //      - scale: allows scaling the result at creation time
     // Note: Combined width of all frames must not exceed MAGIQUE_TEXTURE_ATLAS_SIZE!
-    SpriteSheet ImportSpriteSheet(Asset asset, int width, int height, AtlasID atlas = {}, float scale = 1);
+    SpriteSheet ImportSprite(Asset asset, Point dims, AtlasID atlas = {}, float scale = 1);
 
-    // Sames as RegisterSpriteSheet but allows to specify an offset from the top left and the amount of frames to load
-    // Useful for loading part of a bigger sprite sheet - supports line breaks
-    SpriteSheet ImportSpriteSheetEx(Asset asset, int width, int height, int frames, int offX, int offY,
-                                    AtlasID atlas = {}, float scale = 1);
+    // Extended parameters
+    //      - frames: how many frames to load
+    //      - offset: offset into the image where to start parsing
+    SpriteSheet ImportSprite(Asset asset, Point dims, AtlasID atlas, Point offset, int frames, float scale = 1);
 
     // Register a sprite sheet out of single images - must all have the same dimensions
     // Useful if you have textures as separate images instead of a single SpriteSheet
     // Use with iterateDirectory()
-    SpriteSheet ImportSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas = {}, float scale = 1);
-    SpriteSheet ImportSpriteSheetVec(const std::vector<Image>& images, AtlasID atlas = {}, float scale = 1);
+    SpriteSheet ImportSpriteVec(std::span<const Asset> assets, AtlasID atlas = {}, float scale = 1);
+    SpriteSheet ImportSpriteVec(std::span<const Image> images, AtlasID atlas = {}, float scale = 1);
 
     // Imports an aseprite file with all the frames and duration set (.ase,.aseprite)
     using StateMapFunc = AnimationState (*)(const char* tagName);
 
     // Imports all tags from the given aseprite - each tag is mapped to a animation state with the mapping function
-    // Note: Only imports frames part of any tag
-    Animation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas = {}, float scale = 1.0F,
-                             Point offset = {}, Point anchor = {-1});
+    // If not specified anchor will be the center
+    // Note: Only imports frames that are part of a tag
+    Animation ImportAseprite(Asset asset, StateMapFunc mapping, AtlasID atlas = {}, float scale = 1, Point offset = {});
+    Animation ImportAseprite(Asset asset, StateMapFunc mapping, AtlasID atlas, float scale, Point offset, Point anchor);
 
     using LayerMapFunc = LayeredAnimation (*)(const char* layerName);
 
     // Imports each layers separately into its own entity animation
     // Note: Uses the mapping function to map layer name in the editor to AnimationLayer values
-    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
+    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc mapping,
                                                                              LayerMapFunc layerMap, AtlasID atlas = {},
-                                                                             float scale = 1.0F, Point offset = {},
+                                                                             float scale = 1, Point offset = {},
                                                                              Point anchor = {-1});
 
     //================= Audio =================//

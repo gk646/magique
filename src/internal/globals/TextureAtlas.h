@@ -14,84 +14,77 @@ namespace magique
         AtlasID atlas;
         int gap = 1;
         bool initialized = false;
-        uint16_t id = 0;                       // Texture id
-        int width = MAGIQUE_MAX_TEXTURE_SIZE;  // Total width
-        int height = MAGIQUE_MAX_TEXTURE_SIZE; // Total height
-        int posX = 0;                          // Current offset from the top left
-        int posY = 0;                          // Current offset from the top let
-        int currentStepHeight = 0;             // Highest height of a texture in current row
-        void* imageData = nullptr;             // Save memory by only saving data ptr
+        uint16_t id = 0;                            // Texture id
+        Point maxDims = {MAGIQUE_MAX_TEXTURE_SIZE}; // Max dimensions
+        Point cursor{};                             // Current offset
+        int currentStepHeight = 0;                  // Highest height of a texture in current row
+        void* imageData = nullptr;                  // Save memory by only saving data ptr
 
-        TextureRegion addTexture(const Image& image, const int tarW, const int tarH)
+        TextureRegion addTexture(const Image& image, Point targetDims)
         {
             lazyInit();
             TextureRegion region{};
-            if (!isFullAndSkipToNextRowIfNeeded(tarW, tarH))
+            if (!isFullAndSkipToNextRowIfNeeded(targetDims))
             {
                 return region;
             }
 
-            region.width = static_cast<int16_t>(tarW);
-            region.height = static_cast<int16_t>(tarH);
-            region.offX = static_cast<uint16_t>(posX);
-            region.offY = static_cast<uint16_t>(posY);
+            region.width = static_cast<int16_t>(targetDims.x);
+            region.height = static_cast<int16_t>(targetDims.y);
+            region.offX = static_cast<uint16_t>(cursor.x);
+            region.offY = static_cast<uint16_t>(cursor.y);
             region.id = id;
 
             Image atlasImage = getImg();
             // Add the image
-            const Rectangle src = {0, 0, static_cast<float>(image.width), static_cast<float>(image.height)};
-            const Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), static_cast<float>(tarW),
-                                    static_cast<float>(tarH)};
+            const Rect src = {{}, {static_cast<float>(image.width), static_cast<float>(image.height)}};
+            const Rect dest = {cursor, targetDims};
             ImageDraw(&atlasImage, image, src, dest, WHITE);
-            posX += tarW + gap;
+            cursor.x += targetDims.x + gap;
             UnloadImage(image);
             return region;
         }
 
-        SpriteSheet addSpriteSheet(Image& img, const int srcW, const int srcH, const float scale)
+        SpriteSheet addSpriteSheet(Image& img, Point srcDims, float scale)
         {
-            const int frames = img.width / srcW * (img.height / srcH);
-            return addSpriteSheetEx(img, srcW, srcH, scale, frames, 0, 0);
+            const int frames = img.width / srcDims.x * (img.height / srcDims.y);
+            return addSpriteSheetEx(img, srcDims, scale, frames, {});
         }
 
-        SpriteSheet addSpriteSheetEx(const Image& img, const int srcW, const int srcH, const float scale,
-                                     const int frames, const int offX, const int offY)
+        SpriteSheet addSpriteSheetEx(const Image& img, Point srcDims, const float scale, const int frames, Point offset)
         {
             lazyInit(); // Only load a texture if atlas is actually used
 
             // Cache
-            const int tarW = static_cast<int>(static_cast<float>(srcW) * scale);
-            const int tarH = static_cast<int>(static_cast<float>(srcH) * scale);
-            const int totalWidth = frames * tarW;
+            Point targetDims = srcDims * scale;
+            const auto totalWidth = frames * targetDims.x;
 
             SpriteSheet sheet{};
-            if (!isFullAndSkipToNextRowIfNeeded(totalWidth, tarH))
+            if (!isFullAndSkipToNextRowIfNeeded({totalWidth, targetDims.y}))
                 return sheet;
 
             // Assign sheet
-            assignSheet(sheet, tarW, tarH, frames);
+            assignSheet(sheet, targetDims, frames);
 
             Image atlasImage = getImg(); // The current image of the atlas in the RAM
-            Rectangle src = {static_cast<float>(offX), static_cast<float>(offY), static_cast<float>(srcW),
-                             static_cast<float>(srcH)};
-            Rectangle dest = {static_cast<float>(posX), static_cast<float>(posY), static_cast<float>(tarW),
-                              static_cast<float>(tarH)};
+            Rect src = {offset, srcDims};
+            Rect dest = {cursor, targetDims};
 
             for (int i = 0; i < frames; ++i)
             {
                 ImageDraw(&atlasImage, img, src, dest, WHITE);
-                src.x += static_cast<float>(srcW);
-                dest.x += static_cast<float>(tarW);
+                src.x += srcDims.x;
+                dest.x += targetDims.x;
                 if (src.x >= static_cast<float>(img.width))
                 {
                     src.x = 0.0F;
-                    src.y += static_cast<float>(tarH);
+                    src.y += srcDims.y;
                     if (src.y >= static_cast<float>(img.height))
                         break; // We reached the end by going row by row
                 }
             }
 
-            posX = static_cast<int>(dest.x) + gap;
+            cursor.x = static_cast<int>(dest.x) + gap;
             UnloadImage(img);
             return sheet;
         }
@@ -101,17 +94,18 @@ namespace magique
             if (!initialized)
                 return;
             // Always same format as image
-            UpdateTexture({id, width, height, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8}, imageData);
+            Texture2D tex = {id, (int)maxDims.x, (int)maxDims.y, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8};
+            UpdateTexture(tex, imageData);
             UnloadImage(getImg());
         }
 
     private:
-        void assignSheet(SpriteSheet& sheet, const int tarW, const int tarH, const int frames) const
+        void assignSheet(SpriteSheet& sheet, Point dims, const int frames) const
         {
-            sheet.region.width = static_cast<int16_t>(tarW);
-            sheet.region.height = static_cast<int16_t>(tarH);
-            sheet.region.offX = static_cast<uint16_t>(posX);
-            sheet.region.offY = static_cast<uint16_t>(posY);
+            sheet.region.width = static_cast<int16_t>(dims.x);
+            sheet.region.height = static_cast<int16_t>(dims.y);
+            sheet.region.offX = static_cast<uint16_t>(cursor.x);
+            sheet.region.offY = static_cast<uint16_t>(cursor.y);
             sheet.region.id = id;
             sheet.frames = static_cast<uint16_t>(frames);
         }
@@ -125,7 +119,7 @@ namespace magique
             initialized = true;
 
             // Always PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 and 1 mipmap
-            const auto img = GenImageColor(width, height, BLANK);
+            const auto img = GenImageColor(maxDims.x, maxDims.y, BLANK);
             imageData = img.data;
 
             const auto tex = LoadTextureFromImage(img);
@@ -143,26 +137,26 @@ namespace magique
             img.data = imageData;
             img.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
             img.mipmaps = 1;
-            img.width = width;
-            img.height = height;
+            img.width = maxDims.x;
+            img.height = maxDims.y;
             return img;
         }
 
-        bool isFullAndSkipToNextRowIfNeeded(const int texWidth, const int texHeight)
+        bool isFullAndSkipToNextRowIfNeeded(Point dims)
         {
-            if (posX + texWidth > width)
+            if (cursor.x + dims.x > maxDims.x)
             {
-                posY += currentStepHeight;
-                posX = 0;
-                currentStepHeight = texHeight + gap;
-                if (posY >= height)
+                cursor.y += currentStepHeight;
+                cursor.x = 0;
+                currentStepHeight = dims.y + gap;
+                if (cursor.y >= maxDims.y)
                 {
                     LOG_ERROR("TextureAtlas with AtlasID %d is full!", (int)atlas);
                     return false;
                 }
             }
-            if (texHeight > currentStepHeight) // Keep track of the highest image
-                currentStepHeight = texHeight + gap;
+            if (dims.y > currentStepHeight) // Keep track of the highest image
+                currentStepHeight = dims.y + gap;
             return true;
         }
     };

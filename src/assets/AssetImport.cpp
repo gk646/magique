@@ -35,22 +35,21 @@ namespace magique
     TextureRegion ImportTexture(const Image& img, AtlasID atlas)
     {
         auto& texAtlas = global::ATLAS_DATA.getAtlas(atlas);
-        const auto region = texAtlas.addTexture(img, img.width, img.height);
+        const auto region = texAtlas.addTexture(img, {(float)img.width, (float)img.height});
         return region;
     }
 
-    TextureRegion ImportTexture(const Asset& asset, const AtlasID at, const float scale)
+    TextureRegion ImportTexture(Asset asset, const AtlasID at, const float scale)
     {
         ASSET_CHECK(asset);
         const Image image = ImportImage(asset);
-        const int tarWidth = static_cast<int>(static_cast<float>(image.width) * scale);
-        const int tarHeight = static_cast<int>(static_cast<float>(image.height) * scale);
+        const Point dims = {(float)image.width, (float)image.height};
         auto& atlas = global::ATLAS_DATA.getAtlas(at);
-        const auto region = atlas.addTexture(image, tarWidth, tarHeight);
+        const auto region = atlas.addTexture(image, dims * scale);
         return region;
     }
 
-    Image ImportImage(const Asset& asset)
+    Image ImportImage(Asset asset)
     {
         ASSET_CHECK(asset);
         const auto* ext = asset.getExtension().data();
@@ -60,7 +59,27 @@ namespace magique
         return img;
     }
 
-    SpriteSheet ImportSpriteSheetVec(const std::vector<Asset>& assets, AtlasID atlas, float scale)
+    SpriteSheet ImportSprite(Asset asset, Point dims, AtlasID atlas, float scale)
+    {
+        ASSET_CHECK(asset);
+        Image image = LoadImage(asset);
+        MAGIQUE_ASSERT(image.width >= dims.x && image.height >= dims.y, "Image is smaller than a single frame");
+        const auto sheet = global::ATLAS_DATA.getAtlas(atlas).addSpriteSheet(image, dims, scale);
+        return sheet;
+    }
+
+    SpriteSheet ImportSprite(Asset asset, Point dims, AtlasID atlas, Point offset, int frames, float scale)
+    {
+        ASSET_CHECK(asset);
+        Image image = LoadImage(asset);
+        MAGIQUE_ASSERT(image.width >= dims.x && image.height >= dims.y, "Image is smaller than a single frame");
+        MAGIQUE_ASSERT(offset.x < image.width && offset.y < image.height, "Offset is outside image bounds");
+        const auto sheet = global::ATLAS_DATA.getAtlas(atlas).addSpriteSheetEx(image, dims, scale, frames, offset);
+        return sheet;
+    }
+
+
+    SpriteSheet ImportSpriteVec(std::span<const Asset> assets, AtlasID atlas, float scale)
     {
         if (assets.empty())
         {
@@ -124,11 +143,11 @@ namespace magique
             }
             images.push_back(loadedImage);
         }
-        const SpriteSheet result = ImportSpriteSheetVec(images, atlas, scale);
+        const SpriteSheet result = ImportSpriteVec(images, atlas, scale);
         return result;
     }
 
-    SpriteSheet ImportSpriteSheetVec(const std::vector<Image>& images, AtlasID atlas, float scale)
+    SpriteSheet ImportSpriteVec(std::span<const Image> images, AtlasID atlas, float scale)
     {
         if (images.empty())
         {
@@ -176,7 +195,7 @@ namespace magique
         }
 
         auto& atlasData = global::ATLAS_DATA.getAtlas(atlas);
-        auto sheet = atlasData.addSpriteSheet(singleImage, width, height, scale);
+        auto sheet = atlasData.addSpriteSheet(singleImage, {(float)width, (float)height}, scale);
         sheet.blank = blank;
         return sheet;
     }
@@ -230,15 +249,14 @@ namespace magique
                 func(images, frame);
             }
 
-            const auto sheet = ImportSpriteSheetVec(images, atlas, scale);
+            const auto sheet = ImportSpriteVec(images, atlas, scale);
             const auto state = mapFunc(tag.name);
             animation.addAnimationEx(state, sheet, durations, offset, anchor);
         }
         return animation;
     }
 
-    Animation ImportAseprite(const Asset& asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset,
-                             Point anchor)
+    Animation ImportAseprite(Asset asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset)
     {
         if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
         {
@@ -247,9 +265,26 @@ namespace magique
         }
 
         auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
-        if (anchor == -1)
-            anchor = Point{(float)import->w, (float)import->h} / 2;
+        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
+        {
+            images.push_back(FrameToImg(frame));
+        };
 
+        const Point anchor = Point{(float)import->w, (float)import->h} / 2.0F;
+        auto animation = IterateTags(import, frameFunc, mapFunc, offset, anchor, atlas, scale);
+        cute_aseprite_free(import);
+        return animation;
+    }
+
+    Animation ImportAseprite(Asset asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset, Point anchor)
+    {
+        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
+        {
+            LOG_WARNING("Invalid extensions for a aseprite file");
+            return {};
+        }
+
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
         auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
         {
             images.push_back(FrameToImg(frame));
