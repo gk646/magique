@@ -40,7 +40,7 @@ namespace magique
     //       - 2. Copy the checksum into the code: Checksum{"copied-string"} CHECK_SUM;
     //       - 3. Use this now to verify the integrity of the asset pack (detect tampering or corrupted download)
     //          -  if( !AssetPackValidate(CHECK_SUM)) ... LOG_ERROR("Corrupted asset pack");
-    Checksum AssetPackChecksum(const char* path = "data.bin");
+    Checksum AssetPackChecksum(std::string_view path = "data.bin");
 
     // Returns true if the asset pack at the specified path has the same checksum
     bool AssetPackValidate(Checksum checksum, const char* path = "data.bin");

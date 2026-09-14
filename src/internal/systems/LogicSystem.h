@@ -197,9 +197,9 @@ namespace magique
             {
                 // Pass a boolean whether the entity is updated => if it's in the cache
                 if constexpr (isEnd)
-                    internal::GetScriptInternal(entity)->onUpdate(entity, cache.contains(entity));
-                else
                     internal::GetScriptInternal(entity)->onUpdateEnd(entity, cache.contains(entity));
+                else
+                    internal::GetScriptInternal(entity)->onUpdate(entity, cache.contains(entity));
             }
         }
     }

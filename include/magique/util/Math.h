@@ -2,8 +2,7 @@
 #ifndef MAGIQUE_MATH_H
 #define MAGIQUE_MATH_H
 
-#include <vector>
-#include <raylib/raylib.h>
+#include <cfloat>
 #include <magique/core/Types.h>
 
 //===============================
@@ -18,6 +17,11 @@ namespace magique
     // Returns a random float using raylib's GetRandomValue() - min and max included
     float MathRandom(float min = 0.0F, float max = 1.0F);
 
+    // Returns a random number based on a normal distribution
+    // avg is the expected value and stddev decides how big outliers can get
+    // Note: This is interesting for games as it allows the general case to be more likely while still having rng
+    float MathRandomGaussian(float avg, float stddev, float min = FLT_MIN, float max = FLT_MAX);
+
     // Returns from 0 to 1 how close the given value is to max starting from min
     float MathLerpInverse(float min, float max, float value);
 
@@ -27,7 +31,7 @@ namespace magique
     // Exponential decay function
     float MathDecayExp(float a, float b, float minRatio = 0.1f, float steepness = 1.0f);
 
-    // Returns true if a roll with the given chance was true - GetRandomFloat()
+    // Returns true if a roll with the given chance was true
     // Note: Chance must be between 0.0 and 1.0F - 0 is never true 1 is always true
     bool MathRoll(float chance);
 

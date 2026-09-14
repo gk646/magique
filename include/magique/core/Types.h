@@ -8,6 +8,7 @@
 #include <vector>
 #include <magique/fwd.hpp>
 #include <raylib/raylib.h>
+#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Types Modules
@@ -119,7 +120,7 @@ namespace magique
         // Clamps both values inside the given range - if outside the range will be set to the closes point in range
         Point& clamp(float min, float max);
 
-        // Decreases the magnitude of the vector by the given scalar (flat) or factor
+        // Increases the magnitude of the vector by the given scalar (flat) or factor
         Point& changeMagnitudeAbs(float abs);
         Point& changeMagnitude(float factor);
 
@@ -278,6 +279,7 @@ namespace magique
     };
 
     //================= CORE =================//
+    using Millisecond = uint16_t;
 
     // Used by magique - Good starting point for own projects to use these base colors
     // Note: dark and light are relative, but they describe the purpose of the color here
@@ -354,13 +356,13 @@ namespace magique
         bool blank = false;  // True if all frames are fully transparent
     };
 
-    using DurationArray = uint16_t[MAGIQUE_MAX_ANIM_FRAMES]; // Duration in millis
+    using FrameDuration = std::array<Millisecond, MAGIQUE_MAX_ANIM_FRAMES>;
 
     struct SpriteAnimation final
     {
-        DurationArray durations{};
+        FrameDuration durations{};
         SpriteSheet sheet{};
-        float durationMillis = 0;
+        Millisecond totalDuration = 0;
 
         TextureRegion getCurrentFrame(float millis) const;
 
@@ -388,14 +390,11 @@ namespace magique
     // TileSet/TileMap/Objects... -> right click in properties window -> custom properties -> choose type, name and value
     struct TiledProperty final
     {
-        // Returns the value of the property
-        // IMPORTANT: program will crash when you call the wrong type getter
-        //            -> e.g. check if it's an integer first before calling getInt()
-        bool getBool() const;
-        int getInt() const;
-        float getFloat() const;
-        std::string_view getString() const;
-        Color getColor() const;
+        std::optional<bool> getBool() const;
+        std::optional<int> getInt() const;
+        std::optional<float> getFloat() const;
+        std::optional<std::string_view> getString() const;
+        std::optional<Color> getColor() const;
 
         // the type of the property
         TileObjectPropertyType getType() const;
@@ -422,10 +421,26 @@ namespace magique
 
     using TileObjectID = int;
 
-    // Objects defined inside Tiled
-    struct TiledObject final
+    struct TiledPropertyHolder
     {
         std::vector<TiledProperty> properties; // Defined properties
+
+        // Returns: The property with the given name and type
+        std::optional<TiledProperty> getProperty(std::string_view name) const;
+        std::optional<int> getIntProperty(std::string_view name) const;
+        std::optional<float> getFloatProperty(std::string_view name) const;
+        std::optional<bool> getBoolProperty(std::string_view pName) const;
+        std::optional<std::string_view> getStringProperty(std::string_view name) const;
+        std::optional<Color> getColorProperty(std::string_view name) const;
+
+        // Must be a string property
+        template <typename T>
+        std::optional<T> getEnumProperty(std::string_view name) const;
+    };
+
+    // Objects defined inside Tiled
+    struct TiledObject final : TiledPropertyHolder
+    {
         Rect bounds{};
         float rotation = 0;
         bool visible = false;
@@ -445,10 +460,6 @@ namespace magique
         // This returns the original top left coordinates so the object is positioned properly
         Point getOriginalTopLeft() const;
 
-        // Returns: the property with the given name or nullptr if not exists
-        const TiledProperty* getProperty(std::string_view name) const;
-
-        bool hasProperty(std::string_view name) const;
 
     private:
         M_MAKE_PUB()
@@ -503,7 +514,7 @@ namespace magique
         uint32_t second = 0;
         uint32_t third = 0;
         uint32_t fourth = 0;
-        friend Checksum AssetPackChecksum(const char* path);
+        friend Checksum AssetPackChecksum(std::string_view path);
     };
 
     //================= ECS =================//
@@ -1100,6 +1111,15 @@ namespace magique
 
 namespace magique
 {
+    template <typename T>
+    std::optional<T> TiledPropertyHolder::getEnumProperty(std::string_view name) const
+    {
+        auto property = getStringProperty(name);
+        if (!property.has_value())
+            return {};
+        return enchantum::cast<T>(property.value());
+    }
+
     template <typename T>
     const T& Payload::getDataAs() const
     {

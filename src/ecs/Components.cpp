@@ -74,9 +74,9 @@ namespace magique
 
     //----------------- ANIMATION -----------------//
 
-    AnimationC::AnimationC(const Animation& animation, const AnimationState startState) : animation(&animation)
+    AnimationC::AnimationC(const Animation& animation, AnimationState startState) : animation(&animation)
     {
-        setAnimationState(startState);
+        setState(startState);
     }
 
     void AnimationC::drawCurrentFrame(const Point& pos, bool flipX, const float rotation, bool flipY, Color tint) const
@@ -89,33 +89,55 @@ namespace magique
         DrawRegionPro(currentFrame, dest, rotation, animation->getAnchor(), tint);
     }
 
-    void AnimationC::update() { millisCount += MAGIQUE_TICK_TIME * 1000.0F; }
+    void AnimationC::update()
+    {
+        if (stopped) [[unlikely]]
+            return;
 
-    void AnimationC::setAnimationState(const AnimationState state)
+        millisCount += MAGIQUE_TICK_TIME * 1000.0F;
+        Millisecond insideMillis = (int)std::floor(millisCount) % currentAnimation.totalDuration;
+        if (insideMillis < prevMillis) [[unlikely]]
+            hasPlayed = true;
+        prevMillis = insideMillis;
+    }
+
+    void AnimationC::setState(const AnimationState state)
     {
         if (state != currentState)
         {
             lastState = currentState;
             currentState = state;
-            millisCount = 0;
             currentAnimation = animation->getAnimation(state);
             animationStart = millisCount;
+            resetSpriteCount();
         }
     }
 
-    SpriteAnimation AnimationC::getCurrentAnimation() const { return currentAnimation; }
+    AnimationState AnimationC::getState() const { return currentState; }
 
-    bool AnimationC::getHasAnimationPlayed() const
+    bool AnimationC::getIsStopped() const { return stopped; }
+
+    void AnimationC::setIsStopped(bool isStopped) { stopped = isStopped; }
+
+    bool AnimationC::getHasAnimationPlayed()
     {
-        return millisCount > animationStart + currentAnimation.durationMillis;
+        const bool val = hasPlayed;
+        if (val)
+            hasPlayed = false;
+        return val;
     }
 
-    AnimationState AnimationC::getCurrentState() const { return currentState; }
+    Millisecond AnimationC::getSpriteTime() const { return prevMillis; }
 
-    float AnimationC::getSpriteCount() const { return millisCount; }
+    void AnimationC::resetSpriteCount()
+    {
+        prevMillis = 0;
+        millisCount = 0;
+    }
 
     const Animation& AnimationC::getAnimation() const { return *animation; }
 
+    SpriteAnimation AnimationC::getCurrentSprite() const { return currentAnimation; }
 
     //----------------- LAYERED ANIMATION -----------------//
 

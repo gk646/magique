@@ -25,7 +25,7 @@ and tutorials.
 
 |                                                     [Turtle's Journey](https://github.com/gk646/turtles_journey)                                                     | [Space Fighter](https://store.steampowered.com/app/4695600?utm_source=github) (Steam)                                                                                                                                                             |
 |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------:|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> | <a href="https://store.steampowered.com/app/4695600?utm_source=github"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4695600/122ee0ece8d8522171634345c677dd4826954154/header.jpg" alt="Screenshot 1" width="250"/> |
+| <a href="https://github.com/gk646/turtles_journey"><img src="https://github.com/gk646/turtles_journey/blob/main/pics/main_menu.png" alt="Screenshot 1" width="250"/> | <a href="https://store.steampowered.com/app/4695600?utm_source=github"><img src="https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/4695600/5d8bab783ca6bc4cc2fa3a8fbc3d7e1c6af4aa49/header.jpg" alt="Screenshot 1" width="250"/> |
 
 ---
 

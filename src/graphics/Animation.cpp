@@ -13,12 +13,12 @@ namespace magique
         for (int i = 0; i < sheet.frames; ++i)
         {
             animation.durations[i] = frameMillis;
-            animation.durationMillis += frameMillis;
+            animation.totalDuration += frameMillis;
         }
         animation.sheet = sheet;
     }
 
-    void Animation::addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations, Point off,
+    void Animation::addAnimationEx(AnimationState state, SpriteSheet sheet, const FrameDuration& durations, Point off,
                                    Point anch)
     {
         if (sheet.frames == 0)
@@ -31,7 +31,7 @@ namespace magique
         for (int i = 0; i < sheet.frames; ++i)
         {
             animation.durations[i] = durations[i];
-            animation.durationMillis += durations[i];
+            animation.totalDuration += durations[i];
         }
         animation.sheet = sheet;
         offset = off * logicScale;

@@ -5,6 +5,8 @@
 #include <magique/internal/entt/entity/registry.hpp>
 #include <magique/ecs/Components.h>
 #include <magique/core/Engine.h>
+#include <magique/core/Camera.h>
+#include <magique/ecs/Scripting.h>
 
 //===============================
 // ECS Module
@@ -32,9 +34,11 @@ namespace magique
     using CreateFunc = std::function<void(Entity entity, EntityType type)>;
 
     // Registers an entity (or multiple) with the given create function - replaces the existing function if present
-    // Failure: Returns false
-    bool EntityRegister(EntityType type, const CreateFunc& createFunc);
-    bool EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc);
+    void EntityRegister(EntityType type, const CreateFunc& createFunc);
+    void EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc);
+
+    // Registers the entity and sets the scri
+    void EntityRegisterEx(EntityType type, const CreateFunc& createFunc, EntityScript* script = new EntityScript());
 
     // Unregisters an entity
     // Failure: Returns false
@@ -44,7 +48,7 @@ namespace magique
     // Note: All entities have the PositionC auto assigned per default!
     //      - withFunc: if true looks for and requires EntityRegister to be called first with a creation function
     // Failure: Returns NullEntity
-    Entity EntityCreate(EntityType type, Point pos, MapID map, float rotation = 0, bool withFunc = true);
+    Entity EntityCreate(EntityType type, Point pos, MapID map = CameraGetMap(), float rot = 0, bool withFunc = true);
 
     // Tries to create a new entity with the given id - will FAIL if this id is already taken
     // Note: Should only be called in a networking context with a valid id (when receiving entity info as a client)

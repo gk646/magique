@@ -392,9 +392,8 @@ namespace magique
     }
 
     // https://en.wikipedia.org/wiki/MD5#Pseudocode
-    Checksum AssetPackChecksum(const char* path)
+    Checksum AssetPackChecksum(std::string_view path)
     {
-        MAGIQUE_ASSERT(path != nullptr, "Passed null");
         Checksum checksum{};
         if (!fs::exists(path))
         {
@@ -472,7 +471,7 @@ namespace magique
         };
 
 
-        FILE* file = std::fopen(path, "rb");
+        FILE* file = std::fopen(path.data(), "rb");
         uint32_t chunk[16]{};
 
         std::fseek(file, 0, SEEK_END);

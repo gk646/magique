@@ -197,7 +197,7 @@ namespace magique
         return lineBreaks;
     }
 
-    const std::vector<std::string>& StringSplit(std::string_view s, char delim)
+     std::span<const std::string> StringSplit(std::string_view s, char delim)
     {
         static std::vector<std::string> CACHE;
 

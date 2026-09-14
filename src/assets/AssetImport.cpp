@@ -234,7 +234,7 @@ namespace magique
         std::vector<Image> images = {};
         for (const auto& tag : std::span{import->tags, (size_t)import->tag_count})
         {
-            DurationArray durations{};
+            FrameDuration durations{};
             images.clear();
             if (tag.to_frame - tag.from_frame >= MAGIQUE_MAX_ANIM_FRAMES)
             {

@@ -81,7 +81,7 @@ namespace magique
         // Default: (0,0)
         EmitterBase& setEmissionRotationAnchor(const Point& anchor);
 
-        // How much of the collision shape will be treated as spawnable area - 0 => only the outlines 1.0 full body
+        // How much of the collision shape will be treated as spawnable area - 0 [only the outline] - 1.0 [full emission shape]
         // Grows from the outside inwards - for the other way around just make the shape smaller
         // Default: 1.0
         EmitterBase& setEmissionShapeVolume(float percent);

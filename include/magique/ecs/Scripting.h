@@ -23,7 +23,7 @@ namespace magique
 {
     // Sets a script for this entity type (or multiple)
     // Subclass the EntityScript class and pass a new Instance()
-    void ScriptingSetScript(EntityType type, EntityScript* script);
+    void ScriptingSetScript(EntityType type, EntityScript* script = nullptr);
     void ScriptingSetScript(std::initializer_list<EntityType> types, EntityScript* script);
 
     // Retrieves the script for the entity type

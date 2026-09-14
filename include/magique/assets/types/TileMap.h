@@ -46,7 +46,7 @@ namespace magique
         auto end() const { return tiles.end(); }
     };
 
-    struct TileMap final
+    struct TileMap final : TiledPropertyHolder
     {
         TileMap() = default;
 
@@ -117,7 +117,6 @@ namespace magique
         M_MAKE_PUB()
         std::vector<TiledObjectLayer> objectLayers;
         std::vector<TiledTileLayer> tileLayers; // Contiguous array for map data
-        std::vector<TiledProperty> properties;
 
         struct AnimatedTile final
         {

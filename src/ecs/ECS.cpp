@@ -15,7 +15,7 @@
 
 namespace magique
 {
-    bool EntityRegister(const EntityType type, const CreateFunc& createFunc)
+    void EntityRegister(const EntityType type, const CreateFunc& createFunc)
     {
         MAGIQUE_ASSERT(type < static_cast<EntityType>(UINT16_MAX), "Max value is reserved!");
         auto& map = global::ECS_DATA.typeMap;
@@ -29,17 +29,20 @@ namespace magique
             volatile int b = static_cast<int>(entity); // Try to instantiate all storage types - even in release mode
             (void)b;                                   // Suppress unused variable
         }
-        return true;
     }
 
-    bool EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc)
+    void EntityRegisterEx(EntityType type, const CreateFunc& createFunc, EntityScript* script)
     {
-        bool result = true;
+        EntityRegister(type, createFunc);
+        ScriptingSetScript(type, script);
+    }
+
+    void EntityRegister(std::initializer_list<EntityType> types, const CreateFunc& createFunc)
+    {
         for (const auto type : types)
         {
-            result &= EntityRegister(type, createFunc);
+            EntityRegister(type, createFunc);
         }
-        return result;
     }
 
     bool EntityUnregister(const EntityType type)

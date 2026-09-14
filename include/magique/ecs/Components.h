@@ -102,36 +102,42 @@ namespace magique
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
 
-        // Sets a new action state - automatically reset the sprite count to 0 when a state change happens
-        void setAnimationState(AnimationState state);
+        // Sets/gets the action state - automatically reset the sprite count to 0 when a state change happens
+        void setState(AnimationState state);
+        AnimationState getState() const;
 
-        //================= GETTERS =================//
+        // Allows to get/set the stopped state - skips updating the counter when update is called
+        bool getIsStopped() const;
+        void setIsStopped(bool isStopped = true);
 
-        // Returns the current animation
-        SpriteAnimation getCurrentAnimation() const;
-
-        // Returns true if the current animation played at least once
+        // Returns true if the current animation played at least once since the last time this function was called
         // Useful for when you want to stop certain animations after they played once
-        bool getHasAnimationPlayed() const;
+        bool getHasAnimationPlayed();
 
-        // Returns the current animation state
-        AnimationState getCurrentState() const;
+        // Returns the current sprite time
+        Millisecond getSpriteTime() const;
 
-        // Returns the current sprite count (in millis)
-        float getSpriteCount() const;
+        // Resets the sprite time to 0 - restarts the animation
+        void resetSpriteCount();
 
         // Returns the underlying animation
         const Animation& getAnimation() const;
+
+        // Returns the current animation
+        SpriteAnimation getCurrentSprite() const;
 
         bool operator==(const AnimationC&) const = default;
 
     private:
         const Animation* animation = nullptr;
         SpriteAnimation currentAnimation{};
-        float millisCount = 0;
-        uint16_t animationStart = 0;
+        bool hasPlayed = false;
+        bool stopped = false;
         AnimationState lastState{UINT8_MAX};
         AnimationState currentState{UINT8_MAX};
+        Millisecond prevMillis = 0;
+        float millisCount = 0;
+        float animationStart = 0;
         friend struct glz::meta<AnimationC>;
     };
 

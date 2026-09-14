@@ -80,8 +80,11 @@ namespace magique
                 fputc('\n', log.file);
             }
 
+            fflush(out);
             if (level >= LEVEL_ERROR) [[unlikely]]
             {
+                fflush(stdout);
+                fflush(stderr);
 #ifdef MAGIQUE_DEBUG
 #if defined(_WIN32)
                 __debugbreak();

@@ -44,7 +44,7 @@ namespace magique
 
     // Returns a vector of strings containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-    const std::vector<std::string>& StringSplit(std::string_view s, char delim = '\n');
+     std::span<const std::string> StringSplit(std::string_view s, char delim = '\n');
 
     // Returns true if the given string conforms to:
     //  - At least "minLen" but not longer than "maxLen"

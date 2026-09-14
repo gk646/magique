@@ -15,7 +15,7 @@ namespace magique
     {
         auto& scData = global::SCRIPT_DATA;
         // Dont delete scripts to avoid funny bugs
-        scData.scripts[type] = script;
+        scData.scripts[type] = script == nullptr ? new EntityScript() : script;
     }
 
     void ScriptingSetScript(std::initializer_list<EntityType> types, EntityScript* script)

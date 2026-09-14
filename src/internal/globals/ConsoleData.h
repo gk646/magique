@@ -42,8 +42,8 @@ namespace magique
     struct ParamParser final
     {
         // Returns a ptr to the command to be executed - logs errors internally
-        static const Command* ParseCommand(const std::vector<std::string>& chunks);
-        static ParamList ParseParams(const Command& cmd, const std::vector<std::string>& chunks);
+        static const Command* ParseCommand(std::span<const std::string> chunks);
+        static ParamList ParseParams(const Command& cmd, std::span<const std::string> chunks);
         static bool ValidateParams(const Command& cmd, ParamList& params);
     };
 
@@ -653,7 +653,7 @@ namespace magique
 
     //================= PARSER =================//
 
-    inline const Command* ParamParser::ParseCommand(const std::vector<std::string>& chunks)
+    inline const Command* ParamParser::ParseCommand(std::span<const std::string> chunks)
     {
         auto& data = global::CONSOLE_DATA;
         if (chunks.empty())
@@ -669,7 +669,7 @@ namespace magique
         return cmd;
     }
 
-    inline ParamList ParamParser::ParseParams(const Command& cmd, const std::vector<std::string>& chunks)
+    inline ParamList ParamParser::ParseParams(const Command& cmd, std::span<const std::string> chunks)
     {
         auto getParamName = [&](int i) // Direct index - until for variadics
         {

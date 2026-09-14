@@ -32,7 +32,7 @@ namespace magique
 
         // Same as addAnimation but with extended parameters
         // Anchor will be set to the middle of the sheet dims if 0
-        void addAnimationEx(AnimationState state, SpriteSheet sheet, const DurationArray& durations, Point offset = {},
+        void addAnimationEx(AnimationState state, SpriteSheet sheet, const FrameDuration& durations, Point offset = {},
                             Point anchor = {});
 
         // Removes the animation for this state

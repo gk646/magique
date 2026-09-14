@@ -4,18 +4,28 @@
 #include <magique/util/Math.h>
 #include <raylib/raylib.h>
 #include <magique/util/RayUtils.h>
-
-#include "internal/utils/CollisionPrimitives.h"
+#include <random>
 
 namespace magique
 {
     float MathRandom(const float min, const float max)
     {
         constexpr float ACCURACY = 100'000.0F;
+        constexpr float ACCURACY_INV = 1.0F / 100'000.0F;
         const int minI = static_cast<int>(min * ACCURACY);
         const int maxI = static_cast<int>(max * ACCURACY);
         const auto val = static_cast<float>(GetRandomValue(minI, maxI));
-        return val / ACCURACY;
+        return val * ACCURACY_INV;
+    }
+
+    // https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
+    float MathRandomGaussian(float avg, float stddev, float min, float max)
+    {
+        const float u1 = MathRandom(0.0001F, 1.0F);
+        const float u2 = MathRandom(0.0f, 1.0f);
+        const float z0 = sqrtf(-2.0f * logf(u1)) * cosf(2.0f * M_PI * u2);
+        const float val = avg + stddev * z0;
+        return std::clamp(val, min, max);
     }
 
     float MathLerpInverse(const float min, const float max, const float value)

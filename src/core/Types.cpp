@@ -9,6 +9,9 @@
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
+
+#include "glaze/reflection/get_name.hpp"
+
 #include <magique/util/Logging.h>
 #include <magique/ui/UI.h>
 
@@ -724,8 +727,8 @@ namespace magique
 
     TextureRegion SpriteAnimation::getCurrentFrame(const float millis) const
     {
-        MAGIQUE_ASSERT(durationMillis > 0 && sheet.getFrameCount() > 0 && sheet.isValid(), "Empty Animation");
-        const int count = static_cast<int>(millis) % static_cast<int>(durationMillis);
+        MAGIQUE_ASSERT(totalDuration > 0 && sheet.getFrameCount() > 0 && sheet.isValid(), "Empty Animation");
+        const int count = static_cast<int>(millis) % static_cast<int>(totalDuration);
         int frame = 0;
         uint16_t millisCount = 0;
         for (const auto duration : durations)
@@ -754,34 +757,39 @@ namespace magique
 
     //----------------- TILE OBJECT PROPERTY -----------------//
 
-    bool TiledProperty::getBool() const
+    std::optional<bool> TiledProperty::getBool() const
     {
-        MAGIQUE_ASSERT(type == TileObjectPropertyType::BOOL, "Property does not contain a boolean!");
+        if (type != TileObjectPropertyType::BOOL)
+            return {};
         return boolean;
     }
 
-    int TiledProperty::getInt() const
+    std::optional<int> TiledProperty::getInt() const
     {
-        MAGIQUE_ASSERT(type == TileObjectPropertyType::INT, "Property does not contain a integer!");
+        if (type != TileObjectPropertyType::INT)
+            return {};
         return integer;
     }
 
-    float TiledProperty::getFloat() const
+    std::optional<float> TiledProperty::getFloat() const
     {
-        MAGIQUE_ASSERT(type == TileObjectPropertyType::FLOAT, "Property does not contain a float!");
+        if (type != TileObjectPropertyType::FLOAT)
+            return {};
         return floating;
     }
 
-    std::string_view TiledProperty::getString() const
+    std::optional<std::string_view> TiledProperty::getString() const
     {
-        MAGIQUE_ASSERT(type == TileObjectPropertyType::STRING, "Property does not contain a string!");
+        if (type != TileObjectPropertyType::STRING)
+            return {};
         return string;
     }
 
-    Color TiledProperty::getColor() const
+    std::optional<Color> TiledProperty::getColor() const
     {
-        MAGIQUE_ASSERT(type == TileObjectPropertyType::COLOR, "Property does not contain a color!");
-        return Color{color.b, color.g, color.r, color.a}; // Somehow wrong order?
+        if (type != TileObjectPropertyType::COLOR)
+            return {};
+        return Color{color.b, color.g, color.r, color.a};
     }
 
     TileObjectPropertyType TiledProperty::getType() const { return type; }
@@ -789,6 +797,54 @@ namespace magique
     std::string_view TiledProperty::getName() const { return std::string_view{name}; }
 
     //----------------- TILE OBJECT -----------------//
+
+    std::optional<TiledProperty> TiledPropertyHolder::getProperty(std::string_view pName) const
+    {
+        const auto it =
+            std::ranges::find_if(properties, [&](const auto& property) { return property.getName() == pName; });
+        if (it == properties.end())
+            return {};
+        return *it;
+    }
+
+    std::optional<int> TiledPropertyHolder::getIntProperty(std::string_view pName) const
+    {
+        auto property = getProperty(pName);
+        if (!property.has_value())
+            return {};
+        return property.value().getInt();
+    }
+
+    std::optional<float> TiledPropertyHolder::getFloatProperty(std::string_view pName) const
+    {
+        auto property = getProperty(pName);
+        if (!property.has_value())
+            return {};
+        return property.value().getFloat();
+    }
+
+    std::optional<bool> TiledPropertyHolder::getBoolProperty(std::string_view pName) const
+    {
+        auto property = getProperty(pName);
+        if (!property.has_value())
+            return {};
+        return property.value().getBool();
+    }
+    std::optional<std::string_view> TiledPropertyHolder::getStringProperty(std::string_view pName) const
+    {
+        auto property = getProperty(pName);
+        if (!property.has_value())
+            return {};
+        return property.value().getString();
+    }
+
+    std::optional<Color> TiledPropertyHolder::getColorProperty(std::string_view pName) const
+    {
+        auto property = getProperty(pName);
+        if (!property.has_value())
+            return {};
+        return property.value().getColor();
+    }
 
     std::string_view TiledObject::getName() const { return name; }
 
@@ -806,16 +862,6 @@ namespace magique
         return {x, y};
     }
 
-    const TiledProperty* TiledObject::getProperty(std::string_view pName) const
-    {
-        const auto it =
-            std::ranges::find_if(properties, [&](const auto& property) { return property.getName() == pName; });
-        if (it != properties.end())
-            return &(*it);
-        return nullptr;
-    }
-
-    bool TiledObject::hasProperty(std::string_view property) const { return getProperty(property) != nullptr; }
 
     //----------------- TILE INFO -----------------//
 

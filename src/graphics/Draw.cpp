@@ -233,7 +233,7 @@ namespace magique
 
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, const float fs, const float spc, const Color c)
     {
-        auto& parts = StringSplit(txt);
+        auto parts = StringSplit(txt);
         float offset = 0;
         for (auto& part : parts)
         {
