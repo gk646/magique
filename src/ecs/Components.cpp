@@ -108,8 +108,7 @@ namespace magique
             lastState = currentState;
             currentState = state;
             currentAnimation = animation->getAnimation(state);
-            animationStart = millisCount;
-            resetSpriteCount();
+            resetSpriteTime();
         }
     }
 
@@ -127,13 +126,23 @@ namespace magique
         return val;
     }
 
+    void AnimationC::randomizeSpriteTime()
+    {
+        millisCount = MathRandom() * currentAnimation.totalDuration;
+    }
+
     Millisecond AnimationC::getSpriteTime() const { return prevMillis; }
 
-    void AnimationC::resetSpriteCount()
+    void AnimationC::resetSpriteTime()
     {
         prevMillis = 0;
         millisCount = 0;
     }
+
+    void AnimationC::setSpriteTime(float millis) { millisCount = millis; }
+
+    void resetSpriteTime();
+    void randomizeSpriteTime();
 
     const Animation& AnimationC::getAnimation() const { return *animation; }
 
@@ -304,6 +313,8 @@ namespace magique
         Point offest = point - mid;
         pos.pos += offest;
     }
+
+    void CollisionC::CenterOn(Entity e, Entity entity) { CenterOn(e, GetMiddle(entity)); }
 
     bool CollisionC::detects(const CollisionC& other) const
     {

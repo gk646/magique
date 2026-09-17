@@ -131,7 +131,6 @@ namespace magique
         double ticks = 0;
         double timeScale = 1.0F;
         bool isPaused = false;
-        friend glz::meta<VirtualClock>;
     };
 
 } // namespace magique

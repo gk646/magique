@@ -1,8 +1,7 @@
 #ifndef PATHFINDINGSTRUCTS_H
 #define PATHFINDINGSTRUCTS_H
 
-#include <bitset>
-#include "magique/util/Datastructures.h"
+#include <inplace_vector>
 
 namespace magique
 {
@@ -15,13 +14,13 @@ namespace magique
         [](const Point& dir) { return dir.x != 0 && dir.y != 0 ? 1.40F : 1.0F; },
     };
 
-    inline std::array MOVEMENTS = {StackVector<Point, 8>{
+    inline std::array MOVEMENTS = {std::inplace_vector<Point, 8>{
                                        Point{0, -1}, // North
                                        {1, 0},       // East
                                        {0, 1},       // South
                                        {-1, 0},      // West
                                    },
-                                   StackVector<Point, 8>{
+                                   std::inplace_vector<Point, 8>{
                                        Point{0, -1}, // North
                                        {1, -1},      // North-East
                                        {1, 0},       // East

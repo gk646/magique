@@ -3,6 +3,7 @@
 #define MAGIQUE_GAMESAVE_DATA_H
 
 #include <magique/assets/JSON.h>
+#include <magique/internal/InternalTypes.h>
 
 //===============================================
 // Game Storage

@@ -44,7 +44,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif ()
 
     target_compile_options(magique PUBLIC
-            -std=c++23
+            -std=c++26
+            -freflection
             -flto
             -fno-rtti
             -fvisibility=hidden

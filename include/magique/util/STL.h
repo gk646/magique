@@ -1,9 +1,10 @@
 #ifndef MAGEQUEST_STL_H
 #define MAGEQUEST_STL_H
 
+#include <meta>
 #include <span>
+#include <algorithm>
 #include <raylib/raylib.h>
-#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // STL (Standard Templates Library)
@@ -19,6 +20,9 @@ namespace magique
     template <typename Container>
     using value_type_of = std::iterator_traits<decltype(std::cbegin(std::declval<Container>()))>::value_type;
 
+    template <typename T>
+    using optional_ref = std::optional<std::reference_wrapper<T>>;
+
     // Randomly picks n unique elements from the given range and returns them
     // Note: vec MUST not contain duplicates
     template <typename Container>
@@ -30,19 +34,15 @@ namespace magique
     // Returns the enum value as string
     // Note: This requires the whole enum definition to be visible when used
     template <class E>
-    std::string_view EnumToString(E val);
+    constexpr std::string_view EnumToString(E val);
 
-    // Returns an optional that contains the matching enum value if it exists
+    // Returns the matching enum value if it exists
     template <class E>
-    std::optional<E> EnumFromString(std::string_view value);
-
-    // Returns the amount of values part of the given enum
-    template <class E>
-    size_t EnumSize();
+    constexpr std::optional<E> EnumFromString(std::string_view value);
 
     // Returns a iterable view of all values of this enum
     template <class E>
-    std::span<const E> EnumValues();
+    constexpr std::span<const E> EnumValues();
 
     // Minimal read-only view type that allows implicit conversion from any container
     template <typename Container>
@@ -68,6 +68,49 @@ namespace magique
 
 namespace magique
 {
+
+    template <typename T>
+   std::optional<T> TiledPropertyHolder::getEnumProperty(std::string_view name) const
+    {
+        auto property = getStringProperty(name);
+        if (!property.has_value())
+            return {};
+        return EnumFromString<T>(property.value());
+    }
+
+    namespace internal
+    {
+         template <typename T>
+         consteval auto MakeEnumTable() noexcept {
+            static constexpr auto members = std::define_static_array(std::meta::enumerators_of(^^T));
+
+            std::size_t index{};
+            std::array<std::pair<T, std::string_view>, members.size()> table{};
+
+            template for (constexpr auto item : members) {
+                table[index].first  = [:item:];
+                table[index].second = std::meta::identifier_of(item);
+                ++index;
+            }
+            return table;
+        }
+
+        template <typename T>
+         consteval auto MakeEnumList() noexcept {
+            static constexpr auto members = std::define_static_array(std::meta::enumerators_of(^^T));
+
+            std::size_t index{};
+            std::array<T, members.size()> table{};
+
+            template for (constexpr auto item : members) {
+                table[index] = [:item:];
+                ++index;
+            }
+            return table;
+        }
+    } // namespace internal
+
+
     template <typename Container>
     std::optional<std::vector<value_type_of<Container>>> PickRandomSequence(const Container& view, int n)
     {
@@ -99,27 +142,38 @@ namespace magique
 
 
     template <class E>
-    std::string_view EnumToString(E val)
+    constexpr std::string_view EnumToString(E val)
     {
-        return enchantum::to_string(val);
+        static constexpr auto table = internal::MakeEnumTable<E>();
+        template for (constexpr auto item : table)
+        {
+            if (item.first == val)
+            {
+                return item.second;
+            }
+        }
+        return {};
     }
 
     template <class E>
-    std::optional<E> EnumFromString(std::string_view input)
+    constexpr std::optional<E> EnumFromString(std::string_view input)
     {
-        return enchantum::cast<E>(input);
+        static constexpr auto table = internal::MakeEnumTable<E>();
+        for ( auto [val, string] : table)
+        {
+            if (string == input)
+            {
+                return val;
+            }
+        }
+        return {};
     }
 
     template <class E>
-    size_t EnumSize()
+    constexpr std::span<const E> EnumValues()
     {
-        return enchantum::count<E>;
-    }
-
-    template <class E>
-    std::span<const E> EnumValues()
-    {
-        return enchantum::values<E>;
+        static constexpr auto table = internal::MakeEnumList<E>();
+        return std::span{table};
     }
 
 } // namespace magique

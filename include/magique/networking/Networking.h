@@ -6,7 +6,6 @@
 #include <magique/core/Engine.h>
 #include <magique/util/Logging.h>
 #include <magique/internal/InternalTypes.h>
-#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Networking Module
@@ -173,7 +172,7 @@ namespace magique
             for (const auto& entry : stats)
             {
                 const float avg = static_cast<float>(entry.count) / ticks;
-                auto enumName = enchantum::to_string(static_cast<T>(entry.type));
+                auto enumName = EnumToString(static_cast<T>(entry.type));
                 if (enumName.empty())
                     enumName = TextFormat("%d", (int)entry.type);
 

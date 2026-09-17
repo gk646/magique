@@ -2,8 +2,8 @@
 #ifndef MAGIQUE_STRINGS_H
 #define MAGIQUE_STRINGS_H
 
+#include <span>
 #include <magique/core/Types.h>
-#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Strings Module

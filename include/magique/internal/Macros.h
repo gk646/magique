@@ -35,13 +35,6 @@ namespace magique::internal
         script->eventType(std::forward<Args>(args)...);                                                                 \
     }
 
-#define MQ_REGISTER_SCRIPT_EVENTS(...)                                                                                  \
-    template <ScriptEvent type, class Script, class... Args>                                                            \
-    void Call(Script* script, Args... args)                                                                             \
-    {                                                                                                                   \
-        FOR_EACH(FUNCTION_CASE, __VA_ARGS__)                                                                            \
-    }
-
 //================= UTIL =================//
 
 #if defined(NDEBUG)
@@ -105,8 +98,7 @@ namespace magique::internal
 #define M_GAMESAVE_TYPE_MISMATCH(expected, ret)                                                                         \
     if (cell->type != StorageType::expected)                                                                            \
     {                                                                                                                   \
-        LOG_ERROR("Storage slot type mismatch: Expected: %s Have %s", #expected,                                        \
-                  enchantum::to_string(cell->type).data());                                                             \
+        LOG_ERROR("Storage slot type mismatch: Expected: %s Have %s", #expected, EnumToString(cell->type).data());      \
         return ret;                                                                                                     \
     }
 

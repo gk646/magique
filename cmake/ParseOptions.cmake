@@ -1,6 +1,7 @@
 # magique CMake section start
 message(STATUS "--------------- magique ------------------")
 message(STATUS "Version    : ${PROJECT_VERSION}")
+message(STATUS "Platform   : ${CMAKE_SYSTEM_NAME}")
 
 if (MAGIQUE_SHARED)
     if (MAGIQUE_STEAM OR MAGIQUE_LAN)

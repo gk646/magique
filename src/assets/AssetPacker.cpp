@@ -183,10 +183,9 @@ namespace magique
         }
     };
 
-
     static void UnCompressData(std::string& data)
     {
-        constexpr int MAX_DECOMPRESSION_SIZE = 64;
+        constexpr int MAX_DECOMPRESSION_SIZE = 128;
         const auto* start = data.data() + HEADER_LEN;
         const auto newData = new char[MAX_DECOMPRESSION_SIZE * 1024 * 1024];
         int newSize = sinflate(newData, MAX_DECOMPRESSION_SIZE * 1024 * 1024, start, data.size() - HEADER_LEN);
@@ -232,7 +231,7 @@ namespace magique
         header.from(data.data(), offset);
         if ((int)data.size() != header.totalSize)
         {
-            LOG_ERROR("AssetPack size mismatch between header and buffer size");
+            LOG_ERROR("AssetPack size mismatch between header and buffer size: %d vs %d", header.totalSize, (int)data.size());
             return false;
         }
 

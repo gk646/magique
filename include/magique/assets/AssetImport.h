@@ -5,8 +5,10 @@
 #include <vector>
 #include <raylib/raylib.h>
 #include <magique/core/Types.h>
+#include <magique/assets/types/Asset.h>
 #include <magique/graphics/Animation.h>
 #include <magique/gamedev/Localization.h>
+#include <magique/internal/cute_asprite.h>
 
 //===============================================
 // Asset Import
@@ -55,23 +57,24 @@ namespace magique
     SpriteSheet ImportSpriteVec(std::span<const Asset> assets, AtlasID atlas = {}, float scale = 1);
     SpriteSheet ImportSpriteVec(std::span<const Image> images, AtlasID atlas = {}, float scale = 1);
 
-    // Imports an aseprite file with all the frames and duration set (.ase,.aseprite)
-    using StateMapFunc = AnimationState (*)(const char* tagName);
-
-    // Imports all tags from the given aseprite - each tag is mapped to a animation state with the mapping function
-    // If not specified anchor will be the center
+    // Imports all tags from the given aseprite - tags are mapped to enum values of AnimationState
+    // If not specified rotation anchor will be the center
     // Note: Only imports frames that are part of a tag
-    Animation ImportAseprite(Asset asset, StateMapFunc mapping, AtlasID atlas = {}, float scale = 1, Point offset = {});
-    Animation ImportAseprite(Asset asset, StateMapFunc mapping, AtlasID atlas, float scale, Point offset, Point anchor);
+    // IMPORTANT: AnimationState enum NEEDS to be defined with the tag values
+    template <typename AnimationEnum = AnimationState>
+    Animation ImportAnimation(Asset asset, AtlasID atlas = {}, float scale = 1, Point offset = {});
+
+    template <typename AnimationEnum = AnimationState>
+    Animation ImportAnimation(Asset asset, AtlasID atlas, float scale, Point offset, Point anchor);
 
     using LayerMapFunc = LayeredAnimation (*)(const char* layerName);
 
-    // Imports each layers separately into its own entity animation
+    // Imports each layer separately into its own entity animation
     // Note: Uses the mapping function to map layer name in the editor to AnimationLayer values
-    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc mapping,
-                                                                             LayerMapFunc layerMap, AtlasID atlas = {},
-                                                                             float scale = 1, Point offset = {},
-                                                                             Point anchor = {-1});
+    template <typename AnimationEnum = AnimationState>
+    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, LayerMapFunc mapping,
+                                                                             AtlasID atlas = {}, float scale = 1,
+                                                                             Point offset = {}, Point anchor = {-1});
 
     //================= Audio =================//
 
@@ -150,5 +153,140 @@ namespace magique
 
 } // namespace magique
 
+// IMPLEMENTATION
+
+
+namespace magique
+{
+    namespace internal
+    {
+        static Image AsepriteCellToImg(ase_cel_t& cell)
+        {
+            Image image = GenImageColor(cell.w, cell.h, BLANK);
+            std::memcpy(image.data, cell.pixels, sizeof(Color) * cell.w * cell.h);
+            return image;
+        }
+
+        static Image AsepriteFrameToImg(ase_frame_t& frame)
+        {
+            Image image = GenImageColor(frame.ase->w, frame.ase->h, BLANK);
+            std::memcpy(image.data, frame.pixels, sizeof(Color) * frame.ase->w * frame.ase->h);
+            return image;
+        }
+
+        static ase_cel_t AsepriteFindLayerCell(const ase_frame_t& frame, const ase_layer_t& layer)
+        {
+            for (const auto& cell : std::span{frame.cels, (size_t)frame.cel_count})
+            {
+                if (cell.layer == &layer)
+                {
+                    return cell;
+                }
+            }
+            return ase_cel_t{};
+        }
+
+        template <typename AnimationEnum, typename Func>
+        static Animation AsepriteIterateTags(ase_t* import, Func func, Point offset, Point anchor, AtlasID atlas,
+                                             float scale)
+        {
+            Animation animation{scale};
+            std::vector<Image> images = {};
+            for (const auto& tag : std::span{import->tags, (size_t)import->tag_count})
+            {
+                FrameDuration durations{};
+                images.clear();
+                if (tag.to_frame - tag.from_frame >= MAGIQUE_MAX_ANIM_FRAMES)
+                {
+                    LOG_WARNING("Too many frames in animation!");
+                    continue;
+                }
+
+                for (int l = tag.from_frame; l <= tag.to_frame; ++l)
+                {
+                    auto& frame = import->frames[l];
+                    durations[(int)images.size()] = frame.duration_milliseconds;
+                    func(images, frame);
+                }
+
+                const auto sheet = ImportSpriteVec(images, atlas, scale);
+
+                auto stateVal = EnumFromString<AnimationEnum>(tag.name);
+                if (!stateVal.has_value())
+                    LOG_ERROR("Cannot map aseprite tag: %s\n Add as enum value to AnimationState", tag.name);
+
+                animation.addAnimationEx(stateVal.value_or({}), sheet, durations, offset, anchor);
+            }
+            return animation;
+        }
+    } // namespace internal
+
+
+    template <typename AnimationEnum>
+    std::vector<std::pair<LayeredAnimation, Animation>>
+    ImportAsepriteLayers(Asset asset, LayerMapFunc layerMap, AtlasID atlas, float scale, Point offset, Point anchor)
+    {
+        std::vector<std::pair<LayeredAnimation, Animation>> animations;
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
+        if (anchor == -1)
+            anchor = Point{(float)import->w, (float)import->h} / 2;
+
+        for (const auto& layer : std::span{import->layers, (size_t)import->layer_count})
+        {
+            auto frameFunc = [&](std::vector<Image>& images, ase_frame_t& frame)
+            {
+                auto cell = internal::AsepriteFindLayerCell(frame, layer);
+                images.push_back(internal::AsepriteCellToImg(cell));
+            };
+            auto animation =
+                internal::AsepriteIterateTags<AnimationEnum>(import, frameFunc, offset, anchor, atlas, scale);
+            animations.emplace_back(layerMap(layer.name), std::move(animation));
+        }
+
+        cute_aseprite_free(import);
+        return animations;
+    }
+
+    template <typename AnimationEnum>
+    Animation ImportAnimation(Asset asset, AtlasID atlas, float scale, Point offset)
+    {
+        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
+        {
+            LOG_WARNING("Invalid extensions for a aseprite file");
+            return {};
+        }
+
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
+        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
+        {
+            images.push_back(internal::AsepriteFrameToImg(frame));
+        };
+
+        const Point anchor = Point{(float)import->w, (float)import->h} / 2.0F;
+        auto animation = internal::AsepriteIterateTags<AnimationEnum>(import, frameFunc, offset, anchor, atlas, scale);
+        cute_aseprite_free(import);
+        return animation;
+    }
+
+    template <typename AnimationEnum>
+    Animation ImportAnimation(Asset asset, AtlasID atlas, float scale, Point offset, Point anchor)
+    {
+        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
+        {
+            LOG_WARNING("Invalid extensions for a aseprite file");
+            return {};
+        }
+
+        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
+        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
+        {
+            images.push_back(internal::AsepriteFrameToImg(frame));
+        };
+
+        auto animation = internal::AsepriteIterateTags<AnimationEnum>(import, frameFunc, offset, anchor, atlas, scale);
+        cute_aseprite_free(import);
+        return animation;
+    }
+} // namespace magique
 
 #endif // MAGIQUE_ASSETMANAGER_H

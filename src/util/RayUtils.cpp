@@ -177,8 +177,7 @@ namespace magique
         DrawLineV(rightStart.floored(), rightEnd, tint);
     }
 
-    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillRatio,
-                             Direction dir)
+    void DrawRectFrameFilled(const Rect& bounds, const Color& fill, const Color& outline, float fillRatio, Direction dir)
     {
         auto fillRect = Rect::Filled(bounds.shrink(2.0F), fillRatio, dir).floor();
         const auto outRect = Rect::Filled(bounds, fillRatio, dir).floor();
@@ -363,9 +362,17 @@ namespace magique
 
     ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
 
-    RenderTextureWrapper::RenderTextureWrapper(const RenderTexture& texture) { BeginTextureMode(texture); }
+    RenderTextureWrapper::RenderTextureWrapper(const RenderTexture& texture, const RenderTexture& old) : old(&old)
+    {
+        BeginTextureMode(texture);
+    }
 
-    RenderTextureWrapper::~RenderTextureWrapper() { EndTextureMode(); }
+    RenderTextureWrapper::~RenderTextureWrapper()
+    {
+        EndTextureMode();
+        if (old != nullptr && old->texture.id != 0)
+            BeginTextureMode(*old);
+    }
 
 
 } // namespace magique

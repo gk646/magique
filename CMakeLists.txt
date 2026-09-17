@@ -6,12 +6,12 @@ cmake_minimum_required(VERSION 3.20)
 project(magique
         LANGUAGES CXX C
         DESCRIPTION "2D game engine for programmers (or those yet to be!)"
-        VERSION 0.9.38
+        VERSION 0.9.39
         HOMEPAGE_URL "https://github.com/gk646/magique"
 )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 26)
 
 # Set CMake modules directory - path searched when using include()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")

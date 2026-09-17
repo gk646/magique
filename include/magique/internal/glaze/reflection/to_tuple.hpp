@@ -30,13 +30,22 @@ namespace glz
       // Helper to get access context for reflection
       inline consteval auto reflection_access_ctx() { return std::meta::access_context::unchecked(); }
 
+       consteval std::vector<std::meta::info> get_all_members(std::meta::info n)
+      {
+          auto val = std::meta::nonstatic_data_members_of(n, std::meta::access_context::unchecked());
+          for (auto x : std::meta::bases_of(n, std::meta::access_context::unchecked()))
+          {
+              val.append_range(get_all_members(std::meta::type_of(x)));
+          }
+          return val;
+      }
+
       // Count members using P2996 reflection
       // Works for any class type, including non-aggregates (classes with custom constructors)
       // Inherited members are automatically included via nonstatic_data_members_of
       template <class T>
          requires(std::is_class_v<std::remove_cvref_t<T>>)
-      inline constexpr size_t count_members =
-         std::meta::nonstatic_data_members_of(^^std::remove_cvref_t<T>, reflection_access_ctx()).size();
+      inline constexpr size_t count_members = get_all_members(^^std::remove_cvref_t<T>).size();
 
       // Helper struct to get member info at a specific index
       template <class T, size_t I>
@@ -44,7 +53,7 @@ namespace glz
       {
          static consteval auto info()
          {
-            auto members = std::meta::nonstatic_data_members_of(^^T, reflection_access_ctx());
+            auto members = get_all_members(^^T);
             return members[I];
          }
       };

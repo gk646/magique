@@ -1,6 +1,4 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <enchantum/enchantum.hpp>
-
 #include <magique/gamedev/Localization.h>
 #include <magique/util/Logging.h>
 #include <magique/util/Datastructures.h>
@@ -73,9 +71,9 @@ namespace magique
         if (langCode.size() != 2)
             return Language::None;
 
-        for (auto val : enchantum::values<Language>)
+        for (auto val : EnumValues<Language>())
         {
-            auto string = enchantum::to_string(val);
+            auto string = EnumToString(val);
             if (std::tolower(langCode[0]) == std::tolower(string[0]) &&
                 std::tolower(langCode[1]) == std::tolower(string[1]))
             {
@@ -97,7 +95,7 @@ namespace magique
 
         if (!DATA.languageMapping.contains(base))
         {
-            LOG_ERROR("Localization validation base language does not exist: %s", enchantum::to_string(base).data());
+            LOG_ERROR("Localization validation base language does not exist: %s", EnumToString(base).data());
             return;
         }
 
@@ -138,13 +136,13 @@ namespace magique
             }
         }
 
-        LOG_INFO("Localization Validation against: %s", enchantum::to_string(base).data());
+        LOG_INFO("Localization Validation against: %s", EnumToString(base).data());
         for (const auto& [lang, info] : languageInfos)
         {
             if (!info.present) // Not used
                 continue;
             const auto* msg = "    Language: %s | Empty Translations: %d | New Keywords: %d | Missing Keywords: %d\n";
-            printf(msg, enchantum::to_string(lang).data(), info.emptyValues, info.newKeywords, info.missingKeys);
+            printf(msg, EnumToString(lang).data(), info.emptyValues, info.newKeywords, info.missingKeys);
         }
     }
 

@@ -2,15 +2,9 @@
 #ifndef MAGIQUE_CSVREADER_H
 #define MAGIQUE_CSVREADER_H
 
-#include <magique/ecs/Components.h>
 #include <magique/internal/glaze/json/write.hpp>
-#include <magique/internal/enchantum/enchantum.hpp>
-#include <raylib/raylib.h>
 #include <magique/assets/types/Asset.h>
-#include <magique/gamedev/VirtualClock.h>
 #include <magique/util/Datastructures.h>
-#include <magique/internal/InternalTypes.h>
-#include <magique/graphics/Animation.h>
 
 //===============================================
 // JSON Import/Exports
@@ -42,104 +36,12 @@ namespace magique
     template <bool prettify = true, typename T>
     bool JSONExport(const T& data, std::string& buffer);
 
-    // Useful to reflect an enum - allows to import/export from JSON (with value names)
-    // Note: static analysis may show errors but code compiles (clang-tidy)
-#define MQ_REFLECT_ENUM(Enum)                                                                                           \
-    template <>                                                                                                         \
-    struct glz::meta<Enum>                                                                                              \
-    {                                                                                                                   \
-        using enum Enum;                                                                                                \
-        static constexpr std::string_view name = #Enum;                                                                 \
-        static constexpr auto value = enchantum::values<Enum>;                                                          \
-        static constexpr auto keys = enchantum::names<Enum>;                                                            \
-    };
-
 } // namespace magique
-
 
 // IMPLEMENTATION
 
-
-MQ_REFLECT_ENUM(magique::KeyBindType)
-MQ_REFLECT_ENUM(magique::StorageType)
-MQ_REFLECT_ENUM(magique::Shape)
-MQ_REFLECT_ENUM(magique::Language)
-
 namespace glz
 {
-    template <>
-    struct meta<magique::Point>
-    {
-        using T = magique::Point;
-        static constexpr auto value = object(&T::x, &T::y);
-    };
-
-    template <>
-    struct meta<Vector2>
-    {
-        using T = Vector2;
-        static constexpr auto value = object(&T::x, &T::y);
-    };
-
-    template <>
-    struct meta<magique::Rect>
-    {
-        using T = magique::Rect;
-        static constexpr auto value = object(&T::x, &T::y, &T::width, &T::height);
-    };
-
-    template <>
-    struct meta<magique::Keybind>
-    {
-        using T = magique::Keybind;
-        static constexpr auto value = object(&T::bind, &T::type, &T::layered, &T::shift, &T::ctrl, &T::alt);
-    };
-
-    template <>
-    struct meta<magique::VirtualClock>
-    {
-        using T = magique::VirtualClock;
-        static constexpr auto value = object(&T::realSecondSeconds, &T::ticks, &T::timeScale, &T::isPaused);
-    };
-
-    template <>
-    struct meta<Color>
-    {
-        using T = Color;
-        static constexpr auto value = object(&T::r, &T::g, &T::b, &T::a);
-    };
-
-    template <>
-    struct meta<magique::Rotation>
-    {
-        using T = Rotation;
-        static constexpr auto value = object(&T::rotation);
-    };
-
-    template <>
-    struct meta<magique::AnimationC>
-    {
-        using T = AnimationC;
-        static constexpr auto value = object(&T::currentState, &T::lastState);
-    };
-
-    template <>
-    struct meta<magique::StorageCell>
-    {
-        using T = magique::StorageCell;
-        static constexpr auto values = object(&T::name, &T::type, &T::data);
-    };
-
-    // Empty so glaze doesnt complain - nonsensical to load textures from json
-    // Allows to store it in a serialized struct
-    template <>
-    struct from<JSON, magique::Animation>
-    {
-        template <auto Opts>
-        static void op(magique::Animation& value, auto&&... args)
-        {
-        }
-    };
 
     template <typename K, typename V, int maxSize>
     struct from<JSON, magique::EnumArray<K, V, maxSize>>
@@ -168,11 +70,11 @@ namespace glz
         }
     };
 
-    template <typename K, typename V>
-    struct from<JSON, magique::HashMap<K, V>>
+    template <typename K, typename V, typename HashFunc, typename EqualsFunc>
+    struct from<JSON, magique::HashMapEx<K, V, HashFunc, EqualsFunc>>
     {
         template <auto Opts>
-        static void op(magique::HashMap<K, V>& value, auto&&... args)
+        static void op(magique::HashMapEx<K, V, HashFunc, EqualsFunc>& value, auto&&... args)
         {
             struct ValueHolder
             {
@@ -188,11 +90,11 @@ namespace glz
         }
     };
 
-    template <typename K, typename V>
-    struct to<JSON, magique::HashMap<K, V>>
+    template <typename K, typename V, typename HashFunc, typename EqualsFunc>
+    struct to<JSON, magique::HashMapEx<K, V, HashFunc, EqualsFunc>>
     {
         template <auto Opts>
-        static void op(const magique::HashMap<K, V>& value, auto&&... args) noexcept
+        static void op(const magique::HashMapEx<K, V, HashFunc, EqualsFunc>& value, auto&&... args) noexcept
         {
             struct ValueHolder
             {
@@ -238,11 +140,23 @@ namespace glz
 
 namespace magique
 {
+    struct CustomOptions : glz::opts
+    {
+        bool reflect_enums = true;
+        bool append_arrays;
+        bool linear_search = true;
+        constexpr CustomOptions(bool append_arrays = true, bool prettify = true) : append_arrays(append_arrays)
+        {
+            comments = true;
+            this->prettify = prettify;
+        }
+    };
+
     template <bool append, typename T>
     bool JSONImport(const Asset asset, T& obj)
     {
         std::string_view data = asset;
-        auto ec = glz::read<glz::opts{.comments = true}>(obj, data);
+        auto ec = glz::read<CustomOptions{append}>(obj, data);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath().data(), glz::format_error(ec, data).c_str());
@@ -255,7 +169,7 @@ namespace magique
     bool JSONImport(std::string_view json, T& data)
     {
         glz::context ctx{};
-        auto ec = read<glz::opts{.comments = true}>(data, json, ctx);
+        auto ec = glz::read<CustomOptions{append}>(data, json, ctx);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON:%s", glz::format_error(ec, json).c_str());
@@ -267,7 +181,7 @@ namespace magique
     template <bool prettify, typename T>
     bool JSONExport(const T& data, std::string& buffer)
     {
-        const auto ec = glz::write<glz::opts{.prettify = prettify}>(data, buffer);
+        const auto ec = glz::write<CustomOptions{false, prettify}>(data, buffer);
         if (ec)
         {
             LOG_ERROR("Failed to export JSON: %s", glz::format_error(ec, buffer).c_str());

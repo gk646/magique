@@ -21,7 +21,7 @@
 
 #define CUTE_TILED_WARNING(msg) LOG_ERROR(msg);
 
-#include "external/cute_asprite.h"
+#include "magique/internal/cute_asprite.h"
 #include "external/cute_tiled.h"
 
 namespace magique
@@ -77,7 +77,6 @@ namespace magique
         const auto sheet = global::ATLAS_DATA.getAtlas(atlas).addSpriteSheetEx(image, dims, scale, frames, offset);
         return sheet;
     }
-
 
     SpriteSheet ImportSpriteVec(std::span<const Asset> assets, AtlasID atlas, float scale)
     {
@@ -198,125 +197,6 @@ namespace magique
         auto sheet = atlasData.addSpriteSheet(singleImage, {(float)width, (float)height}, scale);
         sheet.blank = blank;
         return sheet;
-    }
-
-    static Image CellToImg(ase_cel_t& cell)
-    {
-        Image image = GenImageColor(cell.w, cell.h, BLANK);
-        std::memcpy(image.data, cell.pixels, sizeof(Color) * cell.w * cell.h);
-        return image;
-    }
-
-    static Image FrameToImg(ase_frame_t& frame)
-    {
-        Image image = GenImageColor(frame.ase->w, frame.ase->h, BLANK);
-        std::memcpy(image.data, frame.pixels, sizeof(Color) * frame.ase->w * frame.ase->h);
-        return image;
-    }
-
-    static ase_cel_t FindLayerCell(const ase_frame_t& frame, const ase_layer_t& layer)
-    {
-        for (const auto& cell : std::span{frame.cels, (size_t)frame.cel_count})
-        {
-            if (cell.layer == &layer)
-            {
-                return cell;
-            }
-        }
-        return ase_cel_t{};
-    }
-
-    template <typename Func>
-    static Animation IterateTags(ase_t* import, Func func, StateMapFunc mapFunc, Point offset, Point anchor,
-                                 AtlasID atlas, float scale)
-    {
-        Animation animation{scale};
-        std::vector<Image> images = {};
-        for (const auto& tag : std::span{import->tags, (size_t)import->tag_count})
-        {
-            FrameDuration durations{};
-            images.clear();
-            if (tag.to_frame - tag.from_frame >= MAGIQUE_MAX_ANIM_FRAMES)
-            {
-                LOG_WARNING("Too many frames in animation!");
-                continue;
-            }
-
-            for (int l = tag.from_frame; l <= tag.to_frame; ++l)
-            {
-                auto& frame = import->frames[l];
-                durations[(int)images.size()] = frame.duration_milliseconds;
-                func(images, frame);
-            }
-
-            const auto sheet = ImportSpriteVec(images, atlas, scale);
-            const auto state = mapFunc(tag.name);
-            animation.addAnimationEx(state, sheet, durations, offset, anchor);
-        }
-        return animation;
-    }
-
-    Animation ImportAseprite(Asset asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset)
-    {
-        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
-        {
-            LOG_WARNING("Invalid extensions for a aseprite file");
-            return {};
-        }
-
-        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
-        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
-        {
-            images.push_back(FrameToImg(frame));
-        };
-
-        const Point anchor = Point{(float)import->w, (float)import->h} / 2.0F;
-        auto animation = IterateTags(import, frameFunc, mapFunc, offset, anchor, atlas, scale);
-        cute_aseprite_free(import);
-        return animation;
-    }
-
-    Animation ImportAseprite(Asset asset, StateMapFunc mapFunc, AtlasID atlas, float scale, Point offset, Point anchor)
-    {
-        if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
-        {
-            LOG_WARNING("Invalid extensions for a aseprite file");
-            return {};
-        }
-
-        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
-        auto frameFunc = [](std::vector<Image>& images, ase_frame_t& frame)
-        {
-            images.push_back(FrameToImg(frame));
-        };
-
-        auto animation = IterateTags(import, frameFunc, mapFunc, offset, anchor, atlas, scale);
-        cute_aseprite_free(import);
-        return animation;
-    }
-
-    std::vector<std::pair<LayeredAnimation, Animation>> ImportAsepriteLayers(Asset asset, StateMapFunc stateMap,
-                                                                             AtlasID atlas, LayerMapFunc layerMap,
-                                                                             float scale, Point offset, Point anchor)
-    {
-        std::vector<std::pair<LayeredAnimation, Animation>> animations;
-        auto* import = cute_aseprite_load_from_memory((const char*)asset, asset.getSize(), nullptr);
-        if (anchor == -1)
-            anchor = Point{(float)import->w, (float)import->h} / 2;
-
-        for (const auto& layer : std::span{import->layers, (size_t)import->layer_count})
-        {
-            auto frameFunc = [&](std::vector<Image>& images, ase_frame_t& frame)
-            {
-                auto cell = FindLayerCell(frame, layer);
-                images.push_back(CellToImg(cell));
-            };
-            auto animation = IterateTags(import, frameFunc, stateMap, offset, anchor, atlas, scale);
-            animations.emplace_back(layerMap(layer.name), std::move(animation));
-        }
-
-        cute_aseprite_free(import);
-        return animations;
     }
 
     Sound ImportSound(const Asset& asset)

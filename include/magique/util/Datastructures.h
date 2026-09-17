@@ -1,13 +1,10 @@
 #ifndef NODO_DATASTRUCTURES_H
 #define NODO_DATASTRUCTURES_H
 
-#include <algorithm>
-#include <span>
 #include <magique/internal/ankerl/unordered_dense.h>
 #include <magique/util/Strings.h>
 #include <magique/util/Logging.h>
 #include <magique/util/STL.h>
-#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Datastructures
@@ -89,20 +86,20 @@ namespace magique
             }
         }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");
-        std::array<ValueHolder, manual_size == 0 ? enchantum::count<Key> : manual_size> data{};
+        std::array<ValueHolder, manual_size == 0 ? EnumValues<Key>().size() : manual_size> data{};
     };
 
-    // Like a bitflag but for enums
-    // Uses the smallest possible
+
+    // Uses the smallest possible type
     // Enum MUST be a BitFlag!
     template <class E>
-    struct EnumSet final
+    struct BitFlag final
     {
         using StoreType = std::underlying_type_t<E>;
 
-        EnumSet() = default;
-        constexpr EnumSet(E data) : data_(static_cast<StoreType>(data)) {}
-        EnumSet(const std::initializer_list<E>& data) : data_()
+        BitFlag() = default;
+        constexpr BitFlag(E data) : data_(static_cast<StoreType>(data)) {}
+        BitFlag(const std::initializer_list<E>& data) : data_()
         {
             for (const auto flag : data)
             {
@@ -110,18 +107,18 @@ namespace magique
             }
         }
 
-        bool operator==(const EnumSet& other) const { return data_ == other.data_; }
-        EnumSet& operator=(E data)
+        bool operator==(const BitFlag& other) const { return data_ == other.data_; }
+        BitFlag& operator=(E data)
         {
             assign(data);
             return *this;
         }
-        EnumSet& operator-=(E data)
+        BitFlag& operator-=(E data)
         {
             setFlag(data, false);
             return *this;
         }
-        EnumSet& operator+=(E data)
+        BitFlag& operator+=(E data)
         {
             setFlag(data, true);
             return *this;
@@ -151,10 +148,10 @@ namespace magique
 
         void toggleFlag(E flag) noexcept { data_ ^= static_cast<StoreType>(flag); }
 
-        bool all_of(const EnumSet& other) const noexcept { return all_of(other.get()); }
+        bool all_of(const BitFlag& other) const noexcept { return all_of(other.get()); }
         bool all_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) == flag; }
 
-        bool any_of(const EnumSet& other) const noexcept { return any_of(other.get()); }
+        bool any_of(const BitFlag& other) const noexcept { return any_of(other.get()); }
         bool any_of(E flag) const noexcept { return (data_ & static_cast<StoreType>(flag)) != 0; }
 
         // Compile time check(unfolding)
@@ -173,9 +170,9 @@ namespace magique
             return (data_ & compositeFlag) == compositeFlag;
         }
 
-        struct EnumSetIterator
+        struct BitFlagIterator
         {
-            EnumSetIterator(StoreType data, StoreType newCurrent) : set(static_cast<E>(data)), current(newCurrent)
+            BitFlagIterator(StoreType data, StoreType newCurrent) : set(static_cast<E>(data)), current(newCurrent)
             {
                 while (current != 0 && !set.isSet(static_cast<E>(current)))
                 {
@@ -183,7 +180,7 @@ namespace magique
                 }
             }
             E operator*() const noexcept { return static_cast<E>(current); }
-            EnumSetIterator& operator++() noexcept
+            BitFlagIterator& operator++() noexcept
             {
                 current = current << 1;
                 while (current != 0 && !set.isSet(static_cast<E>(current)))
@@ -192,22 +189,22 @@ namespace magique
                 }
                 return *this;
             }
-            EnumSetIterator operator++(int) noexcept
+            BitFlagIterator operator++(int) noexcept
             {
-                EnumSetIterator tmp = *this;
+                BitFlagIterator tmp = *this;
                 ++(*this);
                 return tmp;
             }
-            bool operator==(const EnumSetIterator& other) const noexcept { return current == other.current; }
-            bool operator!=(const EnumSetIterator& other) const noexcept { return !(*this == other); }
+            bool operator==(const BitFlagIterator& other) const noexcept { return current == other.current; }
+            bool operator!=(const BitFlagIterator& other) const noexcept { return !(*this == other); }
 
         private:
-            const EnumSet set;
+            const BitFlag set;
             StoreType current;
         };
 
-        EnumSetIterator begin() const noexcept { return EnumSetIterator(data_, 1); }
-        EnumSetIterator end() const noexcept { return EnumSetIterator(data_, 0); }
+        BitFlagIterator begin() const noexcept { return BitFlagIterator(data_, 1); }
+        BitFlagIterator end() const noexcept { return BitFlagIterator(data_, 0); }
 
     private:
         StoreType data_ = 0;
@@ -219,7 +216,7 @@ namespace magique
     {
         // Iterates from "from" to "to" (inclusive)
         EnumRange(E from, E to) : from(from), to(to) {}
-        EnumRange() : from(0), to(EnumSize<E>()) {}
+        EnumRange() : from(0), to(EnumValues<E>().size()) {}
 
         class Iterator
         {
@@ -259,56 +256,6 @@ namespace magique
     private:
         E from;
         E to;
-    };
-
-    // Statically sized vector (coming as inplace_vector in c++26)
-    // Useful when you want to track the size but want an array as storage
-    // Does not support complex types without a default constructor
-    template <typename T, uint32_t capacity>
-    struct StackVector final
-    {
-        StackVector() = default;
-
-        constexpr StackVector(const std::initializer_list<T>& list)
-        {
-            for (auto& elem : list)
-            {
-                push_back(elem);
-            }
-        }
-
-        void pop_back()
-        {
-            if (size_ > 0)
-            {
-                --size_;
-            }
-        }
-
-        constexpr bool push_back(const T& elem)
-        {
-            if (size_ < capacity)
-            {
-                data[size_++] = elem;
-                return true;
-            }
-            return false;
-        }
-
-        uint32_t size() const { return size_; }
-
-        T& operator[](size_t index) { return data[index]; }
-        const T& operator[](size_t index) const { return data[index]; }
-
-        auto begin() const { return data.begin(); }
-        auto end() const { return data.begin() + size_; }
-
-        auto begin() { return data.begin(); }
-        auto end() { return data.begin() + size_; }
-
-    private:
-        std::array<T, capacity> data;
-        uint32_t size_ = 0;
     };
 
     // To prevent false sharing when accessed in multithread context
@@ -596,7 +543,6 @@ namespace magique
         // Resets the allocator to its start state
         void destroy() { slots.clear(); }
     };
-
 
 
 } // namespace magique

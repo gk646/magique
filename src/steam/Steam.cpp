@@ -264,7 +264,7 @@ namespace magique
 
     void SteamOpenOverlay(SteamOverlayUserCategory category)
     {
-        SteamFriends()->ActivateGameOverlay(enchantum::to_string(category).data());
+        SteamFriends()->ActivateGameOverlay(EnumToString(category).data());
     }
 
     void SteamOpenOverlayToProfile(SteamID id)

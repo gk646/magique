@@ -61,7 +61,6 @@ namespace magique
         HashMap<AnimationState, SpriteAnimation> animations;
         float logicScale = 1.0F;
         friend struct LayeredAnimationC;
-        friend glz::meta<Animation>;
     };
 
     struct LayeredAnimation final

@@ -6,7 +6,6 @@
 #include <glaze/base64/base64.hpp>
 
 #include <magique/util/Strings.h>
-#include <magique/util/Logging.h>
 #include <magique/util/Math.h>
 
 namespace magique

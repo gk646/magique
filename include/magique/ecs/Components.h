@@ -60,8 +60,8 @@ namespace magique
         Shape shape = Shape::RECT; // Shape
 
         // https://www.youtube.com/watch?v=9k8cMzv0ZNo - same as Godot's layers
-        EnumSet<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
-        EnumSet<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
+        BitFlag<CollisionLayer> layer{CollisionLayer{1}}; // Which layers it occupies
+        BitFlag<CollisionLayer> mask{CollisionLayer{1}};  // Against which layers it collides
 
         // Returns the middle point of the entity (or just the position if CollisionC is missing)
         static Point GetMiddle(Entity e);
@@ -75,8 +75,9 @@ namespace magique
         static CollisionC Circle(float radius);
         static CollisionC Triangle(Point p2, Point p3, Point anchor = {});
 
-        // Adjust the position of the entity such the collision shape is centered on the give position
+        // Adjust the position of the entity such the collision shape is centered on the give position/entity
         static void CenterOn(Entity e, Point point);
+        static void CenterOn(Entity target, Entity entity);
 
         // Returns true if the mask of this object detect the other objects layers - so if the two can collide
         bool detects(const CollisionC& other) const;
@@ -102,11 +103,11 @@ namespace magique
         // Progresses the animations - has to be called from the update method to be frame rate independent
         void update();
 
-        // Sets/gets the action state - automatically reset the sprite count to 0 when a state change happens
+        // Sets/gets the action state - automatically reset the sprite time to 0 when a state change happens
         void setState(AnimationState state);
         AnimationState getState() const;
 
-        // Allows to get/set the stopped state - skips updating the counter when update is called
+        // Allows to get/set the stopped state - skips updating the sprite time when update is called
         bool getIsStopped() const;
         void setIsStopped(bool isStopped = true);
 
@@ -114,16 +115,16 @@ namespace magique
         // Useful for when you want to stop certain animations after they played once
         bool getHasAnimationPlayed();
 
-        // Returns the current sprite time
+        // Allows manipulation of the sprite time
+        void resetSpriteTime();
+        void randomizeSpriteTime();
+        void setSpriteTime(float millis);
         Millisecond getSpriteTime() const;
-
-        // Resets the sprite time to 0 - restarts the animation
-        void resetSpriteCount();
 
         // Returns the underlying animation
         const Animation& getAnimation() const;
 
-        // Returns the current animation
+        // Returns the current sprite
         SpriteAnimation getCurrentSprite() const;
 
         bool operator==(const AnimationC&) const = default;
@@ -137,8 +138,6 @@ namespace magique
         AnimationState currentState{UINT8_MAX};
         Millisecond prevMillis = 0;
         float millisCount = 0;
-        float animationStart = 0;
-        friend struct glz::meta<AnimationC>;
     };
 
     // A layered animation is more complex and allows to stack animation ontop of each other

@@ -4,11 +4,10 @@
 
 #include <array>
 #include <string>
-#include <format>
 #include <vector>
+#include <optional>
 #include <magique/fwd.hpp>
 #include <raylib/raylib.h>
-#include <magique/internal/enchantum/enchantum.hpp>
 
 //===============================================
 // Types Modules
@@ -1036,7 +1035,6 @@ namespace magique
         bool ctrl = false;
         bool alt = false;
         bool isModifierDown() const;
-        friend struct glz::meta<Keybind>;
     };
 
     struct ScreenParticle final
@@ -1078,48 +1076,12 @@ namespace magique
         friend struct internal::TaskExecutor<T>;
     };
 
-    //================= MISC =================//
-
-    // Pointer will always be allocated with new []
-    template <typename T>
-    struct DataPointer final
-    {
-        DataPointer(T* pointer, const int size) : pointer(pointer), size(size) {}
-        ~DataPointer() noexcept { free(); }
-
-        // Returns size in bytes
-        int getSize() const { return size; }
-
-        // Returns the underlying data pointer
-        T* getData() const { return pointer; }
-
-        void free() noexcept
-        {
-            delete[] pointer;
-            pointer = nullptr;
-        }
-
-    private:
-        T* pointer; // The data pointer
-        int size;   // The size of the data pointer in bytes
-        friend void UnCompressImage(char*&, int&);
-    };
-
 } // namespace magique
 
 //================= IMPLEMENTATION =================//
 
 namespace magique
 {
-    template <typename T>
-    std::optional<T> TiledPropertyHolder::getEnumProperty(std::string_view name) const
-    {
-        auto property = getStringProperty(name);
-        if (!property.has_value())
-            return {};
-        return enchantum::cast<T>(property.value());
-    }
-
     template <typename T>
     const T& Payload::getDataAs() const
     {

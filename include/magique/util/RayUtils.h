@@ -35,10 +35,14 @@ namespace magique
     };
 
     // Activates the render texture in the constructor and ends it in the destructor
+    // If old is passed automatically reverts to the old texture
     struct RenderTextureWrapper final
     {
-        RenderTextureWrapper(const RenderTexture& texture);
+        RenderTextureWrapper(const RenderTexture& texture, const RenderTexture& old = {});
         ~RenderTextureWrapper();
+
+    private:
+        const RenderTexture* old = nullptr;
     };
 
     // Needed only for SDL3 backend
