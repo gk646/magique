@@ -90,11 +90,26 @@ namespace magique
     };
 
 
+    // Useful for easily creating Bitflag Enums
+    // Note: An implicit Default value is created for the 0 spot
+#define MQ_MAKE_BITFLAG(name, ...) MQ_MAKE_BITFLAG_EX(name, int, __VA_ARGS__)
+
+
+    // Allows to specify the type as well e.g. uint8_t for smaller size
+#define MQ_MAKE_BITFLAG_EX(name, type, ...)                                                                             \
+    inline constexpr int MQ_MAKE_UNIQUE_NAME(MQ_EXPAND_LINE()) = __COUNTER__;                                           \
+    enum class name : type                                                                                              \
+    {                                                                                                                   \
+        Default,                                                                                                        \
+        FOR_EACH(_MQ_ENUM_CASE, __VA_ARGS__)                                                                            \
+    };
+
     // Uses the smallest possible type
-    // Enum MUST be a BitFlag!
+    // Enum MUST be a BitFlag - e.g. use MQ_MAKE_BITFLAG
     template <class E>
     struct BitFlag final
     {
+        static_assert(std::is_enum_v<E>, "Type must be an enum");
         using StoreType = std::underlying_type_t<E>;
 
         BitFlag() = default;
@@ -208,6 +223,21 @@ namespace magique
 
     private:
         StoreType data_ = 0;
+
+        bool is_bitflag()
+        {
+            if (!std::meta::is_complete_type(^^E))
+                return false;
+
+            size_t check = 0;
+            for (auto flag : EnumValues<E>())
+            {
+                if ((size_t)flag != check)
+                    return false;
+                check <<= 1;
+            }
+            return true;
+        }
     };
 
     // Small abstraction that cleanly allows iterating over a subset of enum values
@@ -274,12 +304,12 @@ namespace magique
         DynamicGrid() = default;
         DynamicGrid(int cols, int rows, const T& val = {}) : data(cols * rows, val), cols(cols), rows(rows) {}
 
-        const T& operator()(const Point& point) const
+        const T& operator[](const Point& point) const
         {
             return data[static_cast<int>(point.y) * cols + static_cast<int>(point.x)];
         }
 
-        T& operator()(const Point& point) { return data[static_cast<int>(point.y) * cols + static_cast<int>(point.x)]; }
+        T& operator[](const Point& point) { return data[static_cast<int>(point.y) * cols + static_cast<int>(point.x)]; }
 
         int getCols() const { return cols; }
 
@@ -301,7 +331,7 @@ namespace magique
         {
             if (!isContained(point)) [[unlikely]]
             {
-                operator()(point) = val;
+                (*this)[point] = val;
                 return true;
             }
             return false;
@@ -344,7 +374,7 @@ namespace magique
                 data.resize(nCols * nRows, elem);
                 std::ranges::fill(data, {});
                 for (auto [pos, val] : copy)
-                    this->operator()(pos) = val;
+                    (*this)[pos] = val;
             }
 
             cols = nCols;

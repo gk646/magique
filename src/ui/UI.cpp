@@ -5,6 +5,7 @@
 
 #include "internal/globals/UIData.h"
 #include "external/raylib-compat/rcore_compat.h"
+#include "magique/core/Engine.h"
 
 namespace magique
 {
@@ -128,7 +129,18 @@ namespace magique
 
     const std::vector<Popup*>& UIGetPopups() { return global::UI_DATA.popups; }
 
-    Point GetWorldMousePos() { return GetScreenToWorld2D(GetMousePosition(), CameraGet()); }
+    Point GetWorldMousePos()
+    {
+        static uint32_t CACHE_TICK = 0;
+        static Point CACHED = 0;
+
+        const auto currTicks = EngineGetTicks();
+        if (CACHE_TICK == currTicks) [[likely]]
+            return CACHED;
+        CACHED = GetScreenToWorld2D(GetMousePosition(), CameraGet());
+        CACHE_TICK = currTicks;
+        return CACHED;
+    }
 
     void UIShowHitboxes(const bool value) { global::UI_DATA.showHitboxes = value; }
 

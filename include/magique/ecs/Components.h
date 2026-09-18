@@ -126,8 +126,9 @@ namespace magique
 
         // Returns the current sprite
         SpriteAnimation getCurrentSprite() const;
+        TextureRegion getCurrentFrame() const;
 
-        bool operator==(const AnimationC&) const = default;
+        bool operator==(const AnimationC&) const;
 
     private:
         const Animation* animation = nullptr;
@@ -140,7 +141,7 @@ namespace magique
         float millisCount = 0;
     };
 
-    // A layered animation is more complex and allows to stack animation ontop of each other
+    // A layered animation is more complex and allows you to stack animation ontop of each other
     // This is useful for dynamically drawing characters where e.g. the face, clothes can change dynamically
     // Each layer is a reference to an existing EntityAnimation and layers are set for each component individually
     // All layers are then controlled via the same AnimationState, so they display the correct visuals

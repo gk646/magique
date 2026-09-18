@@ -80,7 +80,7 @@ namespace magique
 
     struct StaticCollisionData final
     {
-        Rectangle worldBounds{};                  // World bounds
+        Rect worldBounds{};                       // World bounds
         StaticPairCollector pairCollector;        // Collects pairs for all types entity + (world, object, tiles, custom)
         ColliderCollector colliderCollector{};    // Collects collider ids
         ColliderStorage colliderStorage;          // Holds all objects - uses a free list to preserve indices
@@ -90,7 +90,7 @@ namespace magique
         float tileSetScale = 1.0f;
         HashMap<uint16_t, TileInfo> markedTilesMap; // which tiles are marked and their tile info
 
-        [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.width != 0 && worldBounds.height != 0; }
+        [[nodiscard]] bool getIsWorldBoundSet() const { return worldBounds.size() != 0; }
     };
 
     namespace global

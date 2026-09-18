@@ -11,7 +11,7 @@
 
 namespace magique
 {
-    void CollisionSetWorldBounds(const Rectangle& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
+    void CollisionSetWorldBounds(const Rect& rectangle) { global::STATIC_COLL_DATA.worldBounds = rectangle; }
 
     //----------------- TILESET -----------------//
 

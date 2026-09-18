@@ -59,13 +59,13 @@ namespace magique
         MAGIQUE_ASSERT(static_cast<int>(conn) != k_HSteamNetConnection_Invalid, "Invalid connection");
         MAGIQUE_ASSERT(flag <= SendFlag::RELIABLE, "Invalid flag");
 
-        if (payload.data == nullptr || !NetworkInSession()) [[unlikely]] // This can cause runtime crash
+        if (payload.empty() || !NetworkInSession()) [[unlikely]] // This can cause runtime crash
             return false;
 
-        auto* msg = SteamNetworkingUtils()->AllocateMessage(payload.size + 1);
+        auto* msg = SteamNetworkingUtils()->AllocateMessage(payload.size() + 1);
 
-        static_cast<char*>(msg->m_pData)[0] = static_cast<char>(payload.type);
-        std::memcpy(static_cast<char*>(msg->m_pData) + 1, payload.data, payload.size);
+        static_cast<char*>(msg->m_pData)[0] = static_cast<char>(payload.getType());
+        std::memcpy(static_cast<char*>(msg->m_pData) + 1, payload.ptr(), payload.size());
 
         // set the flags
         msg->m_nFlags = static_cast<int>(flag);
@@ -122,13 +122,14 @@ namespace magique
             {
                 const auto* msg = data.incMsgBuffer[i];
                 Message message{};
-                message.payload.data = static_cast<uint8_t*>(msg->m_pData) + 1;
-                message.payload.size = msg->m_cbSize - 1;
-                message.payload.type = static_cast<MessageType>(((uint8_t*)msg->m_pData)[0]); // Interpret first byte
+
+                const auto msgData = static_cast<uint8_t*>(msg->m_pData) + 1; // Interpret first byte
+                const auto msgType = static_cast<MessageType>(((uint8_t*)msg->m_pData)[0]);
+                message.payload = {msgData, msg->m_cbSize - 1, msgType};
                 message.connection = static_cast<Connection>(msg->m_conn);
                 message.timeStamp = msg->m_usecTimeReceived;
 
-                if (message.payload.type == MAGIQUE_LOBBY_PACKET_TYPE)
+                if (message.payload.getType() == MAGIQUE_LOBBY_PACKET_TYPE)
                 {
                     global::MP_DATA.lobby.handleLobbyPacket(message);
                 }

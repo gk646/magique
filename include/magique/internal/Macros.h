@@ -35,6 +35,12 @@ namespace magique::internal
         script->eventType(std::forward<Args>(args)...);                                                                 \
     }
 
+#define MQ_EXPAND_LINE() __LINE__
+#define MQ_PASTE(x, y) x##y
+#define MQ_MAKE_UNIQUE_NAME(line) MQ_PASTE(MQ_BITFLAG_BASE_, line)
+#define _MQ_ENUM_CASE(value) value = 1 << (__COUNTER__ - MQ_MAKE_UNIQUE_NAME(MQ_EXPAND_LINE()) - 1),
+
+
 //================= UTIL =================//
 
 #if defined(NDEBUG)

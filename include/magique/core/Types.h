@@ -516,87 +516,6 @@ namespace magique
         friend Checksum AssetPackChecksum(std::string_view path);
     };
 
-    //================= ECS =================//
-
-    // Default action states - Feel free to rename or create your own
-    enum class ActionState : uint8_t
-    {
-        IDLE,
-        WALK,
-        RUN,
-        ATTACK_1,
-        ATTACK_2,
-        HIT,
-        SPECIAL,
-        DEATH,
-        STATES_END, // All custom state enums need this as last state
-    };
-
-    // Shape classes
-    enum class Shape : uint8_t
-    {
-        RECT,     // Rectangle
-        CIRCLE,   // Circle - rotated around its middle point
-        TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
-    };
-
-    // This NEEDS to be a bit mask https://en.wikipedia.org/wiki/Mask_(computing)
-    // Feel free uncomment! or implement it your own
-    enum class CollisionLayer : uint8_t;
-    /*
-    {
-       NONE = 0,
-        DEFAULT_LAYER = 1 << 0,
-        LAYER_1 = 1 << 1,
-        LAYER_2 = 1 << 2,
-        LAYER_3 = 1 << 3,
-        LAYER_4 = 1 << 4,
-        LAYER_5 = 1 << 5,
-        LAYER_6 = 1 << 6,
-    };
-*/
-    enum class ColliderType : uint8_t
-    {
-        WORLD_BOUNDS,
-        TILESET_TILE,
-    };
-
-    struct ColliderInfo final
-    {
-        // Note: If you used the wrong getter (for the type) returns INT32_MAX with a warning
-
-        // Returns the tile class ONLY IF the type is TILESET_TILE
-        TileClass getTileClass() const;
-
-        const ColliderType type; // The type of the collider
-
-        ColliderInfo(int data, ColliderType type);
-
-    private:
-        int data;
-    };
-
-    struct StaticCollider final
-    {
-        Rect bounds;
-    };
-
-    struct CollisionInfo final
-    {
-        Point normalVector{};   // The direction vector in which the object needs to be moved to resolve the collision
-        Point collisionPoint{}; // The point of contact (or often the closest point on the shapes between the centers)
-        float penDepth = 0;     // The amount by which the shapes overlap - minimal distance to move along the normal
-
-        // Returns true
-        bool isColliding() const;
-
-        bool getIsAccumulated() const;
-
-    private:
-        bool isAccumulated = false; // True if this info should be accumulated for this entity
-        friend void SetIsAccumulated(CollisionInfo& info);
-    };
-
     //================= GAMEDEV =================//
 
     enum class NoiseType
@@ -766,9 +685,6 @@ namespace magique
     // Note: The passed data will be copied when sending (so supports both stack and heap memory)
     struct Payload final
     {
-        const void* data; // Direct pointer to the given data
-        int size;         // Valid size of the data
-        MessageType type; // Type of the message (very useful for handling messages on the receiver)
 
         // Automatically assigns size
         template <typename T>
@@ -776,7 +692,7 @@ namespace magique
         {
         }
 
-        Payload(const void* data, int size, MessageType type) : data(data), size(size), type(type) {}
+        Payload(const void* data, int size, MessageType type) : data_({(const char*)data, (size_t)size}), type(type) {}
 
         Payload() = default;
 
@@ -785,7 +701,15 @@ namespace magique
         template <typename T>
         const T& getDataAs() const;
 
-        const char* asString() const;
+        bool empty() const { return data_.empty(); }
+        int size() const { return data_.size(); }
+        std::string_view data() const { return data_; }
+        const void* ptr() const { return data_.data(); }
+        MessageType getType() const { return type; }
+
+    private:
+        std::string_view data_;
+        MessageType type; // Type of the message (very useful for handling messages on the receiver)
     };
 
     struct Message final
@@ -793,6 +717,97 @@ namespace magique
         Payload payload;       // Same payload that was sent
         Connection connection; // Who sent the payload
         int64_t timeStamp;     // When the message was received (micros) - should only be compared to other timestamps
+    };
+
+    //================= ECS =================//
+
+    // Default action states - Feel free to rename or create your own
+    enum class ActionState : uint8_t
+    {
+        IDLE,
+        WALK,
+        RUN,
+        ATTACK_1,
+        ATTACK_2,
+        HIT,
+        SPECIAL,
+        DEATH,
+        STATES_END, // All custom state enums need this as last state
+    };
+
+    // Shape classes
+    enum class Shape : uint8_t
+    {
+        RECT,     // Rectangle
+        CIRCLE,   // Circle - rotated around its middle point
+        TRIANGLE, // Triangle - should only be used as detection shape not colliders (normals are bit funky)
+    };
+
+    // This NEEDS to be a bit flag https://en.wikipedia.org/wiki/Mask_(computing)
+    // Use MQ_MAKE_BITFLAG as helper
+    enum class CollisionLayer : uint8_t;
+
+    enum class ColliderType : uint8_t
+    {
+        WORLD_BOUNDS,
+        TILESET_TILE,
+    };
+
+    struct ColliderInfo final
+    {
+        // Note: If you used the wrong getter (for the type) returns INT32_MAX with a warning
+
+        // Returns the tile class ONLY IF the type is TILESET_TILE
+        TileClass getTileClass() const;
+
+        const ColliderType type; // The type of the collider
+
+        ColliderInfo(int data, ColliderType type);
+
+    private:
+        int data;
+    };
+
+    struct StaticCollider final
+    {
+        Rect bounds;
+    };
+
+    struct CollisionInfo final
+    {
+        Point normalVector{};   // The direction vector in which the object needs to be moved to resolve the collision
+        Point collisionPoint{}; // The point of contact (or often the closest point on the shapes between the centers)
+        float penDepth = 0;     // The amount by which the shapes overlap - minimal distance to move along the normal
+
+        // Returns true
+        bool isColliding() const;
+
+        bool getIsAccumulated() const;
+
+    private:
+        bool isAccumulated = false; // True if this info should be accumulated for this entity
+        friend void SetIsAccumulated(CollisionInfo& info);
+    };
+
+    // Packed view of many changes - automatically compressed if its helpful
+    // Note: This is only a view type (does NOT copy or store data) - Payload or ChangeManager it comes from MUST outlive it!
+    struct ChangeSet
+    {
+        // Parse a changeset from the given payload
+        ChangeSet(Payload payload) : data_(payload.data()) {}
+        ChangeSet(std::string_view data) : data_(data) {}
+
+        // Converts the set to a payload ready for networking
+        Payload toPayload(MessageType type);
+
+        // Returns true if the data is compressed
+        bool isCompressed() const;
+
+        std::string_view data() const { return data_; }
+
+    private:
+        std::string_view data_;
+        friend struct ChangeManager;
     };
 
     //================= PERSISTENCE =================//
@@ -828,7 +843,6 @@ namespace magique
     {
         INVALID = 0
     };
-
 
     enum class SteamLobbyType : uint8_t
     {
@@ -987,6 +1001,7 @@ namespace magique
 
     //================= HELPER TYPES =================//
 
+    // What the binding is for
     enum KeyBindType : uint8_t
     {
         Mouse,
@@ -1022,7 +1037,6 @@ namespace magique
 
         // Returns the base key code
         KeyBindType getType() const;
-
         KeyboardKey getKey() const;
         MouseButton getMouse() const;
         GamepadButton getController() const;
@@ -1085,7 +1099,7 @@ namespace magique
     template <typename T>
     const T& Payload::getDataAs() const
     {
-        return *static_cast<const T*>(data);
+        return *static_cast<const T*>(data_.data());
     }
 
     template <typename T>

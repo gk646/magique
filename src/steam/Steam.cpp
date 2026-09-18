@@ -214,7 +214,7 @@ namespace magique
 
     std::span<const Language> SteamGetGameLanguages()
     {
-        static std::vector<Language> CACHE{};
+        thread_local std::vector<Language> CACHE{};
         CACHE.clear();
 
         const auto& langs = StringSplit(SteamApps()->GetAvailableGameLanguages(), ',');

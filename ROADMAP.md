@@ -3,11 +3,6 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 
 ### Game Dev
 
-**Camera**
-
-- add interface for camera shake
-  - uses impulse forces
-
 **Pathfinding**
 
 - IMplement pathfinding that is aware of the given collision shape
@@ -15,8 +10,6 @@ Use [GitHub issues](https://github.com/gk646/magique) to suggest new features, a
 **Procedural Level Generation**
 
 - Give utilities to generate maps based on manually created room cells
-
-
 
 ### Core
 

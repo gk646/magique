@@ -57,38 +57,7 @@ namespace magique
 
     bool CheckCollisionEntityAny(Entity e)
     {
-        static std::vector<Entity> CACHE{64};
-        auto& dynamic = global::DY_COLL_DATA;
-        const auto& pos = ComponentGet<PositionC>(e);
-        const auto col = ComponentTryGet<CollisionC>(e);
-        if (col == nullptr) [[unlikely]]
-            return false;
-
-        const auto& mapGrid = dynamic.mapEntityGrids[pos.map];
-        const auto bounds = pos.getBounds(*col);
-
-        CACHE.clear();
-        mapGrid.query(CACHE, bounds);
-
-        for (auto nearby : CACHE)
-        {
-            if (nearby == e) [[unlikely]]
-                continue;
-            const auto& colB = ComponentGet<CollisionC>(nearby);
-            if (!colB.detects(*col) || col->detects(colB))
-                continue;
-            const auto& posB = ComponentGet<PositionC>(nearby);
-            CollisionInfo info{};
-            internal::CheckCollisionEntities(pos, *col, posB, colB, info);
-            if (info.isColliding()) [[unlikely]]
-                return true;
-        }
-        return false;
-    }
-
-    bool CheckCollisionEntityStatic(Entity e)
-    {
-        static std::vector<StaticID> CACHE{64};
+        thread_local std::vector<StaticID> CACHE{64};
 
         auto& staticCol = global::STATIC_COLL_DATA;
 

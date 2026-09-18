@@ -25,7 +25,7 @@ namespace magique
     // Sets static collision bounds - this is only useful for simpler (static) scenes
     // Everything outside the rectangle is considered solid - pass a width or height of 0 to disable
     // Default: Disabled
-    void CollisionSetWorldBounds(const Rectangle& rectangle);
+    void CollisionSetWorldBounds(const Rect& rectangle);
 
     //================= TILESET =================//
 

@@ -13,14 +13,14 @@ struct MultiplayerStatistics final
 #ifdef MAGIQUE_DEBUG
     void reset()
     {
-        startTick = magique::EngineGetTicks();
+        startTick = EngineGetTicks();
         incoming.reset();
         outgoing.reset();
     }
-    void addOutgoing(const magique::Payload& payload) { outgoing.add(payload.type, payload.size); }
-    void addIncoming(const magique::Payload& payload) { incoming.add(payload.type, payload.size); }
+    void addOutgoing(const Payload& payload) { outgoing.add(payload.getType(), payload.size()); }
+    void addIncoming(const Payload& payload) { incoming.add(payload.getType(), payload.size()); }
 
-    magique::internal::MultiplayerStatsData getStats() const
+    internal::MultiplayerStatsData getStats() const
     {
         return {incoming.getSorted(), outgoing.getSorted(), incoming.totalBytes, outgoing.totalBytes};
     }

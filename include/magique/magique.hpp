@@ -34,7 +34,7 @@
 #include "ecs/ECS.h"
 #include "ecs/GameSystem.h"
 #include "ecs/Scripting.h"
-#include "ecs/Observer.h"
+#include "ecs/Change.h"
 
 // Gamedev
 #include "gamedev/Achievements.h"

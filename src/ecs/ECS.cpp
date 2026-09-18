@@ -76,9 +76,9 @@ namespace magique
         return {};
     }
 
-    std::span<Entity> EntityFindIf(const FilterFunc& filter)
+    std::span<const Entity> EntityFindIf(const FilterFunc& filter)
     {
-        static std::vector<Entity> CACHE{32};
+        thread_local std::vector<Entity> CACHE{32};
         CACHE.clear();
 
         for (const auto e : internal::REGISTRY.view<Entity>())

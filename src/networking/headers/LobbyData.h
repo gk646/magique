@@ -78,7 +78,7 @@ namespace magique
 
         LobbyPacket readMessage(const Message& msg)
         {
-            auto data = msg.payload.asString();
+            auto data = (const char*)msg.payload.ptr();
             const auto type = LobbyPacketType{*(int8_t*)data};
 
             auto firstEnd = (int)strlen(data + 1);

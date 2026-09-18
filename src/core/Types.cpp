@@ -1074,8 +1074,6 @@ namespace magique
 #define KEY_MACRO_MODIFIER()
 
 
-    const char* Payload::asString() const { return (const char*)data; }
-
     void GamepadMappingState::circulateRows(int offset, int max) { row = MathCirculate(row, offset, max); }
 
     void GamepadMappingState::circulateCols(int offset, int max) { col = MathCirculate(col, offset, max); }

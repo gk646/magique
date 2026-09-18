@@ -1,7 +1,7 @@
-#include "WizardQuest.h"
 
 #include <magique/magique.hpp> // Single include header
 
+#include "WizardQuest.h"
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
 #include "ecs/Systems.h"
@@ -10,15 +10,11 @@
 
 void WizardQuest::onStartup(AssetLoader& loader)
 {
-    // Configure raylib
-    SetTargetFPS(100);
-    SetWindowState(FLAG_WINDOW_RESIZABLE);
-
     // Configure magique
-    SetShowHitboxes(true);
+    EngineShowHitboxes(true);
 
     // Set static world bounds
-    SetStaticWorldBounds({0, 0, 1280, 1000});
+    CollisionSetWorldBounds({0, 0, 1280, 1000});
 
     // Register loaders
     loader.registerTask(new EntityLoader(), THREAD_ANY, MEDIUM, 1);

@@ -82,7 +82,7 @@ namespace magique
     std::optional<Entity> EntityFindFirstOf(EntityType type);
 
     // Returns all entities matching the given filter
-    std::span<Entity> EntityFindIf(const FilterFunc& filter);
+    std::span<const Entity> EntityFindIf(const FilterFunc& filter);
 
     // Immediately tries to destroy this entity
     // Note: It's up to the user to make sure invalid entities are not accessed (destroying in event functions...)

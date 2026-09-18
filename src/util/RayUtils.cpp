@@ -217,7 +217,7 @@ namespace magique
 
     const std::vector<int>& GetMonitors()
     {
-        static std::vector<int> LIST;
+        thread_local std::vector<int> LIST;
         LIST.clear();
 #ifdef USING_SDL3_PROJECT
         int monitorCount = 0;
