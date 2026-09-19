@@ -34,7 +34,7 @@
 #include "ecs/ECS.h"
 #include "ecs/GameSystem.h"
 #include "ecs/Scripting.h"
-#include "ecs/Change.h"
+#include "ecs/Observer.h"
 
 // Gamedev
 #include "gamedev/Achievements.h"
@@ -51,7 +51,7 @@
 
 // Graphics
 #include "graphics/Animation.h"
-#include "graphics/BaseShaders.h"
+#include "graphics/Shaders.h"
 #include "graphics/Draw.h"
 #include "graphics/Lighting.h"
 #include "graphics/Particles.h"
@@ -93,9 +93,10 @@
 // Util
 #include "util/Logging.h"
 #include "util/Strings.h"
-#include "util/JobSystem.h"
+#include "util/Jobs.h"
 #include "util/RayUtils.h"
 #include "util/Math.h"
 #include "util/Datastructures.h"
+#include "util/Reflection.h"
 
 #endif // MAGIQUE_H

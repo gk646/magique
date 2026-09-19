@@ -46,6 +46,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(magique PUBLIC
             -std=c++26
             -freflection
+            -fno-exceptions
             -flto
             -fno-rtti
             -fvisibility=hidden
@@ -57,6 +58,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             -Wdeprecated-declarations
             -Wvla
             -Wno-unused-parameter
+            -Wno-attributes
     )
 
     # Avoid warnings on Mac

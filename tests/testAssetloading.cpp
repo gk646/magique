@@ -6,7 +6,7 @@
 
 #include <magique/assets/AssetLoader.h>
 #include <magique/assets/AssetPacker.h>
-#include <magique/util/JobSystem.h>
+#include <magique/util/Jobs.h>
 
 using namespace magique;
 

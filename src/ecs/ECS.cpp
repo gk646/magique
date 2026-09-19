@@ -279,12 +279,12 @@ namespace magique
         return set;
     }
 
-    std::span<const Entity> EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter)
+    std::span<const Entity> EngineQueryLoaded(MapID map, Circle circle, const FilterFunc& filter)
     {
-        auto& set = QueryLoadedIMPL(map, Rect{mid - radius, Point{radius * 2}});
+        auto& set = QueryLoadedIMPL(map, circle.bounds());
         for (auto it = set.begin(); it != set.end();)
         {
-            if (CollisionC::GetMiddle(*it).euclidean(mid) > radius || (filter && !filter(*it)))
+            if (!circle.contains(CollisionC::GetMiddle(*it)) || (filter && !filter(*it)))
             {
                 it = set.erase(it);
             }
@@ -313,14 +313,14 @@ namespace magique
         return set.values();
     }
 
-    std::span<const Entity> EngineQuery(MapID map, Point origin, float size, const FilterFunc& filter)
+    std::span<const Entity> EngineQuery(MapID map, Circle circle, const FilterFunc& filter)
     {
         auto& set = global::ENGINE_DATA.queryCache;
         set.clear();
         for (const auto e : ComponentGetView<PositionC>())
         {
             const auto& pos = ComponentGet<PositionC>(e);
-            if (pos.map != map || pos.pos.euclidean(origin) > size || (filter && !filter(e))) [[likely]]
+            if (pos.map != map || !circle.contains(CollisionC::GetMiddle(e)) || (filter && !filter(e))) [[likely]]
             {
                 continue;
             }

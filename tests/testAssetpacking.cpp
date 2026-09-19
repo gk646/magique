@@ -17,10 +17,10 @@ constexpr auto INDEX = "index.magique";
 
 using namespace magique;
 
-static void testImpl(const uint64_t key, const bool compress)
+static void testImpl(const uint64_t key)
 {
     namespace fs = std::filesystem;
-    AssetPackCompile("./", DATA_PATH, key, compress);
+    AssetPackCompile("./", DATA_PATH, key);
 
     AssetPack container;
     AssetPackLoad(container, DATA_PATH, key); // Compression detected automatically
@@ -72,8 +72,8 @@ static void testImpl(const uint64_t key, const bool compress)
     remove(INDEX);
 }
 
-TEST_CASE("default") { testImpl(0, false); }
+TEST_CASE("default") { testImpl(0); }
 
-TEST_CASE("encryption") { testImpl(GetRandomValue(0, INT32_MAX), false); }
+TEST_CASE("encryption") { testImpl(GetRandomValue(0, INT32_MAX)); }
 
-TEST_CASE("encryption+compression") { testImpl(GetRandomValue(0, INT32_MAX), true); }
+TEST_CASE("encryption+compression") { testImpl(GetRandomValue(0, INT32_MAX)); }

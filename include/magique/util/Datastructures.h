@@ -89,11 +89,9 @@ namespace magique
         std::array<ValueHolder, manual_size == 0 ? EnumValues<Key>().size() : manual_size> data{};
     };
 
-
     // Useful for easily creating Bitflag Enums
     // Note: An implicit Default value is created for the 0 spot
 #define MQ_MAKE_BITFLAG(name, ...) MQ_MAKE_BITFLAG_EX(name, int, __VA_ARGS__)
-
 
     // Allows to specify the type as well e.g. uint8_t for smaller size
 #define MQ_MAKE_BITFLAG_EX(name, type, ...)                                                                             \
@@ -317,6 +315,8 @@ namespace magique
 
         const std::vector<T>& getData() const { return data; }
 
+        bool empty() const { return data.empty(); }
+
         std::vector<T>& getData() { return data; }
 
         // Resizes the grid to ensure it can hold a value at the given position
@@ -441,6 +441,7 @@ namespace magique
         std::vector<T> data;
         int cols = 0;
         int rows = 0;
+        friend struct glz::meta<DynamicGrid>;
     };
 
     // A faster version of std::priority_queue
@@ -573,7 +574,6 @@ namespace magique
         // Resets the allocator to its start state
         void destroy() { slots.clear(); }
     };
-
 
 } // namespace magique
 

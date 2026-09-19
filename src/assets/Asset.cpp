@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/assets/types/Asset.h>
 
+#include "magique/util/Logging.h"
+
 namespace magique
 {
     Asset::operator const char*() const { return data.data(); }
@@ -9,9 +11,9 @@ namespace magique
 
     Asset::operator std::string_view() const { return data; }
 
-    std::string_view Asset::getData() const { return data.data(); }
+    std::string_view Asset::getData() const { return data; }
 
-    std::string_view Asset::getPath() const { return path.data(); }
+    std::string_view Asset::getPath() const { return path; }
 
     int Asset::getSize() const { return (int)data.size(); }
 
@@ -46,9 +48,10 @@ namespace magique
         {
             return path.substr(lastDot);
         }
-        else
-        {
-            return {};
-        }
+        return {};
     }
+
+    // Needed so glaze uses correct serialization ... :(
+    bool Asset::has_value() const { return true; }
+
 } // namespace magique

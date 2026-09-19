@@ -49,7 +49,7 @@ namespace magique
         }
 
         CollisionInfo info{};
-        const PositionC posR{c.center - c.radius, pos.map, pos.type, 0};
+        const PositionC posR{c.mid - c.radius, pos.map, pos.type, 0};
         const CollisionC colR{c.radius, c.radius, 0, 0, {}, {}, Shape::CIRCLE};
         internal::CheckCollisionEntities(pos, *col, posR, colR, info);
         return info.isColliding();
@@ -89,7 +89,7 @@ namespace magique
         MAGIQUE_ASSERT(info.isColliding() == false, "Not passing in a new CollisionInfo object");
         const float pxs[4] = {q1.x, q2.x, q3.x, q4.x};
         const float pys[4] = {q1.y, q2.y, q3.y, q4.y};
-        CircleToQuadrilateral(c.center.x, c.center.y, c.radius, pxs, pys, info);
+        CircleToQuadrilateral(c.mid.x, c.mid.y, c.radius, pxs, pys, info);
     }
 
     void CheckCollisionQuadrilaterals(const Point p1, const Point p2, const Point p3, const Point p4, const Point q1,

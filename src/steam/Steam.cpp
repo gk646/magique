@@ -81,7 +81,7 @@ namespace magique
 
     std::string_view SteamGetLaunchParam(std::string_view key)
     {
-        static std::string buffer;
+        thread_local std::string buffer;
         buffer.resize(256);
         SteamApps()->GetLaunchCommandLine(buffer.data(), buffer.capacity());
 
@@ -322,7 +322,7 @@ namespace magique
 
     void SteamShowOnScreenKeyboard(std::string_view description, std::string_view current)
     {
-        static std::string currBuffer;
+        thread_local std::string currBuffer;
         currBuffer = current;
 
         if (global::STEAM_DATA.onscreenKeyboardShown)

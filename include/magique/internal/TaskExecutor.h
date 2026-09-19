@@ -8,7 +8,7 @@
 
 #include <magique/util/Logging.h>
 #include <magique/core/Types.h>
-#include <magique/util/JobSystem.h>
+#include <magique/util/Jobs.h>
 
 //===============================================
 // Task Executor

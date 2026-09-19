@@ -44,7 +44,8 @@ namespace magique
 
     // Returns a vector of strings containing the chunks by splitting the string by delim
     // This is useful if you need to work with the strings and modify them a lot
-     std::span<const std::string> StringSplit(std::string_view s, char delim = '\n');
+    std::span<std::string_view> StringSplit(std::string_view s, char delim = '\n');
+    std::vector<std::string_view> StringSplitCopy(std::string_view s, char delim = '\n');
 
     // Returns true if the given string conforms to:
     //  - At least "minLen" but not longer than "maxLen"
@@ -52,7 +53,7 @@ namespace magique
     //      - Letters a-zA-Z
     //      - Numbers 0-9
     // That means no symbols like "%!?-_" or spaces
-    bool StringIsValidName(std::string_view  s, int minLen = 3, int maxLen = 16);
+    bool StringIsValidName(std::string_view s, int minLen = 3, int maxLen = 16);
 
     // Returns true if the given strings match regardless of case
     // string-compare-no-case
@@ -86,6 +87,10 @@ namespace magique
     // Formats the given time into mm:ss:lll (l = milli)
     std::string_view StringFromMillis(float seconds);
 
+    // Tries to parse the given input to the given number type
+    template <typename T>
+    std::optional<T> StringToNumber(std::string_view input);
+
     //================= HASHING =================//
 
     // Uses fnav32a1 to hash the string - aimed to be fast not secure!
@@ -118,6 +123,19 @@ namespace magique
 
 namespace magique
 {
+    template <typename T>
+    std::optional<T> StringToNumber(std::string_view input)
+    {
+        static_assert(std::is_arithmetic_v<T>, "Must be a number type");
+
+        T value;
+        const auto [ptr, ec] = std::from_chars(input.data(), input.data() + input.size(), value);
+
+        if (ec == std::errc()) [[likely]]
+            return value;
+        return {};
+    }
+
     constexpr uint32_t StringHash(char const* s) noexcept
     {
         uint32_t hash = 2166136261U;

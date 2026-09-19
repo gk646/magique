@@ -1,8 +1,14 @@
 // SPDX-License-Identifier: zlib-acknowledgement
-#include <magique/graphics/BaseShaders.h>
+#include <magique/graphics/Shaders.h>
 
 namespace magique
 {
+
+    ShaderWrapper::ShaderWrapper(const Shader& shader) { BeginShaderMode(shader); }
+
+    ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
+
+
     VignetteShader::VignetteShader() { setFalloff().setSize(); }
 
     VignetteShader::operator Shader() const { return shader; }

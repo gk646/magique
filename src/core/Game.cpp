@@ -11,11 +11,11 @@
 #include <magique/graphics/Draw.h>
 #include <magique/ecs/ECS.h>
 #include <magique/assets/AssetLoader.h>
-#include <magique/util/JobSystem.h>
+#include <magique/util/Jobs.h>
 #include <magique/util/Logging.h>
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
-#include <magique/graphics/BaseShaders.h>
+#include <magique/graphics/Shaders.h>
 
 #include "internal/globals/TweenData.h"
 #include "internal/globals/EngineData.h"

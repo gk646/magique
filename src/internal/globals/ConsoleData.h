@@ -42,8 +42,8 @@ namespace magique
     struct ParamParser final
     {
         // Returns a ptr to the command to be executed - logs errors internally
-        static const Command* ParseCommand(std::span<const std::string> chunks);
-        static ParamList ParseParams(const Command& cmd, std::span<const std::string> chunks);
+        static const Command* ParseCommand(std::span<std::string_view> chunks);
+        static ParamList ParseParams(const Command& cmd, std::span<std::string_view> chunks);
         static bool ValidateParams(const Command& cmd, ParamList& params);
     };
 
@@ -90,11 +90,11 @@ namespace magique
         void static SubmitLine(std::string_view input)
         {
             // Must be separated by spaces
-            const auto& chunks = StringSplit(input, ' ');
+            auto chunks = StringSplit(input, ' ');
             const Command* cmd = ParamParser::ParseCommand(chunks);
             if (cmd == nullptr)
             {
-                LOG_WARNING("No such command: %s", chunks.front().c_str());
+                LOG_WARNING("No such command: %s", chunks.front().data());
                 return;
             }
 
@@ -653,7 +653,7 @@ namespace magique
 
     //================= PARSER =================//
 
-    inline const Command* ParamParser::ParseCommand(std::span<const std::string> chunks)
+    inline const Command* ParamParser::ParseCommand(std::span<std::string_view> chunks)
     {
         auto& data = global::CONSOLE_DATA;
         if (chunks.empty())
@@ -669,14 +669,14 @@ namespace magique
         return cmd;
     }
 
-    inline ParamList ParamParser::ParseParams(const Command& cmd, std::span<const std::string> chunks)
+    inline ParamList ParamParser::ParseParams(const Command& cmd, std::span<std::string_view> chunks)
     {
-        auto getParamName = [&](int i) // Direct index - until for variadics
+        auto getParamName = [&](int i) -> std::string_view // Direct index - until for variadics
         {
             const auto size = (int)cmd.getParamInfo().size();
             if (size == 0)
             {
-                return std::string{};
+                return {};
             }
             return cmd.getParamInfo()[std::min(size - 1, i)].name;
         };
@@ -687,20 +687,20 @@ namespace magique
             // Env param
             if (chunks.size() > 1 && chunks[i][0] == '$' && chunks[i][2] != '$')
             {
-                auto it = global::CONSOLE_DATA.envParams.find(chunks[i].c_str() + 1);
+                auto it = global::CONSOLE_DATA.envParams.find(chunks[i].data() + 1);
                 if (it != global::CONSOLE_DATA.envParams.end())
                 {
                     params.emplace_back(it->second);
                 }
                 else
                 {
-                    LOG_WARNING("No such environment parameter: %s", chunks[i].c_str() + 1);
+                    LOG_WARNING("No such environment parameter: %s", chunks[i].data() + 1);
                     return {};
                 }
             }
             else
             {
-                params.emplace_back(getParamName(i).c_str(), chunks[i].c_str());
+                params.emplace_back(getParamName(i), chunks[i]);
             }
         }
         return params;

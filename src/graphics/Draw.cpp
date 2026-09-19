@@ -440,7 +440,7 @@ namespace magique
         DrawTriangleLines({txs[0], tys[0]}, {txs[1], tys[1]}, {txs[2], tys[2]}, color);
     }
 
-    void DrawCircleLines(const Circle& circle, Color color) { DrawCircleLinesV(circle.center, circle.radius, color); }
+    void DrawCircleLines(const Circle& circle, Color color) { DrawCircleLinesV(circle.mid, circle.radius, color); }
 
 
 } // namespace magique

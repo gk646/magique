@@ -246,17 +246,17 @@ namespace magique
     void FormatSetPrefix(const char prefix) { FMT_PREFIX = prefix; }
 
     template <typename T>
-    std::optional<std::reference_wrapper<T>> FormatGetValue(const std::string_view& placeholder)
+    std::optional<T> FormatGetValue(const std::string_view& placeholder)
     {
         const auto it = VALUES.find(placeholder);
         if (it == VALUES.end())
             return {};
 
-        if constexpr (std::is_same_v<T, std::string>)
+        if constexpr (std::is_same_v<T, std::string_view>)
         {
             if (it->second.type != STRING)
                 return {};
-            return VALUE_STORAGE.getValueVec<std::string>()[it->second.index];
+            return std::string_view{VALUE_STORAGE.getValueVec<std::string>()[it->second.index]};
         }
         else if constexpr (std::is_same_v<T, int>)
         {
@@ -269,11 +269,11 @@ namespace magique
             if (it->second.type != FLOAT)
                 return {};
         }
-        return VALUE_STORAGE.getValueVec<T>()[it->second.index];
+        return {};
     }
 
-    template std::optional<std::reference_wrapper<float>> FormatGetValue(const std::string_view&);
-    template std::optional<std::reference_wrapper<std::string>> FormatGetValue(const std::string_view&);
-    template std::optional<std::reference_wrapper<int>> FormatGetValue(const std::string_view&);
+    template std::optional<float> FormatGetValue(const std::string_view&);
+    template std::optional<std::string_view> FormatGetValue(const std::string_view&);
+    template std::optional<int> FormatGetValue(const std::string_view&);
 
 } // namespace magique

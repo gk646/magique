@@ -12,8 +12,6 @@
 // ................................................................................
 // magique uses glaze for JSON importing and exporting
 // glaze allows to import/export C++ types (and also generic JSON with glz::generic)
-// For standard types it's as easy as ExportJSON(myType, buffer); the serialization is generated automatically
-// All standard type (std::array, std::vector, ...) and your own structs that use only those type work automatically!
 // Refer to https://stephenberry.github.io/glaze/json/ for more info on how to use the JSON library
 //
 // IMPORTANT: If you define custom parse/serialization rules etc. they need to be included BEFORE you call Import/Export
@@ -36,12 +34,24 @@ namespace magique
     template <bool prettify = true, typename T>
     bool JSONExport(const T& data, std::string& buffer);
 
+    // Convenience wrapper to quickly get the JSON of a type
+    // Note: This is useful for logging as well
+    template <typename T>
+    std::string_view ToJSON(const T& value);
+
 } // namespace magique
 
 // IMPLEMENTATION
 
 namespace glz
 {
+
+    template <typename Type>
+    struct meta<DynamicGrid<Type>>
+    {
+        using T = DynamicGrid<Type>;
+        static constexpr auto value = object(&T::cols, &T::rows, &T::data);
+    };
 
     template <typename K, typename V, int maxSize>
     struct from<JSON, magique::EnumArray<K, V, maxSize>>
@@ -136,27 +146,33 @@ namespace glz
         }
     };
 
+
 } // namespace glz
 
 namespace magique
 {
-    struct CustomOptions : glz::opts
+    struct json_opts
     {
+        uint32_t format = glz::JSON;
+        bool bools_as_numbers = true;
         bool reflect_enums = true;
-        bool append_arrays;
-        bool linear_search = true;
-        constexpr CustomOptions(bool append_arrays = true, bool prettify = true) : append_arrays(append_arrays)
-        {
-            comments = true;
-            this->prettify = prettify;
-        }
+        bool null_terminated = GLZ_NULL_TERMINATED;
+        bool comments = true;
+        bool error_on_unknown_keys = true;
+        bool skip_null_members = true;
+        bool prettify = true;
+        bool minified = false;
+        bool partial_read = false;
+        bool error_on_missing_keys = false;
+        bool append_arrays = false;
+        uint32_t internal{};
     };
 
     template <bool append, typename T>
     bool JSONImport(const Asset asset, T& obj)
     {
         std::string_view data = asset;
-        auto ec = glz::read<CustomOptions{append}>(obj, data);
+        auto ec = glz::read<json_opts{.append_arrays = append}>(obj, data);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON asset %s:%s", asset.getPath().data(), glz::format_error(ec, data).c_str());
@@ -169,7 +185,7 @@ namespace magique
     bool JSONImport(std::string_view json, T& data)
     {
         glz::context ctx{};
-        auto ec = glz::read<CustomOptions{append}>(data, json, ctx);
+        auto ec = glz::read<json_opts{.append_arrays = append}>(data, json, ctx);
         if (ec)
         {
             LOG_ERROR("Failed to import JSON:%s", glz::format_error(ec, json).c_str());
@@ -181,13 +197,21 @@ namespace magique
     template <bool prettify, typename T>
     bool JSONExport(const T& data, std::string& buffer)
     {
-        const auto ec = glz::write<CustomOptions{false, prettify}>(data, buffer);
+        const auto ec = glz::write<json_opts{.prettify = prettify}>(data, buffer);
         if (ec)
         {
             LOG_ERROR("Failed to export JSON: %s", glz::format_error(ec, buffer).c_str());
             return false;
         }
         return true;
+    }
+
+    template <typename T>
+    std::string_view ToJSON(const T& value)
+    {
+        thread_local std::string CACHE;
+        JSONExport<true>(value, CACHE);
+        return CACHE;
     }
 
 } // namespace magique

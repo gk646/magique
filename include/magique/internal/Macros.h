@@ -29,17 +29,11 @@ namespace magique::internal
 #define FOR_EACH(macro, ...) __VA_OPT__(EXPAND(FOR_EACH_HELPER(macro, __VA_ARGS__)))
 #define FOR_EACH_HELPER(macro, a1, ...) macro(a1) __VA_OPT__(FOR_EACH_AGAIN PARENS(macro, __VA_ARGS__))
 #define FOR_EACH_AGAIN() FOR_EACH_HELPER
-#define FUNCTION_CASE(eventType)                                                                                        \
-    if constexpr (type == eventType)                                                                                    \
-    {                                                                                                                   \
-        script->eventType(std::forward<Args>(args)...);                                                                 \
-    }
 
 #define MQ_EXPAND_LINE() __LINE__
 #define MQ_PASTE(x, y) x##y
 #define MQ_MAKE_UNIQUE_NAME(line) MQ_PASTE(MQ_BITFLAG_BASE_, line)
 #define _MQ_ENUM_CASE(value) value = 1 << (__COUNTER__ - MQ_MAKE_UNIQUE_NAME(MQ_EXPAND_LINE()) - 1),
-
 
 //================= UTIL =================//
 

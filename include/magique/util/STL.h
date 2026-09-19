@@ -10,8 +10,7 @@
 // STL (Standard Templates Library)
 //===============================================
 // ................................................................................
-// These are the simple and public types/enums used and exposed by magique
-// Note: Some enum use an explicit type to save memory when used in the ECS or networking
+// Useful additions to the STL
 // ................................................................................
 
 namespace magique
@@ -43,24 +42,6 @@ namespace magique
     // Returns a iterable view of all values of this enum
     template <class E>
     constexpr std::span<const E> EnumValues();
-
-    // Minimal read-only view type that allows implicit conversion from any container
-    template <typename Container>
-    class View
-    {
-        using iterator_type = decltype(std::cbegin(std::declval<Container>()));
-        iterator_type begin_;
-        iterator_type end_;
-
-    public:
-        View(const Container& c) : begin_(std::cbegin(c)), end_(std::cend(c)) {}
-        auto operator[](size_t index) const -> decltype(*begin_) { return begin_[index]; }
-        iterator_type begin() const { return begin_; }
-        iterator_type end() const { return end_; }
-        size_t size() const { return std::distance(begin_, end_); }
-        bool empty() const { return begin_ == end_; }
-    };
-
 
 } // namespace magique
 

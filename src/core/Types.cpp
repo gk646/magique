@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <cstring>
 #include <string_view>
-#include <charconv>
 #include <algorithm>
 
 #include <raylib/raylib.h>
@@ -320,8 +319,6 @@ namespace magique
         y = std::min(y, other.y);
     }
 
-    std::string_view Point::toString() const { return TextFormat("(%.2f, %.2f)", x, y); }
-
     //----------------- RECT -----------------//
 
     Rect::Rect(const Rectangle& rect) : x(rect.x), y(rect.y), width(rect.width), height(rect.height) {}
@@ -592,7 +589,7 @@ namespace magique
 
     //----------------- ROTATION -----------------//
 
-    bool Circle::contains(const Point& p) const { return center.euclidean(p) <= radius; }
+    bool Circle::contains(const Point& p) const { return mid.euclidean(p) <= radius; }
 
     float Circle::area() const { return PI * (radius * radius); }
 
@@ -600,8 +597,10 @@ namespace magique
     {
         const auto rot = MathRandom(0, 360);
         const auto dist = MathRandom(0, radius);
-        return center + Point::FromRotation(rot) * dist;
+        return mid + Point::FromRotation(rot) * dist;
     }
+
+    Rect Circle::bounds() const { return Rect{mid - radius, radius * 2}; }
 
     Rotation::Rotation(float angle) : rotation(angle)
     {

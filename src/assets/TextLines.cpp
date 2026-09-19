@@ -7,8 +7,8 @@ namespace magique
 {
     TextLines::TextLines(std::string_view buff, const char delimiter) : full(buff)
     {
-        auto foundLines = StringSplit(buff, delimiter);
-        lines.assign_range(foundLines);
+        for (auto line : StringSplit(buff, delimiter))
+            lines.push_back(std::string{line});
     }
 
     std::optional<std::string_view> TextLines::getRandomLine() const

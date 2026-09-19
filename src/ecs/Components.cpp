@@ -126,17 +126,17 @@ namespace magique
         return val;
     }
 
-    void AnimationC::randomizeSpriteTime() { millisCount = MathRandom() * currentAnimation.totalDuration; }
-
-    Millisecond AnimationC::getSpriteTime() const { return prevMillis; }
-
     void AnimationC::resetSpriteTime()
     {
         prevMillis = 0;
         millisCount = 0;
     }
 
+    void AnimationC::randomizeSpriteTime() { millisCount = MathRandom() * currentAnimation.totalDuration; }
+
     void AnimationC::setSpriteTime(float millis) { millisCount = millis; }
+
+    Millisecond AnimationC::getSpriteTime() const { return prevMillis; }
 
     void resetSpriteTime();
     void randomizeSpriteTime();
@@ -146,13 +146,6 @@ namespace magique
     SpriteAnimation AnimationC::getCurrentSprite() const { return currentAnimation; }
 
     TextureRegion AnimationC::getCurrentFrame() const { return currentAnimation.getCurrentFrame(millisCount); }
-
-    bool AnimationC::operator==(const AnimationC& other) const
-    {
-        return currentAnimation == other.currentAnimation && stopped == other.stopped && lastState == other.lastState &&
-            currentState == other.currentState && stopped == other.stopped;
-    }
-
 
     //----------------- LAYERED ANIMATION -----------------//
 

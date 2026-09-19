@@ -6,7 +6,7 @@
 #include <raylib/raylib.h>
 
 //===============================================
-// Input Action Module
+// Action Input Module
 //===============================================
 // .....................................................................
 // This module helps to abstract direct checks of player input (e.g. with IsKeyDown())
@@ -46,9 +46,9 @@ namespace magique
         static ActionInput FromVirtual(bool pressed, bool down = false, bool released = false);
 
         // Returns the state of the action
-         bool getIsDown() const;
-         bool getIsPressed() const;
-         bool getIsReleased() const;
+        bool getIsDown() const;
+        bool getIsPressed() const;
+        bool getIsReleased() const;
 
     private:
         bool isPressed = false;
@@ -58,4 +58,4 @@ namespace magique
 
 } // namespace magique
 
-#endif //MAGIQUE_ACTION_INPUT_H
+#endif // MAGIQUE_ACTION_INPUT_H

@@ -34,9 +34,9 @@ namespace magique
     void FormatSetValue(std::string_view placeholder, int val);
 
     // Returns a modifiable reference to the value of this placeholder
-    // Note: Type has to be specified manually - int, float or std::string
+    // Note: Type has to be specified manually - int, float or std::string_view
     template <typename T>
-    std::optional<std::reference_wrapper<T>> FormatGetValue(const std::string_view& placeholder);
+    std::optional<T> FormatGetValue(const std::string_view& placeholder);
 
     //================= FORMAT =================//
 

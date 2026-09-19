@@ -82,7 +82,7 @@ namespace magique
 } // namespace magique
 
 
-//================= IMPLEMENTATION =================//
+// IMPLEMENTATION
 
 
 namespace magique

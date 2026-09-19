@@ -127,7 +127,7 @@ namespace magique
         int pos = FindDirectoryPos(assets, name.data(), name.size());
         if (pos == -1) [[unlikely]]
         {
-            LOG_WARNING("No directory with name %s found!", name);
+            LOG_WARNING("No directory with name %s found!", name.data());
             return;
         }
 

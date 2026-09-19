@@ -15,6 +15,15 @@ namespace magique
 {
     //================= UTIL =================//
 
+    // Returns the compressed data or the original, whichever one is smaller and a bool indication if compression happened
+    //      - minSize: compression is not attempted below
+    std::pair<std::string_view, bool> CompressData(std::string_view data, size_t minSize = 128);
+
+    // Tried to uncompress data compressed by CompressData()
+    //      - minOutBuffer: minimal (starting) size of the output buffer - decompression fails if data doesnt fit
+    // Failure: Returns empty view
+    std::string_view DecompressData(std::string_view data, size_t minOutBuffer = 64'000);
+
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
 
@@ -26,13 +35,6 @@ namespace magique
 
     Point GetGamePadLeftStick(int gamepad, float deadZone = 0.2F);
     Point GetGamePadRightStick(int gamepad, float deadZone = 0.2F);
-
-    // Activates the shader in the constructor and ends the shader in the destructor
-    struct ShaderWrapper
-    {
-        ShaderWrapper(const Shader& shader);
-        ~ShaderWrapper();
-    };
 
     // Activates the render texture in the constructor and ends it in the destructor
     // If old is passed automatically reverts to the old texture
@@ -113,10 +115,6 @@ namespace magique
     // Scales only with multiples and in a way such that both x and y dimension must fit within the dimensions
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
-
-    // Draws an arrow in the given bounds
-    // Note: For optimal results width should be even and height should be more than width
-    void DrawArrow(const Rect& bounds, Color tint = WHITE);
 
     struct MouseDragger final
     {

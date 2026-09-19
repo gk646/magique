@@ -25,19 +25,19 @@ namespace magique
         assignDataImpl(slot, data, bytes, StorageType::DATA);
     }
 
-    std::string_view GameStorage::getBytes(const std::string_view slot)
-    {
-        const auto* cell = getCell(slot);
-        M_GAMESAVE_SLOT_MISSING({});
-        M_GAMESAVE_TYPE_MISMATCH(DATA, {});
-        return cell->data;
-    }
-
     std::string_view GameStorage::getStringOrElse(std::string_view slot, std::string_view defaultVal)
     {
         const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING(defaultVal);
         M_GAMESAVE_TYPE_MISMATCH(STRING, defaultVal);
+        return cell->data;
+    }
+
+    std::string_view GameStorage::getBytes(const std::string_view slot)
+    {
+        const auto* cell = getCell(slot);
+        M_GAMESAVE_SLOT_MISSING({});
+        M_GAMESAVE_TYPE_MISMATCH(DATA, {});
         return cell->data;
     }
 

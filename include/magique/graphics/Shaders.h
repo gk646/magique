@@ -8,6 +8,13 @@
 namespace magique
 {
 
+    // Activates the shader in the constructor and ends the shader in the destructor
+    struct ShaderWrapper
+    {
+        ShaderWrapper(const Shader& shader);
+        ~ShaderWrapper();
+    };
+
     // A shader that swaps a given color to a target color - the color must match exactly
     // Useful for reskinning textures
     struct ColorSwapShader final

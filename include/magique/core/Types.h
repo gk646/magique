@@ -129,8 +129,6 @@ namespace magique
         // Assigns x to the max of "this.x" and "other.x"; same for y (separate check)
         void max(const Point& other);
         void min(const Point& other);
-
-        std::string_view toString() const;
     };
 
     struct Rect final
@@ -236,11 +234,11 @@ namespace magique
 
     struct Circle final
     {
-        Point center;
+        Point mid;
         float radius;
 
-        Circle() : center(0), radius(0) {};
-        Circle(Point center, float radius) : center(center), radius(radius) {}
+        Circle() : mid(0), radius(0) {};
+        Circle(Point center, float radius) : mid(center), radius(radius) {}
 
         // Returns true if the point is inside (or on the border)
         bool contains(const Point& p) const;
@@ -250,6 +248,9 @@ namespace magique
 
         // Returns a random point within the circle
         Point random() const;
+
+        // Returns the rect directly enclosing this circle
+        Rect bounds() const;
     };
 
     // Represents a (2D) rotation angle - 0 degree is looking up (north), rotates clockwise
@@ -791,7 +792,7 @@ namespace magique
 
     // Packed view of many changes - automatically compressed if its helpful
     // Note: This is only a view type (does NOT copy or store data) - Payload or ChangeManager it comes from MUST outlive it!
-    struct ChangeSet
+    struct ChangeSet final
     {
         // Parse a changeset from the given payload
         ChangeSet(Payload payload) : data_(payload.data()) {}
@@ -803,11 +804,23 @@ namespace magique
         // Returns true if the data is compressed
         bool isCompressed() const;
 
+        bool empty() { return data_.empty(); }
+        size_t size() { return data_.size(); }
         std::string_view data() const { return data_; }
+
+        operator std::string_view() const { return data_; }
 
     private:
         std::string_view data_;
         friend struct ChangeManager;
+    };
+
+    // Minimal view class that represents data
+    struct Diff final
+    {
+        std::string_view data;
+        bool compressed = false;
+        operator std::string_view() const { return data; }
     };
 
     //================= PERSISTENCE =================//

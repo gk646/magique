@@ -6,7 +6,7 @@
 #include <magique/fwd.hpp>
 
 //===============================================
-// Job System
+// Worker System
 //===============================================
 // .....................................................................
 // This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
@@ -32,7 +32,7 @@ namespace magique
 
     // Allows to specify explicit arguments
     template <typename Callable, typename... Args>
-    JobID JobAddEx(Callable callable, Args... args);
+    JobID JobAddEx(Callable callable, Args&&... args);
 
     // Waits till the specified jobs are completed
     void JobAwait(JobID id);
@@ -83,7 +83,7 @@ namespace magique
     template <typename Func, typename... Args>
     struct ExplicitJob final : IJob
     {
-        explicit ExplicitJob(Func func, Args... args) : func(std::move(func)), args(std::make_tuple(args...)) {}
+        explicit ExplicitJob(Func func, Args&&... args) : func(std::move(func)), args(std::forward_as_tuple(args...)) {}
         void run() override { std::apply(func, args); }
 
     private:
@@ -111,11 +111,11 @@ namespace magique
     }
 
     template <typename Callable, typename... Args>
-    JobID JobAddEx(Callable callable, Args... args)
+    JobID JobAddEx(Callable callable, Args&&... args)
     {
         constexpr auto size = sizeof(ExplicitJob<Callable, Args...>);
         void* ptr = internal::JobGetJobMemory(size);
-        auto job = new (ptr) ExplicitJob<Callable, Args...>(callable, args...);
+        auto job = new (ptr) ExplicitJob<Callable, Args...>(callable, std::forward<Args>(args)...);
         return internal::JobQueue(job);
     }
 

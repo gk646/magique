@@ -196,39 +196,36 @@ namespace magique
         return lineBreaks;
     }
 
-     std::span<const std::string> StringSplit(std::string_view s, char delim)
+    std::span<std::string_view> StringSplit(std::string_view s, char delim)
     {
-        static std::vector<std::string> CACHE;
+        thread_local std::vector<std::string_view> CACHE{};
+        CACHE.clear();
 
-        // Count to get the exact number
-        size_t count = 0;
         size_t start = 0;
         size_t end = 0;
-        while ((end = s.find(delim, start)) != std::string_view::npos)
-        {
-            if (end != start)
-                count++;
-            start = end + 1;
-        }
-        if (start < s.size())
-            count++;
-        CACHE.resize(count);
 
-        start = 0;
-        size_t index = 0;
         while ((end = s.find(delim, start)) != std::string_view::npos)
         {
             if (end != start)
             {
-                CACHE[index++].assign(s.data() + start, end - start);
+                CACHE.emplace_back(s.substr(start, end - start));
             }
             start = end + 1;
         }
+
         if (start < s.size())
         {
-            CACHE[index].assign(s.data() + start, s.size() - start);
+            CACHE.emplace_back(s.substr(start));
         }
+
         return CACHE;
+    }
+
+    std::vector<std::string_view> StringSplitCopy(std::string_view s, char delim)
+    {
+        std::vector<std::string_view> ret;
+        ret.append_range(StringSplit(s, delim));
+        return ret;
     }
 
     bool StringIsValidName(std::string_view s, int minLen, int maxLen)

@@ -274,9 +274,9 @@ namespace magique
 
     void NetworkFlush() {}
 
-    const std::vector<Message>& NetworkReceive(const int max)
+    std::span<const Message> NetworkReceive(int maxMessages )
     {
-        (void)max;
+        (void)maxMessages;
         static std::vector<Message> empty;
         return empty;
     }

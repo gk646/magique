@@ -34,7 +34,7 @@ namespace magique
             animation.totalDuration += durations[i];
         }
         animation.sheet = sheet;
-        offset = off * logicScale;
+        setOffset(off * logicScale);
         if (anch == 0)
             anch = sheet.getRegion(0).getSize() / 2;
         anchor = anch * logicScale;

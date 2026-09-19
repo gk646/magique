@@ -137,7 +137,7 @@ namespace magique
         return false;
     }
 
-    const char* LocalSocketGetIP() { return nullptr; }
+    std::string_view LocalSocketGetIP() { return {}; }
 
 } // namespace magique
 #endif

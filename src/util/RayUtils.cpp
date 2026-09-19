@@ -13,15 +13,61 @@
 #else
 #include "external/glfw/include/GLFW/glfw3.h"
 #endif
+#include "external/sdefl.h"
+#include "external/sinfl.h"
 
 namespace magique
 {
+    std::pair<std::string_view, bool> CompressData(std::string_view data, size_t minSize)
+    {
+        thread_local sdefl* compCtx = new sdefl();
+        thread_local std::string COMP_BUFFER{};
+
+        if (data.empty())
+        {
+            COMP_BUFFER.shrink_to_fit();
+            return {data, false};
+        }
+
+        if (data.size() < minSize)
+            return {data, false};
+
+        COMP_BUFFER.resize(sdefl_bound(data.size()));
+        int compSize = sdeflate(compCtx, COMP_BUFFER.data(), data.data(), data.size(), 1);
+        COMP_BUFFER.resize(compSize);
+
+        if (COMP_BUFFER.size() < data.size())
+            return {{COMP_BUFFER.data(), COMP_BUFFER.size()}, true};
+
+        return {data, false};
+    }
+
+    std::string_view DecompressData(std::string_view data, size_t minOutBuffer)
+    {
+        thread_local std::string COMP_BUFFER;
+
+        if (data.empty())
+        {
+            COMP_BUFFER.shrink_to_fit();
+            return {};
+        }
+
+        // Should usually be enough
+        COMP_BUFFER.resize(std::max(data.size() * 3, minOutBuffer));
+
+        int size = sinflate(COMP_BUFFER.data(), COMP_BUFFER.capacity(), data.data(), data.size());
+        COMP_BUFFER.resize(size);
+
+        if (size <= 0)
+            return {};
+        return {COMP_BUFFER.data(), COMP_BUFFER.size()};
+    }
 
     Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
     float MeasureTextUpTo(const char* text, const int index, const Font& f, const float fontSize, const float spacing)
     {
-        static std::string buffer;
+        thread_local std::string buffer;
         buffer.assign(text, index);
         const float ret = MeasureTextEx(f, buffer.c_str(), fontSize, spacing).x;
         return std::floor(ret);
@@ -256,31 +302,6 @@ namespace magique
         DrawRenderTexture(texture, drawPos, scale);
     }
 
-    void DrawArrow(const Rect& bounds, Color tint)
-    {
-        const auto tip = bounds.topMid().floor();
-        const auto base = bounds.bottomMid().round();
-
-        const float thick = std::max(1.0f, bounds.width / 5.0f);
-        DrawLineEx(tip, base, thick, tint);
-
-        if (bounds.width == 4)
-        {
-            DrawPixelV(tip + Point{-2, 1}, tint);
-            DrawPixelV(tip + Point{-3, 2}, tint);
-            DrawPixelV(tip + Point{0, 1}, tint);
-            DrawPixelV(tip + Point{1, 2}, tint);
-        }
-        else
-        {
-            const float headOffset = bounds.height * 0.5f;
-            const auto leftHead = Point(bounds.leftMid().x, tip.y + headOffset).round();
-            const auto rightHead = Point(bounds.rightMid().x, tip.y + headOffset).round();
-            DrawLineEx(leftHead, tip, thick, tint);
-            DrawLineEx(rightHead, tip, thick, tint);
-        }
-    }
-
     Point GetScreenDims() { return {(float)GetScreenWidth(), (float)GetScreenHeight()}; }
 
     Point GetWorldToScreen2DNorm(const Point world, Point screen)
@@ -357,10 +378,6 @@ namespace magique
             return {};
         return p;
     }
-
-    ShaderWrapper::ShaderWrapper(const Shader& shader) { BeginShaderMode(shader); }
-
-    ShaderWrapper::~ShaderWrapper() { EndShaderMode(); }
 
     RenderTextureWrapper::RenderTextureWrapper(const RenderTexture& texture, const RenderTexture& old) : old(&old)
     {

@@ -30,16 +30,32 @@ namespace glz
       // Helper to get access context for reflection
       inline consteval auto reflection_access_ctx() { return std::meta::access_context::unchecked(); }
 
-       consteval std::vector<std::meta::info> get_all_members(std::meta::info n)
+       consteval std::vector<std::meta::info> get_all_members(std::meta::info type)
       {
-          auto val = std::meta::nonstatic_data_members_of(n, std::meta::access_context::unchecked());
-          for (auto x : std::meta::bases_of(n, std::meta::access_context::unchecked()))
+          constexpr  std::array<const char*,1> bannedAnnotations = {"no_reflect"};
+          std::vector<std::meta::info> results;
+          for (auto val : std::meta::nonstatic_data_members_of(type, std::meta::access_context::unchecked()))
           {
-              val.append_range(get_all_members(std::meta::type_of(x)));
-          }
-          return val;
-      }
+              auto annotations = std::meta::annotations_of(val);
+              bool isBanned = false;
+              for (auto annotation : annotations)
+              {
+                  auto id = std::meta::display_string_of(annotation);
+                  auto value = id.substr(id.find_first_of('"') + 1, id.find_last_of('"') - id.find_first_of('"') - 1);
 
+                  for (auto badAnnotation : bannedAnnotations)
+                      if (value == badAnnotation)
+                          isBanned = true;
+              }
+              if (!isBanned)
+                  results.push_back(val);
+          }
+
+          for (auto base : std::meta::bases_of(type, std::meta::access_context::unchecked()))
+              results.append_range(get_all_members(std::meta::type_of(base)));
+
+          return results;
+      }
       // Count members using P2996 reflection
       // Works for any class type, including non-aggregates (classes with custom constructors)
       // Inherited members are automatically included via nonstatic_data_members_of

@@ -131,13 +131,14 @@ namespace magique
 
     Point GetWorldMousePos()
     {
-        static uint32_t CACHE_TICK = 0;
-        static Point CACHED = 0;
+        return GetScreenToWorld2D(GetMousePosition(), CameraGet());
+        thread_local uint32_t CACHE_TICK = 0;
+        thread_local Point CACHED = 0;
 
         const auto currTicks = EngineGetTicks();
         if (CACHE_TICK == currTicks) [[likely]]
             return CACHED;
-        CACHED = GetScreenToWorld2D(GetMousePosition(), CameraGet());
+        CACHED =
         CACHE_TICK = currTicks;
         return CACHED;
     }

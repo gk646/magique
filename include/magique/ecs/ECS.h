@@ -130,11 +130,11 @@ namespace magique
     // Note: If the entity already has the component will crash
     // IMPORTANT: Args HAVE to match type EXACTLY with the constructor or member variables (without constructor)
     template <typename Component, typename... Args>
-    Component& ComponentGive(Entity entity, Args... args);
+    Component& ComponentGive(Entity entity, Args&&... args);
 
     // Same as ComponentGive but if the entity already has the component returns the existing one
     template <typename Component, typename... Args>
-    Component& ComponentTryGive(Entity entity, Args... args);
+    Component& ComponentTryGive(Entity entity, Args&&... args);
 
     // Adds the camera component
     void ComponentGiveCamera(Entity entity);
@@ -190,13 +190,13 @@ namespace magique
     }
 
     template <class Component, typename... Args>
-    Component& ComponentGive(Entity entity, Args... args)
+    Component& ComponentGive(Entity entity, Args&&... args)
     {
         return internal::REGISTRY.emplace<Component>(entity, args...);
     }
 
     template <typename Component, typename... Args>
-    Component& ComponentTryGive(Entity entity, Args... args)
+    Component& ComponentTryGive(Entity entity, Args&&... args)
     {
         return internal::REGISTRY.get_or_emplace<Component>(entity, args...);
     }

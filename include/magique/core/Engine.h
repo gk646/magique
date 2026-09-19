@@ -75,12 +75,12 @@ namespace magique
     // Note: The returned vector is only valid until this method is called again (single instance)
     // Note: Only searches entity within update range of any ActorC!
     // If filter func returns false entity is removed from the vector
-    std::span<const Entity> EngineQueryLoaded(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQueryLoaded(MapID map, Circle circle, const FilterFunc& filter = nullptr);
     std::span<const Entity> EngineQueryLoaded(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     // Similar to the loaded variant but searches all entities instead of only those within update range
     // Much slower!
-    std::span<const Entity> EngineQuery(MapID map, Point mid, float radius, const FilterFunc& filter = nullptr);
+    std::span<const Entity> EngineQuery(MapID map, Circle circle, const FilterFunc& filter = nullptr);
     std::span<const Entity> EngineQuery(MapID map, const Rect& rect, const FilterFunc& filter = nullptr);
 
     //================= UTILS =================//

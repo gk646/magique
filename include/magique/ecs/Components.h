@@ -128,17 +128,15 @@ namespace magique
         SpriteAnimation getCurrentSprite() const;
         TextureRegion getCurrentFrame() const;
 
-        bool operator==(const AnimationC&) const;
-
     private:
-        const Animation* animation = nullptr;
+        [[="no_reflect"]] const Animation* animation = nullptr;
         SpriteAnimation currentAnimation{};
         bool hasPlayed = false;
         bool stopped = false;
         AnimationState lastState{UINT8_MAX};
         AnimationState currentState{UINT8_MAX};
-        Millisecond prevMillis = 0;
-        float millisCount = 0;
+        [[="no_reflect"]] Millisecond prevMillis = 0;
+        [[="no_reflect"]] float millisCount = 0;
     };
 
     // A layered animation is more complex and allows you to stack animation ontop of each other

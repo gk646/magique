@@ -252,7 +252,7 @@ namespace magique
     {
         if (!(asset.endsWith(".ase") || asset.endsWith(".aseprite")))
         {
-            LOG_WARNING("Invalid extensions for a aseprite file");
+            LOG_WARNING("Invalid extensions for a aseprite file: %s", asset.getExtension().data());
             return {};
         }
 

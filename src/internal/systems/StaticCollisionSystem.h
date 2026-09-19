@@ -28,11 +28,8 @@ namespace magique
         const auto& data = global::ENGINE_DATA;
         auto& staticData = global::STATIC_COLL_DATA;
         const int size = data.collisionVec.size(); // Multithread over certain amount
-        if (size < 500 || MAGIQUE_WORKER_THREADS == 0)
-        {
-            CheckStaticCollisionRange(0, 0, size);
-        }
-        else
+#if MAGIQUE_WORKER_THREADS > 0
+        if (size > 500)
         {
             std::array<JobID, COL_WORK_PARTS> handles{};
             int end = 0;
@@ -46,6 +43,12 @@ namespace magique
             CheckStaticCollisionRange(COL_WORK_PARTS - 1, end, size);
             JobAwait(handles); // Await completion - for caller its sequential -> easy reasoning and simplicity
         }
+        else
+#endif
+        {
+            CheckStaticCollisionRange(0, 0, size);
+        }
+
         // Handle unique pairs - we can share the pair set with dynamic
         HandleCollisionPairs(staticData.pairCollector);
     }
