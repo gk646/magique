@@ -13,16 +13,6 @@
 
 namespace magique
 {
-    //================= UTIL =================//
-
-    // Returns the compressed data or the original, whichever one is smaller and a bool indication if compression happened
-    //      - minSize: compression is not attempted below
-    std::pair<std::string_view, bool> CompressData(std::string_view data, size_t minSize = 128);
-
-    // Tried to uncompress data compressed by CompressData()
-    //      - minOutBuffer: minimal (starting) size of the output buffer - decompression fails if data doesnt fit
-    // Failure: Returns empty view
-    std::string_view DecompressData(std::string_view data, size_t minOutBuffer = 64'000);
 
     // Same as raylib's but returns a magique::Point
     Point GetMousePos();
@@ -68,9 +58,6 @@ namespace magique
     // Returns how many characters can be drawn up to the given width (not overstepped)
     int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing = 1.0F);
 
-    // Measure text functions for pixel fonts - mult is the multiple of the base font size
-    float MeasurePixelText(const char* text, const Font& font, int mult = 1);
-
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
 
@@ -85,9 +72,6 @@ namespace magique
     // Returns true if mouse is inside rect or on rect
     bool CheckCollisionMouseRect(const Rectangle& bounds);
 
-    // Draws a horizontally centered texture
-    void DrawTextureCenteredV(const Texture& texture, const Vector2& pos, const Color& tint);
-
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
     void DrawRectFilled(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
@@ -95,9 +79,6 @@ namespace magique
     // Draws text horizontally & vertically centered inside the rectangle
     void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing = 1.0F,
                               Color tint = WHITE);
-
-    // Draws a 2d rectangle with a shade at the bottom
-    void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult = 0.1F);
 
     // Draws a frame - leaves out the edges for a slightly rounded look
     void DrawRectFrame(const Rect& bounds, const Color& tint);
@@ -115,23 +96,6 @@ namespace magique
     // Scales only with multiples and in a way such that both x and y dimension must fit within the dimensions
     // Also correctly sets the mouse offset and scale such that the top left is {0,0}
     void DrawTruePixelartScale(RenderTexture texture);
-
-    struct MouseDragger final
-    {
-        // Updates the zoom and returns the new camera position based on mouse dragg when called
-        Point update(Camera2D& camera, float zoomMult = 2, float min = 1, float max = 5);
-
-        // Returns the offset from drag start to the current position
-        Point getDragOffset(Camera2D& camera) const;
-
-        // Returns the camera position when the drag was started
-        Point getCameraDragStart() const;
-
-    private:
-        void resetDragPos(Camera2D& camera);
-        Point dragStartScreen{};
-        Point dragStartCamera{};
-    };
 
 } // namespace magique
 

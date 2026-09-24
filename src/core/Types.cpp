@@ -4,14 +4,11 @@
 #include <cstring>
 #include <string_view>
 #include <algorithm>
-
 #include <raylib/raylib.h>
 
 #include <magique/core/Types.h>
-
-#include "glaze/reflection/get_name.hpp"
-
 #include <magique/util/Logging.h>
+#include <magique/util/Strings.h>
 #include <magique/ui/UI.h>
 
 #include "internal/utils/CollisionPrimitives.h"
@@ -602,6 +599,19 @@ namespace magique
 
     Rect Circle::bounds() const { return Rect{mid - radius, radius * 2}; }
 
+    Point Circle::closestContained(const Point& p) const
+    {
+        if (contains(p))
+        {
+            return p;
+        }
+        else
+        {
+            const auto dir = mid.dir(p);
+            return mid + dir * radius;
+        }
+    }
+
     Rotation::Rotation(float angle) : rotation(angle)
     {
         if (rotation >= 360)
@@ -1055,6 +1065,20 @@ namespace magique
 
     ParamType Param::getType() const { return type; }
 
+    ShareCode::operator const char*() const { return data.c_str(); }
+
+    ShareCode::operator std::string_view() const { return data; }
+
+    std::string_view ShareCode::getData() const { return data; }
+
+    ShareCodeType ShareCode::getType() const
+    {
+        auto decoded = StringFromBase64(data);
+        if (decoded.empty())
+            return {};
+        return (ShareCodeType)decoded[0];
+    }
+
     //----------------- KEYBIND -----------------//
 
 
@@ -1113,30 +1137,46 @@ namespace magique
         return curr - menuStart;
     }
 
+    EncryptionKey::EncryptionKey(uint64_t first, uint64_t second)
+    {
+        std::memcpy(key.data(), &first, sizeof(uint64_t));
+        std::memcpy(key.data() + sizeof(uint64_t), &second, sizeof(uint64_t));
+    }
+
+    const uint8_t* EncryptionKey::getKey() const { return key.data(); }
+
+    bool EncryptionKey::getIsNull() const
+    {
+        for (auto val : key)
+            if (val != 0)
+                return false;
+        return true;
+    }
+
     Keybind::Keybind(KeyboardKey key, bool layered, bool shift, bool ctrl, bool alt) :
-        bind(key), type(Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
+        bind(key), type(KeyBindType::Keyboard), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
     }
 
     Keybind::Keybind(MouseButton mouse, bool layered, bool shift, bool ctrl, bool alt) :
-        bind(mouse), type(Mouse), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
+        bind(mouse), type(KeyBindType::Mouse), layered(layered), shift(shift), ctrl(ctrl), alt(alt)
     {
     }
 
-    Keybind::Keybind(GamepadButton key, bool layered) : bind(key), type(Controller), layered(layered) {}
+    Keybind::Keybind(GamepadButton key, bool layered) : bind(key), type(KeyBindType::Controller), layered(layered) {}
 
     bool Keybind::isPressed(int gamepad) const
     {
         bool keyPressed = false;
         switch (type)
         {
-        case Mouse:
+        case KeyBindType::Mouse:
             KEY_MACRO(keyPressed, IsMouseButtonPressed, bind);
             break;
-        case Keyboard:
+        case KeyBindType::Keyboard:
             KEY_MACRO(keyPressed, IsKeyPressed, bind);
             break;
-        case Controller:
+        case KeyBindType::Controller:
             KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonPressed, bind);
             break;
         }
@@ -1148,13 +1188,13 @@ namespace magique
         bool keyPressed = false;
         switch (type)
         {
-        case Mouse:
+        case KeyBindType::Mouse:
             KEY_MACRO(keyPressed, IsMouseButtonDown, bind);
             break;
-        case Keyboard:
+        case KeyBindType::Keyboard:
             KEY_MACRO(keyPressed, IsKeyDown, bind);
             break;
-        case Controller:
+        case KeyBindType::Controller:
             KEY_MACRO_GAMEPAD(keyPressed, IsGamepadButtonDown, bind);
             break;
         }
@@ -1166,13 +1206,13 @@ namespace magique
         bool released = false;
         switch (type)
         {
-        case Mouse:
+        case KeyBindType::Mouse:
             KEY_MACRO(released, IsMouseButtonReleased, bind);
             break;
-        case Keyboard:
+        case KeyBindType::Keyboard:
             KEY_MACRO(released, IsKeyReleased, bind);
             break;
-        case Controller:
+        case KeyBindType::Controller:
             KEY_MACRO_GAMEPAD(released, IsGamepadButtonReleased, bind);
             break;
         }

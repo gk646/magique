@@ -59,14 +59,6 @@ namespace magique
     void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
                             Color tint = WHITE);
 
-    // Returns the amount of characters drawn until the given width is reached (not overstepped)
-    int DrawTextUpTo(const Font& font, const char* text, Vector2 pos, float fontSize, float width, Color tint = WHITE);
-
-    // Draws pixel perfect text - fsm is font size multiplier of the base font size
-    void DrawPixelText(const Font& f, std::string_view txt, Point pos, int fsm = 1, Color tint = WHITE);
-    void DrawPixelTextCentered(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
-    void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1, Color tint = WHITE);
-
     // Draws the given text but highlights all numbers in a different color
     void DrawPixelTextWithNumberHighlight(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1,
                                           Color text = WHITE, Color numbers = GRAY);
@@ -88,7 +80,7 @@ namespace magique
     // Draw a triangle using lines - points must be provided in counter-clockwise order
     void DrawTriangleLinesRot(Vector2 p1, Vector2 p2, Vector2 p3, float rot, Point anchor, Color color);
 
-    void DrawCircleLines(const Circle& circle,  Color color = WHITE);
+    void DrawCircleLines(const Circle& circle, Color color = WHITE);
 
 } // namespace magique
 

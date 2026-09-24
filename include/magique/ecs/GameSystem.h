@@ -69,7 +69,7 @@ namespace magique
         const char* getName() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         std::string name;
         std::array<bool, UINT8_MAX + 1> validStates;
     };

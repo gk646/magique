@@ -16,36 +16,25 @@
 
 namespace magique
 {
-    // Serialized as an array of objects with "key" and "value" values [ {"key" : {} , "value" : {}}, ...] in json
     template <typename K, typename V>
     using HashMap = ankerl::unordered_dense::map<K, V>;
 
-    template <typename K, typename V, typename Hash, typename Equals>
-    using HashMapEx = ankerl::unordered_dense::map<K, V, Hash, Equals>;
-
-    // Serialized as an array of objects [ {}, {}, ... ]
     template <typename K>
     using HashSet = ankerl::unordered_dense::set<K>;
 
     // Transparent lookup enabled - works with const char* and std::string_view
     template <typename Value>
-    using StringHashMap = HashMapEx<std::string, Value, StringHashFunc, StringEqualsFunc>;
+    using StringHashMap = ankerl::unordered_dense::map<std::string, Value, StringHashFunc, StringEqualsFunc>;
 
     // Useful to map an enum to a value with direct indexing
     // Just a wrapped std::array<>
-    // Supports loading from JSON
     // e.g. keybinds EnumArray<PlayerAction, magique::Keybind>
     // If no explicit size is given uses Enum::COUNT (should be the last defined value)
-    // Persisted as an array of objects with "key" and "value" values { "key" : {} , "value" : {}} in json
     template <class Key, typename Value, int manual_size = 0>
     struct EnumArray final
     {
-        struct ValueHolder final // This is persisted and loaded from JSON
-        {
-            Key key;
-            Value value;
-            bool operator==(const ValueHolder& other) const = default;
-        };
+        using ValueHolder = std::pair<Key, Value>;
+        using value_type = std::pair<Key, Value>;
 
         EnumArray() { initKeys(); };
 
@@ -53,20 +42,20 @@ namespace magique
         {
             for (const auto& value : init)
             {
-                const auto keyInt = static_cast<size_t>(value.key);
+                const auto keyInt = static_cast<size_t>(value.first);
                 if (keyInt < 0 || keyInt >= size())
                 {
                     LOG_ERROR("Invalid key");
                     continue;
                 }
-                data[keyInt] = ValueHolder{(Key)keyInt, value.value};
+                data[keyInt] = ValueHolder{(Key)keyInt, value.second};
             }
         }
 
         constexpr EnumArray(std::initializer_list<ValueHolder> init) : EnumArray(std::span{init.begin(), init.end()}) {}
 
-        const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].value; }
-        Value& operator[](Key key) { return data[static_cast<size_t>(key)].value; }
+        const Value& operator[](Key key) const { return data[static_cast<size_t>(key)].second; }
+        Value& operator[](Key key) { return data[static_cast<size_t>(key)].second; }
 
         auto begin() { return data.begin(); }
         auto end() { return data.end(); }
@@ -75,6 +64,12 @@ namespace magique
 
         size_t size() const { return data.size(); }
 
+        void clear()
+        {
+            for (auto [key, value] : data)
+                value = {};
+        }
+
         bool operator==(const EnumArray& other) const = default;
 
     private:
@@ -82,7 +77,7 @@ namespace magique
         {
             for (size_t i = 0; i < data.size(); i++)
             {
-                data[i].key = (Key)i;
+                data[i].first = (Key)i;
             }
         }
         static_assert(std::is_integral_v<Key> || std::is_enum_v<Key>, "Key has to be integral");

@@ -54,7 +54,7 @@ namespace magique
         std::string_view getExtension() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         std::string_view path; // Full path of the file - from the compile root
         std::string_view data; // File data
 

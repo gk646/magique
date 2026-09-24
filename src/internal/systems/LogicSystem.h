@@ -114,7 +114,7 @@ namespace magique
         const Rect camBound = CameraGetBounds();
 
         // Lookup tables
-        ActorMapDistribution actorDist{};
+        static ActorMapDistribution actorDist{};
         ActorRectsTable actorRects{};
         ActorMapsTable actorMaps{};
         std::array<bool, UINT8_MAX> loadedMaps{};

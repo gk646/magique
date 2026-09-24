@@ -65,31 +65,7 @@ namespace magique::internal
         return {};                                                                                                      \
     }
 
-#define ASSET_SPRITE_SHEET_FITS_INSIDE_ATLAS(width)                                                                     \
-    if (width > MAGIQUE_TEXTURE_ATLAS_SIZE)                                                                             \
-    {                                                                                                                   \
-        LOG_WARNING("SpriteSheet width would exceed texture atlas width! Skipping: %s", asset.getFileName(true));       \
-        UnloadImage(image);                                                                                             \
-        return {};                                                                                                      \
-    }
-
-#define ASSET_CHECK_IMAGE_DIVISIBILITY(image, checkW, checkH)                                                           \
-    if ((image.width % checkW != 0) || (image.height % checkH != 0))                                                    \
-    {                                                                                                                   \
-        LOG_WARNING("Image dimensions (%d x %d) are not a multiple of the specified frame size (%d x %d). "             \
-                    "Only full frames will be used.",                                                                   \
-                    image.width, image.height, checkW, checkH);                                                         \
-    }
-
-
 //================= HELPERS =================//
-
-#define M_SHARECODE_CHECKTYPE(checkType, err)                                                                           \
-    if (p.type != checkType)                                                                                            \
-    {                                                                                                                   \
-        LOG_WARNING(err, p.name);                                                                                       \
-        return;                                                                                                         \
-    }
 
 #define M_ENABLE_STEAM_ERROR(ret)                                                                                       \
     LOG_ERROR("To enable steam use CMake: set(MAGIQUE_STEAM ON)");                                                      \
@@ -112,19 +88,9 @@ namespace magique::internal
 //================= BUILDING =================//
 
 #if defined(MAGIQUE_TEST_MODE) || defined(MAGIQUE_IMPLEMENTATION)
-#define M_MAKE_PUB() public:
+#define MQ_MAKE_PUB() public:
 #else
-#define M_MAKE_PUB()
+#define MQ_MAKE_PUB()
 #endif
-
-#if defined(__GNUC__) || defined(__clang__)
-#define STRINGIFY(x) #x
-#define IGNORE_WARNING_GCC(warning) _Pragma("GCC diagnostic push") _Pragma(STRINGIFY(GCC diagnostic ignored warning))
-#define UNIGNORE_WARNING_GCC() _Pragma("GCC diagnostic pop")
-#else
-#define IGNORE_WARNING_GCC(warning)
-#define UNIGNORE_WARNING_GCC()
-#endif
-
 
 #endif // MAGIQUE_MACROS_H

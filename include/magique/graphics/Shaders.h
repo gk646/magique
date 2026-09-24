@@ -54,7 +54,7 @@ namespace magique
         VignetteShader& setSize(float size = 0.5F);
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         static void Init();
         static int colorLoc;
         static int fallOffLoc;
@@ -75,7 +75,7 @@ namespace magique
         OutlineShader& setSize(float size = 1);
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         static void Init();
         static int colorLoc;
         static int sizeLoc;

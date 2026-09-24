@@ -1,29 +1,27 @@
 #ifndef ENTT_ENTITY_SNAPSHOT_HPP
 #define ENTT_ENTITY_SNAPSHOT_HPP
 
-#include <cstddef>
-#include <iterator>
-#include <tuple>
-#include <type_traits>
-#include <utility>
-#include <vector>
 #include "../config/config.h"
 #include "../container/dense_map.hpp"
 #include "../core/type_traits.hpp"
+#include "../stl/concepts.hpp"
+#include "../stl/cstddef.hpp"
+#include "../stl/iterator.hpp"
+#include "../stl/tuple.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
 #include "entity.hpp"
 #include "fwd.hpp"
 #include "view.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
 template<typename Registry>
 void orphans(Registry &registry) {
-    auto &storage = registry.template storage<typename Registry::entity_type>();
-
-    for(auto entt: storage) {
+    for(auto &storage = registry.template storage<typename Registry::entity_type>(); auto entt: storage) {
         if(registry.orphan(entt)) {
             storage.erase(entt);
         }
@@ -45,14 +43,14 @@ void orphans(Registry &registry) {
  */
 template<typename Registry>
 class basic_snapshot {
-    static_assert(!std::is_const_v<Registry>, "Non-const registry type required");
+    static_assert(!stl::is_const_v<Registry>, "Non-const registry type required");
     using traits_type = entt_traits<typename Registry::entity_type>;
 
 public:
     /*! Basic registry type. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename registry_type::entity_type;
+    using entity_type = registry_type::entity_type;
 
     /**
      * @brief Constructs an instance that is bound to a given registry.
@@ -95,10 +93,10 @@ public:
         if(const auto *storage = reg->template storage<Type>(id); storage) {
             const typename registry_type::common_type &base = *storage;
 
-            archive(static_cast<typename traits_type::entity_type>(storage->size()));
+            archive(static_cast<traits_type::entity_type>(storage->size()));
 
-            if constexpr(std::is_same_v<Type, entity_type>) {
-                archive(static_cast<typename traits_type::entity_type>(storage->free_list()));
+            if constexpr(stl::is_same_v<Type, entity_type>) {
+                archive(static_cast<traits_type::entity_type>(storage->free_list()));
 
                 for(auto first = base.rbegin(), last = base.rend(); first != last; ++first) {
                     archive(*first);
@@ -109,12 +107,12 @@ public:
                         archive(static_cast<entity_type>(null));
                     } else {
                         archive(entt);
-                        std::apply([&archive](auto &&...args) { (archive(std::forward<decltype(args)>(args)), ...); }, storage->get_as_tuple(entt));
+                        stl::apply([&archive](auto &&...args) { (archive(stl::forward<decltype(args)>(args)), ...); }, storage->get_as_tuple(entt));
                     }
                 }
             } else {
                 for(auto elem: storage->reach()) {
-                    std::apply([&archive](auto &&...args) { (archive(std::forward<decltype(args)>(args)), ...); }, elem);
+                    stl::apply([&archive](auto &&...args) { (archive(stl::forward<decltype(args)>(args)), ...); }, elem);
                 }
             }
         } else {
@@ -129,24 +127,23 @@ public:
      * the entities in a range.
      * @tparam Type Type of elements to serialize.
      * @tparam Archive Type of output archive.
-     * @tparam It Type of input iterator.
      * @param archive A valid reference to an output archive.
      * @param first An iterator to the first element of the range to serialize.
      * @param last An iterator past the last element of the range to serialize.
      * @param id Optional name used to map the storage within the registry.
      * @return An object of this type to continue creating the snapshot.
      */
-    template<typename Type, typename Archive, typename It>
-    const basic_snapshot &get(Archive &archive, It first, It last, const id_type id = type_hash<Type>::value()) const {
-        static_assert(!std::is_same_v<Type, entity_type>, "Entity types not supported");
+    template<typename Type, typename Archive>
+    const basic_snapshot &get(Archive &archive, stl::input_iterator auto first, stl::input_iterator auto last, const id_type id = type_hash<Type>::value()) const {
+        static_assert(!stl::is_same_v<Type, entity_type>, "Entity types not supported");
 
         if(const auto *storage = reg->template storage<Type>(id); storage && !storage->empty()) {
-            archive(static_cast<typename traits_type::entity_type>(std::distance(first, last)));
+            archive(static_cast<traits_type::entity_type>(stl::distance(first, last)));
 
             for(; first != last; ++first) {
                 if(const auto entt = *first; storage->contains(entt)) {
                     archive(entt);
-                    std::apply([&archive](auto &&...args) { (archive(std::forward<decltype(args)>(args)), ...); }, storage->get_as_tuple(entt));
+                    stl::apply([&archive](auto &&...args) { (archive(stl::forward<decltype(args)>(args)), ...); }, storage->get_as_tuple(entt));
                 } else {
                     archive(static_cast<entity_type>(null));
                 }
@@ -174,14 +171,14 @@ private:
  */
 template<typename Registry>
 class basic_snapshot_loader {
-    static_assert(!std::is_const_v<Registry>, "Non-const registry type required");
+    static_assert(!stl::is_const_v<Registry>, "Non-const registry type required");
     using traits_type = entt_traits<typename Registry::entity_type>;
 
 public:
     /*! Basic registry type. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename registry_type::entity_type;
+    using entity_type = registry_type::entity_type;
 
     /**
      * @brief Constructs an instance that is bound to a given registry.
@@ -229,7 +226,7 @@ public:
 
         archive(length);
 
-        if constexpr(std::is_same_v<Type, entity_type>) {
+        if constexpr(stl::is_same_v<Type, entity_type>) {
             typename traits_type::entity_type count{};
             entity_type placeholder{};
 
@@ -253,12 +250,12 @@ public:
                     const auto entity = other.contains(entt) ? entt : other.generate(entt);
                     ENTT_ASSERT(entity == entt, "Entity not available for use");
 
-                    if constexpr(std::tuple_size_v<decltype(storage.get_as_tuple({}))> == 0u) {
+                    if constexpr(stl::tuple_size_v<decltype(storage.get_as_tuple({}))> == 0u) {
                         storage.emplace(entity);
                     } else {
                         Type elem{};
                         archive(elem);
-                        storage.emplace(entity, std::move(elem));
+                        storage.emplace(entity, stl::move(elem));
                     }
                 }
             }
@@ -304,16 +301,16 @@ private:
  */
 template<typename Registry>
 class basic_continuous_loader {
-    static_assert(!std::is_const_v<Registry>, "Non-const registry type required");
+    static_assert(!stl::is_const_v<Registry>, "Non-const registry type required");
     using traits_type = entt_traits<typename Registry::entity_type>;
 
-    void restore(typename Registry::entity_type entt) {
+    void restore(Registry::entity_type entt) {
         if(const auto entity = to_entity(entt); remloc.contains(entity) && remloc[entity].first == entt) {
             if(!reg->valid(remloc[entity].second)) {
                 remloc[entity].second = reg->create();
             }
         } else {
-            remloc.insert_or_assign(entity, std::make_pair(entt, reg->create()));
+            remloc.insert_or_assign(entity, stl::make_pair(entt, reg->create()));
         }
     }
 
@@ -323,27 +320,27 @@ class basic_continuous_loader {
         Container other;
 
         for(auto &&pair: container) {
-            using first_type = std::remove_const_t<typename std::decay_t<decltype(pair)>::first_type>;
-            using second_type = typename std::decay_t<decltype(pair)>::second_type;
+            using first_type = stl::remove_const_t<typename stl::decay_t<decltype(pair)>::first_type>;
+            using second_type = stl::decay_t<decltype(pair)>::second_type;
 
-            if constexpr(std::is_same_v<first_type, entity_type> && std::is_same_v<second_type, entity_type>) {
+            if constexpr(stl::is_same_v<first_type, entity_type> && stl::is_same_v<second_type, entity_type>) {
                 other.emplace(map(pair.first), map(pair.second));
-            } else if constexpr(std::is_same_v<first_type, entity_type>) {
-                other.emplace(map(pair.first), std::move(pair.second));
+            } else if constexpr(stl::is_same_v<first_type, entity_type>) {
+                other.emplace(map(pair.first), stl::move(pair.second));
             } else {
-                static_assert(std::is_same_v<second_type, entity_type>, "Neither the key nor the value are of entity type");
-                other.emplace(std::move(pair.first), map(pair.second));
+                static_assert(stl::is_same_v<second_type, entity_type>, "Neither the key nor the value are of entity type");
+                other.emplace(stl::move(pair.first), map(pair.second));
             }
         }
 
-        using std::swap;
+        using stl::swap;
         swap(container, other);
     }
 
     template<typename Container>
     auto update(char, Container &container) -> decltype(typename Container::value_type{}, void()) {
         // vector like container
-        static_assert(std::is_same_v<typename Container::value_type, entity_type>, "Invalid value type");
+        static_assert(stl::is_same_v<typename Container::value_type, entity_type>, "Invalid value type");
 
         for(auto &&entt: container) {
             entt = map(entt);
@@ -352,9 +349,9 @@ class basic_continuous_loader {
 
     template<typename Component, typename Other, typename Member>
     void update([[maybe_unused]] Component &instance, [[maybe_unused]] Member Other::*member) {
-        if constexpr(!std::is_same_v<Component, Other>) {
+        if constexpr(!stl::is_same_v<Component, Other>) {
             return;
-        } else if constexpr(std::is_same_v<Member, entity_type>) {
+        } else if constexpr(stl::is_same_v<Member, entity_type>) {
             instance.*member = map(instance.*member);
         } else {
             // maybe a container? let's try...
@@ -366,7 +363,7 @@ public:
     /*! Basic registry type. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename registry_type::entity_type;
+    using entity_type = registry_type::entity_type;
 
     /**
      * @brief Constructs an instance that is bound to a given registry.
@@ -419,18 +416,18 @@ public:
 
         archive(length);
 
-        if constexpr(std::is_same_v<Type, entity_type>) {
+        if constexpr(stl::is_same_v<Type, entity_type>) {
             typename traits_type::entity_type in_use{};
 
             storage.reserve(length);
             archive(in_use);
 
-            for(std::size_t pos{}; pos < in_use; ++pos) {
+            for(stl::size_t pos{}; pos < in_use; ++pos) {
                 archive(entt);
                 restore(entt);
             }
 
-            for(std::size_t pos = in_use; pos < length; ++pos) {
+            for(stl::size_t pos = in_use; pos < length; ++pos) {
                 archive(entt);
 
                 if(const auto entity = to_entity(entt); remloc.contains(entity)) {
@@ -450,12 +447,12 @@ public:
                 if(archive(entt); entt != null) {
                     restore(entt);
 
-                    if constexpr(std::tuple_size_v<decltype(storage.get_as_tuple({}))> == 0u) {
+                    if constexpr(stl::tuple_size_v<decltype(storage.get_as_tuple({}))> == 0u) {
                         storage.emplace(map(entt));
                     } else {
                         Type elem{};
                         archive(elem);
-                        storage.emplace(map(entt), std::move(elem));
+                        storage.emplace(map(entt), stl::move(elem));
                     }
                 }
             }
@@ -503,7 +500,7 @@ public:
     }
 
 private:
-    dense_map<typename traits_type::entity_type, std::pair<entity_type, entity_type>> remloc;
+    dense_map<typename traits_type::entity_type, stl::pair<entity_type, entity_type>> remloc;
     registry_type *reg;
 };
 

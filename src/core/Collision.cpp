@@ -11,7 +11,6 @@
 
 namespace magique
 {
-
     void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info)
     {
         auto& posA = ComponentGet<PositionC>(a);
@@ -57,7 +56,7 @@ namespace magique
 
     bool CheckCollisionEntityAny(Entity e)
     {
-        thread_local std::vector<StaticID> CACHE{64};
+        thread_local std::vector<StaticID> CACHE(64);
 
         auto& staticCol = global::STATIC_COLL_DATA;
 

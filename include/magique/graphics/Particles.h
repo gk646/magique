@@ -2,7 +2,6 @@
 #ifndef MAGIQUE_PARTICLES_H
 #define MAGIQUE_PARTICLES_H
 
-#include <initializer_list>
 #include <magique/internal/InternalTypes.h>
 #include <functional>
 
@@ -105,7 +104,7 @@ namespace magique
         // Sets the lifetime in seconds - randomly chosen between the min (x) and max (y)
         EmitterBase& setLifetime(Point lifetime = {0, 1});
 
-        //================= ADDITIONALS =================//
+        //================= ADDITIONAL =================//
 
         // Sets an angular (to the circle center inwards) gravity - replaces normal gravity
         // in pixels per second**2
@@ -174,7 +173,7 @@ namespace magique
         const internal::EmitterData& getData() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         internal::EmitterData data{};
     };
 

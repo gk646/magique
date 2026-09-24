@@ -1,40 +1,43 @@
 #ifndef ENTT_ENTITY_MIXIN_HPP
 #define ENTT_ENTITY_MIXIN_HPP
 
-#include <type_traits>
-#include <utility>
 #include "../config/config.h"
 #include "../core/any.hpp"
 #include "../core/type_info.hpp"
 #include "../signal/sigh.hpp"
+#include "../stl/concepts.hpp"
+#include "../stl/iterator.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
+#include "../stl/vector.hpp"
 #include "entity.hpp"
 #include "fwd.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
-template<typename, typename, typename = void>
-struct has_on_construct final: std::false_type {};
+template<typename, typename>
+struct has_on_construct final: stl::false_type {};
 
 template<typename Type, typename Registry>
-struct has_on_construct<Type, Registry, std::void_t<decltype(Type::on_construct(std::declval<Registry &>(), std::declval<Registry>().create()))>>
-    : std::true_type {};
+requires stl::invocable<decltype(&Type::on_construct), Registry &, typename Registry::entity_type>
+struct has_on_construct<Type, Registry>: stl::true_type {};
 
-template<typename, typename, typename = void>
-struct has_on_update final: std::false_type {};
-
-template<typename Type, typename Registry>
-struct has_on_update<Type, Registry, std::void_t<decltype(Type::on_update(std::declval<Registry &>(), std::declval<Registry>().create()))>>
-    : std::true_type {};
-
-template<typename, typename, typename = void>
-struct has_on_destroy final: std::false_type {};
+template<typename, typename>
+struct has_on_update final: stl::false_type {};
 
 template<typename Type, typename Registry>
-struct has_on_destroy<Type, Registry, std::void_t<decltype(Type::on_destroy(std::declval<Registry &>(), std::declval<Registry>().create()))>>
-    : std::true_type {};
+requires stl::invocable<decltype(&Type::on_update), Registry &, typename Registry::entity_type>
+struct has_on_update<Type, Registry>: stl::true_type {};
+
+template<typename, typename>
+struct has_on_destroy final: stl::false_type {};
+
+template<typename Type, typename Registry>
+requires stl::invocable<decltype(&Type::on_destroy), Registry &, typename Registry::entity_type>
+struct has_on_destroy<Type, Registry>: stl::true_type {};
 
 } // namespace internal
 /*! @endcond */
@@ -60,9 +63,9 @@ class basic_sigh_mixin final: public Type {
 
     using basic_registry_type = basic_registry<typename owner_type::entity_type, typename owner_type::allocator_type>;
     using sigh_type = sigh<void(owner_type &, const typename underlying_type::entity_type), typename underlying_type::allocator_type>;
-    using underlying_iterator = typename underlying_type::base_type::basic_iterator;
+    using underlying_iterator = underlying_type::base_type::basic_iterator;
 
-    static_assert(std::is_base_of_v<basic_registry_type, owner_type>, "Invalid registry type");
+    static_assert(stl::is_base_of_v<basic_registry_type, owner_type>, "Invalid registry type");
 
     [[nodiscard]] auto &owner_or_assert() const noexcept {
         ENTT_ASSERT(owner != nullptr, "Invalid pointer to registry");
@@ -85,12 +88,12 @@ private:
 
     void pop_all() final {
         if(auto &reg = owner_or_assert(); !destruction.empty()) {
-            if constexpr(std::is_same_v<typename underlying_type::element_type, entity_type>) {
+            if constexpr(stl::is_same_v<typename underlying_type::element_type, entity_type>) {
                 for(typename underlying_type::size_type pos{}, last = underlying_type::free_list(); pos < last; ++pos) {
                     destruction.publish(reg, underlying_type::base_type::operator[](pos));
                 }
             } else {
-                for(auto entt: static_cast<typename underlying_type::base_type &>(*this)) {
+                for(auto entt: static_cast<underlying_type::base_type &>(*this)) {
                     if constexpr(underlying_type::storage_policy == deletion_policy::in_place) {
                         if(entt != tombstone) {
                             destruction.publish(reg, entt);
@@ -105,7 +108,7 @@ private:
         underlying_type::pop_all();
     }
 
-    underlying_iterator try_emplace(const typename underlying_type::entity_type entt, const bool force_back, const void *value) final {
+    underlying_iterator try_emplace(const underlying_type::entity_type entt, const bool force_back, const void *value) final {
         const auto it = underlying_type::try_emplace(entt, force_back, value);
 
         if(auto &reg = owner_or_assert(); it != underlying_type::base_type::end()) {
@@ -118,20 +121,20 @@ private:
     void bind_any(any value) noexcept final {
         owner = any_cast<basic_registry_type>(&value);
 
-        if constexpr(!std::is_same_v<registry_type, basic_registry_type>) {
+        if constexpr(!stl::is_same_v<registry_type, basic_registry_type>) {
             if(owner == nullptr) {
                 owner = any_cast<registry_type>(&value);
             }
         }
 
-        underlying_type::bind_any(std::move(value));
+        underlying_type::bind_any(stl::move(value));
     }
 
 public:
     /*! @brief Allocator type. */
-    using allocator_type = typename underlying_type::allocator_type;
+    using allocator_type = underlying_type::allocator_type;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename underlying_type::entity_type;
+    using entity_type = underlying_type::entity_type;
     /*! @brief Expected registry type. */
     using registry_type = owner_type;
 
@@ -172,9 +175,9 @@ public:
     basic_sigh_mixin(basic_sigh_mixin &&other) noexcept
         : underlying_type{static_cast<underlying_type &&>(other)},
           owner{other.owner},
-          construction{std::move(other.construction)},
-          destruction{std::move(other.destruction)},
-          update{std::move(other.update)} {}
+          construction{stl::move(other.construction)},
+          destruction{stl::move(other.destruction)},
+          update{stl::move(other.update)} {}
 
     /**
      * @brief Allocator-extended move constructor.
@@ -184,9 +187,9 @@ public:
     basic_sigh_mixin(basic_sigh_mixin &&other, const allocator_type &allocator)
         : underlying_type{static_cast<underlying_type &&>(other), allocator},
           owner{other.owner},
-          construction{std::move(other.construction), allocator},
-          destruction{std::move(other.destruction), allocator},
-          update{std::move(other.update), allocator} {}
+          construction{stl::move(other.construction), allocator},
+          destruction{stl::move(other.destruction), allocator},
+          update{stl::move(other.update), allocator} {}
 
     /*! @brief Default destructor. */
     ~basic_sigh_mixin() override = default;
@@ -212,7 +215,7 @@ public:
      * @param other Storage to exchange the content with.
      */
     void swap(basic_sigh_mixin &other) noexcept {
-        using std::swap;
+        using stl::swap;
         swap(owner, other.owner);
         swap(construction, other.construction);
         swap(destruction, other.destruction);
@@ -309,11 +312,11 @@ public:
 
     /**
      * @brief Assigns each element in a range an identifier.
-     * @tparam It Type of mutable forward iterator.
+     * @tparam It Type of output iterator.
      * @param first An iterator to the first element of the range to generate.
      * @param last An iterator past the last element of the range to generate.
      */
-    template<typename It>
+    template<stl::output_iterator<entity_type> It>
     void generate(It first, It last) {
         underlying_type::generate(first, last);
 
@@ -333,7 +336,7 @@ public:
      */
     template<typename... Args>
     decltype(auto) emplace(const entity_type entt, Args &&...args) {
-        underlying_type::emplace(entt, std::forward<Args>(args)...);
+        underlying_type::emplace(entt, stl::forward<Args>(args)...);
         construction.publish(owner_or_assert(), entt);
         return this->get(entt);
     }
@@ -347,7 +350,7 @@ public:
      */
     template<typename... Func>
     decltype(auto) patch(const entity_type entt, Func &&...func) {
-        underlying_type::patch(entt, std::forward<Func>(func)...);
+        underlying_type::patch(entt, stl::forward<Func>(func)...);
         update.publish(owner_or_assert(), entt);
         return this->get(entt);
     }
@@ -355,16 +358,15 @@ public:
     /**
      * @brief Assigns one or more entities to a storage and constructs their
      * objects from a given instance.
-     * @tparam It Type of input iterator.
      * @tparam Args Types of arguments to forward to the underlying storage.
      * @param first An iterator to the first element of the range of entities.
      * @param last An iterator past the last element of the range of entities.
      * @param args Parameters to use to forward to the underlying storage.
      */
-    template<typename It, typename... Args>
-    void insert(It first, It last, Args &&...args) {
+    template<typename... Args>
+    void insert(stl::input_iterator auto first, stl::input_iterator auto last, Args &&...args) {
         auto from = underlying_type::size();
-        underlying_type::insert(first, last, std::forward<Args>(args)...);
+        underlying_type::insert(first, last, stl::forward<Args>(args)...);
 
         if(auto &reg = owner_or_assert(); !construction.empty()) {
             // fine as long as insert passes force_back true to try_emplace
@@ -391,18 +393,18 @@ class basic_reactive_mixin final: public Type {
     using underlying_type = Type;
     using owner_type = Registry;
 
-    using alloc_traits = std::allocator_traits<typename underlying_type::allocator_type>;
+    using alloc_traits = stl::allocator_traits<typename underlying_type::allocator_type>;
     using basic_registry_type = basic_registry<typename owner_type::entity_type, typename owner_type::allocator_type>;
-    using container_type = std::vector<connection, typename alloc_traits::template rebind_alloc<connection>>;
+    using container_type = stl::vector<connection, typename alloc_traits::template rebind_alloc<connection>>;
 
-    static_assert(std::is_base_of_v<basic_registry_type, owner_type>, "Invalid registry type");
+    static_assert(stl::is_base_of_v<basic_registry_type, owner_type>, "Invalid registry type");
 
     [[nodiscard]] auto &owner_or_assert() const noexcept {
         ENTT_ASSERT(owner != nullptr, "Invalid pointer to registry");
         return static_cast<owner_type &>(*owner);
     }
 
-    void emplace_element(const Registry &, typename underlying_type::entity_type entity) {
+    void emplace_element(const Registry &, underlying_type::entity_type entity) {
         if(!underlying_type::contains(entity)) {
             underlying_type::emplace(entity);
         }
@@ -412,20 +414,20 @@ private:
     void bind_any(any value) noexcept final {
         owner = any_cast<basic_registry_type>(&value);
 
-        if constexpr(!std::is_same_v<registry_type, basic_registry_type>) {
+        if constexpr(!stl::is_same_v<registry_type, basic_registry_type>) {
             if(owner == nullptr) {
                 owner = any_cast<registry_type>(&value);
             }
         }
 
-        underlying_type::bind_any(std::move(value));
+        underlying_type::bind_any(stl::move(value));
     }
 
 public:
     /*! @brief Allocator type. */
-    using allocator_type = typename underlying_type::allocator_type;
+    using allocator_type = underlying_type::allocator_type;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename underlying_type::entity_type;
+    using entity_type = underlying_type::entity_type;
     /*! @brief Expected registry type. */
     using registry_type = owner_type;
 
@@ -453,7 +455,7 @@ public:
     basic_reactive_mixin(basic_reactive_mixin &&other) noexcept
         : underlying_type{static_cast<underlying_type &&>(other)},
           owner{other.owner},
-          conn{std::move(other.conn)} {
+          conn{stl::move(other.conn)} {
     }
 
     /**
@@ -464,7 +466,7 @@ public:
     basic_reactive_mixin(basic_reactive_mixin &&other, const allocator_type &allocator)
         : underlying_type{static_cast<underlying_type &&>(other), allocator},
           owner{other.owner},
-          conn{std::move(other.conn), allocator} {
+          conn{stl::move(other.conn), allocator} {
     }
 
     /*! @brief Default destructor. */
@@ -496,7 +498,7 @@ public:
     template<typename Clazz, auto Candidate = &basic_reactive_mixin::emplace_element>
     basic_reactive_mixin &on_construct(const id_type id = type_hash<Clazz>::value()) {
         auto curr = owner_or_assert().template storage<Clazz>(id).on_construct().template connect<Candidate>(*this);
-        conn.push_back(std::move(curr));
+        conn.push_back(stl::move(curr));
         return *this;
     }
 
@@ -510,7 +512,7 @@ public:
     template<typename Clazz, auto Candidate = &basic_reactive_mixin::emplace_element>
     basic_reactive_mixin &on_update(const id_type id = type_hash<Clazz>::value()) {
         auto curr = owner_or_assert().template storage<Clazz>(id).on_update().template connect<Candidate>(*this);
-        conn.push_back(std::move(curr));
+        conn.push_back(stl::move(curr));
         return *this;
     }
 
@@ -524,7 +526,7 @@ public:
     template<typename Clazz, auto Candidate = &basic_reactive_mixin::emplace_element>
     basic_reactive_mixin &on_destroy(const id_type id = type_hash<Clazz>::value()) {
         auto curr = owner_or_assert().template storage<Clazz>(id).on_destroy().template connect<Candidate>(*this);
-        conn.push_back(std::move(curr));
+        conn.push_back(stl::move(curr));
         return *this;
     }
 
@@ -560,7 +562,7 @@ public:
     view(exclude_t<Exclude...> = exclude_t{}) const {
         const owner_type &parent = owner_or_assert();
         basic_view<get_t<const basic_reactive_mixin, typename basic_registry_type::template storage_for_type<const Get>...>, exclude_t<typename basic_registry_type::template storage_for_type<const Exclude>...>> elem{};
-        [&elem](const auto *...curr) { ((curr ? elem.storage(*curr) : void()), ...); }(parent.template storage<std::remove_const_t<Exclude>>()..., parent.template storage<std::remove_const_t<Get>>()..., this);
+        [&elem](const auto *...curr) { ((curr ? elem.storage(*curr) : void()), ...); }(parent.template storage<stl::remove_const_t<Exclude>>()..., parent.template storage<stl::remove_const_t<Get>>()..., this);
         return elem;
     }
 
@@ -568,8 +570,8 @@ public:
     template<typename... Get, typename... Exclude>
     [[nodiscard]] basic_view<get_t<const basic_reactive_mixin, typename basic_registry_type::template storage_for_type<Get>...>, exclude_t<typename basic_registry_type::template storage_for_type<Exclude>...>>
     view(exclude_t<Exclude...> = exclude_t{}) {
-        std::conditional_t<((std::is_const_v<Get> && ...) && (std::is_const_v<Exclude> && ...)), const owner_type, owner_type> &parent = owner_or_assert();
-        return {*this, parent.template storage<std::remove_const_t<Get>>()..., parent.template storage<std::remove_const_t<Exclude>>()...};
+        stl::conditional_t<((stl::is_const_v<Get> && ...) && (stl::is_const_v<Exclude> && ...)), const owner_type, owner_type> &parent = owner_or_assert();
+        return {*this, parent.template storage<stl::remove_const_t<Get>>()..., parent.template storage<stl::remove_const_t<Exclude>>()...};
     }
 
     /*! @brief Releases all connections to the underlying registry, if any. */

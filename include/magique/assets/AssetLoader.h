@@ -46,8 +46,8 @@ namespace magique
         void registerTask(const AssetLoadFunc& func, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
 
     private:
-        M_MAKE_PUB()
-        AssetLoader(std::string_view assetPath, uint64_t encryptionKey);
+        MQ_MAKE_PUB()
+        AssetLoader(std::string_view assetPath, EncryptionKey key);
         bool step() override;
         AssetPack assets;
         friend Game;

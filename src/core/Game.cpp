@@ -16,6 +16,7 @@
 #include <magique/gamedev/Achievements.h>
 #include <magique/ui/WindowManager.h>
 #include <magique/graphics/Shaders.h>
+#include <magique/util/Data.h>
 
 #include "internal/globals/TweenData.h"
 #include "internal/globals/EngineData.h"
@@ -162,10 +163,10 @@ namespace magique
         LOG_INFO("Shutdown magique");
     }
 
-    int Game::run(std::string_view assetPath, const uint64_t encryptionKey)
+    int Game::run(std::string_view assetPath,  EncryptionKey key)
     {
         auto& loader = global::LOADER;
-        loader = new AssetLoader{assetPath, encryptionKey};
+        loader = new AssetLoader{assetPath, key};
 
         // Call startup
         onStartup(*static_cast<AssetLoader*>(loader));

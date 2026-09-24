@@ -86,7 +86,7 @@ namespace magique
         const Rect destRect = Rect{pos, size}.floor();
 
         if (backgroundColor.a > 0)
-            DrawRectangleRec(destRect.enlarge(size * 0.1F), backgroundColor);
+            DrawRectangleRec(destRect.enlarge(std::max(size * 0.1F, {2})), backgroundColor);
         DrawRegionPro(img, destRect, 0, {}, tint);
 
         if (moveCursor)
@@ -191,7 +191,7 @@ namespace magique
         return *this;
     }
 
-    TextDrawer& TextDrawer::modHighlight(Color numberHighlight)
+    TextDrawer& TextDrawer::modHighlightNumber(Color numberHighlight)
     {
         modHighlightColor = numberHighlight;
         return *this;
@@ -264,7 +264,8 @@ namespace magique
 
         if (shadeColor.a > 0)
         {
-            DrawPixelText(font, txt, pos + Point{std::max((float)modSizeMult, 1.0F), 0}, modSizeMult, shadeColor);
+            const auto txtPos = pos + Point{std::max((float)modSizeMult, 1.0F), 0};
+            DrawTextEx(font, txt.data(), txtPos.floored(), fntSize, modSizeMult, shadeColor);
         }
 
         if (modHighlightColor.a > 0)
@@ -278,7 +279,7 @@ namespace magique
         }
         else
         {
-            DrawPixelText(font, txt, pos, modSizeMult, tint);
+            DrawTextEx(font, txt.data(), pos, fntSize, modSizeMult, tint);
         }
 
         if (newLines > 0)

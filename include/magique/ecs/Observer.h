@@ -2,12 +2,12 @@
 #ifndef MAGIQUE_OBSERVER_H
 #define MAGIQUE_OBSERVER_H
 
-#include <magique/ecs/ECS.h>
 #include <magique/internal/glaze/beve/read.hpp>
 #include <magique/internal/glaze/json/patch.hpp>
 #include <magique/internal/glaze/beve/write.hpp>
 #include <magique/util/Reflection.h>
-#include <magique/util/RayUtils.h>
+#include <magique/util/Data.h>
+#include <magique/ecs/ECS.h>
 
 //===============================================
 // Observer
@@ -154,7 +154,7 @@ namespace magique
             if (!tryCompress)
                 return {patchBuffer, false};
 
-            auto [data, isCompressed] = CompressData(patchBuffer);
+            auto [data, isCompressed] = DataCompress(patchBuffer);
             // Copy here for more understandable API - data is only valid until next compress call
             patchBuffer = data;
             return {patchBuffer, isCompressed};
@@ -168,7 +168,7 @@ namespace magique
     {
         auto& oldState = ComponentGet<T>(entity);
         if (diff.compressed)
-            diff.data = DecompressData(diff.data);
+            diff.data = DataDecompress(diff.data);
         auto err = glz::read_beve(oldState, diff.data);
         return !err;
     }

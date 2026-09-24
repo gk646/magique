@@ -1,46 +1,49 @@
 #ifndef ENTT_CONFIG_CONFIG_H
 #define ENTT_CONFIG_CONFIG_H
 
+#define ENTT_NO_MIXIN
+
+#if __has_include(<entt/ext/config.h>)
+#    include <entt/ext/config.h>
+#endif
+
+#include <version>
 #include "version.h"
 
 // NOLINTBEGIN(cppcoreguidelines-macro-usage)
 
-#if defined(__cpp_exceptions) && !defined(ENTT_NOEXCEPTION)
-#    define ENTT_CONSTEXPR
+#ifdef ENTT_USE_STL
+#    define ENTT_FORCE_STL
+#endif
+
+#if defined(__cpp_exceptions) && !defined(ENTT_NO_EXCEPTION)
 #    define ENTT_THROW throw
 #    define ENTT_TRY try
 #    define ENTT_CATCH catch(...)
 #else
-#    define ENTT_CONSTEXPR constexpr // use only with throwing functions (waiting for C++20)
 #    define ENTT_THROW
 #    define ENTT_TRY if(true)
 #    define ENTT_CATCH if(false)
 #endif
 
-#if __has_include(<version>)
-#    include <version>
-#
-#    if defined(__cpp_consteval)
-#        define ENTT_CONSTEVAL consteval
-#    endif
-#endif
-
-#ifndef ENTT_CONSTEVAL
+#if defined(__cpp_consteval)
+#    define ENTT_CONSTEVAL consteval
+#else
 #    define ENTT_CONSTEVAL constexpr
 #endif
 
 #ifdef ENTT_USE_ATOMIC
-#    include <atomic>
-#    define ENTT_MAYBE_ATOMIC(Type) std::atomic<Type>
+#    include "../stl/atomic.hpp"
+#    define ENTT_MAYBE_ATOMIC(Type) stl::atomic<Type>
 #else
 #    define ENTT_MAYBE_ATOMIC(Type) Type
 #endif
 
 #ifndef ENTT_ID_TYPE
-#    include <cstdint>
-#    define ENTT_ID_TYPE std::uint32_t
+#    include "../stl/cstdint.hpp"
+#    define ENTT_ID_TYPE stl::uint32_t
 #else
-#    include <cstdint> // provides coverage for types in the std namespace
+#    include "../stl/cstdint.hpp" // provides coverage for types in the std namespace
 #endif
 
 #ifndef ENTT_SPARSE_PAGE

@@ -2,6 +2,7 @@
 #ifndef MAGIQUE_GAME_H
 #define MAGIQUE_GAME_H
 
+#include <magique/core/Types.h>
 #include <magique/ecs/GameSystem.h>
 
 //===============================================
@@ -41,7 +42,7 @@ namespace magique
         // Tries to load an asset pack from the default path - assets will be empty if none exists!
         // Tries to load the game config from the default path - will be created if none exists!
         // Note: The encryption key is applied to both assets and config - make sure they match
-        int run(std::string_view assetPath = "data.bin", uint64_t encryptionKey = 0);
+        int run(std::string_view assetPath = "data.bin", EncryptionKey key = 0);
 
         // Stops the game gracefully - calls onShutDown()
         void shutDown();

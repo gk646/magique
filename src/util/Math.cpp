@@ -114,29 +114,5 @@ namespace magique
         return value;
     }
 
-    Point GetCirclePosOutline(const Point& middle, const float radius, const float angle)
-    {
-        const auto direction = Point::FromRotation(angle);
-        return {middle.x + (direction.x * radius), middle.y + (direction.y * radius)};
-    }
-
-    Point GetCirclePosRandom(const Point& mid, float radius)
-    {
-        const auto angle = GetRandomValue(0, 359);
-        const Point dir = Point::FromRotation(angle);
-        return mid + dir * (MathRandom(0, 1.0F) * radius);
-    }
-
-    Point GetClosestPointOnCircle(Point p, Point middle, float radius)
-    {
-        if (middle.euclidean(p) > radius)
-        {
-            return GetCirclePosOutline(middle, radius, middle.angle(p));
-        }
-        else
-        {
-            return p;
-        }
-    }
 
 } // namespace magique

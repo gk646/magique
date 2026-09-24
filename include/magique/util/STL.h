@@ -5,6 +5,7 @@
 #include <span>
 #include <algorithm>
 #include <raylib/raylib.h>
+#include <magique/core/Types.h>
 
 //===============================================
 // STL (Standard Templates Library)
@@ -15,20 +16,20 @@
 
 namespace magique
 {
-    // Returns the value type of the container
-    template <typename Container>
-    using value_type_of = std::iterator_traits<decltype(std::cbegin(std::declval<Container>()))>::value_type;
-
-    template <typename T>
-    using optional_ref = std::optional<std::reference_wrapper<T>>;
+    // Returns the value type of the range
+    template <typename Range>
+    using value_type_of = std::iterator_traits<decltype(std::cbegin(std::declval<Range>()))>::value_type;
 
     // Randomly picks n unique elements from the given range and returns them
-    // Note: vec MUST not contain duplicates
     template <typename Container>
     std::optional<std::vector<value_type_of<Container>>> PickRandomSequence(const Container& c, int n);
 
+    // Tries to return a random element from the given range
     template <typename Container>
     std::optional<value_type_of<Container>> PickRandom(const Container& c);
+
+    // Returns in seconds how long the given func took to execute
+    double TimeFunc(const std::function<void()>& func);
 
     // Returns the enum value as string
     // Note: This requires the whole enum definition to be visible when used
@@ -43,6 +44,9 @@ namespace magique
     template <class E>
     constexpr std::span<const E> EnumValues();
 
+    // Shorter name for a optional that contains a reference
+    template <typename T>
+    using optional_ref = std::optional<std::reference_wrapper<T>>;
 } // namespace magique
 
 // IMPLEMENTATION
@@ -51,7 +55,7 @@ namespace magique
 {
 
     template <typename T>
-   std::optional<T> TiledPropertyHolder::getEnumProperty(std::string_view name) const
+    std::optional<T> TiledPropertyHolder::getEnumProperty(std::string_view name) const
     {
         auto property = getStringProperty(name);
         if (!property.has_value())
@@ -121,6 +125,12 @@ namespace magique
         return {c[GetRandomValue(0, c.size() - 1)]};
     }
 
+    inline double TimeFunc(const std::function<void()>& func)
+    {
+        const auto start = GetTime();
+        func();
+        return GetTime() - start;
+    }
 
     template <class E>
     constexpr std::string_view EnumToString(E val)

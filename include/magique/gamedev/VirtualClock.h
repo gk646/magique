@@ -47,6 +47,7 @@ namespace magique
         int getHours() const;
         int getDays() const;
 
+        // Returns the time in the format: dd:hh:mm:ss
         // Use immediately or copy the value
         std::string_view toString() const;
 

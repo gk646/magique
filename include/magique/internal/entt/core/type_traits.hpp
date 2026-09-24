@@ -1,12 +1,13 @@
 #ifndef ENTT_CORE_TYPE_TRAITS_HPP
 #define ENTT_CORE_TYPE_TRAITS_HPP
 
-#include <cstddef>
-#include <iterator>
-#include <tuple>
-#include <type_traits>
-#include <utility>
 #include "../config/config.h"
+#include "../stl/concepts.hpp"
+#include "../stl/cstddef.hpp"
+#include "../stl/iterator.hpp"
+#include "../stl/tuple.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
 #include "fwd.hpp"
 
 namespace entt {
@@ -15,10 +16,10 @@ namespace entt {
  * @brief Utility class to disambiguate overloaded functions.
  * @tparam N Number of choices available.
  */
-template<std::size_t N>
+template<stl::size_t N>
 struct choice_t
     // unfortunately, doxygen cannot parse such a construct
-    : /*! @cond TURN_OFF_DOXYGEN */ choice_t<N - 1> /*! @endcond */
+    : /*! @cond ENTT_INTERNAL */ choice_t<N - 1> /*! @endcond */
 {};
 
 /*! @copybrief choice_t */
@@ -29,49 +30,29 @@ struct choice_t<0> {};
  * @brief Variable template for the choice trick.
  * @tparam N Number of choices available.
  */
-template<std::size_t N>
+template<stl::size_t N>
 inline constexpr choice_t<N> choice{};
-
-/**
- * @brief Identity type trait.
- *
- * Useful to establish non-deduced contexts in template argument deduction
- * (waiting for C++20) or to provide types through function arguments.
- *
- * @tparam Type A type.
- */
-template<typename Type>
-struct type_identity {
-    /*! @brief Identity type. */
-    using type = Type;
-};
-
-/**
- * @brief Helper type.
- * @tparam Type A type.
- */
-template<typename Type>
-using type_identity_t = typename type_identity<Type>::type;
 
 /**
  * @brief A type-only `sizeof` wrapper that returns 0 where `sizeof` complains.
  * @tparam Type The type of which to return the size.
  */
-template<typename Type, typename = void>
-struct size_of: std::integral_constant<std::size_t, 0u> {};
+template<typename Type>
+struct size_of: stl::integral_constant<stl::size_t, 0u> {};
 
 /*! @copydoc size_of */
 template<typename Type>
-struct size_of<Type, std::void_t<decltype(sizeof(Type))>>
+requires requires { sizeof(Type); }
+struct size_of<Type>
     // NOLINTNEXTLINE(bugprone-sizeof-expression)
-    : std::integral_constant<std::size_t, sizeof(Type)> {};
+    : stl::integral_constant<stl::size_t, sizeof(Type)> {};
 
 /**
  * @brief Helper variable template.
  * @tparam Type The type of which to return the size.
  */
 template<typename Type>
-inline constexpr std::size_t size_of_v = size_of<Type>::value;
+inline constexpr stl::size_t size_of_v = size_of<Type>::value;
 
 /**
  * @brief Using declaration to be used to _repeat_ the same type a number of
@@ -94,7 +75,7 @@ inline constexpr auto unpack_as_value = Value;
  * @tparam Value A static constant.
  */
 template<auto Value>
-using integral_constant = std::integral_constant<decltype(Value), Value>;
+using integral_constant = stl::integral_constant<decltype(Value), Value>;
 
 /**
  * @brief Alias template to facilitate the creation of named values.
@@ -116,7 +97,7 @@ struct type_list {
 };
 
 /*! @brief Primary template isn't defined on purpose. */
-template<std::size_t, typename>
+template<stl::size_t, typename>
 struct type_list_element;
 
 /**
@@ -125,7 +106,7 @@ struct type_list_element;
  * @tparam First First type provided by the type list.
  * @tparam Other Other types provided by the type list.
  */
-template<std::size_t Index, typename First, typename... Other>
+template<stl::size_t Index, typename First, typename... Other>
 struct type_list_element<Index, type_list<First, Other...>>
     : type_list_element<Index - 1u, type_list<Other...>> {};
 
@@ -145,8 +126,8 @@ struct type_list_element<0u, type_list<First, Other...>> {
  * @tparam Index Index of the type to return.
  * @tparam List Type list to search into.
  */
-template<std::size_t Index, typename List>
-using type_list_element_t = typename type_list_element<Index, List>::type;
+template<stl::size_t Index, typename List>
+using type_list_element_t = type_list_element<Index, List>::type;
 
 /*! @brief Primary template isn't defined on purpose. */
 template<typename, typename>
@@ -161,7 +142,7 @@ struct type_list_index;
 template<typename Type, typename First, typename... Other>
 struct type_list_index<Type, type_list<First, Other...>> {
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given type in the sublist. */
     static constexpr value_type value = 1u + type_list_index<Type, type_list<Other...>>::value;
 };
@@ -172,10 +153,10 @@ struct type_list_index<Type, type_list<First, Other...>> {
  * @tparam Other Other types provided by the type list.
  */
 template<typename Type, typename... Other>
+requires (type_list_index<Type, type_list<Other...>>::value == sizeof...(Other))
 struct type_list_index<Type, type_list<Type, Other...>> {
-    static_assert(type_list_index<Type, type_list<Other...>>::value == sizeof...(Other), "Non-unique type");
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given type in the sublist. */
     static constexpr value_type value = 0u;
 };
@@ -187,7 +168,7 @@ struct type_list_index<Type, type_list<Type, Other...>> {
 template<typename Type>
 struct type_list_index<Type, type_list<>> {
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given type in the sublist. */
     static constexpr value_type value = 0u;
 };
@@ -198,7 +179,7 @@ struct type_list_index<Type, type_list<>> {
  * @tparam Type Type to look for and for which to return the index.
  */
 template<typename Type, typename List>
-inline constexpr std::size_t type_list_index_v = type_list_index<Type, List>::value;
+inline constexpr stl::size_t type_list_index_v = type_list_index<Type, List>::value;
 
 /**
  * @brief Concatenates multiple type lists.
@@ -207,7 +188,7 @@ inline constexpr std::size_t type_list_index_v = type_list_index<Type, List>::va
  * @return A type list composed by the types of both the type lists.
  */
 template<typename... Type, typename... Other>
-constexpr type_list<Type..., Other...> operator+(type_list<Type...>, type_list<Other...>) {
+ENTT_CONSTEVAL type_list<Type..., Other...> operator+(type_list<Type...>, type_list<Other...>) {
     return {};
 }
 
@@ -231,7 +212,7 @@ struct type_list_cat<> {
 template<typename... Type, typename... Other, typename... List>
 struct type_list_cat<type_list<Type...>, type_list<Other...>, List...> {
     /*! @brief A type list composed by the types of all the type lists. */
-    using type = typename type_list_cat<type_list<Type..., Other...>, List...>::type;
+    using type = type_list_cat<type_list<Type..., Other...>, List...>::type;
 };
 
 /**
@@ -249,9 +230,9 @@ struct type_list_cat<type_list<Type...>> {
  * @tparam List Type lists to concatenate.
  */
 template<typename... List>
-using type_list_cat_t = typename type_list_cat<List...>::type;
+using type_list_cat_t = type_list_cat<List...>::type;
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
 template<typename...>
@@ -259,7 +240,7 @@ struct type_list_unique;
 
 template<typename First, typename... Other, typename... Type>
 struct type_list_unique<type_list<First, Other...>, Type...>
-    : std::conditional_t<(std::is_same_v<First, Type> || ...), type_list_unique<type_list<Other...>, Type...>, type_list_unique<type_list<Other...>, Type..., First>> {};
+    : stl::conditional_t<(stl::is_same_v<First, Type> || ...), type_list_unique<type_list<Other...>, Type...>, type_list_unique<type_list<Other...>, Type..., First>> {};
 
 template<typename... Type>
 struct type_list_unique<type_list<>, Type...> {
@@ -276,7 +257,7 @@ struct type_list_unique<type_list<>, Type...> {
 template<typename List>
 struct type_list_unique {
     /*! @brief A type list without duplicate types. */
-    using type = typename internal::type_list_unique<List>::type;
+    using type = internal::type_list_unique<List>::type;
 };
 
 /**
@@ -284,11 +265,11 @@ struct type_list_unique {
  * @tparam List Type list.
  */
 template<typename List>
-using type_list_unique_t = typename type_list_unique<List>::type;
+using type_list_unique_t = type_list_unique<List>::type;
 
 /**
- * @brief Provides the member constant `value` to true if a type list contains a
- * given type, false otherwise.
+ * @brief Provides the member constant `value` equal to true if a type list
+ * contains a given type, false otherwise.
  * @tparam List Type list.
  * @tparam Type Type to look for.
  */
@@ -302,7 +283,7 @@ struct type_list_contains;
  */
 template<typename... Type, typename Other>
 struct type_list_contains<type_list<Type...>, Other>
-    : std::bool_constant<(std::is_same_v<Type, Other> || ...)> {};
+    : stl::bool_constant<(stl::is_same_v<Type, Other> || ...)> {};
 
 /**
  * @brief Helper variable template.
@@ -324,7 +305,7 @@ struct type_list_diff;
 template<typename... Type, typename... Other>
 struct type_list_diff<type_list<Type...>, type_list<Other...>> {
     /*! @brief A type list that is the difference between the two type lists. */
-    using type = type_list_cat_t<std::conditional_t<type_list_contains_v<type_list<Other...>, Type>, type_list<>, type_list<Type>>...>;
+    using type = type_list_cat_t<stl::conditional_t<type_list_contains_v<type_list<Other...>, Type>, type_list<>, type_list<Type>>...>;
 };
 
 /**
@@ -332,14 +313,14 @@ struct type_list_diff<type_list<Type...>, type_list<Other...>> {
  * @tparam List Type lists between which to compute the difference.
  */
 template<typename... List>
-using type_list_diff_t = typename type_list_diff<List...>::type;
+using type_list_diff_t = type_list_diff<List...>::type;
 
 /*! @brief Primary template isn't defined on purpose. */
 template<typename, template<typename...> class>
 struct type_list_transform;
 
 /**
- * @brief Applies a given _function_ to a type list and generate a new list.
+ * @brief Applies a given _function_ to a type list and generates a new list.
  * @tparam Type Types provided by the type list.
  * @tparam Op Unary operation as template class with a type member named `type`.
  */
@@ -356,7 +337,7 @@ struct type_list_transform<type_list<Type...>, Op> {
  * @tparam Op Unary operation as template class with a type member named `type`.
  */
 template<typename List, template<typename...> class Op>
-using type_list_transform_t = typename type_list_transform<List, Op>::type;
+using type_list_transform_t = type_list_transform<List, Op>::type;
 
 /**
  * @brief A class to use to push around lists of constant values, nothing more.
@@ -371,7 +352,7 @@ struct value_list {
 };
 
 /*! @brief Primary template isn't defined on purpose. */
-template<std::size_t, typename>
+template<stl::size_t, typename>
 struct value_list_element;
 
 /**
@@ -380,7 +361,7 @@ struct value_list_element;
  * @tparam Value First value provided by the value list.
  * @tparam Other Other values provided by the value list.
  */
-template<std::size_t Index, auto Value, auto... Other>
+template<stl::size_t Index, auto Value, auto... Other>
 struct value_list_element<Index, value_list<Value, Other...>>
     : value_list_element<Index - 1u, value_list<Other...>> {};
 
@@ -402,15 +383,15 @@ struct value_list_element<0u, value_list<Value, Other...>> {
  * @tparam Index Index of the type to return.
  * @tparam List Value list to search into.
  */
-template<std::size_t Index, typename List>
-using value_list_element_t = typename value_list_element<Index, List>::type;
+template<stl::size_t Index, typename List>
+using value_list_element_t = value_list_element<Index, List>::type;
 
 /**
  * @brief Helper type.
  * @tparam Index Index of the value to return.
  * @tparam List Value list to search into.
  */
-template<std::size_t Index, typename List>
+template<stl::size_t Index, typename List>
 inline constexpr auto value_list_element_v = value_list_element<Index, List>::value;
 
 /*! @brief Primary template isn't defined on purpose. */
@@ -426,7 +407,7 @@ struct value_list_index;
 template<auto Value, auto First, auto... Other>
 struct value_list_index<Value, value_list<First, Other...>> {
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given value in the sublist. */
     static constexpr value_type value = 1u + value_list_index<Value, value_list<Other...>>::value;
 };
@@ -437,10 +418,10 @@ struct value_list_index<Value, value_list<First, Other...>> {
  * @tparam Other Other values provided by the value list.
  */
 template<auto Value, auto... Other>
+requires (value_list_index<Value, value_list<Other...>>::value == sizeof...(Other))
 struct value_list_index<Value, value_list<Value, Other...>> {
-    static_assert(value_list_index<Value, value_list<Other...>>::value == sizeof...(Other), "Non-unique type");
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given value in the sublist. */
     static constexpr value_type value = 0u;
 };
@@ -452,7 +433,7 @@ struct value_list_index<Value, value_list<Value, Other...>> {
 template<auto Value>
 struct value_list_index<Value, value_list<>> {
     /*! @brief Unsigned integer type. */
-    using value_type = std::size_t;
+    using value_type = stl::size_t;
     /*! @brief Compile-time position of the given type in the sublist. */
     static constexpr value_type value = 0u;
 };
@@ -463,7 +444,7 @@ struct value_list_index<Value, value_list<>> {
  * @tparam Value Value to look for and for which to return the index.
  */
 template<auto Value, typename List>
-inline constexpr std::size_t value_list_index_v = value_list_index<Value, List>::value;
+inline constexpr stl::size_t value_list_index_v = value_list_index<Value, List>::value;
 
 /**
  * @brief Concatenates multiple value lists.
@@ -472,7 +453,7 @@ inline constexpr std::size_t value_list_index_v = value_list_index<Value, List>:
  * @return A value list composed by the values of both the value lists.
  */
 template<auto... Value, auto... Other>
-constexpr value_list<Value..., Other...> operator+(value_list<Value...>, value_list<Other...>) {
+ENTT_CONSTEVAL value_list<Value..., Other...> operator+(value_list<Value...>, value_list<Other...>) {
     return {};
 }
 
@@ -496,7 +477,7 @@ struct value_list_cat<> {
 template<auto... Value, auto... Other, typename... List>
 struct value_list_cat<value_list<Value...>, value_list<Other...>, List...> {
     /*! @brief A value list composed by the values of all the value lists. */
-    using type = typename value_list_cat<value_list<Value..., Other...>, List...>::type;
+    using type = value_list_cat<value_list<Value..., Other...>, List...>::type;
 };
 
 /**
@@ -514,7 +495,7 @@ struct value_list_cat<value_list<Value...>> {
  * @tparam List Value lists to concatenate.
  */
 template<typename... List>
-using value_list_cat_t = typename value_list_cat<List...>::type;
+using value_list_cat_t = value_list_cat<List...>::type;
 
 /*! @brief Primary template isn't defined on purpose. */
 template<typename>
@@ -528,7 +509,7 @@ struct value_list_unique;
 template<auto Value, auto... Other>
 struct value_list_unique<value_list<Value, Other...>> {
     /*! @brief A value list without duplicate types. */
-    using type = std::conditional_t<
+    using type = stl::conditional_t<
         ((Value == Other) || ...),
         typename value_list_unique<value_list<Other...>>::type,
         value_list_cat_t<value_list<Value>, typename value_list_unique<value_list<Other...>>::type>>;
@@ -546,11 +527,11 @@ struct value_list_unique<value_list<>> {
  * @tparam Type A value list.
  */
 template<typename Type>
-using value_list_unique_t = typename value_list_unique<Type>::type;
+using value_list_unique_t = value_list_unique<Type>::type;
 
 /**
- * @brief Provides the member constant `value` to true if a value list contains
- * a given value, false otherwise.
+ * @brief Provides the member constant `value` equal to true if a value list
+ * contains a given value, false otherwise.
  * @tparam List Value list.
  * @tparam Value Value to look for.
  */
@@ -564,7 +545,7 @@ struct value_list_contains;
  */
 template<auto... Value, auto Other>
 struct value_list_contains<value_list<Value...>, Other>
-    : std::bool_constant<((Value == Other) || ...)> {};
+    : stl::bool_constant<((Value == Other) || ...)> {};
 
 /**
  * @brief Helper variable template.
@@ -585,8 +566,8 @@ struct value_list_diff;
  */
 template<auto... Value, auto... Other>
 struct value_list_diff<value_list<Value...>, value_list<Other...>> {
-    /*! @brief A value list that is the difference between the two value lists. */
-    using type = value_list_cat_t<std::conditional_t<value_list_contains_v<value_list<Other...>, Value>, value_list<>, value_list<Value>>...>;
+    /*! @brief A value list that is the difference between the two lists. */
+    using type = value_list_cat_t<stl::conditional_t<value_list_contains_v<value_list<Other...>, Value>, value_list<>, value_list<Value>>...>;
 };
 
 /**
@@ -594,11 +575,11 @@ struct value_list_diff<value_list<Value...>, value_list<Other...>> {
  * @tparam List Value lists between which to compute the difference.
  */
 template<typename... List>
-using value_list_diff_t = typename value_list_diff<List...>::type;
+using value_list_diff_t = value_list_diff<List...>::type;
 
-/*! @brief Same as std::is_invocable, but with tuples. */
+/*! @brief Same as stl::is_invocable, but with tuples. */
 template<typename, typename>
-struct is_applicable: std::false_type {};
+struct is_applicable: stl::false_type {};
 
 /**
  * @copybrief is_applicable
@@ -607,7 +588,7 @@ struct is_applicable: std::false_type {};
  * @tparam Args The list of arguments to use to probe the function type.
  */
 template<typename Func, template<typename...> class Tuple, typename... Args>
-struct is_applicable<Func, Tuple<Args...>>: std::is_invocable<Func, Args...> {};
+struct is_applicable<Func, Tuple<Args...>>: stl::is_invocable<Func, Args...> {};
 
 /**
  * @copybrief is_applicable
@@ -616,7 +597,7 @@ struct is_applicable<Func, Tuple<Args...>>: std::is_invocable<Func, Args...> {};
  * @tparam Args The list of arguments to use to probe the function type.
  */
 template<typename Func, template<typename...> class Tuple, typename... Args>
-struct is_applicable<Func, const Tuple<Args...>>: std::is_invocable<Func, Args...> {};
+struct is_applicable<Func, const Tuple<Args...>>: stl::is_invocable<Func, Args...> {};
 
 /**
  * @brief Helper variable template.
@@ -626,9 +607,9 @@ struct is_applicable<Func, const Tuple<Args...>>: std::is_invocable<Func, Args..
 template<typename Func, typename Args>
 inline constexpr bool is_applicable_v = is_applicable<Func, Args>::value;
 
-/*! @brief Same as std::is_invocable_r, but with tuples for arguments. */
+/*! @brief Same as stl::is_invocable_r, but with tuples for arguments. */
 template<typename, typename, typename>
-struct is_applicable_r: std::false_type {};
+struct is_applicable_r: stl::false_type {};
 
 /**
  * @copybrief is_applicable_r
@@ -638,7 +619,7 @@ struct is_applicable_r: std::false_type {};
  * @tparam Args The list of arguments to use to probe the function type.
  */
 template<typename Ret, typename Func, typename... Args>
-struct is_applicable_r<Ret, Func, std::tuple<Args...>>: std::is_invocable_r<Ret, Func, Args...> {};
+struct is_applicable_r<Ret, Func, stl::tuple<Args...>>: stl::is_invocable_r<Ret, Func, Args...> {};
 
 /**
  * @brief Helper variable template.
@@ -651,16 +632,17 @@ template<typename Ret, typename Func, typename Args>
 inline constexpr bool is_applicable_r_v = is_applicable_r<Ret, Func, Args>::value;
 
 /**
- * @brief Provides the member constant `value` to true if a given type is
+ * @brief Provides the member constant `value` equal to true if a given type is
  * complete, false otherwise.
  * @tparam Type The type to test.
  */
-template<typename Type, typename = void>
-struct is_complete: std::false_type {};
+template<typename Type>
+struct is_complete: stl::false_type {};
 
 /*! @copydoc is_complete */
 template<typename Type>
-struct is_complete<Type, std::void_t<decltype(sizeof(Type))>>: std::true_type {};
+requires requires { sizeof(Type); }
+struct is_complete<Type>: stl::true_type {};
 
 /**
  * @brief Helper variable template.
@@ -670,29 +652,30 @@ template<typename Type>
 inline constexpr bool is_complete_v = is_complete<Type>::value;
 
 /**
- * @brief Provides the member constant `value` to true if a given type is an
- * iterator, false otherwise.
+ * @brief Provides the member constant `value` equal to true if a given type is
+ * an iterator, false otherwise.
  * @tparam Type The type to test.
  */
-template<typename Type, typename = void>
-struct is_iterator: std::false_type {};
+template<typename Type>
+struct is_iterator: stl::false_type {};
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
-template<typename, typename = void>
-struct has_iterator_category: std::false_type {};
+template<typename>
+struct has_iterator_category: stl::false_type {};
 
 template<typename Type>
-struct has_iterator_category<Type, std::void_t<typename std::iterator_traits<Type>::iterator_category>>: std::true_type {};
+requires requires { typename stl::iterator_traits<Type>::iterator_category; }
+struct has_iterator_category<Type>: stl::true_type {};
 
 } // namespace internal
 /*! @endcond */
 
 /*! @copydoc is_iterator */
 template<typename Type>
-struct is_iterator<Type, std::enable_if_t<!std::is_void_v<std::remove_const_t<std::remove_pointer_t<Type>>>>>
-    : internal::has_iterator_category<Type> {};
+requires (!stl::is_void_v<stl::remove_const_t<stl::remove_pointer_t<Type>>>)
+struct is_iterator<Type>: internal::has_iterator_category<Type> {};
 
 /**
  * @brief Helper variable template.
@@ -702,13 +685,12 @@ template<typename Type>
 inline constexpr bool is_iterator_v = is_iterator<Type>::value;
 
 /**
- * @brief Provides the member constant `value` to true if a given type is both
- * an empty and non-final class, false otherwise.
+ * @brief Provides the member constant `value` equal to true if a given type is
+ * both an empty and non-final class, false otherwise.
  * @tparam Type The type to test
  */
 template<typename Type>
-struct is_ebco_eligible
-    : std::bool_constant<std::is_empty_v<Type> && !std::is_final_v<Type>> {};
+struct is_ebco_eligible: stl::bool_constant<stl::is_empty_v<Type> && !stl::is_final_v<Type>> {};
 
 /**
  * @brief Helper variable template.
@@ -718,16 +700,17 @@ template<typename Type>
 inline constexpr bool is_ebco_eligible_v = is_ebco_eligible<Type>::value;
 
 /**
- * @brief Provides the member constant `value` to true if `Type::is_transparent`
- * is valid and denotes a type, false otherwise.
+ * @brief Provides the member constant `value` equal to true if
+ * `Type::is_transparent` is valid and denotes a type, false otherwise.
  * @tparam Type The type to test.
  */
-template<typename Type, typename = void>
-struct is_transparent: std::false_type {};
+template<typename Type>
+struct is_transparent: stl::false_type {};
 
 /*! @copydoc is_transparent */
 template<typename Type>
-struct is_transparent<Type, std::void_t<typename Type::is_transparent>>: std::true_type {};
+requires requires { typename Type::is_transparent; }
+struct is_transparent<Type>: stl::true_type {};
 
 /**
  * @brief Helper variable template.
@@ -736,52 +719,54 @@ struct is_transparent<Type, std::void_t<typename Type::is_transparent>>: std::tr
 template<typename Type>
 inline constexpr bool is_transparent_v = is_transparent<Type>::value;
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
-template<typename, typename = void>
-struct has_tuple_size_value: std::false_type {};
+template<typename>
+struct has_tuple_size_value: stl::false_type {};
 
 template<typename Type>
-struct has_tuple_size_value<Type, std::void_t<decltype(std::tuple_size<const Type>::value)>>: std::true_type {};
-
-template<typename, typename = void>
-struct has_value_type: std::false_type {};
-
-template<typename Type>
-struct has_value_type<Type, std::void_t<typename Type::value_type>>: std::true_type {};
+requires is_complete_v<stl::tuple_size<const Type>>
+struct has_tuple_size_value<Type>: stl::true_type {};
 
 template<typename>
-[[nodiscard]] constexpr bool dispatch_is_equality_comparable();
+struct has_value_type: stl::false_type {};
 
-template<typename Type, std::size_t... Index>
-[[nodiscard]] constexpr bool unpack_maybe_equality_comparable(std::index_sequence<Index...>) {
-    return (dispatch_is_equality_comparable<std::tuple_element_t<Index, Type>>() && ...);
+template<typename Type>
+requires requires { typename Type::value_type; }
+struct has_value_type<Type>: stl::true_type {};
+
+template<typename>
+[[nodiscard]] ENTT_CONSTEVAL bool dispatch_is_equality_comparable();
+
+template<typename Type, stl::size_t... Index>
+[[nodiscard]] ENTT_CONSTEVAL bool unpack_maybe_equality_comparable(stl::index_sequence<Index...>) {
+    return (dispatch_is_equality_comparable<stl::tuple_element_t<Index, Type>>() && ...);
 }
 
 template<typename>
-[[nodiscard]] constexpr bool maybe_equality_comparable(char) {
+[[nodiscard]] ENTT_CONSTEVAL bool maybe_equality_comparable(char) {
     return false;
 }
 
 template<typename Type>
-[[nodiscard]] constexpr auto maybe_equality_comparable(int) -> decltype(std::declval<Type>() == std::declval<Type>()) {
+[[nodiscard]] ENTT_CONSTEVAL auto maybe_equality_comparable(int) -> decltype(stl::declval<Type>() == stl::declval<Type>()) {
     return true;
 }
 
 template<typename Type>
-[[nodiscard]] constexpr bool dispatch_is_equality_comparable() {
+[[nodiscard]] ENTT_CONSTEVAL bool dispatch_is_equality_comparable() {
     // NOLINTBEGIN(modernize-use-transparent-functors)
-    if constexpr(std::is_array_v<Type>) {
+    if constexpr(stl::is_array_v<Type>) {
         return false;
-    } else if constexpr(is_complete_v<std::tuple_size<std::remove_const_t<Type>>>) {
+    } else if constexpr(is_complete_v<stl::tuple_size<stl::remove_const_t<Type>>>) {
         if constexpr(has_tuple_size_value<Type>::value) {
-            return maybe_equality_comparable<Type>(0) && unpack_maybe_equality_comparable<Type>(std::make_index_sequence<std::tuple_size<Type>::value>{});
+            return maybe_equality_comparable<Type>(0) && unpack_maybe_equality_comparable<Type>(stl::make_index_sequence<stl::tuple_size<Type>::value>{});
         } else {
             return maybe_equality_comparable<Type>(0);
         }
     } else if constexpr(has_value_type<Type>::value) {
-        if constexpr(is_iterator_v<Type> || std::is_same_v<typename Type::value_type, Type> || dispatch_is_equality_comparable<typename Type::value_type>()) {
+        if constexpr(is_iterator_v<Type> || stl::is_same_v<typename Type::value_type, Type> || dispatch_is_equality_comparable<typename Type::value_type>()) {
             return maybe_equality_comparable<Type>(0);
         } else {
             return false;
@@ -796,12 +781,12 @@ template<typename Type>
 /*! @endcond */
 
 /**
- * @brief Provides the member constant `value` to true if a given type is
+ * @brief Provides the member constant `value` equal to true if a given type is
  * equality comparable, false otherwise.
  * @tparam Type The type to test.
  */
 template<typename Type>
-struct is_equality_comparable: std::bool_constant<internal::dispatch_is_equality_comparable<Type>()> {};
+struct is_equality_comparable: stl::bool_constant<internal::dispatch_is_equality_comparable<Type>()> {};
 
 /*! @copydoc is_equality_comparable */
 template<typename Type>
@@ -822,7 +807,7 @@ inline constexpr bool is_equality_comparable_v = is_equality_comparable<Type>::v
 template<typename To, typename From>
 struct constness_as {
     /*! @brief The type resulting from the transcription of the constness. */
-    using type = std::remove_const_t<To>;
+    using type = stl::remove_const_t<To>;
 };
 
 /*! @copydoc constness_as */
@@ -838,16 +823,19 @@ struct constness_as<To, const From> {
  * @tparam From The type from which to transcribe the constness.
  */
 template<typename To, typename From>
-using constness_as_t = typename constness_as<To, From>::type;
+using constness_as_t = constness_as<To, From>::type;
+
+/*! @brief Primary template isn't defined on purpose. */
+template<typename>
+class member_class;
 
 /**
  * @brief Extracts the class of a non-static member object or function.
  * @tparam Member A pointer to a non-static member object or function.
  */
 template<typename Member>
-class member_class {
-    static_assert(std::is_member_pointer_v<Member>, "Invalid pointer type to non-static member object or function");
-
+requires stl::is_member_pointer_v<Member>
+class member_class<Member> {
     template<typename Class, typename Ret, typename... Args>
     static Class *clazz(Ret (Class::*)(Args...));
 
@@ -859,7 +847,7 @@ class member_class {
 
 public:
     /*! @brief The class of the given non-static member object or function. */
-    using type = std::remove_pointer_t<decltype(clazz(std::declval<Member>()))>;
+    using type = stl::remove_pointer_t<decltype(clazz(stl::declval<Member>()))>;
 };
 
 /**
@@ -867,33 +855,33 @@ public:
  * @tparam Member A pointer to a non-static member object or function.
  */
 template<typename Member>
-using member_class_t = typename member_class<Member>::type;
+using member_class_t = member_class<Member>::type;
 
 /**
  * @brief Extracts the n-th argument of a _callable_ type.
  * @tparam Index The index of the argument to extract.
  * @tparam Candidate A valid _callable_ type.
  */
-template<std::size_t Index, typename Candidate>
+template<stl::size_t Index, typename Candidate>
 class nth_argument {
     template<typename Ret, typename... Args>
-    static constexpr type_list<Args...> pick_up(Ret (*)(Args...));
+    static ENTT_CONSTEVAL type_list<Args...> pick_up(Ret (*)(Args...));
 
     template<typename Ret, typename Class, typename... Args>
-    static constexpr type_list<Args...> pick_up(Ret (Class ::*)(Args...));
+    static ENTT_CONSTEVAL type_list<Args...> pick_up(Ret (Class ::*)(Args...));
 
     template<typename Ret, typename Class, typename... Args>
-    static constexpr type_list<Args...> pick_up(Ret (Class ::*)(Args...) const);
+    static ENTT_CONSTEVAL type_list<Args...> pick_up(Ret (Class ::*)(Args...) const);
 
     template<typename Type, typename Class>
-    static constexpr type_list<Type> pick_up(Type Class ::*);
+    static ENTT_CONSTEVAL type_list<Type> pick_up(Type Class ::*);
 
     template<typename Type>
-    static constexpr decltype(pick_up(&Type::operator())) pick_up(Type &&);
+    static ENTT_CONSTEVAL decltype(pick_up(&Type::operator())) pick_up(Type &&);
 
 public:
     /*! @brief N-th argument of the _callable_ type. */
-    using type = type_list_element_t<Index, decltype(pick_up(std::declval<Candidate>()))>;
+    using type = type_list_element_t<Index, decltype(pick_up(stl::declval<Candidate>()))>;
 };
 
 /**
@@ -901,21 +889,21 @@ public:
  * @tparam Index The index of the argument to extract.
  * @tparam Candidate A valid function, member function or data member type.
  */
-template<std::size_t Index, typename Candidate>
-using nth_argument_t = typename nth_argument<Index, Candidate>::type;
+template<stl::size_t Index, typename Candidate>
+using nth_argument_t = nth_argument<Index, Candidate>::type;
 
 } // namespace entt
 
 template<typename... Type>
-struct std::tuple_size<entt::type_list<Type...>>: std::integral_constant<std::size_t, entt::type_list<Type...>::size> {};
+struct entt::stl::tuple_size<entt::type_list<Type...>>: entt::stl::integral_constant<entt::stl::size_t, entt::type_list<Type...>::size> {};
 
-template<std::size_t Index, typename... Type>
-struct std::tuple_element<Index, entt::type_list<Type...>>: entt::type_list_element<Index, entt::type_list<Type...>> {};
+template<entt::stl::size_t Index, typename... Type>
+struct entt::stl::tuple_element<Index, entt::type_list<Type...>>: entt::type_list_element<Index, entt::type_list<Type...>> {};
 
 template<auto... Value>
-struct std::tuple_size<entt::value_list<Value...>>: std::integral_constant<std::size_t, entt::value_list<Value...>::size> {};
+struct entt::stl::tuple_size<entt::value_list<Value...>>: entt::stl::integral_constant<entt::stl::size_t, entt::value_list<Value...>::size> {};
 
-template<std::size_t Index, auto... Value>
-struct std::tuple_element<Index, entt::value_list<Value...>>: entt::value_list_element<Index, entt::value_list<Value...>> {};
+template<entt::stl::size_t Index, auto... Value>
+struct entt::stl::tuple_element<Index, entt::value_list<Value...>>: entt::value_list_element<Index, entt::value_list<Value...>> {};
 
 #endif

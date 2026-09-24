@@ -13,55 +13,9 @@
 #else
 #include "external/glfw/include/GLFW/glfw3.h"
 #endif
-#include "external/sdefl.h"
-#include "external/sinfl.h"
 
 namespace magique
 {
-    std::pair<std::string_view, bool> CompressData(std::string_view data, size_t minSize)
-    {
-        thread_local sdefl* compCtx = new sdefl();
-        thread_local std::string COMP_BUFFER{};
-
-        if (data.empty())
-        {
-            COMP_BUFFER.shrink_to_fit();
-            return {data, false};
-        }
-
-        if (data.size() < minSize)
-            return {data, false};
-
-        COMP_BUFFER.resize(sdefl_bound(data.size()));
-        int compSize = sdeflate(compCtx, COMP_BUFFER.data(), data.data(), data.size(), 1);
-        COMP_BUFFER.resize(compSize);
-
-        if (COMP_BUFFER.size() < data.size())
-            return {{COMP_BUFFER.data(), COMP_BUFFER.size()}, true};
-
-        return {data, false};
-    }
-
-    std::string_view DecompressData(std::string_view data, size_t minOutBuffer)
-    {
-        thread_local std::string COMP_BUFFER;
-
-        if (data.empty())
-        {
-            COMP_BUFFER.shrink_to_fit();
-            return {};
-        }
-
-        // Should usually be enough
-        COMP_BUFFER.resize(std::max(data.size() * 3, minOutBuffer));
-
-        int size = sinflate(COMP_BUFFER.data(), COMP_BUFFER.capacity(), data.data(), data.size());
-        COMP_BUFFER.resize(size);
-
-        if (size <= 0)
-            return {};
-        return {COMP_BUFFER.data(), COMP_BUFFER.size()};
-    }
 
     Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
 
@@ -174,14 +128,6 @@ namespace magique
 
     bool CheckCollisionMouseRect(const Rectangle& bounds) { return CheckCollisionPointRec(GetMousePosition(), bounds); }
 
-    void DrawTextureCenteredV(const Texture& texture, const Vector2& pos, const Color& tint)
-    {
-        auto center = pos;
-        center.x -= (float)texture.width / 2.0F;
-        center.x = std::floor(center.x);
-        DrawTextureV(texture, center, tint);
-    }
-
     void DrawRectFilled(const Rectangle& bounds, const float fillPercent, const Direction dir, Color tint)
     {
         DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
@@ -193,13 +139,6 @@ namespace magique
         const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
         const auto rect = Rect::CenteredOn(bounds.mid(), dims);
         DrawTextEx(fnt, txt.data(), rect.pos().floored(), fs, spacing, tint);
-    }
-
-    void DrawRectangleShaded(const Rectangle& bounds, const Color& tint, const Color& shade, float shadeMult)
-    {
-        DrawRectangleRec(bounds, tint);
-        const auto shadeRect = Rectangle{bounds.x, bounds.y + bounds.height, bounds.width, bounds.height * shadeMult};
-        DrawRectangleRec(shadeRect, shade);
     }
 
     void DrawRectFrame(const Rect& bounds, const Color& tint)
@@ -308,57 +247,6 @@ namespace magique
     {
         const auto pos = Point{GetWorldToScreen2D(world, CameraGet())};
         return pos / screen;
-    }
-
-    Point MouseDragger::update(Camera2D& camera, float zoomMult, float min, float max)
-    {
-        Point newTarget = {camera.target.x, camera.target.y};
-        const auto move = LayeredInput::GetIsMouseConsumed() ? 0.0F : GetMouseWheelMove();
-        if (move > 0)
-        {
-            resetDragPos(camera);
-            camera.zoom = std::min(camera.zoom + move * zoomMult, max);
-        }
-        else if (move < 0)
-        {
-            resetDragPos(camera);
-            camera.zoom = std::max(camera.zoom + move * zoomMult, min);
-        }
-
-        if (UIGetDragStart() == -1)
-        {
-            dragStartScreen = GetMousePos();
-            dragStartCamera = camera.target;
-        }
-        else
-        {
-            auto diff = (dragStartScreen - GetMousePos()) / camera.zoom;
-            newTarget = dragStartCamera + diff.floor();
-            newTarget.floor();
-        }
-        return newTarget;
-    }
-
-    Point MouseDragger::getDragOffset(Camera2D& camera) const { return (dragStartScreen - GetMousePos()) / camera.zoom; }
-
-    Point MouseDragger::getCameraDragStart() const { return dragStartCamera; }
-
-    void MouseDragger::resetDragPos(Camera2D& camera)
-    {
-        // When dragging we have to reset drag position when zooming
-        // otherwise target jumps as diff is made with different zoom levels
-        if (UIGetDragStart() == -1)
-        {
-            return;
-        }
-
-        const auto diff = dragStartScreen - GetMousePos();
-        auto newTarget = dragStartCamera + (diff / camera.zoom);
-        camera.target.x = newTarget.x;
-        camera.target.y = newTarget.y;
-
-        dragStartCamera = newTarget;
-        dragStartScreen = GetMousePos();
     }
 
     Point GetGamePadLeftStick(int gamepad, float deadZone)

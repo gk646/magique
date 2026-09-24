@@ -66,19 +66,6 @@ namespace magique
     // Applies the change to the given value such that it goes towards the closest max (positive or negative) but not oversteps it
     float AwayFromZero(float value, float change, float max);
 
-    //================= GEOMETRY =================//
-
-    // Returns the point on the given circle that intersects the given angle (on the circle outline)
-    //      - angle: 0-360 starting from the top clockwise
-    Point GetCirclePosOutline(const Point& middle, float radius, float angle);
-
-    // Returns a random position on the given circle area
-    Point GetCirclePosRandom(const Point& mid, float radius);
-
-    // Returns p, if p is inside the circle defined by middle and radius
-    // else returns the closest point on the circle using GetPointOnCircleFromAngle()
-    Point GetClosestPointOnCircle(Point p, Point middle, float radius);
-
 } // namespace magique
 
 
@@ -87,7 +74,6 @@ namespace magique
 
 namespace magique
 {
-
     template <typename T>
     bool MathInRange(const T& val, const T& min, const T& max)
     {
@@ -99,7 +85,6 @@ namespace magique
     {
         return value + (2 * (border - value));
     }
-
 } // namespace magique
 
 #endif // MAGIQUE_MATH_H

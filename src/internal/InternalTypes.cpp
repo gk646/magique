@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #include <magique/internal/InternalTypes.h>
 #include <magique/assets/JSON.h>
-
-#include "internal/utils/EncryptionUtil.h"
+#include <magique/util/Data.h>
 
 namespace magique::internal
 {
@@ -15,11 +14,11 @@ namespace magique::internal
     }
 
     bool StorageContainer::ToFile(StorageContainer& container, std::string_view path, std::string_view name,
-                                  uint64_t key)
+                                  EncryptionKey key)
     {
         std::string buffer;
         JSONExport(container.cells, buffer);
-        SymmetricEncrypt(buffer.data(), buffer.size(), key);
+        DataEncrypt(buffer, key);
 
         FILE* file = fopen(path.data(), "wb");
         if (file == nullptr)
@@ -37,7 +36,7 @@ namespace magique::internal
     }
 
     bool StorageContainer::FromFile(StorageContainer& container, std::string_view path, std::string_view name,
-                                    uint64_t key)
+                                    EncryptionKey key)
     {
         MAGIQUE_ASSERT(container.isLoaded == false, "Can only load from empty save!");
         MAGIQUE_ASSERT(container.cells.empty(), "Can only load from empty save!");
@@ -58,7 +57,7 @@ namespace magique::internal
         fread(buffer.data(), totalSize, 1, file);
         fclose(file);
 
-        SymmetricEncrypt(buffer.data(), totalSize, key);
+        DataDecrypt(buffer, key);
         JSONImport(buffer, container.cells);
 
         LOG_INFO("Loaded %s: %s | Size: %.2fkb", name.data(), path.data(), static_cast<float>(totalSize) / 1000.0F);

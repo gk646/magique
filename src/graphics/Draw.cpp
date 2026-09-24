@@ -238,8 +238,8 @@ namespace magique
         for (auto& part : parts)
         {
             const auto width = MeasureTextEx(f, part.data(), fs, spc).x;
-            DrawTextEx(f, part.data(), Point{pos.x - width / 2.0F, pos.y+offset}.floored(), fs, spc, c);
-            offset+= fs + GetTextLineSpacing();
+            DrawTextEx(f, part.data(), Point{pos.x - width / 2.0F, pos.y + offset}.floored(), fs, spc, c);
+            offset += fs + GetTextLineSpacing();
         }
     }
 
@@ -249,75 +249,6 @@ namespace magique
         const auto width = MeasureTextEx(f, txt.data(), fs, spc).x;
         DrawTextEx(f, txt.data(), {std::round(pos.x - width), std::round(pos.y)}, fs, spc, c);
     }
-
-    int DrawTextUpTo(const Font& font, const char* text, Vector2 position, float fontSize, float width, Color tint)
-    {
-        int size = TextLength(text); // Total size in bytes of the text, scanned by codepoints in loop
-
-        float spacing = 1.0F;
-        float textOffsetY = 0;    // Offset between lines (on linebreak '\n')
-        float textOffsetX = 0.0f; // Offset X to next character to draw
-
-        float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
-
-        for (int i = 0; i < size;)
-        {
-            // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
-            int codepoint = GetCodepointNext(&text[i], &codepointByteCount);
-            int index = GetGlyphIndex(font, codepoint);
-
-            if (codepoint == '\n')
-            {
-                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetY += (fontSize + GetTextLineSpacing());
-                textOffsetX = 0.0f;
-            }
-            else
-            {
-                float charOff = 0.0F;
-                if (font.glyphs[index].advanceX == 0)
-                    charOff = ((float)font.recs[index].width * scaleFactor + spacing);
-                else
-                    charOff = ((float)font.glyphs[index].advanceX * scaleFactor + spacing);
-
-                if (charOff + textOffsetX >= width)
-                    return i;
-
-                if ((codepoint != ' ') && (codepoint != '\t'))
-                {
-                    DrawTextCodepoint(font, codepoint, Vector2{position.x + textOffsetX, position.y + textOffsetY},
-                                      fontSize, tint);
-                }
-
-                textOffsetX += charOff;
-            }
-
-            i += codepointByteCount; // Move text bytes counter to next codepoint
-        }
-        return size;
-    }
-
-    void DrawPixelText(const Font& f, std::string_view txt, Point pos, const int fsm, const Color tint)
-    {
-        pos.round();
-        DrawTextEx(f, txt.data(), pos, static_cast<float>(f.baseSize * fsm), 1.0F * (float)fsm, tint);
-    }
-
-    void DrawPixelTextCentered(const Font& f, std::string_view txt, const Vector2 pos, const int fsm, const Color tint)
-    {
-        const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt.data(), fs, 1.0F).x;
-        DrawPixelText(f, txt, {std::round(pos.x - width / 2.0F), std::round(pos.y)}, fsm, tint);
-    }
-
-    void DrawPixelTextRightBound(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color tint)
-    {
-        const auto fs = (float)f.baseSize * fsm;
-        const auto width = MeasureTextEx(f, txt.data(), fs, (float)fsm).x;
-        DrawPixelText(f, txt, {pos.x - width, pos.y}, fsm, tint);
-    }
-
 
     void DrawPixelTextWithNumberHighlight(const Font& f, std::string_view txt, Vector2 pos, int fsm, Color text,
                                           Color numbers)

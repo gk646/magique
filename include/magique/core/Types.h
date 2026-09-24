@@ -251,6 +251,9 @@ namespace magique
 
         // Returns the rect directly enclosing this circle
         Rect bounds() const;
+
+        // Returns the closest point to p that is also inside the circle
+        Point closestContained(const Point& p) const;
     };
 
     // Represents a (2D) rotation angle - 0 degree is looking up (north), rotates clockwise
@@ -350,7 +353,7 @@ namespace magique
         bool operator==(const SpriteSheet&) const = default;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         TextureRegion region{};
         uint16_t frames = 0; // Total number of frames
         bool blank = false;  // True if all frames are fully transparent
@@ -403,6 +406,7 @@ namespace magique
         std::string_view getName() const;
 
     private:
+        MQ_MAKE_PUB()
         TileObjectPropertyType type = TileObjectPropertyType::INT;
         char* name = nullptr;
         union
@@ -414,9 +418,6 @@ namespace magique
             int object;
             Color color;
         };
-        friend TileInfo;
-        friend TiledObject;
-        friend struct TiledPropertyParser;
     };
 
     using TileObjectID = int;
@@ -462,7 +463,7 @@ namespace magique
 
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         int tileId = 0;
         const char* name = nullptr;
         TileObjectID id = INT32_MAX;
@@ -639,6 +640,24 @@ namespace magique
         WeightedColor(Color color, float weight = 0.5F) : color(color), weight(weight) {}
         Color color{};
         float weight = 0.5F;
+    };
+
+    struct ShareCode final
+    {
+        // Automatic conversion
+        operator const char*() const;
+        operator std::string_view() const;
+
+        // Returns the string data
+        std::string_view getData() const;
+
+        // Returns the version of the generator this sharecode was made with
+        ShareCodeType getType() const;
+
+    private:
+        std::string data;
+        template <typename T>
+        friend ShareCode ShareCodeExport(ShareCodeType type, const T& val);
     };
 
     //================= MULTIPLAYER =================//
@@ -1012,10 +1031,26 @@ namespace magique
         int menuIndex(int menuStart, int menuWidth, int curr);
     };
 
+    //================= DATA =================//
+
+    // 128 bits
+    struct EncryptionKey
+    {
+        EncryptionKey(uint64_t first, uint64_t second = 0);
+
+        const uint8_t* getKey() const;
+
+        // Returns true if key is 0 - encryption is then skipped
+        bool getIsNull() const;
+
+    private:
+        std::array<uint8_t, 16> key;
+    };
+
     //================= HELPER TYPES =================//
 
     // What the binding is for
-    enum KeyBindType : uint8_t
+    enum class KeyBindType : uint8_t
     {
         Mouse,
         Keyboard,

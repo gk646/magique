@@ -86,7 +86,7 @@ namespace magique
         TextDrawer& modOffset(Point offset);
 
         // Highlights numbers in a different color
-        TextDrawer& modHighlight(Color numberHighlight);
+        TextDrawer& modHighlightNumber(Color numberHighlight);
 
         // shades the next drawn text the given color
         TextDrawer& modShade(Color shade);

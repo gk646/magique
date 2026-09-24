@@ -126,12 +126,11 @@ static Font LoadFont_Probably8Denser(void)
         glyp.offsetY -= 6;
     }
 
-    // Custom font loading
-    // NOTE: Compressed font image data (DEFLATE), it requires DecompressData() function
-    int fontDataSize_Probably8Denser = 0;
-    unsigned char* data = DecompressData(fontData_Probably8Denser, COMPRESSED_DATA_SIZE_FONT_PROBABLY8DENSER,
-                                         &fontDataSize_Probably8Denser);
-    Image imFont = {data, 256, 128, 1, 2};
+    auto data = DataDecompress(
+        std::string_view{(const char*)fontData_Probably8Denser, COMPRESSED_DATA_SIZE_FONT_PROBABLY8DENSER}, 66000);
+    auto ptr = new unsigned char[data.size()];
+    std::memcpy(ptr, data.data(), data.size());
+    Image imFont = {ptr, 256, 128, 1, 2};
 
     // Load texture from image
     font.texture = LoadTextureFromImage(imFont);

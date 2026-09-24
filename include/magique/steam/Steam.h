@@ -55,7 +55,7 @@ namespace magique
             std::optional<float> getFloat(std::string_view name) const;
 
         private:
-            M_MAKE_PUB()
+            MQ_MAKE_PUB()
             SteamID user{};
         };
 

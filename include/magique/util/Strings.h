@@ -55,21 +55,13 @@ namespace magique
     // That means no symbols like "%!?-_" or spaces
     bool StringIsValidName(std::string_view s, int minLen = 3, int maxLen = 16);
 
-    // Returns true if the given strings match regardless of case
-    // string-compare-no-case
-    bool strcmpnc(const char* s1, const char* s2);
-
-    // Returns true if the given strings match up to n characters regardless of case
-    // string-compare-n-no-case
-    bool strncmpnc(const char* s1, const char* s2, int n);
-
     //================= ENCODING =================//
 
     // Encodes the given string into base64 representation
-    std::string StringToBase64(std::string_view input);
+    std::string_view StringToBase64(std::string_view input);
 
     // Returns the decoded base64 input as string
-    std::string StringFromBase64(std::string_view input);
+    std::string_view StringFromBase64(std::string_view input);
 
     //================= FORMATTING =================//
 
@@ -128,6 +120,7 @@ namespace magique
     {
         static_assert(std::is_arithmetic_v<T>, "Must be a number type");
 
+        printf("%s", std::string{input}.c_str());
         T value;
         const auto [ptr, ec] = std::from_chars(input.data(), input.data() + input.size(), value);
 

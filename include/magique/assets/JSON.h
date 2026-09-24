@@ -3,6 +3,8 @@
 #define MAGIQUE_CSVREADER_H
 
 #include <magique/internal/glaze/json/write.hpp>
+#include <magique/internal/glaze/beve/write.hpp>
+#include <magique/internal/glaze/beve/read.hpp>
 #include <magique/assets/types/Asset.h>
 #include <magique/util/Datastructures.h>
 
@@ -20,7 +22,6 @@
 
 namespace magique
 {
-
     // Deserializes the given JSON string into the given c++ type
     // Refer to https://stephenberry.github.io/glaze/json/
     //      - append: appends the data instead of replacing if T==std::vector (or others that support it)
@@ -59,9 +60,9 @@ namespace glz
         template <auto Opts>
         static void op(magique::EnumArray<K, V, maxSize>& value, auto&&... args)
         {
-            std::vector<typename magique::EnumArray<K, V, maxSize>::ValueHolder> vec;
-            parse<JSON>::op<Opts>(vec, args...);
-            value = magique::EnumArray<K, V, maxSize>{vec};
+            HashMap<K, V> map;
+            parse<JSON>::op<Opts>(map, args...);
+            value = {map.values()};
         }
     };
 
@@ -71,78 +72,31 @@ namespace glz
         template <auto Opts>
         static void op(const magique::EnumArray<K, V, maxSize>& value, auto&&... args) noexcept
         {
-            std::vector<typename magique::EnumArray<K, V, maxSize>::ValueHolder> vec;
-            for (const auto& [key, val] : value)
-            {
-                vec.emplace_back(key, val);
-            }
-            serialize<JSON>::op<Opts>(vec, args...);
+            HashMap<K, V> map{value.begin(), value.end()};
+            serialize<JSON>::op<Opts>(map, args...);
         }
     };
 
-    template <typename K, typename V, typename HashFunc, typename EqualsFunc>
-    struct from<JSON, magique::HashMapEx<K, V, HashFunc, EqualsFunc>>
+    template <typename K, typename V, int maxSize>
+    struct from<BEVE, magique::EnumArray<K, V, maxSize>>
     {
         template <auto Opts>
-        static void op(magique::HashMapEx<K, V, HashFunc, EqualsFunc>& value, auto&&... args)
+        static void op(magique::EnumArray<K, V, maxSize>& value, auto&&... args)
         {
-            struct ValueHolder
-            {
-                K key;
-                V value;
-            };
-            std::vector<ValueHolder> vec;
-            parse<JSON>::op<Opts>(vec, args...);
-            for (auto& [key, val] : vec)
-            {
-                value[key] = std::move(val);
-            }
+            HashMap<K, V> map;
+            parse<BEVE>::op<Opts>(map, args...);
+            value = {map.values()};
         }
     };
 
-    template <typename K, typename V, typename HashFunc, typename EqualsFunc>
-    struct to<JSON, magique::HashMapEx<K, V, HashFunc, EqualsFunc>>
+    template <typename K, typename V, int maxSize>
+    struct to<BEVE, magique::EnumArray<K, V, maxSize>>
     {
         template <auto Opts>
-        static void op(const magique::HashMapEx<K, V, HashFunc, EqualsFunc>& value, auto&&... args) noexcept
+        static void op(const magique::EnumArray<K, V, maxSize>& value, auto&&... args) noexcept
         {
-            struct ValueHolder
-            {
-                K key;
-                V value;
-            };
-            std::vector<ValueHolder> vec;
-            for (const auto& [key, val] : value)
-            {
-                vec.emplace_back(key, val);
-            }
-            serialize<JSON>::op<Opts>(vec, args...);
-        }
-    };
-
-    template <typename V>
-    struct from<JSON, magique::HashSet<V>>
-    {
-        template <auto Opts>
-        static void op(magique::HashSet<V>& value, auto&&... args)
-        {
-            std::vector<V> vec;
-            parse<JSON>::op<Opts>(vec, args...);
-            for (auto& val : vec)
-            {
-                value.insert(std::move(val));
-            }
-        }
-    };
-
-    template <typename V>
-    struct to<JSON, magique::HashSet<V>>
-    {
-        template <auto Opts>
-        static void op(const magique::HashSet<V>& value, auto&&... args) noexcept
-        {
-            const std::vector<V>& vec = value.values();
-            serialize<JSON>::op<Opts>(vec, args...);
+            HashMap<K, V> map{value.begin(), value.end()};
+            serialize<BEVE>::op<Opts>(map, args...);
         }
     };
 
@@ -154,7 +108,7 @@ namespace magique
     struct json_opts
     {
         uint32_t format = glz::JSON;
-        bool bools_as_numbers = true;
+        bool bools_as_numbers = false;
         bool reflect_enums = true;
         bool null_terminated = GLZ_NULL_TERMINATED;
         bool comments = true;

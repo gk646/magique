@@ -108,7 +108,7 @@ namespace magique
 
         const auto compareFunc = [](char ch1, char ch2)
         {
-            return std::tolower(static_cast<unsigned char>(ch1)) == std::tolower(static_cast<unsigned char>(ch2));
+            return std::tolower(ch1) == std::tolower(ch2);
         };
         const auto it = std::ranges::search(original, search, compareFunc);
 
@@ -116,6 +116,7 @@ namespace magique
         {
             return true;
         }
+
         if (StringDistancePhysical(original, search) > tolerance)
         {
             return true;
@@ -198,7 +199,7 @@ namespace magique
 
     std::span<std::string_view> StringSplit(std::string_view s, char delim)
     {
-        thread_local std::vector<std::string_view> CACHE{};
+        thread_local std::vector<std::string_view> CACHE(16);
         CACHE.clear();
 
         size_t start = 0;
@@ -272,9 +273,46 @@ namespace magique
         return n < 0 || *s1 == *s2;
     }
 
-    std::string StringToBase64(std::string_view input) { return glz::write_base64(input); }
+    std::string_view StringToBase64(std::string_view input)
+    {
+        thread_local std::string CACHE{32};
+        size_t ix{};
+        glz::context ctx{};
+        glz::write_base64_to(ctx, reinterpret_cast<const uint8_t*>(input.data()), input.size(), CACHE, ix);
+        CACHE.resize(ix);
+        return CACHE;
+    }
 
-    std::string StringFromBase64(std::string_view input) { return glz::read_base64(input); }
+    std::string_view StringFromBase64(std::string_view input)
+    {
+        thread_local std::string CACHE{32};
+        CACHE.clear();
+        static constexpr std::array<int, 256> decode_table = []
+        {
+            std::array<int, 256> t;
+            t.fill(-1);
+            for (int i = 0; i < 64; ++i)
+            {
+                t[glz::base64_chars[i]] = i;
+            }
+            return t;
+        }();
+
+        int val = 0, valb = -8;
+        for (unsigned char c : input)
+        {
+            if (decode_table[c] == -1)
+                break; // Stop decoding at padding '=' or invalid characters
+            val = (val << 6) + decode_table[c];
+            valb += 6;
+            if (valb >= 0)
+            {
+                CACHE.push_back((val >> valb) & 0xFF);
+                valb -= 8;
+            }
+        }
+        return CACHE;
+    }
 
     std::string_view StringFromFloat(float num, float cutoff, bool withSign)
     {

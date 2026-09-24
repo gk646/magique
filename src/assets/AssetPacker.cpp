@@ -9,12 +9,10 @@
 #include <magique/assets/AssetPacker.h>
 #include <magique/assets/AssetPack.h>
 #include <magique/util/Logging.h>
-#include <magique/util/RayUtils.h>
+#include <magique/util/Data.h>
 #include <magique/internal/glaze/core/common.hpp>
 #include <magique/internal/glaze/beve/read.hpp>
 #include <magique/internal/glaze/beve/write.hpp>
-
-#include "internal/utils/EncryptionUtil.h"
 
 namespace fs = std::filesystem;
 
@@ -137,7 +135,7 @@ namespace magique
         return std::memcmp(packData.data(), newData.data(), packData.size()) != 0;
     }
 
-    bool AssetPackCompile(std::string_view dir, std::string_view name, const uint64_t key)
+    bool AssetPackCompile(std::string_view dir, std::string_view name, EncryptionKey key)
     {
         const auto startTime = GetTime();
 
@@ -155,15 +153,15 @@ namespace magique
         auto error = glz::write_beve(writePack, data);
         if (error)
         {
-            LOG_ERROR("Failed to generate assset pack: %s", glz::format_error(error).data());
+            LOG_ERROR("Failed to generate asset pack: %s", glz::format_error(error).data());
             return false;
         }
 
         int originalSize = data.size();
         {
-            auto [compressed, isCompressed] = CompressData(data);
+            auto [compressed, isCompressed] = DataCompress(data);
             data = compressed;
-            CompressData({}); // Clear compression buffer
+            DataCompress({}); // Clear compression buffer
             if (!isCompressed)
             {
                 LOG_ERROR("Failed to compress asset pack");
@@ -171,7 +169,7 @@ namespace magique
             }
         }
         int compressedSize = data.size();
-        SymmetricEncrypt(data.data(), data.size(), key);
+        DataEncrypt(data, key);
 
         if (!HasImageChanged(name, data))
         {
@@ -188,11 +186,11 @@ namespace magique
         const auto time = static_cast<int>(std::round((GetTime() - startTime) * 1000.0F)); // Round to millis
         auto* fmt = "Compiled %s into %s | Took %d millis | Compressed: %.2f mb -> %.2f mb (%+.0f%%) | Assets: %d";
         LOG_INFO(fmt, dir.data(), name.data(), time, originalSize / 1'000'000.0F, compressedSize / 1'000'000.0F,
-                (-1.0F + (float)compressedSize / originalSize) * 100.0F, writePack.files.size());
+                 (-1.0F + (float)compressedSize / originalSize) * 100.0F, writePack.files.size());
         return true;
     }
 
-    bool AssetPackLoad(AssetPack& pack, std::string_view path, const uint64_t key)
+    bool AssetPackLoad(AssetPack& pack, std::string_view path, EncryptionKey key)
     {
         if (!fs::exists(path))
         {
@@ -207,11 +205,11 @@ namespace magique
             return false;
         }
 
-        SymmetricEncrypt(pack.nativeData.data(), pack.nativeData.size(), key);
+        DataDecrypt(pack.nativeData, key);
 
         const int originalSize = pack.nativeData.size();
-        pack.nativeData = DecompressData(pack.nativeData);
-        DecompressData({}); // Clear compression buffer
+        pack.nativeData = DataDecompress(pack.nativeData);
+        DataDecompress({}); // Clear compression buffer
         const int currentSize = pack.nativeData.size();
 
         {

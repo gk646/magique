@@ -1,50 +1,56 @@
 #ifndef ENTT_ENTITY_ENTITY_HPP
 #define ENTT_ENTITY_ENTITY_HPP
 
-#include <cstddef>
-#include <cstdint>
-#include <type_traits>
 #include "../config/config.h"
 #include "../core/bit.hpp"
+#include "../stl/bit.hpp"
+#include "../stl/concepts.hpp"
+#include "../stl/cstddef.hpp"
+#include "../stl/cstdint.hpp"
+#include "../stl/type_traits.hpp"
 #include "fwd.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
-template<typename, typename = void>
+template<typename>
 struct entt_traits;
 
 template<typename Type>
-struct entt_traits<Type, std::enable_if_t<std::is_enum_v<Type>>>
-    : entt_traits<std::underlying_type_t<Type>> {
+requires requires {
+    requires stl::is_enum_v<Type>;
+    typename internal::entt_traits<stl::underlying_type_t<Type>>::value_type;
+}
+struct entt_traits<Type>: entt_traits<stl::underlying_type_t<Type>> {
     using value_type = Type;
 };
 
 template<typename Type>
-struct entt_traits<Type, std::enable_if_t<std::is_class_v<Type>>>
+requires requires { typename Type::entity_type; }
+struct entt_traits<Type>
     : entt_traits<typename Type::entity_type> {
     using value_type = Type;
 };
 
 template<>
-struct entt_traits<std::uint32_t> {
-    using value_type = std::uint32_t;
+struct entt_traits<stl::uint32_t> {
+    using value_type = stl::uint32_t;
 
-    using entity_type = std::uint32_t;
-    using version_type = std::uint16_t;
+    using entity_type = stl::uint32_t;
+    using version_type = stl::uint16_t;
 
     static constexpr entity_type entity_mask = 0xFFFFF;
     static constexpr entity_type version_mask = 0xFFF;
 };
 
 template<>
-struct entt_traits<std::uint64_t> {
-    using value_type = std::uint64_t;
+struct entt_traits<stl::uint64_t> {
+    using value_type = stl::uint64_t;
 
-    using entity_type = std::uint64_t;
-    using version_type = std::uint32_t;
+    using entity_type = stl::uint64_t;
+    using version_type = stl::uint32_t;
 
     static constexpr entity_type entity_mask = 0xFFFFFFFF;
     static constexpr entity_type version_mask = 0xFFFFFFFF;
@@ -54,23 +60,29 @@ struct entt_traits<std::uint64_t> {
 /*! @endcond */
 
 /**
+ * @brief Specifies that a type is an entity-like type.
+ * @tparam Type Type to check.
+ */
+template<typename Type>
+concept entity_like = requires {
+    typename internal::entt_traits<Type>::value_type;
+};
+
+/**
  * @brief Common basic entity traits implementation.
  * @tparam Traits Actual entity traits to use.
  */
 template<typename Traits>
 class basic_entt_traits {
-    static constexpr auto length = popcount(Traits::entity_mask);
-
-    static_assert(Traits::entity_mask && ((Traits::entity_mask & (Traits::entity_mask + 1)) == 0), "Invalid entity mask");
-    static_assert((Traits::version_mask & (Traits::version_mask + 1)) == 0, "Invalid version mask");
+    static constexpr auto length = stl::popcount(Traits::entity_mask);
 
 public:
     /*! @brief Value type. */
-    using value_type = typename Traits::value_type;
+    using value_type = Traits::value_type;
     /*! @brief Underlying entity type. */
-    using entity_type = typename Traits::entity_type;
+    using entity_type = Traits::entity_type;
     /*! @brief Underlying version type. */
-    using version_type = typename Traits::version_type;
+    using version_type = Traits::version_type;
 
     /*! @brief Entity mask size. */
     static constexpr entity_type entity_mask = Traits::entity_mask;
@@ -92,6 +104,7 @@ public:
      * @return The integral representation of the entity part.
      */
     [[nodiscard]] static constexpr entity_type to_entity(const value_type value) noexcept {
+        static_assert(Traits::entity_mask && ((Traits::entity_mask & (Traits::entity_mask + 1)) == 0), "Invalid entity mask");
         return (to_integral(value) & entity_mask);
     }
 
@@ -104,6 +117,7 @@ public:
         if constexpr(Traits::version_mask == 0u) {
             return version_type{};
         } else {
+            static_assert((Traits::version_mask & (Traits::version_mask + 1)) == 0, "Invalid version mask");
             return (static_cast<version_type>(to_integral(value) >> length) & version_mask);
         }
     }
@@ -159,12 +173,12 @@ public:
  * @brief Entity traits.
  * @tparam Type Type of identifier.
  */
-template<typename Type>
+template<entity_like Type>
 struct entt_traits: basic_entt_traits<internal::entt_traits<Type>> {
     /*! @brief Base type. */
     using base_type = basic_entt_traits<internal::entt_traits<Type>>;
     /*! @brief Page size, default is `ENTT_SPARSE_PAGE`. */
-    static constexpr std::size_t page_size = ENTT_SPARSE_PAGE;
+    static constexpr stl::size_t page_size = ENTT_SPARSE_PAGE;
 };
 
 /**
@@ -174,7 +188,7 @@ struct entt_traits: basic_entt_traits<internal::entt_traits<Type>> {
  * @return The integral representation of the given value.
  */
 template<typename Entity>
-[[nodiscard]] constexpr typename entt_traits<Entity>::entity_type to_integral(const Entity value) noexcept {
+[[nodiscard]] constexpr entt_traits<Entity>::entity_type to_integral(const Entity value) noexcept {
     return entt_traits<Entity>::to_integral(value);
 }
 
@@ -185,7 +199,7 @@ template<typename Entity>
  * @return The integral representation of the entity part.
  */
 template<typename Entity>
-[[nodiscard]] constexpr typename entt_traits<Entity>::entity_type to_entity(const Entity value) noexcept {
+[[nodiscard]] constexpr entt_traits<Entity>::entity_type to_entity(const Entity value) noexcept {
     return entt_traits<Entity>::to_entity(value);
 }
 
@@ -196,7 +210,7 @@ template<typename Entity>
  * @return The integral representation of the version part.
  */
 template<typename Entity>
-[[nodiscard]] constexpr typename entt_traits<Entity>::version_type to_version(const Entity value) noexcept {
+[[nodiscard]] constexpr entt_traits<Entity>::version_type to_version(const Entity value) noexcept {
     return entt_traits<Entity>::to_version(value);
 }
 
@@ -207,11 +221,10 @@ struct null_t {
      * @tparam Entity Type of identifier.
      * @return The null representation for the given type.
      */
-    template<typename Entity>
+    template<entity_like Entity>
     [[nodiscard]] constexpr operator Entity() const noexcept {
         using traits_type = entt_traits<Entity>;
-        constexpr auto value = traits_type::construct(traits_type::entity_mask, traits_type::version_mask);
-        return value;
+        return traits_type::construct(traits_type::entity_mask, traits_type::version_mask);
     }
 
     /**
@@ -224,61 +237,17 @@ struct null_t {
     }
 
     /**
-     * @brief Compares two null objects.
-     * @param other A null object.
-     * @return False in all cases.
-     */
-    [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const null_t other) const noexcept {
-        return false;
-    }
-
-    /**
      * @brief Compares a null object and an identifier of any type.
      * @tparam Entity Type of identifier.
      * @param entity Identifier with which to compare.
      * @return False if the two elements differ, true otherwise.
      */
-    template<typename Entity>
+    template<entity_like Entity>
     [[nodiscard]] constexpr bool operator==(const Entity entity) const noexcept {
         using traits_type = entt_traits<Entity>;
         return traits_type::to_entity(entity) == traits_type::to_entity(*this);
     }
-
-    /**
-     * @brief Compares a null object and an identifier of any type.
-     * @tparam Entity Type of identifier.
-     * @param entity Identifier with which to compare.
-     * @return True if the two elements differ, false otherwise.
-     */
-    template<typename Entity>
-    [[nodiscard]] constexpr bool operator!=(const Entity entity) const noexcept {
-        return !(entity == *this);
-    }
 };
-
-/**
- * @brief Compares a null object and an identifier of any type.
- * @tparam Entity Type of identifier.
- * @param lhs Identifier with which to compare.
- * @param rhs A null object yet to be converted.
- * @return False if the two elements differ, true otherwise.
- */
-template<typename Entity>
-[[nodiscard]] constexpr bool operator==(const Entity lhs, const null_t rhs) noexcept {
-    return rhs.operator==(lhs);
-}
-
-/**
- * @brief Compares a null object and an identifier of any type.
- * @tparam Entity Type of identifier.
- * @param lhs Identifier with which to compare.
- * @param rhs A null object yet to be converted.
- * @return True if the two elements differ, false otherwise.
- */
-template<typename Entity>
-[[nodiscard]] constexpr bool operator!=(const Entity lhs, const null_t rhs) noexcept {
-    return !(rhs == lhs);
-}
 
 /*! @brief Tombstone object for all identifiers.  */
 struct tombstone_t {
@@ -287,11 +256,10 @@ struct tombstone_t {
      * @tparam Entity Type of identifier.
      * @return The tombstone representation for the given type.
      */
-    template<typename Entity>
+    template<entity_like Entity>
     [[nodiscard]] constexpr operator Entity() const noexcept {
         using traits_type = entt_traits<Entity>;
-        constexpr auto value = traits_type::construct(traits_type::entity_mask, traits_type::version_mask);
-        return value;
+        return traits_type::construct(traits_type::entity_mask, traits_type::version_mask);
     }
 
     /**
@@ -304,21 +272,12 @@ struct tombstone_t {
     }
 
     /**
-     * @brief Compares two tombstone objects.
-     * @param other A tombstone object.
-     * @return False in all cases.
-     */
-    [[nodiscard]] constexpr bool operator!=([[maybe_unused]] const tombstone_t other) const noexcept {
-        return false;
-    }
-
-    /**
      * @brief Compares a tombstone object and an identifier of any type.
      * @tparam Entity Type of identifier.
      * @param entity Identifier with which to compare.
      * @return False if the two elements differ, true otherwise.
      */
-    template<typename Entity>
+    template<entity_like Entity>
     [[nodiscard]] constexpr bool operator==(const Entity entity) const noexcept {
         using traits_type = entt_traits<Entity>;
 
@@ -328,42 +287,7 @@ struct tombstone_t {
             return (traits_type::to_version(entity) == traits_type::to_version(*this));
         }
     }
-
-    /**
-     * @brief Compares a tombstone object and an identifier of any type.
-     * @tparam Entity Type of identifier.
-     * @param entity Identifier with which to compare.
-     * @return True if the two elements differ, false otherwise.
-     */
-    template<typename Entity>
-    [[nodiscard]] constexpr bool operator!=(const Entity entity) const noexcept {
-        return !(entity == *this);
-    }
 };
-
-/**
- * @brief Compares a tombstone object and an identifier of any type.
- * @tparam Entity Type of identifier.
- * @param lhs Identifier with which to compare.
- * @param rhs A tombstone object yet to be converted.
- * @return False if the two elements differ, true otherwise.
- */
-template<typename Entity>
-[[nodiscard]] constexpr bool operator==(const Entity lhs, const tombstone_t rhs) noexcept {
-    return rhs.operator==(lhs);
-}
-
-/**
- * @brief Compares a tombstone object and an identifier of any type.
- * @tparam Entity Type of identifier.
- * @param lhs Identifier with which to compare.
- * @param rhs A tombstone object yet to be converted.
- * @return True if the two elements differ, false otherwise.
- */
-template<typename Entity>
-[[nodiscard]] constexpr bool operator!=(const Entity lhs, const tombstone_t rhs) noexcept {
-    return !(rhs == lhs);
-}
 
 /**
  * @brief Compile-time constant for null entities.

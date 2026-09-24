@@ -1,23 +1,23 @@
 #ifndef ENTT_SIGNAL_DISPATCHER_HPP
 #define ENTT_SIGNAL_DISPATCHER_HPP
 
-#include <cstddef>
-#include <functional>
-#include <memory>
-#include <type_traits>
-#include <utility>
-#include <vector>
 #include "../container/dense_map.hpp"
 #include "../core/compressed_pair.hpp"
+#include "../core/concepts.hpp"
 #include "../core/fwd.hpp"
 #include "../core/type_info.hpp"
-#include "../core/utility.hpp"
+#include "../stl/cstddef.hpp"
+#include "../stl/functional.hpp"
+#include "../stl/memory.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
+#include "../stl/vector.hpp"
 #include "fwd.hpp"
 #include "sigh.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
 struct basic_dispatcher_handler {
@@ -25,16 +25,14 @@ struct basic_dispatcher_handler {
     virtual void publish() = 0;
     virtual void disconnect(void *) = 0;
     virtual void clear() noexcept = 0;
-    [[nodiscard]] virtual std::size_t size() const noexcept = 0;
+    [[nodiscard]] virtual stl::size_t size() const noexcept = 0;
 };
 
-template<typename Type, typename Allocator>
+template<cvref_unqualified Type, typename Allocator>
 class dispatcher_handler final: public basic_dispatcher_handler {
-    static_assert(std::is_same_v<Type, std::decay_t<Type>>, "Invalid type");
-
-    using alloc_traits = std::allocator_traits<Allocator>;
+    using alloc_traits = stl::allocator_traits<Allocator>;
     using signal_type = sigh<void(Type &), Allocator>;
-    using container_type = std::vector<Type, typename alloc_traits::template rebind_alloc<Type>>;
+    using container_type = stl::vector<Type, typename alloc_traits::template rebind_alloc<Type>>;
 
 public:
     using allocator_type = Allocator;
@@ -44,13 +42,12 @@ public:
           events{allocator} {}
 
     void publish() override {
-        const auto length = events.size();
+        container_type other{};
+        other.swap(events);
 
-        for(std::size_t pos{}; pos < length; ++pos) {
-            signal.publish(events[pos]);
+        for(auto &&elem: other) {
+            signal.publish(elem);
         }
-
-        events.erase(events.cbegin(), events.cbegin() + static_cast<typename container_type::difference_type>(length));
     }
 
     void disconnect(void *instance) override {
@@ -65,20 +62,20 @@ public:
         return typename signal_type::sink_type{signal};
     }
 
-    void trigger(Type event) {
+    void trigger(Type &event) {
         signal.publish(event);
     }
 
     template<typename... Args>
     void enqueue(Args &&...args) {
-        if constexpr(std::is_aggregate_v<Type> && (sizeof...(Args) != 0u || !std::is_default_constructible_v<Type>)) {
-            events.push_back(Type{std::forward<Args>(args)...});
+        if constexpr(stl::is_aggregate_v<Type> && (sizeof...(Args) != 0u || !stl::is_default_constructible_v<Type>)) {
+            events.push_back(Type{stl::forward<Args>(args)...});
         } else {
-            events.emplace_back(std::forward<Args>(args)...);
+            events.emplace_back(stl::forward<Args>(args)...);
         }
     }
 
-    [[nodiscard]] std::size_t size() const noexcept override {
+    [[nodiscard]] stl::size_t size() const noexcept override {
         return events.size();
     }
 
@@ -110,30 +107,27 @@ class basic_dispatcher {
     using handler_type = internal::dispatcher_handler<Type, Allocator>;
 
     using key_type = id_type;
-    // std::shared_ptr because of its type erased allocator which is useful here
-    using mapped_type = std::shared_ptr<internal::basic_dispatcher_handler>;
+    // stl::shared_ptr because of its type erased allocator which is useful here
+    using mapped_type = stl::shared_ptr<internal::basic_dispatcher_handler>;
 
-    using alloc_traits = std::allocator_traits<Allocator>;
-    using container_allocator = typename alloc_traits::template rebind_alloc<std::pair<const key_type, mapped_type>>;
-    using container_type = dense_map<key_type, mapped_type, identity, std::equal_to<>, container_allocator>;
+    using alloc_traits = stl::allocator_traits<Allocator>;
+    using container_allocator = alloc_traits::template rebind_alloc<stl::pair<const key_type, mapped_type>>;
+    using container_type = dense_map<key_type, mapped_type, stl::identity, stl::equal_to<>, container_allocator>;
 
-    template<typename Type>
+    template<cvref_unqualified Type>
     [[nodiscard]] handler_type<Type> &assure(const id_type id) {
-        static_assert(std::is_same_v<Type, std::decay_t<Type>>, "Non-decayed types not allowed");
         auto &&ptr = pools.first()[id];
 
         if(!ptr) {
             const auto &allocator = get_allocator();
-            ptr = std::allocate_shared<handler_type<Type>>(allocator, allocator);
+            ptr = stl::allocate_shared<handler_type<Type>>(allocator, allocator);
         }
 
         return static_cast<handler_type<Type> &>(*ptr);
     }
 
-    template<typename Type>
+    template<cvref_unqualified Type>
     [[nodiscard]] const handler_type<Type> *assure(const id_type id) const {
-        static_assert(std::is_same_v<Type, std::decay_t<Type>>, "Non-decayed types not allowed");
-
         if(auto it = pools.first().find(id); it != pools.first().cend()) {
             return static_cast<const handler_type<Type> *>(it->second.get());
         }
@@ -145,7 +139,7 @@ public:
     /*! @brief Allocator type. */
     using allocator_type = Allocator;
     /*! @brief Unsigned integer type. */
-    using size_type = std::size_t;
+    using size_type = stl::size_t;
 
     /*! @brief Default constructor. */
     basic_dispatcher()
@@ -166,7 +160,7 @@ public:
      * @param other The instance to move from.
      */
     basic_dispatcher(basic_dispatcher &&other) noexcept
-        : pools{std::move(other.pools)} {}
+        : pools{stl::move(other.pools)} {}
 
     /**
      * @brief Allocator-extended move constructor.
@@ -174,7 +168,7 @@ public:
      * @param allocator The allocator to use.
      */
     basic_dispatcher(basic_dispatcher &&other, const allocator_type &allocator)
-        : pools{container_type{std::move(other.pools.first()), allocator}, allocator} {
+        : pools{container_type{stl::move(other.pools.first()), allocator}, allocator} {
         ENTT_ASSERT(alloc_traits::is_always_equal::value || get_allocator() == other.get_allocator(), "Copying a dispatcher is not allowed");
     }
 
@@ -203,7 +197,7 @@ public:
      * @param other Dispatcher to exchange the content with.
      */
     void swap(basic_dispatcher &other) noexcept {
-        using std::swap;
+        using stl::swap;
         swap(pools, other.pools);
     }
 
@@ -223,7 +217,7 @@ public:
      */
     template<typename Type>
     [[nodiscard]] size_type size(const id_type id = type_hash<Type>::value()) const noexcept {
-        const auto *cpool = assure<std::decay_t<Type>>(id);
+        const auto *cpool = assure<stl::decay_t<Type>>(id);
         return cpool ? cpool->size() : 0u;
     }
 
@@ -271,8 +265,8 @@ public:
      * @param value An instance of the given type of event.
      */
     template<typename Type>
-    void trigger(Type &&value = {}) {
-        trigger(type_hash<std::decay_t<Type>>::value(), std::forward<Type>(value));
+    void trigger(Type value) {
+        trigger(type_hash<stl::decay_t<Type>>::value(), value);
     }
 
     /**
@@ -282,8 +276,8 @@ public:
      * @param id Name used to map the event queue within the dispatcher.
      */
     template<typename Type>
-    void trigger(const id_type id, Type &&value = {}) {
-        assure<std::decay_t<Type>>(id).trigger(std::forward<Type>(value));
+    void trigger(const id_type id, Type value) {
+        assure<stl::decay_t<Type>>(id).trigger(value);
     }
 
     /**
@@ -294,7 +288,7 @@ public:
      */
     template<typename Type, typename... Args>
     void enqueue(Args &&...args) {
-        enqueue_hint<Type>(type_hash<Type>::value(), std::forward<Args>(args)...);
+        enqueue_hint<Type>(type_hash<Type>::value(), stl::forward<Args>(args)...);
     }
 
     /**
@@ -304,7 +298,7 @@ public:
      */
     template<typename Type>
     void enqueue(Type &&value) {
-        enqueue_hint(type_hash<std::decay_t<Type>>::value(), std::forward<Type>(value));
+        enqueue_hint(type_hash<stl::decay_t<Type>>::value(), stl::forward<Type>(value));
     }
 
     /**
@@ -316,7 +310,7 @@ public:
      */
     template<typename Type, typename... Args>
     void enqueue_hint(const id_type id, Args &&...args) {
-        assure<Type>(id).enqueue(std::forward<Args>(args)...);
+        assure<Type>(id).enqueue(stl::forward<Args>(args)...);
     }
 
     /**
@@ -327,7 +321,7 @@ public:
      */
     template<typename Type>
     void enqueue_hint(const id_type id, Type &&value) {
-        assure<std::decay_t<Type>>(id).enqueue(std::forward<Type>(value));
+        assure<stl::decay_t<Type>>(id).enqueue(stl::forward<Type>(value));
     }
 
     /**

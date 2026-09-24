@@ -57,7 +57,7 @@ namespace magique
         int getSize() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         AssetPack() = default;
         AssetPack(const AssetPack&) = delete;
         AssetPack& operator=(const AssetPack&) = delete;

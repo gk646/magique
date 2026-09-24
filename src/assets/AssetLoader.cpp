@@ -17,9 +17,9 @@ namespace magique
     }
 
 
-    AssetLoader::AssetLoader(std::string_view assetPath, const uint64_t encryptionKey)
+    AssetLoader::AssetLoader(std::string_view assetPath, const EncryptionKey key)
     {
-        addLambdaTask([=](AssetPack& assets) { AssetPackLoad(assets, assetPath, encryptionKey); }, INTERNAL, THREAD_ANY,
+        addLambdaTask([=](AssetPack& assets) { AssetPackLoad(assets, assetPath, key); }, INTERNAL, THREAD_ANY,
                       0, true);
     }
 

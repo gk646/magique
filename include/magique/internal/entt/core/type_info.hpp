@@ -1,16 +1,17 @@
 #ifndef ENTT_CORE_TYPE_INFO_HPP
 #define ENTT_CORE_TYPE_INFO_HPP
 
-#include <string_view>
-#include <type_traits>
-#include <utility>
+#include <compare>
 #include "../config/config.h"
+#include "../stl/string_view.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
 #include "fwd.hpp"
 #include "hashed_string.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
 struct ENTT_API type_index final {
@@ -32,29 +33,29 @@ template<typename Type>
 template<typename Type>
 [[nodiscard]] constexpr auto stripped_type_name() noexcept {
 #if defined ENTT_PRETTY_FUNCTION
-    const std::string_view full_name{pretty_function<Type>()};
+    const stl::string_view full_name{pretty_function<Type>()};
     auto first = full_name.find_first_not_of(' ', full_name.find_first_of(ENTT_PRETTY_FUNCTION_PREFIX) + 1);
     auto value = full_name.substr(first, full_name.find_last_of(ENTT_PRETTY_FUNCTION_SUFFIX) - first);
     return value;
 #else
-    return std::string_view{};
+    return stl::string_view{};
 #endif
 }
 
 template<typename Type, auto = stripped_type_name<Type>().find_first_of('.')>
-[[nodiscard]] constexpr std::string_view type_name(int) noexcept {
+[[nodiscard]] ENTT_CONSTEVAL stl::string_view type_name(int) noexcept {
     constexpr auto value = stripped_type_name<Type>();
     return value;
 }
 
 template<typename Type>
-[[nodiscard]] std::string_view type_name(char) noexcept {
+[[nodiscard]] stl::string_view type_name(char) noexcept {
     static const auto value = stripped_type_name<Type>();
     return value;
 }
 
 template<typename Type, auto = stripped_type_name<Type>().find_first_of('.')>
-[[nodiscard]] constexpr id_type type_hash(int) noexcept {
+[[nodiscard]] ENTT_CONSTEVAL id_type type_hash(int) noexcept {
     constexpr auto stripped = stripped_type_name<Type>();
     constexpr auto value = hashed_string::value(stripped.data(), stripped.size());
     return value;
@@ -75,7 +76,7 @@ template<typename Type>
  * @brief Type sequential identifier.
  * @tparam Type Type for which to generate a sequential identifier.
  */
-template<typename Type, typename = void>
+template<typename Type>
 struct ENTT_API type_index final {
     /**
      * @brief Returns the sequential identifier of a given type.
@@ -96,7 +97,7 @@ struct ENTT_API type_index final {
  * @brief Type hash.
  * @tparam Type Type for which to generate a hash value.
  */
-template<typename Type, typename = void>
+template<typename Type>
 struct type_hash final {
     /**
      * @brief Returns the numeric representation of a given type.
@@ -121,18 +122,18 @@ struct type_hash final {
  * @brief Type name.
  * @tparam Type Type for which to generate a name.
  */
-template<typename Type, typename = void>
+template<typename Type>
 struct type_name final {
     /**
      * @brief Returns the name of a given type.
      * @return The name of the given type.
      */
-    [[nodiscard]] static constexpr std::string_view value() noexcept {
+    [[nodiscard]] static constexpr stl::string_view value() noexcept {
         return internal::type_name<Type>(0);
     }
 
     /*! @copydoc value */
-    [[nodiscard]] constexpr operator std::string_view() const noexcept {
+    [[nodiscard]] constexpr operator stl::string_view() const noexcept {
         return value();
     }
 };
@@ -145,10 +146,10 @@ struct type_info final {
      */
     template<typename Type>
     // NOLINTBEGIN(modernize-use-transparent-functors)
-    constexpr type_info(std::in_place_type_t<Type>) noexcept
-        : seq{type_index<std::remove_const_t<std::remove_reference_t<Type>>>::value()},
-          identifier{type_hash<std::remove_const_t<std::remove_reference_t<Type>>>::value()},
-          alias{type_name<std::remove_const_t<std::remove_reference_t<Type>>>::value()} {}
+    constexpr type_info(stl::in_place_type_t<Type>) noexcept
+        : seq{type_index<stl::remove_cvref_t<Type>>::value()},
+          identifier{type_hash<stl::remove_cvref_t<Type>>::value()},
+          alias{type_name<stl::remove_cvref_t<Type>>::value()} {}
     // NOLINTEND(modernize-use-transparent-functors)
 
     /**
@@ -171,78 +172,33 @@ struct type_info final {
      * @brief Type name.
      * @return Type name.
      */
-    [[nodiscard]] constexpr std::string_view name() const noexcept {
+    [[nodiscard]] constexpr stl::string_view name() const noexcept {
         return alias;
+    }
+
+    /**
+     * @brief Compares two type info objects.
+     * @param other A type info object.
+     * @return True if the two type info objects are identical, false otherwise.
+     */
+    [[nodiscard]] constexpr bool operator==(const type_info &other) const noexcept {
+        return identifier == other.identifier;
+    }
+
+    /**
+     * @brief Lexicographically compares two type info objects.
+     * @param other A type info object.
+     * @return The relative order between the two type info objects.
+     */
+    [[nodiscard]] constexpr auto operator<=>(const type_info &other) const noexcept {
+        return seq <=> other.seq;
     }
 
 private:
     id_type seq;
     id_type identifier;
-    std::string_view alias;
+    stl::string_view alias;
 };
-
-/**
- * @brief Compares the contents of two type info objects.
- * @param lhs A type info object.
- * @param rhs A type info object.
- * @return True if the two type info objects are identical, false otherwise.
- */
-[[nodiscard]] constexpr bool operator==(const type_info &lhs, const type_info &rhs) noexcept {
-    return lhs.hash() == rhs.hash();
-}
-
-/**
- * @brief Compares the contents of two type info objects.
- * @param lhs A type info object.
- * @param rhs A type info object.
- * @return True if the two type info objects differ, false otherwise.
- */
-[[nodiscard]] constexpr bool operator!=(const type_info &lhs, const type_info &rhs) noexcept {
-    return !(lhs == rhs);
-}
-
-/**
- * @brief Compares two type info objects.
- * @param lhs A valid type info object.
- * @param rhs A valid type info object.
- * @return True if the first element is less than the second, false otherwise.
- */
-[[nodiscard]] constexpr bool operator<(const type_info &lhs, const type_info &rhs) noexcept {
-    return lhs.index() < rhs.index();
-}
-
-/**
- * @brief Compares two type info objects.
- * @param lhs A valid type info object.
- * @param rhs A valid type info object.
- * @return True if the first element is less than or equal to the second, false
- * otherwise.
- */
-[[nodiscard]] constexpr bool operator<=(const type_info &lhs, const type_info &rhs) noexcept {
-    return !(rhs < lhs);
-}
-
-/**
- * @brief Compares two type info objects.
- * @param lhs A valid type info object.
- * @param rhs A valid type info object.
- * @return True if the first element is greater than the second, false
- * otherwise.
- */
-[[nodiscard]] constexpr bool operator>(const type_info &lhs, const type_info &rhs) noexcept {
-    return rhs < lhs;
-}
-
-/**
- * @brief Compares two type info objects.
- * @param lhs A valid type info object.
- * @param rhs A valid type info object.
- * @return True if the first element is greater than or equal to the second,
- * false otherwise.
- */
-[[nodiscard]] constexpr bool operator>=(const type_info &lhs, const type_info &rhs) noexcept {
-    return !(lhs < rhs);
-}
 
 /**
  * @brief Returns the type info object associated to a given type.
@@ -257,19 +213,18 @@ private:
  */
 template<typename Type>
 [[nodiscard]] const type_info &type_id() noexcept {
-    if constexpr(std::is_same_v<Type, std::remove_const_t<std::remove_reference_t<Type>>>) {
-        static const type_info instance{std::in_place_type<Type>};
+    if constexpr(stl::is_same_v<Type, stl::remove_cvref_t<Type>>) {
+        static const type_info instance{stl::in_place_type<Type>};
         return instance;
     } else {
-        return type_id<std::remove_const_t<std::remove_reference_t<Type>>>();
+        return type_id<stl::remove_cvref_t<Type>>();
     }
 }
 
 /*! @copydoc type_id */
 template<typename Type>
-// NOLINTNEXTLINE(cppcoreguidelines-missing-std-forward)
-[[nodiscard]] const type_info &type_id(Type &&) noexcept {
-    return type_id<std::remove_const_t<std::remove_reference_t<Type>>>();
+[[nodiscard]] const type_info &type_id(const Type &) noexcept {
+    return type_id<stl::remove_cvref_t<Type>>();
 }
 
 } // namespace entt

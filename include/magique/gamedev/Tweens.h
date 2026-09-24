@@ -18,7 +18,6 @@
 
 namespace magique
 {
-
     enum class TweenMode : uint8_t
     {
         LINEAR,

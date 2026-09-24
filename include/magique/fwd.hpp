@@ -23,6 +23,7 @@ enum class AtlasID : int;            // Identifies different texture atlas
 enum class AnimationState : uint8_t; // Identifies different animation states - uses uint8_t to be small for the ECS
 enum class AnimationLayer : uint8_t; // User implemented to denote different animation layers - shared for all animations
 enum class ParticleLayer : uint8_t;  // Allows to draw particle in multiple layers (e.g. game, menus, ...)
+enum class ShareCodeType : uint8_t;  // Identifies different sharecode formats
 
 namespace magique
 {
@@ -33,8 +34,8 @@ namespace magique
     struct EntityEmitter; // Particle emitter for entity (complex) particles
     struct Animation;     // Shared animation data for a specific entity
     struct LayeredAnimation;
-    struct EmitterData; // Data for particle emitters
-    struct Point;       // Floating point point
+    struct Point;
+    struct Rect;
     struct TileInfo;
     struct Rotation;
     struct GameSystem;
@@ -43,11 +44,8 @@ namespace magique
     //================= LOADING & SAVING =================//
     struct AssetLoader; // Handles loading all major game files -  Start -> MainMenu
     struct AssetPack;   // Asset list loaded from a compiled asset pack
-    struct SaveLoader;  // Handles loading individual world state and player save - MainMenu -> Game
     struct GameStorage; // The game save object
-    struct GameConfig;  // The config persistence object
 
-    struct IExecutor; // Task loading interface
     namespace internal
     {
         template <typename T>
@@ -75,10 +73,7 @@ namespace magique
     using TileClassMapFunc = TileClass (*)(const char*);
 
     //================= GAMEDEV =================//
-    struct ShareCodeFormat;
-    struct ShareCodeData;
     struct ShareCode;
-    struct ShareCodeProperty;
     struct ParamInfo;
     struct Command;
     struct ConsoleData;
@@ -95,7 +90,6 @@ namespace magique
 
     //================= STEAM =================//
 
-    struct SteamStatResult;
     struct ISteamCallbacks;
     struct ISteamMatchmakingCallbacks;
 

@@ -114,7 +114,7 @@ namespace magique
         int getTileSize() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         std::vector<TiledObjectLayer> objectLayers;
         std::vector<TiledTileLayer> tileLayers; // Contiguous array for map data
 

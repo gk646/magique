@@ -1,36 +1,36 @@
 #ifndef ENTT_ENTITY_HANDLE_HPP
 #define ENTT_ENTITY_HANDLE_HPP
 
-#include <iterator>
-#include <tuple>
-#include <type_traits>
-#include <utility>
 #include "../config/config.h"
 #include "../core/iterator.hpp"
 #include "../core/type_traits.hpp"
+#include "../stl/iterator.hpp"
+#include "../stl/tuple.hpp"
+#include "../stl/type_traits.hpp"
+#include "../stl/utility.hpp"
 #include "entity.hpp"
 #include "fwd.hpp"
 
 namespace entt {
 
-/*! @cond TURN_OFF_DOXYGEN */
+/*! @cond ENTT_INTERNAL */
 namespace internal {
 
 template<typename It>
 class handle_storage_iterator final {
-    template<typename Other>
+    template<typename>
     friend class handle_storage_iterator;
 
-    using underlying_type = std::remove_reference_t<typename It::value_type::second_type>;
-    using entity_type = typename underlying_type::entity_type;
+    using underlying_type = stl::remove_reference_t<typename It::value_type::second_type>;
+    using entity_type = underlying_type::entity_type;
 
 public:
-    using value_type = typename std::iterator_traits<It>::value_type;
+    using value_type = stl::iterator_traits<It>::value_type;
     using pointer = input_iterator_pointer<value_type>;
     using reference = value_type;
-    using difference_type = std::ptrdiff_t;
-    using iterator_category = std::input_iterator_tag;
-    using iterator_concept = std::forward_iterator_tag;
+    using difference_type = stl::ptrdiff_t;
+    using iterator_category = stl::input_iterator_tag;
+    using iterator_concept = stl::forward_iterator_tag;
 
     constexpr handle_storage_iterator() noexcept
         : entt{null},
@@ -64,24 +64,16 @@ public:
         return operator*();
     }
 
-    template<typename ILhs, typename IRhs>
-    friend constexpr bool operator==(const handle_storage_iterator<ILhs> &, const handle_storage_iterator<IRhs> &) noexcept;
+    template<typename Other>
+    [[nodiscard]] constexpr bool operator==(const handle_storage_iterator<Other> &other) const noexcept {
+        return it == other.it;
+    }
 
 private:
     entity_type entt;
     It it;
     It last;
 };
-
-template<typename ILhs, typename IRhs>
-[[nodiscard]] constexpr bool operator==(const handle_storage_iterator<ILhs> &lhs, const handle_storage_iterator<IRhs> &rhs) noexcept {
-    return lhs.it == rhs.it;
-}
-
-template<typename ILhs, typename IRhs>
-[[nodiscard]] constexpr bool operator!=(const handle_storage_iterator<ILhs> &lhs, const handle_storage_iterator<IRhs> &rhs) noexcept {
-    return !(lhs == rhs);
-}
 
 } // namespace internal
 /*! @endcond */
@@ -107,13 +99,13 @@ public:
     /*! @brief Type of registry accepted by the handle. */
     using registry_type = Registry;
     /*! @brief Underlying entity identifier. */
-    using entity_type = typename traits_type::value_type;
+    using entity_type = traits_type::value_type;
     /*! @brief Underlying version type. */
-    using version_type = typename traits_type::version_type;
+    using version_type = traits_type::version_type;
     /*! @brief Unsigned integer type. */
-    using size_type = std::size_t;
+    using size_type = stl::size_t;
     /*! @brief Iterable handle type. */
-    using iterable = iterable_adaptor<internal::handle_storage_iterator<typename decltype(std::declval<registry_type>().storage())::iterator>>;
+    using iterable = iterable_adaptor<internal::handle_storage_iterator<typename decltype(stl::declval<registry_type>().storage())::iterator>>;
 
     /*! @brief Constructs an invalid handle. */
     basic_handle() noexcept
@@ -181,7 +173,7 @@ public:
 
     /*! @brief Destroys the entity associated with a handle. */
     void destroy() {
-        owner_or_assert().destroy(std::exchange(entt, null));
+        owner_or_assert().destroy(stl::exchange(entt, null));
     }
 
     /**
@@ -189,7 +181,7 @@ public:
      * @param version A desired version upon destruction.
      */
     void destroy(const version_type version) {
-        owner_or_assert().destroy(std::exchange(entt, null), version);
+        owner_or_assert().destroy(stl::exchange(entt, null), version);
     }
 
     /**
@@ -202,8 +194,8 @@ public:
     template<typename Type, typename... Args>
     // NOLINTNEXTLINE(modernize-use-nodiscard)
     decltype(auto) emplace(Args &&...args) const {
-        static_assert(((sizeof...(Scope) == 0) || ... || std::is_same_v<Type, Scope>), "Invalid type");
-        return owner_or_assert().template emplace<Type>(entt, std::forward<Args>(args)...);
+        static_assert(((sizeof...(Scope) == 0) || ... || stl::is_same_v<Type, Scope>), "Invalid type");
+        return owner_or_assert().template emplace<Type>(entt, stl::forward<Args>(args)...);
     }
 
     /**
@@ -215,8 +207,8 @@ public:
      */
     template<typename Type, typename... Args>
     decltype(auto) emplace_or_replace(Args &&...args) const {
-        static_assert(((sizeof...(Scope) == 0) || ... || std::is_same_v<Type, Scope>), "Invalid type");
-        return owner_or_assert().template emplace_or_replace<Type>(entt, std::forward<Args>(args)...);
+        static_assert(((sizeof...(Scope) == 0) || ... || stl::is_same_v<Type, Scope>), "Invalid type");
+        return owner_or_assert().template emplace_or_replace<Type>(entt, stl::forward<Args>(args)...);
     }
 
     /**
@@ -228,8 +220,8 @@ public:
      */
     template<typename Type, typename... Func>
     decltype(auto) patch(Func &&...func) const {
-        static_assert(((sizeof...(Scope) == 0) || ... || std::is_same_v<Type, Scope>), "Invalid type");
-        return owner_or_assert().template patch<Type>(entt, std::forward<Func>(func)...);
+        static_assert(((sizeof...(Scope) == 0) || ... || stl::is_same_v<Type, Scope>), "Invalid type");
+        return owner_or_assert().template patch<Type>(entt, stl::forward<Func>(func)...);
     }
 
     /**
@@ -241,8 +233,8 @@ public:
      */
     template<typename Type, typename... Args>
     decltype(auto) replace(Args &&...args) const {
-        static_assert(((sizeof...(Scope) == 0) || ... || std::is_same_v<Type, Scope>), "Invalid type");
-        return owner_or_assert().template replace<Type>(entt, std::forward<Args>(args)...);
+        static_assert(((sizeof...(Scope) == 0) || ... || stl::is_same_v<Type, Scope>), "Invalid type");
+        return owner_or_assert().template replace<Type>(entt, stl::forward<Args>(args)...);
     }
 
     /**
@@ -308,8 +300,8 @@ public:
      */
     template<typename Type, typename... Args>
     [[nodiscard]] decltype(auto) get_or_emplace(Args &&...args) const {
-        static_assert(((sizeof...(Scope) == 0) || ... || std::is_same_v<Type, Scope>), "Invalid type");
-        return owner_or_assert().template get_or_emplace<Type>(entt, std::forward<Args>(args)...);
+        static_assert(((sizeof...(Scope) == 0) || ... || stl::is_same_v<Type, Scope>), "Invalid type");
+        return owner_or_assert().template get_or_emplace<Type>(entt, stl::forward<Args>(args)...);
     }
 
     /**
@@ -332,6 +324,27 @@ public:
     }
 
     /**
+     * @brief Compares two handles.
+     * @tparam Other Scope of the other handle.
+     * @param other A valid handle.
+     * @return True if both handles refer to the same registry and the same
+     * entity, false otherwise.
+     */
+    template<typename... Other>
+    [[nodiscard]] bool operator==(const basic_handle<Other...> &other) const noexcept {
+        return owner == other.registry() && entt == other.entity();
+    }
+
+    /**
+     * @brief Compares a handle with the null object.
+     * @param other A null object yet to be converted.
+     * @return False if the two elements differ, true otherwise.
+     */
+    [[nodiscard]] constexpr bool operator==(const null_t other) const noexcept {
+        return (entt == other);
+    }
+
+    /**
      * @brief Returns a const handle from a non-const one.
      * @tparam Other A valid entity type.
      * @tparam Args Scope of the handle to construct.
@@ -340,7 +353,7 @@ public:
      */
     template<typename Other, typename... Args>
     operator basic_handle<Other, Args...>() const noexcept {
-        static_assert(std::is_same_v<Other, Registry> || std::is_same_v<std::remove_const_t<Other>, Registry>, "Invalid conversion between different handles");
+        static_assert(stl::is_same_v<Other, Registry> || stl::is_same_v<stl::remove_const_t<Other>, Registry>, "Invalid conversion between different handles");
         static_assert((sizeof...(Scope) == 0 || ((sizeof...(Args) != 0 && sizeof...(Args) <= sizeof...(Scope)) && ... && (type_list_contains_v<type_list<Scope...>, Args>))), "Invalid conversion between different handles");
         return owner ? basic_handle<Other, Args...>{*owner, entt} : basic_handle<Other, Args...>{};
     }
@@ -349,82 +362,6 @@ private:
     registry_type *owner;
     entity_type entt;
 };
-
-/**
- * @brief Compares two handles.
- * @tparam Args Scope of the first handle.
- * @tparam Other Scope of the second handle.
- * @param lhs A valid handle.
- * @param rhs A valid handle.
- * @return True if both handles refer to the same registry and the same
- * entity, false otherwise.
- */
-template<typename... Args, typename... Other>
-[[nodiscard]] bool operator==(const basic_handle<Args...> &lhs, const basic_handle<Other...> &rhs) noexcept {
-    return lhs.registry() == rhs.registry() && lhs.entity() == rhs.entity();
-}
-
-/**
- * @brief Compares two handles.
- * @tparam Args Scope of the first handle.
- * @tparam Other Scope of the second handle.
- * @param lhs A valid handle.
- * @param rhs A valid handle.
- * @return False if both handles refer to the same registry and the same
- * entity, true otherwise.
- */
-template<typename... Args, typename... Other>
-[[nodiscard]] bool operator!=(const basic_handle<Args...> &lhs, const basic_handle<Other...> &rhs) noexcept {
-    return !(lhs == rhs);
-}
-
-/**
- * @brief Compares a handle with the null object.
- * @tparam Args Scope of the handle.
- * @param lhs A valid handle.
- * @param rhs A null object yet to be converted.
- * @return False if the two elements differ, true otherwise.
- */
-template<typename... Args>
-[[nodiscard]] constexpr bool operator==(const basic_handle<Args...> &lhs, const null_t rhs) noexcept {
-    return (lhs.entity() == rhs);
-}
-
-/**
- * @brief Compares a handle with the null object.
- * @tparam Args Scope of the handle.
- * @param lhs A null object yet to be converted.
- * @param rhs A valid handle.
- * @return False if the two elements differ, true otherwise.
- */
-template<typename... Args>
-[[nodiscard]] constexpr bool operator==(const null_t lhs, const basic_handle<Args...> &rhs) noexcept {
-    return (rhs == lhs);
-}
-
-/**
- * @brief Compares a handle with the null object.
- * @tparam Args Scope of the handle.
- * @param lhs A valid handle.
- * @param rhs A null object yet to be converted.
- * @return True if the two elements differ, false otherwise.
- */
-template<typename... Args>
-[[nodiscard]] constexpr bool operator!=(const basic_handle<Args...> &lhs, const null_t rhs) noexcept {
-    return (lhs.entity() != rhs);
-}
-
-/**
- * @brief Compares a handle with the null object.
- * @tparam Args Scope of the handle.
- * @param lhs A null object yet to be converted.
- * @param rhs A valid handle.
- * @return True if the two elements differ, false otherwise.
- */
-template<typename... Args>
-[[nodiscard]] constexpr bool operator!=(const null_t lhs, const basic_handle<Args...> &rhs) noexcept {
-    return (rhs != lhs);
-}
 
 } // namespace entt
 

@@ -60,15 +60,16 @@ Most notable features:
 `magique` is using the following popular libraries:
 
 - **[raylib](https://github.com/raysan5/raylib)** _(6.1-dev)_: rendering, resource loading, sound,...
-- **[EnTT](https://github.com/skypjack/entt)** _(3.16)_: fast and modern entity-component system
-- **[ankerl](https://github.com/martinus/unordered_dense)** _(4.8.1)_: optimized dense hashmap and hashset
+- **[EnTT](https://github.com/skypjack/entt)** _(4.0.0)_: fast and modern entity-component system
+- **[unordered_dense](https://github.com/martinus/unordered_dense)** _(4.8.1)_: optimized dense hashmap and hashset
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
 - **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
   IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.65)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(8.3.0)_: Fast JSON serialization with reflection support
-- **[enchantum](https://github.com/ZXShady/enchantum)** _(0.4.0)_: Enum reflection
 - **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for resource loading
+- **[blake3-tiny](https://github.com/michaelforney/blake3-tiny)** _(latest)_: BLAKE3 hashing
+- **[tiny-AES](https://github.com/kokke/tiny-AES-c)** _(latest)_: AES encryption
 
 ### Quickstart
 
@@ -80,7 +81,6 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
 - **_main.cpp_**
   ```c++
   #include <magique/magique.hpp>
-  using namespace magique; // Recommended and officially supported
   struct MyGame final : Game
   {
       void onUpdateGame(GameState gameState) override { printf("Hello World!\n"); }
@@ -94,17 +94,21 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
   }
   ```
 
-- _**CMakeLists.txt**_ (You need to set an actual path to the magique directory)
+- _**CMakeLists.txt**_
 
   ```cmake
   cmake_minimum_required(VERSION 3.20)
-  project(MyGame)
+  project(game)
   
-  add_executable(MyGame main.cpp) # Add your executable
+  add_executable(game main.cpp) # Add your executable
   
-  add_subdirectory(path/to/magique/dir magique) # Set the path to directory you downloaded or cloned magique into
+  # Automatically downloads the latest magique
+  include(FetchContent)
+  FetchContent_Declare(magique GIT_REPOSITORY https://github.com/gk646/magique)
+  FetchContent_MakeAvailable(magique)
   
-  target_link_libraries(MyGame PUBLIC magique) # Link your project against magique - automatically sets up include paths and dependencies
+  # Link your project against magique - automatically sets up include paths and dependencies
+  target_link_libraries(game PUBLIC magique) 
   ```
 
 3. To build your game executable inside a build folder call this via a terminal in the new folder:
@@ -112,7 +116,7 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
 ```shell
 mkdir build && cd build
 cmake ..
-make
+make && ./game
 ```
 
 **With these simple steps you created your first project with `magique`!**

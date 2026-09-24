@@ -1077,7 +1077,7 @@ bool ExportFontAsCode(Font font, const char *fileName)
 
     // Compress font image data
     int compDataSize = 0;
-    unsigned char *compData = CompressData((const unsigned char *)image.data, imageDataSize, &compDataSize);
+    unsigned char *compData = NULL;
 
     // Save font image data (compressed)
     byteCount += sprintf(txtData + byteCount, "#define COMPRESSED_DATA_SIZE_FONT_%s %i\n\n", TextToUpper(fileNamePascal), compDataSize);

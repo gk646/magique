@@ -49,7 +49,7 @@ namespace magique
         const std::vector<TileAnimation>& getAnimations() const;
 
     private:
-        M_MAKE_PUB()
+        MQ_MAKE_PUB()
         int tileSize = -1; // Default
         int tileCount = 0;
         std::vector<TileInfo> infoVec;
