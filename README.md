@@ -1,16 +1,15 @@
 <img src="logos/magique_banner.png" title="banner"/>
 
 [![Join the chat](https://img.shields.io/badge/discord-join-7289DA.svg?logo=discord&longCache=true&style=flat)](https://discord.gg/YAsvnxAmX7)
-![Version Badge](https://img.shields.io/badge/Version:-0.9.30-blue)
+![Version Badge](https://img.shields.io/badge/Version:-0.9.41-blue)
 [![License: Zlib](https://img.shields.io/badge/License-Zlib-lightgrey.svg)](https://opensource.org/licenses/Zlib)
 
-`magique` is a **C++ 26** beginner-friendly cross-platform 2D game engine framework for programmers (or those yet to
+`magique` is a **C++ 26** beginner-friendly cross-platform 2D engine for programmers (or those yet to
 be!).
 It combines your favourite game libraries (
-*[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) and **many custom
+*[raylib](https://github.com/raysan5/raylib), [EnTT](https://github.com/skypjack/entt) and more*) with **many custom
 written modules** into a featureful standalone engine.
-With an **intutive and easy-to-learn API** and **extensive documenation** it is specifically designed to be the basis of
-your game project.
+With a **carefully designed API** and **extensive documentation** it is the perfect basis for every C++ 2D game project.
 
 > No fancy interface, no visual helpers, no gui tools or editors... just coding in pure spartan-programmers way.
 > Are you ready to enjoy coding?
@@ -18,7 +17,7 @@ your game project.
 > -- *raylib*
 
 Join the [official discord](https://discord.gg/YAsvnxAmX7) for help, bug reports and discussions.  
-Checkout my [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
+Checkout the `magique` [YouTube channel](https://www.youtube.com/@gk646-yt) for spotlights, development sessions
 and tutorials.
 
 #### Made with magique
@@ -29,33 +28,30 @@ and tutorials.
 
 ---
 
-Most notable features:
+### Feature highlights:
 
 - **Easy to learn and use**
-    - _**No external dependencies!**_ (all dependencies in the source)
-    - All `raylib` functionalities are the same allowing for an easy transition
+    - _**No external dependencies!**_ (all batteries included)
     - _**Fully documented headers**_, many **_examples_** and **_video guides_**!
-    - Intuitive public API optimized for maximum usability
-    - Extensive logging and error detection with asserts and debugger support
+    - Supports _**[Tiled](https://www.mapeditor.org/)**_ _(.tmj, .tsj)_ and [_**aseprite**_](https://www.aseprite.org/)
+      (_.ase_) formats
 - **Fast and modern**
     - Uses _**custom datastructures and algorithms**_ to provide maximum performance
-    - Explicitly _**optimized for compile time**_ internally and externally!
     - Takes advantage of _**multithreading, data-driven design and cache locality**_
+    - Uses latest C++26 reflection features to improve development workflow
 - **Large feature set with `pay for what you use` policy**
-    - Blazingly fast **2D raytracing** with soft shadows for any geometry using polar-tracing optimization
-    - Asset-Packing and Loading with **compression, encryption and checksum support**
+    - Blazingly fast **2D raytracing** with soft shadows for any shape
+    - Integrated Asset-Packing and Loading with **compression, encryption and checksum support**
     - Automatic texture stitching into configurable atlases
-    - Task based loading interface handling load-priority and background loading of assets
-    - _**Procedural particle system**_ inspired by Godot4
-    - Persistence API for gamesaves and configuration
-    - Supports _**[Tiled](https://www.mapeditor.org/) tilemaps and tilset exports**_ (.tmx, .tsx)
-    - Object-oriented UI framework with automatic scaling and intuitive anchoring and alignment tools
-    - Powerful in-game console with custom commands and interaction with the game
-    - _**Achievements, Localization, 2DSound, VirtualClock, and many more!**_
-- **Multiplayer support**
-    - Seamless transition between local and global networking with a unified API
+    - _**Procedural particle system**_ inspired by Godot 4
+    - Object-oriented UI framework with automatic **scaling, anchoring and alignment tools**
+    - Powerful **in-engine console** with custom commands that can modify the gamestate
+    - _PathFinding, Keybindings, Localization, 2DSound_ and many more!
+- **Networking**
+    - _**Unified API**_ that allows to seamlessly switch between Steam or GameNetworkingSockets for local and global
+      networking
 - **Steam integration**
-    - Provided a Steam SDK, allows access to _**steam features**_ like lobbies, stats, matchmaking and chat
+    - Intuitive wrapper around the SteamSDK to access like _**lobbies, stats, matchmaking and chat**_
 
 `magique` is using the following popular libraries:
 
@@ -63,11 +59,11 @@ Most notable features:
 - **[EnTT](https://github.com/skypjack/entt)** _(4.0.0)_: fast and modern entity-component system
 - **[unordered_dense](https://github.com/martinus/unordered_dense)** _(4.8.1)_: optimized dense hashmap and hashset
 - **[FastNoiseLite](https://github.com/Auburn/FastNoiseLite)** _(1.1.1)_: fast and easy noise generation
-- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via
-  IP
+- **[GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets)** _(1.41-dev)_: local networking via IP
 - **[Steam SDK](https://partner.steamgames.com/)** _(1.65)_:  steam features and global P2P networking
 - **[glaze](https://github.com/stephenberry/glaze)** _(8.3.0)_: Fast JSON serialization with reflection support
-- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for resource loading
+- **[cute_headers](https://github.com/RandyGaul/cute_headers)** _(latest)_: _cute_tiled.h_ and _cute_asprite.h_ for
+  resource loading
 - **[blake3-tiny](https://github.com/michaelforney/blake3-tiny)** _(latest)_: BLAKE3 hashing
 - **[tiny-AES](https://github.com/kokke/tiny-AES-c)** _(latest)_: AES encryption
 
@@ -75,8 +71,7 @@ Most notable features:
 
 Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a step by step explanation!
 
-1. Download or clone `magique`
-2. Set up an emtpy new project folder and create the following files:
+1. Set up an emtpy new project folder and create the following files:
 
 - **_main.cpp_**
   ```c++
@@ -121,30 +116,27 @@ make -j 8 && ./game
 
 **With these simple steps you created your first project with `magique`!**
 
-_Note: You need to have cmake and a valid C++20 compiler installed_
-
 ### Is magique for you?
 
 `magique` is aimed at **lower-level game development** in C++. It's intended to be the starting point for a game project
 and meant to be **extended by user written code**! As such it does not have all solutions for any game! Instead, it
-tries to offer many optional general purpose modules that find usage in a multitude of projects. However, there are some
+tries to offer many _optional_ general purpose modules that find usage in a multitude of projects. However, there are some
 **fundamental principles and restrictions** that you have to follow when using magique:
 
-- Game template
-    - You have to overwrite the core/Game.h class and implement your game logic in its virtual methods
-- ECS (entity component system)
+- **Game template**
+    - You have to overwrite the `core/Game.h:Game` class and implement your game logic in its virtual methods
+- **ECS** (entity component system)
     - Every game object is supposed to be an entity with components
-    - The PositionC component is implicit for every object! (look at _ecs/Components.h_)
-- Physics
-    - There is no builtin physics system apart from your reaction to a collision
-        - To add a custom physics system you can disable the collision SetEnableCollisionHandling (false); and integrate
-          a physics engine
+    - The PositionC component is implicit for every object! (see: `ecs/Components.h`)
+- **No Advanced Physics**
+    - There is no builtin physics engine apart from your reaction to a collision
+        - You can of course disable integrated collision handling and roll your own physics engine
 
 Other than the listed points magique is very modular and customizable and many modules can be disabled or replaced by
 user code with _no overhead_.
 
 _**Even if you don't want to use the whole engine there are plenty of interesting concepts within `magique` that you can
-use or learn from.**_
+use (copy) or learn from.**_
 
 ### Documentation
 
@@ -158,22 +150,21 @@ There are 3 ways `magique` is documented:
         - `Failure:` The behavior or return value if the method fails its purpose
         - `Example:` Shows how this method or struct is correctly used
         - `IMPORTANT:` Points out crucial information like unique behavior or pitfalls
-- **[YouTube Channel](https://www.youtube.com/@gk646-yt)**
+- **[magique YouTube](https://www.youtube.com/@gk646-yt)**
     - Contains tutorials, showcase and development videos
 - **Examples**
     - There are many examples in `examples/` which come in 3 categories:
-        - _****games****_: complete games from resources to gameplay showcasing many features
+        - _**games**_: complete games from resources to gameplay showcasing many features
         - _**demos**_: showcase individual functionality that need their own resources
         - _**headers**_: a single header meant to be included in an empty project (see [QuickStart](#QuickStart))
 
-If you're a newcomer to gamedev or C++ you should start with the Getting Started page in the wiki.
-Contrary if you have experience with the concepts the in-header documentation will likely be enough to guide you.
+`magique` is designed to be fully understandable and usable with the documentation provided in the source.
 
 ### Paradigms and design philosophy
 
 > *Software has no functionality if it cannot be used!*
 
-The core philosophy behind `magique` is usability. Using libraries or software should be understandable and intuitive.
+The core philosophy behind `magique` is usability. Using libraries or software should be simple and intuitive.
 In this case usability means you think about the users mental state, their existing knowledge and goals. Then you
 provide them with what they need to help them achieve their goal without restricting their freedom. On top of that, by
 adhering to formatting, naming and implementation rules you allow the user to build a mental image of what to expect.
@@ -184,11 +175,12 @@ internally to achieve that.
 
 > _What if raylib was an engine? ..._
 
-`magique` follows the API design of raylib. For me this means a clear pascal case naming
-scheme with descriptive names and baked in namespacing: e.g. SetFormat (), GetFormat (). Similarly, every public method
-struct or enum is documented and each module has a documentation header as well. Often this documentation is also
-enriched with tips or warnings about pitfalls. The API also specifically only uses the most common types like std::
-vector and std::string and avoids the use of templates. If explicitly needed magique exposes types that are completely
+`magique` follows the API design of raylib. This means a clear pascal case naming
+scheme with descriptive names and baked in namespacing: e.g. FormatSet (), FormatGet (). Similarly, every public method
+struct or enum is documented and each module has a compact documentation header as well. This documentation is also
+enriched with tips or warnings about usage or side effects. 
+The API also specifically only tries to rely on well known types like std::vector or std::string.
+If explicitly needed magique exposes types that are completely
 used managed or defined (e.g. EntityType, AtlasID, ...). This is done with care as the library has less control over
 their usage behavior, and it might not be clear in what way this type is intended to be used.
 
@@ -231,7 +223,7 @@ auto export those types possibly with a macro. This problem doesn't
 occur in other engines as they know ALL their components upfront and don't expose a lot of internal workings.
 This approach allows for any custom type inside C++, while keeping the configuration manageable and type safe!
 
-### 5. Further Resources
+### Further Resources
 
 - [raylib wiki](https://github.com/raysan5/raylib/wiki)
 - [raylib cheatsheet](https://www.raylib.com/cheatsheet/cheatsheet.html) *(all methods)*
