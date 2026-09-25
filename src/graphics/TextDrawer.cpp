@@ -275,7 +275,7 @@ namespace magique
         else if (modCenterH)
         {
             pos.x += width / 2;
-            DrawTextCentered(font, txt, pos, fntSize, modSizeMult, tint);
+            DrawTextCenteredH(font, txt, pos, fntSize, modSizeMult, tint);
         }
         else
         {

@@ -581,16 +581,4 @@ namespace magique
         return language;
     }
 
-    LocalizedLanguage ImportMTF(Asset asset)
-    {
-
-        LocalizedLanguage language{};
-        if (asset.getExtension() != ".mtf")
-        {
-            LOG_WARNING("Invalid extension for magique traslation file: %s", asset.getExtension().data());
-            return language;
-        }
-        return language;
-    }
-
 } // namespace magique

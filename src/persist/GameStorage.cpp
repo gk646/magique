@@ -4,14 +4,14 @@
 
 namespace magique
 {
-    bool GameStorageToFile(GameStorage& save, std::string_view path, const uint64_t key)
+    bool GameStorageToFile(GameStorage& save, std::string_view path, const EncryptionKey key)
     {
-        return internal::StorageContainer::ToFile(save, path, "GameSave", key);
+        return internal::StorageContainer::ToFile(save, path, key);
     }
 
-    bool GameStorageFromFile(GameStorage& save, std::string_view filePath, const uint64_t key)
+    bool GameStorageFromFile(GameStorage& save, std::string_view filePath, const EncryptionKey key)
     {
-        return internal::StorageContainer::FromFile(save, filePath, "GameSave", key);
+        return internal::StorageContainer::FromFile(save, filePath, key);
     }
 
     void GameStorage::saveString(std::string_view slot, const std::string_view& string)
@@ -25,15 +25,15 @@ namespace magique
         assignDataImpl(slot, data, bytes, StorageType::DATA);
     }
 
-    std::string_view GameStorage::getStringOrElse(std::string_view slot, std::string_view defaultVal)
+    std::optional<std::string_view> GameStorage::getString(std::string_view slot)
     {
         const auto* cell = getCell(slot);
-        M_GAMESAVE_SLOT_MISSING(defaultVal);
-        M_GAMESAVE_TYPE_MISMATCH(STRING, defaultVal);
+        M_GAMESAVE_SLOT_MISSING({});
+        M_GAMESAVE_TYPE_MISMATCH(STRING, {});
         return cell->data;
     }
 
-    std::string_view GameStorage::getBytes(const std::string_view slot)
+    std::optional<std::string_view> GameStorage::getBytes(const std::string_view slot)
     {
         const auto* cell = getCell(slot);
         M_GAMESAVE_SLOT_MISSING({});
@@ -50,7 +50,9 @@ namespace magique
     }
 
     void GameStorage::clear() { clearImpl(); }
-    void GameStorage::erase(std::string_view slot) { eraseImpl(slot); }
+
+    bool GameStorage::erase(std::string_view slot) { return eraseImpl(slot); }
+
     StorageType GameStorage::getSlotType(std::string_view slot) { return getSlotTypeImpl(slot); }
 
 

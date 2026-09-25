@@ -53,10 +53,7 @@ namespace magique
     void DrawRenderTextureEx(const RenderTexture& texture, Rect dest, float rotation = 0, Color tint = WHITE);
 
     // Returns the length of the text up to the specified index
-    float MeasureTextUpTo(const char* text, int index, const Font& font, float fontSize, float spacing = 1.0F);
-
-    // Returns how many characters can be drawn up to the given width (not overstepped)
-    int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing = 1.0F);
+    float MeasureTextUpTo(std::string_view text, int index, const Font& font, float fontSize, float spacing = 1.0F);
 
     // Returns the roundness for DrawRectangleRounded* such that regardless of size has the same corner radius
     float GetRoundness(float radius, const Rectangle& bounds);
@@ -75,10 +72,6 @@ namespace magique
     // Draws a partially filled rectangle with the given maximum bounds
     // Either fills up in the given direction
     void DrawRectFilled(const Rectangle& bounds, float fillPercent, Direction dir, Color tint = WHITE);
-
-    // Draws text horizontally & vertically centered inside the rectangle
-    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing = 1.0F,
-                              Color tint = WHITE);
 
     // Draws a frame - leaves out the edges for a slightly rounded look
     void DrawRectFrame(const Rect& bounds, const Color& tint);

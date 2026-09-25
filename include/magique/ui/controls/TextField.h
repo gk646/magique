@@ -94,7 +94,7 @@ namespace magique
                       bool centered = true);
 
         // Draws the default graphical representation of this textfield
-        void drawDefault(const Rect& bounds, float fontSize = 8);
+        void drawDefault(const Rect& bounds);
 
     private:
         bool pollControls();

@@ -5,6 +5,7 @@
 #include <random>
 
 #include <magique/util/Data.h>
+#include <magique/util/Logging.h>
 
 #include "external/sdefl.h"
 #include "external/sinfl.h"
@@ -14,53 +15,53 @@
 namespace magique
 {
 
-    std::pair<std::string_view, bool> DataCompress(std::string_view data, size_t minSize)
+    bool DataReadFile(std::string_view file, std::string& data)
     {
-        thread_local sdefl* compCtx = new sdefl();
-        thread_local std::string COMP_BUFFER{};
-
-        if (data.empty())
+        FILE* f = fopen(file.data(), "rb");
+        setvbuf(f, nullptr, _IONBF, 0);
+        if (f == nullptr)
         {
-            COMP_BUFFER.shrink_to_fit();
-            return {data, false};
+            LOG_INFO("Failed to open file for reading: %s", file.data());
+            return false;
         }
-
-        if (data.size() < minSize)
-            return {data, false};
-
-        COMP_BUFFER.resize(sdefl_bound(data.size()));
-        int compSize = sdeflate(compCtx, COMP_BUFFER.data(), data.data(), data.size(), 1);
-        COMP_BUFFER.resize(compSize);
-
-        if (COMP_BUFFER.size() < data.size())
-            return {{COMP_BUFFER.data(), COMP_BUFFER.size()}, true};
-
-        return {data, false};
+        fseek(f, 0, SEEK_END);
+        const size_t fileSize = ftell(f);
+        data.resize(fileSize);
+        fseek(f, 0, SEEK_SET);
+        fread(data.data(), fileSize, 1, f);
+        fclose(f);
+        return true;
     }
 
-    std::string_view DataDecompress(std::string_view data, size_t minOutBuffer)
+    bool DataWriteFile(std::string_view file, std::string_view content)
     {
-        thread_local std::string COMP_BUFFER;
-
-        if (data.empty())
+        FILE* f = fopen(file.data(), "w+b");
+        setvbuf(f, nullptr, _IONBF, 0);
+        if (f == nullptr)
         {
-            COMP_BUFFER.clear();
-            COMP_BUFFER.shrink_to_fit();
-            return {};
+            LOG_ERROR("Failed to open file for writing: %s", file);
+            return false;
         }
+        fwrite(content.data(), content.size(), 1, f);
+        fclose(f);
+        return true;
+    }
 
-        // Should usually be enough
-        COMP_BUFFER.resize(std::max(data.size() * 3, minOutBuffer));
+    std::string_view DataCompress(std::string_view data)
+    {
+        auto& res = internal::DataCompressImpl(data);
+        return res;
+    }
 
-        int size = sinflate(COMP_BUFFER.data(), COMP_BUFFER.capacity(), data.data(), data.size());
-        if ((int)COMP_BUFFER.size() < size)
-            return {};
-
-        COMP_BUFFER.resize(size);
-
-        if (size <= 0)
-            return {};
-        return {COMP_BUFFER.data(), COMP_BUFFER.size()};
+    std::optional<std::string_view> DataDecompress(std::string_view data)
+    {
+        const auto res = internal::DataDecompressImpl(data);
+        if (res.has_value())
+        {
+            auto& value = res.value().get();
+            return value;
+        }
+        return {};
     }
 
     bool DataEncrypt(std::string& data, EncryptionKey key)
@@ -105,18 +106,62 @@ namespace magique
         return true;
     }
 
-    std::string_view DataHash(std::string_view data)
+    Hash DataHash(std::string_view data)
     {
         constexpr size_t BLAKE3_OUT_LEN = 32;
         thread_local std::string CACHE(BLAKE3_OUT_LEN, '\0');
-        std::memset(CACHE.data(), 0, CACHE.size());
 
         blake3 hasher;
         blake3_init(&hasher);
         blake3_update(&hasher, data.data(), data.size());
         blake3_out(&hasher, (uint8_t*)CACHE.data(), BLAKE3_OUT_LEN);
 
-        return CACHE;
+        return {CACHE};
     }
+
+    namespace internal
+    {
+        std::string& DataCompressImpl(std::string_view data)
+        {
+            thread_local sdefl* compCtx = new sdefl();
+            thread_local std::string COMP_BUFFER{};
+
+            COMP_BUFFER.resize(sdefl_bound(data.size()));
+            int compSize = sdeflate(compCtx, COMP_BUFFER.data(), data.data(), data.size(), 1);
+            COMP_BUFFER.resize(compSize);
+
+            return COMP_BUFFER;
+        }
+
+        std::optional<std::reference_wrapper<std::string>> DataDecompressImpl(std::string_view data)
+        {
+            thread_local std::string COMP_BUFFER;
+
+            // Should usually be enough
+            COMP_BUFFER.resize(std::max(data.size() * 3, 1024UL));
+
+            int size = sinflate(COMP_BUFFER.data(), COMP_BUFFER.capacity(), data.data(), data.size());
+            if (size <= 0)
+                return {};
+
+            // Try resizing a few times
+            for (int i = 0; i < 10; i++)
+            {
+                if ((int)COMP_BUFFER.size() < size) [[unlikely]]
+                {
+                    COMP_BUFFER.resize(size);
+                    size = sinflate(COMP_BUFFER.data(), COMP_BUFFER.capacity(), data.data(), data.size());
+                }
+                else
+                    break;
+            }
+
+            if ((int)COMP_BUFFER.size() < size) [[unlikely]]
+                return {};
+
+            COMP_BUFFER.resize(size);
+            return COMP_BUFFER;
+        }
+    } // namespace internal
 
 } // namespace magique

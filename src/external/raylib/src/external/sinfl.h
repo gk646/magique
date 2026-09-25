@@ -426,8 +426,11 @@ sinfl_decompress(unsigned char *out, int cap, const unsigned char *in, int size)
 
       if ((unsigned short)len != (unsigned short)~nlen)
         return (int)(out-o);
-      if (len > (e - s.bitptr) || !len)
+      if (len > (size_t)(e - s.bitptr) || !len)
         return (int)(out-o);
+
+      if (sinfl_unlikely((size_t)len > (size_t)(oe - out)))
+        return cap + len;
 
       memcpy(out, s.bitptr, (size_t)len);
       s.bitptr += len, out += len;
@@ -491,6 +494,9 @@ sinfl_decompress(unsigned char *out, int cap, const unsigned char *in, int size)
           *out++ = (unsigned char)sym;
           sym = sinfl_decode(&s, s.lits, 10);
           if (sym < 256) {
+            if (sinfl_unlikely(out >= oe)) {
+              return (int)(out-o);
+            }
             *out++ = (unsigned char)sym;
             continue;
           }
@@ -514,6 +520,11 @@ sinfl_decompress(unsigned char *out, int cap, const unsigned char *in, int size)
         if (sinfl_unlikely(offs > (int)(out-o))) {
           return (int)(out-o);
         }
+
+        if (sinfl_unlikely((size_t)len > (size_t)(oe - out))) {
+          return cap + len;
+        }
+
         out = out + len;
 
 #ifndef SINFL_NO_SIMD

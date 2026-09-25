@@ -17,6 +17,7 @@
 
 namespace magique
 {
+
     //================= TEXTURES =================//
 
     // Draws a given texture region - rotation happens around the middle point
@@ -49,15 +50,14 @@ namespace magique
 
     //================= TEXT =================//
 
-    // Draws the given text centered around the given position - supports multiline strings (all lines are centered)
-    // Drop in replacement for DrawTextEx()
-    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
-                          Color tint = WHITE);
+    // Draws the given horizontally & vertically centered on the given position
+    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F, Color c = WHITE);
+
+    // Draws the given horizontally centered on the given position - supports multiline strings (all lines are centered)
+    void DrawTextCenteredH(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F, Color c = WHITE);
 
     // Draws the given text aligned so that it ends on the given x positions
-    // Drop in replacement for DrawTextEx()
-    void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F,
-                            Color tint = WHITE);
+    void DrawTextRightBound(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F, Color c = WHITE);
 
     // Draws the given text but highlights all numbers in a different color
     void DrawPixelTextWithNumberHighlight(const Font& f, std::string_view txt, Vector2 pos, int fsm = 1,

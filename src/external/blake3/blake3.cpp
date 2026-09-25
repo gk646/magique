@@ -20,7 +20,7 @@ static void compress(uint32_t* out, const uint32_t m[16], const uint32_t h[8], u
         {11, 15, 5, 0, 1, 9, 8, 6, 14, 10, 2, 12, 3, 4, 7, 13},
     };
     uint32_t v[16] = {
-        h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], iv[0], iv[1], iv[2], iv[3], t, t >> 32, b, d,
+        h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], iv[0], iv[1], iv[2], iv[3],(uint32_t) t, uint32_t(t >> 32), b, d,
     };
     unsigned i;
 

@@ -8,23 +8,25 @@
 // Data Operations
 //===============================================
 // .....................................................................
-// This system is trimmed for speed by busy waiting during the tick to quickly pickup tasks.
-// Between ticks, it's in hibernation, sleeping until woken up again (if not used).
-// Allows to submit concurrent jobs to distribute compatible work across threads and await their completion.
-// Per default has MAGIQUE_WORKER_THREADS many worker threads.
-// Note: Don't forget to give the main thread work as well BEFORE waiting for the jobs to return!
+// This module contains useful methods that operate on data
 // .....................................................................
 
 namespace magique
 {
-    // Returns the compressed data or the original, whichever one is smaller and a bool indication if compression happened
-    //      - minSize: compression is not attempted below
-    std::pair<std::string_view, bool> DataCompress(std::string_view data, size_t minSize = 128);
 
-    // Tries to uncompress data compressed by CompressData()
-    //      - minOutBuffer: minimal (starting) size of the output buffer - decompression fails if data doesnt fit
-    // Failure: Returns empty view
-    std::string_view DataDecompress(std::string_view data, size_t minOutBuffer = 64'000);
+    // Returns true if the given file was read into data
+    // Note: Usually when using magique as intended, reading files directly should not be necessary
+    bool DataReadFile(std::string_view file, std::string& data);
+
+    // Returns true if the given data was written to file
+    // Note: Usually when using magique as intended, writing files directly should not be necessary
+    bool DataWriteFile(std::string_view file, std::string_view data);
+
+    // Returns the compressed data
+    std::string_view DataCompress(std::string_view data);
+
+    // Tries to uncompress data that was compressed with DataCompress()
+    std::optional<std::string_view> DataDecompress(std::string_view data);
 
     // Returns true if the data was [En/De]crypted inplace with the given key
     // Note: EncryptionKey{0} skips encryption
@@ -35,7 +37,19 @@ namespace magique
 
     // Returns the hash of the given data
     // Note: Uses BLAKE3
-    std::string_view DataHash(std::string_view data);
+    Hash DataHash(std::string_view data);
 
+} // namespace magique
+
+// IMPLEMENTATION
+
+namespace magique
+{
+    namespace internal
+    {
+        // Those function allow moving the returned data directly which avoids a copy operation
+        std::string& DataCompressImpl(std::string_view data);
+        std::optional<std::reference_wrapper<std::string>> DataDecompressImpl(std::string_view data);
+    } // namespace internal
 } // namespace magique
 #endif // MAGIQUE_DATA_H

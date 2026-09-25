@@ -497,25 +497,24 @@ namespace magique
         TiledProperty* getProperty(std::string_view name);
     };
 
-    // Checksum (hash) for a file
-    struct Checksum final
+    // 32 byte Checksum (hash)
+    struct Hash final
     {
-        // Initializes the checksum - should be the output of toString() or another MD5 implementation
-        Checksum(std::string_view hash);
-        Checksum(const char* hash);
-        Checksum() = default;
+        // Initializes the checksum either from direct bytes readable hash
+        Hash(std::string_view hash);
+        Hash() = default;
 
-        bool operator==(const Checksum& other) const;
+        // Returns the raw bytes
+        std::string_view getBytes() const;
 
-        // Returns the checksum as string
-        std::string toString() const;
+        // Returns the readable hexadecimal version of the hash
+        std::string_view getHex() const;
+        operator std::string_view() const;
+
+        bool operator==(const Hash& other) const = default;
 
     private:
-        uint32_t first = 0;
-        uint32_t second = 0;
-        uint32_t third = 0;
-        uint32_t fourth = 0;
-        friend Checksum AssetPackChecksum(std::string_view path);
+        std::array<uint8_t, 32> hash{};
     };
 
     //================= GAMEDEV =================//

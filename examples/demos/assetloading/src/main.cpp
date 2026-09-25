@@ -1,20 +1,18 @@
 
 #include "AssetLoadingDemo.h"
 
-#include <magique/assets/AssetPacker.h>
-
 int main()
 {
-    // Which directory to recursively compile into an asset image
-    const char* pathToCompile = "../res";      // Relative to the executable that lies in the build folder
-    const char* imageName = "MyImageName.bin"; // Path/Name of the image - can be anything
-    uint64_t encryptionKey = 0;                // Arbitrary encryption key - 0 means no encryption
-    bool compressImage = false; // Make the resulting image smaller - is automatically detected and decompressed
+    std::string_view pathToCompile = "../res";      // Relative to the executable that lies in the build folder
+    std::string_view imageName = "MyImageName.bin"; // Path/Name of the assetpack - can be anything
+    EncryptionKey encryptionKey = 0;                // Arbitrary encryption key - 0 means no encryption
 
-    // Compiles the asset image - only recompiles the image if changes are detected
-    CompileAssetImage(pathToCompile, imageName, encryptionKey, compressImage);
+    // Compiles the asset image - only rewrites the image if changes are detected
+    // Automatically compressed to save size
+    AssetPackCompile(pathToCompile, imageName, encryptionKey);
+
     Demo game{};
 
-    const char* configPath = "config.cfg"; // Path/Name of the game config
-    return game.run(imageName, configPath, encryptionKey);
+    // The passed pack is automatically loaded and can be access in onStartup()
+    return game.run(imageName, encryptionKey);
 }

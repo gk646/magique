@@ -1,10 +1,7 @@
 #ifndef MAGIQUE_LOCALIZATION_DEMO_H
 #define MAGIQUE_LOCALIZATION_DEMO_H
 
-#include <raylib/raylib.h>
 #include <magique/magique.hpp>
-
-using namespace magique;
 
 struct LocalizationDemo final : Game
 {
@@ -12,20 +9,31 @@ struct LocalizationDemo final : Game
     {
         const auto loadLocalization = [](AssetPack& assets)
         {
-            LocalizationAdd(ImportMTF(assets["english.mtf"]));
-            LocalizationAdd(ImportMTF(assets["german.mtf"]));
+            // Import the base file - contains the keywords
+            LocalizationAdd(ImportGettextBase(assets["base.pot"]));
+
+            assets.forEachIn("",
+                             [](Asset asset)
+                             {
+                                 // Only import ".po"
+                                 if (asset.getExtension() != ".po")
+                                     return;
+                                 // Import any translations
+                                 LocalizationAdd(ImportGettext(asset));
+                             });
         };
-        loader.registerTask(loadLocalization, MAIN_THREAD);
+
+        loader.registerTask(loadLocalization);
         LocalizationSetLanguage(Language::EN);
     }
 
     void onLoadingFinished() override
     {
-        LocalizationAdd("jam", "Marmelade", Language::DE);
+        LocalizationAdd(Language::DE, "jam", "Marmelade");
         LocalizationValidate(Language::DE);
     }
 
-    void updateGame(GameState gameState) override
+    void onUpdateGame(GameState gameState) override
     {
         if (IsKeyPressed(KEY_SPACE)) // Toggle between the languages
         {
@@ -38,10 +46,10 @@ struct LocalizationDemo final : Game
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
-        const auto* msg = Localize("greeting");
-        const auto text = TextFormat("Current Language: %s", EnumToString(LocalizationGetLanguage()).data());
-        DrawText(text, 50, 50, 25, BLACK);
-        DrawText(msg, 50, 100, 25, BLACK);
+        std::string_view msg = Localize("greeting");
+        std::string_view text = TextFormat("Current Language: %s", EnumToString(LocalizationGetLanguage()).data());
+        DrawText(text.data(), 50, 50, 25, BLACK);
+        DrawText(msg.data(), 50, 100, 25, BLACK);
     }
 };
 

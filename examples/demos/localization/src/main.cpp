@@ -1,9 +1,9 @@
-#include <magique/assets/AssetPacker.h>
 #include "LocalizationDemo.h"
 
 int main()
 {
-    CompileImage("../res"); // Dont forget to compile the asset image
+    // Dont forget to compile the asset image
+    AssetPackCompile("../res");
     LocalizationDemo demo{};
     return demo.run();
 }

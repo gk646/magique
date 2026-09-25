@@ -10,18 +10,18 @@
 //===============================================
 // ................................................................................
 // Allows to register tasks that operate on all assets loaded from disk
-// You can register your task at Game::onStartup() and it runs automatically after this method
+// You can register your tasks inside Game::onStartup() and they are executed automatically after
 //
 // The loader gives 2 strong guarantees:
 //  - Order:
 //         - All task of a higher priority are finished before any task with a lower priority
 //  - Threading:
-//         - ThreadType == MAIN_THREAD -> task runs on the main thread
-//         - ThreadType == BACKGROUND_THREAD -> task runs on ANY available thread
+//         - ThreadType == THREAD_MAIN -> task runs on the main thread
+//         - ThreadType == THREAD_ANY  -> task runs on ANY available background thread (if configured MAGIQUE_WORKER_THREADS)
 //
 // This means higher priority is loaded first -> If a task depends on another one give it a lower priority
-// IMPORTANT: For ANY kind of gpu access (texture loading) you HAVE to specify MAIN_THREAD.
-//            For most others task use BACKGROUND_THREAD to allow background loading without stopping the render loop
+// IMPORTANT: For ANY kind of gpu access (texture loading) you HAVE to specify THREAD_MAIN.
+//            For most others task use THREAD_ANY to allow background loading without stopping the render loop
 // .....................................................................
 
 namespace magique
@@ -34,16 +34,14 @@ namespace magique
         // task     - a new instance of a subclass of ITask, takes ownership
         // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
-        // impact   - an absolute estimate of the time needed to finish the task
-        void registerTask(ITask<AssetPack>* task, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(ITask<AssetPack>* task, ThreadType thread, PriorityLevel pl = MEDIUM);
 
         // Registers a simple loading function - for smaller and less complex loading
         // func     - a loading func (lambda)
         // thread   - thread where the task is loaded - GPU ACCESS NEEDS TO HAPPEN ON THE MAIN THREAD (texture loading...)
         // pl       - the level of priority, higher priorities are loaded first
-        // impact   - an absolute estimate of the time needed to finish the task
         // Example: registerTask([](magique::AssetPack &assets) {}, magique::MAIN_THREAD);
-        void registerTask(const AssetLoadFunc& func, ThreadType thread, PriorityLevel pl = MEDIUM, int impact = 1);
+        void registerTask(const AssetLoadFunc& func, ThreadType thread = THREAD_MAIN, PriorityLevel pl = MEDIUM);
 
     private:
         MQ_MAKE_PUB()

@@ -231,7 +231,14 @@ namespace magique
         rlSetTexture(0);
     }
 
-    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, const float fs, const float spc, const Color c)
+    void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc, Color tint)
+    {
+        const Point dims = MeasureTextEx(f, txt.data(), fs, spc);
+        DrawTextEx(f, txt.data(), pos - dims / 2, fs, spc, tint);
+    }
+
+    void DrawTextCenteredH(const Font& f, std::string_view txt, Point pos, const float fs, const float spc,
+                           const Color c)
     {
         auto parts = StringSplit(txt);
         float offset = 0;

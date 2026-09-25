@@ -154,10 +154,16 @@ namespace magique
             if (!tryCompress)
                 return {patchBuffer, false};
 
-            auto [data, isCompressed] = DataCompress(patchBuffer);
-            // Copy here for more understandable API - data is only valid until next compress call
-            patchBuffer = data;
-            return {patchBuffer, isCompressed};
+            auto& compressed = internal::DataCompressImpl(patchBuffer);
+            if (compressed.size() < patchBuffer.size())
+            {
+                // Move here for more understandable API
+                // This data is only valid until next compress call which is not obvious to user
+                // Like this its valid until next diff call which is default behavior
+                patchBuffer = std::move(compressed);
+                return {patchBuffer, true};
+            }
+            return {patchBuffer, false};
         }
         LOG_ERROR("Failed to generate diff: %s", glz::format_error(result).c_str());
         return {};
@@ -168,7 +174,10 @@ namespace magique
     {
         auto& oldState = ComponentGet<T>(entity);
         if (diff.compressed)
-            diff.data = DataDecompress(diff.data);
+        {
+            diff.data = DataDecompress(diff.data).value();
+            diff.compressed = false;
+        }
         auto err = glz::read_beve(oldState, diff.data);
         return !err;
     }

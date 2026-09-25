@@ -191,11 +191,13 @@ namespace magique
         DrawTextEx(font, "|", {tPos.x + cursorOffX, tPos.y + cursorOffY}, fontSize, spacing, cursor);
     }
 
-    void TextField::drawDefault(const Rect& bounds, const float fontSize)
+    void TextField::drawDefault(const Rect& bounds)
     {
+        const auto fontSize = global::ENGINE_CONFIG.getFontSize();
         const auto& theme = global::ENGINE_CONFIG.theme;
         const Color body = theme.getBodyColor(getIsHovered(), getIsFocused());
         const Color outline = theme.backOutline;
+        fitToText(fontSize);
         DrawRectFrameFilled(bounds, body, outline);
         drawText(fontSize, getIsFocused() ? theme.textHighlight : theme.text, theme.textPassive);
     }

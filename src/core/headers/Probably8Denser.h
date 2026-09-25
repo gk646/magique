@@ -127,9 +127,12 @@ static Font LoadFont_Probably8Denser(void)
     }
 
     auto data = DataDecompress(
-        std::string_view{(const char*)fontData_Probably8Denser, COMPRESSED_DATA_SIZE_FONT_PROBABLY8DENSER}, 66000);
-    auto ptr = new unsigned char[data.size()];
-    std::memcpy(ptr, data.data(), data.size());
+        std::string_view{(const char*)fontData_Probably8Denser, COMPRESSED_DATA_SIZE_FONT_PROBABLY8DENSER});
+    if (!data)
+        LOG_FATAL("Failed to load font data");
+
+    auto ptr = new unsigned char[data->size()];
+    std::memcpy(ptr, data->data(), data->size());
     Image imFont = {ptr, 256, 128, 1, 2};
 
     // Load texture from image

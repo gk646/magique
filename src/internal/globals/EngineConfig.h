@@ -26,7 +26,7 @@ namespace magique
         Font font{};
         Timing timing{};                        // Thread timing information
         Point cameraViewOff{};                  // Manual camera view offset
-        Point cameraTargetOff{};              // Manual camera position offset
+        Point cameraTargetOff{};                // Manual camera position offset
         LoadingScreen* loadingScreen = nullptr; // The loading screen instance
         float entityUpdateDist = 2500;          // Update distance
         float cameraCullPadding = 250;          // Padding around the cameras native bounds
@@ -43,7 +43,11 @@ namespace magique
         bool enableCollisionSystem = true;      // Enables the static and dynamic collision systems
         bool isClientMode = false;              // Flag to disable certain engine tasks on multiplayer clients
 
-        float getFontSize() const { return std::ceil(UIGetScaled(1) * font.baseSize); }
+        float getFontSize() const
+        {
+            // Font base size is for 640x360
+            return std::max(std::round(UIGetTargetResolution().y / 360), 1.0F) * font.baseSize;
+        }
 
         void onInit()
         {

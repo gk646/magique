@@ -6,6 +6,7 @@
 #endif
 
 #include <magique/core/Game.h>
+#include <magique/util/Data.h>
 
 #include "util/headers/CrashLog.h"
 #include "external/glad.h"
@@ -48,16 +49,11 @@ namespace magique
 
     void WriteCrashData(const std::string& crashData)
     {
-        const auto* fileName = GetCrashLogFilename();
-        FILE* crashFile = fopen(fileName, "wb+");
-        if (crashFile != nullptr)
+        auto name = GetCrashLogFilename();
+        if (!DataWriteFile(GetCrashLogFilename(), crashData))
         {
-            fputs(crashData.c_str(), crashFile);
-            fclose(crashFile);
-        }
-        else
-        {
-            fprintf(stderr, "Failed to write crashlog file: %s\n", fileName);
+            fprintf(stderr, "Failed to write crashlog file: %s\n", name);
+            puts(crashData.c_str());
         }
     }
 

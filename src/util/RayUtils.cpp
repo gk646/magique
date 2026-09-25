@@ -16,73 +16,7 @@
 
 namespace magique
 {
-
     Point GetMousePos() { return Point{GetMousePosition()}.floor(); }
-
-    float MeasureTextUpTo(const char* text, const int index, const Font& f, const float fontSize, const float spacing)
-    {
-        thread_local std::string buffer;
-        buffer.assign(text, index);
-        const float ret = MeasureTextEx(f, buffer.c_str(), fontSize, spacing).x;
-        return std::floor(ret);
-    }
-
-    int CountTextUpTo(const char* text, float width, const Font& font, float fontSize, float spacing)
-    {
-        int size = TextLength(text);                  // Total size in bytes of the text, scanned by codepoints in loop
-        float textOffsetX = 0.0f;                     // Offset X to next character to draw
-        float scaleFactor = fontSize / font.baseSize; // Character quad scaling factor
-        for (int i = 0; i < size;)
-        {
-            // Get next codepoint from byte string and glyph index in font
-            int codepointByteCount = 0;
-            int codepoint = GetCodepointNext(&text[i], &codepointByteCount);
-            int index = GetGlyphIndex(font, codepoint);
-
-            if (codepoint == '\n')
-            {
-                // NOTE: Line spacing is a global variable, use SetTextLineSpacing() to setup
-                textOffsetX = 0.0f;
-            }
-            else
-            {
-                float charOff = 0.0F;
-                if (font.glyphs[index].advanceX == 0)
-                    charOff = ((float)font.recs[index].width * scaleFactor + spacing);
-                else
-                    charOff = ((float)font.glyphs[index].advanceX * scaleFactor + spacing);
-
-                if (charOff + textOffsetX >= width)
-                    return i;
-                textOffsetX += charOff;
-            }
-            i += codepointByteCount; // Move text bytes counter to next codepoint
-        }
-        return size;
-    }
-
-    float MeasurePixelText(const char* text, const Font& font, int mult)
-    {
-        return MeasureTextEx(font, text, static_cast<float>(font.baseSize * mult), mult).x;
-    }
-
-    float MeasurePixelTextUpTo(const char* text, int index, const Font& font, int mult)
-    {
-        return MeasureTextUpTo(text, index, font, static_cast<float>(font.baseSize * mult), mult);
-    }
-
-    float GetRoundness(const float radius, const Rectangle& bounds)
-    {
-        if (bounds.width > bounds.height)
-        {
-            // radius = (height * roundness) /2
-            return (radius * 2.0F) / bounds.height;
-        }
-        else
-        {
-            return (radius * 2.0F) / bounds.width;
-        }
-    }
 
     Texture LoadTextureFromMemory(const unsigned char* data, int size, const char* fileType)
     {
@@ -103,6 +37,27 @@ namespace magique
     {
         DrawTexturePro(texture.texture, {0, 0, (float)texture.texture.width, -(float)texture.texture.height}, dest, {},
                        rot, tint);
+    }
+
+    float MeasureTextUpTo(std::string_view text, const int index, const Font& f, const float fontSize, const float spacing)
+    {
+        thread_local std::string buffer;
+        buffer = text.subview(0, std::max(index, 0));
+        const float ret = MeasureTextEx(f, buffer.c_str(), fontSize, spacing).x;
+        return std::floor(ret);
+    }
+
+    float GetRoundness(const float radius, const Rectangle& bounds)
+    {
+        if (bounds.width > bounds.height)
+        {
+            // radius = (height * roundness) /2
+            return (radius * 2.0F) / bounds.height;
+        }
+        else
+        {
+            return (radius * 2.0F) / bounds.width;
+        }
     }
 
 
@@ -131,14 +86,6 @@ namespace magique
     void DrawRectFilled(const Rectangle& bounds, const float fillPercent, const Direction dir, Color tint)
     {
         DrawRectangleRec(Rect::Filled(bounds, fillPercent, dir), tint);
-    }
-
-    void DrawTextCenteredRect(const Font& fnt, std::string_view txt, float fs, const Rect& bounds, float spacing,
-                              Color tint)
-    {
-        const auto dims = MeasureTextEx(fnt, txt.data(), fs, spacing);
-        const auto rect = Rect::CenteredOn(bounds.mid(), dims);
-        DrawTextEx(fnt, txt.data(), rect.pos().floored(), fs, spacing, tint);
     }
 
     void DrawRectFrame(const Rect& bounds, const Color& tint)

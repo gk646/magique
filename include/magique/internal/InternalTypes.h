@@ -29,11 +29,11 @@ namespace magique::internal
 
     protected:
         MQ_MAKE_PUB()
-        static bool ToFile(StorageContainer& storage, std::string_view path, std::string_view name, EncryptionKey key);
-        static bool FromFile(StorageContainer& storage, std::string_view path, std::string_view name, EncryptionKey key);
+        static bool ToFile(StorageContainer& storage, std::string_view path, EncryptionKey key);
+        static bool FromFile(StorageContainer& storage, std::string_view path, EncryptionKey key);
 
         // Erases the storage with the given id
-        void eraseImpl(std::string_view slot);
+        bool eraseImpl(std::string_view slot);
         // Erases all storage slots
         void clearImpl() { cells.clear(); }
 

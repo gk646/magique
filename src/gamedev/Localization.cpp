@@ -54,6 +54,16 @@ namespace magique
         DATA.languageMapping[lang.language] = std::move(lang);
     }
 
+    void LocalizationAdd(Language lang, std::string_view key, std::string_view translation)
+    {
+        if (lang == Language::None)
+        {
+            LOG_WARNING("Cannot add localization language: Invalid language");
+            return;
+        }
+        DATA.languageMapping[lang].translations[key] = translation;
+    }
+
     void LocalizationSetLanguage(Language language)
     {
         if (language == Language::None)
@@ -65,23 +75,6 @@ namespace magique
     }
 
     Language LocalizationGetLanguage() { return DATA.current; }
-
-    Language LocalizationParseLanguage(std::string_view langCode)
-    {
-        if (langCode.size() != 2)
-            return Language::None;
-
-        for (auto val : EnumValues<Language>())
-        {
-            auto string = EnumToString(val);
-            if (std::tolower(langCode[0]) == std::tolower(string[0]) &&
-                std::tolower(langCode[1]) == std::tolower(string[1]))
-            {
-                return val;
-            }
-        }
-        return Language::None;
-    }
 
     void LocalizationValidate(Language base)
     {
@@ -144,6 +137,23 @@ namespace magique
             const auto* msg = "    Language: %s | Empty Translations: %d | New Keywords: %d | Missing Keywords: %d\n";
             printf(msg, EnumToString(lang).data(), info.emptyValues, info.newKeywords, info.missingKeys);
         }
+    }
+
+    Language LocalizationParseLanguage(std::string_view langCode)
+    {
+        if (langCode.size() != 2)
+            return Language::None;
+
+        for (auto val : EnumValues<Language>())
+        {
+            auto string = EnumToString(val);
+            if (std::tolower(langCode[0]) == std::tolower(string[0]) &&
+                std::tolower(langCode[1]) == std::tolower(string[1]))
+            {
+                return val;
+            }
+        }
+        return Language::None;
     }
 
 } // namespace magique

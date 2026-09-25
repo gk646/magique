@@ -1,97 +1,51 @@
 #ifndef PERSISTENCEDEMO_H
 #define PERSISTENCEDEMO_H
 
-#include <string>
-#include <utility>
-
-#include <magique/core/Game.h>
-#include <magique/persist/TaskInterface.h>
-#include <magique/persist/GameSaveData.h>
-#include <magique/ui/controls/TextField.h>
-#include <magique/ui/controls/Button.h>
-#include <magique/ui/UI.h>
-
-using namespace magique;
-
-// Initialize interfaces
-TaskInterface GAME_SAVER{};
-TaskInterface GAME_LOADER{};
-const char* SAVE_PATH = "./mySave.save";
-
-// Define storage ID's
-enum class StorageID
-{
-    TEXT_FIELD_STRING,
-};
-
-// Button with text
-struct TextButton final : Button
-{
-    std::string text;
-
-    TextButton(std::string text, float x, float y) : Button(x, y, 150, 150), text(std::move(text)) {}
-
-    void onDraw(const Rect& bounds) override
-    {
-        drawDefault(bounds);
-        DrawText(text.c_str(), bounds.x, bounds.y, 25, BLACK);
-    }
-};
-
-// Variables
-TextField inputField{250, 250, Anchor::MID_CENTER};
-
-struct SaveClass final : ITask<GameSaveData>
-{
-    void execute(GameSaveData& res) override
-    {
-        printf("Saving text:%s\n", inputField.getText().c_str());
-        res.saveString(StorageID::TEXT_FIELD_STRING, inputField.getText());
-    }
-};
-
-struct LoadClass final : ITask<GameSaveData>
-{
-    void execute(GameSaveData& res) override
-    {
-        const std::string savedText = res.getStringOrElse(StorageID::TEXT_FIELD_STRING, "Not found");
-        printf("Loading text:%s\n", savedText.c_str());
-        inputField.setText(savedText.c_str());
-    }
-};
-
+#include <magique/magique.hpp>
 
 struct PersistenceDemo final : Game
 {
-    TextButton saveButton{"Save", 550, 350};
-    TextButton loadButton{"Load", 1225, 350};
+    TextField inputField{{400, 25}, Anchor::MID_CENTER};
+    TextButton saveButton{"Save", Anchor::MID_CENTER, {-50, -50}};
+    TextButton loadButton{"Load", Anchor::MID_CENTER, {50, -50}};
+    std::string_view path = "./save";
+    EncryptionKey key = 0; // Null key = no encrpytion
 
-    void onStartup(AssetLoader& loader) override
+    void onLoadingFinished() override
     {
-        GAME_SAVER.registerTask(new SaveClass());
-        GAME_LOADER.registerTask(new LoadClass());
+        // If a filled storage is not saved (and it wasnt loaded) a warning is shown
+        {
+            GameStorage storage2;
+            storage2.saveString("1", "hey");
+        }
     }
 
-    void onLoadingFinished() override {}
-
-    void updateGame(GameState gameState) override
+    void onUpdateGame(GameState gameState) override
     {
         if (saveButton.getIsClicked())
         {
-            GameSaveData save; // Cleaned up automatically
-            GAME_SAVER.invoke(save);
-            SaveToDisk(save, SAVE_PATH);
+            GameStorage storage;
+            storage.saveString("textField", inputField.getText());
+            // Save the storage to file
+            if (!GameStorageToFile(storage, path))
+                LOG_WARNING("Failed to save storage");
         }
 
         if (loadButton.getIsClicked())
         {
-            GameSaveData save; // Cleaned up automatically
-            LoadFromDisk(save, SAVE_PATH);
-            GAME_LOADER.invoke(save);
+            GameStorage storage;
+
+            // Load the storage from disk
+            if (!GameStorageFromFile(storage, path))
+                LOG_WARNING("Failed to load storage");
+
+            // std::optional allows to react if value is missing
+            auto savedValue = storage.getString("textField");
+            inputField.setText(savedValue.value_or("Default"));
         }
     }
 
-    void drawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState state, Camera2D& camera) override
     {
         DrawText("Input Text to be saved:", 50, 50, 25, BLACK);
         inputField.draw();

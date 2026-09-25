@@ -871,14 +871,7 @@ namespace magique
         return {x, y};
     }
 
-
     //----------------- TILE INFO -----------------//
-
-    static uint32_t ReverseBytes(const uint32_t value)
-    {
-        return ((value & 0x000000FFU) << 24) | ((value & 0x0000FF00U) << 8) | ((value & 0x00FF0000U) >> 8) |
-            ((value & 0xFF000000U) >> 24);
-    }
 
     bool TileID::isEmpty() const { return id <= 1; }
 
@@ -895,49 +888,42 @@ namespace magique
         return nullptr;
     }
 
-    Checksum::Checksum(std::string_view hash)
+    Hash::Hash(std::string_view input)
     {
-        if (hash.empty() || hash.size() != 32)
+        if (hash.size() == 32) // Direct bytes
         {
-            LOG_WARNING("Invalid hexadecimal hash string");
-            first = second = third = fourth = 0;
-            return;
+            std::memcpy(hash.data(), input.data(), 32);
         }
-
-        auto parseHex = [](const char* str) -> uint32_t
+        else if (hash.size() == 64) // Hash in hexadecimal
         {
-            char buffer[9];
-            strncpy(buffer, str, 8);
-            buffer[8] = '\0';
-            return static_cast<uint32_t>(strtoul(buffer, nullptr, 16));
-        };
-
-        first = parseHex(hash.data());
-        second = parseHex(hash.data() + 8);
-        third = parseHex(hash.data() + 16);
-        fourth = parseHex(hash.data() + 24);
-
-        first = ReverseBytes(first);
-        second = ReverseBytes(second);
-        third = ReverseBytes(third);
-        fourth = ReverseBytes(fourth);
+            for (size_t i = 0; i < input.size(); i += 2)
+            {
+                auto byte = input.subview(i, 2);
+                std::from_chars(byte.begin(), byte.end(), hash[i / 2], 16);
+            }
+        }
+        else
+        {
+            LOG_WARNING("Invalid checksum data");
+        }
     }
 
-    Checksum::Checksum(const char* hash) : Checksum(std::string_view(hash)) {}
+    std::string_view Hash::getBytes() const { return std::string_view{(const char*)hash.data(), hash.size()}; }
 
-    bool Checksum::operator==(const Checksum& o) const
+    std::string_view Hash::getHex() const
     {
-        return first == o.first && second == o.second && third == o.third && fourth == o.fourth;
-    }
-
-    std::string Checksum::toString() const
-    {
-        std::string ret(33, '\0');
-        snprintf(ret.data(), 33, "%08x%08x%08x%08x", ReverseBytes(first), ReverseBytes(second), ReverseBytes(third),
-                 ReverseBytes(fourth));
+        thread_local std::string ret(hash.size() * 2, '\0');
+        static constexpr char hexDigits[] = "0123456789abcdef";
+        for (size_t i = 0; i < hash.size(); ++i)
+        {
+            unsigned char b = hash[i];
+            ret[i * 2] = hexDigits[b >> 4];
+            ret[i * 2 + 1] = hexDigits[b & 0xF];
+        }
         return ret;
     }
 
+    Hash::operator std::string_view() const { return getHex(); }
 
     //----------------- COLLIDER INFO -----------------//
 

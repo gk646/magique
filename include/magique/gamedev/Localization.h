@@ -15,7 +15,7 @@
 //
 // You can either manually add localization for each language or import it from a file with assets/AssetImport.h
 // Supported Formats:
-//      -  .po (GNU gettext format)
+//      -  .po (GNU gettext format) - GUI editor: https://poedit.com/download/
 //
 // Note: There is localize() macro that can be used to wrap the call to Localize()
 // .....................................................................
@@ -40,7 +40,7 @@ namespace magique
     void LocalizationAdd(LocalizedLanguage&& lang);
 
     // Manually adds a translation of the keyword in the given language
-    void LocalizationAdd(std::string_view key, std::string_view translation, Language lang);
+    void LocalizationAdd(Language lang, std::string_view key, std::string_view translation );
 
     //============== UTIL ==============//
 

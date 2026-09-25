@@ -9,64 +9,53 @@ namespace magique::internal
     {
         if (!cells.empty() && !(isLoaded || isSaved))
         {
-            LOG_WARNING("GameSave/GameConfig is not empty and destroyed without usage!");
+            LOG_WARNING("GameStorage is not empty and destroyed without usage!");
         }
     }
 
-    bool StorageContainer::ToFile(StorageContainer& container, std::string_view path, std::string_view name,
-                                  EncryptionKey key)
+    bool StorageContainer::ToFile(StorageContainer& container, std::string_view path, EncryptionKey key)
     {
         std::string buffer;
         JSONExport(container.cells, buffer);
+        buffer = std::move(DataCompressImpl(buffer));
+
         DataEncrypt(buffer, key);
-
-        FILE* file = fopen(path.data(), "wb");
-        if (file == nullptr)
-        {
-            LOG_ERROR("Failed to open file for writing: %s", path.data());
+        if (!DataWriteFile(path, buffer))
             return false;
-        }
 
-        setvbuf(file, nullptr, _IONBF, 0);
-        fwrite(buffer.data(), buffer.size(), 1, file);
-        fclose(file);
-        LOG_INFO("Saved %s: %s | Size: %.2fkb", name.data(), path.data(), (float)buffer.size() / 1000.0F);
+        LOG_INFO("Saved GameStorage: %s | Size: %.2fkb", path.data(), (float)buffer.size() / 1000.0F);
         container.isSaved = true;
         return true;
     }
 
-    bool StorageContainer::FromFile(StorageContainer& container, std::string_view path, std::string_view name,
-                                    EncryptionKey key)
+    bool StorageContainer::FromFile(StorageContainer& container, std::string_view path, EncryptionKey key)
     {
         MAGIQUE_ASSERT(container.isLoaded == false, "Can only load from empty save!");
         MAGIQUE_ASSERT(container.cells.empty(), "Can only load from empty save!");
         container.isLoaded = true;
 
-        FILE* file = fopen(path.data(), "rb");
-        if (file == nullptr)
+        std::string buffer;
+        if (!DataReadFile(path, buffer))
+            return false;
+
+        auto result = DataDecompressImpl(buffer);
+        if (!result)
         {
-            LOG_WARNING("File does not exist. Will be created once you save: %s", path.data());
+            LOG_WARNING("Failed to decompress asset pack: %s", path.data());
             return false;
         }
-
-        fseek(file, 0, SEEK_END);
-        const auto totalSize = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        std::string buffer(totalSize, '\0');
-        fread(buffer.data(), totalSize, 1, file);
-        fclose(file);
+        buffer = std::move(result.value().get());
 
         DataDecrypt(buffer, key);
         JSONImport(buffer, container.cells);
 
-        LOG_INFO("Loaded %s: %s | Size: %.2fkb", name.data(), path.data(), static_cast<float>(totalSize) / 1000.0F);
+        LOG_INFO("Loaded GameStorage: %s | Size: %.2fkb", path.data(), (float)buffer.size() / 1000.0F);
         return true;
     }
 
-    void StorageContainer::eraseImpl(std::string_view slot)
+    bool StorageContainer::eraseImpl(std::string_view slot)
     {
-        std::erase_if(cells, [&](const auto& cell) { return cell.name == slot; });
+        return std::erase_if(cells, [&](const auto& cell) { return cell.name == slot; }) > 0;
     }
 
 } // namespace magique::internal

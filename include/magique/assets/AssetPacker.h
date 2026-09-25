@@ -32,17 +32,17 @@ namespace magique
     // Failure: Returns false
     bool AssetPackLoad(AssetPack& pack, std::string_view path = "data.bin", EncryptionKey key = 0);
 
-    // Returns the checksum (hash) of the pack (using MD5)
+    // Returns the hash of the pack
     // Note: This should not be used in a production build
     // The intended workflow:
     //       - 1. Generate the checksum of the final asset pack
-    //       - 2. Copy the checksum into the code: Checksum{"copied-string"} CHECK_SUM;
+    //       - 2. Copy the checksum into the code: Hash{"copied-string"} CHECK_SUM;
     //       - 3. Use this now to verify the integrity of the asset pack (detect tampering or corrupted download)
     //          -  if( !AssetPackValidate(CHECK_SUM)) ... LOG_ERROR("Corrupted asset pack");
-    Checksum AssetPackChecksum(std::string_view path = "data.bin");
+    Hash AssetPackChecksum(std::string_view path = "data.bin");
 
     // Returns true if the asset pack at the specified path has the same checksum
-    bool AssetPackValidate(Checksum checksum, const char* path = "data.bin");
+    bool AssetPackValidate(Hash checksum, std::string_view path = "data.bin");
 
 } // namespace magique
 

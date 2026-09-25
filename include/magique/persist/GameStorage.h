@@ -9,25 +9,26 @@
 // Game Storage
 //===============================================
 // .....................................................................
-// This is a MANUAL interface to manage save data.
-// POD means Plain Old Data which means that all data is stored directly in the struct.
-// For example if your class contains a pointer to something (e.g a vector) this data is stored outside your class!
-// If you save non-POD types you have to manually handles the data that is stored outside the struct!
+// This is a MANUAL interface to store/load data with enforced type checking.
+// When saving to a given slot the type of this slot is set according to the method used (e.g. saveString => STRING)
+// Retrieval is then only possible when using the correct get method for that type (e.g. getString())
 //
-// Note: All save calls copy the passed data on call. The total data is only persisted when you call GameSaveToFile()!
-// Note: All save calls overwrite the existing data of the slot. They are NOT additive.
+// Note: All save calls copy the passed data on call. The total data is only persisted after calling GameStorageToFile()!
+// Note: All save calls overwrite the existing data of that slot - They are NOT additive.
+// POD means plain old data e.g. your class does not contain pointers or other contains but just flat data members
 // .....................................................................
 
 namespace magique
 {
     // Persists the given save to disk
-    // Failure: Returns false
-    bool GameStorageToFile(GameStorage& save, std::string_view path, uint64_t key = 0);
+    // Failure: Returns false if writing to disk failed
+    // Note: file is compressed automatically
+    bool GameStorageToFile(GameStorage& save, std::string_view path, EncryptionKey key = 0);
 
     // Loads an existing save from disk or creates one at the given path
     // Note: When using steam combine with SteamGetUserDataLocation() to access to correct location
-    // Failure: Returns false
-    bool GameStorageFromFile(GameStorage& save, std::string_view filePath, uint64_t key = 0);
+    // Failure: Returns false storage could not be loaded
+    bool GameStorageFromFile(GameStorage& save, std::string_view filePath, EncryptionKey key = 0);
 
     struct GameStorage final : internal::StorageContainer
     {
@@ -40,24 +41,21 @@ namespace magique
         void saveBytes(std::string_view slot, const void* data, int bytes);
 
         // Saves the vector to the specified slot
-        // Note: the value-type of the vector should be a POD type (see header info)
+        // Note: the value-type of the vector should be a POD type (see header info) - else probably use JSON
         template <typename T>
         void saveVector(std::string_view slot, const std::vector<T>& vector);
 
-        // Serializes the given object to JSON and returns a view to the written data
+        // Saves the object serialized to JSON and returns a view to the serialized data
         template <typename T>
         std::string_view saveAsJSON(std::string_view slot, const T& obj);
 
         //================= GETTING =================//
 
-        // If the storage exists AND stores a string returns a view to it
-        // Failure: else returns the given default value
-        std::string_view getStringOrElse(std::string_view slot, std::string_view defaultVal = "");
+        // Returns a view to the string stored at the given slot
+        std::optional<std::string_view> getString(std::string_view slot);
 
-        // Returns a copy of the data from this slot
-        // Optional: Specify the type to get the correct type back
-        // Failure: returns {} if the storage doesn't exist or type doesn't match
-        std::string_view getBytes(std::string_view slot);
+        // Returns a view to the data at the given slot
+        std::optional<std::string_view> getBytes(std::string_view slot);
 
         // Returns a view to the vector data stored at this slot
         // Failure: returns an empty view
@@ -78,8 +76,13 @@ namespace magique
 
         //================= UTIL =================//
 
+        // Clears all data
         void clear();
-        void erase(std::string_view slot);
+
+        // Returns true if the given slot was removed
+        bool erase(std::string_view slot);
+
+        // Returns the type of the given slot
         StorageType getSlotType(std::string_view slot);
     };
 

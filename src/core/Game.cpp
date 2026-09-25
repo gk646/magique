@@ -176,7 +176,7 @@ namespace magique
         {
             global::ATLAS_DATA.loadToGPU();
         };
-        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, THREAD_MAIN, LOW, 1);
+        static_cast<AssetLoader*>(loader)->registerTask(loadAtlasGPU, THREAD_MAIN, LOW);
         static_cast<AssetLoader*>(loader)->printStats();
         isLoading = true;
 

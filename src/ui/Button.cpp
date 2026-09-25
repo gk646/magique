@@ -40,7 +40,7 @@ namespace magique
             if (isHovered && LayeredInput::IsMouseButtonPressed(i))
             {
                 isPressed = true;
-                LayeredInput::ConsumeMouse();
+                //  LayeredInput::ConsumeMouse();
             }
 
             if (LayeredInput::IsMouseButtonReleased(i))
@@ -117,9 +117,11 @@ namespace magique
 
     void TextButton::drawDefault(const Rect& bounds)
     {
+        const auto fontSize = global::ENGINE_CONFIG.getFontSize();
         const auto& font = EngineGetFont();
+        fitToText(font, fontSize);
         Button::drawDefault(bounds);
-        DrawTextCenteredRect(font, text, font.baseSize, bounds, 1.0F, global::ENGINE_CONFIG.theme.text);
+        DrawTextCentered(font, text, bounds.mid(), fontSize, 1.0F, global::ENGINE_CONFIG.theme.text);
     }
 
     IconButton::IconButton(TextureRegion icon, TextureRegion pressed, Anchor anchor, Point inset, ScalingMode mode) :

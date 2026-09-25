@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: zlib-acknowledgement
 #define _CRT_SECURE_NO_WARNINGS
 #include <magique/steam/Steam.h>
+#include <magique/util/Data.h>
 
 #ifndef MAGIQUE_STEAM
 #include "magique/core/Types.h"
@@ -41,23 +42,13 @@ namespace magique
 
         if (createFile)
         {
-            constexpr auto* filename = "steam_appid.txt";
-            constexpr auto* id = "480";
-
-            const std::ifstream file(filename);
-            if (!file.good())
+            if (!DataWriteFile("./steam_appid.txt", "480"))
             {
-                const auto newFile = fopen(filename, "wb");
-                if (newFile != nullptr)
-                {
-                    fwrite(id, 3, 1, newFile);
-                    fclose(newFile);
-                    LOG_INFO("Created steam_appid.txt with test id 480");
-                }
-                else
-                {
-                    LOG_ERROR("Unable to create steam_appid.txt file with test id 480 - Do it manually!");
-                }
+                LOG_ERROR("Unable to create steam_appid.txt file with test id 480 - Do it manually!");
+            }
+            else
+            {
+                LOG_INFO("Created steam_appid.txt with test id 480");
             }
         }
 
