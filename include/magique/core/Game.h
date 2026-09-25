@@ -68,19 +68,19 @@ namespace magique
 
         // Called each render tick - should draw the world here
         // Default: called 100 times per second - changed by SetTargetFPS()
-        virtual void onDrawGame(GameState gameState, Camera2D& camera2D) { GameSystem::CallDrawGame(); }
+        virtual void onDrawGame(GameState state, Camera2D& camera) { GameSystem::CallDrawGame(); }
 
         // Called each render tick after drawGame() - should draw the user interface here
         // EndDrawing() will be called after this method internally
-        virtual void onDrawUI(GameState gameState) {}
+        virtual void onDrawUI(GameState state) {}
 
         // Called each update tick BEFORE drawGame()
         // Default: called 60 times per second (constant)
-        virtual void onUpdateGame(GameState gameState) { GameSystem::CallUpdateGame(); }
+        virtual void onUpdateGame(GameState state) { GameSystem::CallUpdateGame(); }
 
         // Called after the internal update tick (collision, ui, sound)
         // Note: Useful for sending network updates as this it the final state for this tick
-        virtual void onUpdateEnd(GameState gameState) { GameSystem::CallUpdateEnd(); }
+        virtual void onUpdateEnd(GameState state) { GameSystem::CallUpdateEnd(); }
 
         //================= VARIABLES =================//
 

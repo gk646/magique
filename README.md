@@ -51,7 +51,7 @@ Most notable features:
     - Supports _**[Tiled](https://www.mapeditor.org/) tilemaps and tilset exports**_ (.tmx, .tsx)
     - Object-oriented UI framework with automatic scaling and intuitive anchoring and alignment tools
     - Powerful in-game console with custom commands and interaction with the game
-    - _**Achievements, Localization, 2DSound, AIAgent, VirtualClock, and many more!**_
+    - _**Achievements, Localization, 2DSound, VirtualClock, and many more!**_
 - **Multiplayer support**
     - Seamless transition between local and global networking with a unified API
 - **Steam integration**
@@ -83,8 +83,8 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
   #include <magique/magique.hpp>
   struct MyGame final : Game
   {
-      void onUpdateGame(GameState gameState) override { printf("Hello World!\n"); }
-      void onDrawGame(GameState gameState, Camera2D& camera) override { DrawRectangle(0, 0, 50, 50, RED); }
+      void onUpdateGame(GameState state) override { printf("Hello World!\n"); }
+      void onDrawGame(GameState state, Camera2D& camera) override { DrawRectangleRec(Rect::CenteredOn(GetScreenDims() / 2, 50), RED) }
   };
   
   int main()
@@ -104,7 +104,7 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
   
   # Automatically downloads the latest magique
   include(FetchContent)
-  FetchContent_Declare(magique GIT_REPOSITORY https://github.com/gk646/magique)
+  FetchContent_Declare(magique GIT_REPOSITORY https://github.com/gk646/magique GIT_TAG main)
   FetchContent_MakeAvailable(magique)
   
   # Link your project against magique - automatically sets up include paths and dependencies
@@ -116,7 +116,7 @@ Checkout the [video guide](https://www.youtube.com/watch?v=6mQwd6NjNcw) for a st
 ```shell
 mkdir build && cd build
 cmake ..
-make && ./game
+make -j 8 && ./game
 ```
 
 **With these simple steps you created your first project with `magique`!**
