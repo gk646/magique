@@ -1,10 +1,6 @@
 #ifndef COMPONENTS_H
 #define COMPONENTS_H
 
-#include <magique/core/Types.h>
-
-using namespace magique;
-
 struct EntityStatsC final
 {
     static constexpr float MAX_HEALTH = 10.0F;

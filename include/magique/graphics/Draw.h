@@ -50,6 +50,9 @@ namespace magique
 
     //================= TEXT =================//
 
+    // Simple text function - uses the engine font
+    void DrawText(std::string_view txt, Point pos, float fs = -1, float spc = 1.0F, Color c = WHITE);
+
     // Draws the given horizontally & vertically centered on the given position
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc = 1.0F, Color c = WHITE);
 

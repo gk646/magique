@@ -1,17 +1,5 @@
+#include "WizardQuest.h"
 #include "Multiplayer.h"
-
-#include <cassert>
-#include <raylib/raylib.h>
-
-#include <WizardQuest.h>
-#include <ankerl/unordered_dense.h>
-#include <magique/core/Core.h>
-#include <magique/ecs/ECS.h>
-#include <magique/networking/LocalSockets.h>
-#include <magique/networking/Multiplayer.h>
-#include <magique/util/Logging.h>
-
-using namespace magique;
 
 // This implementation reuses code from example/headers/LocalNetworking.h
 // Check it out for more info
@@ -20,7 +8,7 @@ using namespace magique;
 struct PositionUpdate final // Position update from ane entity in the host world
 {
     entt::entity entity;
-    float x, y;
+    Point pos;
     MapID map;
 };
 
@@ -31,7 +19,7 @@ struct InputUpdate final // Inputs from the client to the host
 
 struct SpawnUpdate final // Entity spawned in the host world
 {
-    float x, y;
+    Point pos;
     entt::entity entity;
     EntityType type;
     MapID map;
@@ -41,88 +29,70 @@ HashMap<Connection, entt::entity> networkPlayerMap{}; // Maps outgoing connectio
 
 void Multiplayer::init()
 {
-    InitLocalMultiplayer();
+    LocalSocketInit();
 
     // Setup event callback so we can react to multiplayer events
-    SetMultiplayerCallback(
-        [&](MultiplayerEvent event, Connection conn)
+    NetworkSetCallback(
+        [&](NetworkEvent event, Connection conn, const NetworkEventData& data)
         {
-            if (event == MultiplayerEvent::HOST_NEW_CONNECTION)
+            if (event == NetworkEvent::HOST_NEW_CONNECTION)
             {
-                const auto id = EntityCreate(NET_PLAYER, 24 * 24, 24 * 24, MapID(0)); // Create a new netplayer
-                const auto lastConnection = GetCurrentConnections().back();
+                // Create a new netplayer
+                const auto id = EntityCreate(EntityType::NET_PLAYER, {24 * 24}, MapID(0));
+                const auto lastConnection = NetworkGetConnections().back();
                 networkPlayerMap[lastConnection] = id; // Save the mapping
 
                 // Send the new client the current world state - iterate all entities
-                for (const auto e : GetRegistry().view<PositionC>())
+                for (const auto e : ComponentGetView<PositionC>())
                 {
                     SpawnUpdate spawnUpdate{};
                     spawnUpdate.entity = e;
                     spawnUpdate.map = MapID(0);
                     const auto& pos = ComponentGet<PositionC>(e);
-                    spawnUpdate.x = pos.x;
-                    spawnUpdate.y = pos.y;
-                    if (id == e) // If it's the network player itself send the player type (for the camera)
-                        spawnUpdate.type = PLAYER;
-                    else if (pos.type == PLAYER) // Filter out the host - the host is a network player on the client
-                        spawnUpdate.type = NET_PLAYER;
+                    spawnUpdate.pos = pos;
+                    // If it's the network player itself send the player type (for the camera)
+                    if (id == e)
+                        spawnUpdate.type = EntityType::PLAYER;
+                    // Filter out the host - the host is a network player on the client
+                    else if (pos.type == EntityType::PLAYER)
+                        spawnUpdate.type = EntityType::NET_PLAYER;
                     else
                         spawnUpdate.type = pos.type;
 
-                    const auto payload = CreatePayload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
+                    const auto payload = Payload(&spawnUpdate, sizeof(SpawnUpdate), MessageType::SPAWN_UPDATE);
 
-                    BatchMessage(lastConnection, payload); // Batch the message - its sent with the next flush
+                    NetworkSend(lastConnection, payload);
                 }
             }
-            else if (event == MultiplayerEvent::CLIENT_CONNECTION_ACCEPTED)
+            else if (event == NetworkEvent::CLIENT_CONNECTION_ACCEPTED)
             {
-                EnterClientMode();
+                NetworkEnterClientMode();
                 EntityDestroy({}); // Destroy all entities in our world as we enter the hosts world
             }
-            else if (event == MultiplayerEvent::CLIENT_CONNECTION_CLOSED)
+            else if (event == NetworkEvent::CLIENT_CONNECTION_CLOSED)
             {
-                ExitClientMode();
+                NetworkExitClientMode();
             }
         });
 }
 
-void Multiplayer::checkBeginSession()
-{
-    const int port = 35000;
-    if (IsKeyPressed(KEY_H))
-    {
-        if (CreateLocalSocket(port))
-            LOG_INFO("Opened server");
-        return;
-    }
-
-    if (IsKeyPressed(KEY_J))
-    {
-        LOG_INFO("Trying to connect to local server...");
-        Connection conn = ConnectToLocalSocket(GetLocalIP(), port);
-        if (conn == Connection::INVALID_CONNECTION)
-        {
-            LOG_WARNING("Error trying to connect to local server");
-        }
-    }
-}
-
 void Multiplayer::update()
 {
-    if (!GetInMultiplayerSession()) // Only check if NOT in a session
+    if (!NetworkInSession()) // Only check if NOT in a session
     {
         checkBeginSession();
     }
 
     // The host gets the client inputs
-    if (GetIsHost())
+    if (NetworkIsHost())
     {
-        const std::vector<Message>& msgs = ReceiveIncomingMessages();
+        auto msgs = NetworkReceive();
         for (const auto& msg : msgs)
         {
-            if (msg.payload.type != MessageType::INPUT_UPDATE)
+            if (msg.payload.getType() != MessageType::INPUT_UPDATE)
             {
                 LOG_WARNING("Received wrong message"); // Client only sends inputs
+                continue;
             }
 
             const auto inputUpdate = msg.payload.getDataAs<InputUpdate>();
@@ -131,7 +101,7 @@ void Multiplayer::update()
 
             // Move the entity in our world
             // Note: Normally you would look up their movement speed or invoke a method to move it
-            auto& pos = ComponentGet<PositionC>(entity);
+            auto& pos = ComponentGet<PositionC>(entity).pos;
             if (inputUpdate.key == KEY_W)
             {
                 pos.y -= 2.5F;
@@ -152,20 +122,19 @@ void Multiplayer::update()
     }
 
     // The client gets the gamestate updates
-    if (GetIsClient())
+    if (NetworkIsClient())
     {
-        const auto& msgs = ReceiveIncomingMessages();
+        auto msgs = NetworkReceive();
         for (const auto& msg : msgs)
         {
-            switch (msg.payload.type)
+            switch (msg.payload.getType())
             {
             case MessageType::POSITION_UPDATE:
                 {
                     // Get the data
                     PositionUpdate positionUpdate = msg.payload.getDataAs<PositionUpdate>();
                     auto& pos = ComponentGet<PositionC>(positionUpdate.entity);
-                    pos.x = positionUpdate.x;
-                    pos.y = positionUpdate.y;
+                    pos.pos = positionUpdate.pos;
                     pos.map = positionUpdate.map;
                 }
                 break;
@@ -174,9 +143,9 @@ void Multiplayer::update()
                 break;
             case MessageType::SPAWN_UPDATE:
                 {
-                    auto [x, y, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
-                    assert(!EntityExists(entity));                    // Entity MUST not exist already!
-                    CreateEntityEx(entity, type, x, y, map, 0, true); // Create a new entity
+                    auto [pos, entity, type, map] = msg.payload.getDataAs<SpawnUpdate>();
+                    assert(!EntityExists(entity));                   // Entity MUST not exist already!
+                    EntityCreateEx(entity, type, pos, map, 0, true); // Create a new entity
                 }
                 break;
             }
@@ -187,26 +156,25 @@ void Multiplayer::update()
 void Multiplayer::postUpdate()
 {
     // Here we send out the data for this tick
-    if (GetInMultiplayerSession())
+    if (NetworkInSession())
     {
         // The host sends out the current gamestate to all clients
         // Note: Usually you want to optimize this to send as little as possible
         //      -> instead of position send the position delta - pack multiple single updates together...
-        if (GetIsHost())
+        if (NetworkIsHost())
         {
-            for (const auto e : GetUpdateEntities())
+            for (const auto e : EngineGetUpdateEntities())
             {
                 const auto& pos = ComponentGet<const PositionC>(e);
 
                 // Create the data
                 PositionUpdate posUpdate{};
-                posUpdate.x = pos.x;
-                posUpdate.y = pos.y;
+                posUpdate.pos = pos;
                 posUpdate.entity = e;
                 posUpdate.map = pos.map;
 
                 // Create the payload
-                const auto payload = CreatePayload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
+                const auto payload = Payload(&posUpdate, sizeof(PositionUpdate), MessageType::POSITION_UPDATE);
 
                 // Use batching to avoid the overhead of sending multiple times - send to all connected clients
                 NetworkSendAll(payload);
@@ -214,9 +182,9 @@ void Multiplayer::postUpdate()
         }
 
         // Send inputs - in client mode all script event methods are skipped!
-        if (GetIsClient())
+        if (NetworkIsClient())
         {
-            const auto host = GetCurrentConnections()[0];
+            const auto host = NetworkGetConnections()[0];
             constexpr KeyboardKey keyArr[] = {KEY_W, KEY_A, KEY_S, KEY_D};
             for (const auto key : keyArr)
             {
@@ -224,12 +192,31 @@ void Multiplayer::postUpdate()
                 {
                     InputUpdate inputUpdate{};
                     inputUpdate.key = key;
-                    BatchMessage(host, CreatePayload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
+                    NetworkSend(host, Payload(&inputUpdate, sizeof(InputUpdate), MessageType::INPUT_UPDATE));
                 }
             }
         }
 
         // Send the accumulated message for this tick
-        SendBatch();
+        NetworkFlush();
+    }
+}
+
+void Multiplayer::checkBeginSession()
+{
+    const int port = 35000;
+    if (IsKeyPressed(KEY_H))
+    {
+        if (LocalSocketCreate(port))
+            LOG_INFO("Opened server");
+        return;
+    }
+
+    if (IsKeyPressed(KEY_J))
+    {
+        LOG_INFO("Trying to connect to local server...");
+        Connection conn = LocalSocketConnect(LocalSocketGetIP(), port);
+        if (conn == Connection::INVALID)
+            LOG_WARNING("Error trying to connect to local server");
     }
 }

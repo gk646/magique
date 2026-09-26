@@ -35,7 +35,7 @@ namespace magique
         //================= SAVING =================//
 
         // Saves a string value to the specified slot
-        void saveString(std::string_view slot, const std::string_view& string);
+        void saveString(std::string_view slot, std::string_view string);
 
         // Saves arbitrary data to the specified slot
         void saveBytes(std::string_view slot, const void* data, int bytes);

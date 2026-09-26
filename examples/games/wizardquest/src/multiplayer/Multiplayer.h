@@ -11,5 +11,4 @@ private:
     static void checkBeginSession();
 };
 
-
 #endif //MULTIPLAYER_H

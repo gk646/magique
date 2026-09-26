@@ -3,21 +3,19 @@
 
 #include <magique/core/Types.h>
 
-using namespace magique;
-
-struct TileLoader final : ITask<AssetContainer>
+struct TileLoader final : ITask<AssetPack>
 {
-    void execute(AssetContainer& res) override;
+    void execute(AssetPack& res) override;
 };
 
-struct TextureLoader final : ITask<AssetContainer>
+struct TextureLoader final : ITask<AssetPack>
 {
-    void execute(AssetContainer& assets) override;
+    void execute(AssetPack& assets) override;
 };
 
-struct EntityLoader final : ITask<AssetContainer>
+struct EntityLoader final : ITask<AssetPack>
 {
-    void execute(AssetContainer& res) override;
+    void execute(AssetPack& res) override;
 };
 
 

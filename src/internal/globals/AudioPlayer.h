@@ -139,7 +139,7 @@ namespace magique
                 return;
 
             const int nextTrack = playlist.getNextTrack();
-            addTrack(playlist.tracks[nextTrack], playlist.volume, playlist.fading, false);
+            addTrack(playlist.tracks[nextTrack], playlist.volume, playlist.isFadeIn, true);
             playlists.push_back(&playlist);
         }
 
@@ -177,7 +177,7 @@ namespace magique
                 if (!IsMusicStreamPlaying(playlist->tracks[playlist->currentTrack]))
                 {
                     const int nextTrack = playlist->getNextTrack();
-                    addTrack(playlist->tracks[nextTrack], playlist->volume, playlist->fading, false);
+                    addTrack(playlist->tracks[nextTrack], playlist->volume, playlist->isFadeIn, false);
                 }
             }
         }

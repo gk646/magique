@@ -412,14 +412,22 @@ namespace magique
 
     bool Rect::operator==(const float num) const { return x == num && y == num && width == num && height == num; }
 
-    Rect& Rect::operator/(float divisor)
+    Rect& Rect::operator/(float divisor) { return this->operator*(1.0F / divisor); }
+
+    Rect& Rect::operator*(float mult)
     {
-        const auto mult = 1.0F / divisor;
         x *= mult;
         y *= mult;
         width *= mult;
         height *= mult;
         return *this;
+    }
+
+    Rect Rect::operator*(float mult) const
+    {
+        Rect copy = *this;
+        copy = copy * mult;
+        return copy;
     }
 
     Rect& Rect::floor()

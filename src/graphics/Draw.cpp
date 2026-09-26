@@ -4,16 +4,18 @@
 #include <cctype>
 
 #include <magique/core/Camera.h>
+#include <magique/core/Engine.h>
 #include <magique/graphics/Draw.h>
 #include <magique/assets/types/TileMap.h>
 #include <magique/assets/types/TileSheet.h>
 #include <magique/util/Strings.h>
+#include <magique/util/RayUtils.h>
 
 #include <raylib/rlgl.h> // Has to be here
 
+#include "internal/globals/EngineConfig.h"
 #include "internal/utils/CollisionPrimitives.h"
 #include "external/raylib-compat/rcore_compat.h"
-#include "magique/util/RayUtils.h"
 
 constexpr auto ATLAS_SIZE = static_cast<float>(MAGIQUE_MAX_TEXTURE_SIZE);
 
@@ -229,6 +231,12 @@ namespace magique
         }
         rlEnd();
         rlSetTexture(0);
+    }
+
+    void DrawText(std::string_view txt, Point pos, float fs, float spc, Color c)
+    {
+        const auto fontSize = fs < 0 ? global::ENGINE_CONFIG.getFontSize() : fs;
+        DrawTextEx(EngineGetFont(), txt.data(), pos, fontSize, spc, c);
     }
 
     void DrawTextCentered(const Font& f, std::string_view txt, Point pos, float fs, float spc, Color tint)

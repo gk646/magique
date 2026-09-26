@@ -12,27 +12,27 @@ struct State
     int score = 0;
     int moves = 0;
     float cellSize = 24;
-    magique::Point boardDims = {16};
+    Point boardDims = {16};
     float foodDelaySec = 2.0F;
     float moveDelaySec = 0.5F;
     bool gameOver = false;
-    magique::Direction direction = magique::Direction::UP;
-    magique::Counter moveDelay{moveDelaySec / (MAGIQUE_TICK_TIME)};
-    magique::Counter foodDelay{foodDelaySec / (MAGIQUE_TICK_TIME)};
+    Direction direction = Direction::UP;
+    Counter moveDelay{moveDelaySec / (MAGIQUE_TICK_TIME)};
+    Counter foodDelay{foodDelaySec / (MAGIQUE_TICK_TIME)};
 
-    std::vector<magique::Point> snake;
-    std::vector<magique::Point> food;
+    std::vector<Point> snake;
+    std::vector<Point> food;
 };
 
 State STATE{};
 
-struct InfoPanel : magique::UIObject
+struct InfoPanel : UIObject
 {
-    InfoPanel() : UIObject{magique::Rect{300}, magique::Anchor::TOP_LEFT, magique::Point{25}} {}
+    InfoPanel() : UIObject{Rect{300}, Anchor::TOP_LEFT, Point{25}} {}
 
-    void onDraw(const magique::Rect& bounds) override
+    void onDraw(const Rect& bounds) override
     {
-        magique::TextDrawer drawer{magique::EngineGetFont(), bounds};
+        TextDrawer drawer{EngineGetFont(), bounds};
 
         drawer.modSize(3).left(GRAY, "Score: %d", STATE.score);
         drawer.linebreak(3);
@@ -45,15 +45,15 @@ struct InfoPanel : magique::UIObject
     }
 };
 
-struct Snake final : magique::Game
+struct Snake final : Game
 {
-    void onStartup(magique::AssetLoader& loader) override
+    void onStartup(AssetLoader& loader) override
     {
-        auto& gameScene = magique::SceneGet(GameState::Game);
+        auto& gameScene = SceneGet(GameState::Game);
         gameScene.addObject(new InfoPanel());
 
-        auto& slider = gameScene.addObject(new magique::Slider{{150, 50}, magique::Anchor::TOP_RIGHT, 50});
-        slider.setScaleImblanced(2, 0.5, 0.05);
+        auto& slider = gameScene.addObject(new Slider{{150, 50}, "Speed", Direction::LEFT, Anchor::TOP_RIGHT, 50});
+        slider.setScaleZones(1, 0.3, 0.05);
         slider.setOnChange(
             [&](float val, float perc)
             {
@@ -61,17 +61,18 @@ struct Snake final : magique::Game
                 STATE.moveDelay = {val / (MAGIQUE_TICK_TIME)};
             });
 
-        auto& sizeSlider = gameScene.addObject(new magique::Slider{{150, 50}, magique::Anchor::TOP_RIGHT, {50, 100}});
-        sizeSlider.setScaleImblanced(8, 16, 64);
+        auto& sizeSlider =
+            gameScene.addObject(new Slider{{150, 50}, "Board Size", Direction::LEFT, Anchor::TOP_RIGHT, {50, 100}});
+        sizeSlider.setScaleZones(8, 16, 64);
         sizeSlider.setOnChange([&](float val, float perc) { STATE.boardDims = {val}; });
 
-        auto& gameOverScene = magique::SceneGet(GameState::GameOver);
-        auto& restart = gameOverScene.addObject(new magique::TextButton{"Restart", magique::Anchor::TOP_RIGHT, 50});
+        auto& gameOverScene = SceneGet(GameState::GameOver);
+        auto& restart = gameOverScene.addObject(new TextButton{"Restart", Anchor::TOP_RIGHT, 50});
         restart.setOnClick(
-            [&](const magique::Rect& bounds, int button)
+            [&](MouseButton button)
             {
                 ResetGame();
-                magique::EngineSetState(GameState::Game);
+                EngineSetState(GameState::Game);
             });
 
         SetWindowState(FLAG_WINDOW_RESIZABLE);
@@ -80,40 +81,40 @@ struct Snake final : magique::Game
     void onLoadingFinished() override
     {
         ResetGame();
-        magique::EngineSetState(GameState::Game);
+        EngineSetState(GameState::Game);
     }
 
     void onUpdateGame(GameState gameState) override
     {
-        STATE.cellSize = std::round((magique::GetScreenDims().y * 0.8F) / STATE.boardDims.y);
+        STATE.cellSize = std::round((GetScreenDims().y * 0.8F) / STATE.boardDims.y);
         if (gameState != GameState::Game)
         {
             return;
         }
 
-        if (magique::LayeredInput::IsKeyDown(KEY_W) && STATE.direction != magique::Direction::DOWN)
+        if (LayeredInput::IsKeyDown(KEY_W) && STATE.direction != Direction::DOWN)
         {
-            STATE.direction = magique::Direction::UP;
+            STATE.direction = Direction::UP;
         }
-        else if (magique::LayeredInput::IsKeyDown(KEY_A) && STATE.direction != magique::Direction::RIGHT)
+        else if (LayeredInput::IsKeyDown(KEY_A) && STATE.direction != Direction::RIGHT)
         {
-            STATE.direction = magique::Direction::LEFT;
+            STATE.direction = Direction::LEFT;
         }
-        else if (magique::LayeredInput::IsKeyDown(KEY_S) && STATE.direction != magique::Direction::UP)
+        else if (LayeredInput::IsKeyDown(KEY_S) && STATE.direction != Direction::UP)
         {
-            STATE.direction = magique::Direction::DOWN;
+            STATE.direction = Direction::DOWN;
         }
-        else if (magique::LayeredInput::IsKeyDown(KEY_D) && STATE.direction != magique::Direction::LEFT)
+        else if (LayeredInput::IsKeyDown(KEY_D) && STATE.direction != Direction::LEFT)
         {
-            STATE.direction = magique::Direction::RIGHT;
+            STATE.direction = Direction::RIGHT;
         }
 
         if (STATE.foodDelay.tick())
         {
-            magique::Point pos = magique::Rect{STATE.boardDims}.random(1).floor();
+            Point pos = Rect{STATE.boardDims}.random(1).floor();
             while (std::ranges::contains(STATE.food, pos))
             {
-                pos = magique::Rect{STATE.boardDims}.random(1).floor();
+                pos = Rect{STATE.boardDims}.random(1).floor();
             }
             STATE.food.push_back(pos);
         }
@@ -121,14 +122,14 @@ struct Snake final : magique::Game
         if (STATE.moveDelay.tick())
         {
             STATE.moves++;
-            magique::Point dx{};
-            if (STATE.direction == magique::Direction::UP)
+            Point dx{};
+            if (STATE.direction == Direction::UP)
                 dx = {0, -1};
-            if (STATE.direction == magique::Direction::RIGHT)
+            if (STATE.direction == Direction::RIGHT)
                 dx = {1, 0};
-            if (STATE.direction == magique::Direction::DOWN)
+            if (STATE.direction == Direction::DOWN)
                 dx = {0, 1};
-            if (STATE.direction == magique::Direction::LEFT)
+            if (STATE.direction == Direction::LEFT)
                 dx = {-1, 0};
 
             auto headPos = STATE.snake[0] + dx;
@@ -145,7 +146,7 @@ struct Snake final : magique::Game
                 {
                     if (&snake != &STATE.snake.front() && snake == STATE.snake.front())
                     {
-                        magique::EngineSetState(GameState::GameOver);
+                        EngineSetState(GameState::GameOver);
                     }
                 }
             }
@@ -169,8 +170,7 @@ struct Snake final : magique::Game
         {
             for (int j = 0; j < (int)STATE.boardDims.x; j++)
             {
-                DrawRectangleLinesEx(magique::Rect{magique::Point{(float)j, (float)i} * STATE.cellSize, STATE.cellSize},
-                                     1, BLACK);
+                DrawRectangleLinesEx(Rect{Point{(float)j, (float)i} * STATE.cellSize, STATE.cellSize}, 1, BLACK);
             }
         }
     }
@@ -179,12 +179,12 @@ struct Snake final : magique::Game
     {
         for (auto& snake : STATE.food)
         {
-            DrawRectangleRec(magique::Rect{snake * STATE.cellSize, STATE.cellSize}, RED);
+            DrawRectangleRec(Rect{snake * STATE.cellSize, STATE.cellSize}, RED);
         }
         for (auto& snake : STATE.snake)
         {
             const auto color = &STATE.snake.front() == &snake ? BLUE : GREEN;
-            DrawRectangleRec(magique::Rect{snake * STATE.cellSize, STATE.cellSize}, color);
+            DrawRectangleRec(Rect{snake * STATE.cellSize, STATE.cellSize}, color);
         }
     }
 
@@ -196,13 +196,13 @@ struct Snake final : magique::Game
         STATE.food.clear();
         STATE.snake.clear();
         STATE.snake.push_back(STATE.boardDims / 2);
-        STATE.direction = magique::Direction::UP;
+        STATE.direction = Direction::UP;
     }
 
-    void onDrawGame(GameState gameState, Camera2D& camera2D) override
+    void onDrawGame(GameState state, Camera2D& camera) override
     {
-        camera2D.target = magique::Point{STATE.boardDims * STATE.cellSize} / 2.0F;
-        BeginMode2D(camera2D);
+        camera.target = Point{STATE.boardDims * STATE.cellSize} / 2.0F;
+        BeginMode2D(camera);
 
         DrawObjects();
         DrawBoard();
@@ -212,7 +212,7 @@ struct Snake final : magique::Game
 
     void onDrawUI(GameState gameState) override
     {
-        auto& scene = magique::SceneGet(gameState);
+        auto& scene = SceneGet(gameState);
         scene.draw();
     }
 };

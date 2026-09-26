@@ -3,13 +3,9 @@
 
 #include <magique/ecs/Scripting.h>
 
-using namespace magique;
-
 struct PlayerScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override;
-
-    void onKeyEvent(entt::entity self) override;
+    void onUpdate(entt::entity self, bool updated) override;
 };
 
 struct NetPlayerScript final : EntityScript
@@ -18,8 +14,8 @@ struct NetPlayerScript final : EntityScript
 
 struct TrollScript final : EntityScript
 {
-    void onTick(entt::entity self, bool updated) override;
+    void onUpdate(entt::entity self, bool updated) override;
 };
 
 
-#endif //SCRIPTS_H
+#endif // SCRIPTS_H

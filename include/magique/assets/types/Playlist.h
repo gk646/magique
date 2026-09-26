@@ -52,7 +52,7 @@ namespace magique
         int currentTrack = 0;
         float volume = 1.0F;
         bool isPlaying_ = false;
-        bool fading = true;
+        bool isFadeIn = true;
         friend AudioPlayer;
     };
 

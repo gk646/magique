@@ -163,14 +163,18 @@ namespace magique
         // Note: This is useful for rotated rectangles
         static Point Mid(Point topLeft, Point bottomRight);
 
-        Rect& operator+=(const Point& p);     // only x and y
-        Rect operator+(const Point& p) const; // only x and y
-        Rect& operator=(const Point& p);      // only x and y
-        Rect operator-(const Point& p) const; // only x and y
-        Rect& operator-=(const Point& p);     // only x and y
+        // Only applies to x and y
+        Rect& operator+=(const Point& p);     
+        Rect operator+(const Point& p) const; 
+        Rect& operator=(const Point& p);      
+        Rect operator-(const Point& p) const; 
+        Rect& operator-=(const Point& p);     
 
-        bool operator==(float num) const; // checks all
+        // Applies to all
+        bool operator==(float num) const;
         Rect& operator/(float divisor);
+        Rect& operator*(float mult);
+        Rect operator*(float mult)const;
 
         // Applies to all values
         Rect& floor();
@@ -1146,7 +1150,7 @@ namespace magique
     template <typename T>
     const T& Payload::getDataAs() const
     {
-        return *static_cast<const T*>(data_.data());
+        return *(const T*)(data_.data());
     }
 
     template <typename T>

@@ -1,10 +1,8 @@
 #include "WizardQuest.h"
 
-#include <magique/assets/AssetPacker.h>
-
 int main()
 {
-    CompileAssetImage("../res");
+    AssetPackCompile("../res");
     WizardQuest game{};
     return game.run();
 }

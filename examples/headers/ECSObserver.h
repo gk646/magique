@@ -16,15 +16,12 @@ struct Example final : Game
     void onStartup(AssetLoader& loader) override
     {
         EntityCreate(EntityType::Player, {}, {}, 15, false);
-        EntityRegister(EntityType::Player, [](Entity e, EntityType type)
-        {
-           ComponentGive<CollisionC>(e);
-        });
+        EntityRegister(EntityType::Player, [](Entity e, EntityType type) { ComponentGive<CollisionC>(e); });
     }
 
     void onUpdateGame(GameState gameState) override
     {
-        auto player = EntityFindFirstOf(EntityType::Player);
+        auto player = EntityFindFirstOf(EntityType::Player).value_or(NullEntity);
         if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
         {
             ComponentGet<PositionC>(player).pos += 5;
@@ -32,22 +29,21 @@ struct Example final : Game
 
         if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
         {
-            EntityApplyChange<PositionC>(player, reverse);
-            LOG_INFO("Revert to old state: %s", ComponentGet<PositionC>(player).pos.toString().data());
+            EntityPatchDiff<PositionC>(player, {reverse});
+            LOG_INFO("Revert to old state: %s", ToJSON(ComponentGet<PositionC>(player).pos).data());
         }
 
         if (IsKeyPressed(KEY_R))
-            EntityResetObserver();
+            ObserverStateClear();
 
-        EntityObserveChange<PositionC>(
-            player,
-            [&](entt::entity e, const PositionC& oldPos, const PositionC& newPos)
-            {
-                LOG_INFO("Changed from %s to %s", oldPos.pos.toString().data(), newPos.pos.toString().data());
-                reverse = EntitySerializeChange(newPos, oldPos);
-                LOG_INFO("Serialized change: %s", EntitySerializeChange(oldPos, newPos).data());
-                LOG_INFO("Reverse change: %s %d bytes", reverse.c_str(), reverse.size());
-            });
+        EntityOnChange<PositionC>(player,
+                                  [&](entt::entity e, const PositionC& oldPos, const PositionC& newPos)
+                                  {
+                                      std::string old = std::string{ToJSON(oldPos.pos)};
+                                      LOG_INFO("Changed from %s to %s", old.c_str(), ToJSON(newPos.pos).data());
+                                      reverse = ObserverDiff(newPos, oldPos);
+                                      LOG_INFO("Size: %d bytes", reverse.size());
+                                  });
 
         auto& position = ComponentGet<PositionC>(player);
         if (IsKeyPressed(KEY_W))
@@ -62,7 +58,7 @@ struct Example final : Game
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
-        auto player = EntityFindFirstOf(EntityType::Player);
+        auto player = EntityFindFirstOf(EntityType::Player).value();
         const auto& position = ComponentGet<PositionC>(player);
         DrawRectangleRec(Rect{position, {50}}, RED);
     }

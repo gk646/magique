@@ -3,8 +3,6 @@
 
 #include <magique/magique.hpp> // Single header include
 
-using namespace magique;
-
 // Entity identifiers
 enum class EntityType : uint16_t
 {
@@ -42,8 +40,8 @@ struct Asteroids final : Game
 {
     Asteroids() : Game("magique - Asteroids") {}
     void onStartup(AssetLoader& loader) override;
-    void onUpdateGame(GameState gameState) override;
-    void onDrawGame(GameState gameState, Camera2D& camera) override;
+    void onUpdateGame(GameState state) override;
+    void onDrawGame(GameState state, Camera2D& camera) override;
     void onDrawUI(GameState gameState) override;
 };
 
@@ -57,6 +55,7 @@ struct PlayerScript final : EntityScript
 
 struct BulletScript final : EntityScript
 {
+    void onCreate(Entity self) override;
     void onUpdate(entt::entity self, bool updated) override;
     void onStaticCollision(entt::entity self, ColliderInfo collider, CollisionInfo& info) override;
 };
@@ -81,12 +80,16 @@ struct HouseScript final : EntityScript
 struct PlayerBarUI final : UIObject
 {
     PlayerBarUI() : UIObject({50, 70, 200, 50}) {}
+
+protected:
     void onDraw(const Rect& bounds) override;
 };
 
 struct ScoreCounter final : UIObject
 {
     ScoreCounter() : UIObject({200, 50}, Anchor::TOP_CENTER) {}
+
+protected:
     void onDraw(const Rect& bounds) override;
     TextButton score{""};
 };
@@ -94,6 +97,8 @@ struct ScoreCounter final : UIObject
 struct GameOverUI final : Button
 {
     GameOverUI();
+
+protected:
     void onDraw(const Rect& bounds) override;
 
     TextButton restart{"Restart"};

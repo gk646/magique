@@ -30,26 +30,25 @@ namespace magique
 
     // Performs a collision check between two entities based on their position and collision components
     // This automatically takes into account their current position, shape and dimensions!
-    // This ignores layers and masks!
+    // Note: This ignores layers and masks!
     bool CheckCollisionEntities(Entity a, Entity b);
     void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info);
-
-    // Returns true and assign info if a collision occurs between the entity and the given rectangle
-    bool CheckCollisionEntityRect(Entity e, const Rect& r, CollisionInfo& info);
 
     // Returns true if the entity collision shape contains or intersects the mouse pos
     bool CheckCollisionEntityMouse(Entity e);
 
+    // Returns true if the given entities collision bounds intersect with the given shape
+    bool CheckCollisionEntityRect(Entity e, const Rect& rect);
     bool CheckCollisionEntityCircle(Entity e, const Circle& c);
 
     //================= GRIDS =================//
 
     // Returns true if the entity collides with any other collision entity
-    // Note: This performs a direct collision check with all relevant entities nearby each time
+    // Note: This performs a direct collision check with all relevant entities nearby each call
     bool CheckCollisionEntityAny(Entity e);
 
-    // Returns true if the thing collides with any static collision objects
-    // Note: This performs a direct collision check with all relevant static objects nearby each time
+    // Returns true if the entity collides with any static collision object
+    // Note: This performs a direct collision check with all relevant static objects nearby each call
     bool CheckCollisionEntityStatic(Entity e);
 
     //================= CIRCLE =================//
@@ -78,9 +77,7 @@ namespace magique::internal
     void CheckCollisionEntities(const PositionC& posA, const CollisionC& colA, const PositionC& posB,
                                 const CollisionC& colB, CollisionInfo& info);
 
-    bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
-
-    bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col);
+    void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info);
 
 } // namespace magique::internal
 

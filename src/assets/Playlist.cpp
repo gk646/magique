@@ -4,7 +4,7 @@
 namespace magique
 {
     Playlist::Playlist(const std::initializer_list<Music>& musics, const bool fade, const float volume) :
-        volume(volume), fading(fade)
+        volume(volume), isFadeIn(fade)
     {
         tracks.reserve(musics.size() + 1);
         for (const auto& m : musics)
@@ -28,9 +28,9 @@ namespace magique
         }
     }
 
-    void Playlist::setFading(const bool val) { fading = val; }
+    void Playlist::setFading(const bool val) { isFadeIn = val; }
 
-    bool Playlist::getIsFading() const { return fading; }
+    bool Playlist::getIsFading() const { return isFadeIn; }
 
     int Playlist::getSize() const { return static_cast<int>(tracks.size()); }
 

@@ -1,76 +1,23 @@
-#include "loading/Loaders.h"
-
-#include <magique/assets/HandleRegistry.h>
-#include <magique/assets/container/AssetContainer.h>
-#include <magique/assets/AssetManager.h>
-#include <magique/ecs/Scripting.h>
-
 #include "WizardQuest.h"
+#include "loading/Loaders.h"
 #include "ecs/Components.h"
 #include "ecs/Scripts.h"
 
-#include <magique/core/Animations.h>
-
-void TileLoader::execute(AssetContainer& res)
+void TileLoader::execute(AssetPack& assets)
 {
-    auto handle = RegisterTileMap(res.getAsset("Level1.tmx"));
-    RegisterHandle(handle, HandleID::LEVEL_1);
-
-    handle = RegisterTileMap(res.getAsset("Level2.tmx"));
-    RegisterHandle(handle, HandleID::LEVEL_2);
-
-    handle = RegisterTileMap(res.getAsset("Lobby.tmx"));
-    RegisterHandle(handle, HandleID::LOBBY);
-
-    // Load TileSet
-    handle = RegisterTileSet(res.getAsset("topdown.tsx"));
-    RegisterHandle(handle, HandleID::TILE_SET);
+    GLOBAL.tilemaps[MapID::LEVEL_1] = ImportTileMap(assets["Level1.tmj"]);
+    GLOBAL.tilemaps[MapID::LEVEL_2] = ImportTileMap(assets["Level2.tmj"]);
+    GLOBAL.tilemaps[MapID::LOBBY] = ImportTileMap(assets["lobby.tmj"]);
+    GLOBAL.tileset = ImportTileSet(assets["topdown.tmj"]);
 }
 
-void EntityLoader::execute(AssetContainer& res)
+void TextureLoader::execute(AssetPack& assets)
 {
-    ScriptingSetScript(PLAYER, new PlayerScript());
-    EntityRegister(PLAYER,
-                   [](entt::entity e, EntityType type)
-                   {
-                       ComponentGiveActor(e);
-                       ComponentGiveCamera(e);
-                       GiveCollisionRect(e, 20, 30);
-                       ComponentGive<EntityStatsC>(e);
-                       ComponentGive<MovementC>(e);
-                       GiveAnimation(e, type, AnimationState::IDLE);
-                   });
-
-    ScriptingSetScript(TROLL, new TrollScript());
-    EntityRegister(TROLL,
-                   [](entt::entity e, EntityType type)
-                   {
-                       GiveCollisionRect(e, 20, 30);
-                       ComponentGive<EntityStatsC>(e);
-                       ComponentGive<MovementC>(e);
-                       GiveAnimation(e, type, AnimationState::IDLE);
-                   });
-
-    ScriptingSetScript(NET_PLAYER, new NetPlayerScript());
-    EntityRegister(NET_PLAYER,
-                   [](entt::entity e, EntityType type)
-                   {
-                       ComponentGiveActor(e);
-                       GiveCollisionRect(e, 20, 30);
-                       ComponentGive<EntityStatsC>(e);
-                       ComponentGive<MovementC>(e);
-                       GiveAnimation(e, type, AnimationState::IDLE);
-                   });
-}
-
-void TextureLoader::execute(AssetContainer& assets)
-{
-    auto handle = RegisterTileSheet(assets["topdown.png"], 8, 3);
-    RegisterHandle(handle, HandleID::TILESHEET);
+    GLOBAL.tileSheet = ImportTileSheet(assets["topdown.png"], 8, 3);
 
     // Load player animations - from single image files
     {
-        magique::Animation playerAnim{3}; // Scaling factor is 3 just like for the tilemap and collision
+        Animation playerAnim{3}; // Scaling factor is 3 just like for the tilemap and collision
         std::vector<Asset> idle;
         std::vector<Asset> jump;
         std::vector<Asset> run;
@@ -90,11 +37,11 @@ void TextureLoader::execute(AssetContainer& assets)
                 run.push_back(asset);
             }
         };
-        assets.iterateDirectory("characters/basic/basic/", func);
+        assets.forEachIn("characters/basic/basic/", func);
 
         // Register the animations
         const Point offset = {-5, -6};
-        handle = RegisterSpriteSheetVec(idle, AtlasID::ENTITIES, 3);
+        handle = ImportSpriteVec(idle, AtlasID::ENTITIES, 3);
         playerAnim.addAnimation(AnimationState::IDLE, GetSpriteSheet(handle), 12, offset);
 
         handle = RegisterSpriteSheetVec(jump, AtlasID::ENTITIES, 3);
@@ -150,4 +97,40 @@ void TextureLoader::execute(AssetContainer& assets)
 
         RegisterEntityAnimation(TROLL, trollAnim);
     }
+}
+
+void EntityLoader::execute(AssetPack& res)
+{
+    ScriptingSetScript(EntityType::PLAYER, new PlayerScript());
+    EntityRegister(EntityType::PLAYER,
+                   [](entt::entity e, EntityType type)
+                   {
+                       ComponentGiveActor(e);
+                       ComponentGiveCamera(e);
+                       GiveCollisionRect(e, 20, 30);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
+                       GiveAnimation(e, type, AnimationState::IDLE);
+                   });
+
+    ScriptingSetScript(TROLL, new TrollScript());
+    EntityRegister(TROLL,
+                   [](entt::entity e, EntityType type)
+                   {
+                       GiveCollisionRect(e, 20, 30);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
+                       GiveAnimation(e, type, AnimationState::IDLE);
+                   });
+
+    ScriptingSetScript(NET_PLAYER, new NetPlayerScript());
+    EntityRegister(NET_PLAYER,
+                   [](entt::entity e, EntityType type)
+                   {
+                       ComponentGiveActor(e);
+                       GiveCollisionRect(e, 20, 30);
+                       ComponentGive<EntityStatsC>(e);
+                       ComponentGive<MovementC>(e);
+                       GiveAnimation(e, type, AnimationState::IDLE);
+                   });
 }

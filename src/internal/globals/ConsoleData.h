@@ -685,9 +685,10 @@ namespace magique
         for (int i = 1; i < (int)chunks.size(); i++)
         {
             // Env param
-            if (chunks.size() > 1 && chunks[i][0] == '$' && chunks[i][2] != '$')
+            if (chunks.size() > 1 && chunks[i][0] == '$' && chunks[i][1] != '$')
             {
-                auto it = global::CONSOLE_DATA.envParams.find(chunks[i].data() + 1);
+                auto chunk = chunks[i];
+                auto it = global::CONSOLE_DATA.envParams.find(std::string_view{chunk.data() + 1, chunk.size() - 1});
                 if (it != global::CONSOLE_DATA.envParams.end())
                 {
                     params.emplace_back(it->second);

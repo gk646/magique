@@ -37,11 +37,11 @@ namespace magique
 
     // Patches the given component of the given entity using the diff to transform it into the observed target state
     template <typename T>
-    bool EntityPatch(Entity entity, Diff diff);
+    bool EntityPatchDiff(Entity entity, Diff diff);
 
     // Resets the saved state such that any new observation causes an update
     // Note: Should be called when a new game starts
-    void ChangeStateClear();
+    void ObserverStateClear();
 
     // Abstraction class that allows to manage changes for many entities across multiple components
     struct ChangeManager
@@ -170,7 +170,7 @@ namespace magique
     }
 
     template <typename T>
-    bool EntityPatch(Entity entity, Diff diff)
+    bool EntityPatchDiff(Entity entity, Diff diff)
     {
         auto& oldState = ComponentGet<T>(entity);
         if (diff.compressed)
@@ -182,7 +182,7 @@ namespace magique
         return !err;
     }
 
-    inline void ChangeStateClear() { internal::GLOBAL_OBSERVER.clear(); }
+    inline void ObserverStateClear() { internal::GLOBAL_OBSERVER.clear(); }
 
     template <typename... Components>
     ChangeSet ChangeManager::generateChangeSet(FilterFunc filter)
@@ -230,7 +230,7 @@ namespace magique
                 return;
             applyMap[std::meta::identifier_of(^^T)] = [](Entity entity, std::string_view diff)
             {
-                EntityPatch<T>(entity, {diff, false});
+                EntityPatchDiff<T>(entity, {diff, false});
             };
         };
 

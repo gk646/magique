@@ -18,7 +18,6 @@ namespace magique
             DrawGame,
             UpdateGame,
             UpdateEnd,
-            COUNT,
         };
 
         struct SystemEntry
@@ -85,6 +84,8 @@ namespace magique
         }
 
         auto copy = SYSTEM_DATA.systems;
+        if (copy.empty())
+            return;
         std::ranges::sort(copy, [](auto& one, auto& two) { return one.getTotalMillis() > two.getTotalMillis(); });
 
         LOG_INFO("Gamesystem Stats:");

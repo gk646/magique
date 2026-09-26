@@ -14,7 +14,7 @@ namespace magique
         return internal::StorageContainer::FromFile(save, filePath, key);
     }
 
-    void GameStorage::saveString(std::string_view slot, const std::string_view& string)
+    void GameStorage::saveString(std::string_view slot,  std::string_view string)
     {
         auto& cell = getCellOrNew(slot, StorageType::STRING);
         cell.data = string;

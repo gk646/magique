@@ -72,7 +72,11 @@ namespace magique
         msg->m_conn = static_cast<HSteamNetConnection>(conn);
 
         global::MP_DATA.statistics.addOutgoing(payload);
+#ifdef MAGIQUE_STEAM
         SteamNetworkingSockets()->SendMessages(1, &msg, nullptr, true);
+#else
+        SteamNetworkingSockets()->SendMessages(1, &msg, nullptr);
+#endif
         return true;
     }
 

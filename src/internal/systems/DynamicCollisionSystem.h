@@ -136,7 +136,7 @@ namespace magique
                 {
                     // Call for second entity
 #if MAGIQUE_CHECK_EXISTS_BEFORE_EVENT == 1
-                    bool invokeEvent = group.contains(e1) && group.contains(e2); // Needs recheck as first could delete
+                    bool invokeEvent = EntityExists(e1) && EntityExists(e2); // Needs recheck as first could delete
                     if (invokeEvent)
 #endif
                         internal::GetScriptInternal(e2)->onDynamicCollision(e2, e1, secondInfo);

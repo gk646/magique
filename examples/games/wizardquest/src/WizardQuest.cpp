@@ -1,9 +1,7 @@
-
-#include <magique/magique.hpp> // Single include header
+#include <magique/magique.hpp>
 
 #include "WizardQuest.h"
 #include "ecs/Components.h"
-#include "ecs/Scripts.h"
 #include "ecs/Systems.h"
 #include "loading/Loaders.h"
 #include "multiplayer/Multiplayer.h"
@@ -17,9 +15,9 @@ void WizardQuest::onStartup(AssetLoader& loader)
     CollisionSetWorldBounds({0, 0, 1280, 1000});
 
     // Register loaders
-    loader.registerTask(new EntityLoader(), THREAD_ANY, MEDIUM, 1);
-    loader.registerTask(new TileLoader(), THREAD_ANY, MEDIUM, 3);
-    loader.registerTask(new TextureLoader(), THREAD_MAIN, MEDIUM, 5);
+    loader.registerTask(new EntityLoader(), THREAD_ANY, MEDIUM);
+    loader.registerTask(new TileLoader(), THREAD_ANY, MEDIUM);
+    loader.registerTask(new TextureLoader(), THREAD_MAIN, MEDIUM);
 }
 
 void WizardQuest::onLoadingFinished()
@@ -29,51 +27,49 @@ void WizardQuest::onLoadingFinished()
 
     // Set the initial map
     auto map = MapID::LOBBY;
+
     // Create the player
-    EntityCreate(PLAYER, 24 * 24, 24 * 24, map);
+    EntityCreate(EntityType::PLAYER, {24 * 24}, map);
 
     // Load the global tileset - the tileset defines the collision (and other) attributes for tiles
-    // Mark all tiles with class 1 as solid
-    LoadGlobalTileSet(GetTileSet(HandleID::TILE_SET), {1}, 3);
+    CollisionSetTileset(GLOBAL.tileSet);
 
     // Adds all solid tiles from the given map as static collision objects - from layer 0 and 1
-    AddTileCollisions(map, GetTileMap(GetMapHandle(map)), {0, 1});
-    AddTileCollisions(MapID::LEVEL_1, GetTileMap(GetMapHandle(MapID::LEVEL_1)), {0, 1});
+    CollisionAddTiles(map, GLOBAL.tilemaps[map], {0, 1});
+    CollisionAddTiles(map, GLOBAL.tilemaps[MapID::LEVEL_1], {0, 1});
 
     // Start the game in game state
     EngineSetState(GameState::GAME);
 }
 
-void WizardQuest::drawGame(GameState gameState, Camera2D& camera)
+void WizardQuest::onDrawGame(GameState state, Camera2D& camera)
 {
     BeginMode2D(camera);
     {
         // Get the current map
-        const auto map = GetCameraMap();
-        // Get the map data from the asset manager
-        const auto& tileMap = GetTileMap(GetMapHandle(map));
-        // Draw the specified layer of the given map using the textures from the given tilesheet
-        DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 0);
-        DrawTileMap(tileMap, GetTileSheet(HandleID::TILESHEET), 1);
+        const auto& tileMap = GLOBAL.tilemaps[CameraGetMap()];
+
+        // Draw the tilemap using the texture from the tilesheet
+        DrawTileMap(tileMap, GLOBAL.tileSheet);
 
         // Draw the entities using their defined animation data
-        for (const auto entity : GetDrawEntities())
+        for (const auto entity : EngineGetDrawEntities())
         {
-            if (EntityHasComponents<AnimationC>(entity))
+            if (EntityHasAll<AnimationC>(entity))
             {
                 const auto& pos = ComponentGet<PositionC>(entity);
                 const auto& anim = ComponentGet<AnimationC>(entity);
                 const auto& mov = ComponentGet<MovementC>(entity);
-                anim.drawCurrentFrame(pos.x, pos.y, 0, mov.movedLeft);
+                anim.drawCurrentFrame(pos, mov.movedLeft);
             }
         }
     }
     EndMode2D();
 }
 
-void WizardQuest::drawUI(GameState gameState)
+void WizardQuest::onDrawUI(GameState state)
 {
-    switch (gameState)
+    switch (state)
     {
     case GameState::MAIN_MENU:
         break;
@@ -86,9 +82,9 @@ void WizardQuest::drawUI(GameState gameState)
     }
 }
 
-void WizardQuest::updateGame(GameState gameState)
+void WizardQuest::onUpdateGame(GameState state)
 {
-    switch (gameState)
+    switch (state)
     {
     case GameState::MAIN_MENU:
         break;
@@ -104,13 +100,13 @@ void WizardQuest::updateGame(GameState gameState)
 }
 
 // Update happens after the internal update tick - we want to send out the most up-to-date position for entities
-void WizardQuest::postTickUpdate(GameState gameState) { Multiplayer::postUpdate(); }
+void WizardQuest::onUpdateEnd(GameState state) { Multiplayer::postUpdate(); }
 
 // Runs once on shutdown - save our game data
 void WizardQuest::onShutDown()
 {
-    GameSaveData save;
-    auto data = GetAchievementsData();
-    save.saveData(StorageID::ACHIEVEMENTS, data.getData(), data.getSize());
-    SaveToDisk(save, "MySave.save");
+    GameStorage save;
+    auto data = AchievementExport();
+    save.saveString("achievements", data);
+    GameStorageToFile(save, "save.save");
 }

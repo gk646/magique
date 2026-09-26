@@ -18,12 +18,12 @@ namespace magique
     bool DataReadFile(std::string_view file, std::string& data)
     {
         FILE* f = fopen(file.data(), "rb");
-        setvbuf(f, nullptr, _IONBF, 0);
         if (f == nullptr)
         {
-            LOG_INFO("Failed to open file for reading: %s", file.data());
+            LOG_WARNING("Failed to open file for reading: %s", file.data());
             return false;
         }
+        setvbuf(f, nullptr, _IONBF, 0);
         fseek(f, 0, SEEK_END);
         const size_t fileSize = ftell(f);
         data.resize(fileSize);
@@ -36,12 +36,12 @@ namespace magique
     bool DataWriteFile(std::string_view file, std::string_view content)
     {
         FILE* f = fopen(file.data(), "w+b");
-        setvbuf(f, nullptr, _IONBF, 0);
         if (f == nullptr)
         {
-            LOG_ERROR("Failed to open file for writing: %s", file);
+            LOG_WARNING("Failed to open file for writing: %s", file);
             return false;
         }
+        setvbuf(f, nullptr, _IONBF, 0);
         fwrite(content.data(), content.size(), 1, f);
         fclose(f);
         return true;

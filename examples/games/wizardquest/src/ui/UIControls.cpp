@@ -1,17 +1,11 @@
-#include <magique/ecs/ECS.h>
-#include <magique/ui/TextFormat.h>
-#include <magique/core/Core.h>
-#include <magique/core/Camera.h>
-
 #include "ui/UIControls.h"
 #include "ecs/Components.h"
 
-void PlayerHUD::onDraw(const magique::Rect& bounds)
+void PlayerHUD::onDraw(const Rect& bounds)
 {
-    if (GetCameraEntity() == entt::entity(UINT32_MAX))
+    if (CameraGetEntity() == NullEntity)
         return;
-    const auto& stats = ComponentGet<EntityStatsC>(GetCameraEntity()); // Player is always the camera in this example
-
+    const auto& stats = ComponentGet<EntityStatsC>(); // Player is always the camera in this example
     const auto healthWidth = bounds.width * stats.getHealthPercent();
     const Rectangle health = {bounds.x, bounds.y, healthWidth, bounds.height / 2.0F};
     DrawRectangleRec(health, RED);
@@ -27,34 +21,33 @@ void PlayerHUD::onDraw(const magique::Rect& bounds)
     DrawTextFmt(font, "${P_MANA}/${P_MAX_MANA}", p, 18, 1.0F);
 }
 
-void PlayerHUD::onUpdate(const Rectangle& bounds, const bool isDrawn)
+void PlayerHUD::onUpdate(const Rect& bounds, const bool isDrawn)
 {
-    if (!isDrawn || GetCameraEntity() == entt::entity(UINT32_MAX)) // No need for update or no camera
+    if (!isDrawn || CameraGetEntity() == NullEntity) // No need for update or no camera
         return;
-    const auto& stats = ComponentGet<EntityStatsC>(GetCameraEntity());
-    SetFormatValue("P_HEALTH", (int)stats.health);
-    SetFormatValue("P_MAX_HEALTH", (int)stats.maxHealth);
-    SetFormatValue("P_MANA", (int)stats.mana);
-    SetFormatValue("P_MAX_MANA", (int)stats.maxMana);
+    const auto& stats = ComponentGet<EntityStatsC>(CameraGetEntity());
+    FormatSetValue("P_HEALTH", (int)stats.health);
+    FormatSetValue("P_MAX_HEALTH", (int)stats.maxHealth);
+    FormatSetValue("P_MANA", (int)stats.mana);
+    FormatSetValue("P_MAX_MANA", (int)stats.maxMana);
 }
 
-void HotbarSlot::onDraw(const magique::Rect& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
+void HotbarSlot::onDraw(const Rect& bounds) { DrawRectangleLinesEx(bounds, 1, DARKGRAY); }
 
-PlayerHotbar::PlayerHotbar() : UIContainer(slots * HotbarSlot::size, 50, Anchor::BOTTOM_CENTER,0, ScalingMode::KEEP_RATIO)
+PlayerHotbar::PlayerHotbar() :
+    UIContainer({slots * HotbarSlot::size, 50}, Anchor::BOTTOM_CENTER, 0, ScalingMode::KEEP_RATIO)
 {
     for (int i = 0; i < slots; ++i)
-    {
         addChild(new HotbarSlot());
-    }
 }
 
-void PlayerHotbar::onDraw(const magique::Rect& bounds)
+void PlayerHotbar::onDraw(const Rect& bounds)
 {
     DrawRectangleLinesEx(bounds, 2, DARKGRAY);
 
     // Align the slots next to each other
     const UIObject* prevChild = nullptr;
-    for (const auto child : getChildren())
+    for (const auto [name, child] : getChildren())
     {
         if (prevChild == nullptr)
         {

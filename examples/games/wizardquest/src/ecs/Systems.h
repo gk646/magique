@@ -8,19 +8,17 @@ struct MovementSystem final
     static void update();
 };
 
-
 struct AnimationSystem final
 {
     static void update();
 };
 
-
 struct TeleportSystem final
 {
     struct Teleporter final
     {
-        float x, y, w, h;
-        float outX, outY;
+        Rect bounds;
+        Point target;
         MapID origin;
         MapID destination;
     };
@@ -29,7 +27,6 @@ struct TeleportSystem final
     static void setup();
     static void update();
 };
-
 
 struct MultiplayerSystem final
 {
@@ -43,4 +40,4 @@ struct MultiplayerSystem final
 private:
     static void checkBeginSession();
 };
-#endif //SYSTEMS_H
+#endif // SYSTEMS_H

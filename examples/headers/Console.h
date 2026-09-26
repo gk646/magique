@@ -9,8 +9,6 @@ struct Example final : Game
 {
     void onStartup(AssetLoader& loader) override
     {
-        EngineSetState({}); // Set empty gamestate - needs to be set in a real game
-
         // printName Command
         Command printHello{"printHello"};
         printHello.addParam("name", {ParamType::STRING});
@@ -106,6 +104,7 @@ struct Example final : Game
 
     void onDrawGame(GameState gameState, Camera2D& camera2D) override
     {
+        ClearBackground(DARKGRAY);
         const char* helpText = R"(
 Open the console with PAGE_UP.
 
@@ -122,7 +121,7 @@ Look at the commands defined in the example and try to invoke them!
 	- "greet User Morning"
 	- "broadcast
         )";
-        DrawTextEx(EngineGetFont(), helpText, {10, 250}, 18, 1, BLACK);
+        DrawText( helpText, {10, 250});
     }
 };
 

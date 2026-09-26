@@ -11,6 +11,13 @@
 
 namespace magique
 {
+    bool CheckCollisionEntities(Entity a, Entity b)
+    {
+        CollisionInfo info{};
+        CheckCollisionEntities(a, b, info);
+        return info.isColliding();
+    }
+
     void CheckCollisionEntities(Entity a, Entity b, CollisionInfo& info)
     {
         auto& posA = ComponentGet<PositionC>(a);
@@ -20,22 +27,21 @@ namespace magique
         internal::CheckCollisionEntities(posA, colA, posB, colB, info);
     }
 
-    bool CheckCollisionEntities(Entity a, Entity b)
-    {
-        CollisionInfo info{};
-        CheckCollisionEntities(a, b, info);
-        return info.isColliding();
-    }
-
     bool CheckCollisionEntityMouse(Entity e)
     {
+        return CheckCollisionEntityRect(e, Rect{GetScreenToWorld2D(GetMousePosition(), CameraGet()), 1});
+    }
+
+    bool CheckCollisionEntityRect(Entity e, const Rect& rect)
+    {
+        CollisionInfo info;
         const auto& pos = ComponentGet<PositionC>(e);
-        const auto* col = ComponentTryGet<CollisionC>(e);
+        const auto col = ComponentTryGet<CollisionC>(e);
         if (col == nullptr) [[unlikely]]
-        {
-            return pos.pos == GetScreenToWorld2D(GetMousePosition(), CameraGet());
-        }
-        return internal::CheckCollisionEntityMouse(pos, *col);
+            return false;
+
+        internal::CheckCollisionEntityRect(pos, *col, rect, info);
+        return info.isColliding();
     }
 
     bool CheckCollisionEntityCircle(Entity e, const Circle& c)
@@ -55,6 +61,37 @@ namespace magique
     }
 
     bool CheckCollisionEntityAny(Entity e)
+    {
+        thread_local std::vector<Entity> CACHE{64};
+        auto& dynamic = global::DY_COLL_DATA;
+        const auto& pos = ComponentGet<PositionC>(e);
+        const auto col = ComponentTryGet<CollisionC>(e);
+        if (col == nullptr) [[unlikely]]
+            return false;
+
+        const auto& mapGrid = dynamic.mapEntityGrids[pos.map];
+        const auto bounds = pos.getBounds(*col);
+
+        CACHE.clear();
+        mapGrid.query(CACHE, bounds);
+
+        for (auto nearby : CACHE)
+        {
+            if (nearby == e) [[unlikely]]
+                continue;
+            const auto& colB = ComponentGet<CollisionC>(nearby);
+            if (!colB.detects(*col) || col->detects(colB))
+                continue;
+            const auto& posB = ComponentGet<PositionC>(nearby);
+            CollisionInfo info{};
+            internal::CheckCollisionEntities(pos, *col, posB, colB, info);
+            if (info.isColliding()) [[unlikely]]
+                return true;
+        }
+        return false;
+    }
+
+    bool CheckCollisionEntityStatic(Entity e)
     {
         thread_local std::vector<StaticID> CACHE(64);
 
@@ -127,21 +164,12 @@ namespace magique
 
     namespace internal
     {
-        bool CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
+        void CheckCollisionEntityRect(const PositionC& pos, const CollisionC& col, const Rect& r, CollisionInfo& info)
         {
             // Avoids doubling logic
             const PositionC posR{r.pos(), pos.map, pos.type, 0};
             const CollisionC colR{r.width, r.height, 0, 0, {}, {}, Shape::RECT};
             CheckCollisionEntities(pos, col, posR, colR, info);
-            return info.isColliding();
-        }
-
-        bool CheckCollisionEntityMouse(const PositionC& pos, const CollisionC& col)
-        {
-            CollisionInfo info;
-            const auto worldMouse = GetScreenToWorld2D(GetMousePosition(), CameraGet());
-            CheckCollisionEntityRect(pos, col, Rect{worldMouse.x, worldMouse.y, 1, 1}, info);
-            return info.isColliding();
         }
 
         // Should be the most efficient way - allows jump tables and inlining - this is actually very fast!

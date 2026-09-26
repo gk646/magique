@@ -7,7 +7,7 @@
 using namespace magique;
 
 // Define the types of entities used in this game
-enum EntityType : uint16_t
+enum class EntityType : uint16_t
 {
     Player,
     OBJECT,
@@ -25,8 +25,7 @@ bool DISABLE_MOVEMENT = false;
 // Custom Script to enable WASD movement
 struct PlayerScript final : EntityScript
 {
-    // Called if any keystate changed
-    void onKeyEvent(entt::entity self) override
+    void onUpdate(entt::entity self) override
     {
         float speed = 2.0F;
         auto& pos = ComponentGet<PositionC>(self); // Retrieve the position component - implicit for each entity
@@ -49,7 +48,7 @@ struct PlayerScript final : EntityScript
 struct ObjectScript final : EntityScript // Moving platform
 {
     // Called at the beginning of each tick
-    void onTick(entt::entity self, bool updated) override
+    void onUpdate(entt::entity self, bool updated) override
     {
         auto& myComp = ComponentGet<TestCompC>(self);
         myComp.isColliding = false; // Reset collision flag
@@ -77,7 +76,7 @@ struct ObjectScript final : EntityScript // Moving platform
     void onDynamicCollision(entt::entity self, entt::entity other, CollisionInfo& info) override
     {
         ComponentGet<TestCompC>(self).isColliding = true; // Set the collide flag to color the entity
-       AccumulateCollision(info);                        // Accumulates the collision info to resolve the collision
+        AccumulateCollision(info);                        // Accumulates the collision info to resolve the collision
     }
 };
 
@@ -87,9 +86,9 @@ struct Example final : Game
 
     void onStartup(AssetLoader& loader) override
     {
-        EngineSetState({});               // Set empty gamestate - needs to be set in a real game
-        SetShowHitboxes(true);          // Show all collision hitboxes
-        SetShowEntityGridOverlay(true); // Shows the size and entity count of each cell in the entity collision grid
+        EngineSetState({});            // Set empty gamestate - needs to be set in a real game
+        EngineShowHitboxes(true);      // Show all collision hitboxes
+        EngineShowEntityOverlay(true); // Shows the size and entity count of each cell in the entity collision grid
         // Create the player
         const auto playerFunc = [](entt::entity e, EntityType type)
         {
@@ -131,7 +130,6 @@ struct Example final : Game
         {
             EntityCreate(OBJECT, Point::Random(-500, 500), MapID(0));
         }
-
     }
 
     void onDrawGame(GameState /**/, Camera2D& camera2D) override

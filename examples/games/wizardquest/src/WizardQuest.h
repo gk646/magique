@@ -1,10 +1,10 @@
 #ifndef WIZARDQUEST_H
 #define WIZARDQUEST_H
 
-#include <magique/core/Game.h>
+#include <magique/magique.hpp>
 #include "ui/UIControls.h"
 
-using namespace magique; // using namespace is recommended and allowed
+// using namespace is recommended and allowed
 
 enum class GameState : uint8_t
 {
@@ -20,7 +20,7 @@ enum class MessageType : uint8_t
     SPAWN_UPDATE,
 };
 
-enum EntityType : uint16_t
+enum class EntityType : uint16_t
 {
     PLAYER,
     TROLL,      // Enemy
@@ -70,20 +70,29 @@ enum class AtlasID : int
 struct WizardQuestUI final
 {
     PlayerHUD playerHUD{};
-    LobbyBrowser lobbyBrowser{};
     PlayerHotbar playerHotbar{};
 };
+
+struct GlobalData
+{
+    HashMap<MapID, TileMap> tilemaps;
+    TileSheet tileSheet;
+    TileSet tileSet;
+};
+
+inline GlobalData GLOBAL{};
 
 struct WizardQuest final : Game
 {
     WizardQuestUI gameUI{};
+
     WizardQuest() : Game("WizardQuest") {}
     void onStartup(AssetLoader& loader) override;
     void onLoadingFinished() override;
-    void updateGame(GameState gameState) override;
-    void postTickUpdate(GameState gameState) override;
-    void drawGame(GameState gameState, Camera2D& camera) override;
-    void drawUI(GameState gameState) override;
+    void onUpdateGame(GameState state) override;
+    void onUpdateEnd(GameState state) override;
+    void onDrawGame(GameState state, Camera2D& camera) override;
+    void onDrawUI(GameState state) override;
     void onShutDown() override;
 };
 
